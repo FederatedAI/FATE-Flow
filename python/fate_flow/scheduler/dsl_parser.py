@@ -101,13 +101,13 @@ class BaseDSLParser(object):
         self.predict_dsl = {}
         self.runtime_conf = {}
         self.pipeline_runtime_conf = {}
-        self.setting_conf_prefix = None
         self.graph_dependency = None
         self.args_input = None
         self.args_datakey = None
         self.args_input_to_check = set()
         self.next_component_to_topo = set()
         self.job_parameters = {}
+        self.setting_conf_prefix_list = None
 
     def _init_components(self, mode="train", version=1, **kwargs):
         if not self.dsl:
@@ -239,7 +239,12 @@ class BaseDSLParser(object):
             self.components[i].set_upstream(self.component_upstream[i])
             self.components[i].set_downstream(self.component_downstream[i])
 
-    def _init_component_setting(self, setting_conf_prefix, runtime_conf, version=1, redundant_param_check=True):
+    def _init_component_setting(self,
+                                setting_conf_prefix_list,
+                                runtime_conf,
+                                version=1,
+                                redundant_param_check=True,
+                                parse_parameter=True):
         """
         init top input
         """
@@ -249,17 +254,19 @@ class BaseDSLParser(object):
             if self.train_input_model.get(name, None) is None:
                 module = self.components[idx].get_module()
                 if version == 1:
-                    role_parameters = parameter_util.ParameterUtil.override_parameter(setting_conf_prefix,
+                    role_parameters = parameter_util.ParameterUtil.override_parameter(setting_conf_prefix_list,
                                                                                       runtime_conf,
                                                                                       module,
                                                                                       name,
-                                                                                      redundant_param_check=redundant_param_check)
+                                                                                      redundant_param_check=redundant_param_check,
+                                                                                      parse_parameter=parse_parameter)
                 else:
-                    role_parameters = parameter_util.ParameterUtilV2.override_parameter(setting_conf_prefix,
+                    role_parameters = parameter_util.ParameterUtilV2.override_parameter(setting_conf_prefix_list,
                                                                                         runtime_conf,
                                                                                         module,
                                                                                         name,
-                                                                                        redundant_param_check=redundant_param_check)
+                                                                                        redundant_param_check=redundant_param_check,
+                                                                                        parse_parameter=parse_parameter)
 
                 self.components[idx].set_role_parameters(role_parameters)
             else:
@@ -464,17 +471,6 @@ class BaseDSLParser(object):
 
             if not dependence_dict[name]:
                 del dependence_dict[name]
-            # upstream = self.component_upstream[self.component_name_index.get(name)]
-            # if upstream:
-            #     dependence_dict[name] = []
-            #     for up_component in upstream:
-            #         if (name, up_component) in self.component_upstream_data_relation_set:
-            #             dependence_dict[name].append({"component_name": up_component,
-            #                                           "type": "data"})
-
-            #         if (name, up_component) in self.component_upstream_model_relation_set:
-            #             dependence_dict[name].append({"component_name": up_component,
-            #                                           "type": "model"})
 
         component_list = [None for i in range(len(self.components))]
         topo_rank_reverse_mapping = {}
@@ -511,7 +507,7 @@ class BaseDSLParser(object):
                         dependency_list[i]["component_need_run"][name] = False
                 else:
                     if self.train_input_model.get(name, None) is None:
-                        param_class = parameter_util.ParameterUtil.get_param_class_name(self.setting_conf_prefix,
+                        param_class = parameter_util.ParameterUtil.get_param_class_name(self.setting_conf_prefix_list,
                                                                                         module)
                         for i in range(len(dependency_list)):
                             if parameters[role][i].get(param_class) is None \
@@ -567,7 +563,7 @@ class BaseDSLParser(object):
     def deploy_component(*args, **kwargs):
         raise NotImplementedError
 
-    def _auto_deduction(self, setting_conf_prefix=None, deploy_cpns=None, version=1, erase_top_data_input=False):
+    def _auto_deduction(self, setting_conf_prefix_list=None, deploy_cpns=None, version=1, erase_top_data_input=False):
         self.predict_dsl = {"components": {}}
         self.predict_components = []
         mapping_list = {}
@@ -584,16 +580,8 @@ class BaseDSLParser(object):
                 if version != 2:
                     raise ValueError("Reader component can only be set in dsl_version 2")
 
-                # if self.get_need_deploy_parameter(name=name,
-                #                                   setting_conf_prefix=setting_conf_prefix,
-                #                                   deploy_cpns=deploy_cpns):
-                #     raise ValueError(
-                #         "Reader component should not be include in predict process, it should be just as an input placeholder")
-
-                # continue
-
             if self.get_need_deploy_parameter(name=name,
-                                              setting_conf_prefix=setting_conf_prefix,
+                                              setting_conf_prefix_list=setting_conf_prefix_list,
                                               deploy_cpns=deploy_cpns):
 
                 self.predict_dsl["components"][name] = {"module": self.predict_components[i].get_module()}
@@ -645,7 +633,7 @@ class BaseDSLParser(object):
                                         pre_name = input_data.split(".")[0]
                                         data_suffix = input_data.split(".")[1]
                                         if self.get_need_deploy_parameter(name=pre_name,
-                                                                          setting_conf_prefix=setting_conf_prefix,
+                                                                          setting_conf_prefix_list=setting_conf_prefix_list,
                                                                           deploy_cpns=deploy_cpns):
                                             self.predict_dsl["components"][name]["input"]["data"][data_value].append(
                                                 input_data)
@@ -702,7 +690,7 @@ class BaseDSLParser(object):
                 up_input_data_component_name = up_input_data.split(".", -1)[0]
                 if up_input_data_component_name == "args" or self.get_need_deploy_parameter(
                         name=up_input_data_component_name,
-                        setting_conf_prefix=setting_conf_prefix,
+                        setting_conf_prefix_list=setting_conf_prefix_list,
                         deploy_cpns=deploy_cpns):
                     output_data_maps[name][output_data_str] = [up_input_data]
                 elif self.components[
@@ -744,7 +732,7 @@ class BaseDSLParser(object):
     def get_args_input(self):
         return self.args_input
 
-    def get_need_deploy_parameter(self, name, setting_conf_prefix=None, deploy_cpns=None):
+    def get_need_deploy_parameter(self, name, setting_conf_prefix_list=None, deploy_cpns=None):
         raise NotImplementedError
 
     def get_job_parameters(self):
@@ -830,7 +818,7 @@ class DSLParser(BaseDSLParser):
     #     return dsl_parser.predict_dsl
 
     def run(self, pipeline_dsl=None, pipeline_runtime_conf=None, dsl=None, runtime_conf=None,
-            setting_conf_prefix=None, mode="train", *args, **kwargs):
+            setting_conf_prefix_list=None, mode="train", parse_parameter=True, *args, **kwargs):
 
         if mode not in ["train", "predict"]:
             raise ModeError("")
@@ -841,21 +829,24 @@ class DSLParser(BaseDSLParser):
         self.runtime_conf = runtime_conf
         self.pipeline_runtime_conf = pipeline_runtime_conf
         self.mode = mode
-        self.setting_conf_prefix = setting_conf_prefix
+        self.setting_conf_prefix_list = setting_conf_prefix_list
 
         if mode == "train":
-            self._init_component_setting(setting_conf_prefix, self.runtime_conf)
+            self._init_component_setting(setting_conf_prefix_list, self.runtime_conf, parse_parameter=parse_parameter)
             self.job_parameters = parameter_util.ParameterUtil.get_job_parameters(self.runtime_conf)
         else:
             predict_runtime_conf = parameter_util.ParameterUtil.merge_dict(pipeline_runtime_conf, runtime_conf)
-            self._init_component_setting(setting_conf_prefix, predict_runtime_conf, redundant_param_check=False)
+            self._init_component_setting(setting_conf_prefix_list,
+                                         predict_runtime_conf,
+                                         redundant_param_check=False,
+                                         parse_parameter=parse_parameter)
             self.job_parameters = parameter_util.ParameterUtil.get_job_parameters(predict_runtime_conf)
 
         self.args_input, self.args_datakey = parameter_util.ParameterUtil.get_args_input(runtime_conf, module="args")
         self._check_args_input()
 
         if mode == "train":
-            self._auto_deduction(setting_conf_prefix)
+            self._auto_deduction(setting_conf_prefix_list)
 
         self.prepare_graph_dependency_info()
 
@@ -866,7 +857,7 @@ class DSLParser(BaseDSLParser):
             if key not in self.args_datakey:
                 raise DataNotExistInSubmitConfError(msg=key)
 
-    def get_need_deploy_parameter(self, name, setting_conf_prefix=None, deploy_cpns=None):
+    def get_need_deploy_parameter(self, name, setting_conf_prefix_list=None, deploy_cpns=None):
         if deploy_cpns is not None:
             return name in deploy_cpns
 
@@ -875,12 +866,18 @@ class DSLParser(BaseDSLParser):
 
         module = self.dsl["components"][name].get("module")
 
-        setting_conf_path = os.path.join(setting_conf_prefix, module + ".json")
-        if not os.path.isfile(setting_conf_path):
+        setting_conf_path = None
+        for setting_conf_prefix in setting_conf_prefix_list:
+            _path = os.path.join(setting_conf_prefix, module + ".json")
+            if os.path.isfile(_path):
+                setting_conf_path = _path
+                break
+
+        if not setting_conf_path:
             raise ModuleNotExistError(component=name, module=module)
 
         need_deploy = True
-        with open(os.path.join(setting_conf_prefix, module + ".json"), "r") as fin:
+        with open(setting_conf_path, "r") as fin:
             setting_dict = json.loads(fin.read())
             need_deploy = setting_dict.get("need_deploy", True)
 
@@ -986,7 +983,7 @@ class DSLParserV2(BaseDSLParser):
         return dsl_parser.predict_dsl
 
     def run(self, pipeline_runtime_conf=None, dsl=None, runtime_conf=None,
-            setting_conf_prefix=None, mode="train", *args, **kwargs):
+            setting_conf_prefix_list=None, mode="train", parse_parameter=True, *args, **kwargs):
 
         if mode not in ["train", "predict"]:
             raise ModeError("")
@@ -997,16 +994,20 @@ class DSLParserV2(BaseDSLParser):
         self.runtime_conf = runtime_conf
         self.pipeline_runtime_conf = pipeline_runtime_conf
         self.mode = mode
-        self.setting_conf_prefix = setting_conf_prefix
+        self.setting_conf_prefix_list = setting_conf_prefix_list
 
         if mode == "train":
-            if kwargs.get("get_parameters", False):
-                self._init_component_setting(setting_conf_prefix, self.runtime_conf, version=2)
+            self._init_component_setting(setting_conf_prefix_list,
+                                         self.runtime_conf,
+                                         version=2,
+                                         parse_parameter=parse_parameter)
             self.job_parameters = parameter_util.ParameterUtilV2.get_job_parameters(self.runtime_conf)
         else:
             predict_runtime_conf = parameter_util.ParameterUtilV2.merge_dict(pipeline_runtime_conf, runtime_conf)
-            if kwargs.get("get_parameters", False):
-                self._init_component_setting(setting_conf_prefix, predict_runtime_conf, version=2)
+            self._init_component_setting(setting_conf_prefix_list,
+                                         predict_runtime_conf,
+                                         version=2,
+                                         parse_parameter=parse_parameter)
             self.job_parameters = parameter_util.ParameterUtilV2.get_job_parameters(predict_runtime_conf)
 
         self.args_input = parameter_util.ParameterUtilV2.get_input_parameters(runtime_conf,
@@ -1030,7 +1031,7 @@ class DSLParserV2(BaseDSLParser):
 
         return False
 
-    def get_predict_dsl(self, role, predict_dsl=None, setting_conf_prefix=None):
+    def get_predict_dsl(self, role, predict_dsl=None, setting_conf_prefix_list=None):
         if not predict_dsl:
             return {}
 
@@ -1041,7 +1042,7 @@ class DSLParserV2(BaseDSLParser):
                                                                      module=predict_dsl["components"][component][
                                                                          "module"],
                                                                      module_alias=component,
-                                                                     setting_conf_prefix=setting_conf_prefix)
+                                                                     setting_conf_prefix_list=setting_conf_prefix_list)
             if code_path:
                 role_predict_dsl["components"][component]["CodePath"] = code_path
 
