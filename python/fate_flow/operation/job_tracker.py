@@ -52,21 +52,23 @@ class Tracker(object):
                  job_parameters: RunParameters = None
                  ):
         self.job_id = job_id
+        self.job_parameters = job_parameters
         self.role = role
         self.party_id = party_id
+        self.component_name = component_name if component_name else job_utils.job_virtual_component_name()
+        self.module_name = component_module_name if component_module_name else job_utils.job_virtual_component_module_name()
+        self.task_id = task_id
+        self.task_version = task_version
+
         self.model_id = model_id
         self.party_model_id = model_utils.gen_party_model_id(model_id=model_id, role=role, party_id=party_id)
         self.model_version = model_version
         self.pipelined_model = None
         if self.party_model_id and self.model_version:
             self.pipelined_model = pipelined_model.PipelinedModel(model_id=self.party_model_id,
-                                                                  model_version=self.model_version)
-
-        self.component_name = component_name if component_name else job_utils.job_virtual_component_name()
-        self.module_name = component_module_name if component_module_name else job_utils.job_virtual_component_module_name()
-        self.task_id = task_id
-        self.task_version = task_version
-        self.job_parameters = job_parameters
+                                                                  model_version=self.model_version,
+                                                                  component_type=self.job_parameters.component_type if self.job_parameters else None,
+                                                                  component_version=self.job_parameters.component_version if self.job_parameters else None)
 
     def save_metric_data(self, metric_namespace: str, metric_name: str, metrics: List[Metric], job_level=False):
         schedule_logger(self.job_id).info(

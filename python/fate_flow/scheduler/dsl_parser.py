@@ -1000,11 +1000,13 @@ class DSLParserV2(BaseDSLParser):
         self.setting_conf_prefix = setting_conf_prefix
 
         if mode == "train":
-            self._init_component_setting(setting_conf_prefix, self.runtime_conf, version=2)
+            if kwargs.get("get_parameters", False):
+                self._init_component_setting(setting_conf_prefix, self.runtime_conf, version=2)
             self.job_parameters = parameter_util.ParameterUtilV2.get_job_parameters(self.runtime_conf)
         else:
             predict_runtime_conf = parameter_util.ParameterUtilV2.merge_dict(pipeline_runtime_conf, runtime_conf)
-            self._init_component_setting(setting_conf_prefix, predict_runtime_conf, version=2)
+            if kwargs.get("get_parameters", False):
+                self._init_component_setting(setting_conf_prefix, predict_runtime_conf, version=2)
             self.job_parameters = parameter_util.ParameterUtilV2.get_job_parameters(predict_runtime_conf)
 
         self.args_input = parameter_util.ParameterUtilV2.get_input_parameters(runtime_conf,

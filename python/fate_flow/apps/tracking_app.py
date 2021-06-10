@@ -33,7 +33,7 @@ from fate_flow.settings import stat_logger, TEMP_DIRECTORY
 from fate_flow.utils import job_utils, data_utils, detect_utils, schedule_utils
 from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_components.federatedml.default.federatedml.feature.instance import Instance
+from fate_components.federatedml.v1.federatedml.feature.instance import Instance
 
 manager = Flask(__name__)
 

@@ -421,6 +421,7 @@ class ParameterUtilV2(BaseParameterUtil):
     def get_job_parameters(submit_dict):
         ret = {}
         job_parameters = submit_dict.get("job_parameters", {})
+        #todo: job parameters may be a on party, and then no common and role
         common_job_parameters = job_parameters.get("common", {})
         role_job_parameters = job_parameters.get("role", {})
         for role in submit_dict["role"]:

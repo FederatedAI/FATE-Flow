@@ -19,6 +19,8 @@ from fate_common import file_utils
 from fate_flow.db.db_models import DB, Job
 from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
+from fate_flow.utils.job_utils import get_component_path
+from fate_flow.entity.types import RunParameters
 
 
 @DB.connection_context()
@@ -33,12 +35,13 @@ def get_job_dsl_parser_by_job_id(job_id):
         return None
 
 
-def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None):
+def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None, get_parameters=False):
     parser_version = str(runtime_conf.get('dsl_version', '1'))
     dsl_parser = get_dsl_parser_by_version(parser_version)
-    default_runtime_conf_path = os.path.join(file_utils.get_python_base_directory(),
-                                             *['federatedml', 'conf', 'default_runtime_conf'])
-    setting_conf_path = os.path.join(file_utils.get_python_base_directory(), *['federatedml', 'conf', 'setting_conf'])
+    job_parameters = RunParameters(**runtime_conf["job_parameters"].get("common", runtime_conf["job_parameters"]))
+    component_path = get_component_path(job_parameters.component_type, job_parameters.component_version)
+    default_runtime_conf_path = os.path.join(file_utils.get_python_base_directory(), *component_path, *["conf", "default_runtime_conf"])
+    setting_conf_path = os.path.join(file_utils.get_python_base_directory(), *component_path, *['conf', 'setting_conf'])
     job_type = JobRuntimeConfigAdapter(runtime_conf).get_job_type()
     dsl_parser.run(dsl=dsl,
                    runtime_conf=runtime_conf,
@@ -46,7 +49,8 @@ def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_run
                    pipeline_runtime_conf=train_runtime_conf,
                    default_runtime_conf_prefix=default_runtime_conf_path,
                    setting_conf_prefix=setting_conf_path,
-                   mode=job_type)
+                   mode=job_type,
+                   get_parameters=get_parameters)
     return dsl_parser
 
 

@@ -14,10 +14,10 @@
 #  limitations under the License.
 #
 from fate_flow.utils.authentication_utils import authentication_check
-from fate_components.federatedml.default.federatedml.protobuf.generated import pipeline_pb2
+from fate_components.federatedml.v1.federatedml.protobuf.generated import pipeline_pb2
 from fate_common.log import schedule_logger
 from fate_common import EngineType, string_utils
-from fate_flow.entity.types import JobStatus, EndStatus, RunParameters
+from fate_flow.entity.types import JobStatus, EndStatus, RunParameters, ComponentType
 from fate_flow.entity.runtime_config import RuntimeConfig
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.settings import USE_AUTHENTICATION, DEFAULT_TASK_PARALLELISM, DEFAULT_FEDERATED_STATUS_COLLECT_TYPE
@@ -79,7 +79,6 @@ class JobController(object):
 
         cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
                              initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
-        job_parameters = job_info['runtime_conf_on_party']['job_parameters']
         roles = job_info['roles']
         cls.initialize_job_tracker(job_id=job_id, role=role, party_id=party_id,
                                    job_parameters=job_parameters, roles=roles, is_initiator=is_initiator, dsl_parser=dsl_parser)
@@ -134,6 +133,10 @@ class JobController(object):
         if create_initiator_baseline and not job_parameters.computing_partitions:
             job_parameters.computing_partitions = job_parameters.adaptation_parameters[
                 "task_cores_per_node"] * job_parameters.adaptation_parameters["task_nodes"]
+        if not job_parameters.component_type or not job_parameters.component_version:
+            #todo: get default from?
+            job_parameters.component_type = ComponentType.FEDERATEDML
+            job_parameters.component_version = "default"
 
     @classmethod
     def get_job_engines_address(cls, job_parameters: RunParameters):
@@ -182,21 +185,20 @@ class JobController(object):
             components = [dsl_parser.get_component_info(
                 component_name=component_name)]
         for component in components:
-            component_parameters = component.get_role_parameters()
-            for parameters_on_party in component_parameters.get(common_task_info["role"], []):
-                if parameters_on_party.get('local', {}).get('party_id') == common_task_info["party_id"]:
-                    task_info = {}
-                    task_info.update(common_task_info)
-                    task_info["component_name"] = component.get_name()
-                    TaskController.create_task(
-                        role=role, party_id=party_id, run_on_this_party=run_on_this_party, task_info=task_info)
+            #todo: if every role run every component?
+            task_info = {}
+            task_info.update(common_task_info)
+            task_info["component_name"] = component.get_name()
+            TaskController.create_task(
+                role=role, party_id=party_id, run_on_this_party=run_on_this_party, task_info=task_info)
 
     @classmethod
-    def initialize_job_tracker(cls, job_id, role, party_id, job_parameters, roles, is_initiator, dsl_parser):
+    def initialize_job_tracker(cls, job_id, role, party_id, job_parameters: RunParameters, roles, is_initiator, dsl_parser):
         tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
-                          model_id=job_parameters["model_id"],
-                          model_version=job_parameters["model_version"])
-        if job_parameters.get("job_type", "") != "predict":
+                          model_id=job_parameters.model_id,
+                          model_version=job_parameters.model_version,
+                          job_parameters=job_parameters)
+        if job_parameters.job_type != "predict":
             tracker.init_pipelined_model()
         partner = {}
         show_role = {}
@@ -366,7 +368,7 @@ class JobController(object):
         pipeline.parent_info = json_dumps({}, byte=True)
 
         tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
-                          model_id=model_id, model_version=model_version)
+                          model_id=model_id, model_version=model_version, job_parameters=RunParameters(**job_parameters))
         tracker.save_pipelined_model(pipelined_buffer_object=pipeline)
         if role != 'local':
             tracker.save_machine_learning_model_info()

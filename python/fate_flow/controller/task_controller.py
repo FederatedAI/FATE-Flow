@@ -15,7 +15,7 @@
 #
 import sys
 
-from fate_common import FederatedCommunicationType
+from fate_common import FederatedCommunicationType, file_utils
 from fate_common.log import schedule_logger
 from fate_flow.db.db_models import Task
 from fate_flow.operation.task_executor import TaskExecutor
@@ -89,6 +89,8 @@ class TaskController(object):
 
             schedule_logger(job_id=job_id).info(f"use computing engine {run_parameters.computing_engine}")
 
+            component_path = job_utils.get_component_path(run_parameters.component_type, run_parameters.component_version)
+            component_python_path = os.path.join(file_utils.get_python_base_directory(), *component_path[:-1])
             if run_parameters.computing_engine in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
                 process_cmd = [
                     sys.executable,
@@ -143,7 +145,7 @@ class TaskController(object):
             task_job_dir = os.path.join(job_utils.get_job_directory(job_id=job_id), role, party_id, component_name)
             schedule_logger(job_id).info(
                 'job {} task {} {} on {} {} executor subprocess is ready'.format(job_id, task_id, task_version, role, party_id))
-            p = job_utils.run_subprocess(job_id=job_id, config_dir=task_dir, process_cmd=process_cmd, log_dir=task_log_dir, job_dir=task_job_dir)
+            p = job_utils.run_subprocess(job_id=job_id, config_dir=task_dir, process_cmd=process_cmd, extra_python_path=component_python_path, log_dir=task_log_dir, job_dir=task_job_dir)
             if p:
                 task_info["party_status"] = TaskStatus.RUNNING
                 #task_info["run_pid"] = p.pid

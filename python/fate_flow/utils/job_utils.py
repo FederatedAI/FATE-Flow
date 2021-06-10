@@ -27,7 +27,7 @@ from fate_common import file_utils
 from fate_common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_common.log import schedule_logger
 from fate_flow.db.db_models import DB, Job, Task
-from fate_flow.entity.types import JobStatus
+from fate_flow.entity.types import JobStatus, ComponentType
 from fate_flow.entity.types import TaskStatus, RunParameters, KillProcessStatusCode
 from fate_flow.settings import stat_logger, JOB_DEFAULT_TIMEOUT, WORK_MODE, FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.utils import detect_utils, model_utils
@@ -203,17 +203,6 @@ def get_model_configuration(job_id, role, party_id):
     return {}, {}, {}
 
 
-    # models = MLModel.select(MLModel.f_dsl, MLModel.f_runtime_conf,
-    #                         MLModel.f_train_runtime_conf).where(MLModel.f_job_id == job_id,
-    #                                                             MLModel.f_role == role,
-    #                                                             MLModel.f_party_id == party_id)
-    # if models:
-    #     model = models[0]
-    #     return model.f_dsl, model.f_runtime_conf, model.f_train_runtime_conf
-    # else:
-    #     return {}, {}, {}
-
-
 @DB.connection_context()
 def get_job_parameters(job_id, role, party_id):
     jobs = Job.select(Job.f_runtime_conf_on_party).where(Job.f_job_id == job_id,
@@ -244,6 +233,10 @@ def job_virtual_component_name():
 
 def job_virtual_component_module_name():
     return "Pipeline"
+
+
+def get_component_path(component_type: ComponentType, component_version):
+    return ["fate_components", component_type, component_version, component_type]
 
 
 @DB.connection_context()
@@ -306,7 +299,7 @@ def check_process_by_keyword(keywords):
     return ret == 0
 
 
-def run_subprocess(job_id, config_dir, process_cmd, log_dir=None, job_dir=None):
+def run_subprocess(job_id, config_dir, process_cmd, extra_python_path=None, log_dir=None, job_dir=None):
     schedule_logger(job_id=job_id).info('start process command: {}'.format(' '.join(process_cmd)))
 
     os.makedirs(config_dir, exist_ok=True)
@@ -321,11 +314,16 @@ def run_subprocess(job_id, config_dir, process_cmd, log_dir=None, job_dir=None):
         startupinfo.wShowWindow = subprocess.SW_HIDE
     else:
         startupinfo = None
+    subprocess_env = None
+    if extra_python_path:
+        subprocess_env = os.environ.copy()
+        subprocess_env["PYTHONPATH"] += f":{extra_python_path}"
     p = subprocess.Popen(process_cmd,
                          stdout=std_log,
                          stderr=std_log,
                          startupinfo=startupinfo,
                          cwd=job_dir,
+                         env=subprocess_env
                          )
     with open(pid_path, 'w') as f:
         f.truncate()

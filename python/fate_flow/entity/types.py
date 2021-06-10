@@ -36,6 +36,8 @@ class RunParameters(object):
         self.model_id = None
         self.model_version = None
         self.dsl_version = None
+        self.component_type = None
+        self.component_version = None
         self.timeout = None
         self.eggroll_run = {}
         self.spark_run = {}
@@ -56,6 +58,11 @@ class RunParameters(object):
                 continue
             d[k] = v
         return d
+
+
+class ComponentType:
+    FEDERATEDML = "federatedml"
+    AVATAR = "avatar"
 
 
 class RetCode(IntEnum):
@@ -216,3 +223,7 @@ class KillProcessStatusCode(object):
     KILLED = 0
     NOT_FOUND = 1
     ERROR_PID = 2
+
+
+class PassTaskException(Exception):
+    pass
