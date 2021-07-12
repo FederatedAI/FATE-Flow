@@ -283,7 +283,7 @@ class RuntimeConfParserV2(object):
 
         for role in roles:
             role_parameters = submit_dict["component_parameters"]["role"][role]
-            input_parameters[role] = [copy.deepcopy(cpn_dict)] * len(submit_dict)
+            input_parameters[role] = [copy.deepcopy(cpn_dict)] * len(submit_dict["role"][role])
 
             for idx, parameters in role_parameters.items():
                 for reader in components:
