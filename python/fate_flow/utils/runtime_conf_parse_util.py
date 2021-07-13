@@ -99,8 +99,8 @@ class RuntimeConfParserUtil(object):
                 conf = dict()
                 conf["role"] = role_on_module
                 conf["local"] = runtime_conf.get("local", {})
-                conf.update({"role": role,
-                             "party_id": party_id})
+                conf["local"].update({"role": role,
+                                      "party_id": party_id})
                 conf["module"] = module
                 conf["CodePath"] = valid_interface.get_module_name(module, role)
                 for key, value in runtime_conf.items():
