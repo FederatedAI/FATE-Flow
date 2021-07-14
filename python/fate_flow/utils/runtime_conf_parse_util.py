@@ -74,7 +74,6 @@ class RuntimeConfParserUtil(object):
                                  module,
                                  alias,
                                  redundant_param_check,
-                                 parse_parameter,
                                  conf_version):
         valid_interface = None
         for component_interface in component_interface_list:
@@ -106,10 +105,6 @@ class RuntimeConfParserUtil(object):
                 for key, value in runtime_conf.items():
                     if key not in ["algorithm_parameters", "role_parameters", "component_parameters"]:
                         conf[key] = value
-
-                if not parse_parameter:
-                    component_conf[role].append(conf)
-                    continue
 
                 common_parameters = runtime_conf.get("component_parameters", {}).get("common", {}) if conf_version == 2 \
                     else runtime_conf.get("algorithm_parameters", {})
