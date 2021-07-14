@@ -35,7 +35,7 @@ from fate_flow.utils.dsl_exception import DSLNotExistError, ComponentFieldNotExi
     ComponentInputDataValueTypeError, DataInputComponentNotExistError, DataInputNameNotExistError, \
     ComponentNotExistError, ModeError, DataNotExistInSubmitConfError, ComponentOutputTypeError, \
     ComponentOutputKeyTypeError, LoopError, ComponentMultiMappingError, NamingIndexError, \
-    NamingError, NamingFormatError, DeployComponentNotExistError
+    NamingError, NamingFormatError, DeployComponentNotExistError, ModuleNotExistError
 from fate_flow.utils.runtime_conf_parse_util import RuntimeConfParserUtil
 
 
@@ -48,6 +48,7 @@ class Component(object):
         self.role_parameters = {}
         self.input = {}
         self.output = {}
+        self.source_component_interface = None
 
     def set_input(self, inp):
         self.input = inp
@@ -63,6 +64,12 @@ class Component(object):
 
     def get_module(self):
         return self.module
+
+    def set_source_component_interface(self, interface):
+        self.source_component_interface = interface
+
+    def get_source_component_interface(self):
+        return self.source_component_interface
 
     def get_name(self):
         return self.name
@@ -254,7 +261,9 @@ class BaseDSLParser(object):
             name = self.components[idx].get_name()
             if self.train_input_model.get(name, None) is None:
                 module = self.components[idx].get_module()
-                role_parameters = RuntimeConfParserUtil.get_component_parameters(component_interface_list,
+                source_component_interface = self.get_source_component_interface(name, module, component_interface_list)
+                self.components[idx].set_source_component_interface(source_component_interface)
+                role_parameters = RuntimeConfParserUtil.get_component_parameters(source_component_interface,
                                                                                  runtime_conf,
                                                                                  module,
                                                                                  name,
@@ -266,6 +275,15 @@ class BaseDSLParser(object):
                 up_component = self.train_input_model.get(name)
                 up_idx = self.component_name_index.get(up_component)
                 self.components[idx].set_role_parameters(self.components[up_idx].get_role_parameters())
+
+    @staticmethod
+    def get_source_component_interface(alias, module, component_interface_list):
+        for component_interface in component_interface_list:
+            if component_interface.has_module(module):
+                if component_interface.has_module(module):
+                    return component_interface
+
+        raise ModuleNotExistError(component=alias, module=module)
 
     def get_component_info(self, component_name):
         if component_name not in self.component_name_index:
