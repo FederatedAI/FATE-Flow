@@ -21,7 +21,7 @@ from fate_flow.utils.proto_compatibility import proxy_pb2, proxy_pb2_grpc
 import grpc
 
 from fate_flow.settings import FATEFLOW_SERVICE_NAME, IP, GRPC_PORT, HEADERS, DEFAULT_REMOTE_REQUEST_TIMEOUT
-from fate_flow.entity.runtime_config import RuntimeConfig
+from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.utils.node_check_utils import nodes_check
 from fate_common.base_utils import json_dumps, json_loads
 

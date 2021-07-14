@@ -33,7 +33,7 @@ from fate_flow.settings import stat_logger, TEMP_DIRECTORY
 from fate_flow.utils import job_utils, detect_utils, schedule_utils
 from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.component_env import feature_utils
+from fate_flow.component_env_utils import feature_utils
 
 manager = Flask(__name__)
 

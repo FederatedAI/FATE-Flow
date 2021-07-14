@@ -23,7 +23,7 @@ get component parameters
 import importlib
 import json
 import os
-from fate_flow.tool_components.param.param_extract import ParamExtract
+from fate_flow.components.param.param_extract import ParamExtract
 
 
 home_dir = os.path.split(os.path.realpath(__file__))[0]

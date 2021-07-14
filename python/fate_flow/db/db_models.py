@@ -27,8 +27,8 @@ from playhouse.pool import PooledMySQLDatabase
 from fate_common import log, file_utils
 from fate_arch.storage.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField
 from fate_common import WorkMode
-from fate_flow.settings import FATE_FLOW_DIRECTORY, DATABASE, WORK_MODE, stat_logger
-from fate_flow.entity.runtime_config import RuntimeConfig
+from fate_flow.settings import DATABASE, WORK_MODE, stat_logger
+from fate_flow.runtime_config import RuntimeConfig
 
 
 LOGGER = log.getLogger()

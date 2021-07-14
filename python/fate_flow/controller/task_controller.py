@@ -21,7 +21,7 @@ from fate_flow.db.db_models import Task
 from fate_flow.operation.task_executor import TaskExecutor
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.types import TaskStatus, EndStatus, KillProcessStatusCode
-from fate_flow.entity.runtime_config import RuntimeConfig
+from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.utils import job_utils
 import os
 from fate_flow.operation.job_saver import JobSaver

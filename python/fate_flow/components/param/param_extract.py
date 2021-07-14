@@ -21,7 +21,7 @@
 # Param Exact Class
 # =============================================================================
 import builtins
-from fate_flow.tool_components.param import consts
+from fate_flow.components.param import consts
 
 
 class ParamExtract(object):

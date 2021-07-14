@@ -15,7 +15,7 @@
 #
 import importlib
 from fate_flow.entity.types import ComponentType
-from fate_flow.entity.runtime_config import RuntimeConfig
+from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.utils import job_utils
 
 

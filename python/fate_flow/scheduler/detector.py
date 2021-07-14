@@ -21,7 +21,7 @@ from fate_common.log import detect_logger
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.types import JobStatus, TaskStatus, EndStatus
 from fate_flow.utils import cron, job_utils
-from fate_flow.entity.runtime_config import RuntimeConfig
+from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.manager.resource_manager import ResourceManager
 

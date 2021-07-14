@@ -31,7 +31,7 @@ from fate_flow.settings import DEFAULT_REMOTE_REQUEST_TIMEOUT, CHECK_NODES_IDENT
 from fate_flow.utils.grpc_utils import wrap_grpc_packet, get_command_federation_channel, gen_routing_metadata, \
     forward_grpc_packet
 from fate_flow.utils.service_utils import ServiceUtils
-from fate_flow.entity.runtime_config import RuntimeConfig
+from fate_flow.runtime_config import RuntimeConfig
 
 
 def get_json_result(retcode=0, retmsg='success', data=None, job_id=None, meta=None):

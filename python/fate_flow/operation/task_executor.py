@@ -22,11 +22,11 @@ from fate_common.base_utils import current_timestamp, timestamp_to_date
 from fate_common.log import schedule_logger, getLogger
 from fate_arch import session
 from fate_flow.entity.types import TaskStatus, ProcessRole, RunParameters, PassTaskException
-from fate_flow.entity.runtime_config import RuntimeConfig
+from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.operation.job_tracker import Tracker
 from fate_arch import storage
 from fate_flow.utils import job_utils, schedule_utils
-from fate_flow.component_env import dsl_utils
+from fate_flow.component_env_utils import dsl_utils
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object

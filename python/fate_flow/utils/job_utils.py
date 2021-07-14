@@ -27,7 +27,7 @@ from fate_common.log import schedule_logger
 from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.entity.types import JobStatus, ComponentType
 from fate_flow.entity.types import TaskStatus, RunParameters, KillProcessStatusCode
-from fate_flow.entity.runtime_config import RuntimeConfig
+from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.settings import stat_logger, JOB_DEFAULT_TIMEOUT, WORK_MODE, FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.utils import detect_utils, model_utils
 from fate_flow.utils import session_utils
