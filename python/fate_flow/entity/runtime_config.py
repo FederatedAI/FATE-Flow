@@ -69,7 +69,7 @@ class RuntimeConfig(object):
                 "version": fate_flow_version
             },
             fate_flow_version: {
-                "path": ["fate_flow", "flow_components"]
+                "path": ["fate_flow", "tool_components"]
             }
         }
         RuntimeConfig.COMPONENT_REGISTRY["fate_flow_tools"] = flow_component_registry_info

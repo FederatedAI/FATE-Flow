@@ -13,7 +13,7 @@
         "version": "v1.7.0"
       },
       "v1.7.0": {
-        "path": ["fate_components", "federatedml", "v1_7_0", "federatedml"]
+        "path": ["flow_components", "federatedml", "v1_7_0", "federatedml"]
       }
     }
   }

@@ -23,7 +23,7 @@ from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.utils import job_utils, data_utils
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_arch import storage
-from fate_flow.flow_components.component_base import ComponentBase
+from fate_flow.tool_components.component_base import ComponentBase
 
 LOGGER = log.getLogger()
 

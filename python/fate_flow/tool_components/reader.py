@@ -24,7 +24,7 @@ from fate_arch.computing import ComputingEngine
 from fate_arch.storage import StorageTableMeta, StorageEngine, Relationship
 from fate_flow.entity.metric import MetricMeta
 from fate_flow.utils import job_utils, data_utils
-from fate_flow.flow_components.component_base import ComponentBase
+from fate_flow.tool_components.component_base import ComponentBase
 
 LOGGER = log.getLogger()
 MAX_NUM = 10000

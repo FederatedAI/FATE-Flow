@@ -16,7 +16,7 @@
 from fate_common import log
 from fate_flow.entity.types import ModelStorage
 from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage
-from fate_flow.flow_components.component_base import ComponentBase
+from fate_flow.tool_components.component_base import ComponentBase
 
 LOGGER = log.getLogger()
 

@@ -41,7 +41,7 @@ local layers(including nn structure, optimizer, learning rate) in the
 algorithm conf.
 
 The federation layer is for the two sides exchanging intermediate
-computing fate_components and collaboratively train the federated model by
+computing flow_components and collaboratively train the federated model by
 minimizing target loss and alignment loss.
 
 In current version, we get rid of the arbiter and still guarantee
@@ -56,7 +56,7 @@ Paillier.
 
 What is more, in the latest Hetero FTL, we add an option: communication
 efficient mode. Once communication efficient mode is enabled, for every
-epoch, intermediate fate_components are preserved and are used to conduct
+epoch, intermediate flow_components are preserved and are used to conduct
 several local model weights updates, thus communication cost is reduced.
 
 Features
