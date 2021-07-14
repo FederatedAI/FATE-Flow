@@ -185,12 +185,15 @@ class JobController(object):
             components = [dsl_parser.get_component_info(
                 component_name=component_name)]
         for component in components:
-            #todo: if every role run every component?
             task_info = {}
             task_info.update(common_task_info)
-            task_info["component_name"] = component.get_name()
-            TaskController.create_task(
-                role=role, party_id=party_id, run_on_this_party=run_on_this_party, task_info=task_info)
+            component_parameters = component.get_role_parameters()
+            for parameters_on_party in component_parameters.get(common_task_info["role"], []):
+                if parameters_on_party.get('local', {}).get('party_id') == common_task_info["party_id"]:
+                    task_info = {}
+                    task_info.update(common_task_info)
+                    task_info["component_name"] = component.get_name()
+                    TaskController.create_task(role=role, party_id=party_id, run_on_this_party=run_on_this_party, task_info=task_info)
 
     @classmethod
     def initialize_job_tracker(cls, job_id, role, party_id, job_parameters: RunParameters, roles, is_initiator, dsl_parser):

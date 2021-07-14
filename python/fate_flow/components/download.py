@@ -32,7 +32,7 @@ class Download(ComponentBase):
         self.parameters = {}
 
     def run(self, component_parameters=None, args=None):
-        self.parameters = component_parameters["DownloadParam"]
+        self.parameters = component_parameters["ComponentParam"]
         self.parameters["role"] = component_parameters["role"]
         self.parameters["local"] = component_parameters["local"]
         name, namespace = self.parameters.get("name"), self.parameters.get("namespace")

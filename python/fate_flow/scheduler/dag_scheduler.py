@@ -419,7 +419,7 @@ class DAGScheduler(Cron):
             if len(tmp_status_set) == 2 and TaskStatus.WAITING in tmp_status_set and TaskStatus.SUCCESS in tmp_status_set and task_scheduling_status_code == SchedulingStatusCode.NO_NEXT:
                 return JobStatus.CANCELED
 
-            raise Exception("Calculate job status failed: {}".format(tasks_status))
+            raise Exception("Calculate job status failed, all task status: {}".format(tasks_status))
 
     @classmethod
     def calculate_job_progress(cls, tasks_status):

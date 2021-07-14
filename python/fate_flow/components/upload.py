@@ -37,7 +37,7 @@ class Upload(ComponentBase):
         self.table = None
 
     def run(self, component_parameters=None, args=None):
-        self.parameters = component_parameters["UploadParam"]
+        self.parameters = component_parameters["ComponentParam"]
         LOGGER.info(self.parameters)
         LOGGER.info(args)
         self.parameters["role"] = component_parameters["role"]

@@ -222,15 +222,13 @@ class FederatedScheduler(object):
     def task_command(cls, job, task, command, command_body=None):
         federated_response = {}
         job_parameters = job.f_runtime_conf_on_party["job_parameters"]
-        #dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl, runtime_conf=job.f_runtime_conf_on_party, train_runtime_conf=job.f_train_runtime_conf)
-        #component = dsl_parser.get_component_info(component_name=task.f_component_name)
-        #component_parameters = component.get_role_parameters()
-        #todo: use component.get_role_parameters()
-        for dest_role, parameters_on_partys in job.f_roles.items():
+        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl, runtime_conf=job.f_runtime_conf_on_party, train_runtime_conf=job.f_train_runtime_conf, parse_parameters=False)
+        component = dsl_parser.get_component_info(component_name=task.f_component_name)
+        component_parameters = component.get_role_parameters()
+        for dest_role, parameters_on_partys in component_parameters.items():
             federated_response[dest_role] = {}
-            for dest_party_id in parameters_on_partys:
-                #dest_party_id = parameters_on_party.get('local', {}).get('party_id')
-                #dest_party_id = parameters_on_party.get('local', {}).get('party_id')
+            for parameters_on_party in parameters_on_partys:
+                dest_party_id = parameters_on_party.get('local', {}).get('party_id')
                 try:
                     response = federated_api(job_id=task.f_job_id,
                                              method='POST',

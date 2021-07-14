@@ -94,8 +94,9 @@ if __name__ == '__main__':
     # init runtime config
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--standalone_node', default=False, help="if standalone node mode or not ", action='store_true')
+    parser.add_argument('--debug', default=False, help="debug mode", action='store_true')
     args = parser.parse_args()
+    debug_mode = args.debug
     RuntimeConfig.init_env()
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
     PrivilegeAuth.init()
@@ -116,7 +117,7 @@ if __name__ == '__main__':
     # start http server
     try:
         stat_logger.info("FATE Flow http server start...")
-        run_simple(hostname=IP, port=HTTP_PORT, application=app, threaded=True)
+        run_simple(hostname=IP, port=HTTP_PORT, application=app, threaded=True, use_reloader=debug_mode, use_debugger=debug_mode)
     except OSError as e:
         traceback.print_exc()
         os.kill(os.getpid(), signal.SIGKILL)

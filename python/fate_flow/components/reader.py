@@ -36,7 +36,7 @@ class Reader(ComponentBase):
         self.parameters = None
 
     def run(self, component_parameters=None, args=None):
-        self.parameters = component_parameters["ReaderParam"]
+        self.parameters = component_parameters["ComponentParam"]
         output_storage_address = args["job_parameters"].engines_address[EngineType.STORAGE]
         table_key = [key for key in self.parameters.keys()][0]
         computing_engine = args["job_parameters"].computing_engine
