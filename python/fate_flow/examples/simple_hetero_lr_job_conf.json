@@ -16,8 +16,8 @@
             "task_parallelism": 1,
             "task_cores": 2,
             "computing_partitions": 8,
-            "component_type": "federatedml",
-            "component_version": "v1"
+            "component_type": "fate_federated_algorithm",
+            "component_version": "v1.7.0"
         }
     },
     "component_parameters": {

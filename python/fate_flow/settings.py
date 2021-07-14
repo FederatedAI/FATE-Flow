@@ -20,7 +20,6 @@ from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
 from fate_common import file_utils, log, EngineType
-from fate_flow.entity.runtime_config import RuntimeConfig
 from fate_common.conf_utils import get_base_config
 import __main__
 
@@ -32,6 +31,7 @@ MAIN_MODULE = os.path.relpath(__main__.__file__)
 SERVER_MODULE = "fate_flow_server.py"
 TEMP_DIRECTORY = os.path.join(
     file_utils.get_project_base_directory(), "temp", "fate_flow")
+FATE_FLOW_DIRECTORY = os.path.join(file_utils.get_python_base_directory(), "fate_flow")
 HEADERS = {
     "Content-Type": "application/json",
     "Connection": "close",
@@ -114,7 +114,3 @@ PRIVILEGE_COMMAND_WHITELIST = []
 CHECK_NODES_IDENTITY = False
 DEFAULT_FEDERATED_STATUS_COLLECT_TYPE = get_base_config(
     FATEFLOW_SERVICE_NAME, {}).get("default_federated_status_collect_type", "PUSH")
-
-# Init
-RuntimeConfig.init_config(WORK_MODE=WORK_MODE)
-RuntimeConfig.init_config(JOB_SERVER_HOST=IP, HTTP_PORT=HTTP_PORT)

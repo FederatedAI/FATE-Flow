@@ -1,0 +1,20 @@
+{
+  "registry": {
+    "default": {
+      "type": "fate_federated_algorithm",
+      "class_path": {
+        "framework_interface": "framework.scheduler.interface",
+        "feature_instance": "feature.instance.Instance",
+        "feature_vector": "feature.sparse_vector.SparseVector"
+      }
+    },
+    "fate_federated_algorithm": {
+      "default": {
+        "version": "v1.7.0"
+      },
+      "v1.7.0": {
+        "path": ["federatedml", "v1_7_0", "federatedml"]
+      }
+    }
+  }
+}

@@ -14,10 +14,10 @@
 #  limitations under the License.
 #
 from fate_flow.utils.authentication_utils import authentication_check
-from fate_components.federatedml.v1.federatedml.protobuf.generated import pipeline_pb2
+from fate_flow.protobuf.python import pipeline_pb2
 from fate_common.log import schedule_logger
 from fate_common import EngineType, string_utils
-from fate_flow.entity.types import JobStatus, EndStatus, RunParameters, ComponentType
+from fate_flow.entity.types import JobStatus, EndStatus, RunParameters
 from fate_flow.entity.runtime_config import RuntimeConfig
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.settings import USE_AUTHENTICATION, DEFAULT_TASK_PARALLELISM, DEFAULT_FEDERATED_STATUS_COLLECT_TYPE
@@ -134,9 +134,7 @@ class JobController(object):
             job_parameters.computing_partitions = job_parameters.adaptation_parameters[
                 "task_cores_per_node"] * job_parameters.adaptation_parameters["task_nodes"]
         if not job_parameters.component_type or not job_parameters.component_version:
-            #todo: get default from?
-            job_parameters.component_type = ComponentType.FEDERATEDML
-            job_parameters.component_version = "default"
+            job_parameters.component_type, job_parameters.component_version = job_utils.get_default_component_use()
 
     @classmethod
     def get_job_engines_address(cls, job_parameters: RunParameters):

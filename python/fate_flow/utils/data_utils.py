@@ -17,7 +17,7 @@ from fate_common import base_utils
 import numpy
 
 from fate_arch import storage
-from fate_components.federatedml.v1.federatedml.feature.sparse_vector import SparseVector
+from fate_components.federatedml.v1_7_0.federatedml.feature.sparse_vector import SparseVector
 
 
 def dataset_to_list(src):

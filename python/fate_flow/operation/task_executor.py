@@ -129,6 +129,7 @@ class TaskExecutor(object):
                                       COMPUTING_ENGINE=job_parameters.computing_engine,
                                       FEDERATION_ENGINE=job_parameters.federation_engine,
                                       FEDERATED_MODE=job_parameters.federated_mode)
+            RuntimeConfig.load_component_registry()
 
             if RuntimeConfig.COMPUTING_ENGINE == ComputingEngine.EGGROLL:
                 session_options = task_parameters.eggroll_run.copy()
@@ -159,8 +160,8 @@ class TaskExecutor(object):
             if module_name in {"Upload", "Download", "Reader", "Writer"}:
                 task_run_args["job_parameters"] = job_parameters
 
-            from fate_components.federatedml.v1.federatedml.framework.scheduler import interface
-            run_object = interface.get_module(component.get_module(), role)
+            component_framework_interface = job_utils.get_component_framework_interface(job_parameters.component_type, job_parameters.component_version)
+            run_object = component_framework_interface.get_module(component.get_module(), role)
             run_object.set_tracker(tracker=tracker_client)
             run_object.set_task_version_id(task_version_id=job_utils.generate_task_version_id(task_id, task_version))
             # add profile logs

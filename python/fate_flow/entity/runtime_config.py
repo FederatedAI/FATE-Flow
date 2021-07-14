@@ -13,8 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os.path
 
 from fate_common.versions import get_versions
+from fate_common import file_utils
+from fate_flow.settings import FATE_FLOW_DIRECTORY
 
 
 class RuntimeConfig(object):
@@ -31,6 +34,7 @@ class RuntimeConfig(object):
     IS_SERVER = False
     PROCESS_ROLE = None
     ENV = dict()
+    COMPONENT_REGISTRY = {}
 
     @classmethod
     def init_config(cls, **kwargs):
@@ -49,3 +53,10 @@ class RuntimeConfig(object):
     @classmethod
     def set_process_role(cls, process_role: PROCESS_ROLE):
         RuntimeConfig.PROCESS_ROLE = process_role
+
+    @classmethod
+    def load_component_registry(cls):
+        #todo: check if the component type is supported
+        component_registry = file_utils.load_json_conf(os.path.join(FATE_FLOW_DIRECTORY, "component_registry.json"))
+        RuntimeConfig.COMPONENT_REGISTRY.update(component_registry.get("registry", {}))
+        print(RuntimeConfig.COMPONENT_REGISTRY)
