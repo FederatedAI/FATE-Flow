@@ -63,15 +63,19 @@ def get_module(module, role):
     setting_path = os.path.join(setting_conf_dir, module + ".json")
     with open(setting_path, "r") as fin:
         setting = json.loads(fin.read())
-        if role not in setting["role"]:
-            return None
-        else:
-            object_path = setting["module_path"] + "/" + setting["role"][role]["program"]
+        for support_role in setting["role"]:
+            roles = __parse_support_role(support_role)
+            if role not in roles:
+                continue
+
+            object_path = setting["module_path"] + "/" + setting["role"][support_role]["program"]
             import_path = ".".join(object_path.split("/", -1)[:-1]).replace(".py", "")
             object_name = object_path.split("/", -1)[-1]
             module_obj = getattr(importlib.import_module(import_path), object_name)()
 
             return module_obj
+
+    return None
 
 
 def get_module_name(module, role):
