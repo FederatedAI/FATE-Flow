@@ -69,7 +69,7 @@ def get_module(module, role):
             object_path = setting["module_path"] + "/" + setting["role"][role]["program"]
             import_path = ".".join(object_path.split("/", -1)[:-1]).replace(".py", "")
             object_name = object_path.split("/", -1)[-1]
-            module_obj = importlib.import_module(import_path).getattr(object_name)()
+            module_obj = getattr(importlib.import_module(import_path), object_name)()
 
             return module_obj
 
