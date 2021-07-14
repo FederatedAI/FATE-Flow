@@ -17,21 +17,6 @@ from fate_common import base_utils
 import numpy
 
 from fate_arch import storage
-from fate_components.federatedml.v1.federatedml.feature.sparse_vector import SparseVector
-
-
-def dataset_to_list(src):
-    if isinstance(src, numpy.ndarray):
-        return src.tolist()
-    elif isinstance(src, list):
-        return src
-    elif isinstance(src, SparseVector):
-        vector = [0] * src.get_shape()
-        for idx, v in src.get_all_data():
-            vector[idx] = v
-        return vector
-    else:
-        return [src]
 
 
 def get_header_schema(header_line, id_delimiter):

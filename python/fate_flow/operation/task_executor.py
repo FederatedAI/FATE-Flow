@@ -26,6 +26,7 @@ from fate_flow.entity.runtime_config import RuntimeConfig
 from fate_flow.operation.job_tracker import Tracker
 from fate_arch import storage
 from fate_flow.utils import job_utils, schedule_utils
+from fate_flow.component_env import dsl_utils
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
@@ -60,6 +61,7 @@ class TaskExecutor(object):
                 RuntimeConfig.init_config(JOB_SERVER_HOST=args.job_server.split(':')[0],
                                           HTTP_PORT=args.job_server.split(':')[1])
                 RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
+            RuntimeConfig.load_component_registry()
             job_id = args.job_id
             component_name = args.component_name
             task_id = args.task_id
@@ -89,7 +91,7 @@ class TaskExecutor(object):
                                                            runtime_conf=job_runtime_conf,
                                                            train_runtime_conf=job_conf["train_runtime_conf_path"],
                                                            pipeline_dsl=job_conf["pipeline_dsl_path"],
-                                                           get_parameters=True
+                                                           parse_parameters=True
                                                            )
             party_index = job_runtime_conf["role"][role].index(party_id)
             job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser, job_runtime_conf, role, party_id)
@@ -121,13 +123,6 @@ class TaskExecutor(object):
                                            model_version=job_parameters.model_version,
                                            component_module_name=module_name,
                                            job_parameters=job_parameters)
-            code_path = component_parameters_on_party.get('CodePath')
-            if not code_path:
-                raise PassTaskException()
-            run_class_paths = code_path.split('/')
-            print(run_class_paths)
-            run_class_package = '.'.join(run_class_paths[:-2]) + '.' + run_class_paths[-2].replace('.py', '')
-            run_class_name = run_class_paths[-1]
             task_info["party_status"] = TaskStatus.RUNNING
             cls.report_task_update_to_driver(task_info=task_info)
 
@@ -165,7 +160,9 @@ class TaskExecutor(object):
                                                   )
             if module_name in {"Upload", "Download", "Reader", "Writer"}:
                 task_run_args["job_parameters"] = job_parameters
-            run_object = getattr(importlib.import_module(run_class_package), run_class_name)()
+
+            component_framework_interface = dsl_utils.get_component_framework_interface(job_parameters.component_type, job_parameters.component_version)
+            run_object = component_framework_interface.get_module(component.get_module(), role)
             run_object.set_tracker(tracker=tracker_client)
             run_object.set_task_version_id(task_version_id=job_utils.generate_task_version_id(task_id, task_version))
             # add profile logs

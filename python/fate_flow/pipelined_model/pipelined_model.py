@@ -56,8 +56,8 @@ class PipelinedModel(object):
             os.makedirs(self.model_path, exist_ok=False)
         for path in [self.variables_index_path, self.variables_data_path]:
             os.makedirs(path, exist_ok=False)
-        shutil.copytree(os.path.join(file_utils.get_python_base_directory(), "fate_components", self.component_type, self.component_version, "federatedml", "protobuf", "proto"), self.define_proto_path)
-        shutil.copytree(os.path.join(file_utils.get_python_base_directory(), "fate_components", self.component_type, self.component_version, "federatedml", "protobuf", "generated"), self.define_proto_generated_path)
+        shutil.copytree(os.path.join(file_utils.get_python_base_directory(), "fate_flow", "protobuf", "python"), self.define_proto_path)
+        shutil.copytree(os.path.join(file_utils.get_python_base_directory(), "fate_flow", "protobuf", "python"), self.define_proto_generated_path)
         with open(self.define_meta_path, "w", encoding="utf-8") as fw:
             yaml.dump({"describe": "This is the model definition meta"}, fw, Dumper=yaml.RoundTripDumper)
 

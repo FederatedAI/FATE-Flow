@@ -13,13 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
-
-from fate_common import file_utils
 from fate_flow.db.db_models import DB, Job
 from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.utils.job_utils import get_component_path
+from fate_flow.component_env import dsl_utils
 from fate_flow.entity.types import RunParameters
 
 
@@ -35,22 +32,19 @@ def get_job_dsl_parser_by_job_id(job_id):
         return None
 
 
-def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None, get_parameters=False):
+def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None, parse_parameters=False):
     parser_version = str(runtime_conf.get('dsl_version', '1'))
     dsl_parser = get_dsl_parser_by_version(parser_version)
     job_parameters = RunParameters(**runtime_conf["job_parameters"].get("common", runtime_conf["job_parameters"]))
-    component_path = get_component_path(job_parameters.component_type, job_parameters.component_version)
-    default_runtime_conf_path = os.path.join(file_utils.get_python_base_directory(), *component_path, *["conf", "default_runtime_conf"])
-    setting_conf_path = os.path.join(file_utils.get_python_base_directory(), *component_path, *['conf', 'setting_conf'])
+    interface = dsl_utils.get_component_framework_interface(job_parameters.component_type, job_parameters.component_version)
     job_type = JobRuntimeConfigAdapter(runtime_conf).get_job_type()
     dsl_parser.run(dsl=dsl,
                    runtime_conf=runtime_conf,
                    pipeline_dsl=pipeline_dsl,
                    pipeline_runtime_conf=train_runtime_conf,
-                   default_runtime_conf_prefix=default_runtime_conf_path,
-                   setting_conf_prefix=setting_conf_path,
+                   component_interface_list=[interface],
                    mode=job_type,
-                   get_parameters=get_parameters)
+                   parse_parameter=parse_parameters)
     return dsl_parser
 
 

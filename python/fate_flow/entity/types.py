@@ -61,8 +61,8 @@ class RunParameters(object):
 
 
 class ComponentType:
-    FEDERATEDML = "federatedml"
-    AVATAR = "avatar"
+    FATE_FEDERATED_ALGORITHM = "fate_federated_algorithm"
+    FUSHU_AVATAR_ALGORITHM = "fushu_avatar_algorithm"
 
 
 class RetCode(IntEnum):
