@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 from fate_common import WorkMode, Backend
-from enum import IntEnum
+from enum import IntEnum, Enum
 
 
 class RunParameters(object):
@@ -60,9 +60,10 @@ class RunParameters(object):
         return d
 
 
-class ComponentType:
+class ComponentType(Enum):
     FATE_FEDERATED_ALGORITHM = "fate_federated_algorithm"
     FUSHU_AVATAR_ALGORITHM = "fushu_avatar_algorithm"
+    FATE_FLOW_TOOLS = "fate_flow_tools"
 
 
 class RetCode(IntEnum):

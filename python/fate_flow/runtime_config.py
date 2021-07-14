@@ -18,6 +18,7 @@ import os.path
 from fate_common.versions import get_versions
 from fate_common import file_utils
 from fate_flow.settings import FATE_FLOW_DIRECTORY
+from fate_flow.entity.types import ComponentType
 
 
 class RuntimeConfig(object):
@@ -56,13 +57,16 @@ class RuntimeConfig(object):
 
     @classmethod
     def load_component_registry(cls):
-        #todo: check if the component type is supported
         component_registry = file_utils.load_json_conf(os.path.join(FATE_FLOW_DIRECTORY, "component_registry.json"))
-        RuntimeConfig.COMPONENT_REGISTRY.update(component_registry.get("registry", {}))
-        cls.inject_flow_components()
+        for component_type, registry_info in component_registry.get("registry", {}).items():
+            if component_type == "default" or component_type in ComponentType._value2member_map_:
+                RuntimeConfig.COMPONENT_REGISTRY[component_type] = registry_info
+            else:
+                raise Exception(f"not support component type: {component_type}")
+        cls.inject_fate_flow_components()
 
     @classmethod
-    def inject_flow_components(cls):
+    def inject_fate_flow_components(cls):
         fate_flow_version = get_versions()["FATEFlow"]
         flow_component_registry_info = {
             "default": {
