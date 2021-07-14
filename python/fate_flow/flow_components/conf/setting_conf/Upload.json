@@ -1,0 +1,11 @@
+{
+    "module_path":  "fate_flow/flow_components",
+    "param_class" : "fate_flow/flow_components/param/upload_param.py/UploadParam",
+    "role":
+    {
+        "local":
+        {
+            "program": "upload.py/Upload"
+        }
+    }
+}

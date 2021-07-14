@@ -16,7 +16,7 @@
 from fate_flow.db.db_models import DB, Job
 from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.utils import job_utils
+from fate_flow.component_env import dsl_utils
 from fate_flow.entity.types import RunParameters
 
 
@@ -36,7 +36,7 @@ def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_run
     parser_version = str(runtime_conf.get('dsl_version', '1'))
     dsl_parser = get_dsl_parser_by_version(parser_version)
     job_parameters = RunParameters(**runtime_conf["job_parameters"].get("common", runtime_conf["job_parameters"]))
-    interface = job_utils.get_component_framework_interface(job_parameters.component_type, job_parameters.component_version)
+    interface = dsl_utils.get_component_framework_interface(job_parameters.component_type, job_parameters.component_version)
     job_type = JobRuntimeConfigAdapter(runtime_conf).get_job_type()
     dsl_parser.run(dsl=dsl,
                    runtime_conf=runtime_conf,

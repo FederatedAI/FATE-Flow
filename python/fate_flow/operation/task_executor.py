@@ -26,6 +26,7 @@ from fate_flow.entity.runtime_config import RuntimeConfig
 from fate_flow.operation.job_tracker import Tracker
 from fate_arch import storage
 from fate_flow.utils import job_utils, schedule_utils
+from fate_flow.component_env import dsl_utils
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
@@ -60,6 +61,7 @@ class TaskExecutor(object):
                 RuntimeConfig.init_config(JOB_SERVER_HOST=args.job_server.split(':')[0],
                                           HTTP_PORT=args.job_server.split(':')[1])
                 RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
+            RuntimeConfig.load_component_registry()
             job_id = args.job_id
             component_name = args.component_name
             task_id = args.task_id
@@ -129,7 +131,6 @@ class TaskExecutor(object):
                                       COMPUTING_ENGINE=job_parameters.computing_engine,
                                       FEDERATION_ENGINE=job_parameters.federation_engine,
                                       FEDERATED_MODE=job_parameters.federated_mode)
-            RuntimeConfig.load_component_registry()
 
             if RuntimeConfig.COMPUTING_ENGINE == ComputingEngine.EGGROLL:
                 session_options = task_parameters.eggroll_run.copy()
@@ -160,7 +161,7 @@ class TaskExecutor(object):
             if module_name in {"Upload", "Download", "Reader", "Writer"}:
                 task_run_args["job_parameters"] = job_parameters
 
-            component_framework_interface = job_utils.get_component_framework_interface(job_parameters.component_type, job_parameters.component_version)
+            component_framework_interface = dsl_utils.get_component_framework_interface(job_parameters.component_type, job_parameters.component_version)
             run_object = component_framework_interface.get_module(component.get_module(), role)
             run_object.set_tracker(tracker=tracker_client)
             run_object.set_task_version_id(task_version_id=job_utils.generate_task_version_id(task_id, task_version))

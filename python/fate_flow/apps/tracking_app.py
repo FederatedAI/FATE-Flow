@@ -30,10 +30,10 @@ from fate_flow.operation.job_tracker import Tracker
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import stat_logger, TEMP_DIRECTORY
-from fate_flow.utils import job_utils, data_utils, detect_utils, schedule_utils
+from fate_flow.utils import job_utils, detect_utils, schedule_utils
 from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_components.federatedml.v1_7_0.federatedml.feature.instance import Instance
+from fate_flow.component_env import feature_utils
 
 manager = Flask(__name__)
 
@@ -384,11 +384,11 @@ def get_component_output_data_line(src_key, src_value):
     have_weight = False
     data_line = [src_key]
     is_str = False
-    if isinstance(src_value, Instance):
+    if isinstance(src_value, feature_utils.Instance):
         if src_value.label is not None:
             data_line.append(src_value.label)
             have_data_label = True
-        data_line.extend(data_utils.dataset_to_list(src_value.features))
+        data_line.extend(feature_utils.dataset_to_list(src_value.features))
         if src_value.weight is not None:
             have_weight = True
             data_line.append(src_value.weight)
@@ -396,7 +396,7 @@ def get_component_output_data_line(src_key, src_value):
         data_line.extend([value for value in src_value.split(',')])
         is_str = True
     else:
-        data_line.extend(data_utils.dataset_to_list(src_value))
+        data_line.extend(feature_utils.dataset_to_list(src_value))
     return data_line, have_data_label, is_str, have_weight
 
 

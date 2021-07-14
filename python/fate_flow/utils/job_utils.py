@@ -20,10 +20,7 @@ import subprocess
 import sys
 import threading
 import typing
-import importlib
-
 import psutil
-
 from fate_common import file_utils
 from fate_common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_common.log import schedule_logger
@@ -237,28 +234,17 @@ def job_virtual_component_module_name():
     return "Pipeline"
 
 
-def get_default_component_use():
-    component_type = RuntimeConfig.COMPONENT_REGISTRY.get("default")
-    component_version = RuntimeConfig.COMPONENT_REGISTRY.get(component_type, {}).get("default", "")
+def get_default_component_use(component_type=None):
+    if not component_type:
+        component_type = RuntimeConfig.COMPONENT_REGISTRY.get("default", {}).get("type", None)
+    component_version = RuntimeConfig.COMPONENT_REGISTRY.get(component_type, {}).get("default", {}).get("version", None)
     if not component_type or not component_version:
         raise Exception("can not found default component use")
     return component_type, component_version
 
 
 def get_component_path(component_type: ComponentType, component_version):
-    return ["fate_components"] + RuntimeConfig.COMPONENT_REGISTRY.get(component_type, {}).get(component_version, {}).get("path", [])
-
-
-def get_component_framework_interface(component_type: ComponentType, component_version):
-    return get_component_class_path(component_type, component_version, "framework_interface")
-
-
-def get_component_class_path(component_type: ComponentType, component_version, class_name):
-    component_path = get_component_path(component_type, component_version)
-    class_path = RuntimeConfig.COMPONENT_REGISTRY.get(component_type, {}).get(component_version, {}).get("class_path", {}).get(class_name, None)
-    if not class_path:
-        class_path = RuntimeConfig.COMPONENT_REGISTRY["default"]["class_path"][class_name]
-    return importlib.import_module("{}.{}".format(".".join(component_path), class_path))
+    return RuntimeConfig.COMPONENT_REGISTRY.get(component_type, {}).get(component_version, {}).get("path", [])
 
 
 @DB.connection_context()

@@ -59,4 +59,17 @@ class RuntimeConfig(object):
         #todo: check if the component type is supported
         component_registry = file_utils.load_json_conf(os.path.join(FATE_FLOW_DIRECTORY, "component_registry.json"))
         RuntimeConfig.COMPONENT_REGISTRY.update(component_registry.get("registry", {}))
-        print(RuntimeConfig.COMPONENT_REGISTRY)
+        cls.inject_flow_components()
+
+    @classmethod
+    def inject_flow_components(cls):
+        fate_flow_version = get_versions()["FATEFlow"]
+        flow_component_registry_info = {
+            "default": {
+                "version": fate_flow_version
+            },
+            fate_flow_version: {
+                "path": ["fate_flow", "flow_components"]
+            }
+        }
+        RuntimeConfig.COMPONENT_REGISTRY["fate_flow_tools"] = flow_component_registry_info
