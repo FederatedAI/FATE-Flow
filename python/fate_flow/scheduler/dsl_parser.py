@@ -35,7 +35,7 @@ from fate_flow.utils.dsl_exception import DSLNotExistError, ComponentFieldNotExi
     ComponentInputDataValueTypeError, DataInputComponentNotExistError, DataInputNameNotExistError, \
     ComponentNotExistError, ModeError, DataNotExistInSubmitConfError, ComponentOutputTypeError, \
     ComponentOutputKeyTypeError, LoopError, ComponentMultiMappingError, NamingIndexError, \
-    NamingError, NamingFormatError, DeployComponentNotExistError
+    NamingError, NamingFormatError, DeployComponentNotExistError, ModuleNotExistError
 from fate_flow.utils.runtime_conf_parse_util import RuntimeConfParserUtil
 
 
@@ -48,6 +48,7 @@ class Component(object):
         self.role_parameters = {}
         self.input = {}
         self.output = {}
+        self.source_component_interface = None
 
     def set_input(self, inp):
         self.input = inp
@@ -63,6 +64,12 @@ class Component(object):
 
     def get_module(self):
         return self.module
+
+    def set_source_component_interface(self, interface):
+        self.source_component_interface = interface
+
+    def get_source_component_interface(self):
+        return self.source_component_interface
 
     def get_name(self):
         return self.name
@@ -245,8 +252,7 @@ class BaseDSLParser(object):
                                 component_interface_list,
                                 runtime_conf,
                                 version=1,
-                                redundant_param_check=True,
-                                parse_parameter=True):
+                                redundant_param_check=True):
         """
         init top input
         """
@@ -255,12 +261,13 @@ class BaseDSLParser(object):
             name = self.components[idx].get_name()
             if self.train_input_model.get(name, None) is None:
                 module = self.components[idx].get_module()
-                role_parameters = RuntimeConfParserUtil.get_component_parameters(component_interface_list,
+                source_component_interface = self.get_source_component_interface(name, module, component_interface_list)
+                self.components[idx].set_source_component_interface(source_component_interface)
+                role_parameters = RuntimeConfParserUtil.get_component_parameters(source_component_interface,
                                                                                  runtime_conf,
                                                                                  module,
                                                                                  name,
                                                                                  redundant_param_check=redundant_param_check,
-                                                                                 parse_parameter=parse_parameter,
                                                                                  conf_version=version)
 
                 self.components[idx].set_role_parameters(role_parameters)
@@ -268,6 +275,15 @@ class BaseDSLParser(object):
                 up_component = self.train_input_model.get(name)
                 up_idx = self.component_name_index.get(up_component)
                 self.components[idx].set_role_parameters(self.components[up_idx].get_role_parameters())
+
+    @staticmethod
+    def get_source_component_interface(alias, module, component_interface_list):
+        for component_interface in component_interface_list:
+            if component_interface.has_module(module):
+                if component_interface.has_module(module):
+                    return component_interface
+
+        raise ModuleNotExistError(component=alias, module=module)
 
     def get_component_info(self, component_name):
         if component_name not in self.component_name_index:
@@ -463,7 +479,6 @@ class BaseDSLParser(object):
             for rank in range(len(self.topo_rank)):
                 idx = self.topo_rank[rank]
                 name = self.components[idx].get_name()
-                module = self.components[idx].get_module()
                 parameters = self.components[idx].get_role_parameters()
 
                 if role not in parameters:
@@ -779,15 +794,16 @@ class DSLParser(BaseDSLParser):
         self.mode = mode
 
         if mode == "train":
-            self._init_component_setting(component_interface_list, self.runtime_conf, parse_parameter=parse_parameter)
+            if parse_parameter:
+                self._init_component_setting(component_interface_list, self.runtime_conf)
             self.job_parameters = RuntimeConfParserUtil.get_job_parameters(self.runtime_conf,
                                                                            conf_version=1)
-        else:
+        elif mode == "predict":
             predict_runtime_conf = RuntimeConfParserUtil.merge_dict(pipeline_runtime_conf, runtime_conf)
-            self._init_component_setting(component_interface_list,
-                                         predict_runtime_conf,
-                                         redundant_param_check=False,
-                                         parse_parameter=parse_parameter)
+            if parse_parameter:
+                self._init_component_setting(component_interface_list,
+                                             predict_runtime_conf,
+                                             redundant_param_check=False)
             self.job_parameters = RuntimeConfParserUtil.get_job_parameters(predict_runtime_conf,
                                                                            conf_version=1)
 
@@ -907,18 +923,18 @@ class DSLParserV2(BaseDSLParser):
         self.mode = mode
 
         if mode == "train":
-            self._init_component_setting(component_interface_list,
-                                         self.runtime_conf,
-                                         version=2,
-                                         parse_parameter=parse_parameter)
+            if parse_parameter:
+                self._init_component_setting(component_interface_list,
+                                             self.runtime_conf,
+                                             version=2)
             self.job_parameters = RuntimeConfParserUtil.get_job_parameters(self.runtime_conf,
                                                                            conf_version=2)
         else:
             predict_runtime_conf = RuntimeConfParserUtil.merge_dict(pipeline_runtime_conf, runtime_conf)
-            self._init_component_setting(component_interface_list,
-                                         predict_runtime_conf,
-                                         version=2,
-                                         parse_parameter=parse_parameter)
+            if parse_parameter:
+                self._init_component_setting(component_interface_list,
+                                             predict_runtime_conf,
+                                             version=2)
             self.job_parameters = RuntimeConfParserUtil.get_job_parameters(predict_runtime_conf,
                                                                            conf_version=2)
 
@@ -926,7 +942,8 @@ class DSLParserV2(BaseDSLParser):
                                                                      components=self._get_reader_components(),
                                                                      conf_version=2)
 
-        self.prepare_graph_dependency_info()
+        if parse_parameter:
+            self.prepare_graph_dependency_info()
 
         return self.components
 

@@ -69,23 +69,14 @@ class RuntimeConfParserUtil(object):
         raise ValueError(f"Can not find module {module}")
 
     @staticmethod
-    def get_component_parameters(component_interface_list,
+    def get_component_parameters(component_interface,
                                  runtime_conf,
                                  module,
                                  alias,
                                  redundant_param_check,
-                                 parse_parameter,
                                  conf_version):
-        valid_interface = None
-        for component_interface in component_interface_list:
-            if component_interface.has_module(module):
-                valid_interface = component_interface
-                break
 
-        if not valid_interface:
-            raise ModuleNotExistError(component=alias, module=module)
-
-        support_roles = valid_interface.get_support_role(module, runtime_conf["role"])
+        support_roles = component_interface.get_support_role(module, runtime_conf["role"])
         role_on_module = copy.deepcopy(runtime_conf["role"])
         for role in runtime_conf["role"]:
             if role not in support_roles:
@@ -102,22 +93,18 @@ class RuntimeConfParserUtil(object):
                 conf["local"].update({"role": role,
                                       "party_id": party_id})
                 conf["module"] = module
-                conf["CodePath"] = valid_interface.get_module_name(module, role)
+                conf["CodePath"] = component_interface.get_module_name(module, role)
                 for key, value in runtime_conf.items():
                     if key not in ["algorithm_parameters", "role_parameters", "component_parameters"]:
                         conf[key] = value
 
-                if not parse_parameter:
-                    component_conf[role].append(conf)
-                    continue
-
                 common_parameters = runtime_conf.get("component_parameters", {}).get("common", {}) if conf_version == 2 \
                     else runtime_conf.get("algorithm_parameters", {})
 
-                param_class = valid_interface.get_module_param(module, alias)
+                param_class = component_interface.get_module_param(module, alias)
                 if alias in common_parameters:
                     common_parameters = common_parameters[alias]
-                    param_class = valid_interface.update_param(param_class,
+                    param_class = component_interface.update_param(param_class,
                                                                common_parameters,
                                                                redundant_param_check,
                                                                module,
@@ -131,7 +118,7 @@ class RuntimeConfParserUtil(object):
                             parameters = role_parameters[role_id].get(alias, {})
                             if not parameters:
                                 continue
-                            param_class = valid_interface.update_param(param_class,
+                            param_class = component_interface.update_param(param_class,
                                                                        parameters,
                                                                        redundant_param_check,
                                                                        module,
@@ -139,19 +126,19 @@ class RuntimeConfParserUtil(object):
                                                                        )
                 else:
                     # query if backend interface support dsl v1
-                    if hasattr(valid_interface, "get_not_builtin_types_for_dsl_v1"):
+                    if hasattr(component_interface, "get_not_builtin_types_for_dsl_v1"):
                         v1_parameters = runtime_conf.get("role_parameters", {}).get(role, {}).get(alias, {})
-                        not_builtin_vars = valid_interface.get_not_builtin_types_for_dsl_v1(param_class)
+                        not_builtin_vars = component_interface.get_not_builtin_types_for_dsl_v1(param_class)
                         if v1_parameters:
                             v2_parameters = RuntimeConfParserUtil.change_conf_v1_to_v2(v1_parameters, not_builtin_vars, idx, role, len(role_on_module[role]))
-                            param_class = valid_interface.update_param(param_class,
+                            param_class = component_interface.update_param(param_class,
                                                                        v2_parameters,
                                                                        redundant_param_check,
                                                                        module,
                                                                        alias
                                                                        )
-                valid_interface.check_param(param_class)
-                conf["ComponentParam"] = valid_interface.change_param_to_dict(param_class)
+                component_interface.check_param(param_class)
+                conf["ComponentParam"] = component_interface.change_param_to_dict(param_class)
                 component_conf[role].append(conf)
 
         return component_conf
