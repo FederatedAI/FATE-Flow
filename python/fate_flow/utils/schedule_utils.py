@@ -32,7 +32,21 @@ def get_job_dsl_parser_by_job_id(job_id):
         return None
 
 
-def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None, parse_parameters=False):
+def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None):
+    parser_version = str(runtime_conf.get('dsl_version', '1'))
+    dsl_parser = get_dsl_parser_by_version(parser_version)
+    job_type = JobRuntimeConfigAdapter(runtime_conf).get_job_type()
+    dsl_parser.run(dsl=dsl,
+                   runtime_conf=runtime_conf,
+                   pipeline_dsl=pipeline_dsl,
+                   pipeline_runtime_conf=train_runtime_conf,
+                   component_interface_list=None,
+                   mode=job_type,
+                   parse_parameter=False)
+    return dsl_parser
+
+
+def get_dsl_parser_on_component_env(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None):
     parser_version = str(runtime_conf.get('dsl_version', '1'))
     dsl_parser = get_dsl_parser_by_version(parser_version)
     job_parameters = RunParameters(**runtime_conf["job_parameters"].get("common", runtime_conf["job_parameters"]))
@@ -40,14 +54,14 @@ def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_run
     from fate_flow.entity.types import ComponentProvider
     flow_tools_interface = dsl_utils.get_component_framework_interface(ComponentProvider.FATE_FLOW_TOOLS.value, "1.7.0")
     job_type = JobRuntimeConfigAdapter(runtime_conf).get_job_type()
-    interfaces = [interface, flow_tools_interface] if parse_parameters else None
+    interfaces = [interface, flow_tools_interface]
     dsl_parser.run(dsl=dsl,
                    runtime_conf=runtime_conf,
                    pipeline_dsl=pipeline_dsl,
                    pipeline_runtime_conf=train_runtime_conf,
                    component_interface_list=interfaces,
                    mode=job_type,
-                   parse_parameter=parse_parameters)
+                   parse_parameter=True)
     return dsl_parser
 
 

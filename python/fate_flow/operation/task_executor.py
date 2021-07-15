@@ -87,12 +87,10 @@ class TaskExecutor(object):
             job_conf = job_utils.get_job_conf(job_id, role)
             job_dsl = job_conf["job_dsl_path"]
             job_runtime_conf = job_conf["job_runtime_conf_path"]
-            dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_dsl,
-                                                           runtime_conf=job_runtime_conf,
-                                                           train_runtime_conf=job_conf["train_runtime_conf_path"],
-                                                           pipeline_dsl=job_conf["pipeline_dsl_path"],
-                                                           parse_parameters=True
-                                                           )
+            dsl_parser = schedule_utils.get_dsl_parser_on_component_env(dsl=job_dsl,
+                                                                        runtime_conf=job_runtime_conf,
+                                                                        train_runtime_conf=job_conf["train_runtime_conf_path"],
+                                                                        pipeline_dsl=job_conf["pipeline_dsl_path"])
             party_index = job_runtime_conf["role"][role].index(party_id)
             job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser, job_runtime_conf, role, party_id)
             component = dsl_parser.get_component_info(component_name=component_name)

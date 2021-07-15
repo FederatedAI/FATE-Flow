@@ -44,10 +44,9 @@ class JobController(object):
             authentication_check(src_role=job_info.get('src_role', None), src_party_id=job_info.get('src_party_id', None),
                                  dsl=dsl, runtime_conf=runtime_conf, role=role, party_id=party_id)
 
-        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=dsl,
-                                                       runtime_conf=runtime_conf,
-                                                       train_runtime_conf=train_runtime_conf,
-                                                       parse_parameters=True)
+        dsl_parser = schedule_utils.get_dsl_parser_on_component_env(dsl=dsl,
+                                                                    runtime_conf=runtime_conf,
+                                                                    train_runtime_conf=train_runtime_conf)
         job_parameters = dsl_parser.get_job_parameters().get(role, {}).get(party_id, {})
         schedule_logger(job_id).info(
             'job parameters:{}'.format(job_parameters))
@@ -353,11 +352,10 @@ class JobController(object):
         initiator_party_id = runtime_conf_on_party['initiator']['party_id']
         if job_type == 'predict':
             return
-        dag = schedule_utils.get_job_dsl_parser(dsl=job_dsl,
-                                                runtime_conf=job_runtime_conf,
-                                                train_runtime_conf=train_runtime_conf,
-                                                parse_parameters=True)
-        predict_dsl = dag.get_predict_dsl(role=role)
+        dsl_parser = schedule_utils.get_dsl_parser_on_component_env(dsl=job_dsl,
+                                                                    runtime_conf=job_runtime_conf,
+                                                                    train_runtime_conf=train_runtime_conf)
+        predict_dsl = dsl_parser.get_predict_dsl(role=role)
         pipeline = pipeline_pb2.Pipeline()
         pipeline.inference_dsl = json_dumps(predict_dsl, byte=True)
         pipeline.train_dsl = json_dumps(job_dsl, byte=True)

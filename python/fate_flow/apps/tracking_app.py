@@ -139,25 +139,22 @@ def component_metric_delete():
 def component_parameters():
     request_data = request.json
     check_request_parameters(request_data)
-    job_id = request_data.get('job_id', '')
-    job_dsl_parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id=job_id)
-    if job_dsl_parser:
-        component = job_dsl_parser.get_component_info(request_data['component_name'])
-        parameters = component.get_role_parameters()
-        for role, partys_parameters in parameters.items():
-            for party_parameters in partys_parameters:
-                if party_parameters.get('local', {}).get('role', '') == request_data['role'] and party_parameters.get(
-                        'local', {}).get('party_id', '') == int(request_data['party_id']):
-                    output_parameters = {}
-                    output_parameters['module'] = party_parameters.get('module', '')
-                    for p_k, p_v in party_parameters.items():
-                        if p_k.endswith('Param'):
-                            output_parameters[p_k] = p_v
-                    return get_json_result(retcode=0, retmsg='success', data=output_parameters)
-        else:
-            return get_json_result(retcode=0, retmsg='can not found this component parameters')
+    tasks = JobSaver.query_task(only_latest=True, **request_data)
+    if not tasks:
+        return get_json_result(retcode=101, retmsg='can not found this task')
+    parameters = tasks[0].f_component_paramters
+    for role, partys_parameters in parameters.items():
+        for party_parameters in partys_parameters:
+            if party_parameters.get('local', {}).get('role', '') == request_data['role'] and party_parameters.get(
+                    'local', {}).get('party_id', '') == int(request_data['party_id']):
+                output_parameters = {}
+                output_parameters['module'] = party_parameters.get('module', '')
+                for p_k, p_v in party_parameters.items():
+                    if p_k.endswith('Param'):
+                        output_parameters[p_k] = p_v
+                return get_json_result(retcode=0, retmsg='success', data=output_parameters)
     else:
-        return get_json_result(retcode=101, retmsg='can not found this job')
+        return get_json_result(retcode=0, retmsg='can not found this component parameters')
 
 
 @manager.route('/component/output/model', methods=['post'])
@@ -188,9 +185,9 @@ def component_output_model():
     tracker = Tracker(job_id=request_data['job_id'], component_name=request_data['component_name'],
                       role=request_data['role'], party_id=request_data['party_id'], model_id=model_id,
                       model_version=model_version)
-    dag = schedule_utils.get_job_dsl_parser(dsl=job_dsl, runtime_conf=job_runtime_conf,
-                                            train_runtime_conf=train_runtime_conf)
-    component = dag.get_component_info(request_data['component_name'])
+    dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_dsl, runtime_conf=job_runtime_conf,
+                                                   train_runtime_conf=train_runtime_conf)
+    component = dsl_parser.get_component_info(request_data['component_name'])
     output_model_json = {}
     # There is only one model output at the current dsl version.
     output_model = tracker.get_output_model(component.get_output()['model'][0] if component.get_output().get('model') else 'default')
@@ -368,12 +365,6 @@ def get_component_output_tables_meta(task_data):
     check_request_parameters(task_data)
     tracker = Tracker(job_id=task_data['job_id'], component_name=task_data['component_name'],
                       role=task_data['role'], party_id=task_data['party_id'])
-    job_dsl_parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id=task_data['job_id'])
-    if not job_dsl_parser:
-        raise Exception('can not get dag parser, please check if the parameters are correct')
-    component = job_dsl_parser.get_component_info(task_data['component_name'])
-    if not component:
-        raise Exception('can not found component, please check if the parameters are correct')
     output_data_table_infos = tracker.get_output_data_info()
     output_tables_meta = tracker.get_output_data_table(output_data_infos=output_data_table_infos)
     return output_tables_meta
