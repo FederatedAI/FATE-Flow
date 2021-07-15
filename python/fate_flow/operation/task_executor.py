@@ -161,7 +161,7 @@ class TaskExecutor(object):
             if module_name in {"Upload", "Download", "Reader", "Writer"}:
                 task_run_args["job_parameters"] = job_parameters
 
-            component_framework_interface = dsl_utils.get_component_framework_interface(job_parameters.component_type, job_parameters.component_version)
+            component_framework_interface = component.get_source_component_interface()
             run_object = component_framework_interface.get_module(component.get_module(), role)
             run_object.set_tracker(tracker=tracker_client)
             run_object.set_task_version_id(task_version_id=job_utils.generate_task_version_id(task_id, task_version))

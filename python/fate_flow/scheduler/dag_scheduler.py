@@ -97,7 +97,8 @@ class DAGScheduler(Cron):
         job.f_runtime_conf = conf_adapter.update_common_parameters(common_parameters=common_job_parameters)
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                        runtime_conf=job.f_runtime_conf,
-                                                       train_runtime_conf=job.f_train_runtime_conf)
+                                                       train_runtime_conf=job.f_train_runtime_conf,
+                                                       parse_parameters=True)
 
         # initiator runtime conf as template
         job.f_runtime_conf_on_party = job.f_runtime_conf.copy()
@@ -339,7 +340,8 @@ class DAGScheduler(Cron):
         job_can_rerun = False
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                        runtime_conf=job.f_runtime_conf_on_party,
-                                                       train_runtime_conf=job.f_train_runtime_conf)
+                                                       train_runtime_conf=job.f_train_runtime_conf,
+                                                       parse_parameters=True)
         for task in tasks:
             if task.f_status in {TaskStatus.WAITING, TaskStatus.SUCCESS}:
                 if task.f_status == TaskStatus.WAITING:

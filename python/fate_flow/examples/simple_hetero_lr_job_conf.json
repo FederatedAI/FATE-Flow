@@ -16,7 +16,7 @@
             "task_parallelism": 1,
             "task_cores": 2,
             "computing_partitions": 8,
-            "component_type": "fate_federated_algorithm"
+            "component_provider": "fate_federated_algorithm"
         }
     },
     "component_parameters": {

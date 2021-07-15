@@ -18,7 +18,7 @@ import os.path
 from fate_common.versions import get_versions
 from fate_common import file_utils
 from fate_flow.settings import FATE_FLOW_DIRECTORY
-from fate_flow.entity.types import ComponentType
+from fate_flow.entity.types import ComponentProvider
 
 
 class RuntimeConfig(object):
@@ -58,17 +58,17 @@ class RuntimeConfig(object):
     @classmethod
     def load_component_registry(cls):
         component_registry = file_utils.load_json_conf(os.path.join(FATE_FLOW_DIRECTORY, "component_registry.json"))
-        for component_type, registry_info in component_registry.get("registry", {}).items():
-            if component_type == "default" or component_type in ComponentType._value2member_map_:
-                RuntimeConfig.COMPONENT_REGISTRY[component_type] = registry_info
-            else:
-                raise Exception(f"not support component type: {component_type}")
-        cls.inject_fate_flow_components()
+        RuntimeConfig.COMPONENT_REGISTRY.update(component_registry)
+        for component_provider, provider_info in component_registry.get("provider", {}).items():
+            if component_provider not in ComponentProvider._value2member_map_:
+                del RuntimeConfig.COMPONENT_REGISTRY["provider"][component_provider]
+                raise Exception(f"not support component provider: {component_provider}")
+        cls.inject_fate_flow_component_provider()
 
     @classmethod
-    def inject_fate_flow_components(cls):
+    def inject_fate_flow_component_provider(cls):
         fate_flow_version = get_versions()["FATEFlow"]
-        flow_component_registry_info = {
+        fate_flow_tool_component_provider = {
             "default": {
                 "version": fate_flow_version
             },
@@ -76,4 +76,4 @@ class RuntimeConfig(object):
                 "path": ["fate_flow", "components"]
             }
         }
-        RuntimeConfig.COMPONENT_REGISTRY["fate_flow_tools"] = flow_component_registry_info
+        RuntimeConfig.COMPONENT_REGISTRY["provider"]["fate_flow_tools"] = fate_flow_tool_component_provider

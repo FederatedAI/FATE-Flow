@@ -36,7 +36,7 @@ class RunParameters(object):
         self.model_id = None
         self.model_version = None
         self.dsl_version = None
-        self.component_type = None
+        self.component_provider = None
         self.component_version = None
         self.timeout = None
         self.eggroll_run = {}
@@ -60,7 +60,7 @@ class RunParameters(object):
         return d
 
 
-class ComponentType(Enum):
+class ComponentProvider(Enum):
     FATE_FEDERATED_ALGORITHM = "fate_federated_algorithm"
     FUSHU_AVATAR_ALGORITHM = "fushu_avatar_algorithm"
     FATE_FLOW_TOOLS = "fate_flow_tools"

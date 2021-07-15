@@ -46,7 +46,8 @@ class JobController(object):
 
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=dsl,
                                                        runtime_conf=runtime_conf,
-                                                       train_runtime_conf=train_runtime_conf)
+                                                       train_runtime_conf=train_runtime_conf,
+                                                       parse_parameters=True)
         job_parameters = dsl_parser.get_job_parameters().get(role, {}).get(party_id, {})
         schedule_logger(job_id).info(
             'job parameters:{}'.format(job_parameters))
@@ -133,9 +134,10 @@ class JobController(object):
         if create_initiator_baseline and not job_parameters.computing_partitions:
             job_parameters.computing_partitions = job_parameters.adaptation_parameters[
                 "task_cores_per_node"] * job_parameters.adaptation_parameters["task_nodes"]
-        if not job_parameters.component_type or not job_parameters.component_version:
+        if not job_parameters.component_provider or not job_parameters.component_version:
             #todo: component type may be not from job parameters
-            job_parameters.component_type, job_parameters.component_version = job_utils.get_default_component_use(component_type=job_parameters.component_type)
+            job_parameters.component_provider, job_parameters.component_version = job_utils.get_default_component_use(
+                component_provider=job_parameters.component_provider)
 
     @classmethod
     def get_job_engines_address(cls, job_parameters: RunParameters):
@@ -187,11 +189,15 @@ class JobController(object):
             task_info = {}
             task_info.update(common_task_info)
             component_parameters = component.get_role_parameters()
+            interface = component.get_source_component_interface()
+            support_roles = interface.get_support_role(component.get_module())
             for parameters_on_party in component_parameters.get(common_task_info["role"], []):
                 if parameters_on_party.get('local', {}).get('party_id') == common_task_info["party_id"]:
                     task_info = {}
                     task_info.update(common_task_info)
                     task_info["component_name"] = component.get_name()
+                    task_info["support_roles"] = support_roles
+                    task_info["component_parameters"] = component_parameters
                     TaskController.create_task(role=role, party_id=party_id, run_on_this_party=run_on_this_party, task_info=task_info)
 
     @classmethod
@@ -349,7 +355,8 @@ class JobController(object):
             return
         dag = schedule_utils.get_job_dsl_parser(dsl=job_dsl,
                                                 runtime_conf=job_runtime_conf,
-                                                train_runtime_conf=train_runtime_conf)
+                                                train_runtime_conf=train_runtime_conf,
+                                                parse_parameters=True)
         predict_dsl = dag.get_predict_dsl(role=role)
         pipeline = pipeline_pb2.Pipeline()
         pipeline.inference_dsl = json_dumps(predict_dsl, byte=True)

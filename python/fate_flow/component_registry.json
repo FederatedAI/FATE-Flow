@@ -1,20 +1,48 @@
 {
-  "registry": {
-    "default": {
-      "type": "fate_federated_algorithm",
-      "class_path": {
-        "framework_interface": "framework.scheduler.interface",
-        "feature_instance": "feature.instance.Instance",
-        "feature_vector": "feature.sparse_vector.SparseVector"
-      }
+  "components": {
+    "Upload": {
+      "default_provider": "fate_flow_tools",
+      "support_provider": ["fate_flow_tools"]
     },
+    "Download": {
+      "default_provider": "fate_flow_tools",
+      "support_provider": ["fate_flow_tools"]
+    },
+    "Reader": {
+      "default_provider": "fate_flow_tools",
+      "support_provider": ["fate_flow_tools"]
+    },
+    "DataIO": {
+      "default_provider": "fate_federated_algorithm",
+      "support_provider": ["fate_federated_algorithm"]
+    },
+    "HeteroFeatureBinning": {
+      "default_provider": "fate_federated_algorithm",
+      "support_provider": ["fate_federated_algorithm"]
+    },
+    "HeteroLR": {
+      "default_provider": "fate_federated_algorithm",
+      "support_provider": ["fate_federated_algorithm", "fushu_avatar_algorithm"]
+    }
+  },
+  "provider": {
     "fate_federated_algorithm": {
       "default": {
         "version": "v1.7.0"
       },
       "v1.7.0": {
-        "path": ["flow_components", "federatedml", "v1_7_0", "federatedml"]
+        "path": ["flow_components", "federatedml", "v1_7_0", "federatedml"],
+        "class_path": {
+
+        }
       }
+    }
+  },
+  "default_settings": {
+    "class_path": {
+      "framework_interface": "framework.scheduler.interface",
+      "feature_instance": "feature.instance.Instance",
+      "feature_vector": "feature.sparse_vector.SparseVector"
     }
   }
 }

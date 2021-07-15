@@ -25,7 +25,7 @@ from fate_common import file_utils
 from fate_common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_common.log import schedule_logger
 from fate_flow.db.db_models import DB, Job, Task
-from fate_flow.entity.types import JobStatus, ComponentType
+from fate_flow.entity.types import JobStatus, ComponentProvider
 from fate_flow.entity.types import TaskStatus, RunParameters, KillProcessStatusCode
 from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.settings import stat_logger, JOB_DEFAULT_TIMEOUT, WORK_MODE, FATE_BOARD_DASHBOARD_ENDPOINT
@@ -234,17 +234,15 @@ def job_virtual_component_module_name():
     return "Pipeline"
 
 
-def get_default_component_use(component_type=None):
-    if not component_type:
-        component_type = RuntimeConfig.COMPONENT_REGISTRY.get("default", {}).get("type", None)
-    component_version = RuntimeConfig.COMPONENT_REGISTRY.get(component_type, {}).get("default", {}).get("version", None)
-    if not component_type or not component_version:
+def get_default_component_use(component_provider):
+    component_version = RuntimeConfig.COMPONENT_REGISTRY["provider"].get(component_provider, {}).get("default", {}).get("version", None)
+    if not component_provider or not component_version:
         raise Exception("can not found default component use")
-    return component_type, component_version
+    return component_provider, component_version
 
 
-def get_component_path(component_type: ComponentType, component_version):
-    return RuntimeConfig.COMPONENT_REGISTRY.get(component_type, {}).get(component_version, {}).get("path", [])
+def get_component_path(component_provider: ComponentProvider, component_version):
+    return RuntimeConfig.COMPONENT_REGISTRY["provider"].get(component_provider, {}).get(component_version, {}).get("path", [])
 
 
 @DB.connection_context()
