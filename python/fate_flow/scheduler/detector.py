@@ -13,9 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch import storage
 from fate_common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, Job
+from fate_arch.session import Session
 from fate_arch.storage import StorageSessionBase
 from fate_common.log import detect_logger
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -121,7 +121,7 @@ class Detector(cron.Cron):
         sessions_record = StorageSessionBase.query_expired_sessions_record(ttl=5 * 60 * 60 * 1000)
         for session_record in sessions_record:
             detect_logger().info('start stop session id {}'.format(session_record.f_session_id))
-            session = storage.Session.build(session_id=session_record.f_session_id, storage_engine=session_record.f_engine_name)
+            session = Session().new_storage(storage_session_id=session_record.f_session_id, storage_engine=session_record.f_engine_name)
             session.destroy_session()
             detect_logger().info('session id {} success'.format(session_record.f_session_id))
 

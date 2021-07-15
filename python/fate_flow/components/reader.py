@@ -17,6 +17,7 @@
 #
 import numpy as np
 
+from fate_arch.session import Session
 from fate_arch import storage
 from fate_arch.abc import StorageTableABC, StorageTableMetaABC, AddressABC
 from fate_common import log, EngineType
@@ -49,11 +50,8 @@ class Reader(ComponentBase):
             output_namespace=output_table_namespace,
             computing_engine=computing_engine,
             output_storage_address=output_storage_address)
-        with storage.Session.build(
-                session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version,
-                                                         self.tracker.role, self.tracker.party_id,
-                                                         suffix="storage", random_end=True),
-                storage_engine=input_table_meta.get_engine()) as input_table_session:
+        session = Session(job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id))
+        with session.new_storage(storage_engine=input_table_meta.get_engine()) as input_table_session:
             input_table = input_table_session.get_table(name=input_table_meta.get_name(),
                                                         namespace=input_table_meta.get_namespace())
             # update real count to meta info
@@ -64,12 +62,7 @@ class Reader(ComponentBase):
                     f"the {input_table_meta.get_engine()} engine input table needs to be converted to {output_table_engine} engine to support computing engine {computing_engine}")
             else:
                 LOGGER.info(f"the {input_table_meta.get_engine()} input table needs to be transform format")
-            with storage.Session.build(
-                    session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version,
-                                                             self.tracker.role, self.tracker.party_id,
-                                                             suffix="storage",
-                                                             random_end=True),
-                    storage_engine=output_table_engine) as output_table_session:
+            with session.new_storage(storage_engine=output_table_engine) as output_table_session:
                 output_table = output_table_session.create_table(address=output_table_address,
                                                                  name=output_table_name,
                                                                  namespace=output_table_namespace,

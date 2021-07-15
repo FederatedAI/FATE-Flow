@@ -24,6 +24,7 @@ from fate_flow.utils import job_utils, data_utils
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_arch import storage
 from fate_flow.components.component_base import ComponentBase
+from fate_arch.session import Session
 
 LOGGER = log.getLogger()
 
@@ -72,7 +73,8 @@ class Upload(ComponentBase):
         partitions = self.parameters["partition"]
         if partitions <= 0 or partitions >= self.MAX_PARTITIONS:
             raise Exception("Error number of partition, it should between %d and %d" % (0, self.MAX_PARTITIONS))
-        with storage.Session.build(session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id, suffix="storage", random_end=True), namespace=namespace, name=name) as storage_session:
+        session = Session(session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id))
+        with session.new_storage(namespace=namespace, name=name) as storage_session:
             if self.parameters.get("destroy", False):
                 table = storage_session.get_table()
                 if table:
@@ -81,8 +83,7 @@ class Upload(ComponentBase):
                 else:
                     LOGGER.info(f"can not found table name: {name} namespace: {namespace}, pass destroy")
         address_dict = storage_address.copy()
-        with storage.Session.build(session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id, suffix="storage", random_end=True),
-                                   storage_engine=storage_engine, options=self.parameters.get("options")) as storage_session:
+        with session.new_storage(storage_engine=storage_engine, options=self.parameters.get("options")) as storage_session:
             if storage_engine in {StorageEngine.EGGROLL, StorageEngine.STANDALONE}:
                 upload_address = {"name": name, "namespace": namespace, "storage_type": EggRollStorageType.ROLLPAIR_LMDB}
             elif storage_engine in {StorageEngine.MYSQL}:

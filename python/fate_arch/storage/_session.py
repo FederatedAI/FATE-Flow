@@ -29,45 +29,6 @@ MAX_NUM = 10000
 LOGGER = getLogger()
 
 
-class Session(object):
-    @classmethod
-    def build(cls, session_id=None, storage_engine=None, computing_engine=None, **kwargs):
-        session_id = session_id if session_id else fate_uuid()
-        # Find the storage engine type
-        if storage_engine is None and kwargs.get("name") and kwargs.get("namespace"):
-            storage_engine, address, partitions = StorageSessionBase.get_storage_info(name=kwargs.get("name"),
-                                                                                      namespace=kwargs.get("namespace"))
-        if storage_engine is None and computing_engine is None:
-            computing_engine, federation_engine, federation_mode = compatibility_utils.backend_compatibility(**kwargs)
-        if storage_engine is None and computing_engine:
-            # Gets the computing engine default storage engine
-            storage_engine = Relationship.CompToStore.get(computing_engine)[0]
-
-        if storage_engine == StorageEngine.EGGROLL:
-            from fate_arch.storage.eggroll import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
-        elif storage_engine == StorageEngine.STANDALONE:
-            from fate_arch.storage.standalone import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
-        elif storage_engine == StorageEngine.MYSQL:
-            from fate_arch.storage.mysql import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
-        elif storage_engine == StorageEngine.HDFS:
-            from fate_arch.storage.hdfs import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
-        elif storage_engine == StorageEngine.FILE:
-            from fate_arch.storage.file import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
-        elif storage_engine == StorageEngine.PATH:
-            from fate_arch.storage.path import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
-        else:
-            raise NotImplementedError(f"can not be initialized with storage engine: {storage_engine}")
-        if kwargs.get("name") and kwargs.get("namespace"):
-            storage_session.set_default(name=kwargs["name"], namespace=kwargs["namespace"])
-        return storage_session
-
-
 class StorageSessionBase(StorageSessionABC):
     def __init__(self, session_id, engine_name):
         self._session_id = session_id
