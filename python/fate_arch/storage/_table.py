@@ -60,7 +60,7 @@ class StorageTableBase(StorageTableABC):
     def get_engine(self):
         pass
 
-    def get_type(self):
+    def get_store_type(self):
         pass
 
     def get_options(self):

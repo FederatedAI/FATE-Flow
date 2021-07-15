@@ -124,38 +124,17 @@ class Tracker(object):
             schedule_logger(self.job_id).info(
                 'persisting the component output temporary table to {} {}'.format(output_table_namespace,
                                                                                   output_table_name))
-            partitions = computing_table.partitions
-            schedule_logger(self.job_id).info('output data table partitions is {}'.format(partitions))
-            address_dict = output_storage_address.copy()
-            if output_storage_engine == StorageEngine.EGGROLL:
-                address_dict.update({"name": output_table_name, "namespace": output_table_namespace, "storage_type": storage.EggRollStorageType.ROLLPAIR_LMDB})
-            elif output_storage_engine == StorageEngine.STANDALONE:
-                address_dict.update({"name": output_table_name, "namespace": output_table_namespace, "storage_type": storage.StandaloneStorageType.ROLLPAIR_LMDB})
-            elif output_storage_engine == StorageEngine.HDFS:
-                address_dict.update({"path": data_utils.default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=address_dict.get("path_prefix"))})
-            else:
-                raise RuntimeError(f"{output_storage_engine} storage is not supported")
-            address = storage.StorageTableMeta.create_address(storage_engine=output_storage_engine, address_dict=address_dict)
-            schema = {}
-            # persistent table
-            computing_table.save(address, schema=schema, partitions=partitions)
-            part_of_data = []
-            part_of_limit = 100
-            for k, v in computing_table.collect():
-                part_of_data.append((k, v))
-                part_of_limit -= 1
-                if part_of_limit == 0:
-                    break
-            table_count = computing_table.count()
-            table_meta = storage.StorageTableMeta(name=output_table_name, namespace=output_table_namespace, new=True)
-            table_meta.address = address
-            table_meta.partitions = computing_table.partitions
-            table_meta.engine = output_storage_engine
-            table_meta.type = storage.EggRollStorageType.ROLLPAIR_LMDB
-            table_meta.schema = schema
-            table_meta.part_of_data = part_of_data
-            table_meta.count = table_count
-            table_meta.create()
+
+            schedule_logger(self.job_id).info('output data table partitions is {}'.format(computing_table.partitions))
+
+            if output_storage_engine == StorageEngine.HDFS:
+                output_storage_address.update({"path": data_utils.default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=output_storage_address.get("path_prefix"))})
+
+            session.get_latest_opened().computing_table_to_storage(computing_table=computing_table,
+                                                                   table_namespace=output_table_namespace,
+                                                                   table_name=output_table_name,
+                                                                   storage_engine=output_storage_engine,
+                                                                   storage_engine_address=output_storage_address)
             return output_table_namespace, output_table_name
         else:
             schedule_logger(self.job_id).info('task id {} output data table is none'.format(self.task_id))

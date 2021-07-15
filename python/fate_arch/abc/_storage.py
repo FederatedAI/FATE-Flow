@@ -124,7 +124,7 @@ class StorageTableABC(metaclass=abc.ABCMeta):
         ...
 
     @abc.abstractmethod
-    def get_type(self):
+    def get_store_type(self):
         ...
 
     @abc.abstractmethod
@@ -180,6 +180,10 @@ class StorageSessionABC(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def query_expired_sessions_record(self, ttl) -> []:
+        ...
+
+    @abc.abstractmethod
+    def destroy(self):
         ...
 
     @abc.abstractmethod

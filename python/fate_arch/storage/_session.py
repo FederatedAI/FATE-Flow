@@ -13,13 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os.path
 
-
-from fate_arch.abc import StorageSessionABC, StorageTableABC
-from fate_arch.common import compatibility_utils, EngineType
-from fate_arch.common.base_utils import fate_uuid, current_timestamp
+from fate_arch.abc import StorageSessionABC, StorageTableABC, CTableABC
+from fate_arch.common import EngineType
+from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.log import getLogger
-from fate_arch.computing import ComputingEngine
 from fate_arch.storage._table import StorageTableMeta
 from fate_arch.storage._types import StorageEngine, Relationship
 from fate_arch.storage.metastore.db_models import DB, StorageTableMetaModel, SessionRecord
@@ -46,7 +45,7 @@ class StorageSessionBase(StorageSessionABC):
         table_meta.address = table.get_address()
         table_meta.partitions = table.get_partitions()
         table_meta.engine = table.get_engine()
-        table_meta.type = table.get_type()
+        table_meta.type = table.get_store_type()
         table_meta.options = table.get_options()
         table_meta.create()
         table.set_meta(table_meta)
@@ -77,6 +76,48 @@ class StorageSessionBase(StorageSessionABC):
 
     def table(self, name, namespace, address, partitions, storage_type=None, options=None, **kwargs) -> StorageTableABC:
         raise NotImplementedError()
+
+    @classmethod
+    def copy_from_computing(cls, computing_table: CTableABC, table_namespace, table_name, engine=None, engine_address=None, store_type=None):
+        partitions = computing_table.partitions
+        address_dict = engine_address.copy()
+        if engine:
+            if engine not in Relationship.CompToStore.get(computing_table.engine, {}).get("support", []):
+                raise Exception(f"storage engine {engine} not supported with computing engine {computing_table.engine}")
+        else:
+            engine = Relationship.CompToStore.get(computing_table.engine, {}).get("default", None)
+            if not engine:
+                raise Exception(f"can not found {computing_table.engine} default storage engine")
+        if engine == StorageEngine.EGGROLL:
+            address_dict.update({"name": table_name, "namespace": table_namespace})
+        elif engine == StorageEngine.STANDALONE:
+            address_dict.update({"name": table_name, "namespace": table_namespace})
+        elif engine == StorageEngine.HDFS:
+            address_dict.update({"path": os.path.join(address_dict.get("path_prefix", ""), table_namespace, table_name)})
+        else:
+            raise RuntimeError(f"{engine} storage is not supported")
+        address = StorageTableMeta.create_address(storage_engine=engine, address_dict=address_dict)
+        schema = {}
+        # persistent table
+        computing_table.save(address, schema=schema, partitions=partitions)
+        part_of_data = []
+        part_of_limit = 100
+        for k, v in computing_table.collect():
+            part_of_data.append((k, v))
+            part_of_limit -= 1
+            if part_of_limit == 0:
+                break
+        table_count = computing_table.count()
+        table_meta = StorageTableMeta(name=table_name, namespace=table_namespace, new=True)
+        table_meta.address = address
+        table_meta.partitions = computing_table.partitions
+        table_meta.engine = engine
+        table_meta.type = store_type
+        table_meta.schema = schema
+        table_meta.part_of_data = part_of_data
+        table_meta.count = table_count
+        table_meta.create()
+        return table_meta
 
     @classmethod
     @DB.connection_context()
@@ -110,19 +151,13 @@ class StorageSessionBase(StorageSessionABC):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
-        with DB.connection_context():
-            rows = SessionRecord.delete().where(SessionRecord.f_session_id == self._session_id).execute()
-            if rows > 0:
-                LOGGER.debug(f"delete session {self._session_id} record")
-            else:
-                LOGGER.warning(f"failed delete session {self._session_id} record")
+        self.destroy()
 
-    def destroy_session(self):
+    def destroy(self):
         try:
             self.close()
-        except:
-            pass
+        except Exception as e:
+            LOGGER.warning(e)
         with DB.connection_context():
             rows = SessionRecord.delete().where(SessionRecord.f_session_id == self._session_id).execute()
             if rows > 0:

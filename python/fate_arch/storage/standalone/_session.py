@@ -32,7 +32,7 @@ class StorageSession(StorageSessionBase):
         if isinstance(address, StandaloneAddress):
             from fate_arch.storage.standalone._table import StorageTable
             return StorageTable(session=self._session, name=name, namespace=namespace, address=address,
-                                partitions=partitions, storage_type=storage_type, options=options)
+                                partitions=partitions, store_type=storage_type, options=options)
         raise NotImplementedError(f"address type {type(address)} not supported with standalone storage")
 
     def cleanup(self, name, namespace):

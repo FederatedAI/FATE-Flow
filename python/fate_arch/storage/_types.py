@@ -13,13 +13,13 @@ class StorageEngine(object):
     PATH = 'PATH'
 
 
-class StandaloneStorageType(object):
+class StandaloneStoreType(object):
     ROLLPAIR_IN_MEMORY = 'IN_MEMORY'
     ROLLPAIR_LMDB = 'LMDB'
     DEFAULT = ROLLPAIR_LMDB
 
 
-class EggRollStorageType(object):
+class EggRollStoreType(object):
     ROLLPAIR_IN_MEMORY = 'IN_MEMORY'
     ROLLPAIR_LMDB = 'LMDB'
     ROLLPAIR_LEVELDB = 'LEVEL_DB'
@@ -32,7 +32,7 @@ class EggRollStorageType(object):
     DEFAULT = ROLLPAIR_LMDB
 
 
-class HDFSStorageType(object):
+class HDFSStoreType(object):
     RAM_DISK = 'RAM_DISK'
     SSD = 'SSD'
     DISK = 'DISK'
@@ -40,15 +40,15 @@ class HDFSStorageType(object):
     DEFAULT = None
 
 
-class PathStorageType(object):
+class PathStoreType(object):
     PICTURE = 'PICTURE'
 
 
-class FileStorageType(object):
+class FileStoreType(object):
     CSV = 'CSV'
 
 
-class MySQLStorageType(object):
+class MySQLStoreType(object):
     InnoDB = "InnoDB"
     MyISAM = "MyISAM"
     ISAM = "ISAM"
@@ -67,9 +67,18 @@ class StorageTableMetaType(object):
 
 class Relationship(object):
     CompToStore = {
-        ComputingEngine.STANDALONE: [StorageEngine.STANDALONE],
-        ComputingEngine.EGGROLL: [StorageEngine.EGGROLL],
-        ComputingEngine.SPARK: [StorageEngine.HDFS]
+        ComputingEngine.STANDALONE: {
+            "default": StorageEngine.STANDALONE,
+            "support": [StorageEngine.STANDALONE]
+        },
+        ComputingEngine.EGGROLL: {
+            "default": StorageEngine.EGGROLL,
+            "support": [StorageEngine.EGGROLL]
+        },
+        ComputingEngine.SPARK: {
+            "default": StorageEngine.HDFS,
+            "support": [StorageEngine.HDFS]
+        }
     }
     EngineToAddress = {
         StorageEngine.STANDALONE: StandaloneAddress,

@@ -122,7 +122,7 @@ class Detector(cron.Cron):
         for session_record in sessions_record:
             detect_logger().info('start stop session id {}'.format(session_record.f_session_id))
             session = Session().new_storage(storage_session_id=session_record.f_session_id, storage_engine=session_record.f_engine_name)
-            session.destroy_session()
+            session.destroy()
             detect_logger().info('session id {} success'.format(session_record.f_session_id))
 
     @classmethod

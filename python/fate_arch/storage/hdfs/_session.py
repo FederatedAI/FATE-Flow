@@ -30,7 +30,7 @@ class StorageSession(StorageSessionBase):
         if isinstance(address, HDFSAddress):
             from fate_arch.storage.hdfs._table import StorageTable
             return StorageTable(address=address, name=name, namespace=namespace,
-                                partitions=partitions, storage_type=storage_type, options=options)
+                                partitions=partitions, store_type=storage_type, options=options)
         raise NotImplementedError(f"address type {type(address)} not supported with hdfs storage")
 
     def cleanup(self, name, namespace):

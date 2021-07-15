@@ -118,27 +118,27 @@ class Reader(ComponentBase):
             raise RuntimeError(f"can not found table name: {input_name} namespace: {input_namespace}")
         address_dict = output_storage_address.copy()
         if input_table_meta.get_engine() in [StorageEngine.PATH]:
-            from fate_arch.storage import PathStorageType
+            from fate_arch.storage import PathStoreType
             address_dict["name"] = output_name
             address_dict["namespace"] = output_namespace
-            address_dict["storage_type"] = PathStorageType.PICTURE
+            address_dict["storage_type"] = PathStoreType.PICTURE
             address_dict["path"] = input_table_meta.get_address().path
             output_table_address = StorageTableMeta.create_address(storage_engine=StorageEngine.PATH,
                                                                    address_dict=address_dict)
             output_table_engine = StorageEngine.PATH
         elif computing_engine == ComputingEngine.STANDALONE:
-            from fate_arch.storage import StandaloneStorageType
+            from fate_arch.storage import StandaloneStoreType
             address_dict["name"] = output_name
             address_dict["namespace"] = output_namespace
-            address_dict["storage_type"] = StandaloneStorageType.ROLLPAIR_LMDB
+            address_dict["storage_type"] = StandaloneStoreType.ROLLPAIR_LMDB
             output_table_address = StorageTableMeta.create_address(storage_engine=StorageEngine.STANDALONE,
                                                                    address_dict=address_dict)
             output_table_engine = StorageEngine.STANDALONE
         elif computing_engine == ComputingEngine.EGGROLL:
-            from fate_arch.storage import EggRollStorageType
+            from fate_arch.storage import EggRollStoreType
             address_dict["name"] = output_name
             address_dict["namespace"] = output_namespace
-            address_dict["storage_type"] = EggRollStorageType.ROLLPAIR_LMDB
+            address_dict["storage_type"] = EggRollStoreType.ROLLPAIR_LMDB
             output_table_address = StorageTableMeta.create_address(storage_engine=StorageEngine.EGGROLL,
                                                                    address_dict=address_dict)
             output_table_engine = StorageEngine.EGGROLL

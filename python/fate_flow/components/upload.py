@@ -18,7 +18,7 @@ import shutil
 import time
 
 from fate_common import log, file_utils, EngineType, path_utils
-from fate_arch.storage import StorageEngine, EggRollStorageType
+from fate_arch.storage import StorageEngine, EggRollStoreType
 from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.utils import job_utils, data_utils
 from fate_flow.scheduling_apps.client import ControllerClient
@@ -85,7 +85,7 @@ class Upload(ComponentBase):
         address_dict = storage_address.copy()
         with session.new_storage(storage_engine=storage_engine, options=self.parameters.get("options")) as storage_session:
             if storage_engine in {StorageEngine.EGGROLL, StorageEngine.STANDALONE}:
-                upload_address = {"name": name, "namespace": namespace, "storage_type": EggRollStorageType.ROLLPAIR_LMDB}
+                upload_address = {"name": name, "namespace": namespace, "storage_type": EggRollStoreType.ROLLPAIR_LMDB}
             elif storage_engine in {StorageEngine.MYSQL}:
                 upload_address = {"db": namespace, "name": name}
             elif storage_engine in {StorageEngine.PATH}:

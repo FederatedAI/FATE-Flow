@@ -184,7 +184,7 @@ class Session(object):
             computing_engine, federation_engine, federation_mode = compatibility_utils.backend_compatibility(**kwargs)
         if storage_engine is None and computing_engine:
             # Gets the computing engine default storage engine
-            storage_engine = Relationship.CompToStore.get(computing_engine)[0]
+            storage_engine = Relationship.CompToStore.get(computing_engine, {}).get("default", None)
 
         if storage_engine == StorageEngine.EGGROLL:
             from fate_arch.storage.eggroll import StorageSession
@@ -210,6 +210,18 @@ class Session(object):
             storage_session.set_default(name=kwargs["name"], namespace=kwargs["namespace"])
         self._storage_session.append(storage_session)
         return storage_session
+
+    def clean_storage(self):
+        for storage_session in self._storage_session:
+            storage_session.destroy()
+
+    def computing_table_to_storage(self, computing_table: CTableABC, table_namespace, table_name, storage_engine=None, storage_engine_address=None, store_type=None):
+        return StorageSessionBase.copy_from_computing(computing_table=computing_table,
+                                                      table_namespace=table_namespace,
+                                                      table_name=table_name,
+                                                      engine=storage_engine,
+                                                      engine_address=storage_engine_address,
+                                                      store_type=store_type)
 
     @property
     def computing(self) -> CSessionABC:
