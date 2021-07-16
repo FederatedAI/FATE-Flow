@@ -13,24 +13,25 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.utils.authentication_utils import authentication_check
-from fate_flow.protobuf.python import pipeline_pb2
-from fate_common.log import schedule_logger
-from fate_common import EngineType, string_utils
-from fate_flow.entity.types import JobStatus, EndStatus, RunParameters
-from fate_flow.runtime_config import RuntimeConfig
-from fate_flow.operation.job_tracker import Tracker
-from fate_flow.settings import USE_AUTHENTICATION, DEFAULT_TASK_PARALLELISM, DEFAULT_FEDERATED_STATUS_COLLECT_TYPE
-from fate_flow.utils import job_utils, schedule_utils, data_utils
-from fate_flow.operation.job_saver import JobSaver
-from fate_common.base_utils import json_dumps, current_timestamp
-from fate_flow.controller.task_controller import TaskController
-from fate_flow.manager.resource_manager import ResourceManager
-from fate_common import WorkMode, Backend
-from fate_common import FederatedMode
+from fate_arch.common import compatibility_utils
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
+from fate_common import EngineType, string_utils
+from fate_common import FederatedMode
+from fate_common import WorkMode, Backend
+from fate_common.base_utils import json_dumps, current_timestamp
+from fate_common.log import schedule_logger
+from fate_flow.controller.task_controller import TaskController
+from fate_flow.entity.types import JobStatus, EndStatus, RunParameters
+from fate_flow.manager.resource_manager import ResourceManager
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.operation.job_tracker import Tracker
+from fate_flow.protobuf.python import pipeline_pb2
+from fate_flow.runtime_config import RuntimeConfig
+from fate_flow.settings import USE_AUTHENTICATION, DEFAULT_TASK_PARALLELISM, DEFAULT_FEDERATED_STATUS_COLLECT_TYPE
+from fate_flow.utils import job_utils, schedule_utils, data_utils
+from fate_flow.utils.authentication_utils import authentication_check
 
 
 class JobController(object):
@@ -85,41 +86,19 @@ class JobController(object):
         JobSaver.create_job(job_info=job_info)
 
     @classmethod
-    def backend_compatibility(cls, job_parameters: RunParameters):
-        # compatible with previous 1.5 versions
-        if job_parameters.computing_engine is None or job_parameters.federation_engine is None:
-            if job_parameters.work_mode is None or job_parameters.backend is None:
-                raise RuntimeError("unable to find compatible backend engines")
-            work_mode = WorkMode(job_parameters.work_mode)
-            backend = Backend(job_parameters.backend)
-            if backend == Backend.EGGROLL:
-                if work_mode == WorkMode.CLUSTER:
-                    job_parameters.computing_engine = ComputingEngine.EGGROLL
-                    job_parameters.federation_engine = FederationEngine.EGGROLL
-                    job_parameters.storage_engine = StorageEngine.EGGROLL
-                else:
-                    job_parameters.computing_engine = ComputingEngine.STANDALONE
-                    job_parameters.federation_engine = FederationEngine.STANDALONE
-                    job_parameters.storage_engine = StorageEngine.STANDALONE
-            elif backend == Backend.SPARK_PULSAR:
-                job_parameters.computing_engine = ComputingEngine.SPARK
-                job_parameters.federation_engine = FederationEngine.PULSAR
-                job_parameters.storage_engine = StorageEngine.HDFS
-            elif backend == Backend.SPARK_RABBITMQ:
-                job_parameters.computing_engine = ComputingEngine.SPARK
-                job_parameters.federation_engine = FederationEngine.RABBITMQ
-                job_parameters.storage_engine = StorageEngine.HDFS
-                # add mq info
-                federation_info = {}
-                federation_info['union_name'] = string_utils.random_string(4)
-                federation_info['policy_id'] = string_utils.random_string(10)
-                job_parameters.federation_info = federation_info
-
-        if job_parameters.federated_mode is None:
-            if job_parameters.computing_engine in [ComputingEngine.EGGROLL, ComputingEngine.SPARK]:
-                job_parameters.federated_mode = FederatedMode.MULTIPLE
-            elif job_parameters.computing_engine in [ComputingEngine.STANDALONE]:
-                job_parameters.federated_mode = FederatedMode.SINGLE
+    def get_job_engines(cls, job_parameters: RunParameters):
+        kwargs = {}
+        for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
+            kwargs[k] = getattr(job_parameters, f"{k}_engine", None)
+        engines = compatibility_utils.engines_compatibility(
+            work_mode=job_parameters.work_mode,
+            backend=job_parameters.backend,
+            federated_mode=job_parameters.federated_mode,
+            **kwargs
+        )
+        for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
+            setattr(job_parameters, f"{k}_engine", engines[k])
+        job_parameters.federated_mode = engines["federated_mode"]
 
     @classmethod
     def adapt_job_parameters(cls, role, job_parameters: RunParameters, create_initiator_baseline=False):

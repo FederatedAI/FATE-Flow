@@ -18,27 +18,50 @@ import typing
 from fate_arch.common import WorkMode, Backend, FederatedMode
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
+from fate_arch.storage import StorageEngine
+from fate_arch.relation_ship import Relationship
+from fate_arch.common import EngineType
 
 
-def backend_compatibility(work_mode: typing.Union[WorkMode, int] = WorkMode.STANDALONE,
+def engines_compatibility(work_mode: typing.Union[WorkMode, int] = WorkMode.STANDALONE,
                           backend: typing.Union[Backend, int] = Backend.EGGROLL, **kwargs):
-    # Compatible with previous 1.5 versions
-    if kwargs.get("computing_engine") is None or kwargs.get("federation_engine") is None or kwargs.get(
-            "federation_mode") is None:
-        if work_mode is None or backend is None:
-            raise RuntimeError("unable to find compatible engines")
+    keys = ["computing", "federation", "storage", "federated_mode"]
+    engines = {}
+    for k in keys:
+        if kwargs.get(k) is not None:
+            engines[k] = kwargs[k]
+    if kwargs.get("computing") is None and (work_mode is None or backend is None):
+        raise RuntimeError("must provide computing engine parameters or work_mode and backend parameters")
+    if kwargs.get("computing") is None and kwargs.get("federation") is None:
         if isinstance(work_mode, int):
             work_mode = WorkMode(work_mode)
         if isinstance(backend, int):
             backend = Backend(backend)
         if backend == Backend.EGGROLL:
             if work_mode == WorkMode.CLUSTER:
-                return ComputingEngine.EGGROLL, FederationEngine.EGGROLL, FederatedMode.MULTIPLE
+                values = (ComputingEngine.EGGROLL, FederationEngine.EGGROLL)
             else:
-                return ComputingEngine.STANDALONE, FederationEngine.STANDALONE, FederatedMode.SINGLE
-        if backend == Backend.SPARK_RABBITMQ:
-            return ComputingEngine.SPARK, FederationEngine.RABBITMQ, FederatedMode.MULTIPLE
-        if backend == Backend.SPARK_PULSAR:
-            return ComputingEngine.SPARK, FederationEngine.PULSAR, FederatedMode.MULTIPLE
-    else:
-        return kwargs["computing_engine"], kwargs["federation_engine"], kwargs["federated_mode"]
+                values = (ComputingEngine.STANDALONE, FederationEngine.STANDALONE)
+        elif backend == Backend.SPARK_RABBITMQ:
+            values = (ComputingEngine.SPARK, FederationEngine.RABBITMQ)
+        elif backend == Backend.SPARK_PULSAR:
+            values = (ComputingEngine.SPARK, FederationEngine.PULSAR)
+        else:
+            raise RuntimeError(f"unable to find default engines by work_mode: {work_mode} backend: {backend}")
+
+        engines.update(dict(zip(keys[:2], values)))
+
+    # set default storage engine and federation engine by computing engine
+    for t in {EngineType.STORAGE, EngineType.FEDERATION}:
+        if engines.get(t) is None:
+            # use default relation engine
+            engines[t] = Relationship.Computing[engines[EngineType.COMPUTING]][t]["default"]
+
+    # set default federated mode by federation engine
+    if engines.get("federated_mode") is None:
+        if engines[EngineType.FEDERATION] == FederationEngine.STANDALONE:
+            engines["federated_mode"] = FederatedMode.SINGLE
+        else:
+            engines["federated_mode"] = FederatedMode.MULTIPLE
+
+    return engines

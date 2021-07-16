@@ -18,11 +18,10 @@
 import numpy as np
 
 from fate_arch.session import Session
-from fate_arch import storage
 from fate_arch.abc import StorageTableABC, StorageTableMetaABC, AddressABC
 from fate_common import log, EngineType
 from fate_arch.computing import ComputingEngine
-from fate_arch.storage import StorageTableMeta, StorageEngine, Relationship
+from fate_arch.storage import StorageTableMeta, StorageEngine
 from fate_flow.entity.metric import MetricMeta
 from fate_flow.utils import job_utils, data_utils
 from fate_flow.components.component_base import ComponentBase

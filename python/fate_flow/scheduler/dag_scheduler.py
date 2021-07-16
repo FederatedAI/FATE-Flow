@@ -91,7 +91,7 @@ class DAGScheduler(Cron):
             raise Exception("initiator party id error {}".format(job.f_initiator_party_id))
 
         # create common parameters on initiator
-        JobController.backend_compatibility(job_parameters=common_job_parameters)
+        JobController.get_job_engines(job_parameters=common_job_parameters)
         JobController.adapt_job_parameters(role=job.f_initiator_role, job_parameters=common_job_parameters, create_initiator_baseline=True)
 
         job.f_runtime_conf = conf_adapter.update_common_parameters(common_parameters=common_job_parameters)

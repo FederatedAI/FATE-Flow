@@ -20,7 +20,7 @@ from typing import List
 from fate_common import EngineType, Party
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
-from fate_arch.storage import StorageEngine
+from fate_arch.storage import StorageEngine, StorageSessionBase
 from fate_common.base_utils import current_timestamp, serialize_b64, deserialize_b64, json_loads
 from fate_common.log import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingMetric, TrackingOutputDataInfo,
@@ -130,11 +130,11 @@ class Tracker(object):
             if output_storage_engine == StorageEngine.HDFS:
                 output_storage_address.update({"path": data_utils.default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=output_storage_address.get("path_prefix"))})
 
-            session.get_latest_opened().computing_table_to_storage(computing_table=computing_table,
-                                                                   table_namespace=output_table_namespace,
-                                                                   table_name=output_table_name,
-                                                                   storage_engine=output_storage_engine,
-                                                                   storage_engine_address=output_storage_address)
+            StorageSessionBase.persistent(computing_table=computing_table,
+                                          table_namespace=output_table_namespace,
+                                          table_name=output_table_name,
+                                          engine=output_storage_engine,
+                                          engine_address=output_storage_address)
             return output_table_namespace, output_table_name
         else:
             schedule_logger(self.job_id).info('task id {} output data table is none'.format(self.task_id))

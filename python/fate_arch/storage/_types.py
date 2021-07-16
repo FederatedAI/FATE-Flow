@@ -1,6 +1,19 @@
-from fate_arch.computing import ComputingEngine
-from fate_arch.common.address import StandaloneAddress, EggRollAddress, HDFSAddress, MysqlAddress, FileAddress, \
-    PathAddress
+#
+#  Copyright 2019 The FATE Authors. All Rights Reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+DEFAULT_ID_DELIMITER = ","
 
 
 class StorageEngine(object):
@@ -64,30 +77,3 @@ class StorageTableMetaType(object):
     COUNT = "count"
     PARTITIONS = "partitions"
 
-
-class Relationship(object):
-    CompToStore = {
-        ComputingEngine.STANDALONE: {
-            "default": StorageEngine.STANDALONE,
-            "support": [StorageEngine.STANDALONE]
-        },
-        ComputingEngine.EGGROLL: {
-            "default": StorageEngine.EGGROLL,
-            "support": [StorageEngine.EGGROLL]
-        },
-        ComputingEngine.SPARK: {
-            "default": StorageEngine.HDFS,
-            "support": [StorageEngine.HDFS]
-        }
-    }
-    EngineToAddress = {
-        StorageEngine.STANDALONE: StandaloneAddress,
-        StorageEngine.EGGROLL: EggRollAddress,
-        StorageEngine.HDFS: HDFSAddress,
-        StorageEngine.MYSQL: MysqlAddress,
-        StorageEngine.FILE: FileAddress,
-        StorageEngine.PATH: PathAddress
-    }
-
-
-DEFAULT_ID_DELIMITER = ","

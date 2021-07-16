@@ -20,7 +20,8 @@ from fate_arch.common import EngineType
 from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.log import getLogger
 from fate_arch.storage._table import StorageTableMeta
-from fate_arch.storage._types import StorageEngine, Relationship
+from fate_arch.storage._types import StorageEngine
+from fate_arch.relation_ship import Relationship
 from fate_arch.storage.metastore.db_models import DB, StorageTableMetaModel, SessionRecord
 
 MAX_NUM = 10000
@@ -78,14 +79,14 @@ class StorageSessionBase(StorageSessionABC):
         raise NotImplementedError()
 
     @classmethod
-    def copy_from_computing(cls, computing_table: CTableABC, table_namespace, table_name, engine=None, engine_address=None, store_type=None):
+    def persistent(cls, computing_table: CTableABC, table_namespace, table_name, engine=None, engine_address=None, store_type=None):
         partitions = computing_table.partitions
         address_dict = engine_address.copy()
         if engine:
-            if engine not in Relationship.CompToStore.get(computing_table.engine, {}).get("support", []):
+            if engine not in Relationship.Computing.get(computing_table.engine, {}).get(EngineType.STORAGE, {}).get("support", []):
                 raise Exception(f"storage engine {engine} not supported with computing engine {computing_table.engine}")
         else:
-            engine = Relationship.CompToStore.get(computing_table.engine, {}).get("default", None)
+            engine = Relationship.Computing.get(computing_table.engine, {}).get(EngineType.STORAGE, {}).get("default", None)
             if not engine:
                 raise Exception(f"can not found {computing_table.engine} default storage engine")
         if engine == StorageEngine.EGGROLL:

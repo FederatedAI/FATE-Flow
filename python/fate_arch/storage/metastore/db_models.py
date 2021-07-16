@@ -89,7 +89,7 @@ class StorageTableMetaModel(DataBaseModel):
     f_namespace = CharField(max_length=100, index=True)
     f_address = JSONField()
     f_engine = CharField(max_length=100, index=True)  # 'EGGROLL', 'MYSQL'
-    f_type = CharField(max_length=50, index=True, null=True)  # storage type
+    f_type = CharField(max_length=50, index=True, null=True)  # store type
     f_options = JSONField()
     f_partitions = IntegerField(null=True)
 

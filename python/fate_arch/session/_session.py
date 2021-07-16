@@ -1,9 +1,25 @@
+#
+#  Copyright 2019 The FATE Authors. All Rights Reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
 import threading
 import typing
 import uuid
 
-from fate_arch.common import compatibility_utils
-from fate_arch.storage._types import StorageEngine, Relationship
+from fate_arch.common import compatibility_utils, EngineType
+from fate_arch.storage._types import StorageEngine
+from fate_arch.relation_ship import Relationship
 from fate_arch.abc import CSessionABC, FederationABC, CTableABC, StorageSessionABC
 from fate_arch.common import Backend, WorkMode
 from fate_arch.computing import ComputingEngine
@@ -181,10 +197,10 @@ class Session(object):
             storage_engine, address, partitions = StorageSessionBase.get_storage_info(name=kwargs.get("name"),
                                                                                       namespace=kwargs.get("namespace"))
         if storage_engine is None and computing_engine is None:
-            computing_engine, federation_engine, federation_mode = compatibility_utils.backend_compatibility(**kwargs)
+            computing_engine, federation_engine, federation_mode = compatibility_utils.engines_compatibility(**kwargs)
         if storage_engine is None and computing_engine:
             # Gets the computing engine default storage engine
-            storage_engine = Relationship.CompToStore.get(computing_engine, {}).get("default", None)
+            storage_engine = Relationship.Computing.get(computing_engine, {}).get(EngineType.STORAGE, {}).get("default", None)
 
         if storage_engine == StorageEngine.EGGROLL:
             from fate_arch.storage.eggroll import StorageSession
@@ -214,14 +230,6 @@ class Session(object):
     def clean_storage(self):
         for storage_session in self._storage_session:
             storage_session.destroy()
-
-    def computing_table_to_storage(self, computing_table: CTableABC, table_namespace, table_name, storage_engine=None, storage_engine_address=None, store_type=None):
-        return StorageSessionBase.copy_from_computing(computing_table=computing_table,
-                                                      table_namespace=table_namespace,
-                                                      table_name=table_name,
-                                                      engine=storage_engine,
-                                                      engine_address=storage_engine_address,
-                                                      store_type=store_type)
 
     @property
     def computing(self) -> CSessionABC:
