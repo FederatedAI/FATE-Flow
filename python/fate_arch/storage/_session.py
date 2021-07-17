@@ -16,7 +16,7 @@
 import os.path
 
 from fate_arch.abc import StorageSessionABC, StorageTableABC, CTableABC
-from fate_arch.common import EngineType
+from fate_arch.common import EngineType, engine_utils
 from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.log import getLogger
 from fate_arch.storage._table import StorageTableMeta
@@ -80,8 +80,6 @@ class StorageSessionBase(StorageSessionABC):
 
     @classmethod
     def persistent(cls, computing_table: CTableABC, table_namespace, table_name, engine=None, engine_address=None, store_type=None):
-        partitions = computing_table.partitions
-        address_dict = engine_address.copy()
         if engine:
             if engine not in Relationship.Computing.get(computing_table.engine, {}).get(EngineType.STORAGE, {}).get("support", []):
                 raise Exception(f"storage engine {engine} not supported with computing engine {computing_table.engine}")
@@ -89,6 +87,13 @@ class StorageSessionBase(StorageSessionABC):
             engine = Relationship.Computing.get(computing_table.engine, {}).get(EngineType.STORAGE, {}).get("default", None)
             if not engine:
                 raise Exception(f"can not found {computing_table.engine} default storage engine")
+        if engine_address is None:
+            # find engine address from service_conf.yaml
+            engine_address = engine_utils.get_engines_config_from_conf().get(EngineType.STORAGE, {}).get(engine, None)
+        if engine_address is None:
+            raise Exception("no engine address")
+        address_dict = engine_address.copy()
+        partitions = computing_table.partitions
         if engine == StorageEngine.EGGROLL:
             address_dict.update({"name": table_name, "namespace": table_namespace})
         elif engine == StorageEngine.STANDALONE:

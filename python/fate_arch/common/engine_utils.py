@@ -15,7 +15,7 @@
 #
 import typing
 
-from fate_arch.common import WorkMode, Backend, FederatedMode
+from fate_arch.common import WorkMode, Backend, FederatedMode, conf_utils
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
@@ -23,8 +23,8 @@ from fate_arch.relation_ship import Relationship
 from fate_arch.common import EngineType
 
 
-def engines_compatibility(work_mode: typing.Union[WorkMode, int] = WorkMode.STANDALONE,
-                          backend: typing.Union[Backend, int] = Backend.EGGROLL, **kwargs):
+def engines_compatibility(work_mode: typing.Union[WorkMode, int] = None,
+                          backend: typing.Union[Backend, int] = None, **kwargs):
     keys = ["computing", "federation", "storage", "federated_mode"]
     engines = {}
     for k in keys:
@@ -65,3 +65,23 @@ def engines_compatibility(work_mode: typing.Union[WorkMode, int] = WorkMode.STAN
             engines["federated_mode"] = FederatedMode.MULTIPLE
 
     return engines
+
+
+def get_engines_config_from_conf(group_map=False):
+    engines_config = {}
+    engine_group_map = {}
+    for engine_type in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
+        engines_config[engine_type] = {}
+        engine_group_map[engine_type] = {}
+    for group_name, engine_map in Relationship.EngineConfMap.items():
+        for engine_type, name_maps in engine_map.items():
+            for name_map in name_maps:
+                single_engine_config = conf_utils.get_base_config(group_name, {}).get(name_map[1], {})
+                if single_engine_config:
+                    engine_name = name_map[0]
+                    engines_config[engine_type][engine_name] = single_engine_config
+                    engine_group_map[engine_type][engine_name] = group_name
+    if not group_map:
+        return engines_config
+    else:
+        return engines_config, engine_group_map

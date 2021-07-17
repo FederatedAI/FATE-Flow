@@ -32,7 +32,7 @@ class SessionStop(object):
         session_job_id = args.job_id
         fate_job_id = session_job_id.split('_')[0]
         command = args.command
-        with Session(computing_type=args.computing, federation_type=args.federation) as session:
+        with Session(computing=args.computing, federation=args.federation) as session:
             session.init_computing(computing_session_id=session_job_id)
             try:
                 schedule_logger(fate_job_id).info('start {} session {}'.format(command, session.computing.session_id))

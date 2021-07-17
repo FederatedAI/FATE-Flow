@@ -135,7 +135,7 @@ class TaskExecutor(object):
             else:
                 session_options = {}
 
-            sess = session.Session(computing_type=job_parameters.computing_engine, federation_type=job_parameters.federation_engine)
+            sess = session.Session(computing=job_parameters.computing_engine, federation=job_parameters.federation_engine)
             computing_session_id = job_utils.generate_session_id(task_id, task_version, role, party_id)
             sess.init_computing(computing_session_id=computing_session_id, options=session_options)
             federation_session_id = job_utils.generate_task_version_id(task_id, task_version)
@@ -184,6 +184,7 @@ class TaskExecutor(object):
             # There is only one model output at the current dsl version.
             tracker.save_output_model(output_model,
                                       task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default')
+            sess.clean_storage()
             task_info["party_status"] = TaskStatus.SUCCESS
         except PassTaskException:
             task_info["party_status"] = TaskStatus.SUCCESS

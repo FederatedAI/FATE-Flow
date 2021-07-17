@@ -404,7 +404,7 @@ class Tracker(object):
                                                                              self.role,
                                                                              self.party_id))
         try:
-            sess = session.Session(computing_type=self.job_parameters.computing_engine, federation_type=self.job_parameters.federation_engine)
+            sess = session.Session(computing=self.job_parameters.computing_engine, federation=self.job_parameters.federation_engine)
             # clean up temporary tables
             computing_temp_namespace = job_utils.generate_session_id(task_id=self.task_id,
                                                                      task_version=self.task_version,

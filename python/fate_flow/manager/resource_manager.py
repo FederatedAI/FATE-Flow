@@ -19,36 +19,22 @@ import typing
 
 from fate_common import EngineType
 from fate_common import base_utils
-from fate_common.conf_utils import get_base_config
 from fate_common.log import schedule_logger
 from fate_arch.computing import ComputingEngine
+from fate_arch.common import engine_utils
 from fate_flow.db.db_models import DB, EngineRegistry, Job
 from fate_flow.entity.types import ResourceOperation, RunParameters
-from fate_flow.settings import stat_logger, STANDALONE_BACKEND_VIRTUAL_CORES_PER_NODE, SUPPORT_BACKENDS_ENTRANCE, \
-    MAX_CORES_PERCENT_PER_JOB, DEFAULT_TASK_CORES, IGNORE_RESOURCE_ROLES, SUPPORT_IGNORE_RESOURCE_ENGINES, TOTAL_CORES_OVERWEIGHT_PERCENT, TOTAL_MEMORY_OVERWEIGHT_PERCENT
+from fate_flow.settings import stat_logger, MAX_CORES_PERCENT_PER_JOB, DEFAULT_TASK_CORES, IGNORE_RESOURCE_ROLES, SUPPORT_IGNORE_RESOURCE_ENGINES, TOTAL_CORES_OVERWEIGHT_PERCENT, TOTAL_MEMORY_OVERWEIGHT_PERCENT
 from fate_flow.utils import job_utils
 
 
 class ResourceManager(object):
     @classmethod
     def initialize(cls):
-        for backend_name, backend_engines in SUPPORT_BACKENDS_ENTRANCE.items():
-            for engine_type, engine_keys_list in backend_engines.items():
-                for engine_keys in engine_keys_list:
-                    engine_config = get_base_config(backend_name, {}).get(engine_keys[1], {})
-                    if engine_config:
-                        cls.register_engine(engine_type=engine_type, engine_name=engine_keys[0], engine_entrance=engine_keys[1], engine_config=engine_config)
-
-        # initialize standalone engine
-        for backend_engines in SUPPORT_BACKENDS_ENTRANCE.values():
-            for engine_type in backend_engines.keys():
-                engine_name = "STANDALONE"
-                engine_entrance = "fateflow"
-                engine_config = {
-                    "nodes": 1,
-                    "cores_per_node": STANDALONE_BACKEND_VIRTUAL_CORES_PER_NODE,
-                }
-                cls.register_engine(engine_type=engine_type, engine_name=engine_name, engine_entrance=engine_entrance, engine_config=engine_config)
+        engines_config, engine_group_map = engine_utils.get_engines_config_from_conf()
+        for engine_type, engine_configs in engines_config.items():
+            for engine_name, engine_config in engine_configs:
+                cls.register_engine(engine_type=engine_type, engine_name=engine_name, engine_entrance=engine_group_map[engine_type][engine_name], engine_config=engine_config)
 
     @classmethod
     @DB.connection_context()

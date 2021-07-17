@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common import compatibility_utils
+from fate_arch.common import engine_utils
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
@@ -90,7 +90,7 @@ class JobController(object):
         kwargs = {}
         for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
             kwargs[k] = getattr(job_parameters, f"{k}_engine", None)
-        engines = compatibility_utils.engines_compatibility(
+        engines = engine_utils.engines_compatibility(
             work_mode=job_parameters.work_mode,
             backend=job_parameters.backend,
             federated_mode=job_parameters.federated_mode,

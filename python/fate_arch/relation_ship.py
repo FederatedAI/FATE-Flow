@@ -62,3 +62,20 @@ class Relationship(object):
         StorageEngine.FILE: FileAddress,
         StorageEngine.PATH: PathAddress
     }
+    EngineConfMap = {
+        "fate_on_standalone": {
+            EngineType.COMPUTING: [(ComputingEngine.STANDALONE, "standalone")],
+            EngineType.STORAGE: [(StorageEngine.STANDALONE, "standalone")],
+            EngineType.FEDERATION: [(FederationEngine.STANDALONE, "standalone")]
+        },
+        "fate_on_eggroll": {
+            EngineType.COMPUTING: [(ComputingEngine.EGGROLL, "clustermanager")],
+            EngineType.STORAGE: [(StorageEngine.EGGROLL, "clustermanager")],
+            EngineType.FEDERATION: [(FederationEngine.EGGROLL, "rollsite")],
+        },
+        "fate_on_spark": {
+            EngineType.COMPUTING: [(ComputingEngine.SPARK, "spark")],
+            EngineType.STORAGE: [(StorageEngine.HDFS, "hdfs")],
+            EngineType.FEDERATION: [(FederationEngine.RABBITMQ, "rabbitmq"), (FederationEngine.PULSAR, "pulsar")]
+        },
+    }

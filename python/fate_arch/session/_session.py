@@ -17,43 +17,28 @@ import threading
 import typing
 import uuid
 
-from fate_arch.common import compatibility_utils, EngineType
-from fate_arch.storage._types import StorageEngine
+from fate_arch.common import engine_utils, EngineType
 from fate_arch.relation_ship import Relationship
 from fate_arch.abc import CSessionABC, FederationABC, CTableABC, StorageSessionABC
 from fate_arch.common import Backend, WorkMode
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
-from fate_arch.storage import StorageSessionBase
+from fate_arch.storage import StorageEngine, StorageSessionBase
 from fate_arch.session._parties import PartiesInfo
 
 
 class Session(object):
 
     @staticmethod
-    def create(backend: typing.Union[Backend, int] = Backend.EGGROLL,
-               work_mode: typing.Union[WorkMode, int] = WorkMode.CLUSTER):
-        if isinstance(work_mode, int):
-            work_mode = WorkMode(work_mode)
-        if isinstance(backend, int):
-            backend = Backend(backend)
+    def create(backend: typing.Union[Backend, int] = None,
+               work_mode: typing.Union[WorkMode, int] = None, **kwargs):
+        engines = engine_utils.engines_compatibility(**locals())
+        return Session(**engines)
 
-        if backend == Backend.EGGROLL:
-            if work_mode == WorkMode.CLUSTER:
-                return Session(ComputingEngine.EGGROLL, FederationEngine.EGGROLL)
-            else:
-                return Session(ComputingEngine.STANDALONE, FederationEngine.STANDALONE)
-
-        if backend == Backend.SPARK_RABBITMQ:
-            return Session(ComputingEngine.SPARK, FederationEngine.RABBITMQ)
-
-        if backend == Backend.SPARK_PULSAR:
-            return Session(ComputingEngine.SPARK, FederationEngine.PULSAR)
-
-    def __init__(self, computing_type: ComputingEngine = None,
-                 federation_type: FederationEngine = None, session_id: str = None):
-        self._computing_type = computing_type
-        self._federation_type = federation_type
+    def __init__(self, computing: ComputingEngine = None, federation: FederationEngine = None, storage: StorageEngine = None, session_id: str = None, **kwargs):
+        self._computing_type = computing
+        self._federation_type = federation
+        self._storage_engine = storage
         self._computing_session: typing.Optional[CSessionABC] = None
         self._federation_session: typing.Optional[FederationABC] = None
         self._storage_session: typing.List[StorageSessionABC] = []
@@ -86,8 +71,9 @@ class Session(object):
         return self._close()
 
     def init_computing(self,
-                       computing_session_id: str,
+                       computing_session_id: str = None,
                        **kwargs):
+        computing_session_id = f"{self._session_id}_computing_{uuid.uuid1()}" if not computing_session_id else computing_session_id
         if self.is_computing_valid:
             raise RuntimeError(f"computing session already valid")
 
@@ -191,35 +177,34 @@ class Session(object):
         raise RuntimeError(f"{self._federation_type} not supported")
 
     def new_storage(self, storage_session_id=None, storage_engine=None, computing_engine=None, **kwargs):
-        session_id = storage_session_id if storage_session_id else f"{self._session_id}_{uuid.uuid1()}_storage"
-        # Find the storage engine type
+        storage_session_id = f"{self._session_id}_storage_{uuid.uuid1()}" if not storage_session_id else storage_session_id
         if storage_engine is None and kwargs.get("name") and kwargs.get("namespace"):
             storage_engine, address, partitions = StorageSessionBase.get_storage_info(name=kwargs.get("name"),
                                                                                       namespace=kwargs.get("namespace"))
         if storage_engine is None and computing_engine is None:
-            computing_engine, federation_engine, federation_mode = compatibility_utils.engines_compatibility(**kwargs)
+            computing_engine, federation_engine, federation_mode = engine_utils.engines_compatibility(**kwargs)
         if storage_engine is None and computing_engine:
             # Gets the computing engine default storage engine
             storage_engine = Relationship.Computing.get(computing_engine, {}).get(EngineType.STORAGE, {}).get("default", None)
 
         if storage_engine == StorageEngine.EGGROLL:
             from fate_arch.storage.eggroll import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
+            storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
         elif storage_engine == StorageEngine.STANDALONE:
             from fate_arch.storage.standalone import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
+            storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
         elif storage_engine == StorageEngine.MYSQL:
             from fate_arch.storage.mysql import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
+            storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
         elif storage_engine == StorageEngine.HDFS:
             from fate_arch.storage.hdfs import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
+            storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
         elif storage_engine == StorageEngine.FILE:
             from fate_arch.storage.file import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
+            storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
         elif storage_engine == StorageEngine.PATH:
             from fate_arch.storage.path import StorageSession
-            storage_session = StorageSession(session_id=session_id, options=kwargs.get("options", {}))
+            storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
         else:
             raise NotImplementedError(f"can not be initialized with storage engine: {storage_engine}")
         if kwargs.get("name") and kwargs.get("namespace"):
@@ -239,9 +224,8 @@ class Session(object):
     def federation(self) -> FederationABC:
         return self._federation_session
 
-    @property
-    def storage(self):
-        return self.new_storage()
+    def storage(self, **kwargs):
+        return self.new_storage(**kwargs)
 
     @property
     def parties(self):
