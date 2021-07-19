@@ -25,14 +25,16 @@ class StorageSession(StorageSessionBase):
         self._options = options if options else {}
         self._rp_session = None
         self._rpc = None
+        self.create()
 
     def create(self):
-        from eggroll.core.session import session_init
-        from eggroll.roll_pair.roll_pair import RollPairContext
-        self._options['eggroll.session.deploy.mode'] = "cluster"
-        self._rp_session = session_init(session_id=self._session_id, options=self._options)
-        self._rpc = RollPairContext(session=self._rp_session)
-        self._session_id = self._rp_session.get_session_id()
+        if self._rp_session is None or self._rpc is None:
+            from eggroll.core.session import session_init
+            from eggroll.roll_pair.roll_pair import RollPairContext
+            self._options['eggroll.session.deploy.mode'] = "cluster"
+            self._rp_session = session_init(session_id=self._session_id, options=self._options)
+            self._rpc = RollPairContext(session=self._rp_session)
+            self._session_id = self._rp_session.get_session_id()
 
     def table(self, name, namespace, address: AddressABC, partitions, storage_type: EggRollStoreType = EggRollStoreType.ROLLPAIR_LMDB, options=None, **kwargs):
         if isinstance(address, EggRollAddress):

@@ -20,7 +20,7 @@ from fate_arch.common import EngineType, engine_utils
 from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.log import getLogger
 from fate_arch.storage._table import StorageTableMeta
-from fate_arch.storage._types import StorageEngine
+from fate_arch.storage._types import StorageEngine, EggRollStoreType
 from fate_arch.relation_ship import Relationship
 from fate_arch.storage.metastore.db_models import DB, StorageTableMetaModel, SessionRecord
 
@@ -96,6 +96,7 @@ class StorageSessionBase(StorageSessionABC):
         partitions = computing_table.partitions
         if engine == StorageEngine.EGGROLL:
             address_dict.update({"name": table_name, "namespace": table_namespace})
+            store_type = EggRollStoreType.ROLLPAIR_LMDB if store_type is None else store_type
         elif engine == StorageEngine.STANDALONE:
             address_dict.update({"name": table_name, "namespace": table_namespace})
         elif engine == StorageEngine.HDFS:
@@ -104,8 +105,7 @@ class StorageSessionBase(StorageSessionABC):
             raise RuntimeError(f"{engine} storage is not supported")
         address = StorageTableMeta.create_address(storage_engine=engine, address_dict=address_dict)
         schema = {}
-        # persistent table
-        computing_table.save(address, schema=schema, partitions=partitions)
+        computing_table.save(address, schema=schema, partitions=partitions, store_type=store_type)
         part_of_data = []
         part_of_limit = 100
         for k, v in computing_table.collect():
@@ -141,18 +141,6 @@ class StorageSessionBase(StorageSessionABC):
             return None, None, None
 
     def __enter__(self):
-        with DB.connection_context():
-            session_record = SessionRecord()
-            session_record.f_session_id = self._session_id
-            session_record.f_engine_name = self._engine_name
-            session_record.f_engine_type = EngineType.STORAGE
-            # TODO: engine address
-            session_record.f_engine_address = {}
-            session_record.f_create_time = current_timestamp()
-            rows = session_record.save(force_insert=True)
-            if rows != 1:
-                raise Exception(f"create session record {self._session_id} failed")
-            LOGGER.debug(f"save session {self._session_id} record")
         self.create()
         return self
 
@@ -161,15 +149,10 @@ class StorageSessionBase(StorageSessionABC):
 
     def destroy(self):
         try:
-            self.close()
+            self.stop()
         except Exception as e:
-            LOGGER.warning(e)
-        with DB.connection_context():
-            rows = SessionRecord.delete().where(SessionRecord.f_session_id == self._session_id).execute()
-            if rows > 0:
-                LOGGER.debug(f"delete session {self._session_id} record")
-            else:
-                LOGGER.warning(f"failed delete session {self._session_id} record")
+            LOGGER.warning(f"stop storage session {self._session_id} failed, try to kill", e)
+            self.kill()
 
     @classmethod
     @DB.connection_context()
@@ -177,17 +160,12 @@ class StorageSessionBase(StorageSessionABC):
         sessions_record = SessionRecord.select().where(SessionRecord.f_create_time < (current_timestamp() - ttl))
         return [session_record for session_record in sessions_record]
 
-    def close(self):
-        try:
-            self.stop()
-        except Exception as e:
-            self.kill()
-
     def stop(self):
         raise NotImplementedError()
 
     def kill(self):
         raise NotImplementedError()
 
+    @property
     def session_id(self):
         return self._session_id

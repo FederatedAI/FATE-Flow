@@ -120,10 +120,12 @@ class Detector(cron.Cron):
         detect_logger().info('start detect expired session')
         sessions_record = StorageSessionBase.query_expired_sessions_record(ttl=5 * 60 * 60 * 1000)
         for session_record in sessions_record:
-            detect_logger().info('start stop session id {}'.format(session_record.f_session_id))
-            session = Session().new_storage(storage_session_id=session_record.f_session_id, storage_engine=session_record.f_engine_name)
+            detect_logger().info('start stop session id {}'.format(session_record.f_engine_session_id))
+            """
+            session = Session().new_storage(storage_session_id=session_record.f_engine_session_id, storage_engine=session_record.f_engine_name)
             session.destroy()
-            detect_logger().info('session id {} success'.format(session_record.f_session_id))
+            """
+            detect_logger().info('session id {} success'.format(session_record.f_engine_session_id))
 
     @classmethod
     def request_stop_jobs(cls, jobs: [Job], stop_msg, stop_status):

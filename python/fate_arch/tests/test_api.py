@@ -19,7 +19,7 @@ import numpy as np
 from fate_arch import session
 from fate_arch.storage import StorageSessionBase
 
-work_mode = 0
+work_mode = 1
 backend = 0
 
 sess = session.Session.create(work_mode=work_mode, backend=backend)
@@ -36,20 +36,17 @@ for k, v in c_table.collect():
     print(v)
 print()
 
-table_meta = StorageSessionBase.persistent(computing_table=c_table, table_namespace="jarvis_experiment", table_name=str(uuid.uuid1()))
-print(table_meta.get_namespace())
+table_meta = sess.persistent(computing_table=c_table, table_namespace="jarvis_experiment", table_name=str(uuid.uuid1()))
 
-with sess.storage(namespace=table_meta.get_namespace(), name=table_meta.get_name()) as storage_session:
-    s_table = storage_session.get_table()
-    for k, v in s_table.collect():
-        print(v)
-    print()
+storage_session = sess.storage(namespace=table_meta.get_namespace(), name=table_meta.get_name())
+s_table = storage_session.get_table()
+for k, v in s_table.collect():
+    print(v)
+print()
 
 t2 = session.get_latest_opened().computing.load(table_meta.get_address(), partitions=table_meta.get_partitions(), schema=table_meta.get_schema())
 for k, v in t2.collect():
     print(v)
 
-sess.computing.stop()
-sess.clean_storage()
-
+sess.destroy_all()
 

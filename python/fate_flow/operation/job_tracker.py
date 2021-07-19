@@ -130,11 +130,11 @@ class Tracker(object):
             if output_storage_engine == StorageEngine.HDFS:
                 output_storage_address.update({"path": data_utils.default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=output_storage_address.get("path_prefix"))})
 
-            StorageSessionBase.persistent(computing_table=computing_table,
-                                          table_namespace=output_table_namespace,
-                                          table_name=output_table_name,
-                                          engine=output_storage_engine,
-                                          engine_address=output_storage_address)
+            session.Session.persistent(computing_table=computing_table,
+                                       table_namespace=output_table_namespace,
+                                       table_name=output_table_name,
+                                       engine=output_storage_engine,
+                                       engine_address=output_storage_address)
             return output_table_namespace, output_table_name
         else:
             schedule_logger(self.job_id).info('task id {} output data table is none'.format(self.task_id))
@@ -425,7 +425,8 @@ class Tracker(object):
             schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(federation_temp_namespace,
                                                                                                  self.role,
                                                                                                  self.party_id))
-            sess.computing.stop()
+            #sess.computing.stop()
+            sess.destroy_all()
             if self.job_parameters.federation_engine == FederationEngine.RABBITMQ and self.role != "local":
                 schedule_logger(self.job_id).info('rabbitmq start clean up')
                 parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]

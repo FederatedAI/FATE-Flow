@@ -20,11 +20,14 @@ import uuid
 from fate_arch.common import engine_utils, EngineType
 from fate_arch.relation_ship import Relationship
 from fate_arch.abc import CSessionABC, FederationABC, CTableABC, StorageSessionABC
-from fate_arch.common import Backend, WorkMode
+from fate_arch.common import Backend, WorkMode, log, base_utils
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine, StorageSessionBase
+from fate_arch.storage.metastore.db_models import DB, SessionRecord, init_database_tables
 from fate_arch.session._parties import PartiesInfo
+
+LOGGER = log.getLogger()
 
 
 class Session(object):
@@ -47,6 +50,9 @@ class Session(object):
 
         # add to session environment
         _RuntimeSessionEnvironment.add_session(self)
+
+        # init meta db
+        init_database_tables()
 
     @property
     def session_id(self) -> str:
@@ -76,6 +82,10 @@ class Session(object):
         computing_session_id = f"{self._session_id}_computing_{uuid.uuid1()}" if not computing_session_id else computing_session_id
         if self.is_computing_valid:
             raise RuntimeError(f"computing session already valid")
+
+        self.save_record(engine_type=EngineType.COMPUTING,
+                         engine_name=self._computing_type,
+                         engine_session_id=computing_session_id)
 
         if self._computing_type == ComputingEngine.EGGROLL:
             from fate_arch.computing.eggroll import CSession
@@ -116,6 +126,10 @@ class Session(object):
 
         if self.is_federation_valid:
             raise RuntimeError("federation session already valid")
+
+        self.save_record(engine_type=EngineType.FEDERATION,
+                         engine_name=self._federation_type,
+                         engine_session_id=federation_session_id)
 
         if self._federation_type == FederationEngine.EGGROLL:
             from fate_arch.computing.eggroll import CSession
@@ -187,6 +201,10 @@ class Session(object):
             # Gets the computing engine default storage engine
             storage_engine = Relationship.Computing.get(computing_engine, {}).get(EngineType.STORAGE, {}).get("default", None)
 
+        self.save_record(engine_type=EngineType.STORAGE,
+                         engine_name=storage_engine,
+                         engine_session_id=storage_session_id)
+
         if storage_engine == StorageEngine.EGGROLL:
             from fate_arch.storage.eggroll import StorageSession
             storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
@@ -212,9 +230,14 @@ class Session(object):
         self._storage_session.append(storage_session)
         return storage_session
 
-    def clean_storage(self):
-        for storage_session in self._storage_session:
-            storage_session.destroy()
+    @classmethod
+    def persistent(cls, computing_table: CTableABC, table_namespace, table_name, engine=None, engine_address=None, store_type=None):
+        return StorageSessionBase.persistent(computing_table=computing_table,
+                                             table_namespace=table_namespace,
+                                             table_name=table_name,
+                                             engine=engine,
+                                             engine_address=engine_address,
+                                             store_type=store_type)
 
     @property
     def computing(self) -> CSessionABC:
@@ -238,6 +261,54 @@ class Session(object):
     @property
     def is_federation_valid(self):
         return self._federation_session is not None
+
+    def save_record(self, engine_type, engine_name, engine_session_id):
+        with DB.connection_context():
+            session_record = SessionRecord()
+            session_record.f_manager_session_id = self._session_id
+            session_record.f_engine_type = engine_type
+            session_record.f_engine_name = engine_name
+            session_record.f_engine_session_id = engine_session_id
+            # TODO: engine address
+            session_record.f_engine_address = {}
+            session_record.f_create_time = base_utils.current_timestamp()
+            rows = session_record.save(force_insert=True)
+            if rows != 1:
+                raise Exception(f"save session record failed for manager {self._session_id}, {engine_type} {engine_name} {engine_session_id} failed")
+            LOGGER.info(f"save session record for manager {self._session_id}, {engine_type} {engine_name} {engine_session_id} successfully")
+
+    def delete_session_record(self, engine_session_id):
+        with DB.connection_context():
+            rows = SessionRecord.delete().where(SessionRecord.f_engine_session_id == engine_session_id).execute()
+            if rows > 0:
+                LOGGER.debug(f"delete session {engine_session_id} record successfully")
+            else:
+                LOGGER.warning(f"delete session {engine_session_id} record failed")
+
+    def destroy_all(self):
+        self.destroy_storage()
+        self.destroy_computing()
+
+    def destroy_computing(self):
+        if self.is_computing_valid:
+            try:
+                try:
+                    self.computing.stop()
+                except:
+                    self.computing.kill()
+                LOGGER.info(f"destroy computing session {self._computing_session.session_id} successfully")
+                self.delete_session_record(engine_session_id=self._computing_session.session_id)
+            except Exception as e:
+                LOGGER.info(f"destroy computing session {self._computing_session.session_id} failed", e)
+
+    def destroy_storage(self):
+        for storage_session in self._storage_session:
+            try:
+                storage_session.destroy()
+                LOGGER.info(f"destroy storage session {storage_session.session_id} successfully")
+                self.delete_session_record(engine_session_id=storage_session.session_id)
+            except Exception as e:
+                LOGGER.exception(f"destroy storage session {storage_session.session_id} failed", e)
 
 
 class _RuntimeSessionEnvironment(object):

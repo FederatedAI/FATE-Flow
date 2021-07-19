@@ -56,17 +56,17 @@ class CSession(CSessionABC):
         if isinstance(address, EggRollAddress):
             options = kwargs.get("option", {})
             options["total_partitions"] = partitions
-            options["store_type"] = address.storage_type
+            options["store_type"] = kwargs.get("store_type", EggRollStoreType.ROLLPAIR_LMDB)
             options["create_if_missing"] = False
             rp = self._rpc.load(
                 namespace=address.namespace, name=address.name, options=options
             )
             if rp is None or rp.get_partitions() == 0:
                 raise RuntimeError(
-                    f"no exists: {address.name}, {address.namespace}, {address.storage_type}"
+                    f"no exists: {address.name}, {address.namespace}"
                 )
 
-            if address.storage_type != EggRollStoreType.ROLLPAIR_IN_MEMORY:
+            if options["store_type"] != EggRollStoreType.ROLLPAIR_IN_MEMORY:
                 rp = rp.save_as(
                     name=f"{address.name}_{fate_uuid()}",
                     namespace=self.session_id,

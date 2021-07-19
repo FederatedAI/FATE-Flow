@@ -184,7 +184,6 @@ class TaskExecutor(object):
             # There is only one model output at the current dsl version.
             tracker.save_output_model(output_model,
                                       task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default')
-            sess.clean_storage()
             task_info["party_status"] = TaskStatus.SUCCESS
         except PassTaskException:
             task_info["party_status"] = TaskStatus.SUCCESS

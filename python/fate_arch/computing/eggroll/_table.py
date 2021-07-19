@@ -43,8 +43,9 @@ class Table(CTableABC):
     def save(self, address, partitions, schema: dict, **kwargs):
         options = kwargs.get("options", {})
         from fate_arch.common.address import EggRollAddress
+        from fate_arch.storage import EggRollStoreType
         if isinstance(address, EggRollAddress):
-            options["store_type"] = address.storage_type
+            options["store_type"] = kwargs.get("store_type", EggRollStoreType.ROLLPAIR_LMDB)
             self._rp.save_as(name=address.name, namespace=address.namespace, partition=partitions, options=options)
             schema.update(self.schema)
             return

@@ -23,10 +23,12 @@ class StorageSession(StorageSessionBase):
         super(StorageSession, self).__init__(session_id=session_id, engine_name=StorageEngine.STANDALONE)
         self._options = options if options else {}
         self._session = None
+        self.create()
 
     def create(self):
-        from fate_arch._standalone import Session
-        self._session = Session(session_id=self._session_id)
+        if self._session is None:
+            from fate_arch._standalone import Session
+            self._session = Session(session_id=self._session_id)
 
     def table(self, address: AddressABC, name, namespace, partitions, storage_type=None, options=None, **kwargs):
         if isinstance(address, StandaloneAddress):
