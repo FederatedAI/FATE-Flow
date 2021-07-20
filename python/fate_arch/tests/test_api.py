@@ -17,9 +17,8 @@ import uuid
 
 import numpy as np
 from fate_arch import session
-from fate_arch.storage import StorageSessionBase
 
-work_mode = 1
+work_mode = 0
 backend = 0
 
 sess = session.Session.create(work_mode=work_mode, backend=backend)
@@ -48,5 +47,5 @@ t2 = session.get_latest_opened().computing.load(table_meta.get_address(), partit
 for k, v in t2.collect():
     print(v)
 
-sess.destroy_all()
+sess.destroy_all_sessions()
 

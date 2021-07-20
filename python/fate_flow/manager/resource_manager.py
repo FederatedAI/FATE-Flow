@@ -31,9 +31,9 @@ from fate_flow.utils import job_utils
 class ResourceManager(object):
     @classmethod
     def initialize(cls):
-        engines_config, engine_group_map = engine_utils.get_engines_config_from_conf()
+        engines_config, engine_group_map = engine_utils.get_engines_config_from_conf(group_map=True)
         for engine_type, engine_configs in engines_config.items():
-            for engine_name, engine_config in engine_configs:
+            for engine_name, engine_config in engine_configs.items():
                 cls.register_engine(engine_type=engine_type, engine_name=engine_name, engine_entrance=engine_group_map[engine_type][engine_name], engine_config=engine_config)
 
     @classmethod

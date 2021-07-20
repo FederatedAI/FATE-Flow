@@ -74,38 +74,38 @@ class Upload(ComponentBase):
         if partitions <= 0 or partitions >= self.MAX_PARTITIONS:
             raise Exception("Error number of partition, it should between %d and %d" % (0, self.MAX_PARTITIONS))
         session = Session(session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id))
-        with session.new_storage(namespace=namespace, name=name) as storage_session:
-            if self.parameters.get("destroy", False):
-                table = storage_session.get_table()
-                if table:
-                    LOGGER.info(f"destroy table name: {name} namespace: {namespace} engine: {table.get_engine()}")
-                    table.destroy()
-                else:
-                    LOGGER.info(f"can not found table name: {name} namespace: {namespace}, pass destroy")
+        storage_session = session.new_storage(namespace=namespace, name=name)
+        if self.parameters.get("destroy", False):
+            table = storage_session.get_table()
+            if table:
+                LOGGER.info(f"destroy table name: {name} namespace: {namespace} engine: {table.get_engine()}")
+                table.destroy()
+            else:
+                LOGGER.info(f"can not found table name: {name} namespace: {namespace}, pass destroy")
         address_dict = storage_address.copy()
-        with session.new_storage(storage_engine=storage_engine, options=self.parameters.get("options")) as storage_session:
-            if storage_engine in {StorageEngine.EGGROLL, StorageEngine.STANDALONE}:
-                upload_address = {"name": name, "namespace": namespace, "storage_type": EggRollStoreType.ROLLPAIR_LMDB}
-            elif storage_engine in {StorageEngine.MYSQL}:
-                upload_address = {"db": namespace, "name": name}
-            elif storage_engine in {StorageEngine.PATH}:
-                upload_address = {"path": self.parameters["file"]}
-            elif storage_engine in {StorageEngine.HDFS}:
-                upload_address = {"path": data_utils.default_input_fs_path(name=name, namespace=namespace, prefix=address_dict.get("path_prefix"))}
-            else:
-                raise RuntimeError(f"can not support this storage engine: {storage_engine}")
-            address_dict.update(upload_address)
-            LOGGER.info(f"upload to {storage_engine} storage, address: {address_dict}")
-            address = storage.StorageTableMeta.create_address(storage_engine=storage_engine, address_dict=address_dict)
-            self.parameters["partitions"] = partitions
-            self.parameters["name"] = name
-            self.table = storage_session.create_table(address=address, **self.parameters)
-            data_table_count = None
-            if storage_engine not in [StorageEngine.PATH]:
-                data_table_count = self.save_data_table(job_id, name, namespace, head)
-            else:
-                data_table_count = self.get_data_table_count(self.parameters["file"], name, namespace)
-            self.table.get_meta().update_metas(in_serialized=True)
+        storage_session = session.new_storage(storage_engine=storage_engine, options=self.parameters.get("options"))
+        if storage_engine in {StorageEngine.EGGROLL, StorageEngine.STANDALONE}:
+            upload_address = {"name": name, "namespace": namespace, "storage_type": EggRollStoreType.ROLLPAIR_LMDB}
+        elif storage_engine in {StorageEngine.MYSQL}:
+            upload_address = {"db": namespace, "name": name}
+        elif storage_engine in {StorageEngine.PATH}:
+            upload_address = {"path": self.parameters["file"]}
+        elif storage_engine in {StorageEngine.HDFS}:
+            upload_address = {"path": data_utils.default_input_fs_path(name=name, namespace=namespace, prefix=address_dict.get("path_prefix"))}
+        else:
+            raise RuntimeError(f"can not support this storage engine: {storage_engine}")
+        address_dict.update(upload_address)
+        LOGGER.info(f"upload to {storage_engine} storage, address: {address_dict}")
+        address = storage.StorageTableMeta.create_address(storage_engine=storage_engine, address_dict=address_dict)
+        self.parameters["partitions"] = partitions
+        self.parameters["name"] = name
+        self.table = storage_session.create_table(address=address, **self.parameters)
+        data_table_count = None
+        if storage_engine not in [StorageEngine.PATH]:
+            data_table_count = self.save_data_table(job_id, name, namespace, head)
+        else:
+            data_table_count = self.get_data_table_count(self.parameters["file"], name, namespace)
+        self.table.get_meta().update_metas(in_serialized=True)
         LOGGER.info("------------load data finish!-----------------")
         # rm tmp file
         try:

@@ -423,18 +423,18 @@ def kill_task_executor_process(task: Task, only_child=False):
 
 def start_session_stop(task):
     job_parameters = RunParameters(**get_job_parameters(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id))
-    computing_session_id = generate_session_id(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id)
+    session_manager_id = generate_session_id(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id)
     if task.f_status != TaskStatus.WAITING:
-        schedule_logger(task.f_job_id).info(f'start run subprocess to stop task session {computing_session_id}')
+        schedule_logger(task.f_job_id).info(f'start run subprocess to stop task sessions {session_manager_id}')
     else:
-        schedule_logger(task.f_job_id).info(f'task is waiting, pass stop session {computing_session_id}')
+        schedule_logger(task.f_job_id).info(f'task is waiting, pass stop sessions {session_manager_id}')
         return
     task_dir = os.path.join(get_job_directory(job_id=task.f_job_id), task.f_role,
                             task.f_party_id, task.f_component_name, 'session_stop')
     os.makedirs(task_dir, exist_ok=True)
     process_cmd = [
         'python3', sys.modules[session_utils.SessionStop.__module__].__file__,
-        '-j', computing_session_id,
+        '--session', session_manager_id,
         '--computing', job_parameters.computing_engine,
         '--federation', job_parameters.federation_engine,
         '--storage', job_parameters.storage_engine,
