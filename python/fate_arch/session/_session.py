@@ -55,6 +55,8 @@ class Session(object):
         # add to session environment
         _RuntimeSessionEnvironment.add_session(self)
 
+        self._logger.info(f"thread environment had sessions {_RuntimeSessionEnvironment.get_all()}")
+
         # init meta db
         init_database_tables()
 
@@ -78,6 +80,8 @@ class Session(object):
         return self._open()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_tb:
+            self._logger.exception("", exc_info=(exc_type, exc_val, exc_tb))
         return self._close()
 
     def init_computing(self,
@@ -291,8 +295,9 @@ class Session(object):
         else:
             self._logger.warning(f"delete session {engine_session_id} record failed")
 
+    @classmethod
     @DB.connection_context()
-    def query_sessions(self, reverse=None, order_by=None, **kwargs):
+    def query_sessions(cls, reverse=None, order_by=None, **kwargs):
         filters = []
         for f_n, f_v in kwargs.items():
             attr_name = 'f_%s' % f_n
@@ -302,14 +307,14 @@ class Session(object):
                     gt_value = f_v[1]
                 else:
                     # time type: %Y-%m-%d %H:%M:%S
-                    lt_value = self.str_to_time_stamp(f_v[0]) if isinstance(f_v[0], str) else f_v[0]
-                    gt_value = self.str_to_time_stamp(f_v[1]) if isinstance(f_v[1], str) else f_v[1]
+                    lt_value = base_utils.date_string_to_timestamp(f_v[0]) if isinstance(f_v[0], str) else f_v[0]
+                    gt_value = base_utils.date_string_to_timestamp(f_v[1]) if isinstance(f_v[1], str) else f_v[1]
                 if lt_value is not None and gt_value is not None:
                     filters.append(getattr(SessionRecord, attr_name).between(lt_value, gt_value))
                 elif lt_value is not None:
-                    filters.append(operator.attrgetter(attr_name)(SessionRecord) > lt_value)
+                    filters.append(operator.attrgetter(attr_name)(SessionRecord) >= lt_value)
                 elif gt_value is not None:
-                    filters.append(operator.attrgetter(attr_name)(SessionRecord) < gt_value)
+                    filters.append(operator.attrgetter(attr_name)(SessionRecord) <= gt_value)
             elif hasattr(SessionRecord, attr_name):
                 if isinstance(f_v, set):
                     filters.append(operator.attrgetter(attr_name)(SessionRecord) << f_v)
@@ -328,12 +333,6 @@ class Session(object):
         else:
             return []
 
-    def str_to_time_stamp(self, time_str):
-        import time
-        time_array = time.strptime(time_str, "%Y-%m-%d %H:%M:%S")
-        time_stamp = int(time.mktime(time_array) * 1000)
-        return time_stamp
-
     @DB.connection_context()
     def get_session_from_record(self):
         self._logger.info(f"query by manager session id {self._session_id}")
@@ -342,17 +341,27 @@ class Session(object):
         for session_record in session_records:
             engine_session_id = session_record.f_engine_session_id
             if session_record.f_engine_type == EngineType.COMPUTING:
-                if not self.is_computing_valid:
-                    self.init_computing(computing_session_id=engine_session_id, record=False)
-                elif self._computing_session.session_id != engine_session_id:
-                    self._logger.warning(f"manager session had computing session {self._computing_session.session_id} different with query from db session {engine_session_id}")
-                else:
-                    pass
+                self.add_computing(computing_session_id=engine_session_id)
             elif session_record.f_engine_type == EngineType.STORAGE:
-                if engine_session_id not in self._storage_session:
-                    self.new_storage(storage_session_id=engine_session_id,
-                                     storage_engine=session_record.f_engine_name,
-                                     record=False)
+                self.add_storage(storage_session_id=engine_session_id, storage_engine=session_record.f_engine_name)
+
+    def add_computing(self, computing_session_id):
+        if not self.is_computing_valid:
+            self.init_computing(computing_session_id=computing_session_id, record=False)
+            return True
+        elif self._computing_session.session_id != computing_session_id:
+            self._logger.warning(f"manager session had computing session {self._computing_session.session_id} different with query from db session {computing_session_id}")
+            return False
+        else:
+            # already exists
+            return True
+
+    def add_storage(self, storage_session_id, storage_engine):
+        if storage_session_id not in self._storage_session:
+            self.new_storage(storage_session_id=storage_session_id,
+                             storage_engine=storage_engine,
+                             record=False)
+        return True
 
     def destroy_all_sessions(self):
         self._logger.info(f"start destroy manager session {self._session_id} all sessions")
@@ -390,6 +399,10 @@ class _RuntimeSessionEnvironment(object):
     __SESSIONS = threading.local()
 
     @classmethod
+    def get_all(cls):
+        return cls.__SESSIONS.CREATED
+
+    @classmethod
     def add_session(cls, session: 'Session'):
         if not hasattr(cls.__SESSIONS, "CREATED"):
             cls.__SESSIONS.CREATED = {}
@@ -417,6 +430,7 @@ class _RuntimeSessionEnvironment(object):
             raise RuntimeError(
                 f"non_default_session stack empty, nothing to close")
         least: Session = cls.__SESSIONS.OPENED_STACK.pop()
+        cls.__SESSIONS.CREATED.pop(session.session_id)
         if least.session_id != session.session_id:
             raise RuntimeError(f"least opened session({least.session_id}) should be close first! "
                                f"while try to close {session.session_id}. all session: {cls.__SESSIONS.OPENED_STACK}")

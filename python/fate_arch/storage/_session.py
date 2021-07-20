@@ -17,12 +17,11 @@ import os.path
 
 from fate_arch.abc import StorageSessionABC, StorageTableABC, CTableABC
 from fate_arch.common import EngineType, engine_utils
-from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.log import getLogger
 from fate_arch.storage._table import StorageTableMeta
 from fate_arch.storage._types import StorageEngine, EggRollStoreType
 from fate_arch.relation_ship import Relationship
-from fate_arch.storage.metastore.db_models import DB, StorageTableMetaModel, SessionRecord
+from fate_arch.storage.metastore.db_models import DB, StorageTableMetaModel
 
 MAX_NUM = 10000
 
@@ -153,12 +152,6 @@ class StorageSessionBase(StorageSessionABC):
         except Exception as e:
             LOGGER.warning(f"stop storage session {self._session_id} failed, try to kill", e)
             self.kill()
-
-    @classmethod
-    @DB.connection_context()
-    def query_expired_sessions_record(cls, ttl) -> [SessionRecord]:
-        sessions_record = SessionRecord.select().where(SessionRecord.f_create_time < (current_timestamp() - ttl))
-        return [session_record for session_record in sessions_record]
 
     def stop(self):
         raise NotImplementedError()
