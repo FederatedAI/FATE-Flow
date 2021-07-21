@@ -29,7 +29,7 @@ from fate_flow.utils import detect_utils, job_utils, schedule_utils, authenticat
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils import model_utils
 from fate_flow.utils.cron import Cron
-from fate_flow.settings import END_STATUS_JOB_SCHEDULING_TIME_LIMIT, END_STATUS_JOB_SCHEDULING_UPDATES
+from fate_flow import job_default_settings
 
 
 class DAGScheduler(Cron):
@@ -92,6 +92,7 @@ class DAGScheduler(Cron):
 
         # create common parameters on initiator
         JobController.get_job_engines(job_parameters=common_job_parameters)
+        JobController.fill_default_job_parameters(job_id=job_id, job_parameters=common_job_parameters)
         JobController.adapt_job_parameters(role=job.f_initiator_role, job_parameters=common_job_parameters, create_initiator_baseline=True)
 
         job.f_runtime_conf = conf_adapter.update_common_parameters(common_parameters=common_job_parameters)
@@ -183,16 +184,18 @@ class DAGScheduler(Cron):
         schedule_logger().info("schedule rerun jobs finished")
 
         schedule_logger().info("start schedule end status jobs to update status")
-        jobs = JobSaver.query_job(is_initiator=True, status=set(EndStatus.status_list()), end_time=[current_timestamp() - END_STATUS_JOB_SCHEDULING_TIME_LIMIT, current_timestamp()])
+        jobs = JobSaver.query_job(is_initiator=True, status=set(EndStatus.status_list()), end_time=[current_timestamp() - job_default_settings.END_STATUS_JOB_SCHEDULING_TIME_LIMIT, current_timestamp()])
         schedule_logger().info(f"have {len(jobs)} end status jobs")
         for job in jobs:
             schedule_logger().info(f"schedule end status job {job.f_job_id}")
             try:
                 update_status = self.end_scheduling_updates(job_id=job.f_job_id)
-                if not update_status:
+                if update_status:
+                    schedule_logger(job.f_job_id).info(f"try update status by scheduling like running job")
+                    self.schedule_running_job(job=job)
+                else:
                     schedule_logger(job.f_job_id).info(f"the number of updates has been exceeded")
                     continue
-                self.schedule_running_job(job=job)
             except Exception as e:
                 schedule_logger(job.f_job_id).exception(e)
                 schedule_logger(job.f_job_id).error(f"schedule job {job.f_job_id} failed")
@@ -493,7 +496,7 @@ class DAGScheduler(Cron):
     @DB.connection_context()
     def end_scheduling_updates(cls, job_id):
         operate = Job.update({Job.f_end_scheduling_updates: Job.f_end_scheduling_updates + 1}).where(Job.f_job_id == job_id,
-                                                                                                     Job.f_end_scheduling_updates < END_STATUS_JOB_SCHEDULING_UPDATES)
+                                                                                                     Job.f_end_scheduling_updates < job_default_settings.END_STATUS_JOB_SCHEDULING_UPDATES)
         update_status = operate.execute() > 0
         return update_status
 

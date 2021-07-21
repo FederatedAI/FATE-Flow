@@ -36,6 +36,8 @@ class RunParameters(object):
         self.model_id = None
         self.model_version = None
         self.dsl_version = None
+        self.auto_retries = None
+        self.auto_retry_delay = None
         self.component_provider = None
         self.component_version = None
         self.timeout = None

@@ -15,11 +15,7 @@
 #
 from fate_arch.common import engine_utils
 from fate_arch.computing import ComputingEngine
-from fate_arch.federation import FederationEngine
-from fate_arch.storage import StorageEngine
-from fate_common import EngineType, string_utils
-from fate_common import FederatedMode
-from fate_common import WorkMode, Backend
+from fate_common import EngineType
 from fate_common.base_utils import json_dumps, current_timestamp
 from fate_common.log import schedule_logger
 from fate_flow.controller.task_controller import TaskController
@@ -29,7 +25,8 @@ from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.protobuf.python import pipeline_pb2
 from fate_flow.runtime_config import RuntimeConfig
-from fate_flow.settings import USE_AUTHENTICATION, DEFAULT_TASK_PARALLELISM, DEFAULT_FEDERATED_STATUS_COLLECT_TYPE
+from fate_flow.settings import USE_AUTHENTICATION
+from fate_flow import job_default_settings
 from fate_flow.utils import job_utils, schedule_utils, data_utils
 from fate_flow.utils.authentication_utils import authentication_check
 
@@ -101,14 +98,19 @@ class JobController(object):
         job_parameters.federated_mode = engines["federated_mode"]
 
     @classmethod
+    def fill_default_job_parameters(cls, job_id, job_parameters: RunParameters):
+        keys = {"task_parallelism", "auto_retries", "auto_retry_delay", "federated_status_collect_type"}
+        for key in keys:
+            if hasattr(job_parameters, key) and getattr(job_parameters, key) is None:
+                if hasattr(job_default_settings, key.upper()):
+                    setattr(job_parameters, key, getattr(job_default_settings, key.upper()))
+                else:
+                    schedule_logger(job_id=job_id).warning(f"can not found {key} job parameter default value from job_default_settings")
+
+    @classmethod
     def adapt_job_parameters(cls, role, job_parameters: RunParameters, create_initiator_baseline=False):
         ResourceManager.adapt_engine_parameters(
             role=role, job_parameters=job_parameters, create_initiator_baseline=create_initiator_baseline)
-        if create_initiator_baseline:
-            if job_parameters.task_parallelism is None:
-                job_parameters.task_parallelism = DEFAULT_TASK_PARALLELISM
-            if job_parameters.federated_status_collect_type is None:
-                job_parameters.federated_status_collect_type = DEFAULT_FEDERATED_STATUS_COLLECT_TYPE
         if create_initiator_baseline and not job_parameters.computing_partitions:
             job_parameters.computing_partitions = job_parameters.adaptation_parameters[
                 "task_cores_per_node"] * job_parameters.adaptation_parameters["task_nodes"]

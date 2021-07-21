@@ -118,7 +118,7 @@ class Detector(cron.Cron):
     @classmethod
     def detect_expired_session(cls):
         ttl = 5 * 60 * 60 * 1000
-        detect_logger().info(f'start detect expired session by ttl {ttl}ms')
+        detect_logger().info(f'start detect expired session by ttl {ttl/1000} s')
         try:
             session_records = Session.query_sessions(create_time=[None, current_timestamp() - ttl])
             for session_record in session_records:

@@ -28,10 +28,11 @@ from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.entity.types import JobStatus, ComponentProvider
 from fate_flow.entity.types import TaskStatus, RunParameters, KillProcessStatusCode
 from fate_flow.runtime_config import RuntimeConfig
-from fate_flow.settings import stat_logger, JOB_DEFAULT_TIMEOUT, WORK_MODE, FATE_BOARD_DASHBOARD_ENDPOINT
+from fate_flow.settings import stat_logger, WORK_MODE, FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.utils import detect_utils, model_utils
 from fate_flow.utils import session_utils
 from fate_flow.utils.service_utils import ServiceUtils
+from fate_flow import job_default_settings
 
 
 class IdCounter(object):
@@ -287,7 +288,7 @@ def check_job_process(pid):
 
 def check_job_is_timeout(job: Job):
     job_parameters = job.f_runtime_conf_on_party["job_parameters"]
-    timeout = job_parameters.get("timeout", JOB_DEFAULT_TIMEOUT)
+    timeout = job_parameters.get("timeout", job_default_settings.JOB_DEFAULT_TIMEOUT)
     now_time = current_timestamp()
     running_time = (now_time - job.f_create_time)/1000
     if running_time > timeout:
@@ -462,7 +463,7 @@ def get_timeout(job_id, timeout, runtime_conf, dsl):
 
 def job_default_timeout(runtime_conf, dsl):
     # future versions will improve
-    timeout = JOB_DEFAULT_TIMEOUT
+    timeout = job_default_settings.JOB_DEFAULT_TIMEOUT
     return timeout
 
 
