@@ -108,6 +108,11 @@ class EndStatus(BaseStatus):
     SUCCESS = StatusSet.SUCCESS
 
 
+class AutoRerunStatus(BaseStatus):
+    TIMEOUT = StatusSet.TIMEOUT
+    FAILED = StatusSet.FAILED
+
+
 class SchedulingStatusCode(object):
     SUCCESS = 0
     NO_RESOURCE = 1

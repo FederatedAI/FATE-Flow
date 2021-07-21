@@ -300,15 +300,15 @@ class DAGScheduler(Cron):
             schedule_logger(job_id=job_id).error("can not found job {} on initiator {} {}".format(job_id, initiator_role, initiator_party_id))
 
     @classmethod
-    def schedule_running_job(cls, job):
+    def schedule_running_job(cls, job: Job):
         schedule_logger(job_id=job.f_job_id).info("scheduling job {}".format(job.f_job_id))
 
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                        runtime_conf=job.f_runtime_conf_on_party,
                                                        train_runtime_conf=job.f_train_runtime_conf)
-        task_scheduling_status_code, tasks = TaskScheduler.schedule(job=job, dsl_parser=dsl_parser, canceled=job.f_cancel_signal)
-        tasks_status = [task.f_status for task in tasks]
-        new_job_status = cls.calculate_job_status(task_scheduling_status_code=task_scheduling_status_code, tasks_status=tasks_status)
+        task_scheduling_status_code, auto_rerun_tasks, tasks = TaskScheduler.schedule(job=job, dsl_parser=dsl_parser, canceled=job.f_cancel_signal)
+        tasks_status = dict([(task.f_component_name, task.f_status) for task in tasks])
+        new_job_status = cls.calculate_job_status(task_scheduling_status_code=task_scheduling_status_code, tasks_status=tasks_status.values())
         if new_job_status == JobStatus.WAITING and job.f_cancel_signal:
             new_job_status = JobStatus.CANCELED
         total, finished_count = cls.calculate_job_progress(tasks_status=tasks_status)
@@ -328,26 +328,30 @@ class DAGScheduler(Cron):
                 cls.update_job_on_initiator(initiator_job=job, update_fields=["status"])
         if EndStatus.contains(job.f_status):
             cls.finish(job=job, end_status=job.f_status)
+        if auto_rerun_tasks:
+            schedule_logger(job_id=job.f_job_id).info("job {} have auto rerun tasks".format(job.f_job_id))
+            cls.set_job_rerun(job_id=job.f_job_id, initiator_role=job.f_initiator_role, initiator_party_id=job.f_initiator_party_id, tasks=auto_rerun_tasks, auto=True)
         schedule_logger(job_id=job.f_job_id).info("finish scheduling job {}".format(job.f_job_id))
 
     @classmethod
-    def set_job_rerun(cls, job_id, initiator_role, initiator_party_id, component_name):
+    def set_job_rerun(cls, job_id, initiator_role, initiator_party_id, auto, tasks=None, component_name=None):
         schedule_logger(job_id=job_id).info(f"try to rerun job {job_id} on initiator {initiator_role} {initiator_party_id}")
         jobs = JobSaver.query_job(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
         if jobs:
             job = jobs[0]
         else:
             raise RuntimeError(f"can not found job {job_id} on initiator {initiator_role} {initiator_party_id}")
-        if component_name != job_utils.job_pipeline_component_name():
-            tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id, component_name=component_name)
-        else:
-            tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
+        if not tasks:
+            if component_name != job_utils.job_pipeline_component_name():
+                tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id, component_name=component_name)
+            else:
+                tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
         job_can_rerun = False
         dsl_parser = schedule_utils.get_dsl_parser_on_component_env(dsl=job.f_dsl,
                                                                     runtime_conf=job.f_runtime_conf_on_party,
                                                                     train_runtime_conf=job.f_train_runtime_conf)
         for task in tasks:
-            job_can_rerun = job_can_rerun or TaskScheduler.prepare_rerun_task(job=job, task=task, dsl_parser=dsl_parser)
+            job_can_rerun = job_can_rerun or TaskScheduler.prepare_rerun_task(job=job, task=task, dsl_parser=dsl_parser, auto=auto)
         if job_can_rerun:
             schedule_logger(job_id=job_id).info(f"job {job_id} set rerun signal")
             status = cls.rerun_signal(job_id=job_id, set_or_reset=True)
@@ -404,7 +408,7 @@ class DAGScheduler(Cron):
             if len(tmp_status_set) == 2 and TaskStatus.WAITING in tmp_status_set and TaskStatus.SUCCESS in tmp_status_set and task_scheduling_status_code == SchedulingStatusCode.NO_NEXT:
                 return JobStatus.CANCELED
 
-            raise Exception("Calculate job status failed, all task status: {}".format(tasks_status))
+            raise Exception("calculate job status failed, all task status: {}".format(tasks_status))
 
     @classmethod
     def calculate_job_progress(cls, tasks_status):

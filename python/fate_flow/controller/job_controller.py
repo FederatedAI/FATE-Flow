@@ -159,6 +159,8 @@ class JobController(object):
         common_task_info["party_id"] = party_id
         common_task_info["federated_mode"] = job_parameters.federated_mode
         common_task_info["federated_status_collect_type"] = job_parameters.federated_status_collect_type
+        common_task_info["auto_retries"] = job_parameters.auto_retries
+        common_task_info["auto_retry_delay"] = job_parameters.auto_retry_delay
         if task_version:
             common_task_info["task_version"] = task_version
         if not component_name:
