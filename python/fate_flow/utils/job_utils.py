@@ -228,11 +228,11 @@ def get_job_dsl(job_id, role, party_id):
         return {}
 
 
-def job_virtual_component_name():
+def job_pipeline_component_name():
     return "pipeline"
 
 
-def job_virtual_component_module_name():
+def job_pipeline_component_module_name():
     return "Pipeline"
 
 

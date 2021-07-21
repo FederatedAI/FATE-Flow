@@ -55,8 +55,8 @@ class Tracker(object):
         self.job_parameters = job_parameters
         self.role = role
         self.party_id = party_id
-        self.component_name = component_name if component_name else job_utils.job_virtual_component_name()
-        self.module_name = component_module_name if component_module_name else job_utils.job_virtual_component_module_name()
+        self.component_name = component_name if component_name else job_utils.job_pipeline_component_name()
+        self.module_name = component_module_name if component_module_name else job_utils.job_pipeline_component_module_name()
         self.task_id = task_id
         self.task_version = task_version
 
@@ -185,7 +185,7 @@ class Tracker(object):
         try:
             tracking_metric = self.get_dynamic_db_model(TrackingMetric, self.job_id)()
             tracking_metric.f_job_id = self.job_id
-            tracking_metric.f_component_name = (self.component_name if not job_level else job_utils.job_virtual_component_name())
+            tracking_metric.f_component_name = (self.component_name if not job_level else job_utils.job_pipeline_component_name())
             tracking_metric.f_task_id = self.task_id
             tracking_metric.f_task_version = self.task_version
             tracking_metric.f_role = self.role
@@ -319,7 +319,7 @@ class Tracker(object):
             tracking_metric_model = self.get_dynamic_db_model(TrackingMetric, self.job_id)
             tracking_metrics = tracking_metric_model.select(tracking_metric_model.f_key, tracking_metric_model.f_value).where(
                 tracking_metric_model.f_job_id == self.job_id,
-                tracking_metric_model.f_component_name == (self.component_name if not job_level else job_utils.job_virtual_component_name()),
+                tracking_metric_model.f_component_name == (self.component_name if not job_level else job_utils.job_pipeline_component_name()),
                 tracking_metric_model.f_role == self.role,
                 tracking_metric_model.f_party_id == self.party_id,
                 tracking_metric_model.f_metric_namespace == metric_namespace,

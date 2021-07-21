@@ -331,14 +331,14 @@ class DAGScheduler(Cron):
         schedule_logger(job_id=job.f_job_id).info("finish scheduling job {}".format(job.f_job_id))
 
     @classmethod
-    def rerun_job(cls, job_id, initiator_role, initiator_party_id, component_name):
+    def set_job_rerun(cls, job_id, initiator_role, initiator_party_id, component_name):
         schedule_logger(job_id=job_id).info(f"try to rerun job {job_id} on initiator {initiator_role} {initiator_party_id}")
         jobs = JobSaver.query_job(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
         if jobs:
             job = jobs[0]
         else:
             raise RuntimeError(f"can not found job {job_id} on initiator {initiator_role} {initiator_party_id}")
-        if component_name != job_utils.job_virtual_component_name():
+        if component_name != job_utils.job_pipeline_component_name():
             tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id, component_name=component_name)
         else:
             tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
@@ -347,28 +347,7 @@ class DAGScheduler(Cron):
                                                                     runtime_conf=job.f_runtime_conf_on_party,
                                                                     train_runtime_conf=job.f_train_runtime_conf)
         for task in tasks:
-            if task.f_status in {TaskStatus.WAITING, TaskStatus.SUCCESS}:
-                if task.f_status == TaskStatus.WAITING:
-                    job_can_rerun = True
-                schedule_logger(job_id=job_id).info(f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} is {task.f_status}, pass rerun")
-            else:
-                # stop old version task
-                FederatedScheduler.stop_task(job=job, task=task, stop_status=TaskStatus.CANCELED)
-                FederatedScheduler.clean_task(job=job, task=task, content_type="metrics")
-                # create new version task
-                task.f_task_version = task.f_task_version + 1
-                task.f_run_pid = None
-                task.f_run_ip = None
-                FederatedScheduler.create_task(job=job, task=task)
-                # Save the status information of all participants in the initiator for scheduling
-                schedule_logger(job_id=job_id).info(f"create task {task.f_task_id} new version {task.f_task_version}")
-                for _role, _party_ids in job.f_runtime_conf_on_party["role"].items():
-                    for _party_id in _party_ids:
-                        if _role == initiator_role and _party_id == initiator_party_id:
-                            continue
-                        JobController.initialize_tasks(job_id, _role, _party_id, False, job.f_initiator_role, job.f_initiator_party_id, RunParameters(**job.f_runtime_conf_on_party["job_parameters"]), dsl_parser, component_name=task.f_component_name, task_version=task.f_task_version)
-                schedule_logger(job_id=job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
-                job_can_rerun = True
+            job_can_rerun = job_can_rerun or TaskScheduler.prepare_rerun_task(job=job, task=task, dsl_parser=dsl_parser)
         if job_can_rerun:
             schedule_logger(job_id=job_id).info(f"job {job_id} set rerun signal")
             status = cls.rerun_signal(job_id=job_id, set_or_reset=True)
