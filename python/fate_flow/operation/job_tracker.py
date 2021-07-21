@@ -31,7 +31,7 @@ from fate_flow.pipelined_model import pipelined_model
 from fate_arch import storage
 from fate_flow.utils import model_utils, job_utils, data_utils
 from fate_arch import session
-from fate_flow.entity.types import RunParameters
+from fate_flow.entity.run_parameters import RunParameters
 
 
 class Tracker(object):

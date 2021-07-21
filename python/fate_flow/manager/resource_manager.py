@@ -23,7 +23,8 @@ from fate_common.log import schedule_logger
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import engine_utils
 from fate_flow.db.db_models import DB, EngineRegistry, Job
-from fate_flow.entity.types import ResourceOperation, RunParameters
+from fate_flow.entity.types import ResourceOperation
+from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.settings import stat_logger
 from fate_flow.utils import job_utils
 from fate_flow import job_default_settings

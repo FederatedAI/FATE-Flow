@@ -18,7 +18,7 @@ import shutil
 
 from flask import Flask, request
 
-from fate_flow.entity.types import StatusSet
+from fate_flow.entity.run_status import StatusSet
 from fate_arch import storage
 from fate_common.base_utils import json_loads
 from fate_flow.settings import stat_logger, UPLOAD_DATA_FROM_CLIENT

@@ -19,7 +19,8 @@ from fate_common import EngineType
 from fate_common.base_utils import json_dumps, current_timestamp
 from fate_common.log import schedule_logger
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.entity.types import JobStatus, EndStatus, RunParameters
+from fate_flow.entity.run_status import JobStatus, EndStatus
+from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
