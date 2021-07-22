@@ -87,7 +87,7 @@ server = grpc.server(thread_pool_executor,
                               (cygrpc.ChannelArgKey.max_receive_message_length, -1)])
 
 proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
-server.add_insecure_port("{}:{}".format("127.0.0.1", 7777))
+server.add_insecure_port("{}:{}".format("127.0.0.1", 9360))
 server.start()
 
 try:
