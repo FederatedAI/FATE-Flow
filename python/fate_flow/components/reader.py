@@ -155,7 +155,7 @@ class Reader(ComponentBase):
         count = 0
         data_temp = []
         part_of_data = []
-        src_table_meta = src_table.get_meta()
+        src_table_meta = src_table.meta
         LOGGER.info(f"start copying table")
         LOGGER.info(
             f"source table name: {src_table.get_name()} namespace: {src_table.get_namespace()} engine: {src_table.get_engine()}")
@@ -172,20 +172,20 @@ class Reader(ComponentBase):
                     schema = data_utils.get_header_schema(header_line=line, id_delimiter=src_table_meta.get_id_delimiter())
                     get_head = True
                     continue
-                values = line.rstrip().split(src_table.get_meta().get_id_delimiter())
+                values = line.rstrip().split(src_table.meta.get_id_delimiter())
                 k, v = values[0], data_utils.list_to_str(values[1:],
-                                                         id_delimiter=src_table.get_meta().get_id_delimiter())
+                                                         id_delimiter=src_table.meta.get_id_delimiter())
                 count = self.put_in_table(table=dest_table, k=k, v=v, temp=data_temp, count=count,
                                           part_of_data=part_of_data)
         else:
             for k, v in src_table.collect():
                 count = self.put_in_table(table=dest_table, k=k, v=v, temp=data_temp, count=count,
                                           part_of_data=part_of_data)
-            schema = src_table.get_meta().get_schema()
+            schema = src_table.meta.get_schema()
         if data_temp:
             dest_table.put_all(data_temp)
         LOGGER.info("copy successfully")
-        dest_table.get_meta().update_metas(schema=schema, part_of_data=part_of_data)
+        dest_table.meta.update_metas(schema=schema, part_of_data=part_of_data)
 
     def put_in_table(self, table: StorageTableABC, k, v, temp, count, part_of_data):
         temp.append((k, v))

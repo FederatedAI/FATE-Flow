@@ -135,12 +135,14 @@ class StorageTableABC(metaclass=abc.ABCMeta):
     def get_partitions(self):
         ...
 
+    @property
     @abc.abstractmethod
-    def set_meta(self, meta: StorageTableMetaABC):
+    def meta(self) -> StorageTableMetaABC:
         ...
 
+    @meta.setter
     @abc.abstractmethod
-    def get_meta(self) -> StorageTableMetaABC:
+    def meta(self, meta: StorageTableMetaABC):
         ...
 
     @abc.abstractmethod

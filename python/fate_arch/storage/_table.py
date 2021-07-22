@@ -42,11 +42,13 @@ class StorageTableBase(StorageTableABC):
         self._meta.destroy_metas()
         # subclass method needs do: super().destroy()
 
-    def set_meta(self, meta):
-        self._meta = meta
-
-    def get_meta(self):
+    @property
+    def meta(self):
         return self._meta
+
+    @meta.setter
+    def meta(self, meta):
+        self._meta = meta
 
     def get_name(self):
         pass
@@ -82,8 +84,7 @@ class StorageTableBase(StorageTableABC):
         pass
 
     def save_as(self, dest_name, dest_namespace, partitions=None, schema=None):
-        src_table_meta = self.get_meta()
-        pass
+        src_table_meta = self.meta
 
 
 class StorageTableMeta(StorageTableMetaABC):

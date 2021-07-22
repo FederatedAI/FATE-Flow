@@ -75,7 +75,7 @@ class StorageTable(StorageTableBase):
 
     def count(self):
         count = path_utils.get_data_table_count(self._address.path)
-        self.get_meta().update_metas(count=count)
+        self.meta.update_metas(count=count)
         return count
 
     def save_as(self, address, partitions=None, name=None, namespace=None, schema=None, **kwargs):

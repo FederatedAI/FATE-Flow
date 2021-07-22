@@ -104,7 +104,7 @@ class StorageTable(StorageTableBase):
         count = 0
         for _ in self._as_generator():
             count += 1
-        self.get_meta().update_metas(count=count)
+        self.meta.update_metas(count=count)
         return count
 
     def save_as(self, address, partitions=None, name=None, namespace=None, schema=None, **kwargs):

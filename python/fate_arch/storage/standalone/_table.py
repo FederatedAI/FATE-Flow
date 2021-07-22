@@ -75,5 +75,5 @@ class StorageTable(StorageTableBase):
 
     def count(self):
         count = self._table.count()
-        self.get_meta().update_metas(count=count)
+        self.meta.update_metas(count=count)
         return count

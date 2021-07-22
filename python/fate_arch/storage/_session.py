@@ -48,7 +48,7 @@ class StorageSessionBase(StorageSessionABC):
         table_meta.type = table.get_store_type()
         table_meta.options = table.get_options()
         table_meta.create()
-        table.set_meta(table_meta)
+        table.meta = table_meta
         # update count on meta
         # table.count()
         return table
@@ -69,7 +69,7 @@ class StorageSessionBase(StorageSessionABC):
                                partitions=meta.get_partitions(),
                                storage_type=meta.get_type(),
                                options=meta.get_options())
-            table.set_meta(meta)
+            table.meta = meta
             return table
         else:
             return None

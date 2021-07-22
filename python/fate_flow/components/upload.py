@@ -105,7 +105,7 @@ class Upload(ComponentBase):
             data_table_count = self.save_data_table(job_id, name, namespace, head)
         else:
             data_table_count = self.get_data_table_count(self.parameters["file"], name, namespace)
-        self.table.get_meta().update_metas(in_serialized=True)
+        self.table.meta.update_metas(in_serialized=True)
         LOGGER.info("------------load data finish!-----------------")
         # rm tmp file
         try:
@@ -127,7 +127,7 @@ class Upload(ComponentBase):
             if head is True:
                 data_head = fin.readline()
                 input_feature_count -= 1
-                self.table.get_meta().update_metas(schema=data_utils.get_header_schema(header_line=data_head, id_delimiter=self.parameters["id_delimiter"]))
+                self.table.meta.update_metas(schema=data_utils.get_header_schema(header_line=data_head, id_delimiter=self.parameters["id_delimiter"]))
             n = 0
             while True:
                 data = list()
@@ -142,10 +142,10 @@ class Upload(ComponentBase):
                     ControllerClient.update_job(job_info=job_info)
                     self.table.put_all(data)
                     if n == 0:
-                        self.table.get_meta().update_metas(part_of_data=data)
+                        self.table.meta.update_metas(part_of_data=data)
                 else:
                     table_count = self.table.count()
-                    self.table.get_meta().update_metas(count=table_count, partitions=self.parameters["partition"])
+                    self.table.meta.update_metas(count=table_count, partitions=self.parameters["partition"])
                     self.save_meta(dst_table_namespace=dst_table_namespace, dst_table_name=dst_table_name, table_count=table_count)
                     return table_count
                 n += 1
@@ -178,5 +178,5 @@ class Upload(ComponentBase):
     def get_data_table_count(self, path, name, namespace):
         count = path_utils.get_data_table_count(path)
         self.save_meta(dst_table_namespace=namespace, dst_table_name=name, table_count=count)
-        self.table.get_meta().update_metas(count=count)
+        self.table.meta.update_metas(count=count)
         return count
