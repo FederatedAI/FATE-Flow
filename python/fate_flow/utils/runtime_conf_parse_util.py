@@ -15,7 +15,9 @@
 #
 
 import copy
-from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, ModuleNotExistError, RoleParameterNotListError
+import importlib
+from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, ModuleNotExistError, \
+    RoleParameterNotListError
 
 
 class RuntimeConfParserUtil(object):
@@ -60,88 +62,89 @@ class RuntimeConfParserUtil(object):
             return RuntimeConfParserV2.generate_predict_conf_template(predict_dsl, train_conf, model_id, model_version)
 
     @staticmethod
-    def get_module_name(module, role, component_interface_list):
-        for component_interface in component_interface_list:
-            if component_interface.has_module(module):
-                if component_interface.has_module(module):
-                    return component_interface.get_module_name(module, role)
-
-        raise ValueError(f"Can not find module {module}")
+    def get_module_name(module, role, provider):
+        return provider.get_module_name(module, role)
 
     @staticmethod
-    def get_component_parameters(component_interface,
+    def get_component_parameters(provider,
                                  runtime_conf,
                                  module,
                                  alias,
                                  redundant_param_check,
-                                 conf_version):
+                                 conf_version,
+                                 local_role,
+                                 local_party_id):
 
-        support_roles = component_interface.get_support_role(module, runtime_conf["role"])
+        support_roles = provider.get_support_role(module, runtime_conf["role"])
         role_on_module = copy.deepcopy(runtime_conf["role"])
         for role in runtime_conf["role"]:
             if role not in support_roles:
                 del role_on_module[role]
 
-        component_conf = {}
-        for role in role_on_module:
-            party_id_list = role_on_module[role]
-            component_conf[role] = []
-            for idx, party_id in enumerate(party_id_list):
-                conf = dict()
-                conf["role"] = role_on_module
-                conf["local"] = runtime_conf.get("local", {})
-                conf["local"].update({"role": role,
-                                      "party_id": party_id})
-                conf["module"] = module
-                conf["CodePath"] = component_interface.get_module_name(module, role)
-                for key, value in runtime_conf.items():
-                    if key not in ["algorithm_parameters", "role_parameters", "component_parameters"]:
-                        conf[key] = value
+        if local_role not in role_on_module:
+            return {}
 
-                common_parameters = runtime_conf.get("component_parameters", {}).get("common", {}) if conf_version == 2 \
-                    else runtime_conf.get("algorithm_parameters", {})
+        conf = dict()
+        conf["role"] = role_on_module
+        conf["local"] = runtime_conf.get("local", {})
+        conf["local"].update({"role": local_role,
+                              "party_id": local_party_id})
+        conf["module"] = module
+        conf["CodePath"] = provider.get_module_name(module, local_role)
 
-                param_class = component_interface.get_module_param(module, alias)
-                if alias in common_parameters:
-                    common_parameters = common_parameters[alias]
-                    param_class = component_interface.update_param(param_class,
-                                                               common_parameters,
-                                                               redundant_param_check,
-                                                               module,
-                                                               alias)
+        for key, value in runtime_conf.items():
+            if key not in ["algorithm_parameters", "role_parameters", "component_parameters"]:
+                conf[key] = value
 
-                if conf_version == 2:
-                    role_parameters = runtime_conf.get("component_parameters", {}).get("role", {}).get(role, {})
-                    role_ids = role_parameters.keys()
-                    for role_id in role_ids:
-                        if role_id == "all" or str(idx) in role_id.split("|"):
-                            parameters = role_parameters[role_id].get(alias, {})
-                            if not parameters:
-                                continue
-                            param_class = component_interface.update_param(param_class,
-                                                                       parameters,
-                                                                       redundant_param_check,
-                                                                       module,
-                                                                       alias
-                                                                       )
-                else:
-                    # query if backend interface support dsl v1
-                    if hasattr(component_interface, "get_not_builtin_types_for_dsl_v1"):
-                        v1_parameters = runtime_conf.get("role_parameters", {}).get(role, {}).get(alias, {})
-                        not_builtin_vars = component_interface.get_not_builtin_types_for_dsl_v1(param_class)
-                        if v1_parameters:
-                            v2_parameters = RuntimeConfParserUtil.change_conf_v1_to_v2(v1_parameters, not_builtin_vars, idx, role, len(role_on_module[role]))
-                            param_class = component_interface.update_param(param_class,
-                                                                       v2_parameters,
-                                                                       redundant_param_check,
-                                                                       module,
-                                                                       alias
-                                                                       )
-                component_interface.check_param(param_class)
-                conf["ComponentParam"] = component_interface.change_param_to_dict(param_class)
-                component_conf[role].append(conf)
+        common_parameters = runtime_conf.get("component_parameters", {}).get("common", {}) if conf_version == 2 \
+            else runtime_conf.get("algorithm_parameters", {})
 
-        return component_conf
+        param_class = provider.get_module_param(module, alias)
+
+        if alias in common_parameters:
+            common_parameters = common_parameters[alias]
+            param_class = provider.update_param(param_class,
+                                                common_parameters,
+                                                redundant_param_check,
+                                                module,
+                                                alias)
+
+        party_idx = role_on_module[local_role].index(local_party_id)
+
+        if conf_version == 2:
+            role_parameters = runtime_conf.get("component_parameters", {}).get("role", {}).get(local_role, {})
+            role_ids = role_parameters.keys()
+            for role_id in role_ids:
+                if role_id == "all" or str(party_idx) in role_id.split("|"):
+                    parameters = role_parameters[role_id].get(alias, {})
+                    if not parameters:
+                        continue
+                    param_class = provider.update_param(param_class,
+                                                        parameters,
+                                                        redundant_param_check,
+                                                        module,
+                                                        alias
+                                                        )
+        else:
+            # query if backend interface support dsl v1
+            if hasattr(provider, "get_not_builtin_types_for_dsl_v1"):
+                v1_parameters = runtime_conf.get("role_parameters", {}).get(local_role, {}).get(alias, {})
+                not_builtin_vars = provider.get_not_builtin_types_for_dsl_v1(param_class)
+                if v1_parameters:
+                    idx = role_on_module[local_role].index(local_party_id)
+                    v2_parameters = RuntimeConfParserUtil.change_conf_v1_to_v2(v1_parameters, not_builtin_vars, idx,
+                                                                               local_role, len(role_on_module[local_role]))
+                    param_class = provider.update_param(param_class,
+                                                        v2_parameters,
+                                                        redundant_param_check,
+                                                        module,
+                                                        alias
+                                                        )
+
+        provider.check_param(param_class)
+        conf["ComponentParam"] = provider.change_param_to_dict(param_class)
+
+        return conf
 
     @staticmethod
     def change_conf_v1_to_v2(v1_conf, not_builtin_vars, idx, role, role_num):
@@ -157,9 +160,90 @@ class RuntimeConfParserUtil(object):
                 v2_conf[key] = val_list[idx]
 
             else:
-                v2_conf[key] = RuntimeConfParserUtil.change_conf_v1_to_v2(val_list, not_builtin_vars, idx, role, role_num)
+                v2_conf[key] = RuntimeConfParserUtil.change_conf_v1_to_v2(val_list, not_builtin_vars, idx, role,
+                                                                          role_num)
 
         return v2_conf
+
+    @staticmethod
+    def get_job_providers(dsl, provider_detail, local_role, local_party_id, job_parameters):
+        provider_info = {}
+        for component in dsl["components"]:
+            module = dsl["components"][component]["module"]
+            name, version = RuntimeConfParserUtil.get_component_provider(alias=component,
+                                                                         module=module,
+                                                                         provider_detail=provider_detail,
+                                                                         local_role=local_role,
+                                                                         local_party_id=local_party_id,
+                                                                         job_parameters=job_parameters)
+            provider_info.update({component: {
+                "module": module,
+                "provider": {
+                    "name": name,
+                    "version": version
+                }
+            }})
+
+        return provider_info
+
+    @staticmethod
+    def get_component_provider(alias, module, provider_detail, local_role, local_party_id, job_parameters, detect=True):
+        if module not in provider_detail["components"]:
+            if detect:
+                raise ValueError(f"component {alias}, module {module}'s provider does not exist")
+            else:
+                return None
+
+        if job_parameters.get(local_role).get(local_party_id) is None or not job_parameters.get(local_role).get(
+                local_party_id).get("provider"):
+            name = provider_detail["components"][module]["default_provider"]
+            version = provider_detail["provider"][name]["default"]["version"]
+        else:
+            provider_setting = job_parameters.get(local_role).get(local_party_id).get("provider")
+            if "name" not in provider_setting:
+                name = provider_detail["components"][module]["default_provider"]
+            else:
+                name = provider_setting.get("name")
+                if name not in provider_detail["components"]["support_provider"]:
+                    raise ValueError(f"Provider {name} does not support, please register in fate-flow")
+
+            if "version" not in provider_setting:
+                version = provider_detail["provider"][name]["default"]["version"]
+            else:
+                version = provider_setting.get("version")
+                if version not in provider_detail["provider"][name]:
+                    raise ValueError(f"Provider {name} dose not has version {version}")
+
+        return name, version
+
+    @staticmethod
+    def instantiate_component_provider(provider_detail, alias=None, module=None, provider_name=None,
+                                       provider_version=None, local_role=None, local_party_id=None,
+                                       detect=True, provider_cache=None, job_parameters=None):
+
+        if provider_name and provider_version:
+            provider_import_path = ".".join(provider_detail["provider"][provider_name][provider_version]["path"])
+            provider = importlib.import_module(provider_import_path)
+            if provider_cache is not None:
+                if provider_name not in provider_cache:
+                    provider_cache[provider_name] = {}
+
+                provider_cache[provider_name][provider_version] = provider
+
+            return provider
+
+        provider_name, provider_version = RuntimeConfParserUtil.get_component_provider(alias=alias,
+                                                                                       module=module,
+                                                                                       provider_detail=provider_detail,
+                                                                                       local_role=local_role,
+                                                                                       local_party_id=local_party_id,
+                                                                                       job_parameters=job_parameters,
+                                                                                       provider_cache=provider_cache,
+                                                                                       detect=detect)
+
+        return RuntimeConfParserUtil.instantiate_component_provider(provider_detail,
+                                                                    provider_name=provider_name,
+                                                                    provider_version=provider_version)
 
 
 class RuntimeConfParserV1(object):
@@ -351,4 +435,3 @@ class RuntimeConfParserV2(object):
                 predict_conf["component_parameters"]["role"][role][str(idx)] = fill_template
 
         return predict_conf
-
