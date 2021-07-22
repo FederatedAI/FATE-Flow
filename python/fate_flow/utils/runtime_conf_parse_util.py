@@ -222,8 +222,12 @@ class RuntimeConfParserUtil(object):
                                        detect=True, provider_cache=None, job_parameters=None):
 
         if provider_name and provider_version:
-            provider_import_path = ".".join(provider_detail["provider"][provider_name][provider_version]["path"])
-            provider = importlib.import_module(provider_import_path)
+            provider_import_dir = ".".join(provider_detail["provider"][provider_name][provider_version]["path"])
+            provider_class_path = provider_detail["provider"][provider_name][provider_version].get("class_path", {}).get("framework_interface")
+            if not provider_class_path:
+                provider_class_path = provider_detail["default_settings"]["class_path"]["framework_interface"]
+
+            provider = importlib.import_module(".".join([provider_import_dir, provider_class_path]))
             if provider_cache is not None:
                 if provider_name not in provider_cache:
                     provider_cache[provider_name] = {}
