@@ -46,7 +46,7 @@ dsl_parser_v2.run(dsl=dsl_v2,
                   provider_detail=provider_detail,
                   mode="train",
                   local_role="guest",
-                  local_party_id=10000)
+                  local_party_id=9999)
 
 pprint.pprint(dsl_parser_v2.get_job_parameters())
 print ("\n\n\n")
@@ -82,7 +82,7 @@ print ("\n\n\n")
 
 
 pprint.pprint(dsl_parser_v2.get_job_providers_by_conf(dsl_v2, conf_v2, provider_detail,
-                                                      "guest", 10000))
+                                                      "guest", 9999))
 print ("\n\n\n")
 
 module_object_name_mapping = dict()
