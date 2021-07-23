@@ -19,7 +19,7 @@ import time
 
 from fate_common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, Job, Task
-from fate_flow.entity.types import JobStatus, TaskStatus, EndStatus
+from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
 from fate_common.log import schedule_logger, sql_logger
 import peewee
 

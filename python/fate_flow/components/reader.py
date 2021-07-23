@@ -17,11 +17,11 @@
 #
 import numpy as np
 
-from fate_arch import storage
+from fate_arch.session import Session
 from fate_arch.abc import StorageTableABC, StorageTableMetaABC, AddressABC
 from fate_common import log, EngineType
 from fate_arch.computing import ComputingEngine
-from fate_arch.storage import StorageTableMeta, StorageEngine, Relationship
+from fate_arch.storage import StorageTableMeta, StorageEngine
 from fate_flow.entity.metric import MetricMeta
 from fate_flow.utils import job_utils, data_utils
 from fate_flow.components.component_base import ComponentBase
@@ -49,35 +49,28 @@ class Reader(ComponentBase):
             output_namespace=output_table_namespace,
             computing_engine=computing_engine,
             output_storage_address=output_storage_address)
-        with storage.Session.build(
-                session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version,
-                                                         self.tracker.role, self.tracker.party_id,
-                                                         suffix="storage", random_end=True),
-                storage_engine=input_table_meta.get_engine()) as input_table_session:
-            input_table = input_table_session.get_table(name=input_table_meta.get_name(),
-                                                        namespace=input_table_meta.get_namespace())
-            # update real count to meta info
-            input_table.count()
-            # Table replication is required
-            if input_table_meta.get_engine() != output_table_engine:
-                LOGGER.info(
-                    f"the {input_table_meta.get_engine()} engine input table needs to be converted to {output_table_engine} engine to support computing engine {computing_engine}")
-            else:
-                LOGGER.info(f"the {input_table_meta.get_engine()} input table needs to be transform format")
-            with storage.Session.build(
-                    session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version,
-                                                             self.tracker.role, self.tracker.party_id,
-                                                             suffix="storage",
-                                                             random_end=True),
-                    storage_engine=output_table_engine) as output_table_session:
-                output_table = output_table_session.create_table(address=output_table_address,
-                                                                 name=output_table_name,
-                                                                 namespace=output_table_namespace,
-                                                                 partitions=input_table_meta.partitions)
-                self.copy_table(src_table=input_table, dest_table=output_table)
-                # update real count to meta info
-                output_table.count()
-                output_table_meta = StorageTableMeta(name=output_table.get_name(), namespace=output_table.get_namespace())
+        session = Session(session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id))
+        input_table_session = session.new_storage(storage_engine=input_table_meta.get_engine())
+        input_table = input_table_session.get_table(name=input_table_meta.get_name(),
+                                                    namespace=input_table_meta.get_namespace())
+        # update real count to meta info
+        input_table.count()
+        # Table replication is required
+        if input_table_meta.get_engine() != output_table_engine:
+            LOGGER.info(
+                f"the {input_table_meta.get_engine()} engine input table needs to be converted to {output_table_engine} engine to support computing engine {computing_engine}")
+        else:
+            LOGGER.info(f"the {input_table_meta.get_engine()} input table needs to be transform format")
+        LOGGER.info("reader create storage session2")
+        output_table_session = session.new_storage(storage_engine=output_table_engine)
+        output_table = output_table_session.create_table(address=output_table_address,
+                                                         name=output_table_name,
+                                                         namespace=output_table_namespace,
+                                                         partitions=input_table_meta.partitions)
+        self.copy_table(src_table=input_table, dest_table=output_table)
+        # update real count to meta info
+        output_table.count()
+        output_table_meta = StorageTableMeta(name=output_table.get_name(), namespace=output_table.get_namespace())
         self.tracker.log_output_data_info(
             data_name=component_parameters.get('output_data_name')[0] if component_parameters.get(
                 'output_data_name') else table_key,
@@ -125,27 +118,27 @@ class Reader(ComponentBase):
             raise RuntimeError(f"can not found table name: {input_name} namespace: {input_namespace}")
         address_dict = output_storage_address.copy()
         if input_table_meta.get_engine() in [StorageEngine.PATH]:
-            from fate_arch.storage import PathStorageType
+            from fate_arch.storage import PathStoreType
             address_dict["name"] = output_name
             address_dict["namespace"] = output_namespace
-            address_dict["storage_type"] = PathStorageType.PICTURE
+            address_dict["storage_type"] = PathStoreType.PICTURE
             address_dict["path"] = input_table_meta.get_address().path
             output_table_address = StorageTableMeta.create_address(storage_engine=StorageEngine.PATH,
                                                                    address_dict=address_dict)
             output_table_engine = StorageEngine.PATH
         elif computing_engine == ComputingEngine.STANDALONE:
-            from fate_arch.storage import StandaloneStorageType
+            from fate_arch.storage import StandaloneStoreType
             address_dict["name"] = output_name
             address_dict["namespace"] = output_namespace
-            address_dict["storage_type"] = StandaloneStorageType.ROLLPAIR_LMDB
+            address_dict["storage_type"] = StandaloneStoreType.ROLLPAIR_LMDB
             output_table_address = StorageTableMeta.create_address(storage_engine=StorageEngine.STANDALONE,
                                                                    address_dict=address_dict)
             output_table_engine = StorageEngine.STANDALONE
         elif computing_engine == ComputingEngine.EGGROLL:
-            from fate_arch.storage import EggRollStorageType
+            from fate_arch.storage import EggRollStoreType
             address_dict["name"] = output_name
             address_dict["namespace"] = output_namespace
-            address_dict["storage_type"] = EggRollStorageType.ROLLPAIR_LMDB
+            address_dict["storage_type"] = EggRollStoreType.ROLLPAIR_LMDB
             output_table_address = StorageTableMeta.create_address(storage_engine=StorageEngine.EGGROLL,
                                                                    address_dict=address_dict)
             output_table_engine = StorageEngine.EGGROLL
@@ -162,7 +155,7 @@ class Reader(ComponentBase):
         count = 0
         data_temp = []
         part_of_data = []
-        src_table_meta = src_table.get_meta()
+        src_table_meta = src_table.meta
         LOGGER.info(f"start copying table")
         LOGGER.info(
             f"source table name: {src_table.get_name()} namespace: {src_table.get_namespace()} engine: {src_table.get_engine()}")
@@ -179,20 +172,20 @@ class Reader(ComponentBase):
                     schema = data_utils.get_header_schema(header_line=line, id_delimiter=src_table_meta.get_id_delimiter())
                     get_head = True
                     continue
-                values = line.rstrip().split(src_table.get_meta().get_id_delimiter())
+                values = line.rstrip().split(src_table.meta.get_id_delimiter())
                 k, v = values[0], data_utils.list_to_str(values[1:],
-                                                         id_delimiter=src_table.get_meta().get_id_delimiter())
+                                                         id_delimiter=src_table.meta.get_id_delimiter())
                 count = self.put_in_table(table=dest_table, k=k, v=v, temp=data_temp, count=count,
                                           part_of_data=part_of_data)
         else:
             for k, v in src_table.collect():
                 count = self.put_in_table(table=dest_table, k=k, v=v, temp=data_temp, count=count,
                                           part_of_data=part_of_data)
-            schema = src_table.get_meta().get_schema()
+            schema = src_table.meta.get_schema()
         if data_temp:
             dest_table.put_all(data_temp)
         LOGGER.info("copy successfully")
-        dest_table.get_meta().update_metas(schema=schema, part_of_data=part_of_data)
+        dest_table.meta.update_metas(schema=schema, part_of_data=part_of_data)
 
     def put_in_table(self, table: StorageTableABC, k, v, temp, count, part_of_data):
         temp.append((k, v))

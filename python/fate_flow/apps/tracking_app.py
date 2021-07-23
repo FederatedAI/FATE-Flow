@@ -24,6 +24,7 @@ from google.protobuf import json_format
 
 from fate_common.base_utils import fate_uuid
 from fate_arch import storage
+from fate_arch.session import Session
 from fate_flow.db.db_models import Job, DB
 from fate_flow.manager.data_manager import delete_metric_data
 from fate_flow.operation.job_tracker import Tracker
@@ -270,7 +271,7 @@ def component_output_data_download():
         output_data_file_path = "{}/{}.csv".format(output_tmp_dir, output_name)
         os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
         with open(output_data_file_path, 'w') as fw:
-            with storage.Session.build(name=output_table_meta.get_name(), namespace=output_table_meta.get_namespace()) as storage_session:
+            with Session().new_storage(name=output_table_meta.get_name(), namespace=output_table_meta.get_namespace()) as storage_session:
                 output_table = storage_session.get_table()
                 for k, v in output_table.collect():
                     data_line, have_data_label, is_str, have_weight = get_component_output_data_line(src_key=k, src_value=v)

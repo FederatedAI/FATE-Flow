@@ -21,12 +21,13 @@ from fate_common import file_utils, log, EngineType, profile
 from fate_common.base_utils import current_timestamp, timestamp_to_date
 from fate_common.log import schedule_logger, getLogger
 from fate_arch import session
-from fate_flow.entity.types import TaskStatus, ProcessRole, RunParameters, PassTaskException
+from fate_flow.entity.types import ProcessRole, PassTaskException
+from fate_flow.entity.run_status import TaskStatus
+from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.operation.job_tracker import Tracker
 from fate_arch import storage
 from fate_flow.utils import job_utils, schedule_utils
-from fate_flow.component_env_utils import dsl_utils
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
@@ -135,7 +136,9 @@ class TaskExecutor(object):
             else:
                 session_options = {}
 
-            sess = session.Session(computing_type=job_parameters.computing_engine, federation_type=job_parameters.federation_engine)
+            sess = session.Session(session_id=job_utils.generate_session_id(task_id, task_version, role, party_id),
+                                   computing=job_parameters.computing_engine,
+                                   federation=job_parameters.federation_engine)
             computing_session_id = job_utils.generate_session_id(task_id, task_version, role, party_id)
             sess.init_computing(computing_session_id=computing_session_id, options=session_options)
             federation_session_id = job_utils.generate_task_version_id(task_id, task_version)

@@ -13,24 +13,23 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.utils.authentication_utils import authentication_check
-from fate_flow.protobuf.python import pipeline_pb2
-from fate_common.log import schedule_logger
-from fate_common import EngineType, string_utils
-from fate_flow.entity.types import JobStatus, EndStatus, RunParameters
-from fate_flow.runtime_config import RuntimeConfig
-from fate_flow.operation.job_tracker import Tracker
-from fate_flow.settings import USE_AUTHENTICATION, DEFAULT_TASK_PARALLELISM, DEFAULT_FEDERATED_STATUS_COLLECT_TYPE
-from fate_flow.utils import job_utils, schedule_utils, data_utils
-from fate_flow.operation.job_saver import JobSaver
-from fate_common.base_utils import json_dumps, current_timestamp
-from fate_flow.controller.task_controller import TaskController
-from fate_flow.manager.resource_manager import ResourceManager
-from fate_common import WorkMode, Backend
-from fate_common import FederatedMode
+from fate_arch.common import engine_utils
 from fate_arch.computing import ComputingEngine
-from fate_arch.federation import FederationEngine
-from fate_arch.storage import StorageEngine
+from fate_common import EngineType
+from fate_common.base_utils import json_dumps, current_timestamp
+from fate_common.log import schedule_logger
+from fate_flow.controller.task_controller import TaskController
+from fate_flow.entity.run_status import JobStatus, EndStatus
+from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.manager.resource_manager import ResourceManager
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.operation.job_tracker import Tracker
+from fate_flow.protobuf.python import pipeline_pb2
+from fate_flow.runtime_config import RuntimeConfig
+from fate_flow.settings import USE_AUTHENTICATION
+from fate_flow import job_default_settings
+from fate_flow.utils import job_utils, schedule_utils, data_utils
+from fate_flow.utils.authentication_utils import authentication_check
 
 
 class JobController(object):
@@ -85,51 +84,34 @@ class JobController(object):
         JobSaver.create_job(job_info=job_info)
 
     @classmethod
-    def backend_compatibility(cls, job_parameters: RunParameters):
-        # compatible with previous 1.5 versions
-        if job_parameters.computing_engine is None or job_parameters.federation_engine is None:
-            if job_parameters.work_mode is None or job_parameters.backend is None:
-                raise RuntimeError("unable to find compatible backend engines")
-            work_mode = WorkMode(job_parameters.work_mode)
-            backend = Backend(job_parameters.backend)
-            if backend == Backend.EGGROLL:
-                if work_mode == WorkMode.CLUSTER:
-                    job_parameters.computing_engine = ComputingEngine.EGGROLL
-                    job_parameters.federation_engine = FederationEngine.EGGROLL
-                    job_parameters.storage_engine = StorageEngine.EGGROLL
-                else:
-                    job_parameters.computing_engine = ComputingEngine.STANDALONE
-                    job_parameters.federation_engine = FederationEngine.STANDALONE
-                    job_parameters.storage_engine = StorageEngine.STANDALONE
-            elif backend == Backend.SPARK_PULSAR:
-                job_parameters.computing_engine = ComputingEngine.SPARK
-                job_parameters.federation_engine = FederationEngine.PULSAR
-                job_parameters.storage_engine = StorageEngine.HDFS
-            elif backend == Backend.SPARK_RABBITMQ:
-                job_parameters.computing_engine = ComputingEngine.SPARK
-                job_parameters.federation_engine = FederationEngine.RABBITMQ
-                job_parameters.storage_engine = StorageEngine.HDFS
-                # add mq info
-                federation_info = {}
-                federation_info['union_name'] = string_utils.random_string(4)
-                federation_info['policy_id'] = string_utils.random_string(10)
-                job_parameters.federation_info = federation_info
+    def get_job_engines(cls, job_parameters: RunParameters):
+        kwargs = {}
+        for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
+            kwargs[k] = getattr(job_parameters, f"{k}_engine", None)
+        engines = engine_utils.engines_compatibility(
+            work_mode=job_parameters.work_mode,
+            backend=job_parameters.backend,
+            federated_mode=job_parameters.federated_mode,
+            **kwargs
+        )
+        for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
+            setattr(job_parameters, f"{k}_engine", engines[k])
+        job_parameters.federated_mode = engines["federated_mode"]
 
-        if job_parameters.federated_mode is None:
-            if job_parameters.computing_engine in [ComputingEngine.EGGROLL, ComputingEngine.SPARK]:
-                job_parameters.federated_mode = FederatedMode.MULTIPLE
-            elif job_parameters.computing_engine in [ComputingEngine.STANDALONE]:
-                job_parameters.federated_mode = FederatedMode.SINGLE
+    @classmethod
+    def fill_default_job_parameters(cls, job_id, job_parameters: RunParameters):
+        keys = {"task_parallelism", "auto_retries", "auto_retry_delay", "federated_status_collect_type"}
+        for key in keys:
+            if hasattr(job_parameters, key) and getattr(job_parameters, key) is None:
+                if hasattr(job_default_settings, key.upper()):
+                    setattr(job_parameters, key, getattr(job_default_settings, key.upper()))
+                else:
+                    schedule_logger(job_id=job_id).warning(f"can not found {key} job parameter default value from job_default_settings")
 
     @classmethod
     def adapt_job_parameters(cls, role, job_parameters: RunParameters, create_initiator_baseline=False):
         ResourceManager.adapt_engine_parameters(
             role=role, job_parameters=job_parameters, create_initiator_baseline=create_initiator_baseline)
-        if create_initiator_baseline:
-            if job_parameters.task_parallelism is None:
-                job_parameters.task_parallelism = DEFAULT_TASK_PARALLELISM
-            if job_parameters.federated_status_collect_type is None:
-                job_parameters.federated_status_collect_type = DEFAULT_FEDERATED_STATUS_COLLECT_TYPE
         if create_initiator_baseline and not job_parameters.computing_partitions:
             job_parameters.computing_partitions = job_parameters.adaptation_parameters[
                 "task_cores_per_node"] * job_parameters.adaptation_parameters["task_nodes"]
@@ -177,6 +159,8 @@ class JobController(object):
         common_task_info["party_id"] = party_id
         common_task_info["federated_mode"] = job_parameters.federated_mode
         common_task_info["federated_status_collect_type"] = job_parameters.federated_status_collect_type
+        common_task_info["auto_retries"] = job_parameters.auto_retries
+        common_task_info["auto_retry_delay"] = job_parameters.auto_retry_delay
         if task_version:
             common_task_info["task_version"] = task_version
         if not component_name:

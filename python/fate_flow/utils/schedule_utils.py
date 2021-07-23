@@ -17,7 +17,7 @@ from fate_flow.db.db_models import DB, Job
 from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.component_env_utils import dsl_utils
-from fate_flow.entity.types import RunParameters
+from fate_flow.entity.run_parameters import RunParameters
 
 
 @DB.connection_context()
