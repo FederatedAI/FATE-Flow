@@ -714,8 +714,14 @@ class BaseDSLParser(object):
     def get_job_parameters(self):
         return self.job_parameters
 
-    def get_job_providers(self):
-        return self.job_providers
+    def get_job_providers(self, provider_detail=None, local_role=None, local_party_id=None):
+        if self.job_providers:
+            return self.job_providers
+        else:
+            self.job_providers = RuntimeConfParserUtil.get_job_providers(self.dsl, provider_detail, local_role,
+                                                                         local_party_id, self.job_parameters)
+
+            return self.job_providers
 
     @staticmethod
     def _gen_predict_data_mapping():
@@ -804,16 +810,12 @@ class DSLParser(BaseDSLParser):
         if mode == "train":
             self.job_parameters = RuntimeConfParserUtil.get_job_parameters(self.runtime_conf,
                                                                            conf_version=1)
-            self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail, local_role,
-                                                                         local_party_id, self.job_parameters)
 
         elif mode == "predict":
             predict_runtime_conf = RuntimeConfParserUtil.merge_dict(pipeline_runtime_conf, runtime_conf)
             self.predict_runtime_conf = predict_runtime_conf
             self.job_parameters = RuntimeConfParserUtil.get_job_parameters(predict_runtime_conf,
                                                                            conf_version=1)
-            self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail, local_role,
-                                                                         local_party_id, self.job_parameters)
 
         self.args_input, self.args_data_key = RuntimeConfParserUtil.get_input_parameters(runtime_conf,
                                                                                          conf_version=1)
@@ -962,17 +964,12 @@ class DSLParserV2(BaseDSLParser):
         if mode == "train":
             self.job_parameters = RuntimeConfParserUtil.get_job_parameters(self.runtime_conf,
                                                                            conf_version=2)
-            self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail, local_role,
-                                                                         local_party_id, self.job_parameters)
 
         else:
             predict_runtime_conf = RuntimeConfParserUtil.merge_dict(pipeline_runtime_conf, runtime_conf)
             self.predict_runtime_conf = predict_runtime_conf
             self.job_parameters = RuntimeConfParserUtil.get_job_parameters(predict_runtime_conf,
                                                                            conf_version=2)
-
-            self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail, local_role,
-                                                                         local_party_id, self.job_parameters)
 
         self.args_input = RuntimeConfParserUtil.get_input_parameters(runtime_conf,
                                                                      components=self._get_reader_components(),
