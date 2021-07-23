@@ -43,19 +43,20 @@ with open(provider_path, "r") as fin:
 dsl_parser_v1 = dsl_parser.DSLParser()
 dsl_parser_v1.run(dsl=dsl_v1,
                   runtime_conf=conf_v1,
-                  provider_detail=provider_detail,
-                  mode="train",
-                  local_role="guest",
-                  local_party_id=10000)
+                  mode="train")
 
 pprint.pprint(dsl_parser_v1.get_job_parameters())
 print ("\n\n\n")
-pprint.pprint(dsl_parser_v1.get_job_providers())
+pprint.pprint(dsl_parser_v1.get_job_providers(provider_detail=provider_detail,
+                                              local_role="guest",
+                                              local_party_id=10000))
 print ("\n\n\n")
 pprint.pprint(dsl_parser_v1.get_dependency())
 print ("\n\n\n")
 
-job_providers = dsl_parser_v1.get_job_providers()
+job_providers = dsl_parser_v1.get_job_providers(provider_detail=provider_detail,
+                                                local_role="guest",
+                                                local_party_id=10000)
 component_parameters = dict()
 deploy_detail = dict()
 for component in job_providers.keys():
