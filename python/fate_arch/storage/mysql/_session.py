@@ -31,7 +31,7 @@ class StorageSession(StorageSessionBase):
         pass
 
     def table(self, name, namespace, address: AddressABC, partitions,
-              storage_type: MySQLStoreType = MySQLStoreType.InnoDB, options=None, **kwargs):
+              store_type: MySQLStoreType = MySQLStoreType.InnoDB, options=None, **kwargs):
         self.address = address
         if isinstance(address, MysqlAddress):
             from fate_arch.storage.mysql._table import StorageTable
@@ -43,7 +43,7 @@ class StorageSession(StorageSessionBase):
                                        db=address.db)
             self.cur = self.con.cursor()
             return StorageTable(cur=self.cur, con=self.con, address=address, name=name, namespace=namespace,
-                                store_type=storage_type, partitions=partitions, options=options)
+                                store_type=store_type, partitions=partitions, options=options)
         raise NotImplementedError(f"address type {type(address)} not supported with eggroll storage")
 
     def cleanup(self, name, namespace):

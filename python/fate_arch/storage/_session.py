@@ -19,9 +19,10 @@ from fate_arch.abc import StorageSessionABC, StorageTableABC, CTableABC
 from fate_arch.common import EngineType, engine_utils
 from fate_arch.common.log import getLogger
 from fate_arch.storage._table import StorageTableMeta
-from fate_arch.storage._types import StorageEngine, EggRollStoreType
+from fate_arch.storage._types import StorageEngine, EggRollStoreType, StandaloneStoreType
 from fate_arch.relation_ship import Relationship
 from fate_arch.storage.metastore.db_models import DB, StorageTableMetaModel
+from fate_arch.common.base_utils import current_timestamp
 
 MAX_NUM = 10000
 
@@ -45,7 +46,7 @@ class StorageSessionBase(StorageSessionABC):
         table_meta.address = table.get_address()
         table_meta.partitions = table.get_partitions()
         table_meta.engine = table.get_engine()
-        table_meta.type = table.get_store_type()
+        table_meta.store_type = table.get_store_type()
         table_meta.options = table.get_options()
         table_meta.create()
         table.meta = table_meta
@@ -67,14 +68,14 @@ class StorageSessionBase(StorageSessionABC):
                                namespace=meta.get_namespace(),
                                address=meta.get_address(),
                                partitions=meta.get_partitions(),
-                               storage_type=meta.get_type(),
+                               store_type=meta.get_store_type(),
                                options=meta.get_options())
             table.meta = meta
             return table
         else:
             return None
 
-    def table(self, name, namespace, address, partitions, storage_type=None, options=None, **kwargs) -> StorageTableABC:
+    def table(self, name, namespace, address, partitions, store_type=None, options=None, **kwargs) -> StorageTableABC:
         raise NotImplementedError()
 
     @classmethod
@@ -98,6 +99,7 @@ class StorageSessionBase(StorageSessionABC):
             store_type = EggRollStoreType.ROLLPAIR_LMDB if store_type is None else store_type
         elif engine == StorageEngine.STANDALONE:
             address_dict.update({"name": table_name, "namespace": table_namespace})
+            store_type = StandaloneStoreType.ROLLPAIR_LMDB if store_type is None else store_type
         elif engine == StorageEngine.HDFS:
             address_dict.update({"path": os.path.join(address_dict.get("path_prefix", ""), table_namespace, table_name)})
         else:
@@ -117,10 +119,11 @@ class StorageSessionBase(StorageSessionABC):
         table_meta.address = address
         table_meta.partitions = computing_table.partitions
         table_meta.engine = engine
-        table_meta.type = store_type
+        table_meta.store_type = store_type
         table_meta.schema = schema
         table_meta.part_of_data = part_of_data
         table_meta.count = table_count
+        table_meta.write_access_time = current_timestamp()
         table_meta.create()
         return table_meta
 

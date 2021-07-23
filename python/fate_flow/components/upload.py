@@ -74,16 +74,19 @@ class Upload(ComponentBase):
         if partitions <= 0 or partitions >= self.MAX_PARTITIONS:
             raise Exception("Error number of partition, it should between %d and %d" % (0, self.MAX_PARTITIONS))
         session = Session(session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id))
-        storage_session = session.new_storage(namespace=namespace, name=name)
         if self.parameters.get("destroy", False):
-            table = storage_session.get_table()
-            if table:
-                LOGGER.info(f"destroy table name: {name} namespace: {namespace} engine: {table.get_engine()}")
-                table.destroy()
+            storage_session = session.storage(namespace=namespace, name=name)
+            if storage_session:
+                table = storage_session.get_table()
+                if table:
+                    LOGGER.info(f"destroy table name: {name} namespace: {namespace} engine: {table.get_engine()}")
+                    table.destroy()
+                else:
+                    LOGGER.info(f"can not found table name: {name} namespace: {namespace}, pass destroy")
             else:
                 LOGGER.info(f"can not found table name: {name} namespace: {namespace}, pass destroy")
         address_dict = storage_address.copy()
-        storage_session = session.new_storage(storage_engine=storage_engine, options=self.parameters.get("options"))
+        storage_session = session.storage(storage_engine=storage_engine, options=self.parameters.get("options"))
         if storage_engine in {StorageEngine.EGGROLL, StorageEngine.STANDALONE}:
             upload_address = {"name": name, "namespace": namespace, "storage_type": EggRollStoreType.ROLLPAIR_LMDB}
         elif storage_engine in {StorageEngine.MYSQL}:

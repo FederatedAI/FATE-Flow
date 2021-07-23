@@ -18,6 +18,7 @@ import os
 import sys
 
 from peewee import CharField, IntegerField, BigIntegerField, TextField, CompositeKey, BooleanField
+from fate_arch.storage.metastore.base_model import DateTimeField
 from playhouse.apsw_ext import APSWDatabase
 from playhouse.pool import PooledMySQLDatabase
 
@@ -89,7 +90,7 @@ class StorageTableMetaModel(DataBaseModel):
     f_namespace = CharField(max_length=100, index=True)
     f_address = JSONField()
     f_engine = CharField(max_length=100, index=True)  # 'EGGROLL', 'MYSQL'
-    f_type = CharField(max_length=50, index=True, null=True)  # store type
+    f_store_type = CharField(max_length=50, index=True, null=True)  # store type
     f_options = JSONField()
     f_partitions = IntegerField(null=True)
 
@@ -102,8 +103,10 @@ class StorageTableMetaModel(DataBaseModel):
     f_part_of_data = SerializedField()
     f_description = TextField(default='')
 
-    f_create_time = BigIntegerField()
-    f_update_time = BigIntegerField(null=True)
+    f_read_access_time = BigIntegerField(null=True)
+    f_read_access_date = DateTimeField(null=True)
+    f_write_access_time = BigIntegerField(null=True)
+    f_write_access_date = DateTimeField(null=True)
 
     class Meta:
         db_table = "t_storage_table_meta"
@@ -116,7 +119,6 @@ class SessionRecord(DataBaseModel):
     f_engine_type = CharField(max_length=10, index=True)
     f_engine_name = CharField(max_length=50, index=True)
     f_engine_address = JSONField()
-    f_create_time = BigIntegerField(index=True)
 
     class Meta:
         db_table = "t_session_record"

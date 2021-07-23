@@ -200,9 +200,11 @@ class Session(object):
         storage_session_id = f"{self._session_id}_storage_{uuid.uuid1()}" if not storage_session_id else storage_session_id
         if storage_session_id in self._storage_session:
             raise RuntimeError(f"the storage session id {storage_session_id} already exists")
-        if storage_engine is None and kwargs.get("name") and kwargs.get("namespace"):
+        if kwargs.get("name") and kwargs.get("namespace"):
             storage_engine, address, partitions = StorageSessionBase.get_storage_info(name=kwargs.get("name"),
                                                                                       namespace=kwargs.get("namespace"))
+            if not storage_engine:
+                return None
         if storage_engine is None and computing_engine is None:
             computing_engine, federation_engine, federation_mode = engine_utils.engines_compatibility(**kwargs)
         if storage_engine is None and computing_engine:

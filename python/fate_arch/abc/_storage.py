@@ -62,7 +62,7 @@ class StorageTableMetaABC(metaclass=abc.ABCMeta):
         ...
 
     @abc.abstractmethod
-    def get_type(self):
+    def get_store_type(self):
         ...
 
     @abc.abstractmethod

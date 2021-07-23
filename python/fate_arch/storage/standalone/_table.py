@@ -64,9 +64,11 @@ class StorageTable(StorageTableBase):
         return self._options
 
     def put_all(self, kv_list: Iterable, **kwargs):
+        super(StorageTable, self).update_write_access_time()
         return self._table.put_all(kv_list)
 
     def collect(self, **kwargs):
+        super(StorageTable, self).update_read_access_time()
         return self._table.collect(**kwargs)
 
     def destroy(self):

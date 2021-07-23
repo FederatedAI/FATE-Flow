@@ -36,6 +36,8 @@ class StorageTableBase(StorageTableABC):
         self._name = name
         self._namespace = namespace
         self._meta = None
+        self._read_access_time = None
+        self._write_access_time = None
 
     def destroy(self):
         # destroy schema
@@ -71,6 +73,22 @@ class StorageTableBase(StorageTableABC):
     def get_partitions(self):
         pass
 
+    @property
+    def read_access_time(self):
+        return self._read_access_time
+
+    def update_read_access_time(self, read_access_time=None):
+        read_access_time = current_timestamp() if not read_access_time else read_access_time
+        self._meta.update_metas(read_access_time=read_access_time)
+
+    @property
+    def write_access_time(self):
+        return self._write_access_time
+
+    def update_write_access_time(self, write_access_time=None):
+        write_access_time = current_timestamp() if not write_access_time else write_access_time
+        self._meta.update_metas(write_access_time=write_access_time)
+
     def put_all(self, kv_list: Iterable, **kwargs):
         pass
 
@@ -94,7 +112,7 @@ class StorageTableMeta(StorageTableMetaABC):
         self.namespace = namespace
         self.address = None
         self.engine = None
-        self.type = None
+        self.store_type = None
         self.options = None
         self.partitions = None
         self.in_serialized = None
@@ -106,6 +124,8 @@ class StorageTableMeta(StorageTableMetaABC):
         self.description = None
         self.create_time = None
         self.update_time = None
+        self.read_access_time = None
+        self.write_access_time = None
         if self.options is None:
             self.options = {}
         if self.schema is None:
@@ -251,8 +271,8 @@ class StorageTableMeta(StorageTableMetaABC):
     def get_engine(self):
         return self.engine
 
-    def get_type(self):
-        return self.type
+    def get_store_type(self):
+        return self.store_type
 
     def get_options(self):
         return self.options
