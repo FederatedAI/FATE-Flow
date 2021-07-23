@@ -90,7 +90,9 @@ class BaseModel(Model):
 
     @classmethod
     def update(cls, __data=None, **update):
-        for f_n in {"start", "end"}:
+        if hasattr(cls, "f_update_time"):
+            __data[operator.attrgetter("f_update_time")(cls)] = current_timestamp()
+        for f_n in {"start", "end", "update"}:
             if hasattr(cls, f"f_{f_n}_time") and hasattr(cls, f"f_{f_n}_date"):
                 k = operator.attrgetter(f"f_{f_n}_time")(cls)
                 if k in __data and __data[k]:
