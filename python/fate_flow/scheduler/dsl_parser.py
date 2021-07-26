@@ -271,6 +271,8 @@ class BaseDSLParser(object):
                                 provider_detail,
                                 provider_name,
                                 provider_version,
+                                local_role,
+                                local_party_id,
                                 runtime_conf,
                                 redundant_param_check=True):
         """
@@ -298,8 +300,8 @@ class BaseDSLParser(object):
                                                                          cur_component,
                                                                          redundant_param_check=redundant_param_check,
                                                                          conf_version=self.version,
-                                                                         local_role=self.local_role,
-                                                                         local_party_id=self.local_party_id)
+                                                                         local_role=local_role,
+                                                                         local_party_id=local_party_id)
 
         for component in parent_path:
             idx = self.component_name_index.get(component)
@@ -875,7 +877,8 @@ class DSLParser(BaseDSLParser):
 
         return self.predict_dsl
 
-    def parse_component_parameters(self, component_name, provider_detail, provider_name, provider_version):
+    def parse_component_parameters(self, component_name, provider_detail, provider_name,
+                                   provider_version, local_role, local_party_id):
         if self.mode == "predict":
             runtime_conf = self.predict_runtime_conf
             redundant_param_check = False
@@ -887,6 +890,8 @@ class DSLParser(BaseDSLParser):
                                                   provider_detail,
                                                   provider_name,
                                                   provider_version,
+                                                  local_role,
+                                                  local_party_id,
                                                   runtime_conf,
                                                   redundant_param_check)
 
@@ -1041,7 +1046,7 @@ class DSLParserV2(BaseDSLParser):
 
             return role_predict_dsl
 
-    def parse_component_parameters(self, component_name, provider_detail, provider_name, provider_version):
+    def parse_component_parameters(self, component_name, provider_detail, provider_name, provider_version, local_role, local_party_id):
         if self.mode == "predict":
             runtime_conf = self.predict_runtime_conf
         else:
@@ -1052,6 +1057,8 @@ class DSLParserV2(BaseDSLParser):
                                                   provider_detail,
                                                   provider_name,
                                                   provider_version,
+                                                  local_role,
+                                                  local_party_id,
                                                   runtime_conf,
                                                   redundant_param_check)
 

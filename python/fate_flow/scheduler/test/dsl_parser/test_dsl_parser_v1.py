@@ -67,7 +67,9 @@ for component in job_providers.keys():
     parameter = dsl_parser_v1.parse_component_parameters(component,
                                                          provider_detail,
                                                          provider_name,
-                                                         provider_version)
+                                                         provider_version,
+                                                         local_role="guest",
+                                                         local_party_id=10000)
 
     component_parameters[component] = parameter
     deploy_detail[component] = dsl_parser_v1.get_component_need_deploy_info(component, provider_detail, job_providers)

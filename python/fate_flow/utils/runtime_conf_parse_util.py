@@ -85,16 +85,16 @@ class RuntimeConfParserUtil(object):
             return {}
 
         conf = dict()
+        for key, value in runtime_conf.items():
+            if key not in ["algorithm_parameters", "role_parameters", "component_parameters"]:
+                conf[key] = value
+
         conf["role"] = role_on_module
         conf["local"] = runtime_conf.get("local", {})
         conf["local"].update({"role": local_role,
                               "party_id": local_party_id})
         conf["module"] = module
         conf["CodePath"] = provider.get_module_name(module, local_role)
-
-        for key, value in runtime_conf.items():
-            if key not in ["algorithm_parameters", "role_parameters", "component_parameters"]:
-                conf[key] = value
 
         common_parameters = runtime_conf.get("component_parameters", {}).get("common", {}) if conf_version == 2 \
             else runtime_conf.get("algorithm_parameters", {})
