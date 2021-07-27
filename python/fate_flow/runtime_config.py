@@ -18,7 +18,7 @@ import os.path
 from fate_common.versions import get_versions
 from fate_common import file_utils
 from fate_flow.settings import FATE_FLOW_DIRECTORY
-from fate_flow.entity.types import ComponentProvider
+from fate_flow.entity.types import ComponentProviderName
 
 
 class RuntimeConfig(object):
@@ -59,10 +59,10 @@ class RuntimeConfig(object):
     def load_component_registry(cls):
         component_registry = file_utils.load_json_conf(os.path.join(FATE_FLOW_DIRECTORY, "component_registry.json"))
         RuntimeConfig.COMPONENT_REGISTRY.update(component_registry)
-        for component_provider, provider_info in component_registry.get("provider", {}).items():
-            if component_provider not in ComponentProvider._value2member_map_:
-                del RuntimeConfig.COMPONENT_REGISTRY["provider"][component_provider]
-                raise Exception(f"not support component provider: {component_provider}")
+        for provider_name, provider_info in component_registry.get("provider", {}).items():
+            if provider_name not in ComponentProviderName._value2member_map_:
+                del RuntimeConfig.COMPONENT_REGISTRY["provider"][provider_name]
+                raise Exception(f"not support component provider: {provider_name}")
         cls.inject_fate_flow_component_provider()
 
     @classmethod

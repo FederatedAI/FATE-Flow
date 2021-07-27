@@ -24,11 +24,11 @@ from os.path import join, getsize
 from fate_common import file_utils
 from fate_arch.protobuf.python import default_empty_fill_pb2
 from fate_flow.settings import stat_logger, TEMP_DIRECTORY
-from fate_flow.entity.types import ComponentProvider
+from fate_flow.entity.types import ComponentProviderName
 
 
 class PipelinedModel(object):
-    def __init__(self, model_id, model_version, component_type: ComponentProvider = None, component_version = None):
+    def __init__(self, model_id, model_version, component_type: ComponentProviderName = None, component_version = None):
         """
         Support operations on FATE PipelinedModels
         TODO: add lock

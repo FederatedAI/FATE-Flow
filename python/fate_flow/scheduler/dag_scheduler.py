@@ -99,7 +99,7 @@ class DAGScheduler(Cron):
         JobController.adapt_job_parameters(role=job.f_initiator_role, job_parameters=common_job_parameters, create_initiator_baseline=True)
 
         job.f_runtime_conf = conf_adapter.update_common_parameters(common_parameters=common_job_parameters)
-        dsl_parser = schedule_utils.get_dsl_parser_on_component_env(dsl=job.f_dsl,
+        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                                     runtime_conf=job.f_runtime_conf,
                                                                     train_runtime_conf=job.f_train_runtime_conf)
 
@@ -347,7 +347,7 @@ class DAGScheduler(Cron):
             else:
                 tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
         job_can_rerun = False
-        dsl_parser = schedule_utils.get_dsl_parser_on_component_env(dsl=job.f_dsl,
+        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                                     runtime_conf=job.f_runtime_conf_on_party,
                                                                     train_runtime_conf=job.f_train_runtime_conf)
         for task in tasks:

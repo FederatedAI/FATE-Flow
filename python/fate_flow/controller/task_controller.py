@@ -79,6 +79,7 @@ class TaskController(object):
             "party_id": party_id,
         }
         try:
+            task = JobSaver.query_task(task_id=task_id, task_version=task_version)[0]
             task_dir = os.path.join(job_utils.get_job_directory(job_id=job_id), role, party_id, component_name, task_id, task_version)
             os.makedirs(task_dir, exist_ok=True)
             task_parameters_path = os.path.join(task_dir, 'task_parameters.json')
@@ -90,7 +91,7 @@ class TaskController(object):
 
             schedule_logger(job_id=job_id).info(f"use computing engine {run_parameters.computing_engine}")
 
-            component_path = job_utils.get_component_path(run_parameters.component_provider, run_parameters.component_version)
+            component_path = task.f_provider_path
             component_python_path = os.path.join(file_utils.get_python_base_directory(), *component_path[:-1])
             if run_parameters.computing_engine in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
                 process_cmd = [

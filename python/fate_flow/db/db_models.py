@@ -168,8 +168,7 @@ class Task(DataBaseModel):
     f_status_code = IntegerField(null=True, index=True)
     f_auto_retries = IntegerField(default=0, index=True)
     f_auto_retry_delay = IntegerField(default=0)
-    f_support_roles = JSONField()
-    f_component_parameters = JSONField()
+    #f_support_roles = JSONField()
     # this party configuration
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=10, index=True)
@@ -177,6 +176,8 @@ class Task(DataBaseModel):
     f_run_ip = CharField(max_length=100, null=True)
     f_run_pid = IntegerField(null=True)
     f_party_status = CharField(max_length=50, index=True)
+    f_provider_path = CharField(max_length=1000)
+    f_component_parameters = JSONField()
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)

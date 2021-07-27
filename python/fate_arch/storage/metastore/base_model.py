@@ -88,7 +88,7 @@ class BaseModel(Model):
         self.f_update_date = timestamp_to_date(self.f_update_time)
         for f_n in {"read_access", "write_access"}:
             if getattr(self, f"f_{f_n}_time", None) and hasattr(self, f"f_{f_n}_date"):
-                setattr(self, f"f_{f_n}_date", getattr(self, f"f_{f_n}_time"))
+                setattr(self, f"f_{f_n}_date", timestamp_to_date(getattr(self, f"f_{f_n}_time")))
         return super(BaseModel, self).save(*args, **kwargs)
 
     @classmethod

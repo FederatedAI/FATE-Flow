@@ -243,10 +243,6 @@ def get_default_component_use(component_provider):
     return component_provider, component_version
 
 
-def get_component_path(component_provider: ComponentProvider, component_version):
-    return RuntimeConfig.COMPONENT_REGISTRY["provider"].get(component_provider, {}).get(component_version, {}).get("path", [])
-
-
 @DB.connection_context()
 def list_job(limit):
     if limit > 0:

@@ -21,7 +21,7 @@ from fate_common import file_utils, log, EngineType, profile
 from fate_common.base_utils import current_timestamp, timestamp_to_date
 from fate_common.log import schedule_logger, getLogger
 from fate_arch import session
-from fate_flow.entity.types import ProcessRole, PassTaskException
+from fate_flow.entity.types import ProcessRole
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.runtime_config import RuntimeConfig
@@ -32,6 +32,7 @@ from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
 from fate_arch.computing import ComputingEngine
+from fate_flow.component_env_utils import dsl_utils
 
 LOGGER = getLogger()
 
@@ -88,16 +89,17 @@ class TaskExecutor(object):
             job_conf = job_utils.get_job_conf(job_id, role)
             job_dsl = job_conf["job_dsl_path"]
             job_runtime_conf = job_conf["job_runtime_conf_path"]
-            dsl_parser = schedule_utils.get_dsl_parser_on_component_env(dsl=job_dsl,
-                                                                        runtime_conf=job_runtime_conf,
-                                                                        train_runtime_conf=job_conf["train_runtime_conf_path"],
-                                                                        pipeline_dsl=job_conf["pipeline_dsl_path"])
-            party_index = job_runtime_conf["role"][role].index(party_id)
+            dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_dsl,
+                                                           runtime_conf=job_runtime_conf,
+                                                           train_runtime_conf=job_conf["train_runtime_conf_path"],
+                                                           pipeline_dsl=job_conf["pipeline_dsl_path"])
             job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser, job_runtime_conf, role, party_id)
             component = dsl_parser.get_component_info(component_name=component_name)
-            component_parameters = component.get_role_parameters()
-            component_parameters_on_party = component_parameters[role][
-                party_index] if role in component_parameters else {}
+            component_provider, component_parameters_on_party = dsl_utils.get_component_run_info(dsl_parser=dsl_parser,
+                                                                                                 component_name=component_name,
+                                                                                                 role=role,
+                                                                                                 party_id=party_id)
+
             module_name = component.get_module()
             task_input_dsl = component.get_input()
             task_output_dsl = component.get_output()
@@ -162,8 +164,8 @@ class TaskExecutor(object):
             if module_name in {"Upload", "Download", "Reader", "Writer"}:
                 task_run_args["job_parameters"] = job_parameters
 
-            component_framework_interface = component.get_source_component_interface()
-            run_object = component_framework_interface.get_module(component.get_module(), role)
+            component_framework = dsl_utils.get_component_framework_interface(provider=component_provider)
+            run_object = component_framework.get_module(module_name, role)
             run_object.set_tracker(tracker=tracker_client)
             run_object.set_task_version_id(task_version_id=job_utils.generate_task_version_id(task_id, task_version))
             # add profile logs
@@ -187,8 +189,6 @@ class TaskExecutor(object):
             # There is only one model output at the current dsl version.
             tracker.save_output_model(output_model,
                                       task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default')
-            task_info["party_status"] = TaskStatus.SUCCESS
-        except PassTaskException:
             task_info["party_status"] = TaskStatus.SUCCESS
         except Exception as e:
             traceback.print_exc()

@@ -29,6 +29,7 @@ from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.settings import USE_AUTHENTICATION
 from fate_flow import job_default_settings
 from fate_flow.utils import job_utils, schedule_utils, data_utils
+from fate_flow.component_env_utils import dsl_utils
 from fate_flow.utils.authentication_utils import authentication_check
 
 
@@ -43,9 +44,9 @@ class JobController(object):
             authentication_check(src_role=job_info.get('src_role', None), src_party_id=job_info.get('src_party_id', None),
                                  dsl=dsl, runtime_conf=runtime_conf, role=role, party_id=party_id)
 
-        dsl_parser = schedule_utils.get_dsl_parser_on_component_env(dsl=dsl,
-                                                                    runtime_conf=runtime_conf,
-                                                                    train_runtime_conf=train_runtime_conf)
+        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=dsl,
+                                                       runtime_conf=runtime_conf,
+                                                       train_runtime_conf=train_runtime_conf)
         job_parameters = dsl_parser.get_job_parameters().get(role, {}).get(party_id, {})
         schedule_logger(job_id).info(
             'job parameters:{}'.format(job_parameters))
@@ -171,17 +172,22 @@ class JobController(object):
         for component in components:
             task_info = {}
             task_info.update(common_task_info)
-            component_parameters = component.get_role_parameters()
-            interface = component.get_source_component_interface()
-            support_roles = interface.get_support_role(component.get_module())
-            for parameters_on_party in component_parameters.get(common_task_info["role"], []):
-                if parameters_on_party.get('local', {}).get('party_id') == common_task_info["party_id"]:
-                    task_info = {}
-                    task_info.update(common_task_info)
-                    task_info["component_name"] = component.get_name()
-                    task_info["support_roles"] = support_roles
-                    task_info["component_parameters"] = component_parameters
-                    TaskController.create_task(role=role, party_id=party_id, run_on_this_party=run_on_this_party, task_info=task_info)
+
+            provider, parameters = dsl_utils.get_component_run_info(dsl_parser=dsl_parser,
+                                                                    component_name=component.get_name(),
+                                                                    role=role,
+                                                                    party_id=party_id)
+            if parameters:
+                task_info = {}
+                task_info.update(common_task_info)
+                task_info["component_name"] = component.get_name()
+                task_info["provider_path"] = provider.path
+                #task_info["support_roles"] = support_roles
+                task_info["component_parameters"] = parameters
+                TaskController.create_task(role=role, party_id=party_id, run_on_this_party=run_on_this_party, task_info=task_info)
+            else:
+                # The party does not need to run, pass
+                pass
 
     @classmethod
     def initialize_job_tracker(cls, job_id, role, party_id, job_parameters: RunParameters, roles, is_initiator, dsl_parser):
@@ -336,7 +342,7 @@ class JobController(object):
         initiator_party_id = runtime_conf_on_party['initiator']['party_id']
         if job_type == 'predict':
             return
-        dsl_parser = schedule_utils.get_dsl_parser_on_component_env(dsl=job_dsl,
+        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_dsl,
                                                                     runtime_conf=job_runtime_conf,
                                                                     train_runtime_conf=train_runtime_conf)
         predict_dsl = dsl_parser.get_predict_dsl(role=role)
