@@ -13,14 +13,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
+import os
 from fate_arch.common import engine_utils
 from fate_arch.computing import ComputingEngine
 from fate_common import EngineType
-from fate_common.base_utils import json_dumps, current_timestamp
+from fate_common.base_utils import json_dumps, current_timestamp, fate_uuid
+from fate_common import file_utils
 from fate_common.log import schedule_logger
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.run_status import JobStatus, EndStatus
 from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity.component_provider import ComponentProvider
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
@@ -31,6 +35,8 @@ from fate_flow import job_default_settings
 from fate_flow.utils import job_utils, schedule_utils, data_utils
 from fate_flow.component_env_utils import dsl_utils
 from fate_flow.utils.authentication_utils import authentication_check
+from fate_flow.operation.task_initializer import TaskInitializer
+import subprocess
 
 
 class JobController(object):
@@ -158,36 +164,68 @@ class JobController(object):
         common_task_info["initiator_party_id"] = initiator_party_id
         common_task_info["role"] = role
         common_task_info["party_id"] = party_id
+        common_task_info["run_on_this_party"] = run_on_this_party
         common_task_info["federated_mode"] = job_parameters.federated_mode
         common_task_info["federated_status_collect_type"] = job_parameters.federated_status_collect_type
         common_task_info["auto_retries"] = job_parameters.auto_retries
         common_task_info["auto_retry_delay"] = job_parameters.auto_retry_delay
         if task_version:
             common_task_info["task_version"] = task_version
-        if not component_name:
-            components = dsl_parser.get_topology_components()
-        else:
-            components = [dsl_parser.get_component_info(
-                component_name=component_name)]
-        for component in components:
-            task_info = {}
-            task_info.update(common_task_info)
+        provider_group = dsl_utils.get_job_provider_group(dsl_parser=dsl_parser,
+                                                          role=role,
+                                                          party_id=party_id,
+                                                          component_name=component_name)
+        for group_key, group_info in provider_group.items():
+            initialized_config = {}
+            initialized_config.update(group_info)
+            initialized_config["common_task_info"] = common_task_info
+            cls.start_initializer(job_id=job_id,
+                                  role=role,
+                                  party_id=party_id,
+                                  initialized_config=initialized_config)
 
-            provider, parameters = dsl_utils.get_component_run_info(dsl_parser=dsl_parser,
-                                                                    component_name=component.get_name(),
-                                                                    role=role,
-                                                                    party_id=party_id)
-            if parameters:
-                task_info = {}
-                task_info.update(common_task_info)
-                task_info["component_name"] = component.get_name()
-                task_info["provider_path"] = provider.path
-                #task_info["support_roles"] = support_roles
-                task_info["component_parameters"] = parameters
-                TaskController.create_task(role=role, party_id=party_id, run_on_this_party=run_on_this_party, task_info=task_info)
-            else:
-                # The party does not need to run, pass
-                pass
+    @classmethod
+    def start_initializer(cls, job_id, role, party_id, initialized_config):
+        initializer_id = fate_uuid()
+        initialized_components = initialized_config["components"]
+        party_id = str(party_id)
+        schedule_logger(job_id).info('try to start job {} task initializer {} subprocess to initialize {} on {} {}'.format(job_id, initializer_id, initialized_components, role, party_id))
+        initialize_dir = os.path.join(job_utils.get_job_directory(job_id=job_id), role, party_id, f"initialize_{initializer_id}")
+        os.makedirs(initialize_dir, exist_ok=True)
+        initialized_config_path = os.path.join(initialize_dir, f'initialized_config.json')
+        with open(initialized_config_path, 'w') as fw:
+            fw.write(json_dumps(initialized_config))
+
+        process_cmd = [
+            sys.executable,
+            sys.modules[TaskInitializer.__module__].__file__,
+            '-j', job_id,
+            '-r', role,
+            '-p', party_id,
+            '-c', initialized_config_path,
+            '--run_ip', RuntimeConfig.JOB_SERVER_HOST,
+            '--job_server', '{}:{}'.format(RuntimeConfig.JOB_SERVER_HOST, RuntimeConfig.HTTP_PORT),
+        ]
+        log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), role, party_id, f"initialize_{initializer_id}")
+        print(initialized_config["provider"])
+        provider = ComponentProvider(**initialized_config["provider"])
+        p = job_utils.run_subprocess(job_id=job_id, config_dir=initialize_dir, process_cmd=process_cmd, extra_env=provider.env, log_dir=log_dir, job_dir=initialize_dir)
+        schedule_logger(job_id).info('job {} task initializer {} on {} {} subprocess pid {} is ready'.format(job_id, initializer_id, role, party_id, p.pid))
+        try:
+            p.communicate(timeout=5)
+            # return code always 0 because of server wait_child_process, can not use to check
+            st = JobSaver.check_task(job_id=job_id, role=role, party_id=party_id, components=initialized_components)
+            schedule_logger(job_id).info('job {} initialize {} on {} {} {}'.format(job_id, initialized_components, role, party_id, "successfully" if st else "failed"))
+            #todo: check
+            """
+            if not st:
+                raise Exception(job_utils.get_subprocess_std(log_dir=log_dir))
+            """
+        except subprocess.TimeoutExpired as e:
+            err = f"job {job_id} task initializer {initializer_id} on {role} {party_id} subprocess pid {p.pid} run timeout"
+            schedule_logger(job_id).exception(err, e)
+            p.kill()
+            raise Exception(err)
 
     @classmethod
     def initialize_job_tracker(cls, job_id, role, party_id, job_parameters: RunParameters, roles, is_initiator, dsl_parser):

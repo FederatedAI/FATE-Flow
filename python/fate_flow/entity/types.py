@@ -22,27 +22,6 @@ class ComponentProviderName(Enum):
     FATE_FLOW_TOOLS = "fate_flow_tools"
 
 
-class ComponentProvider(object):
-    def __init__(self, name, version, path):
-        if name not in ComponentProviderName._value2member_map_:
-            raise ValueError(f"not support {name} provider")
-        self._name = name
-        self._version = version
-        self._path = path
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def version(self):
-        return self._version
-
-    @property
-    def path(self):
-        return self._path
-
-
 class RetCode(IntEnum):
     SUCCESS = 0
     EXCEPTION_ERROR = 100

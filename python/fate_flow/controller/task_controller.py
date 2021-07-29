@@ -22,6 +22,7 @@ from fate_flow.operation.task_executor import TaskExecutor
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import TaskStatus, EndStatus
 from fate_flow.entity.types import KillProcessRetCode
+from fate_flow.entity.component_provider import ComponentProvider
 from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.utils import job_utils
 import os
@@ -91,8 +92,8 @@ class TaskController(object):
 
             schedule_logger(job_id=job_id).info(f"use computing engine {run_parameters.computing_engine}")
 
-            component_path = task.f_provider_path
-            component_python_path = os.path.join(file_utils.get_python_base_directory(), *component_path[:-1])
+            provider = ComponentProvider(**task.f_provider_info)
+
             if run_parameters.computing_engine in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
                 process_cmd = [
                     sys.executable,
@@ -147,7 +148,7 @@ class TaskController(object):
             task_job_dir = os.path.join(job_utils.get_job_directory(job_id=job_id), role, party_id, component_name)
             schedule_logger(job_id).info(
                 'job {} task {} {} on {} {} executor subprocess is ready'.format(job_id, task_id, task_version, role, party_id))
-            p = job_utils.run_subprocess(job_id=job_id, config_dir=task_dir, process_cmd=process_cmd, extra_python_path=component_python_path, log_dir=task_log_dir, job_dir=task_job_dir)
+            p = job_utils.run_subprocess(job_id=job_id, config_dir=task_dir, process_cmd=process_cmd, extra_env=provider.env, log_dir=task_log_dir, job_dir=task_job_dir)
             if p:
                 task_info["party_status"] = TaskStatus.RUNNING
                 #task_info["run_pid"] = p.pid

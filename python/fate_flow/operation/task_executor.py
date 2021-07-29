@@ -56,20 +56,21 @@ class TaskExecutor(object):
             parser.add_argument('--run_ip', help="run ip", type=str)
             parser.add_argument('--job_server', help="job server", type=str)
             args = parser.parse_args()
-            schedule_logger(args.job_id).info('enter task process')
-            schedule_logger(args.job_id).info(args)
-            # init function args
-            if args.job_server:
-                RuntimeConfig.init_config(JOB_SERVER_HOST=args.job_server.split(':')[0],
-                                          HTTP_PORT=args.job_server.split(':')[1])
-                RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
-            RuntimeConfig.load_component_registry()
             job_id = args.job_id
             component_name = args.component_name
             task_id = args.task_id
             task_version = args.task_version
             role = args.role
             party_id = args.party_id
+            schedule_logger(job_id).info('enter task executor process')
+            schedule_logger(job_id).info(args)
+            schedule_logger(job_id).info("python env: {}, python path: {}".format(os.getenv("VIRTUAL_ENV"), os.getenv("PYTHONPATH")))
+            # init function args
+            if args.job_server:
+                RuntimeConfig.init_config(JOB_SERVER_HOST=args.job_server.split(':')[0],
+                                          HTTP_PORT=args.job_server.split(':')[1])
+                RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
+            RuntimeConfig.load_component_registry()
             task_parameters = RunParameters(**file_utils.load_json_conf(args.config))
             job_parameters = task_parameters
             if job_parameters.assistant_role:

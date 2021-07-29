@@ -222,13 +222,6 @@ class FederatedScheduler(object):
     def task_command(cls, job, task, command, command_body=None):
         federated_response = {}
         job_parameters = job.f_runtime_conf_on_party["job_parameters"]
-        """
-        component_parameters = task.f_component_parameters
-        for dest_role, parameters_on_partys in component_parameters.items():
-            federated_response[dest_role] = {}
-            for parameters_on_party in parameters_on_partys:
-                dest_party_id = parameters_on_party.get('local', {}).get('party_id')
-        """
         tasks = JobSaver.query_task(task_id=task.f_task_id, task_version=task.f_task_version)
         for task in tasks:
             dest_role, dest_party_id = task.f_role, task.f_party_id

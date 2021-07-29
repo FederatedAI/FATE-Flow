@@ -14,19 +14,43 @@
 #  limitations under the License.
 #
 import importlib
-from fate_flow.entity.types import ComponentProvider
+from fate_flow.entity.component_provider import ComponentProvider
 from fate_flow.runtime_config import RuntimeConfig
 
 
-def get_component_provider(dsl_parser, component_name, role, party_id):
-    component_providers = dsl_parser.get_job_providers(provider_detail=RuntimeConfig.COMPONENT_REGISTRY,
-                                                       local_role=role,
-                                                       local_party_id=party_id)
-
-    provider_info = component_providers[component_name]["provider"]
+def component_provider(provider_info):
     name, version = provider_info["name"], provider_info["version"]
     path = RuntimeConfig.COMPONENT_REGISTRY["provider"].get(name, {}).get(version, {}).get("path", [])
     return ComponentProvider(name=name, version=version, path=path)
+
+
+def get_job_provider_group(dsl_parser, role, party_id, component_name=None):
+    providers = dsl_parser.get_job_providers(provider_detail=RuntimeConfig.COMPONENT_REGISTRY,
+                                             local_role=role,
+                                             local_party_id=party_id)
+    # providers format: {'upload_0': {'module': 'Upload', 'provider': {'name': 'fate_flow_tools', 'version': '1.7.0'}}}
+
+    group = {}
+    if component_name is not None:
+        providers = providers.get(component_name)
+    for component_name, provider_info in providers.items():
+        provider = component_provider(provider_info["provider"])
+        group_key = ":".join([provider.name, provider.version])
+        if group_key not in group:
+            group[group_key] = {
+                "provider": provider.to_json(),
+                "components": [component_name]
+            }
+        else:
+            group[group_key]["components"].append(component_name)
+    return group
+
+
+def get_component_provider(dsl_parser, component_name, role, party_id):
+    providers = dsl_parser.get_job_providers(provider_detail=RuntimeConfig.COMPONENT_REGISTRY,
+                                             local_role=role,
+                                             local_party_id=party_id)
+    return component_provider(providers[component_name]["provider"])
 
 
 def get_component_parameters(dsl_parser, component_name, role, party_id, provider: ComponentProvider = None):

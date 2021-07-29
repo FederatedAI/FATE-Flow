@@ -151,7 +151,7 @@ class TaskScheduler(object):
     def collect_task_of_all_party(cls, job, initiator_task, set_status=None):
         tasks_on_all_party = JobSaver.query_task(task_id=initiator_task.f_task_id, task_version=initiator_task.f_task_version)
         tasks_status_on_all = set([task.f_status for task in tasks_on_all_party])
-        if not len(tasks_status_on_all) > 1 and not TaskStatus.RUNNING in tasks_status_on_all:
+        if not len(tasks_status_on_all) > 1 and TaskStatus.RUNNING not in tasks_status_on_all:
             return
         status, federated_response = FederatedScheduler.collect_task(job=job, task=initiator_task)
         if status != FederatedSchedulingStatusCode.SUCCESS:

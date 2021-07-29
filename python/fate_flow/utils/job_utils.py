@@ -25,11 +25,11 @@ from fate_common import file_utils
 from fate_common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_common.log import schedule_logger
 from fate_flow.db.db_models import DB, Job, Task
-from fate_flow.entity.types import ComponentProvider, KillProcessRetCode
+from fate_flow.entity.types import KillProcessRetCode
 from fate_flow.entity.run_status import JobStatus, TaskStatus
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.runtime_config import RuntimeConfig
-from fate_flow.settings import stat_logger, WORK_MODE, FATE_BOARD_DASHBOARD_ENDPOINT
+from fate_flow.settings import stat_logger, WORK_MODE, FATE_BOARD_DASHBOARD_ENDPOINT, SUBPROCESS_STD_LOG_NAME
 from fate_flow.utils import detect_utils, model_utils
 from fate_flow.utils import session_utils
 from fate_flow.utils.service_utils import ServiceUtils
@@ -303,13 +303,13 @@ def check_process_by_keyword(keywords):
     return ret == 0
 
 
-def run_subprocess(job_id, config_dir, process_cmd, extra_python_path=None, log_dir=None, job_dir=None):
+def run_subprocess(job_id, config_dir, process_cmd, extra_env: dict = None, log_dir=None, job_dir=None):
     schedule_logger(job_id=job_id).info('start process command: {}'.format(' '.join(process_cmd)))
 
     os.makedirs(config_dir, exist_ok=True)
     if log_dir:
         os.makedirs(log_dir, exist_ok=True)
-    std_log = open(os.path.join(log_dir if log_dir else config_dir, 'std.log'), 'w')
+    std_log = open(os.path.join(log_dir if log_dir else config_dir, SUBPROCESS_STD_LOG_NAME), 'w')
     pid_path = os.path.join(config_dir, 'pid')
 
     if os.name == 'nt':
@@ -319,9 +319,13 @@ def run_subprocess(job_id, config_dir, process_cmd, extra_python_path=None, log_
     else:
         startupinfo = None
     subprocess_env = None
-    if extra_python_path:
+    if extra_env:
         subprocess_env = os.environ.copy()
-        subprocess_env["PYTHONPATH"] += f":{extra_python_path}"
+        for name, value in extra_env.items():
+            if name.endswith("PATH"):
+                subprocess_env[name] = subprocess_env.get(name, "") + f":{value}"
+            else:
+                subprocess_env[name] = value
     p = subprocess.Popen(process_cmd,
                          stdout=std_log,
                          stderr=std_log,
@@ -335,6 +339,12 @@ def run_subprocess(job_id, config_dir, process_cmd, extra_python_path=None, log_
         f.flush()
     schedule_logger(job_id=job_id).info('start process command: {} successfully, pid is {}'.format(' '.join(process_cmd), p.pid))
     return p
+
+
+def get_subprocess_std(log_dir):
+    with open(os.path.join(log_dir, SUBPROCESS_STD_LOG_NAME), "r") as fr:
+        text = fr.read()
+    return text
 
 
 def wait_child_process(signum, frame):

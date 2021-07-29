@@ -253,6 +253,21 @@ class JobSaver(object):
             return [task for task in tasks]
 
     @classmethod
+    @DB.connection_context()
+    def check_task(cls, job_id, role, party_id, components: list):
+        filters = [
+            Task.f_job_id == job_id,
+            Task.f_role == role,
+            Task.f_party_id == party_id,
+            Task.f_component_name << components
+        ]
+        tasks = Task.select().where(*filters)
+        if tasks and len(tasks) == len(components):
+            return True
+        else:
+            return False
+
+    @classmethod
     def get_latest_tasks(cls, tasks):
         tasks_group = {}
         for task in tasks:

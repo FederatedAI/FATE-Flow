@@ -29,6 +29,7 @@ SERVER_MODULE = "fate_flow_server.py"
 TEMP_DIRECTORY = os.path.join(
     file_utils.get_project_base_directory(), "temp", "fate_flow")
 FATE_FLOW_DIRECTORY = os.path.join(file_utils.get_python_base_directory(), "fate_flow")
+SUBPROCESS_STD_LOG_NAME = "std.log"
 HEADERS = {
     "Content-Type": "application/json",
     "Connection": "close",
