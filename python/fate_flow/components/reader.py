@@ -23,8 +23,11 @@ from fate_common import log, EngineType
 from fate_arch.computing import ComputingEngine
 from fate_arch.storage import StorageTableMeta, StorageEngine
 from fate_flow.entity.metric import MetricMeta
+from fate_flow.entity.exceptions import ParameterException
+from fate_flow.entity.types import InputSearchType
 from fate_flow.utils import job_utils, data_utils
 from fate_flow.components.component_base import ComponentBase
+from fate_flow.operation.job_tracker import Tracker
 
 LOGGER = log.getLogger()
 MAX_NUM = 10000
@@ -38,13 +41,19 @@ class Reader(ComponentBase):
     def run(self, component_parameters=None, args=None):
         self.parameters = component_parameters["ComponentParam"]
         output_storage_address = args["job_parameters"].engines_address[EngineType.STORAGE]
+        # only support one input table
         table_key = [key for key in self.parameters.keys()][0]
+
+        input_table_namespace, input_table_name = self.get_input_table_info(parameters=self.parameters[table_key],
+                                                                            role=self.tracker.role,
+                                                                            party_id=self.tracker.party_id)
+
         computing_engine = args["job_parameters"].computing_engine
         output_table_namespace, output_table_name = data_utils.default_output_table_info(task_id=self.tracker.task_id,
                                                                                          task_version=self.tracker.task_version)
         input_table_meta, output_table_address, output_table_engine = self.convert_check(
-            input_name=self.parameters[table_key]['name'],
-            input_namespace=self.parameters[table_key]['namespace'],
+            input_name=input_table_name,
+            input_namespace=input_table_namespace,
             output_name=output_table_name,
             output_namespace=output_table_namespace,
             computing_engine=computing_engine,
@@ -93,8 +102,8 @@ class Reader(ComponentBase):
                 for data in Tdata:
                     table_info[data[0]] = ','.join(list(set(data[1:]))[:5])
         data_info = {
-            "table_name": self.parameters[table_key]['name'],
-            "namespace": self.parameters[table_key]['namespace'],
+            "table_name": input_table_name,
+            "namespace": input_table_namespace,
             "table_info": table_info,
             "partitions": output_table_meta.get_partitions(),
             "storage_engine": output_table_meta.get_engine()
@@ -109,6 +118,24 @@ class Reader(ComponentBase):
                                      metric_name="reader_name",
                                      metric_meta=MetricMeta(name='reader', metric_type='data_info',
                                                             extra_metas=data_info))
+
+    def get_input_table_info(self, parameters, role, party_id):
+        search_type = data_utils.get_input_search_type(parameters)
+        if search_type == InputSearchType.TABLE_INFO:
+            return parameters["namespace"], parameters["name"]
+        elif search_type == InputSearchType.JOB_COMPONENT_OUTPUT:
+            output_data_infos = Tracker.query_output_data_infos(job_id=parameters["job_id"],
+                                                                component_name=parameters["component_name"],
+                                                                data_name=parameters["data"],
+                                                                role=role, party_id=party_id)
+            if not output_data_infos:
+                raise Exception(f"can not found input table, please check parameters")
+            else:
+                namespace, name = output_data_infos[0].f_table_namespace, output_data_infos[0].f_table_name
+                LOGGER.info(f"found input table {namespace} {name} by {parameters}")
+                return namespace, name
+        else:
+            raise ParameterException(f"can not found input table info by parameters {parameters}")
 
     def convert_check(self, input_name, input_namespace, output_name, output_namespace,
                       computing_engine: ComputingEngine = ComputingEngine.EGGROLL, output_storage_address={}) -> (

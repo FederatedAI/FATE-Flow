@@ -19,12 +19,12 @@ from fate_arch.common import engine_utils
 from fate_arch.computing import ComputingEngine
 from fate_common import EngineType
 from fate_common.base_utils import json_dumps, current_timestamp, fate_uuid
-from fate_common import file_utils
 from fate_common.log import schedule_logger
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.run_status import JobStatus, EndStatus
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity.types import InputSearchType
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
@@ -63,7 +63,7 @@ class JobController(object):
             is_initiator = True
         else:
             is_initiator = False
-        job_info["status"] = JobStatus.WAITING
+        job_info["status"] = JobStatus.READY
         # this party configuration
         job_info["role"] = role
         job_info["party_id"] = party_id
@@ -207,7 +207,6 @@ class JobController(object):
             '--job_server', '{}:{}'.format(RuntimeConfig.JOB_SERVER_HOST, RuntimeConfig.HTTP_PORT),
         ]
         log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), role, party_id, f"initialize_{initializer_id}")
-        print(initialized_config["provider"])
         provider = ComponentProvider(**initialized_config["provider"])
         p = job_utils.run_subprocess(job_id=job_id, config_dir=initialize_dir, process_cmd=process_cmd, extra_env=provider.env, log_dir=log_dir, job_dir=initialize_dir)
         schedule_logger(job_id).info('job {} task initializer {} on {} {} subprocess pid {} is ready'.format(job_id, initializer_id, role, party_id, p.pid))
@@ -282,8 +281,13 @@ class JobController(object):
                         else:
                             for key in _role_party_args[_party_index].keys():
                                 for _data_type, _data_location in _role_party_args[_party_index][key].items():
-                                    dataset[_role][_party_id][key] = '{}.{}'.format(
-                                        _data_location['namespace'], _data_location['name'])
+                                    search_type = data_utils.get_input_search_type(parameters=_data_location)
+                                    if search_type == InputSearchType.TABLE_INFO:
+                                        dataset[_role][_party_id][key] = '{}.{}'.format(_data_location['namespace'], _data_location['name'])
+                                    elif search_type == InputSearchType.JOB_COMPONENT_OUTPUT:
+                                        dataset[_role][_party_id][key] = '{}.{}.{}'.format(_data_location['job_id'], _data_location['component_name'], _data_location['data'])
+                                    else:
+                                        dataset[_role][_party_id][key] = "unknown"
         return dataset
 
     @classmethod

@@ -42,11 +42,11 @@ def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_run
     return dsl_parser
 
 
-def federated_order_reset(dest_partys, scheduler_partys_info):
+def federated_order_reset(dest_parties, scheduler_partys_info):
     dest_partys_new = []
     scheduler = []
     dest_party_ids_dict = {}
-    for dest_role, dest_party_ids in dest_partys:
+    for dest_role, dest_party_ids in dest_parties:
         from copy import deepcopy
         new_dest_party_ids = deepcopy(dest_party_ids)
         dest_party_ids_dict[dest_role] = new_dest_party_ids

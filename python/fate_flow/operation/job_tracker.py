@@ -15,12 +15,12 @@
 #
 import operator
 import copy
-from typing import List
+import typing
 
 from fate_common import EngineType, Party
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
-from fate_arch.storage import StorageEngine, StorageSessionBase
+from fate_arch.storage import StorageEngine
 from fate_common.base_utils import current_timestamp, serialize_b64, deserialize_b64, json_loads
 from fate_common.log import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingMetric, TrackingOutputDataInfo,
@@ -70,7 +70,7 @@ class Tracker(object):
                                                                   component_type=self.job_parameters.component_provider if self.job_parameters else None,
                                                                   component_version=self.job_parameters.component_version if self.job_parameters else None)
 
-    def save_metric_data(self, metric_namespace: str, metric_name: str, metrics: List[Metric], job_level=False):
+    def save_metric_data(self, metric_namespace: str, metric_name: str, metrics: typing.List[Metric], job_level=False):
         schedule_logger(self.job_id).info(
             'save job {} component {} on {} {} {} {} metric data'.format(self.job_id, self.component_name, self.role,
                                                                          self.party_id, metric_namespace, metric_name))
@@ -373,7 +373,7 @@ class Tracker(object):
 
     @classmethod
     @DB.connection_context()
-    def query_output_data_infos(cls, **kwargs):
+    def query_output_data_infos(cls, **kwargs) -> typing.List[TrackingOutputDataInfo]:
         tracking_output_data_info_model = cls.get_dynamic_db_model(TrackingOutputDataInfo, kwargs.get("job_id"))
         filters = []
         for f_n, f_v in kwargs.items():
@@ -392,7 +392,7 @@ class Tracker(object):
                 output_data_infos_group[group_key] = output_data_info
             elif output_data_info.f_task_version > output_data_infos_group[group_key].f_task_version:
                 output_data_infos_group[group_key] = output_data_info
-        return output_data_infos_group.values()
+        return list(output_data_infos_group.values())
 
     @classmethod
     def get_output_data_group_key(cls, task_id, data_name):

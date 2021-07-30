@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 from fate_common import base_utils
-import numpy
+from fate_flow.entity.types import InputSearchType
 
 from fate_arch import storage
 
@@ -58,3 +58,12 @@ def get_input_data_min_partitions(input_data, role, party_id):
                 if not min_partition or min_partition > table_partition:
                     min_partition = table_partition
     return min_partition
+
+
+def get_input_search_type(parameters):
+    if "name" in parameters and "namespace" in parameters:
+        return InputSearchType.TABLE_INFO
+    elif "job_id" in parameters and "component_name" in parameters and "data" in parameters:
+        return InputSearchType.JOB_COMPONENT_OUTPUT
+    else:
+        return InputSearchType.UNKNOWN

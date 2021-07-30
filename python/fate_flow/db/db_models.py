@@ -158,6 +158,7 @@ class Task(DataBaseModel):
     # multi-party common configuration
     f_job_id = CharField(max_length=25, index=True)
     f_component_name = TextField()
+    f_component_module = CharField(max_length=200, index=True)
     f_task_id = CharField(max_length=100, index=True)
     f_task_version = BigIntegerField(index=True)
     f_initiator_role = CharField(max_length=50, index=True)

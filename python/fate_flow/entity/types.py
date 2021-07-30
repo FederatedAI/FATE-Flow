@@ -13,10 +13,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from enum import IntEnum, Enum
+from enum import IntEnum
 
 
-class ComponentProviderName(Enum):
+class BaseType(object):
+    @classmethod
+    def types(cls):
+        return [cls.__dict__[k] for k in cls.__dict__.keys() if not callable(getattr(cls, k)) and not k.startswith("__")]
+
+    @classmethod
+    def contains(cls, status):
+        return status in cls.types()
+
+
+class ComponentProviderName(BaseType):
     FATE_FEDERATED_ALGORITHM = "fate_federated_algorithm"
     FUSHU_AVATAR_ALGORITHM = "fushu_avatar_algorithm"
     FATE_FLOW_TOOLS = "fate_flow_tools"
@@ -71,5 +81,7 @@ class KillProcessRetCode(object):
     ERROR_PID = 2
 
 
-class PassTaskException(Exception):
-    pass
+class InputSearchType(IntEnum):
+    UNKNOWN = 0
+    TABLE_INFO = 1
+    JOB_COMPONENT_OUTPUT = 2

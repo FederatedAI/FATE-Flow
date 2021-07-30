@@ -60,7 +60,7 @@ class RuntimeConfig(object):
         component_registry = file_utils.load_json_conf(os.path.join(FATE_FLOW_DIRECTORY, "component_registry.json"))
         RuntimeConfig.COMPONENT_REGISTRY.update(component_registry)
         for provider_name, provider_info in component_registry.get("provider", {}).items():
-            if provider_name not in ComponentProviderName._value2member_map_:
+            if not ComponentProviderName.contains(provider_name):
                 del RuntimeConfig.COMPONENT_REGISTRY["provider"][provider_name]
                 raise Exception(f"not support component provider: {provider_name}")
         cls.inject_fate_flow_component_provider()

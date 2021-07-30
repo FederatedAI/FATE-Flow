@@ -20,7 +20,7 @@ from fate_flow.entity.types import ComponentProviderName
 
 class ComponentProvider(object):
     def __init__(self, name, version, path, **kwargs):
-        if name not in ComponentProviderName._value2member_map_:
+        if not ComponentProviderName.contains(name):
             raise ValueError(f"not support {name} provider")
         self._name = name
         self._version = version

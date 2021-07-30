@@ -81,6 +81,7 @@ class TaskInitializer(object):
                     task_info = {}
                     task_info.update(common_task_info)
                     task_info["component_name"] = component_name
+                    task_info["component_module"] = parameters["module"]
                     task_info["provider_info"] = provider.to_json()
                     task_info["component_parameters"] = parameters
                     TaskController.create_task(role=role, party_id=party_id,
