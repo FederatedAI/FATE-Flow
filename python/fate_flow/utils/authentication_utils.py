@@ -19,7 +19,7 @@ import os
 
 from flask import request
 
-from fate_common import file_utils
+from fate_arch.common import file_utils
 from fate_flow.settings import USE_AUTHENTICATION, PRIVILEGE_COMMAND_WHITELIST, stat_logger
 
 

@@ -17,12 +17,12 @@ import operator
 import copy
 import typing
 
-from fate_common import EngineType, Party
+from fate_arch.common import EngineType, Party
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
-from fate_common.base_utils import current_timestamp, serialize_b64, deserialize_b64, json_loads
-from fate_common.log import schedule_logger
+from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64, json_loads
+from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingMetric, TrackingOutputDataInfo,
                                     ComponentSummary, MachineLearningModelInfo as MLModel)
 from fate_flow.entity.metric import Metric, MetricMeta

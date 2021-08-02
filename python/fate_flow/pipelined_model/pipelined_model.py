@@ -21,7 +21,7 @@ import base64
 from ruamel import yaml
 
 from os.path import join, getsize
-from fate_common import file_utils
+from fate_arch.common import file_utils
 from fate_arch.protobuf.python import default_empty_fill_pb2
 from fate_flow.settings import stat_logger, TEMP_DIRECTORY
 from fate_flow.entity.types import ComponentProviderName

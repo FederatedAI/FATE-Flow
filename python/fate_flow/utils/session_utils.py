@@ -15,7 +15,7 @@
 #
 import argparse
 
-from fate_common.log import schedule_logger
+from fate_arch.common.log import schedule_logger
 from fate_arch import session
 
 

@@ -15,7 +15,7 @@
 #
 from flask.json import jsonify
 
-from fate_common import FederatedMode
+from fate_arch.common import FederatedMode
 from fate_flow.utils import job_utils
 from flask import Flask, request
 

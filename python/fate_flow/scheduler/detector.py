@@ -13,10 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_common.base_utils import current_timestamp
+from fate_arch.common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, Job
 from fate_arch.session import Session
-from fate_common.log import detect_logger
+from fate_arch.common.log import detect_logger
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
 from fate_flow.utils import cron, job_utils

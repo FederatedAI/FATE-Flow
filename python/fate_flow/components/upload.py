@@ -17,7 +17,7 @@ import os
 import shutil
 import time
 
-from fate_common import log, file_utils, EngineType, path_utils
+from fate_arch.common import log, file_utils, EngineType, path_utils
 from fate_arch.storage import StorageEngine, EggRollStoreType
 from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.utils import job_utils, data_utils

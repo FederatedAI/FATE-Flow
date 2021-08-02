@@ -15,7 +15,7 @@
 #
 # -*- coding: utf-8 -*-
 from fate_arch.computing import ComputingEngine
-from fate_common.conf_utils import get_base_config
+from fate_arch.common.conf_utils import get_base_config
 from fate_flow.settings import FATEFLOW_SERVICE_NAME
 
 # Resource

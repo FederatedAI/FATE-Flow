@@ -15,8 +15,8 @@
 #
 import sys
 
-from fate_common import FederatedCommunicationType, file_utils
-from fate_common.log import schedule_logger
+from fate_arch.common import FederatedCommunicationType, file_utils
+from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import Task
 from fate_flow.operation.task_executor import TaskExecutor
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -27,8 +27,8 @@ from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.utils import job_utils
 import os
 from fate_flow.operation.job_saver import JobSaver
-from fate_common.base_utils import json_dumps, current_timestamp
-from fate_common import base_utils
+from fate_arch.common.base_utils import json_dumps, current_timestamp
+from fate_arch.common import base_utils
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker

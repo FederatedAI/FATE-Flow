@@ -18,8 +18,8 @@ from urllib import parse
 from kazoo.client import KazooClient
 from kazoo.security import make_digest_acl
 
-from fate_common import conf_utils
-from fate_common.conf_utils import get_base_config
+from fate_arch.common import conf_utils
+from fate_arch.common.conf_utils import get_base_config
 from fate_flow.settings import FATE_FLOW_MODEL_TRANSFER_ENDPOINT, IP, HTTP_PORT, FATEFLOW_SERVICE_NAME
 from fate_flow.settings import stat_logger, SERVICES_SUPPORT_REGISTRY, FATE_SERVICES_REGISTERED_PATH
 

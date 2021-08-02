@@ -16,7 +16,7 @@
 import grpc
 
 from fate_flow.settings import IP, HTTP_PORT, FATE_FLOW_MODEL_TRANSFER_ENDPOINT
-from fate_common.conf_utils import get_base_config
+from fate_arch.common.conf_utils import get_base_config
 from fate_arch.protobuf.python import model_service_pb2
 from fate_arch.protobuf.python import model_service_pb2_grpc
 from fate_flow.settings import stat_logger

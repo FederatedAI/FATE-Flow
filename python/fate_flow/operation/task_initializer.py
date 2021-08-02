@@ -17,9 +17,9 @@ import argparse
 import os
 import sys
 import traceback
-from fate_common import file_utils
-from fate_common.base_utils import current_timestamp
-from fate_common.log import schedule_logger, getLogger
+from fate_arch.common import file_utils
+from fate_arch.common.base_utils import current_timestamp
+from fate_arch.common.log import schedule_logger, getLogger
 from fate_flow.component_env_utils import dsl_utils
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.types import ProcessRole

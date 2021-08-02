@@ -15,8 +15,8 @@
 #
 from typing import List
 
-from fate_common import log
-from fate_common.base_utils import serialize_b64
+from fate_arch.common import log
+from fate_arch.common.base_utils import serialize_b64
 from fate_flow.entity.types import RetCode
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.entity.metric import Metric, MetricMeta

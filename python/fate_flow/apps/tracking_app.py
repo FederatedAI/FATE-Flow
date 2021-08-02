@@ -22,7 +22,7 @@ import tarfile
 from flask import Flask, request, send_file, jsonify
 from google.protobuf import json_format
 
-from fate_common.base_utils import fate_uuid
+from fate_arch.common.base_utils import fate_uuid
 from fate_arch import storage
 from fate_arch.session import Session
 from fate_flow.db.db_models import Job, DB

@@ -15,10 +15,10 @@
 #
 import os
 import shutil
-from fate_common import file_utils
+from fate_arch.common import file_utils
 from fate_flow.utils import model_utils, schedule_utils
 from fate_flow.settings import stat_logger
-from fate_common.base_utils import json_loads, json_dumps
+from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.utils.model_utils import check_before_deploy

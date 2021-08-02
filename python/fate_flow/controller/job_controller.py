@@ -17,9 +17,9 @@ import sys
 import os
 from fate_arch.common import engine_utils
 from fate_arch.computing import ComputingEngine
-from fate_common import EngineType
-from fate_common.base_utils import json_dumps, current_timestamp, fate_uuid
-from fate_common.log import schedule_logger
+from fate_arch.common import EngineType
+from fate_arch.common.base_utils import json_dumps, current_timestamp, fate_uuid
+from fate_arch.common.log import schedule_logger
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.run_status import JobStatus, EndStatus
 from fate_flow.entity.run_parameters import RunParameters

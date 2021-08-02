@@ -15,7 +15,7 @@
 #
 import requests
 
-from fate_common.log import audit_logger
+from fate_arch.common.log import audit_logger
 from fate_flow.utils.proto_compatibility import basic_meta_pb2
 from fate_flow.utils.proto_compatibility import proxy_pb2, proxy_pb2_grpc
 import grpc
@@ -23,7 +23,7 @@ import grpc
 from fate_flow.settings import FATEFLOW_SERVICE_NAME, IP, GRPC_PORT, HEADERS
 from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.utils.node_check_utils import nodes_check
-from fate_common.base_utils import json_dumps, json_loads
+from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_flow import job_default_settings
 
 

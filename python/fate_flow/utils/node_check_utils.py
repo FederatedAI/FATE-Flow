@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 import requests
-from fate_common import conf_utils
+from fate_arch.common import conf_utils
 
 from fate_flow.settings import CHECK_NODES_IDENTITY, FATE_MANAGER_NODE_CHECK_ENDPOINT
 from fate_flow.utils.service_utils import ServiceUtils

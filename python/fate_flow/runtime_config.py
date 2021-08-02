@@ -15,8 +15,8 @@
 #
 import os.path
 
-from fate_common.versions import get_versions
-from fate_common import file_utils
+from fate_arch.common.versions import get_versions
+from fate_arch.common import file_utils
 from fate_flow.settings import FATE_FLOW_DIRECTORY
 from fate_flow.entity.types import ComponentProviderName
 

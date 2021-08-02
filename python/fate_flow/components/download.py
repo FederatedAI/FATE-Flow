@@ -15,7 +15,7 @@
 #
 import os
 
-from fate_common import log
+from fate_arch.common import log
 from fate_flow.entity.metric import Metric, MetricMeta
 from fate_arch import storage
 from fate_arch.session import Session

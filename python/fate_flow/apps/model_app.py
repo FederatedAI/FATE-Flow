@@ -23,8 +23,8 @@ import json
 from copy import deepcopy
 from datetime import date, datetime
 
-from fate_common.base_utils import json_loads, json_dumps
-from fate_common.file_utils import get_project_base_directory
+from fate_arch.common.base_utils import json_loads, json_dumps
+from fate_arch.common.file_utils import get_project_base_directory
 from fate_flow.db.db_models import MachineLearningModelInfo as MLModel
 from fate_flow.db.db_models import Tag, DB, ModelTag, ModelOperationLog as OperLog
 from flask import Flask, request, send_file, Response
@@ -40,7 +40,7 @@ from fate_flow.utils.service_utils import ServiceUtils
 from fate_flow.utils.detect_utils import check_config
 from fate_flow.utils.model_utils import gen_party_model_id, check_if_deployed
 from fate_flow.entity.types import ModelOperation, TagOperation
-from fate_common import file_utils, WorkMode, FederatedMode
+from fate_arch.common import file_utils, WorkMode, FederatedMode
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 
 manager = Flask(__name__)

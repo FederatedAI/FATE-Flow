@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_common import FederatedCommunicationType
+from fate_arch.common import FederatedCommunicationType
 from fate_flow.entity.types import RetCode
 from fate_flow.entity.run_status import StatusSet, TaskStatus, EndStatus, AutoRerunStatus
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
@@ -22,7 +22,7 @@ from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.utils import job_utils
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.operation.job_saver import JobSaver
-from fate_common.log import schedule_logger
+from fate_arch.common.log import schedule_logger
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.controller.job_controller import JobController
 from fate_flow.db.db_models import Job, Task

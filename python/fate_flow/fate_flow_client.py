@@ -26,7 +26,7 @@ import re
 import requests
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
-from fate_common import file_utils, conf_utils
+from fate_arch.common import file_utils, conf_utils
 from fate_flow.settings import FATEFLOW_SERVICE_NAME, API_VERSION
 from fate_flow.utils import detect_utils
 

@@ -20,8 +20,8 @@ from playhouse.pool import PooledMySQLDatabase
 
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.pipelined_model.model_storage_base import ModelStorageBase
-from fate_common import log
-from fate_common.base_utils import current_timestamp, serialize_b64, deserialize_b64
+from fate_arch.common import log
+from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64
 from fate_arch.storage.metastore.base_model import LongTextField
 
 LOGGER = log.getLogger()

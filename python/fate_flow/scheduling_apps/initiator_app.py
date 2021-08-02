@@ -16,7 +16,7 @@
 
 from flask import Flask, request
 
-from fate_common import log
+from fate_arch.common import log
 from fate_flow.db.db_models import Task
 from fate_flow.entity.types import RetCode
 from fate_flow.operation.job_saver import JobSaver

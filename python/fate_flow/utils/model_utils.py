@@ -19,10 +19,10 @@ import operator
 from collections import OrderedDict
 
 import peewee
-from fate_common.log import sql_logger
+from fate_arch.common.log import sql_logger
 from fate_flow.settings import stat_logger
-from fate_common.base_utils import json_loads, current_timestamp
-from fate_common.file_utils import get_project_base_directory
+from fate_arch.common.base_utils import json_loads, current_timestamp
+from fate_arch.common.file_utils import get_project_base_directory
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel

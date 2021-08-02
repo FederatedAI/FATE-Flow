@@ -23,7 +23,7 @@ from fate_flow.settings import stat_logger
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.authentication_utils import request_authority_certification
 from fate_flow.operation.job_saver import JobSaver
-from fate_common import log
+from fate_arch.common import log
 from fate_flow.manager.resource_manager import ResourceManager
 
 manager = Flask(__name__)

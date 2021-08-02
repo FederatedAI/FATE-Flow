@@ -24,9 +24,9 @@ from peewee import (CharField, IntegerField, BigIntegerField,
 from playhouse.apsw_ext import APSWDatabase
 from playhouse.pool import PooledMySQLDatabase
 
-from fate_common import log, file_utils
+from fate_arch.common import log, file_utils
 from fate_arch.storage.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField
-from fate_common import WorkMode
+from fate_arch.common import WorkMode
 from fate_flow.settings import DATABASE, WORK_MODE, stat_logger
 from fate_flow.runtime_config import RuntimeConfig
 

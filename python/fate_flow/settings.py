@@ -16,8 +16,8 @@
 # -*- coding: utf-8 -*-
 import os
 
-from fate_common import file_utils, log
-from fate_common.conf_utils import get_base_config
+from fate_arch.common import file_utils, log
+from fate_arch.common.conf_utils import get_base_config
 import __main__
 
 

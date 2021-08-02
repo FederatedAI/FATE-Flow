@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_common import base_utils
+from fate_arch.common import base_utils
 from fate_flow.entity.types import InputSearchType
 
 from fate_arch import storage

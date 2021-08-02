@@ -18,7 +18,7 @@ import grpc
 import requests
 from grpc._cython import cygrpc
 
-from fate_common.base_utils import json_dumps, json_loads
+from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_flow.runtime_config import RuntimeConfig
 from fate_flow.settings import FATEFLOW_SERVICE_NAME
 from fate_flow.settings import IP, GRPC_PORT, stat_logger

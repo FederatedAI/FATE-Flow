@@ -19,13 +19,13 @@ import requests
 import time
 from flask import jsonify
 from flask import Response
-from fate_common.base_utils import json_loads, json_dumps
+from fate_arch.common.base_utils import json_loads, json_dumps
 
-from fate_common.conf_utils import get_base_config
-from fate_common.log import audit_logger, schedule_logger
-from fate_common import FederatedMode
-from fate_common import conf_utils
-from fate_common import CoordinationProxyService, CoordinationCommunicationProtocol
+from fate_arch.common.conf_utils import get_base_config
+from fate_arch.common.log import audit_logger, schedule_logger
+from fate_arch.common import FederatedMode
+from fate_arch.common import conf_utils
+from fate_arch.common import CoordinationProxyService, CoordinationCommunicationProtocol
 from fate_flow.settings import CHECK_NODES_IDENTITY,\
     FATE_MANAGER_GET_NODE_INFO_ENDPOINT, HEADERS, API_VERSION, stat_logger
 from fate_flow.utils.grpc_utils import wrap_grpc_packet, get_command_federation_channel, gen_routing_metadata, \

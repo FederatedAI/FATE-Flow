@@ -14,9 +14,9 @@
 #  limitations under the License.
 #
 
-from fate_common.base_utils import json_loads, json_dumps, current_timestamp
-from fate_common.log import schedule_logger
-from fate_common import WorkMode
+from fate_arch.common.base_utils import json_loads, json_dumps, current_timestamp
+from fate_arch.common.log import schedule_logger
+from fate_arch.common import WorkMode
 from fate_flow.db.db_models import DB, Job
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.scheduler.task_scheduler import TaskScheduler
