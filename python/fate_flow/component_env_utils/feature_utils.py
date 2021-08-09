@@ -15,8 +15,8 @@
 #
 import numpy
 
-from flow_components.fate_federated_algorithm.default.federatedml.feature.sparse_vector import SparseVector
-from flow_components.fate_federated_algorithm.default.federatedml.feature.instance import Instance
+from component_plugins.fate.python.federatedml.feature.sparse_vector import SparseVector
+from component_plugins.fate.python.federatedml.feature.instance import Instance
 
 
 def dataset_to_list(src):
