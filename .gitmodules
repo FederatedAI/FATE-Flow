@@ -1,0 +1,4 @@
+[submodule "fate"]
+	path = python/component_plugins/fate
+	url = https://github.com/FederatedAI/FATE.git
+	branch = develop-1.7
