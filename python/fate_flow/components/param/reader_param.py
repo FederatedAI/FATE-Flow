@@ -16,11 +16,8 @@
 
 
 class ReaderParam:
-    def __init__(self, table=None, job_id=None, component_name=None, data=None):
+    def __init__(self, table=None):
         self.table = table
-        self.job_id = job_id
-        self.component_name = component_name
-        self.data = data
 
     def check(self):
         return True

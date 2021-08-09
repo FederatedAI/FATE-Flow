@@ -13,26 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
-from flask import Flask, request
+from flask import request
 
 from fate_flow.entity.types import RetCode
 from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.settings import stat_logger
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.authentication_utils import request_authority_certification
 from fate_flow.operation.job_saver import JobSaver
-from fate_arch.common import log
 from fate_flow.manager.resource_manager import ResourceManager
-
-manager = Flask(__name__)
-
-
-@manager.errorhandler(500)
-def internal_server_error(e):
-    stat_logger.exception(e)
-    return get_json_result(retcode=RetCode.EXCEPTION_ERROR, retmsg=log.exception_to_trace_string(e))
 
 
 # execute command on every party
@@ -89,6 +78,12 @@ def update_job(job_id, role, party_id):
     return get_json_result(retcode=0, retmsg='success')
 
 
+@manager.route('/<job_id>/<role>/<party_id>/parameter/update', methods=['POST'])
+def update_parameters(job_id, role, party_id):
+    JobController.update_parameter(job_id=job_id, role=role, party_id=party_id, updated_parameters=request.json)
+    return get_json_result(retcode=0, retmsg='success')
+
+
 @manager.route('/<job_id>/<role>/<party_id>/status/<status>', methods=['POST'])
 def job_status(job_id, role, party_id, status):
     job_info = {}
@@ -101,12 +96,12 @@ def job_status(job_id, role, party_id, status):
     if JobController.update_job_status(job_info=job_info):
         return get_json_result(retcode=0, retmsg='success')
     else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update job status failed")
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update job status does not take effect")
 
 
 @manager.route('/<job_id>/<role>/<party_id>/model', methods=['POST'])
 def save_pipelined_model(job_id, role, party_id):
-    #JobController.save_pipelined_model(job_id=job_id, role=role, party_id=party_id)
+    JobController.save_pipelined_model(job_id=job_id, role=role, party_id=party_id)
     return get_json_result(retcode=0, retmsg='success')
 
 

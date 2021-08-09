@@ -39,6 +39,10 @@ class FederatedScheduler(object):
         return cls.job_command(job=job, command="create", command_body=job.to_human_model_dict(), parallel=True)
 
     @classmethod
+    def update_parameter(cls, job: Job, updated_parameters):
+        return cls.job_command(job=job, command="parameter/update", command_body=updated_parameters, parallel=True)
+
+    @classmethod
     def resource_for_job(cls, job, operation_type, specific_dest=None):
         schedule_logger(job_id=job.f_job_id).info(f"try to {operation_type} job {job.f_job_id} resource")
         status_code, response = cls.job_command(job=job, command=f"resource/{operation_type}", specific_dest=specific_dest)
@@ -150,8 +154,8 @@ class FederatedScheduler(object):
         return cls.task_command(job=job, task=task, command="create", command_body=task.to_human_model_dict())
 
     @classmethod
-    def start_task(cls, job, task, task_parameters):
-        return cls.task_command(job=job, task=task, command="start", command_body=task_parameters)
+    def start_task(cls, job, task):
+        return cls.task_command(job=job, task=task, command="start", command_body={}, need_user=True)
 
     @classmethod
     def collect_task(cls, job, task):
@@ -200,7 +204,7 @@ class FederatedScheduler(object):
         return status_code, response
 
     @classmethod
-    def task_command(cls, job, task, command, command_body=None, parallel=False):
+    def task_command(cls, job, task, command, command_body=None, parallel=False, need_user=False):
         federated_response = {}
         job_parameters = job.f_runtime_conf_on_party["job_parameters"]
         tasks = JobSaver.query_task(task_id=task.f_task_id, task_version=task.f_task_version)
@@ -209,6 +213,10 @@ class FederatedScheduler(object):
             dest_role, dest_party_id = task.f_role, task.f_party_id
             federated_response[dest_role] = federated_response.get(dest_role, {})
             endpoint = f"/party/{task.f_job_id}/{task.f_component_name}/{task.f_task_id}/{task.f_task_version}/{dest_role}/{dest_party_id}/{command}"
+            if need_user:
+                command_body["user_id"] = job.f_user.get(dest_role, {}).get(str(dest_party_id), "")
+                schedule_logger(job_id=job.f_job_id).info(f'user:{job.f_user}, dest_role:{dest_role}, dest_party_id:{dest_party_id}')
+                schedule_logger(job_id=job.f_job_id).info(f'command_body: {command_body}')
             args = (job.f_job_id, job.f_role, job.f_party_id, dest_role, dest_party_id, endpoint, command_body, job_parameters["federated_mode"], federated_response)
             if parallel:
                 t = threading.Thread(target=cls.federated_command, args=args)

@@ -24,7 +24,7 @@ from fate_flow.component_env_utils import dsl_utils
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.types import ProcessRole
 from fate_flow.entity.component_provider import ComponentProvider
-from fate_flow.runtime_config import RuntimeConfig
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.utils import job_utils, schedule_utils
 
 LOGGER = getLogger()
@@ -56,7 +56,7 @@ class TaskInitializer(object):
             start_time = current_timestamp()
             RuntimeConfig.load_component_registry()
 
-            job_conf = job_utils.get_job_conf(job_id, role)
+            job_conf = job_utils.get_job_conf(job_id, role, party_id)
             job_dsl = job_conf["job_dsl_path"]
             job_runtime_conf = job_conf["job_runtime_conf_path"]
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_dsl,

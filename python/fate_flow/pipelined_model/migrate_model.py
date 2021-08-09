@@ -24,7 +24,7 @@ from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_arch.common.file_utils import get_project_base_directory
 from fate_flow.settings import stat_logger
 from fate_flow.utils import model_utils
-#from fate_components.federatedml.default.federatedml.protobuf.model_migrate.model_migrate import model_migration
+#from flow_components.fate_federated_algorithm.v1_7_0.federatedml.protobuf.model_migrate.model_migrate import model_migration
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 
 
@@ -34,18 +34,18 @@ def gen_model_file_path(model_id, model_version):
 
 def compare_roles(request_conf_roles: dict, run_time_conf_roles: dict):
     if request_conf_roles.keys() == run_time_conf_roles.keys():
-        varify_format = True
-        varify_equality = True
+        verify_format = True
+        verify_equality = True
         for key in request_conf_roles.keys():
-            varify_format = varify_format and (len(request_conf_roles[key]) == len(run_time_conf_roles[key])) and (isinstance(request_conf_roles[key], list))
+            verify_format = verify_format and (len(request_conf_roles[key]) == len(run_time_conf_roles[key])) and (isinstance(request_conf_roles[key], list))
             request_conf_roles_set = set(str(item) for item in request_conf_roles[key])
             run_time_conf_roles_set = set(str(item) for item in run_time_conf_roles[key])
-            varify_equality = varify_equality and (request_conf_roles_set == run_time_conf_roles_set)
-        if not varify_format:
+            verify_equality = verify_equality and (request_conf_roles_set == run_time_conf_roles_set)
+        if not verify_format:
             raise Exception("The structure of roles data of local configuration is different from "
                             "model runtime configuration's. Migration aborting.")
         else:
-            return varify_equality
+            return verify_equality
     raise Exception("The structure of roles data of local configuration is different from "
                     "model runtime configuration's. Migration aborting.")
 

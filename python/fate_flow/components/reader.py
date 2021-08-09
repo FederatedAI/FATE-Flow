@@ -15,14 +15,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import uuid
+
 import numpy as np
 
 from fate_arch.session import Session
+from fate_arch import storage, session
 from fate_arch.abc import StorageTableABC, StorageTableMetaABC, AddressABC
 from fate_arch.common import log, EngineType
 from fate_arch.computing import ComputingEngine
 from fate_arch.storage import StorageTableMeta, StorageEngine
 from fate_flow.entity.metric import MetricMeta
+from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.entity.exceptions import ParameterException
 from fate_flow.entity.types import InputSearchType
 from fate_flow.utils import job_utils, data_utils
@@ -37,10 +41,12 @@ class Reader(ComponentBase):
     def __init__(self):
         super(Reader, self).__init__()
         self.parameters = None
+        self.job_parameters = None
 
     def run(self, component_parameters=None, args=None):
         self.parameters = component_parameters["ComponentParam"]
-        output_storage_address = args["job_parameters"].engines_address[EngineType.STORAGE]
+        self.job_parameters = args["job_parameters"]
+        output_storage_address = self.job_parameters.engines_address[EngineType.STORAGE]
         # only support one input table
         table_key = [key for key in self.parameters.keys()][0]
 
@@ -48,7 +54,6 @@ class Reader(ComponentBase):
                                                                             role=self.tracker.role,
                                                                             party_id=self.tracker.party_id)
 
-        computing_engine = args["job_parameters"].computing_engine
         output_table_namespace, output_table_name = data_utils.default_output_table_info(task_id=self.tracker.task_id,
                                                                                          task_version=self.tracker.task_version)
         input_table_meta, output_table_address, output_table_engine = self.convert_check(
@@ -56,10 +61,10 @@ class Reader(ComponentBase):
             input_namespace=input_table_namespace,
             output_name=output_table_name,
             output_namespace=output_table_namespace,
-            computing_engine=computing_engine,
+            computing_engine=self.job_parameters.computing_engine,
             output_storage_address=output_storage_address)
-        session = Session(session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id))
-        input_table_session = session.new_storage(storage_engine=input_table_meta.get_engine())
+        sess = Session(session_id=job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id))
+        input_table_session = sess.storage(storage_engine=input_table_meta.get_engine())
         input_table = input_table_session.get_table(name=input_table_meta.get_name(),
                                                     namespace=input_table_meta.get_namespace())
         # update real count to meta info
@@ -67,11 +72,11 @@ class Reader(ComponentBase):
         # Table replication is required
         if input_table_meta.get_engine() != output_table_engine:
             LOGGER.info(
-                f"the {input_table_meta.get_engine()} engine input table needs to be converted to {output_table_engine} engine to support computing engine {computing_engine}")
+                f"the {input_table_meta.get_engine()} engine input table needs to be converted to {output_table_engine} engine to support computing engine {self.job_parameters.computing_engine}")
         else:
             LOGGER.info(f"the {input_table_meta.get_engine()} input table needs to be transform format")
         LOGGER.info("reader create storage session2")
-        output_table_session = session.new_storage(storage_engine=output_table_engine)
+        output_table_session = sess.storage(storage_engine=output_table_engine)
         output_table = output_table_session.create_table(address=output_table_address,
                                                          name=output_table_name,
                                                          namespace=output_table_namespace,
@@ -85,6 +90,13 @@ class Reader(ComponentBase):
                 'output_data_name') else table_key,
             table_namespace=output_table_meta.get_namespace(),
             table_name=output_table_meta.get_name())
+        DataTableTracker.create_table_tracker(output_table_meta.get_name(), output_table_meta.get_namespace(),
+                                              entity_info={
+                                                  "have_parent": True,
+                                                  "parent_table_namespace": self.parameters[table_key]['namespace'],
+                                                  "parent_table_name": self.parameters[table_key]['name'],
+                                                  "job_id": self.tracker.job_id
+                                              })
         headers_str = output_table_meta.get_schema().get('header')
         table_info = {}
         if output_table_meta.get_schema() and headers_str:
@@ -119,7 +131,8 @@ class Reader(ComponentBase):
                                      metric_meta=MetricMeta(name='reader', metric_type='data_info',
                                                             extra_metas=data_info))
 
-    def get_input_table_info(self, parameters, role, party_id):
+    @staticmethod
+    def get_input_table_info(parameters, role, party_id):
         search_type = data_utils.get_input_search_type(parameters)
         if search_type == InputSearchType.TABLE_INFO:
             return parameters["namespace"], parameters["name"]
@@ -137,10 +150,12 @@ class Reader(ComponentBase):
         else:
             raise ParameterException(f"can not found input table info by parameters {parameters}")
 
-    def convert_check(self, input_name, input_namespace, output_name, output_namespace,
+    @staticmethod
+    def convert_check(input_name, input_namespace, output_name, output_namespace,
                       computing_engine: ComputingEngine = ComputingEngine.EGGROLL, output_storage_address={}) -> (
             StorageTableMetaABC, AddressABC, StorageEngine):
         input_table_meta = StorageTableMeta(name=input_name, namespace=input_namespace)
+
         if not input_table_meta:
             raise RuntimeError(f"can not found table name: {input_name} namespace: {input_namespace}")
         address_dict = output_storage_address.copy()
@@ -170,38 +185,124 @@ class Reader(ComponentBase):
                                                                    address_dict=address_dict)
             output_table_engine = StorageEngine.EGGROLL
         elif computing_engine == ComputingEngine.SPARK:
-            address_dict["path"] = data_utils.default_output_fs_path(name=output_name, namespace=output_namespace, prefix=address_dict.get("path_prefix"))
-            output_table_address = StorageTableMeta.create_address(storage_engine=StorageEngine.HDFS,
-                                                                   address_dict=address_dict)
-            output_table_engine = StorageEngine.HDFS
+            if input_table_meta.get_engine() == StorageEngine.HIVE:
+                # todo
+                pass
+            else:
+                address_dict["path"] = data_utils.default_output_fs_path(name=output_name, namespace=output_namespace, prefix=address_dict.get("path_prefix"))
+                output_table_address = StorageTableMeta.create_address(storage_engine=StorageEngine.HDFS,
+                                                                       address_dict=address_dict)
+                output_table_engine = StorageEngine.HDFS
+        elif computing_engine == ComputingEngine.LINKIS_SPARK:
+            output_table_address = input_table_meta.get_address()
+            output_table_address.name = output_name
+            output_table_engine = input_table_meta.get_engine()
         else:
             raise RuntimeError(f"can not support computing engine {computing_engine}")
         return input_table_meta, output_table_address, output_table_engine
+
+    def deal_linkis_hive(self, src_table: StorageTableABC, dest_table: StorageTableABC):
+        from pyspark.sql import SparkSession
+        import functools
+        session = SparkSession.builder.enableHiveSupport().getOrCreate()
+        src_data = session.sql(f"select * from {src_table.get_address().database}.{src_table.get_address().name}")
+        LOGGER.info(f"database:{src_table.get_address().database}, name:{src_table.get_address().name}")
+        LOGGER.info(f"src data: {src_data}")
+        # src_data = src_table.collect(is_spark=1)
+        src_data = src_data.toPandas().astype(str)
+        LOGGER.info(f"columns: {src_data.columns}")
+        header_source_item = list(src_data.columns)
+
+        id_delimiter = src_table.meta.get_id_delimiter()
+        LOGGER.info(f"id_delimiter: {id_delimiter}")
+        LOGGER.info(f"src_data: {src_data}")
+        src_data.applymap(lambda x: str(x))
+        f = functools.partial(self.convert_join, delimitor=id_delimiter)
+        src_data["result"] = src_data.agg(f, axis=1)
+        dest_data = src_data.iloc[:,[0,-1]]
+        dest_data.columns = ["key", "value"]
+        LOGGER.info(f"dest_data: {dest_data}")
+        LOGGER.info(f"database:{dest_table.get_address().database}, name:{dest_table.get_address().name}")
+        dest_table.put_all(dest_data)
+        schema = {'header': id_delimiter.join(header_source_item[1:]).strip(), 'sid': header_source_item[0].strip()}
+        dest_table.meta.update_metas(schema=schema)
+
+    def convert_join(self, x, delimitor=","):
+        import pickle
+        x = [str(i) for i in x]
+        return pickle.dumps(delimitor.join(x[1:])).hex()
+
+
+    def save_table(self, src_table: StorageTableABC, dest_table: StorageTableABC):
+        LOGGER.info(f"start copying table")
+        LOGGER.info(
+            f"source table name: {src_table.get_name()} namespace: {src_table.get_namespace()} engine: {src_table.get_engine()}")
+        LOGGER.info(
+            f"destination table name: {dest_table.get_name()} namespace: {dest_table.get_namespace()} engine: {dest_table.get_engine()}")
+        if dest_table.get_engine() == dest_table.get_engine():
+            self.to_save(src_table, dest_table)
+        else:
+            self.copy_table(src_table, dest_table)
+
+    def to_save(self, src_table, dest_table):
+        src_table_meta = src_table.meta
+        sess = session.Session(computing_type=self.job_parameters.computing_engine,
+                               federation_type=self.job_parameters.federation_engine)
+        computing_session_id = job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version,
+                                                             self.tracker.role, self.tracker.party_id)
+        sess.init_computing(computing_session_id=computing_session_id)
+        sess.as_default()
+        src_computing_table = session.get_latest_opened().computing.load(src_table_meta.get_address(),
+                                                                         schema=src_table_meta.get_schema(),
+                                                                         partitions=src_table_meta.get_partitions(),
+                                                                         id_delimiter=src_table_meta.get_id_delimiter(),
+                                                                         in_serialized=src_table_meta.get_in_serialized())
+        LOGGER.info(f"schema: {src_table_meta.get_schema()}")
+        schema = src_table_meta.get_schema()
+        if not src_table_meta.get_in_serialized():
+            header_line = src_computing_table.take()
+            schema = data_utils.get_header_schema(header_line=header_line, id_delimiter=src_table_meta.get_id_delimiter())
+        self.tracker.job_tracker.save_output_data(src_computing_table, output_storage_engine=dest_table.get_engine(),
+                                                  output_storage_address=dest_table.get_address(),
+                                                  output_table_namespace=dest_table.get_namespace(),
+                                                  output_table_name=dest_table.get_name(),
+                                                  schema=schema)
+        LOGGER.info(f"save {dest_table.get_namespace()} {dest_table.get_name()} success")
 
     def copy_table(self, src_table: StorageTableABC, dest_table: StorageTableABC):
         count = 0
         data_temp = []
         part_of_data = []
         src_table_meta = src_table.meta
-        LOGGER.info(f"start copying table")
-        LOGGER.info(
-            f"source table name: {src_table.get_name()} namespace: {src_table.get_namespace()} engine: {src_table.get_engine()}")
-        LOGGER.info(
-            f"destination table name: {dest_table.get_name()} namespace: {dest_table.get_namespace()} engine: {dest_table.get_engine()}")
         schema = {}
         if not src_table_meta.get_in_serialized():
             if src_table_meta.get_have_head():
                 get_head = False
             else:
                 get_head = True
+            line_index = 0
+            fate_uuid = uuid.uuid1().hex
+            if not src_table.meta.get_extend_sid():
+                get_line = data_utils.get_data_line
+            elif not src_table_meta.get_auto_increasing_sid():
+                get_line = data_utils.get_sid_data_line
+            else:
+                get_line = data_utils.get_auto_increasing_sid_data_line
             for line in src_table.read():
                 if not get_head:
-                    schema = data_utils.get_header_schema(header_line=line, id_delimiter=src_table_meta.get_id_delimiter())
+                    schema = data_utils.get_header_schema(header_line=line, id_delimiter=src_table_meta.get_id_delimiter(),
+                                                          extend_sid=src_table_meta.get_extend_sid())
                     get_head = True
                     continue
                 values = line.rstrip().split(src_table.meta.get_id_delimiter())
                 k, v = values[0], data_utils.list_to_str(values[1:],
                                                          id_delimiter=src_table.meta.get_id_delimiter())
+                values = line.rstrip().split(src_table.meta.get_id_delimiter())
+                k, v = get_line(values=values, line_index=line_index, extend_sid=src_table.meta.get_extend_sid(),
+                                auto_increasing_sid=src_table.meta.get_auto_increasing_sid(),
+                                id_delimiter=src_table.meta.get_id_delimiter(),
+                                fate_uuid=fate_uuid)
+                line_index += 1
                 count = self.put_in_table(table=dest_table, k=k, v=v, temp=data_temp, count=count,
                                           part_of_data=part_of_data)
         else:

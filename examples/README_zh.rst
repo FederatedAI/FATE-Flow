@@ -41,7 +41,7 @@ FATE-Pipeline
     # initialize pipeline
     pipeline = PipeLine().set_initiator(role="guest", party_id=9999).set_roles(guest=9999, host=10000)
 
-    # define fate_components
+    # define components
     reader_0 = Reader(name="reader_0")
     reader_0.get_party_instance(role="guest", party_id=9999).component_param(table=guest_train_data)
     reader_0.get_party_instance(role="host", party_id=10000).component_param(table=host_train_data)
@@ -57,7 +57,7 @@ FATE-Pipeline
                                              tree_param={"max_depth": 3})
     evaluation_0 = Evaluation(name="evaluation_0", eval_type="binary")
 
-    # add fate_components to pipeline, in order of task execution
+    # add components to pipeline, in order of task execution
     pipeline.add_component(reader_0)\
         .add_component(dataio_0, data=Data(data=reader_0.output.data))\
         .add_component(intersect_0, data=Data(data=dataio_0.output.data))\

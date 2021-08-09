@@ -63,7 +63,7 @@ What is the role of FATE FLOW in the FATE?
 :   
 
 > FATE Flow is a scheduling system that schedules the execution of
-> algorithmic fate_components based on the DSL of the job submitted by the
+> algorithmic components based on the DSL of the job submitted by the
 > user.
 
 ModuleNotFoundError

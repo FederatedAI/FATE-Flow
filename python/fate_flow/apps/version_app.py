@@ -13,33 +13,36 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from flask import Flask, request
+from flask import request
 
 from fate_arch.common import conf_utils
-from fate_flow.runtime_config import RuntimeConfig
-from fate_flow.settings import stat_logger
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.utils.api_utils import get_json_result
-
-manager = Flask(__name__)
-
-
-@manager.errorhandler(500)
-def internal_server_error(e):
-    stat_logger.exception(e)
-    return get_json_result(retcode=100, retmsg=str(e))
+from fate_flow.settings import API_VERSION
+from fate_flow.db.service_registry import ServiceRegistry
+from fate_flow.db.config_manager import ConfigManager
 
 
 @manager.route('/get', methods=['POST'])
 def get_fate_version_info():
-    version = RuntimeConfig.get_env(request.json.get('module', 'FATE'))
-    return get_json_result(data={request.json.get('module'): version})
+    module = request.json.get('module', 'FATE')
+    version = RuntimeConfig.get_env(module)
+    return get_json_result(data={
+        module: version,
+        'API': API_VERSION,
+    })
 
 
 @manager.route('/set', methods=['POST'])
 def set_fate_server_info():
     # manager
     federated_id = request.json.get("federatedId")
-    manager_conf = conf_utils.get_base_config("fatemanager", {})
-    manager_conf["federatedId"] = federated_id
-    conf_utils.update_config("fatemanager", manager_conf)
+    ServiceRegistry.FATEMANAGER["federatedId"] = federated_id
+    conf_utils.update_config("fatemanager", ServiceRegistry.FATEMANAGER)
     return get_json_result(data={"federatedId": federated_id})
+
+
+@manager.route('/reload', methods=['POST'])
+def reload():
+    config = ConfigManager.load()
+    return get_json_result(data=config)

@@ -26,7 +26,7 @@ from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingMetric, TrackingOutputDataInfo,
                                     ComponentSummary, MachineLearningModelInfo as MLModel)
 from fate_flow.entity.metric import Metric, MetricMeta
-from fate_flow.runtime_config import RuntimeConfig
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.pipelined_model import pipelined_model
 from fate_arch import storage
 from fate_flow.utils import model_utils, job_utils, data_utils
@@ -66,9 +66,7 @@ class Tracker(object):
         self.pipelined_model = None
         if self.party_model_id and self.model_version:
             self.pipelined_model = pipelined_model.PipelinedModel(model_id=self.party_model_id,
-                                                                  model_version=self.model_version,
-                                                                  component_type=self.job_parameters.component_provider if self.job_parameters else None,
-                                                                  component_version=self.job_parameters.component_version if self.job_parameters else None)
+                                                                  model_version=self.model_version)
 
     def save_metric_data(self, metric_namespace: str, metric_name: str, metrics: typing.List[Metric], job_level=False):
         schedule_logger(self.job_id).info(
@@ -117,7 +115,8 @@ class Tracker(object):
         return view_data
 
     def save_output_data(self, computing_table, output_storage_engine, output_storage_address: dict,
-                         output_table_namespace=None, output_table_name=None):
+                         output_table_namespace=None, output_table_name=None, schema=None,
+                         tracker_client=None, user_name=''):
         if computing_table:
             if not output_table_namespace or not output_table_name:
                 output_table_namespace, output_table_name = data_utils.default_output_table_info(task_id=self.task_id, task_version=self.task_version)
@@ -133,14 +132,46 @@ class Tracker(object):
             session.Session.persistent(computing_table=computing_table,
                                        table_namespace=output_table_namespace,
                                        table_name=output_table_name,
+                                       schema=schema,
                                        engine=output_storage_engine,
-                                       engine_address=output_storage_address)
+                                       engine_address=output_storage_address,
+                                       token={"username": user_name})
+
+            """
+            if not tracker_client and not schema:
+                table_meta.create()
+            if tracker_client:
+                tracker_client.create_table_meta(table_meta)
+            else:
+                table_meta.update_metas(schema=schema, part_of_data=part_of_data, count=table_count)
+            """
+
             return output_table_namespace, output_table_name
         else:
             schedule_logger(self.job_id).info('task id {} output data table is none'.format(self.task_id))
             return None, None
 
-    def get_output_data_table(self, output_data_infos):
+    def save_table_meta(self, meta):
+        schedule_logger(self.job_id).info(f'start save table meta:{meta}')
+        address = storage.StorageTableMeta.create_address(storage_engine=meta.get("engine"),
+                                                          address_dict=meta.get("address"))
+        table_meta = storage.StorageTableMeta(name=meta.get("name"), namespace=meta.get("namespace"), new=True)
+        table_meta.set_metas(**meta)
+        meta["address"] = address
+        meta["part_of_data"] = deserialize_b64(meta["part_of_data"])
+        meta["schema"] = deserialize_b64(meta["schema"])
+        table_meta.create()
+        schedule_logger(self.job_id).info(f'save table meta success')
+
+    def get_table_meta(self, table_info):
+        schedule_logger(self.job_id).info(f'start get table meta:{table_info}')
+        table_meta_dict = storage.StorageTableMeta(namespace=table_info.get("namespace"), name=table_info.get("table_name"), create_address=False).to_dict()
+        schedule_logger(self.job_id).info(f'get table meta success: {table_meta_dict}')
+        table_meta_dict["part_of_data"] = serialize_b64(table_meta_dict["part_of_data"], to_str=True)
+        table_meta_dict["schema"] = serialize_b64(table_meta_dict["schema"], to_str=True)
+        return table_meta_dict
+
+    def get_output_data_table(self, output_data_infos, tracker_client=None):
         """
         Get component output data table, will run in the task executor process
         :param output_data_infos:
@@ -150,32 +181,40 @@ class Tracker(object):
         if output_data_infos:
             for output_data_info in output_data_infos:
                 schedule_logger(self.job_id).info("Get task {} {} output table {} {}".format(output_data_info.f_task_id, output_data_info.f_task_version, output_data_info.f_table_namespace, output_data_info.f_table_name))
-                data_table_meta = storage.StorageTableMeta(name=output_data_info.f_table_name, namespace=output_data_info.f_table_namespace)
+                if not tracker_client:
+                    data_table_meta = storage.StorageTableMeta(name=output_data_info.f_table_name, namespace=output_data_info.f_table_namespace)
+                else:
+                    data_table_meta = tracker_client.get_table_meta(output_data_info.f_table_name, output_data_info.f_table_namespace)
+
                 output_tables_meta[output_data_info.f_data_name] = data_table_meta
         return output_tables_meta
 
-    def init_pipelined_model(self):
+    def init_pipeline_model(self):
         self.pipelined_model.create_pipelined_model()
 
-    def save_output_model(self, model_buffers: dict, model_alias: str):
+    def save_output_model(self, model_buffers: dict, model_alias: str, tracker_client=None):
         if model_buffers:
             self.pipelined_model.save_component_model(component_name=self.component_name,
                                                       component_module_name=self.module_name,
                                                       model_alias=model_alias,
-                                                      model_buffers=model_buffers)
+                                                      model_buffers=model_buffers,
+                                                      tracker_client=tracker_client)
 
-    def get_output_model(self, model_alias):
+    def write_output_model(self, component_model):
+        self.pipelined_model.write_component_model(component_model)
+
+    def get_output_model(self, model_alias, parse=True):
         model_buffers = self.pipelined_model.read_component_model(component_name=self.component_name,
-                                                                  model_alias=model_alias)
+                                                                  model_alias=model_alias,
+                                                                  parse=parse)
         return model_buffers
 
     def collect_model(self):
         model_buffers = self.pipelined_model.collect_models()
         return model_buffers
 
-    def save_pipelined_model(self, pipelined_buffer_object):
-        self.save_output_model({'Pipeline': pipelined_buffer_object}, 'pipeline')
-        self.pipelined_model.save_pipeline(pipelined_buffer_object=pipelined_buffer_object)
+    def save_pipeline_model(self, pipeline_buffer_object):
+        self.save_output_model({self.pipelined_model.pipeline_model_name: pipeline_buffer_object}, self.pipelined_model.pipeline_model_alias)
 
     def get_component_define(self):
         return self.pipelined_model.get_component_define(component_name=self.component_name)
@@ -307,6 +346,8 @@ class Tracker(object):
             return 0
 
     def save_as_table(self, computing_table, name, namespace):
+        if self.job_parameters.storage_engine == StorageEngine.LINKIS_HIVE:
+            return
         self.save_output_data(computing_table=computing_table,
                               output_storage_engine=self.job_parameters.storage_engine,
                               output_storage_address=self.job_parameters.engines_address.get(EngineType.STORAGE, {}),
@@ -414,18 +455,19 @@ class Tracker(object):
                 session_options = {"eggroll.session.processors.per.node": 1}
             else:
                 session_options = {}
-            sess.init_computing(computing_session_id=f"{computing_temp_namespace}_clean", options=session_options)
             try:
-                sess.computing.cleanup(namespace=computing_temp_namespace, name="*")
-                schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(computing_temp_namespace,
-                                                                                                     self.role,
-                                                                                                     self.party_id))
-                # clean up the last tables of the federation
-                federation_temp_namespace = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                sess.computing.cleanup(namespace=federation_temp_namespace, name="*")
-                schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(federation_temp_namespace,
-                                                                                                     self.role,
-                                                                                                     self.party_id))
+                if self.job_parameters.computing_engine != ComputingEngine.LINKIS_SPARK:
+                    sess.init_computing(computing_session_id=f"{computing_temp_namespace}_clean", options=session_options)
+                    sess.computing.cleanup(namespace=computing_temp_namespace, name="*")
+                    schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(computing_temp_namespace,
+                                                                                                         self.role,
+                                                                                                         self.party_id))
+                    # clean up the last tables of the federation
+                    federation_temp_namespace = job_utils.generate_task_version_id(self.task_id, self.task_version)
+                    sess.computing.cleanup(namespace=federation_temp_namespace, name="*")
+                    schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(federation_temp_namespace,
+                                                                                                         self.role,
+                                                                                                         self.party_id))
                 if self.job_parameters.federation_engine == FederationEngine.RABBITMQ and self.role != "local":
                     schedule_logger(self.job_id).info('rabbitmq start clean up')
                     parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]
@@ -468,7 +510,7 @@ class Tracker(object):
                                          MLModel.f_party_id == self.party_id)
             if not record:
                 job = Job.get_or_none(Job.f_job_id == self.job_id)
-                pipeline = self.pipelined_model.read_component_model('pipeline', 'pipeline')['Pipeline']
+                pipeline = self.pipelined_model.read_pipelined_model(component_name=job_utils.job_pipeline_component_name())[self.pipelined_model.pipeline_model_name]
                 if job:
                     job_data = job.to_json()
                     model_info = {

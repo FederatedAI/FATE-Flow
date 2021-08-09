@@ -14,8 +14,9 @@
 #  limitations under the License.
 #
 import importlib
+
 from fate_flow.entity.component_provider import ComponentProvider
-from fate_flow.runtime_config import RuntimeConfig
+from fate_flow.db.runtime_config import RuntimeConfig
 
 
 def component_provider(provider_info):
@@ -32,7 +33,7 @@ def get_job_provider_group(dsl_parser, role, party_id, component_name=None):
 
     group = {}
     if component_name is not None:
-        providers = providers.get(component_name)
+        providers = {component_name: providers.get(component_name)}
     for component_name, provider_info in providers.items():
         provider = component_provider(provider_info["provider"])
         group_key = ":".join([provider.name, provider.version])

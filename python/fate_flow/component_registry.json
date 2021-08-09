@@ -88,10 +88,11 @@
       "1.7.0": {
         "path": [
           "flow_components",
-          "federatedml",
-          "v1_7_0",
+          "fate_federated_algorithm",
+          "default",
           "federatedml"
         ],
+        "venv": "xxxxx",
         "class_path": {
         }
       }

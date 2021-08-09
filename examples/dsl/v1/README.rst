@@ -31,11 +31,11 @@ Field Specification
 Step2: Define your modeling task structure
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Practically, when building a modeling task, several fate_components might be involved, such as data_io, feature_engineering, algorithm_model, evaluation as so on. However, the combination of these fate_components would differ from task to task. Therefore, a convenient way to freely combine these fate_components would be a critical feature.
+Practically, when building a modeling task, several components might be involved, such as data_io, feature_engineering, algorithm_model, evaluation as so on. However, the combination of these components would differ from task to task. Therefore, a convenient way to freely combine these components would be a critical feature.
 
-Currently, FATE provide a kind of domain-specific language(DSL) to define whatever structure you want. The fate_components are combined as a Directed Acyclic Graph(DAG) through the dsl config file. The usage of dsl config file is as simple as defining a json file.
+Currently, FATE provide a kind of domain-specific language(DSL) to define whatever structure you want. The components are combined as a Directed Acyclic Graph(DAG) through the dsl config file. The usage of dsl config file is as simple as defining a json file.
 
-The DSL config file will define input data and(or) model as well as output data and(or) model for each component. The downstream fate_components take output data and(or) model of upstream fate_components as input. In this way, a DAG can be constructed by the config file.
+The DSL config file will define input data and(or) model as well as output data and(or) model for each component. The downstream components take output data and(or) model of upstream components as input. In this way, a DAG can be constructed by the config file.
 
 We have provided several example conf/dsl files in corresponding algorithm-named folders. For example, hetero-lr dsl files are located `here <hetero_logistic_regression/>`_.
 
@@ -43,7 +43,7 @@ We have provided several example conf/dsl files in corresponding algorithm-named
 Field Specification
 ^^^^^^^^^^^^^^^^^^^
 
-:component_name: key of a component. This name should end with a "_num" such as "_0", "_1" etc. And the number should start with 0. This is used to distinguish multiple same kind of fate_components that may exist.
+:component_name: key of a component. This name should end with a "_num" such as "_0", "_1" etc. And the number should start with 0. This is used to distinguish multiple same kind of components that may exist.
 
 :module: Specify which component use. This field should be one of the algorithm modules FATE supported.
          The supported algorithms can be referred to `here <../../python/federatedml/README.rst>`__
@@ -59,7 +59,7 @@ Field Specification
       - model: There are two possible model-input type:
 
         * model: This is a model input by same type of component, used in prediction or transform stage. For example, hetero_binning_0 run as a fit component, and hetero_binning_1 take model output of hetero_binning_0 as input so that can be used to transform or predict.
-        * isometric_model: This is used to specify the model input from upstream fate_components, only used by HeteroFeatureSelection module in FATE-1.x. HeteroFeatureSelection can take the model output of HetereFeatureBinning and use information value calculated as filter criterion.
+        * isometric_model: This is used to specify the model input from upstream components, only used by HeteroFeatureSelection module in FATE-1.x. HeteroFeatureSelection can take the model output of HetereFeatureBinning and use information value calculated as filter criterion.
 
     - output: Same as input, two type of output may occur which are data and model.
 
@@ -72,7 +72,7 @@ Field Specification
 Step3: Define Submit Runtime Configuration for Each Specific Component.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This config file is used to config parameters of all fate_components for each party.
+This config file is used to config parameters of all components for each party.
 
 1. initiator: Specify the initiator's role and party id.
 2. job_parameters: Specify runtime configuration.
@@ -188,7 +188,7 @@ There will list all your job history. Latest job will be at the top of the page.
    
    Figure 2: Job Overview
 
-In the task page, all the fate_components will be shown as a DAG. We use different color to indicate their running status.
+In the task page, all the components will be shown as a DAG. We use different color to indicate their running status.
 
 1. Green: run success
 2. Blue: running
@@ -214,7 +214,7 @@ If you want an overview of the whole task, there is a **dashboard** button on th
 
 1. Left window: data set used for each party in this task.
 2. Middle window: running status or progress of the whole task.
-3. Right window: DAG of fate_components.
+3. Right window: DAG of components.
 
 
 Step6: Check out Logs
@@ -222,7 +222,7 @@ Step6: Check out Logs
 
 After you submit a job, you can find your job log in `${Your install path}/logs/${your jobid}`
 
-The logs for each party are listed in different folders. Inside each party folder, logs from different fate_components are also arranged in corresponding sub-folders.
+The logs for each party are listed in different folders. Inside each party folder, logs from different components are also arranged in corresponding sub-folders.
 
 
 FATE-FLOW Usage

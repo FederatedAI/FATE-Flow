@@ -42,7 +42,7 @@ Below shows how to build and fit a Hetero SecureBoost model with FATE-Pipeline i
     # initialize pipeline
     pipeline = PipeLine().set_initiator(role="guest", party_id=9999).set_roles(guest=9999, host=10000)
 
-    # define fate_components
+    # define components
     reader_0 = Reader(name="reader_0")
     reader_0.get_party_instance(role="guest", party_id=9999).component_param(table=guest_train_data)
     reader_0.get_party_instance(role="host", party_id=10000).component_param(table=host_train_data)
@@ -58,7 +58,7 @@ Below shows how to build and fit a Hetero SecureBoost model with FATE-Pipeline i
                                              tree_param={"max_depth": 3})
     evaluation_0 = Evaluation(name="evaluation_0", eval_type="binary")
 
-    # add fate_components to pipeline, in order of task execution
+    # add components to pipeline, in order of task execution
     pipeline.add_component(reader_0)\
         .add_component(dataio_0, data=Data(data=reader_0.output.data))\
         .add_component(intersect_0, data=Data(data=dataio_0.output.data))\
@@ -92,7 +92,7 @@ Upgraded DSL(DSL v2) by FATE-v1.5 comes with the following major features:
    that with new DSL training job will no longer automatically form prediction DSL;
    user needs to first form DSL manually with FATE-Flow cli before running
    prediction task.
-2. New fate_components may now be added to prediction DSL;
+2. New components may now be added to prediction DSL;
    for instance, ``evaluation`` module may be added to prediction task.
 3. Standardize style of ``role_parameter`` and ``algorithm_parameter``.
 

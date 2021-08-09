@@ -16,7 +16,7 @@
 from fate_arch.common import WorkMode, Backend
 
 
-class RunParameters(object):
+class RunParameters:
     def __init__(self, **kwargs):
         self.job_type = "train"
         self.work_mode = WorkMode.STANDALONE
@@ -37,8 +37,6 @@ class RunParameters(object):
         self.dsl_version = None
         self.auto_retries = None
         self.auto_retry_delay = None
-        self.component_provider = None
-        self.component_version = None
         self.timeout = None
         self.eggroll_run = {}
         self.spark_run = {}

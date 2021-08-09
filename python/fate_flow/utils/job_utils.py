@@ -25,37 +25,50 @@ from fate_arch.common import file_utils
 from fate_arch.common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import DB, Job, Task
-from fate_flow.entity.types import KillProcessRetCode
+from fate_flow.entity.types import KillProcessRetCode, JobConfiguration
 from fate_flow.entity.run_status import JobStatus, TaskStatus
 from fate_flow.entity.run_parameters import RunParameters
-from fate_flow.runtime_config import RuntimeConfig
-from fate_flow.settings import stat_logger, WORK_MODE, FATE_BOARD_DASHBOARD_ENDPOINT, SUBPROCESS_STD_LOG_NAME
+from fate_flow.settings import SUBPROCESS_STD_LOG_NAME, WORK_MODE
+from fate_flow.db.job_default_config import JobDefaultConfig
+from fate_flow.settings import stat_logger, FATE_BOARD_DASHBOARD_ENDPOINT
+from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.utils import detect_utils, model_utils
 from fate_flow.utils import session_utils
-from fate_flow.utils.service_utils import ServiceUtils
-from fate_flow import job_default_settings
 
 
-class IdCounter(object):
+class JobIdGenerator(object):
     _lock = threading.RLock()
 
     def __init__(self, initial_value=0):
         self._value = initial_value
+        self._pre_timestamp = None
+        self._max = 99999
 
-    def incr(self, delta=1):
+    def next_id(self):
         '''
-        Increment the counter with locking
+        generate next job id with locking
         '''
-        with IdCounter._lock:
-            self._value += delta
-            return self._value
+        #todo: there is duplication in the case of multiple instances deployment
+        now = datetime.datetime.now()
+        with JobIdGenerator._lock:
+            if self._pre_timestamp == now:
+                if self._value < self._max:
+                    self._value += 1
+                else:
+                    now += datetime.timedelta(microseconds=1)
+                    self._pre_timestamp = now
+                    self._value = 0
+            else:
+                self._pre_timestamp = now
+                self._value = 0
+            return "{}{}".format(now.strftime("%Y%m%d%H%M%S%f"), self._value)
 
 
-id_counter = IdCounter()
+job_id_generator = JobIdGenerator()
 
 
 def generate_job_id():
-    return '{}{}'.format(datetime.datetime.now().strftime("%Y%m%d%H%M%S%f"), str(id_counter.incr()))
+    return job_id_generator.next_id()
 
 
 def generate_task_id(job_id, component_name):
@@ -82,12 +95,12 @@ def generate_task_input_data_namespace(task_id, task_version, role, party_id):
                                                       party_id=party_id))
 
 
-def get_job_directory(job_id):
-    return os.path.join(file_utils.get_project_base_directory(), 'jobs', job_id)
+def get_job_directory(job_id, *args):
+    return os.path.join(file_utils.get_project_base_directory(), 'jobs', job_id, *args)
 
 
-def get_job_log_directory(job_id):
-    return os.path.join(file_utils.get_project_base_directory(), 'logs', job_id)
+def get_job_log_directory(job_id, *args):
+    return os.path.join(file_utils.get_project_base_directory(), 'logs', job_id, *args)
 
 
 def check_config(config: typing.Dict, required_parameters: typing.List):
@@ -131,8 +144,8 @@ def new_runtime_conf(job_dir, method, module, role, party_id):
     return os.path.join(conf_path_dir, 'runtime_conf.json')
 
 
-def save_job_conf(job_id, role, job_dsl, job_runtime_conf, job_runtime_conf_on_party, train_runtime_conf, pipeline_dsl=None):
-    path_dict = get_job_conf_path(job_id=job_id, role=role)
+def save_job_conf(job_id, role, party_id, job_dsl, job_runtime_conf, job_runtime_conf_on_party, train_runtime_conf, pipeline_dsl=None):
+    path_dict = get_job_conf_path(job_id=job_id, role=role, party_id=party_id)
     os.makedirs(os.path.dirname(path_dict.get('job_dsl_path')), exist_ok=True)
     os.makedirs(os.path.dirname(path_dict.get('job_runtime_conf_on_party_path')), exist_ok=True)
     for data, conf_path in [(job_dsl, path_dict['job_dsl_path']),
@@ -149,11 +162,11 @@ def save_job_conf(job_id, role, job_dsl, job_runtime_conf, job_runtime_conf_on_p
     return path_dict
 
 
-def get_job_conf_path(job_id, role):
+def get_job_conf_path(job_id, role, party_id):
     job_dir = get_job_directory(job_id)
     job_dsl_path = os.path.join(job_dir, 'job_dsl.json')
     job_runtime_conf_path = os.path.join(job_dir, 'job_runtime_conf.json')
-    job_runtime_conf_on_party_path = os.path.join(job_dir, role, 'job_runtime_on_party_conf.json')
+    job_runtime_conf_on_party_path = os.path.join(job_dir, role, str(party_id), 'job_runtime_on_party_conf.json')
     train_runtime_conf_path = os.path.join(job_dir, 'train_runtime_conf.json')
     pipeline_dsl_path = os.path.join(job_dir, 'pipeline_dsl.json')
     return {'job_dsl_path': job_dsl_path,
@@ -163,33 +176,35 @@ def get_job_conf_path(job_id, role):
             'pipeline_dsl_path': pipeline_dsl_path}
 
 
-def get_job_conf(job_id, role):
+def get_job_conf(job_id, role, party_id):
     conf_dict = {}
-    for key, path in get_job_conf_path(job_id, role).items():
+    for key, path in get_job_conf_path(job_id, role, party_id).items():
         config = file_utils.load_json_conf(path)
         conf_dict[key] = config
     return conf_dict
 
 
 @DB.connection_context()
-def get_job_configuration(job_id, role, party_id, tasks=None):
-    if tasks:
-        jobs_run_conf = {}
-        for task in tasks:
-            jobs = Job.select(Job.f_job_id, Job.f_runtime_conf_on_party, Job.f_description).where(Job.f_job_id == task.f_job_id)
-            job = jobs[0]
-            jobs_run_conf[job.f_job_id] = job.f_runtime_conf_on_party["component_parameters"]["role"]["local"]["0"]["upload_0"]
-            jobs_run_conf[job.f_job_id]["notes"] = job.f_description
-        return jobs_run_conf
-    else:
-        jobs = Job.select(Job.f_dsl, Job.f_runtime_conf, Job.f_train_runtime_conf, Job.f_runtime_conf_on_party).where(Job.f_job_id == job_id,
-                                                                                                                      Job.f_role == role,
-                                                                                                                      Job.f_party_id == party_id)
+def get_job_configuration(job_id, role, party_id) -> JobConfiguration:
+    jobs = Job.select(Job.f_dsl, Job.f_runtime_conf, Job.f_train_runtime_conf, Job.f_runtime_conf_on_party).where(Job.f_job_id == job_id,
+                                                                                                                  Job.f_role == role,
+                                                                                                                  Job.f_party_id == party_id)
     if jobs:
         job = jobs[0]
-        return job.f_dsl, job.f_runtime_conf, job.f_runtime_conf_on_party, job.f_train_runtime_conf
+        return JobConfiguration(**job.to_human_model_dict())
     else:
-        return {}, {}, {}, {}
+        return None
+
+
+@DB.connection_context()
+def get_upload_job_configuration_summary(upload_tasks: typing.List[Task]):
+    jobs_run_conf = {}
+    for task in upload_tasks:
+        jobs = Job.select(Job.f_job_id, Job.f_runtime_conf_on_party, Job.f_description).where(Job.f_job_id == task.f_job_id)
+        job = jobs[0]
+        jobs_run_conf[job.f_job_id] = job.f_runtime_conf_on_party["component_parameters"]["role"]["local"]["0"]["upload_0"]
+        jobs_run_conf[job.f_job_id]["notes"] = job.f_description
+    return jobs_run_conf
 
 
 @DB.connection_context()
@@ -236,13 +251,6 @@ def job_pipeline_component_module_name():
     return "Pipeline"
 
 
-def get_default_component_use(component_provider):
-    component_version = RuntimeConfig.COMPONENT_REGISTRY["provider"].get(component_provider, {}).get("default", {}).get("version", None)
-    if not component_provider or not component_version:
-        raise Exception("can not found default component use")
-    return component_provider, component_version
-
-
 @DB.connection_context()
 def list_job(limit):
     if limit > 0:
@@ -285,7 +293,7 @@ def check_job_process(pid):
 
 def check_job_is_timeout(job: Job):
     job_parameters = job.f_runtime_conf_on_party["job_parameters"]
-    timeout = job_parameters.get("timeout", job_default_settings.JOB_DEFAULT_TIMEOUT)
+    timeout = job_parameters.get("timeout", JobDefaultConfig.job_timeout)
     now_time = current_timestamp()
     running_time = (now_time - job.f_create_time)/1000
     if running_time > timeout:
@@ -303,7 +311,8 @@ def check_process_by_keyword(keywords):
     return ret == 0
 
 
-def run_subprocess(job_id, config_dir, process_cmd, extra_env: dict = None, log_dir=None, job_dir=None):
+def run_subprocess(job_id, config_dir, process_cmd, extra_env: dict = None, log_dir=None, cwd_dir=None):
+    process_cmd = [str(cmd) for cmd in process_cmd]
     schedule_logger(job_id=job_id).info('start process command: {}'.format(' '.join(process_cmd)))
 
     os.makedirs(config_dir, exist_ok=True)
@@ -330,7 +339,7 @@ def run_subprocess(job_id, config_dir, process_cmd, extra_env: dict = None, log_
                          stdout=std_log,
                          stderr=std_log,
                          startupinfo=startupinfo,
-                         cwd=job_dir,
+                         cwd=cwd_dir,
                          env=subprocess_env
                          )
     with open(pid_path, 'w') as f:
@@ -355,10 +364,10 @@ def wait_child_process(signum, frame):
                 stat_logger.info('no child process was immediately available')
                 break
             exitcode = status >> 8
-            stat_logger.info('child process %s exit with exitcode %s', child_pid, exitcode)
+            stat_logger.info(f'child process {child_pid} exit with exitcode {exitcode}')
     except OSError as e:
         if e.errno == errno.ECHILD:
-            stat_logger.warning('current process has no existing unwaited-for child processes.')
+            stat_logger.info('current process has no existing unwaited-for child processes.')
         else:
             raise
 
@@ -470,13 +479,13 @@ def get_timeout(job_id, timeout, runtime_conf, dsl):
 
 def job_default_timeout(runtime_conf, dsl):
     # future versions will improve
-    timeout = job_default_settings.JOB_DEFAULT_TIMEOUT
+    timeout = JobDefaultConfig.job_timeout
     return timeout
 
 
 def get_board_url(job_id, role, party_id):
     board_url = "http://{}:{}{}".format(
-        ServiceUtils.get_item("fateboard", "host"),
-        ServiceUtils.get_item("fateboard", "port"),
+        ServiceRegistry.FATEBOARD.get("host"),
+        ServiceRegistry.FATEBOARD.get("port"),
         FATE_BOARD_DASHBOARD_ENDPOINT).format(job_id, role, party_id)
     return board_url

@@ -13,14 +13,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+
 from fate_arch.common.base_utils import current_timestamp
+from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.db.db_models import DB, Job
 from fate_arch.session import Session
 from fate_arch.common.log import detect_logger
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
 from fate_flow.utils import cron, job_utils
-from fate_flow.runtime_config import RuntimeConfig
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_arch.common import EngineType
@@ -38,16 +40,18 @@ class Detector(cron.Cron):
         detect_logger().info('start to detect running task..')
         count = 0
         try:
-            running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, run_on_this_party=True, run_ip=RuntimeConfig.JOB_SERVER_HOST, only_latest=False)
+            running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, only_latest=False)
             stop_job_ids = set()
             for task in running_tasks:
+                if not task.f_engine_conf and task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST and not task.f_run_on_this_party:
+                    continue
                 count += 1
                 try:
-                    process_exist = job_utils.check_job_process(int(task.f_run_pid))
+                    process_exist = build_engine(task.f_engine_conf.get("computing_engine")).is_alive(task)
                     if not process_exist:
                         detect_logger(job_id=task.f_job_id).info(
-                                'job {} task {} {} on {} {} process {} does not exist'.format(
-                                    task.f_job_id,
+                                'the {} task {} {} on {} {} process {} does not exist'.format(
+                                    task.f_party_status,
                                     task.f_task_id,
                                     task.f_task_version,
                                     task.f_role,
@@ -122,8 +126,9 @@ class Detector(cron.Cron):
         try:
             session_records = Session.query_sessions(create_time=[None, current_timestamp() - ttl])
             for session_record in session_records:
+                msg = f"{session_record.f_engine_type} engine session {session_record.f_engine_session_id}"
                 engine_session_id = session_record.f_engine_session_id
-                detect_logger().info(f'start stop session id {engine_session_id}')
+                detect_logger().info(f'start stop {msg}')
                 try:
                     if session_record.f_engine_type == EngineType.COMPUTING:
                         with Session(computing=session_record.f_engine_name, logger=detect_logger()) as sess:
@@ -134,9 +139,9 @@ class Detector(cron.Cron):
                             sess.add_storage(storage_session_id=session_record.f_engine_session_id, storage_engine=session_record.f_engine_name)
                             sess.destroy_storage()
                 except Exception as e:
-                    detect_logger().error(f'stop session id {engine_session_id} error', e)
+                    detect_logger().error(f'stop {msg} error', e)
                 finally:
-                    detect_logger().info(f'finish stop session id {engine_session_id}')
+                    detect_logger().info(f'stop {msg} successfully')
         except Exception as e:
             detect_logger().error('detect expired session error', e)
         finally:

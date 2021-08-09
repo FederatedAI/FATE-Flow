@@ -47,7 +47,7 @@ You can query the corresponding model_id and model_version of a job using the "f
 
 ## Make a predict conf and generate predict dsl
 
-We use flow_client to deploy fate_components needed in the prediction task:
+We use flow_client to deploy components needed in the prediction task:
 
     flow model deploy --model-id guest-10000#host-10000#model --model-version 2020103015490073208469 --cpn-list "dataio_0, intersection_0, hetero_secure_boost_0"
 

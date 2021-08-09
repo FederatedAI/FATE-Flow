@@ -18,7 +18,6 @@ import inspect
 import os
 import sys
 
-import __main__
 from peewee import (CharField, IntegerField, BigIntegerField,
                     TextField, CompositeKey, BigAutoField, BooleanField)
 from playhouse.apsw_ext import APSWDatabase
@@ -27,8 +26,8 @@ from playhouse.pool import PooledMySQLDatabase
 from fate_arch.common import log, file_utils
 from fate_arch.storage.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField
 from fate_arch.common import WorkMode
-from fate_flow.settings import DATABASE, WORK_MODE, stat_logger
-from fate_flow.runtime_config import RuntimeConfig
+from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.settings import WORK_MODE, DATABASE, stat_logger
 
 
 LOGGER = log.getLogger()
@@ -52,7 +51,7 @@ class BaseDataBase(object):
         database_config = DATABASE.copy()
         db_name = database_config.pop("name")
         if WORK_MODE == WorkMode.STANDALONE:
-            self.database_connection = APSWDatabase(os.path.join(file_utils.get_python_base_directory(), 'fate_flow_sqlite.db'))
+            self.database_connection = APSWDatabase(os.path.join(file_utils.get_project_base_directory(), 'fate_flow_sqlite.db'))
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
             stat_logger.info('init sqlite database on standalone mode successfully')
         elif WORK_MODE == WorkMode.CLUSTER:
@@ -63,14 +62,7 @@ class BaseDataBase(object):
             raise Exception('can not init database')
 
 
-MAIN_FILE_PATH = os.path.realpath(__main__.__file__)
-if MAIN_FILE_PATH.endswith('fate_flow_server.py') or \
-        MAIN_FILE_PATH.endswith('task_executor.py') or \
-        MAIN_FILE_PATH.find("/unittest/__main__.py"):
-    DB = BaseDataBase().database_connection
-else:
-    # Initialize the database only when the server is started.
-    DB = None
+DB = BaseDataBase().database_connection
 
 
 def close_connection():
@@ -121,6 +113,7 @@ class Job(DataBaseModel):
     f_initiator_party_id = CharField(max_length=50, index=True)
     f_status = CharField(max_length=50, index=True)
     f_status_code = IntegerField(null=True, index=True)
+    f_user = JSONField()
     # this party configuration
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=10, index=True)
@@ -178,6 +171,7 @@ class Task(DataBaseModel):
     f_party_status = CharField(max_length=50, index=True)
     f_provider_info = JSONField()
     f_component_parameters = JSONField()
+    f_engine_conf = JSONField(null=True)
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)
@@ -290,6 +284,23 @@ class MachineLearningModelInfo(DataBaseModel):
     class Meta:
         db_table = "t_machine_learning_model_info"
         primary_key = CompositeKey('f_role', 'f_party_id', 'f_model_id', 'f_model_version')
+
+
+class DataTableTracking(DataBaseModel):
+    f_table_id = BigAutoField(primary_key=True)
+    f_table_name = CharField(max_length=300, null=True)
+    f_table_namespace = CharField(max_length=300, null=True)
+    f_job_id = CharField(max_length=25, index=True, null=True)
+    f_have_parent = BooleanField(default=False)
+    f_parent_number = IntegerField(default=0)
+
+    f_parent_table_name = CharField(max_length=500, null=True)
+    f_parent_table_namespace = CharField(max_length=500, null=True)
+    f_source_table_name = CharField(max_length=500, null=True)
+    f_source_table_namespace = CharField(max_length=500, null=True)
+
+    class Meta:
+        db_table = "t_data_table_tracking"
 
 
 class ModelTag(DataBaseModel):

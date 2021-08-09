@@ -13,11 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
 import math
 import typing
 
-from fate_arch.common import EngineType
+from fate_arch.common import EngineType, Backend
 from fate_arch.common import base_utils
 from fate_arch.common.log import schedule_logger
 from fate_arch.computing import ComputingEngine
@@ -25,9 +24,10 @@ from fate_arch.common import engine_utils
 from fate_flow.db.db_models import DB, EngineRegistry, Job
 from fate_flow.entity.types import ResourceOperation
 from fate_flow.entity.run_parameters import RunParameters
-from fate_flow.settings import stat_logger
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, SUPPORT_IGNORE_RESOURCE_ENGINES, IGNORE_RESOURCE_COMPUTING_ENGINE
 from fate_flow.utils import job_utils
-from fate_flow import job_default_settings
+from fate_flow.db.job_default_config import JobDefaultConfig
 
 
 class ResourceManager(object):
@@ -42,8 +42,8 @@ class ResourceManager(object):
     @DB.connection_context()
     def register_engine(cls, engine_type, engine_name, engine_entrance, engine_config):
         nodes = engine_config.get("nodes", 1)
-        cores = engine_config.get("cores_per_node", 0) * nodes * job_default_settings.TOTAL_CORES_OVERWEIGHT_PERCENT
-        memory = engine_config.get("memory_per_node", 0) * nodes * job_default_settings.TOTAL_MEMORY_OVERWEIGHT_PERCENT
+        cores = engine_config.get("cores_per_node", 0) * nodes * JobDefaultConfig.total_cores_overweight_percent
+        memory = engine_config.get("memory_per_node", 0) * nodes * JobDefaultConfig.total_memory_overweight_percent
         filters = [EngineRegistry.f_engine_type == engine_type, EngineRegistry.f_engine_name == engine_name]
         resources = EngineRegistry.select().where(*filters)
         if resources:
@@ -85,7 +85,7 @@ class ResourceManager(object):
     @classmethod
     def check_resource_apply(cls, job_parameters: RunParameters, role, party_id, engines_info):
         computing_engine, cores, memory = cls.calculate_job_resource(job_parameters=job_parameters, role=role, party_id=party_id)
-        max_cores_per_job = math.floor(engines_info[EngineType.COMPUTING].f_cores * job_default_settings.MAX_CORES_PERCENT_PER_JOB)
+        max_cores_per_job = math.floor(engines_info[EngineType.COMPUTING].f_cores * JobDefaultConfig.max_cores_percent_per_job)
         if cores > max_cores_per_job:
             return False, cores, max_cores_per_job
         else:
@@ -99,6 +99,28 @@ class ResourceManager(object):
     def return_job_resource(cls, job_id, role, party_id):
         return cls.resource_for_job(job_id=job_id, role=role, party_id=party_id,
                                     operation_type=ResourceOperation.RETURN)
+
+    @classmethod
+    def query_resource(cls, resource_in_use=True, engine_name=ComputingEngine.EGGROLL):
+        use_resource_jobs = JobSaver.query_job(resource_in_use=resource_in_use)
+        used = []
+        for job in use_resource_jobs:
+            used.append({"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id,
+                         "core": job.f_cores, "memory": job.f_memory})
+        computing_engine_resource = cls.get_engine_registration_info(engine_type=EngineType.COMPUTING, engine_name=engine_name)
+        return used, computing_engine_resource.to_json() if computing_engine_resource else {}
+
+    @classmethod
+    def return_resource(cls, job_id):
+        jobs = JobSaver.query_job(job_id=job_id)
+        return_resource_job_list = []
+        for job in jobs:
+            job_info = {"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id, "resource_in_use": job.f_resource_in_use}
+            if job.f_resource_in_use:
+                return_status = cls.return_job_resource(job.f_job_id, job.f_role, job.f_party_id)
+                job_info["resource_return_status"] = return_status
+            return_resource_job_list.append(job_info)
+        return return_resource_job_list
 
     @classmethod
     @DB.connection_context()
@@ -174,7 +196,7 @@ class ResourceManager(object):
                 "task_cores_per_node": 0,
                 "task_memory_per_node": 0,
                 # request_task_cores base on initiator and distribute to all parties, using job conf parameters or initiator fateflow server default settings
-                "request_task_cores": int(job_parameters.task_cores) if job_parameters.task_cores else job_default_settings.TASK_CORES,
+                "request_task_cores": int(job_parameters.task_cores) if job_parameters.task_cores else JobDefaultConfig.task_cores,
                 "if_initiator_baseline": True
             }
         else:
@@ -197,7 +219,7 @@ class ResourceManager(object):
             if not create_initiator_baseline:
                 # set the adaptation parameters to the actual engine operation parameters
                 job_parameters.eggroll_run["eggroll.session.processors.per.node"] = adaptation_parameters["task_cores_per_node"]
-        elif job_parameters.computing_engine == ComputingEngine.SPARK:
+        elif job_parameters.computing_engine == ComputingEngine.SPARK or job_parameters.computing_engine == ComputingEngine.LINKIS_SPARK:
             adaptation_parameters["task_nodes"] = int(job_parameters.spark_run.get("num-executors", computing_engine_info.f_nodes))
             if int(job_parameters.spark_run.get("executor-cores", 0)) > 0:
                 adaptation_parameters["task_cores_per_node"] = int(job_parameters.spark_run["executor-cores"])
@@ -215,7 +237,10 @@ class ResourceManager(object):
                                                           role=role,
                                                           party_id=party_id)
             job_parameters = RunParameters(**job_parameters)
-        if role in job_default_settings.IGNORE_RESOURCE_ROLES and job_parameters.computing_engine in job_default_settings.SUPPORT_IGNORE_RESOURCE_ENGINES:
+        if job_parameters.computing_engine in IGNORE_RESOURCE_COMPUTING_ENGINE:
+            cores = 0
+            memory = 0
+        elif role in IGNORE_RESOURCE_ROLES and job_parameters.computing_engine in SUPPORT_IGNORE_RESOURCE_ENGINES:
             cores = 0
             memory = 0
         else:
@@ -232,7 +257,10 @@ class ResourceManager(object):
                                                           role=task_info["role"],
                                                           party_id=task_info["party_id"])
             task_parameters = RunParameters(**job_parameters)
-        if task_info["role"] in job_default_settings.IGNORE_RESOURCE_ROLES and task_parameters.computing_engine in job_default_settings.SUPPORT_IGNORE_RESOURCE_ENGINES:
+        if task_parameters.computing_engine in IGNORE_RESOURCE_COMPUTING_ENGINE:
+            cores_per_task = 0
+            memory_per_task = 0
+        elif task_info["role"] in IGNORE_RESOURCE_ROLES and task_parameters.computing_engine in SUPPORT_IGNORE_RESOURCE_ENGINES:
             cores_per_task = 0
             memory_per_task = 0
         else:
@@ -253,7 +281,7 @@ class ResourceManager(object):
     @classmethod
     def resource_for_task(cls, task_info, operation_type):
         cores_per_task, memory_per_task = cls.calculate_task_resource(task_info=task_info)
-
+        schedule_logger(job_id=task_info["job_id"]).info(f"cores_per_task:{cores_per_task}, memory_per_task:{memory_per_task}")
         if cores_per_task or memory_per_task:
             filters, updates = cls.update_resource_sql(resource_model=Job,
                                                        cores=cores_per_task,
@@ -316,5 +344,3 @@ class ResourceManager(object):
                                                 EngineRegistry.f_engine_name == engine_name)
         if engines:
             return engines[0]
-        else:
-            return None

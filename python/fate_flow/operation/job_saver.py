@@ -16,6 +16,7 @@
 
 import operator
 import time
+import typing
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, Job, Task
@@ -59,6 +60,10 @@ class JobSaver(object):
     @classmethod
     def update_job(cls, job_info):
         schedule_logger(job_id=job_info["job_id"]).info("try to update job {}".format(job_info["job_id"]))
+        if "status" in job_info:
+            # Avoid unintentional usage that updates the status
+            del job_info["status"]
+            schedule_logger(job_id=job_info["job_id"]).warning("try to update job {}, pop job status".format(job_info["job_id"]))
         update_status = cls.update_entity_table(Job, job_info)
         if update_status:
             schedule_logger(job_id=job_info.get("job_id")).info(f"job {job_info['job_id']} update successfully: {job_info}")
@@ -155,7 +160,7 @@ class JobSaver(object):
         if objs:
             obj = objs[0]
         else:
-            raise Exception("can not found the {}".format(entity_model.__class__.__name__))
+            raise Exception("can not found the {}".format(entity_model.__name__))
         update_filters = query_filters[:]
         update_info = {}
         update_info.update(entity_info)
@@ -190,67 +195,24 @@ class JobSaver(object):
     @classmethod
     @DB.connection_context()
     def query_job(cls, reverse=None, order_by=None, **kwargs):
-        filters = []
-        for f_n, f_v in kwargs.items():
-            attr_name = 'f_%s' % f_n
-            if attr_name in ['f_start_time', 'f_end_time', 'f_elapsed'] and isinstance(f_v, list):
-                if attr_name == 'f_elapsed':
-                    b_timestamp = f_v[0]
-                    e_timestamp = f_v[1]
-                else:
-                    # time type: %Y-%m-%d %H:%M:%S
-                    b_timestamp = str_to_time_stamp(f_v[0]) if isinstance(f_v[0], str) else f_v[0]
-                    e_timestamp = str_to_time_stamp(f_v[1]) if isinstance(f_v[1], str) else f_v[1]
-                filters.append(getattr(Job, attr_name).between(b_timestamp, e_timestamp))
-            elif hasattr(Job, attr_name):
-                if isinstance(f_v, set):
-                    filters.append(operator.attrgetter('f_%s' % f_n)(Job) << f_v)
-                else:
-                    filters.append(operator.attrgetter('f_%s' % f_n)(Job) == f_v)
-        if filters:
-            jobs = Job.select().where(*filters)
-            if reverse is not None:
-                if not order_by or not hasattr(Job, f"f_{order_by}"):
-                    order_by = "create_time"
-                if reverse is True:
-                    jobs = jobs.order_by(getattr(Job, f"f_{order_by}").desc())
-                elif reverse is False:
-                    jobs = jobs.order_by(getattr(Job, f"f_{order_by}").asc())
-            return [job for job in jobs]
-        else:
-            return []
+        return Job.query(reverse=reverse, order_by=order_by, **kwargs)
 
     @classmethod
     @DB.connection_context()
     def get_tasks_asc(cls, job_id, role, party_id):
-        tasks = Task.select().where(Task.f_job_id == job_id, Task.f_role == role, Task.f_party_id == party_id).order_by(Task.f_create_time.asc())
+        tasks = Task.query(order_by="create_time", reverse=False, job_id=job_id, role=role, party_id=party_id)
         tasks_group = cls.get_latest_tasks(tasks=tasks)
         return tasks_group
 
     @classmethod
     @DB.connection_context()
-    def query_task(cls, only_latest=True, reverse=None, order_by=None, **kwargs):
-        filters = []
-        for f_n, f_v in kwargs.items():
-            attr_name = 'f_%s' % f_n
-            if hasattr(Task, attr_name):
-                filters.append(operator.attrgetter('f_%s' % f_n)(Task) == f_v)
-        if filters:
-            tasks = Task.select().where(*filters)
-        else:
-            tasks = Task.select()
-        if reverse is not None:
-            if not order_by or not hasattr(Task, f"f_{order_by}"):
-                order_by = "create_time"
-            if reverse is True:
-                tasks = tasks.order_by(getattr(Task, f"f_{order_by}").desc())
-            elif reverse is False:
-                tasks = tasks.order_by(getattr(Task, f"f_{order_by}").asc())
+    def query_task(cls, only_latest=True, reverse=None, order_by=None, **kwargs) -> typing.List[Task]:
+        tasks = Task.query(reverse=reverse, order_by=order_by, **kwargs)
         if only_latest:
             tasks_group = cls.get_latest_tasks(tasks=tasks)
             return list(tasks_group.values())
         else:
-            return [task for task in tasks]
+            return tasks
 
     @classmethod
     @DB.connection_context()
