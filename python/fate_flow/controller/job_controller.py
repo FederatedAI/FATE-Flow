@@ -34,7 +34,7 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.settings import USE_AUTHENTICATION, USE_DATA_AUTHENTICATION
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.utils import job_utils, schedule_utils, data_utils
-from fate_flow.component_env_utils import dsl_utils
+from fate_flow.component_env_utils import provider_utils
 from fate_flow.utils.authentication_utils import authentication_check
 from fate_flow.operation.task_initializer import TaskInitializer
 import subprocess
@@ -268,10 +268,10 @@ class JobController(object):
         common_task_info["auto_retry_delay"] = job_parameters.auto_retry_delay
         if task_version:
             common_task_info["task_version"] = task_version
-        provider_group = dsl_utils.get_job_provider_group(dsl_parser=dsl_parser,
-                                                          role=role,
-                                                          party_id=party_id,
-                                                          component_name=component_name)
+        provider_group = provider_utils.get_job_provider_group(dsl_parser=dsl_parser,
+                                                               role=role,
+                                                               party_id=party_id,
+                                                               component_name=component_name)
         for group_key, group_info in provider_group.items():
             initialized_config = {}
             initialized_config.update(group_info)

@@ -7,7 +7,7 @@ FATE FLOW
 
 FATE-Flow是联邦学习框架FATE的作业调度系统，实现联邦学习作业生命周期的完整管理，其中包括数据输入、训练作业调度、指标追踪、模型中心等功能.
 
-![FATE-Flow联邦学习Pipeline](./images/federated_learning_pipeline.png)
+![FATE-Flow联邦学习Pipeline](python/fate_flow/images/federated_learning_pipeline.png)
 
 FATE-Flow关键点:
 ------------------
@@ -24,7 +24,7 @@ FATE-Flow关键点:
 架构
 ====
 
-![fateflow_arch](./images/fateflow_arch.png){.align-center}
+![fateflow_arch](python/fate_flow/images/fateflow_arch.png){.align-center}
 
 部署
 ====
@@ -38,9 +38,9 @@ FATE-Flow关键点:
 
 ##### [Python SDK](../fate_client/flow_sdk/README_zh.rst)
 
-##### [HTTP API](./doc/fate_flow_http_api.rst)
+##### [HTTP API](doc/fate_flow_http_api.rst)
 
-##### [训练样例](../../examples/README_zh.rst)
+##### [训练样例](examples/README_zh.rst)
 
 ##### [在线推理样例](../../doc/model_publish_with_serving_guide_zh.md)
 

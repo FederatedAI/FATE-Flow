@@ -22,7 +22,7 @@ from filelock import FileLock
 from fate_arch.protobuf.python.default_empty_fill_pb2 import DefaultEmptyFillMessage
 from fate_flow.settings import stat_logger
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.component_env_utils import dsl_utils
+from fate_flow.component_env_utils import provider_utils
 
 
 def serialize_buffer_object(buffer_object):
@@ -36,7 +36,7 @@ def serialize_buffer_object(buffer_object):
 
 
 def get_proto_buffer_class(buffer_name):
-    package_path, package_module = dsl_utils.get_component_model(provider=RuntimeConfig.COMPONENT_PROVIDER)
+    package_path, package_module = provider_utils.get_component_model(provider=RuntimeConfig.COMPONENT_PROVIDER)
     e = ModuleNotFoundError(f'No module named {buffer_name}')
     for f in package_path.glob('*.py'):
         try:

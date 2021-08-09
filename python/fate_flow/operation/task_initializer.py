@@ -20,7 +20,7 @@ import traceback
 from fate_arch.common import file_utils
 from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.log import schedule_logger, getLogger
-from fate_flow.component_env_utils import dsl_utils
+from fate_flow.component_env_utils import provider_utils
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.types import ProcessRole
 from fate_flow.entity.component_provider import ComponentProvider
@@ -72,11 +72,11 @@ class TaskInitializer(object):
                 task_info = {}
                 task_info.update(common_task_info)
 
-                parameters = dsl_utils.get_component_parameters(dsl_parser=dsl_parser,
-                                                                component_name=component_name,
-                                                                role=role,
-                                                                party_id=party_id,
-                                                                provider=provider)
+                parameters = provider_utils.get_component_parameters(dsl_parser=dsl_parser,
+                                                                     component_name=component_name,
+                                                                     role=role,
+                                                                     party_id=party_id,
+                                                                     provider=provider)
                 if parameters:
                     task_info = {}
                     task_info.update(common_task_info)

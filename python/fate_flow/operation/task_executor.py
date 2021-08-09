@@ -35,7 +35,7 @@ from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.scheduling_apps.client import ControllerClient, TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
 from fate_arch.computing import ComputingEngine
-from fate_flow.component_env_utils import dsl_utils
+from fate_flow.component_env_utils import provider_utils
 
 LOGGER = getLogger()
 
@@ -92,10 +92,10 @@ class TaskExecutor(object):
 
             job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser, job_configuration.runtime_conf_on_party, role, party_id)
             component = dsl_parser.get_component_info(component_name=component_name)
-            component_provider, component_parameters_on_party = dsl_utils.get_component_run_info(dsl_parser=dsl_parser,
-                                                                                                 component_name=component_name,
-                                                                                                 role=role,
-                                                                                                 party_id=party_id)
+            component_provider, component_parameters_on_party = provider_utils.get_component_run_info(dsl_parser=dsl_parser,
+                                                                                                      component_name=component_name,
+                                                                                                      role=role,
+                                                                                                      party_id=party_id)
             RuntimeConfig.set_component_provider(component_provider)
             module_name = component.get_module()
             task_input_dsl = component.get_input()
@@ -158,7 +158,7 @@ class TaskExecutor(object):
             if module_name in {"Upload", "Download", "Reader", "Writer"}:
                 task_run_args["job_parameters"] = job_parameters
 
-            component_framework = dsl_utils.get_component_framework_interface(provider=component_provider)
+            component_framework = provider_utils.get_component_framework_interface(provider=component_provider)
             run_object = component_framework.get_module(module_name, role)
             run_object.set_tracker(tracker=tracker_client)
             run_object.set_checkpoint_manager(checkpoint_manager)
