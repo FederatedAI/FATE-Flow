@@ -17,6 +17,7 @@ from fate_arch.common.versions import get_versions
 from fate_arch.common import file_utils
 from fate_flow.settings import FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH
 from fate_flow.entity.types import ComponentProviderName
+from fate_flow.entity.component_provider import ComponentProvider
 from .reload_config_base import ReloadConfigBase
 
 
@@ -35,6 +36,7 @@ class RuntimeConfig(ReloadConfigBase):
     PROCESS_ROLE = None
     ENV = dict()
     COMPONENT_REGISTRY = {}
+    COMPONENT_PROVIDER: ComponentProvider = None
 
     @classmethod
     def init_config(cls, **kwargs):
@@ -53,6 +55,10 @@ class RuntimeConfig(ReloadConfigBase):
     @classmethod
     def set_process_role(cls, process_role: PROCESS_ROLE):
         cls.PROCESS_ROLE = process_role
+
+    @classmethod
+    def set_component_provider(cls, component_provider: ComponentProvider):
+        cls.COMPONENT_PROVIDER = component_provider
 
     @classmethod
     def load_component_registry(cls):

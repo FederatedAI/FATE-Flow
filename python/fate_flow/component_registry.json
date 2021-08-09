@@ -113,7 +113,8 @@
     "class_path": {
       "framework_interface": "framework.scheduler.interface",
       "feature_instance": "feature.instance.Instance",
-      "feature_vector": "feature.sparse_vector.SparseVector"
+      "feature_vector": "feature.sparse_vector.SparseVector",
+      "model": "protobuf.generated"
     }
   }
 }

@@ -14,7 +14,9 @@
 #  limitations under the License.
 #
 import importlib
+import pathlib
 
+from fate_arch.common import file_utils
 from fate_flow.entity.component_provider import ComponentProvider
 from fate_flow.db.runtime_config import RuntimeConfig
 
@@ -76,11 +78,20 @@ def get_component_run_info(dsl_parser, component_name, role, party_id):
 
 
 def get_component_framework_interface(provider: ComponentProvider):
-    return get_component_class_path(provider, "framework_interface")
+    return get_component_class(provider, "framework_interface")
+
+
+def get_component_model(provider: ComponentProvider):
+    class_path = get_component_class_path(provider, "model")
+    return pathlib.Path(file_utils.get_python_base_directory(*class_path.split("."))), class_path
+
+
+def get_component_class(provider: ComponentProvider, class_name):
+    return importlib.import_module(get_component_class_path(provider, class_name))
 
 
 def get_component_class_path(provider: ComponentProvider, class_name):
     class_path = RuntimeConfig.COMPONENT_REGISTRY["provider"].get(provider.name, {}).get(provider.version, {}).get("class_path", {}).get(class_name, None)
     if not class_path:
         class_path = RuntimeConfig.COMPONENT_REGISTRY["default_settings"]["class_path"][class_name]
-    return importlib.import_module("{}.{}".format(".".join(provider.path), class_path))
+    return "{}.{}".format(".".join(provider.path), class_path)

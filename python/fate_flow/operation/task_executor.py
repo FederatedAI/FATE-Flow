@@ -96,6 +96,7 @@ class TaskExecutor(object):
                                                                                                  component_name=component_name,
                                                                                                  role=role,
                                                                                                  party_id=party_id)
+            RuntimeConfig.set_component_provider(component_provider)
             module_name = component.get_module()
             task_input_dsl = component.get_input()
             task_output_dsl = component.get_output()
