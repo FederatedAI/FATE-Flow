@@ -40,7 +40,7 @@ from fate_flow.utils import job_utils, model_utils, schedule_utils
 from fate_flow.utils.detect_utils import check_config
 from fate_flow.utils.model_utils import gen_party_model_id, check_if_deployed
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.entity.runtime_config import RuntimeConfig
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.types import ModelOperation, TagOperation
 from fate_arch.common import file_utils, WorkMode, FederatedMode
 
