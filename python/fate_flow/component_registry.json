@@ -87,9 +87,9 @@
       },
       "1.7.0": {
         "path": [
-          "flow_components",
-          "fate_federated_algorithm",
-          "default",
+          "component_plugins",
+          "fate",
+          "python",
           "federatedml"
         ],
         "venv": "xxxxx",
