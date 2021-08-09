@@ -9,7 +9,7 @@ Introduction
 FATE-Flow is the job scheduling system of the federated learning framework FATE, which realizes the complete management of the federated learning job life cycle, including data input, training job scheduling, indicator tracking, model center and other functions
 
 ![FATE-Flow Federated Learning
-Pipeline](python/fate_flow/images/federated_learning_pipeline.png){.align-center}
+Pipeline](images/federated_learning_pipeline.png){.align-center}
 
 ### FATE-Flow now supports
 
@@ -25,7 +25,7 @@ Pipeline](python/fate_flow/images/federated_learning_pipeline.png){.align-center
 Architecture
 ------------
 
-![fateflow_arch](python/fate_flow/images/fateflow_arch.png){.align-center}
+![fateflow_arch](images/fate_flow_arch.png){.align-center}
 
 Deploy
 ------
