@@ -22,11 +22,12 @@ from collections import deque, OrderedDict
 
 from ruamel import yaml
 
+from fate_arch.common.file_utils import get_project_base_directory
 from fate_flow.settings import stat_logger
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.utils.model_utils import gen_party_model_id
-from fate_arch.common.file_utils import get_project_base_directory
 from fate_flow.model import serialize_buffer_object, parse_proto_object, Locker
+from fate_flow.components.component_base import ComponentBase
 
 
 class Checkpoint(Locker):
@@ -233,3 +234,63 @@ class CheckpointManager:
 
     def to_dict(self, include_models=False):
         return [checkpoint.to_dict(include_models) for checkpoint in self.checkpoints]
+
+
+class CheckpointComponent(ComponentBase):
+
+    def set_checkpoint_manager(self, checkpoint_manager):
+        pass
+
+    def run(self, component_parameters=None, run_args=None):
+        params = {}
+        for i in ('model_id', 'model_version', 'component_name'):
+            params[i] = component_parameters['ComponentParam'].get(i)
+            if params[i] is None:
+                raise TypeError(f'CheckpointComponent needs {i}')
+        for i in ('step_index', 'step_name'):
+            params[i] = component_parameters['ComponentParam'].get(i)
+
+        checkpoint_manager = CheckpointManager(
+            role=self.tracker.role, party_id=self.tracker.party_id,
+            model_id=params['model_id'], model_version=params['model_version'],
+            component_name=params['component_name'],
+            mkdir=False,
+        )
+
+        if params['step_index'] is not None:
+            checkpoint = checkpoint_manager.get_checkpoint_by_index(params['step_index'])
+        elif params['step_name'] is not None:
+            checkpoint = checkpoint_manager.get_checkpoint_by_name(params['step_name'])
+        else:
+            raise TypeError('CheckpointComponent needs step_index or step_name')
+
+        if checkpoint is None:
+            raise TypeError('Checkpoint not found')
+
+        self.model_output = checkpoint.read()
+
+    def warm_start(self):
+        raise NotImplementedError('CheckpointComponent does not support warm_start')
+
+
+class CheckpointParam:
+
+    def __init__(self, model_id=None, model_version=None, component_name=None, step_index=None, step_name=None):
+        self.model_id = model_id
+        self.model_version = model_version
+        self.component_name = component_name
+        self.step_index = step_index
+        self.step_name = step_name
+
+        if self.step_index is not None:
+            self.step_index = int(self.step_index)
+
+    def check(self):
+        for i in ('model_id', 'model_version', 'component_name'):
+            if getattr(self, i) is None:
+                return False
+
+        # do not set step_index and step_name at the same time
+        if self.step_index is not None:
+            return self.step_name is None
+        return self.step_name is not None

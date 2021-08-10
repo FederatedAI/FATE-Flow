@@ -18,6 +18,12 @@
         "fate_flow_tools"
       ]
     },
+    "Checkpoint": {
+      "default_provider": "fate_flow_tools",
+      "support_provider": [
+        "fate_flow_tools"
+      ]
+    },
     "DataIO": {
       "default_provider": "fate_federated_algorithm",
       "support_provider": [
