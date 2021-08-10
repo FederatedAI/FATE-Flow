@@ -22,7 +22,7 @@ from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.scheduler.task_scheduler import TaskScheduler
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.entity.types import ResourceOperation, RetCode
-from fate_flow.entity.run_status import StatusSet, JobStatus, TaskStatus, EndStatus
+from fate_flow.entity.run_status import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, SuccessStatus
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.entity.run_status import SchedulingStatusCode
 from fate_flow.operation.job_tracker import Tracker
@@ -413,6 +413,9 @@ class DAGScheduler(Cron):
         # 4. all end status and difference
         # 5. all the same end status
         tmp_status_set = set(tasks_status)
+        if TaskStatus.PASS in tmp_status_set:
+            tmp_status_set.remove(TaskStatus.PASS)
+            tmp_status_set.add(TaskStatus.SUCCESS)
         if len(tmp_status_set) == 1:
             # 1 and 5
             return tmp_status_set.pop()
@@ -428,12 +431,10 @@ class DAGScheduler(Cron):
                     # have waiting with no next
                     pass
             # have waiting with no next or 4
-            for status in sorted(EndStatus.status_list(), key=lambda s: StatusSet.get_level(status=s), reverse=True):
-                if status == TaskStatus.SUCCESS:
-                    continue
-                elif status in tmp_status_set:
+            for status in sorted(InterruptStatus.status_list(), key=lambda s: StatusSet.get_level(status=s), reverse=True):
+                if status in tmp_status_set:
                     return status
-            if len(tmp_status_set) == 2 and TaskStatus.WAITING in tmp_status_set and TaskStatus.SUCCESS in tmp_status_set and task_scheduling_status_code == SchedulingStatusCode.NO_NEXT:
+            if tmp_status_set == {TaskStatus.WAITING, TaskStatus.SUCCESS} and task_scheduling_status_code == SchedulingStatusCode.NO_NEXT:
                 return JobStatus.CANCELED
 
             raise Exception("calculate job status failed, all task status: {}".format(tasks_status))
