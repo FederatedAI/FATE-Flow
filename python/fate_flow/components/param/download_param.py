@@ -14,11 +14,18 @@
 #  limitations under the License.
 #
 from fate_arch.storage import DEFAULT_ID_DELIMITER
+from components.param.base_param import BaseParam
 
 
-class DownloadParam:
-    def __init__(self, output_path="", delimiter=DEFAULT_ID_DELIMITER,
-                 namespace="", name="", work_mode=0):
+class DownloadParam(BaseParam):
+    def __init__(
+        self,
+        output_path="",
+        delimiter=DEFAULT_ID_DELIMITER,
+        namespace="",
+        name="",
+        work_mode=0,
+    ):
         self.output_path = output_path
         self.delimiter = delimiter
         self.namespace = namespace

@@ -103,14 +103,9 @@ class RuntimeConfParserUtil(object):
 
         if alias in common_parameters:
             common_parameters = common_parameters[alias]
-            param_class = provider.update_param(param_class,
-                                                common_parameters,
-                                                redundant_param_check,
-                                                module,
-                                                alias)
+            param_class = param_class.update(common_parameters, not redundant_param_check)
 
         party_idx = role_on_module[local_role].index(local_party_id)
-
         if conf_version == 2:
             role_parameters = runtime_conf.get("component_parameters", {}).get("role", {}).get(local_role, {})
             role_ids = role_parameters.keys()
@@ -119,12 +114,8 @@ class RuntimeConfParserUtil(object):
                     parameters = role_parameters[role_id].get(alias, {})
                     if not parameters:
                         continue
-                    param_class = provider.update_param(param_class,
-                                                        parameters,
-                                                        redundant_param_check,
-                                                        module,
-                                                        alias
-                                                        )
+                    param_class = param_class.update(parameters, not redundant_param_check)
+
         else:
             # query if backend interface support dsl v1
             if hasattr(provider, "get_not_builtin_types_for_dsl_v1"):
@@ -134,15 +125,10 @@ class RuntimeConfParserUtil(object):
                     idx = role_on_module[local_role].index(local_party_id)
                     v2_parameters = RuntimeConfParserUtil.change_conf_v1_to_v2(v1_parameters, not_builtin_vars, idx,
                                                                                local_role, len(role_on_module[local_role]))
-                    param_class = provider.update_param(param_class,
-                                                        v2_parameters,
-                                                        redundant_param_check,
-                                                        module,
-                                                        alias
-                                                        )
+                    param_class = param_class.update(v2_parameters, not redundant_param_check)
 
-        provider.check_param(param_class)
-        conf["ComponentParam"] = provider.change_param_to_dict(param_class)
+        param_class.check()
+        conf["ComponentParam"] = param_class.as_dict()
 
         return conf
 

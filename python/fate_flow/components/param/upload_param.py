@@ -13,12 +13,25 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from components.param.base_param import BaseParam
 from fate_arch.storage import DEFAULT_ID_DELIMITER
 
 
-class UploadParam:
-    def __init__(self, file="", head=1, id_delimiter=DEFAULT_ID_DELIMITER, partition=10, namespace="", name="",
-                 storage_engine="", storage_address=None, destroy=False, extend_sid=False, auto_increasing_sid=False):
+class UploadParam(BaseParam):
+    def __init__(
+        self,
+        file="",
+        head=1,
+        id_delimiter=DEFAULT_ID_DELIMITER,
+        partition=10,
+        namespace="",
+        name="",
+        storage_engine="",
+        storage_address=None,
+        destroy=False,
+        extend_sid=False,
+        auto_increasing_sid=False,
+    ):
         self.file = file
         self.head = head
         self.id_delimiter = id_delimiter
@@ -33,4 +46,3 @@ class UploadParam:
 
     def check(self):
         return True
-
