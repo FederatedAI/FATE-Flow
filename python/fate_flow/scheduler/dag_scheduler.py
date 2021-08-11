@@ -22,9 +22,10 @@ from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.scheduler.task_scheduler import TaskScheduler
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.entity.types import ResourceOperation, RetCode
-from fate_flow.entity.run_status import StatusSet, JobStatus, TaskStatus, EndStatus
+from fate_flow.entity.run_status import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.entity.run_status import SchedulingStatusCode
+from fate_flow.entity.job import JobConfigurationBase
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.controller.job_controller import JobController
 from fate_flow.utils import detect_utils, job_utils, schedule_utils, authentication_utils
@@ -36,22 +37,22 @@ from fate_flow.db.job_default_config import JobDefaultConfig
 
 class DAGScheduler(Cron):
     @classmethod
-    def submit(cls, job_data, job_id=None):
+    def submit(cls, submit_job_conf: JobConfigurationBase, job_id: str = None):
         if not job_id:
             job_id = job_utils.generate_job_id()
-        schedule_logger(job_id).info('submit job, job_id {}, body {}'.format(job_id, job_data))
-        job_dsl = job_data.get('job_dsl', {})
-        job_runtime_conf = job_data.get('job_runtime_conf', {})
-        job_utils.check_job_runtime_conf(job_runtime_conf)
-        authentication_utils.check_constraint(job_runtime_conf, job_dsl)
+        schedule_logger(job_id).info('submit job, job_id {}, body {}'.format(job_id, submit_job_conf.to_dict()))
+        dsl = submit_job_conf.dsl
+        runtime_conf = submit_job_conf.runtime_conf
+        job_utils.check_job_runtime_conf(runtime_conf)
+        authentication_utils.check_constraint(runtime_conf, dsl)
 
-        job_initiator = job_runtime_conf['initiator']
-        conf_adapter = JobRuntimeConfigAdapter(job_runtime_conf)
+        job_initiator = runtime_conf['initiator']
+        conf_adapter = JobRuntimeConfigAdapter(runtime_conf)
         common_job_parameters = conf_adapter.get_common_parameters()
 
         if common_job_parameters.job_type != 'predict':
             # generate job model info
-            common_job_parameters.model_id = model_utils.gen_model_id(job_runtime_conf['role'])
+            common_job_parameters.model_id = model_utils.gen_model_id(runtime_conf['role'])
             common_job_parameters.model_version = job_id
             train_runtime_conf = {}
         else:
@@ -67,13 +68,13 @@ class DAGScheduler(Cron):
                                                  model_id=common_job_parameters.model_id,
                                                  model_version=common_job_parameters.model_version):
                 raise Exception(f"Model {common_job_parameters.model_id} {common_job_parameters.model_version} has not been deployed yet.")
-            job_dsl = json_loads(pipeline_model['Pipeline'].inference_dsl)
+            dsl = json_loads(pipeline_model['Pipeline'].inference_dsl)
 
         job = Job()
         job.f_job_id = job_id
-        job.f_dsl = job_dsl
+        job.f_dsl = dsl
         job.f_train_runtime_conf = train_runtime_conf
-        job.f_roles = job_runtime_conf['role']
+        job.f_roles = runtime_conf['role']
         job.f_work_mode = common_job_parameters.work_mode
         job.f_initiator_role = job_initiator['role']
         job.f_initiator_party_id = job_initiator['party_id']
@@ -83,13 +84,13 @@ class DAGScheduler(Cron):
         path_dict = job_utils.save_job_conf(job_id=job_id,
                                             role=job.f_initiator_role,
                                             party_id=job.f_initiator_party_id,
-                                            job_dsl=job_dsl,
-                                            job_runtime_conf=job_runtime_conf,
-                                            job_runtime_conf_on_party={},
+                                            dsl=dsl,
+                                            runtime_conf=runtime_conf,
+                                            runtime_conf_on_party={},
                                             train_runtime_conf=train_runtime_conf,
                                             pipeline_dsl=None)
 
-        if job.f_initiator_party_id not in job_runtime_conf['role'][job.f_initiator_role]:
+        if job.f_initiator_party_id not in runtime_conf['role'][job.f_initiator_role]:
             schedule_logger(job_id).info("initiator party id error:{}".format(job.f_initiator_party_id))
             raise Exception("initiator party id error {}".format(job.f_initiator_party_id))
 
@@ -413,6 +414,9 @@ class DAGScheduler(Cron):
         # 4. all end status and difference
         # 5. all the same end status
         tmp_status_set = set(tasks_status)
+        if TaskStatus.PASS in tmp_status_set:
+            tmp_status_set.remove(TaskStatus.PASS)
+            tmp_status_set.add(TaskStatus.SUCCESS)
         if len(tmp_status_set) == 1:
             # 1 and 5
             return tmp_status_set.pop()
@@ -428,12 +432,10 @@ class DAGScheduler(Cron):
                     # have waiting with no next
                     pass
             # have waiting with no next or 4
-            for status in sorted(EndStatus.status_list(), key=lambda s: StatusSet.get_level(status=s), reverse=True):
-                if status == TaskStatus.SUCCESS:
-                    continue
-                elif status in tmp_status_set:
+            for status in sorted(InterruptStatus.status_list(), key=lambda s: StatusSet.get_level(status=s), reverse=True):
+                if status in tmp_status_set:
                     return status
-            if len(tmp_status_set) == 2 and TaskStatus.WAITING in tmp_status_set and TaskStatus.SUCCESS in tmp_status_set and task_scheduling_status_code == SchedulingStatusCode.NO_NEXT:
+            if tmp_status_set == {TaskStatus.WAITING, TaskStatus.SUCCESS} and task_scheduling_status_code == SchedulingStatusCode.NO_NEXT:
                 return JobStatus.CANCELED
 
             raise Exception("calculate job status failed, all task status: {}".format(tasks_status))

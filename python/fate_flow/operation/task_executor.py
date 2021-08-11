@@ -21,8 +21,9 @@ import traceback
 from fate_arch.common import file_utils, EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, timestamp_to_date
 from fate_arch import session
-from fate_flow.entity.types import ProcessRole, JobConfiguration
-from fate_flow.entity.run_status import TaskStatus
+from fate_flow.entity.types import ProcessRole
+from fate_flow.entity.job import JobConfiguration
+from fate_flow.entity.run_status import TaskStatus, PassException
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_arch.common.log import schedule_logger, getLogger, LoggerFactory
@@ -147,6 +148,10 @@ class TaskExecutor(object):
             schedule_logger().info('Run {} {} {} {} {} task'.format(job_id, component_name, task_id, role, party_id))
             schedule_logger().info("Component parameters on party {}".format(component_parameters_on_party))
             schedule_logger().info("Task input dsl {}".format(task_input_dsl))
+            need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
+            if not need_run:
+                schedule_logger().info("need run component parameters is {}".format(component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)))
+                raise PassException()
             task_run_args, input_table_list = cls.get_task_run_args(job_id=job_id, role=role, party_id=party_id,
                                                                     task_id=task_id,
                                                                     task_version=task_version,
@@ -196,6 +201,8 @@ class TaskExecutor(object):
                                       task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
                                       tracker_client=tracker_client)
             task_info["party_status"] = TaskStatus.SUCCESS
+        except PassException as e:
+            task_info["party_status"] = TaskStatus.PASS
         except Exception as e:
             traceback.print_exc()
             task_info["party_status"] = TaskStatus.FAILED
