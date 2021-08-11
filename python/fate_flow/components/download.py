@@ -16,17 +16,39 @@
 import os
 
 from fate_arch.common import log
-from fate_flow.entity.metric import Metric, MetricMeta
-from fate_arch import storage
 from fate_arch.session import Session
-from fate_flow.utils import job_utils
+from fate_arch.storage import DEFAULT_ID_DELIMITER
+from fate_flow.components._base import BaseParam, ComponentBase, ComponentMeta
+from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.scheduling_apps.client import ControllerClient
-from fate_flow.components.component_base import ComponentBase
-
+from fate_flow.utils import job_utils
 
 LOGGER = log.getLogger()
 
+download_cpn_meta = ComponentMeta("Download")
 
+
+@download_cpn_meta.impl_param
+class DownloadParam(BaseParam):
+    def __init__(
+        self,
+        output_path="",
+        delimiter=DEFAULT_ID_DELIMITER,
+        namespace="",
+        name="",
+        work_mode=0,
+    ):
+        self.output_path = output_path
+        self.delimiter = delimiter
+        self.namespace = namespace
+        self.name = name
+        self.work_mode = work_mode
+
+    def check(self):
+        return True
+
+
+@download_cpn_meta.impl_runner("local")
 class Download(ComponentBase):
     def __init__(self):
         super(Download, self).__init__()
@@ -38,11 +60,18 @@ class Download(ComponentBase):
         self.parameters["local"] = component_parameters["local"]
         name, namespace = self.parameters.get("name"), self.parameters.get("namespace")
         with open(os.path.abspath(self.parameters["output_path"]), "w") as fw:
-            session = Session(job_utils.generate_session_id(self.tracker.task_id, self.tracker.task_version, self.tracker.role, self.tracker.party_id))
+            session = Session(
+                job_utils.generate_session_id(
+                    self.tracker.task_id,
+                    self.tracker.task_version,
+                    self.tracker.role,
+                    self.tracker.party_id,
+                )
+            )
             storage_session = session.new_storage(name=name, namespace=namespace)
             data_table = storage_session.get_table()
             count = data_table.count()
-            LOGGER.info('===== begin to export data =====')
+            LOGGER.info("===== begin to export data =====")
             lines = 0
             job_info = {}
             job_info["job_id"] = self.tracker.job_id
@@ -52,32 +81,38 @@ class Download(ComponentBase):
                 if not value:
                     fw.write(key + "\n")
                 else:
-                    fw.write(key + self.parameters.get("delimiter", ",") + str(value) + "\n")
+                    fw.write(
+                        key + self.parameters.get("delimiter", ",") + str(value) + "\n"
+                    )
                 lines += 1
                 if lines % 2000 == 0:
                     LOGGER.info("===== export {} lines =====".format(lines))
                 if lines % 10000 == 0:
-                    job_info["progress"] = lines/count*100//1
+                    job_info["progress"] = lines / count * 100 // 1
                     ControllerClient.update_job(job_info=job_info)
             job_info["progress"] = 100
             ControllerClient.update_job(job_info=job_info)
-            self.callback_metric(metric_name='data_access',
-                                 metric_namespace='download',
-                                 metric_data=[Metric("count", data_table.count())])
+            self.callback_metric(
+                metric_name="data_access",
+                metric_namespace="download",
+                metric_data=[Metric("count", data_table.count())],
+            )
             LOGGER.info("===== export {} lines totally =====".format(lines))
-            LOGGER.info('===== export data finish =====')
-            LOGGER.info('===== export data file path:{} ====='.format(os.path.abspath(self.parameters["output_path"])))
+            LOGGER.info("===== export data finish =====")
+            LOGGER.info(
+                "===== export data file path:{} =====".format(
+                    os.path.abspath(self.parameters["output_path"])
+                )
+            )
 
     def callback_metric(self, metric_name, metric_namespace, metric_data):
-        self.tracker.log_metric_data(metric_name=metric_name,
-                                     metric_namespace=metric_namespace,
-                                     metrics=metric_data)
-        self.tracker.set_metric_meta(metric_namespace,
-                                     metric_name,
-                                     MetricMeta(name='download',
-                                                metric_type='DOWNLOAD'))
-
-
-
-
-
+        self.tracker.log_metric_data(
+            metric_name=metric_name,
+            metric_namespace=metric_namespace,
+            metrics=metric_data,
+        )
+        self.tracker.set_metric_meta(
+            metric_namespace,
+            metric_name,
+            MetricMeta(name="download", metric_type="DOWNLOAD"),
+        )

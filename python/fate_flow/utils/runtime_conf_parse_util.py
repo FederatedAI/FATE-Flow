@@ -74,8 +74,9 @@ class RuntimeConfParserUtil(object):
                                  conf_version,
                                  local_role,
                                  local_party_id):
-
-        support_roles = provider.get_support_role(module, runtime_conf["role"])
+        support_roles = provider.get_support_role(module)
+        if runtime_conf["role"] is not None:
+            support_roles = [r for r in runtime_conf["role"] if r in support_roles]
         role_on_module = copy.deepcopy(runtime_conf["role"])
         for role in runtime_conf["role"]:
             if role not in support_roles:
