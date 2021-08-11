@@ -21,7 +21,8 @@ import traceback
 from fate_arch.common import file_utils, EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, timestamp_to_date
 from fate_arch import session
-from fate_flow.entity.types import ProcessRole, JobConfiguration
+from fate_flow.entity.types import ProcessRole
+from fate_flow.entity.job import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus, PassException
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.db.runtime_config import RuntimeConfig
