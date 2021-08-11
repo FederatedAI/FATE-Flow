@@ -14,11 +14,12 @@
 #  limitations under the License.
 #
 
+from components.param.base_param import BaseParam
 
-class ReaderParam:
+
+class ReaderParam(BaseParam):
     def __init__(self, table=None):
         self.table = table
 
     def check(self):
         return True
-
