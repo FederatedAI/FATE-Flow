@@ -334,6 +334,15 @@ class BaseDSLParser(object):
 
         return dependent_components
 
+    def get_downstream_dependent_components(self, component_name):
+        component_idx = self.component_name_index.get(component_name)
+        downstream_components = []
+        for cpn in self.component_downstream[component_idx]:
+            down_cpn_idx = self.component_name_index.get(cpn)
+            downstream_components.append(self.components[down_cpn_idx])
+
+        return downstream_components
+
     def get_topology_components(self):
         topo_components = []
         for i in range(len(self.topo_rank)):
