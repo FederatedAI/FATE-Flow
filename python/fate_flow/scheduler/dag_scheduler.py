@@ -13,11 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
+import typing
 from fate_arch.common.base_utils import json_loads, json_dumps, current_timestamp
 from fate_arch.common.log import schedule_logger
 from fate_arch.common import WorkMode
-from fate_flow.db.db_models import DB, Job
+from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.scheduler.task_scheduler import TaskScheduler
 from fate_flow.operation.job_saver import JobSaver
@@ -359,24 +359,36 @@ class DAGScheduler(Cron):
         schedule_logger(job_id=job.f_job_id).info("finish scheduling job {}".format(job.f_job_id))
 
     @classmethod
-    def set_job_rerun(cls, job_id, initiator_role, initiator_party_id, auto, force=False, tasks=None, component_name=None):
+    def set_job_rerun(cls, job_id, initiator_role, initiator_party_id, auto, force=False, tasks: typing.List[Task] = None, component_name: typing.Union[str, list] = None):
         schedule_logger(job_id=job_id).info(f"try to rerun job {job_id} on initiator {initiator_role} {initiator_party_id}")
         jobs = JobSaver.query_job(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
         if jobs:
             job = jobs[0]
         else:
             raise RuntimeError(f"can not found job {job_id} on initiator {initiator_role} {initiator_party_id}")
-        if not tasks:
-            if component_name != job_utils.job_pipeline_component_name():
-                #todo: found all downstream components by input component
-                tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id, component_name=component_name)
-            else:
-                # rerun all tasks
-                tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
-        job_can_rerun = False
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                        runtime_conf=job.f_runtime_conf_on_party,
                                                        train_runtime_conf=job.f_train_runtime_conf)
+        if tasks:
+            schedule_logger(job_id).info(f"require {[task.f_component_name for task in tasks]} to rerun")
+        else:
+            if component_name != job_utils.job_pipeline_component_name():
+                if isinstance(component_name, str):
+                    _require_reruns = {component_name}
+                else:
+                    _require_reruns = set(component_name)
+                _should_reruns = _require_reruns.copy()
+                for _cpn in _require_reruns:
+                    _components = dsl_parser.get_downstream_dependent_components(_cpn)
+                    for _c in _components:
+                        _should_reruns.add(_c.get_name())
+                schedule_logger(job_id).info(f"require {_require_reruns} to rerun, and then found {_should_reruns} need be to rerun")
+                tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id, component_name=_should_reruns)
+            else:
+                # rerun all tasks
+                schedule_logger(job_id).info(f"require all component of pipeline to rerun")
+                tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
+        job_can_rerun = False
         for task in tasks:
             job_can_rerun = TaskScheduler.prepare_rerun_task(job=job, task=task, dsl_parser=dsl_parser, auto=auto, force=force) or job_can_rerun
         if job_can_rerun:
