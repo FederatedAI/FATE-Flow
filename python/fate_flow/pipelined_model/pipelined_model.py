@@ -14,19 +14,19 @@
 #  limitations under the License.
 #
 import os
-import shutil
 import base64
-from ruamel import yaml
-from copy import deepcopy
 import hashlib
+import shutil
+from copy import deepcopy
 
-from os.path import join, getsize
+from ruamel import yaml
+
 from fate_arch.common import file_utils
 from fate_arch.protobuf.python import default_empty_fill_pb2
+
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
 from fate_flow.model import serialize_buffer_object, parse_proto_object, Locker
 from fate_flow.settings import stat_logger, TEMP_DIRECTORY
-from fate_flow.entity.types import ComponentProviderName
 
 
 def local_cache_required(method):
@@ -132,7 +132,6 @@ class PipelinedModel(Locker):
                 else:
                     model_buffers[model_name] = [buffer_name, base64.b64encode(buffer_object_serialized_string).decode()]
         return model_buffers
-
 
     def read_pipelined_model(self, component_name, parse=True):
         model_alias = self.pipeline_model_alias
@@ -268,5 +267,5 @@ class PipelinedModel(Locker):
     def calculate_model_file_size(self):
         size = 0
         for root, dirs, files in os.walk(self.model_path):
-            size += sum([getsize(join(root, name)) for name in files])
+            size += sum([os.path.getsize(os.path.join(root, name)) for name in files])
         return round(size/1024)
