@@ -13,16 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
-import random
-import string
+import uuid
 
 
-def random_string(string_length=6):
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for _ in range(string_length))
-
-
-def random_number_string(string_length=6):
-    letters = string.octdigits
-    return ''.join(random.choice(letters) for _ in range(string_length))
+def new_unique_id():
+    #todo: may be using snowflake?
+    return uuid.uuid1().hex

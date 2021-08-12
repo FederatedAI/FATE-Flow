@@ -14,7 +14,22 @@
 #  limitations under the License.
 #
 import sys
+import os
 
 if sys.version_info < (3, 7):
     from backports.datetime_fromisoformat import MonkeyPatch
     MonkeyPatch.patch_fromisoformat()
+
+
+def set_env():
+    project_base = os.path.abspath(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            os.pardir,
+            os.pardir,
+        )
+    )
+    os.environ.setdefault("FATE_DEPLOY_BASE", project_base)
+
+
+set_env()

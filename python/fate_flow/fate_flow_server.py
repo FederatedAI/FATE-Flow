@@ -23,7 +23,8 @@ import logging
 import grpc
 from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
-
+# be sure to import environment variable before importing fate_arch
+from fate_flow import set_env
 from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
 from fate_flow.apps import app
 from fate_flow.db.db_models import init_database_tables as init_flow_db
@@ -39,6 +40,7 @@ from fate_flow.db.db_services import service_db
 from fate_flow.utils.xthread import ThreadPoolExecutor
 from fate_flow.utils import job_utils
 from fate_arch.common.log import schedule_logger
+from fate_arch.common.versions import get_versions
 from fate_flow.db.config_manager import ConfigManager
 
 
@@ -52,9 +54,13 @@ if __name__ == '__main__':
     # init runtime config
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument('--version', default=False, help="fate flow version", action='store_true')
     parser.add_argument('--debug', default=False, help="debug mode", action='store_true')
     args = parser.parse_args()
     debug_mode = args.debug
+    if args.version:
+        print(get_versions())
+        sys.exit(0)
     ConfigManager.load()
     RuntimeConfig.init_env()
     RuntimeConfig.init_config(WORK_MODE=WORK_MODE, JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)

@@ -19,7 +19,7 @@ import importlib
 import traceback
 
 from fate_arch.common import file_utils, EngineType, profile
-from fate_arch.common.base_utils import current_timestamp, timestamp_to_date
+from fate_arch.common.base_utils import current_timestamp, timestamp_to_date, json_dumps
 from fate_arch import session
 from fate_flow.entity.types import ProcessRole
 from fate_flow.entity.job import JobConfiguration
@@ -145,9 +145,9 @@ class TaskExecutor(object):
                                  service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
             sess.as_default()
 
-            schedule_logger().info('Run {} {} {} {} {} task'.format(job_id, component_name, task_id, role, party_id))
-            schedule_logger().info("Component parameters on party {}".format(component_parameters_on_party))
-            schedule_logger().info("Task input dsl {}".format(task_input_dsl))
+            schedule_logger().info(f'run {component_name} {task_id} {task_version} on {role} {party_id} task')
+            schedule_logger().info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
+            schedule_logger().info(f"task input dsl {task_input_dsl}")
             need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
             if not need_run:
                 schedule_logger().info("need run component parameters is {}".format(component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)))
@@ -184,11 +184,12 @@ class TaskExecutor(object):
             output_table_list = []
             for index, data in enumerate(output_data):
                 data_name = task_output_dsl.get('data')[index] if task_output_dsl.get('data') else '{}'.format(index)
+                #todo: the token depends on the engine type, maybe in job parameters
                 persistent_table_namespace, persistent_table_name = tracker.save_output_data(
                     computing_table=data,
                     output_storage_engine=job_parameters.storage_engine,
                     output_storage_address=job_parameters.engines_address.get(EngineType.STORAGE, {}),
-                    user_name=user_name)
+                    token={"username": user_name})
                 if persistent_table_namespace and persistent_table_name:
                     tracker.log_output_data_info(data_name=data_name,
                                                  table_namespace=persistent_table_namespace,
@@ -217,17 +218,14 @@ class TaskExecutor(object):
                 traceback.print_exc()
                 schedule_logger().exception(e)
         schedule_logger().info(
-            'task {} {} {} start time: {}'.format(task_id, role, party_id, timestamp_to_date(start_time)))
+            f"task {task_id} {task_version} on {role} {party_id} start time: {timestamp_to_date(start_time)}")
         schedule_logger().info(
-            'task {} {} {} end time: {}'.format(task_id, role, party_id, timestamp_to_date(task_info["end_time"])))
+            f"task {task_id} {task_version} on {role} {party_id} end time: {timestamp_to_date(task_info['end_time'])}")
         schedule_logger().info(
-            'task {} {} {} takes {}s'.format(task_id, role, party_id, int(task_info["elapsed"]) / 1000))
-        schedule_logger().info(
-            'Finish {} {} {} {} {} {} task {}'.format(job_id, component_name, task_id, task_version, role, party_id,
-                                                      task_info["party_status"]))
-
-        print('Finish {} {} {} {} {} {} task {}'.format(job_id, component_name, task_id, task_version, role, party_id,
-                                                        task_info["party_status"]))
+            f"task {task_id} {task_version} on {role} {party_id} takes {int(task_info['elapsed']) / 1000}s")
+        msg = f"finish {component_name} {task_id} {task_version} on {role} {party_id} with {task_info['party_status']}"
+        schedule_logger().info(msg)
+        print(msg)
         return task_info
 
     @classmethod
@@ -325,8 +323,6 @@ class TaskExecutor(object):
                         if search_component_name == 'args':
                             if job_args.get('data', {}).get(search_data_name).get('namespace', '') and job_args.get(
                                     'data', {}).get(search_data_name).get('name', ''):
-                                # storage_table_meta = tracker_client.get_table_meta(table_name=job_args['data'][search_data_name]['name'],
-                                #                                                    table_namespace=job_args['data'][search_data_name]['namespace'])
                                 storage_table_meta = storage.StorageTableMeta(
                                     name=job_args['data'][search_data_name]['name'],
                                     namespace=job_args['data'][search_data_name]['namespace'])
@@ -366,7 +362,13 @@ class TaskExecutor(object):
                         else:
                             args_from_component[data_type] = dict(
                                 [(a, getattr(computing_table, "get_{}".format(a))()) for a in filter_attr["data"]])
-            elif input_type in ['model', 'isometric_model']:
+            elif input_type == "cache":
+                this_type_args = task_run_args[input_type] = task_run_args.get(input_type, {})
+                for search_key in input_detail:
+                    search_component_name, cache_name = search_key.split(".")
+                    tracker = Tracker(job_id=job_id, role=role, party_id=party_id, component_name=search_component_name)
+                    this_type_args[search_component_name] = tracker.get_output_cache(cache_name=cache_name)
+            elif input_type in {'model', 'isometric_model'}:
                 this_type_args = task_run_args[input_type] = task_run_args.get(input_type, {})
                 for dsl_model_key in input_detail:
                     dsl_model_key_items = dsl_model_key.split('.')
@@ -379,10 +381,12 @@ class TaskExecutor(object):
                     tracker_client = TrackerClient(job_id=job_id, role=role, party_id=party_id, component_name=search_component_name
                                                    , model_id=job_parameters.model_id, model_version=job_parameters.model_version)
                     tracker = Tracker(job_id=job_id, role=role, party_id=party_id, component_name=search_component_name,
-                                     model_id=job_parameters.model_id,
-                                     model_version=job_parameters.model_version)
+                                      model_id=job_parameters.model_id,
+                                      model_version=job_parameters.model_version)
                     models = tracker_client.read_component_output_model(search_model_alias, tracker)
                     this_type_args[search_component_name] = models
+            else:
+                raise Exception(f"not support {input_type} input type")
         if get_input_table:
             return input_table
         return task_run_args, input_table_info_list
