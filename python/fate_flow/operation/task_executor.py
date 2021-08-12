@@ -19,7 +19,7 @@ import importlib
 import traceback
 
 from fate_arch.common import file_utils, EngineType, profile
-from fate_arch.common.base_utils import current_timestamp, timestamp_to_date
+from fate_arch.common.base_utils import current_timestamp, timestamp_to_date, json_dumps
 from fate_arch import session
 from fate_flow.entity.types import ProcessRole
 from fate_flow.entity.job import JobConfiguration
@@ -145,9 +145,9 @@ class TaskExecutor(object):
                                  service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
             sess.as_default()
 
-            schedule_logger().info('Run {} {} {} {} {} task'.format(job_id, component_name, task_id, role, party_id))
-            schedule_logger().info("Component parameters on party {}".format(component_parameters_on_party))
-            schedule_logger().info("Task input dsl {}".format(task_input_dsl))
+            schedule_logger().info(f'run {component_name} {task_id} {task_version} on {role} {party_id} task')
+            schedule_logger().info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
+            schedule_logger().info(f"task input dsl {task_input_dsl}")
             need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
             if not need_run:
                 schedule_logger().info("need run component parameters is {}".format(component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)))
@@ -217,17 +217,14 @@ class TaskExecutor(object):
                 traceback.print_exc()
                 schedule_logger().exception(e)
         schedule_logger().info(
-            'task {} {} {} start time: {}'.format(task_id, role, party_id, timestamp_to_date(start_time)))
+            f"task {task_id} {task_version} on {role} {party_id} start time: {timestamp_to_date(start_time)}")
         schedule_logger().info(
-            'task {} {} {} end time: {}'.format(task_id, role, party_id, timestamp_to_date(task_info["end_time"])))
+            f"task {task_id} {task_version} on {role} {party_id} end time: {timestamp_to_date(task_info['end_time'])}")
         schedule_logger().info(
-            'task {} {} {} takes {}s'.format(task_id, role, party_id, int(task_info["elapsed"]) / 1000))
-        schedule_logger().info(
-            'Finish {} {} {} {} {} {} task {}'.format(job_id, component_name, task_id, task_version, role, party_id,
-                                                      task_info["party_status"]))
-
-        print('Finish {} {} {} {} {} {} task {}'.format(job_id, component_name, task_id, task_version, role, party_id,
-                                                        task_info["party_status"]))
+            f"task {task_id} {task_version} on {role} {party_id} takes {int(task_info['elapsed']) / 1000}s")
+        msg = f"finish {component_name} {task_id} {task_version} on {role} {party_id} with {task_info['party_status']}"
+        schedule_logger().info(msg)
+        print(msg)
         return task_info
 
     @classmethod
