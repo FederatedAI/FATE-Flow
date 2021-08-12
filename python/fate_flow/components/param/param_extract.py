@@ -43,12 +43,11 @@ class ParamExtract(object):
         param = self.recursive_parse_param_from_config(param, config_json.get("ComponentParam"),
                                                        param_parse_depth=0,
                                                        valid_check=valid_check,
-                                                       module=module,
-                                                       cpn=cpn)
+                                                       name=f"{module}#{cpn}")
 
         return param
 
-    def recursive_parse_param_from_config(self, param, config_json, param_parse_depth, valid_check, module, cpn):
+    def recursive_parse_param_from_config(self, param, config_json, param_parse_depth, valid_check, name):
         if param_parse_depth > consts.PARAM_MAXDEPTH:
             raise ValueError("Param define nesting too deep!!!, can not parse it")
 
@@ -65,8 +64,7 @@ class ParamExtract(object):
                 sub_params = self.recursive_parse_param_from_config(attr, config_json.get(variable),
                                                                     param_parse_depth + 1,
                                                                     valid_check,
-                                                                    module,
-                                                                    cpn)
+                                                                    name)
                 setattr(param, variable, sub_params)
 
         if valid_check:
@@ -76,7 +74,7 @@ class ParamExtract(object):
                     redundant.append(var)
 
             if redundant:
-                raise ValueError(f"module={module}, component={cpn} has redundant parameters {redundant}")
+                raise ValueError(f"cpn `{name}` has redundant parameters {redundant}")
 
         return param
 

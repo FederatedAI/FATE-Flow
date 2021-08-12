@@ -36,15 +36,15 @@ class ComponentFieldNotExistError(Exception):
 
 
 class ModuleException(Exception):
-    def __init__(self, component=None, module=None, input_model=None, input_data=None, output_model=None,
-                 output_data=None, other_info=None):
+    def __init__(self, component=None, module=None, input=None, output_model=None,
+                 output_data=None, other_info=None, value_type=None):
         self.component = component
         self.module = module
-        self.input_model = input_model
-        self.input_data = input_data
+        self.input = input
         self.output_data = output_data
         self.output_model = output_model
         self.other_info = other_info
+        self.value_type = value_type
 
 
 class ComponentNotExistError(ModuleException):
@@ -84,16 +84,17 @@ class DefaultRuntimeConfNotJsonError(ModuleException):
         return "Default runtime conf of component {}, module {} should be json format file, but error occur: {}".format(self.component, self.module, self.other_info)
 
 
-class ModelInputComponentNotExistError(ModuleException):
+class InputComponentNotExistError(ModuleException):
     def __str__(self):
-        return "Component {}'s model input {} does not exist".format(self.component, self.input_model)
+        return "Component {}'s {} input {} does not exist".format(self.component, self.value_type, self.input)
 
 
-class ModelInputNameNotExistError(ModuleException):
+class InputNameNotExistError(ModuleException):
     def __str__(self):
-        return "Component {}' s model input {}'s output model {} does not exist".format(self.component,
-                                                                                        self.input_model,
-                                                                                        self.other_info)
+        return "Component {}' s {} input {}'s output {} does not exist".format(self.component,
+                                                                               self.input,
+                                                                               self.value_type,
+                                                                               self.other_info)
 
 
 class ComponentInputTypeError(ModuleException):
@@ -111,33 +112,17 @@ class ComponentInputDataTypeError(ModuleException):
         return "Component {}'s input data type should be dict".format(self.component)
 
 
-class ComponentInputDataValueTypeError(ModuleException):
+class ComponentInputValueTypeError(ModuleException):
     def __str__(self):
-        return "Component {}'s input data type should be list, but {} not match".format(self.component, self.other_info)
-
-
-class ComponentInputModelValueTypeError(ModuleException):
-    def __str__(self):
-        return "Component {}'s input model value type should be list, but {} not match".format(self.component,
-                                                                                               self.other_info)
+        return "Component {}'s input {} type should be list, but {} not match".format(self.component,
+                                                                                      self.value_type,
+                                                                                      self.other_info)
 
 
 class ComponentOutputKeyTypeError(ModuleException):
     def __str__(self):
         return "Component {}'s output key {} value type should be list".format(self.component,
                                                                                self.other_info)
-
-
-class DataInputComponentNotExistError(ModuleException):
-    def __str__(self):
-        return "Component {}'s data input {} does not exist".format(self.component, self.input_data)
-
-
-class DataInputNameNotExistError(ModuleException):
-    def __str__(self):
-        return "Component {}' data input {}'s output data {} does not exist".format(self.component,
-                                                                                    self.input_data,
-                                                                                    self.other_info)
 
 
 class ParameterException(Exception):

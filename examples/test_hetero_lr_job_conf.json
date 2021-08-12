@@ -59,6 +59,9 @@
                     "dataio_0":{
                         "with_label": false,
                         "output_format": "dense"
+                    },
+                    "evaluation_0": {
+                        "need_run": false
                     }
                 }
             }

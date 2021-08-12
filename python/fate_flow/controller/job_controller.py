@@ -99,9 +99,9 @@ class JobController(object):
         job_utils.save_job_conf(job_id=job_id,
                                 role=role,
                                 party_id=party_id,
-                                job_dsl=dsl,
-                                job_runtime_conf=runtime_conf,
-                                job_runtime_conf_on_party=job_info["runtime_conf_on_party"],
+                                dsl=dsl,
+                                runtime_conf=runtime_conf,
+                                runtime_conf_on_party=job_info["runtime_conf_on_party"],
                                 train_runtime_conf=train_runtime_conf,
                                 pipeline_dsl=None)
 

@@ -13,10 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from components.param.base_param import BaseParam
 
 
-class ModelStoreParam:
-    def __init__(self, model_id: str = None, model_version: str = None, store_address: dict = None, force_update: bool = False):
+class ModelStoreParam(BaseParam):
+    def __init__(
+        self,
+        model_id: str = None,
+        model_version: str = None,
+        store_address: dict = None,
+        force_update: bool = False,
+    ):
         self.model_id = model_id
         self.model_version = model_version
         self.store_address = store_address
@@ -27,11 +34,15 @@ class ModelStoreParam:
 
 
 class ModelRestoreParam:
-    def __init__(self, model_id: str = None, model_version: str = None, store_address: dict = None):
+    def __init__(
+        self,
+        model_id: str = None,
+        model_version: str = None,
+        store_address: dict = None,
+    ):
         self.model_id = model_id
         self.model_version = model_version
         self.store_address = store_address
 
     def check(self):
         return True
-
