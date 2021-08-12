@@ -14,29 +14,46 @@
 #  limitations under the License.
 #
 
-import typing
-from ._base import ComponentMeta
 import importlib
+import inspect
+import typing
+from pathlib import Path
+
+from fate_arch.common import log
+from fate_flow.components._base import ComponentMeta
+
+_flow_base = Path(__file__).resolve().parent.parent.parent
+
+LOGGER = log.getLogger()
+
+
+def _search_components(path):
+    try:
+        module_name = (
+            path.absolute()
+            .relative_to(_flow_base)
+            .with_suffix("")
+            .__str__()
+            .replace("/", ".")
+        )
+        module = importlib.import_module(module_name)
+    except ImportError as e:
+        # or skip ?
+        raise e
+    _obj_pairs = inspect.getmembers(module, lambda obj: isinstance(obj, ComponentMeta))
+    return _obj_pairs
 
 
 class Components:
     @classmethod
     def get_names(cls) -> typing.Dict[str, dict]:
-        from .download import download_cpn_meta
-        from .model_operation_components import (
-            model_store_cpn_meta,
-            model_restore_cpn_meta,
-        )
-        from .reader import reader_cpn_meta
-        from .upload import upload_cpn_meta
-
         names = {}
-        names.update(download_cpn_meta.register_info())
-        names.update(model_store_cpn_meta.register_info())
-        names.update(model_restore_cpn_meta.register_info())
-        names.update(reader_cpn_meta.register_info())
-        names.update(upload_cpn_meta.register_info())
-
+        _components_base = Path(__file__).resolve().parent
+        for p in _components_base.glob("**/*.py"):
+            for name, obj in _search_components(p):
+                info = obj.register_info()
+                LOGGER.info(f"component register {name} with cache info {info}")
+                names.update(info)
         return names
 
     @classmethod
@@ -46,11 +63,11 @@ class Components:
 
         # temperary
         else:
-            from .download import download_cpn_meta
-            from .model_operation_components import (
-                model_store_cpn_meta,
-                model_restore_cpn_meta,
-            )
             from .reader import reader_cpn_meta
+            from .download import download_cpn_meta
             from .upload import upload_cpn_meta
+            from .model_operation_components import (
+                model_restore_cpn_meta,
+                model_store_cpn_meta,
+            )
         return ComponentMeta.get_meta(name)
