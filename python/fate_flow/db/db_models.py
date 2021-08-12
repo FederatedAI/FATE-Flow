@@ -288,8 +288,8 @@ class MachineLearningModelInfo(DataBaseModel):
 
 class DataTableTracking(DataBaseModel):
     f_table_id = BigAutoField(primary_key=True)
-    f_table_name = CharField(max_length=300, null=True)
-    f_table_namespace = CharField(max_length=300, null=True)
+    f_table_name = CharField(max_length=300, index=True, null=True)
+    f_table_namespace = CharField(max_length=300, index=True, null=True)
     f_job_id = CharField(max_length=25, index=True, null=True)
     f_have_parent = BooleanField(default=False)
     f_parent_number = IntegerField(default=0)
@@ -301,6 +301,21 @@ class DataTableTracking(DataBaseModel):
 
     class Meta:
         db_table = "t_data_table_tracking"
+
+
+class CacheTracking(DataBaseModel):
+    f_cache_key = CharField(max_length=500, primary_key=True)
+    f_cache_data = JSONField()
+    f_cache_meta = JSONField()
+    f_job_id = CharField(max_length=25, index=True)
+    f_component_name = TextField()
+    f_task_id = CharField(max_length=100, null=True, index=True)
+    f_task_version = BigIntegerField(null=True, index=True)
+    f_cache_name = CharField(max_length=50)
+    t_ttl = BigIntegerField(default=0)
+
+    class Meta:
+        db_table = "t_cache_tracking"
 
 
 class ModelTag(DataBaseModel):

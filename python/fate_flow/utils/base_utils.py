@@ -13,7 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import warnings
-from fate_arch.common.log import *
+import uuid
 
-warnings.warn('arch.api.log_utils argument deprecated, use fate_arch.common.log instead', DeprecationWarning)
+
+def new_unique_id():
+    #todo: may be using snowflake?
+    return uuid.uuid1().hex
