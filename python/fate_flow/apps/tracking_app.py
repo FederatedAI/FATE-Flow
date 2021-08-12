@@ -156,6 +156,8 @@ def component_output_model():
     job_configuration = job_utils.get_job_configuration(job_id=request_data['job_id'],
                                                         role=request_data['role'],
                                                         party_id=request_data['party_id'])
+    job_dsl, job_runtime_conf, train_runtime_conf = job_configuration.dsl, job_configuration.runtime_conf, job_configuration.train_runtime_conf
+
     try:
         model_id = job_configuration.runtime_conf_on_party['job_parameters']['model_id']
         model_version = job_configuration.runtime_conf_on_party['job_parameters']['model_version']
