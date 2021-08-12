@@ -28,7 +28,7 @@ LOGGER = log.getLogger()
 download_cpn_meta = ComponentMeta("Download")
 
 
-@download_cpn_meta.impl_param
+@download_cpn_meta.bind_param
 class DownloadParam(BaseParam):
     def __init__(
         self,
@@ -48,7 +48,7 @@ class DownloadParam(BaseParam):
         return True
 
 
-@download_cpn_meta.impl_runner("local")
+@download_cpn_meta.bind_runner.on_local
 class Download(ComponentBase):
     def __init__(self):
         super(Download, self).__init__()

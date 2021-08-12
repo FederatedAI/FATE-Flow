@@ -38,7 +38,7 @@ MAX_NUM = 10000
 reader_cpn_meta = ComponentMeta("Reader")
 
 
-@reader_cpn_meta.impl_param
+@reader_cpn_meta.bind_param
 class ReaderParam(BaseParam):
     def __init__(self, table=None):
         self.table = table
@@ -47,7 +47,7 @@ class ReaderParam(BaseParam):
         return True
 
 
-@reader_cpn_meta.impl_runner("guest", "host")
+@reader_cpn_meta.bind_runner.on_guest.on_host
 class Reader(ComponentBase):
     def __init__(self):
         super(Reader, self).__init__()

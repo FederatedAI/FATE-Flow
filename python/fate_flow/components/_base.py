@@ -48,6 +48,40 @@ class ComponentBase(object):
         self.task_version_id = task_version_id
 
 
+class _RunnerDocorator:
+    def __init__(self, meta) -> None:
+        self._roles = set()
+        self._meta = meta
+
+    @property
+    def on_guest(self):
+        self._roles.add("guest")
+        return self
+
+    @property
+    def on_host(self):
+        self._roles.add("host")
+        return self
+
+    @property
+    def on_arbiter(self):
+        self._roles.add("arbiter")
+        return self
+
+    @property
+    def on_local(self):
+        self._roles.add("local")
+        return self
+
+    def __call__(self, cls):
+        if isinstance(cls, ComponentBase):
+            for role in self._roles:
+                self._meta._role_to_runner_cls[role] = cls
+            raise NotImplementedError(f"type of {cls} not supported")
+
+        return cls
+
+
 class ComponentMeta:
     __name_to_obj: typing.Dict[str, "ComponentMeta"] = {}
 
@@ -58,16 +92,12 @@ class ComponentMeta:
 
         self.__name_to_obj[name] = self
 
-    def impl_runner(self, *args: str):
-        def _wrap(cls):
-            for role in args:
-                self._role_to_runner_cls[role] = cls
-            return cls
-
-        return _wrap
+    @property
+    def bind_runner(self):
+        return _RunnerDocorator(self)
 
     @property
-    def impl_param(self):
+    def bind_param(self):
         def _wrap(cls):
             self._param_cls = cls
             return cls

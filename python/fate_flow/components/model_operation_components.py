@@ -28,7 +28,7 @@ ModelStorageClassMap = {
 model_store_cpn_meta = ComponentMeta("ModelStore")
 
 
-@model_store_cpn_meta.impl_param
+@model_store_cpn_meta.bind_param
 class ModelStoreParam(BaseParam):
     def __init__(
         self,
@@ -46,7 +46,7 @@ class ModelStoreParam(BaseParam):
         return True
 
 
-@model_store_cpn_meta.impl_runner("local")
+@model_store_cpn_meta.bind_runner.on_local
 class ModelStore(ComponentBase):
     def run(self, component_parameters: dict = None, run_args: dict = None):
         parameters = component_parameters.get("ModelStoreParam", dict)
@@ -65,7 +65,7 @@ class ModelStore(ComponentBase):
 model_restore_cpn_meta = ComponentMeta("ModelRestore")
 
 
-@model_restore_cpn_meta.impl_param
+@model_restore_cpn_meta.bind_param
 class ModelRestoreParam(BaseParam):
     def __init__(
         self,
@@ -81,7 +81,7 @@ class ModelRestoreParam(BaseParam):
         return True
 
 
-@model_restore_cpn_meta.impl_runner("local")
+@model_restore_cpn_meta.bind_runner.on_local
 class ModelRestore(ComponentBase):
     def run(self, component_parameters: dict = None, run_args: dict = None):
         parameters = component_parameters.get("ModelRestoreParam", dict)

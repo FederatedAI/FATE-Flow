@@ -33,7 +33,7 @@ LOGGER = log.getLogger()
 upload_cpn_meta = ComponentMeta("Upload")
 
 
-@upload_cpn_meta.impl_param
+@upload_cpn_meta.bind_param
 class UploadParam(BaseParam):
     def __init__(
         self,
@@ -65,7 +65,7 @@ class UploadParam(BaseParam):
         return True
 
 
-@upload_cpn_meta.impl_runner("local")
+@upload_cpn_meta.bind_runner.on_local
 class Upload(ComponentBase):
     def __init__(self):
         super(Upload, self).__init__()
