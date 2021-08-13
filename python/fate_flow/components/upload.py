@@ -27,6 +27,7 @@ from fate_flow.scheduling_apps.client import ControllerClient
 from fate_arch import storage
 from fate_flow.components.component_base import ComponentBase
 from fate_arch.session import Session
+from fate_flow.db.job_default_config import JobDefaultConfig
 
 LOGGER = log.getLogger()
 
@@ -153,7 +154,7 @@ class Upload(ComponentBase):
                 get_line = data_utils.get_auto_increasing_sid_data_line
             while True:
                 data = list()
-                lines = fin.readlines(self.MAX_BYTES)
+                lines = fin.readlines(JobDefaultConfig.upload_max_bytes)
                 line_index = 0
                 if lines:
                     # self.append_data_line(lines, data, n)
