@@ -36,7 +36,7 @@ from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.pipelined_model import migrate_model, pipelined_model, publish_model, deploy_model
 from fate_flow.utils.api_utils import get_json_result, federated_api, error_response
 from fate_flow.utils import job_utils, model_utils, schedule_utils
-from fate_flow.utils.detect_utils import check_config
+from fate_flow.utils.detect_utils import check_config, validate_request
 from fate_flow.utils.model_utils import gen_party_model_id, check_if_deployed
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.db.runtime_config import RuntimeConfig
@@ -116,6 +116,8 @@ def load_model():
 
 
 @manager.route('/migrate', methods=['POST'])
+@validate_request("migrate_initiator", "role", "migrate_role", "model_id",
+                  "model_version", "execute_party", "job_parameters")
 def migrate_model_process():
     request_config = request.json
     _job_id = job_utils.generate_job_id()
@@ -127,10 +129,6 @@ def migrate_model_process():
     migrate_status_info = {}
     migrate_status_msg = 'success'
     migrate_status_info['detail'] = {}
-
-    require_arguments = ["migrate_initiator", "role", "migrate_role", "model_id",
-                         "model_version", "execute_party", "job_parameters"]
-    check_config(request_config, require_arguments)
 
     try:
         if compare_roles(request_config.get("migrate_role"), request_config.get("role")):
@@ -297,13 +295,12 @@ def download_model(model_id, model_version):
 
 
 @manager.route('/<model_operation>', methods=['post', 'get'])
+@validate_request("model_id", "model_version", "role", "party_id")
 def operate_model(model_operation):
     request_config = request.json or request.form.to_dict()
     job_id = job_utils.generate_job_id()
     if model_operation not in [ModelOperation.STORE, ModelOperation.RESTORE, ModelOperation.EXPORT, ModelOperation.IMPORT]:
         raise Exception('Can not support this operating now: {}'.format(model_operation))
-    required_arguments = ["model_id", "model_version", "role", "party_id"]
-    check_config(request_config, required_arguments=required_arguments)
     request_config["model_id"] = gen_party_model_id(model_id=request_config["model_id"], role=request_config["role"], party_id=request_config["party_id"])
     if model_operation in [ModelOperation.EXPORT, ModelOperation.IMPORT]:
         if model_operation == ModelOperation.IMPORT:
@@ -600,10 +597,9 @@ def query_model():
 
 
 @manager.route('/deploy', methods=['POST'])
+@validate_request('model_id', 'model_version')
 def deploy():
     request_data = request.json
-    require_parameters = ['model_id', 'model_version']
-    check_config(request_data, require_parameters)
     model_id = request_data.get("model_id")
     model_version = request_data.get("model_version")
     retcode, retmsg, model_info = model_utils.query_model_info_from_file(model_id=model_id, model_version=model_version, to_dict=True)
@@ -701,10 +697,9 @@ def get_predict_dsl():
 
 
 @manager.route('/get/predict/conf', methods=['POST'])
+@validate_request('model_id', 'model_version')
 def get_predict_conf():
     request_data = request.json
-    required_parameters = ['model_id', 'model_version']
-    check_config(request_data, required_parameters)
     model_dir = os.path.join(get_project_base_directory(), 'model_local_cache')
     model_fp_list = glob.glob(model_dir + f"/guest#*#{request_data['model_id']}/{request_data['model_version']}")
     if model_fp_list:
@@ -735,27 +730,25 @@ def get_predict_conf():
 
 
 @manager.route('/homo/convert', methods=['POST'])
+@validate_request("model_id", "model_version", "role", "party_id")
 def homo_convert():
     request_config = request.json or request.form.to_dict()
-    required_arguments = ["model_id", "model_version", "role", "party_id"]
-    check_config(request_config, required_arguments=required_arguments)
     retcode, retmsg, res_data = publish_model.convert_homo_model(request_data=request_config)
     operation_record(request.json, "homo_convert", "success" if not retcode else "failed")
     return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
 
 
 @manager.route('/homo/deploy', methods=['POST'])
+@validate_request("service_id",
+                  "model_id",
+                  "model_version",
+                  "role",
+                  "party_id",
+                  "component_name",
+                  "deployment_type",
+                  "deployment_parameters")
 def homo_deploy():
     request_config = request.json or request.form.to_dict()
-    required_arguments = ["service_id",
-                          "model_id",
-                          "model_version",
-                          "role",
-                          "party_id",
-                          "component_name",
-                          "deployment_type",
-                          "deployment_parameters"]
-    check_config(request_config, required_arguments=required_arguments)
     retcode, retmsg, res_data = publish_model.deploy_homo_model(request_data=request_config)
     operation_record(request.json, "homo_deploy", "success" if not retcode else "failed")
     return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)

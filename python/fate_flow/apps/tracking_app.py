@@ -33,6 +33,7 @@ from fate_flow.settings import stat_logger, TEMP_DIRECTORY
 from fate_flow.utils import job_utils, detect_utils, schedule_utils
 from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
+from fate_flow.utils.detect_utils import validate_request
 from fate_flow.component_env_utils import feature_utils
 
 
@@ -304,9 +305,9 @@ def component_output_data_download():
 
 
 @manager.route('/component/output/data/table', methods=['post'])
+@validate_request('job_id', 'role', 'party_id', 'component_name')
 def component_output_data_table():
     request_data = request.json
-    detect_utils.check_config(config=request_data, required_arguments=['job_id', 'role', 'party_id', 'component_name'])
     jobs = JobSaver.query_job(job_id=request_data.get('job_id'))
     if jobs:
         job = jobs[0]
@@ -316,11 +317,10 @@ def component_output_data_table():
 
 
 @manager.route('/component/summary/download', methods=['POST'])
+@validate_request("job_id", "component_name", "role", "party_id")
 def get_component_summary():
     request_data = request.json
     try:
-        required_params = ["job_id", "component_name", "role", "party_id"]
-        detect_utils.check_config(request_data, required_params)
         tracker = Tracker(job_id=request_data["job_id"], component_name=request_data["component_name"],
                           role=request_data["role"], party_id=request_data["party_id"],
                           task_id=request_data.get("task_id", None), task_version=request_data.get("task_version", None))

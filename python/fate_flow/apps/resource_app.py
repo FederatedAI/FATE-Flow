@@ -18,6 +18,7 @@ from flask import request
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.utils import detect_utils
 from fate_flow.utils.api_utils import get_json_result
+from fate_flow.utils.detect_utils import validate_request
 
 
 @manager.route('/query', methods=['post'])
@@ -28,10 +29,9 @@ def query_resource():
 
 
 @manager.route('/return', methods=['post'])
+@validate_request('job_id')
 def return_resource():
-    request_data = request.json
-    detect_utils.check_config(config=request_data, required_arguments=['job_id'])
-    status = ResourceManager.return_resource(job_id=request_data.get("job_id"))
+    status = ResourceManager.return_resource(job_id=request.json.get("job_id"))
     return get_json_result(data=status)
 
 

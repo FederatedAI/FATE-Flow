@@ -113,9 +113,9 @@ def update_job():
 
 
 @manager.route('/parameter/update', methods=['POST'])
+@detect_utils.validate_request("job_id")
 def update_parameters():
     job_info = request.json
-    detect_utils.check_config(job_info, required_arguments=["job_id"])
     component_parameters = job_info.pop("component_parameters", None)
     job_parameters = job_info.pop("job_parameters", None)
     job_info["is_initiator"] = True
@@ -238,9 +238,9 @@ def dsl_generator():
 
 
 @manager.route('/url/get', methods=['POST'])
+@detect_utils.validate_request('job_id', 'role', 'party_id')
 def get_url():
     request_data = request.json
-    detect_utils.check_config(config=request_data, required_arguments=['job_id', 'role', 'party_id'])
     jobs = JobSaver.query_job(job_id=request_data.get('job_id'), role=request_data.get('role'),
                               party_id=request_data.get('party_id'))
     if jobs:
