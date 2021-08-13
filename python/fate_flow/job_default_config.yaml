@@ -18,4 +18,4 @@ auto_retry_delay: 1  #seconds
 federated_status_collect_type: PULL
 
 # upload
-upload_max_bytes = 4194304000 # bytes
+upload_max_bytes: 4194304000 # bytes

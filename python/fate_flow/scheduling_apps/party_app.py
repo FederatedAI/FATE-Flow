@@ -15,7 +15,7 @@
 #
 from flask import request
 
-from fate_flow.entity.types import RetCode
+from fate_flow.entity.retcode import RetCode
 from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.utils.api_utils import get_json_result

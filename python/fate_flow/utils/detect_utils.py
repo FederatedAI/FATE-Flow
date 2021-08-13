@@ -14,6 +14,10 @@
 #  limitations under the License.
 #
 import typing
+from functools import wraps
+import flask
+from fate_flow.entity.retcode import RetCode
+from fate_flow.utils.api_utils import get_json_result
 
 
 def check_config(config: typing.Dict, required_arguments: typing.List):
@@ -40,3 +44,34 @@ def check_config(config: typing.Dict, required_arguments: typing.List):
         if error_arguments:
             error_string += "required parameter values: {}".format(",".join(["{}={}".format(a[0], a[1]) for a in error_arguments]))
         raise KeyError(error_string)
+
+
+def validate_request(*args, **kwargs):
+    def wrapper(func):
+        @wraps(func)
+        def decorated_function(*_args, **_kwargs):
+            input_arguments = flask.request.json
+            no_arguments = []
+            error_arguments = []
+            for arg in args:
+                if arg not in input_arguments:
+                    no_arguments.append(arg)
+            for k, v in kwargs.items():
+                config_value = input_arguments.get(k, None)
+                if config_value is None:
+                    no_arguments.append(k)
+                elif isinstance(v, (tuple, list)):
+                    if config_value not in v:
+                        error_arguments.append((k, set(v)))
+                elif config_value != v:
+                    error_arguments.append((k, v))
+            if no_arguments or error_arguments:
+                error_string = ""
+                if no_arguments:
+                    error_string += "required argument are missing: {}; ".format(",".join(no_arguments))
+                if error_arguments:
+                    error_string += "required argument values: {}".format(",".join(["{}={}".format(a[0], a[1]) for a in error_arguments]))
+                return get_json_result(retcode=RetCode.ARGUMENT_ERROR, retmsg=error_string)
+            return func(*_args, **_kwargs)
+        return decorated_function
+    return wrapper

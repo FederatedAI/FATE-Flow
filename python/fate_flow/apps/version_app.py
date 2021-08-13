@@ -20,7 +20,6 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.settings import API_VERSION
 from fate_flow.db.service_registry import ServiceRegistry
-from fate_flow.db.config_manager import ConfigManager
 
 
 @manager.route('/get', methods=['POST'])
@@ -40,9 +39,3 @@ def set_fate_server_info():
     ServiceRegistry.FATEMANAGER["federatedId"] = federated_id
     conf_utils.update_config("fatemanager", ServiceRegistry.FATEMANAGER)
     return get_json_result(data={"federatedId": federated_id})
-
-
-@manager.route('/reload', methods=['POST'])
-def reload():
-    config = ConfigManager.load()
-    return get_json_result(data=config)

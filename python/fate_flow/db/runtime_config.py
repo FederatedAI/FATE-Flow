@@ -53,6 +53,10 @@ class RuntimeConfig(ReloadConfigBase):
         return cls.ENV.get(key, None)
 
     @classmethod
+    def get_all_env(cls):
+        return cls.ENV
+
+    @classmethod
     def set_process_role(cls, process_role: PROCESS_ROLE):
         cls.PROCESS_ROLE = process_role
 

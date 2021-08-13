@@ -32,17 +32,6 @@ class ComponentProviderName(BaseType):
     FATE_FLOW_TOOLS = "fate_flow_tools"
 
 
-class RetCode(IntEnum):
-    SUCCESS = 0
-    EXCEPTION_ERROR = 100
-    PARAMETER_ERROR = 101
-    DATA_ERROR = 102
-    OPERATING_ERROR = 103
-    FEDERATED_ERROR = 104
-    CONNECTION_ERROR = 105
-    SERVER_ERROR = 500
-
-
 class ModelStorage(object):
     REDIS = "redis"
     MYSQL = "mysql"
