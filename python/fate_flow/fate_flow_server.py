@@ -28,7 +28,7 @@ from fate_flow import set_env
 from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
 from fate_flow.apps import app
 from fate_flow.db.db_models import init_database_tables as init_flow_db
-from fate_arch.storage.metastore.db_models import init_database_tables as init_arch_db
+from fate_arch.metastore.db_models import init_database_tables as init_arch_db
 from fate_flow.scheduler.detector import Detector
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.db.runtime_config import RuntimeConfig
