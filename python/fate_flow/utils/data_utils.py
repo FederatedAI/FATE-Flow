@@ -13,9 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common import base_utils
+from fate_flow.utils import base_utils
 from fate_flow.entity.types import InputSearchType
-
 from fate_arch import storage
 
 
@@ -46,8 +45,8 @@ def list_to_str(input_list, id_delimiter):
     return id_delimiter.join(list(map(str, input_list)))
 
 
-def default_output_table_info(task_id, task_version):
-    return f"output_data_{task_id}_{task_version}", base_utils.fate_uuid()
+def default_output_info(task_id, task_version, output_type):
+    return f"output_{output_type}_{task_id}_{task_version}", base_utils.new_unique_id()
 
 
 def default_output_fs_path(name, namespace, prefix=None):
