@@ -14,37 +14,82 @@
 #  limitations under the License.
 #
 from fate_arch.common import log
+from fate_flow.components._base import (
+    BaseParam,
+    ComponentBase,
+    ComponentMeta,
+    ComponentInputProtocol,
+)
 from fate_flow.entity.types import ModelStorage
 from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage
-from fate_flow.components.component_base import ComponentBase
 
 LOGGER = log.getLogger()
 
-
 ModelStorageClassMap = {
     ModelStorage.REDIS: redis_model_storage.RedisModelStorage,
-    ModelStorage.MYSQL: mysql_model_storage.MysqlModelStorage
+    ModelStorage.MYSQL: mysql_model_storage.MysqlModelStorage,
 }
 
+model_store_cpn_meta = ComponentMeta("ModelStore")
 
+
+@model_store_cpn_meta.bind_param
+class ModelStoreParam(BaseParam):
+    def __init__(
+        self,
+        model_id: str = None,
+        model_version: str = None,
+        store_address: dict = None,
+        force_update: bool = False,
+    ):
+        self.model_id = model_id
+        self.model_version = model_version
+        self.store_address = store_address
+        self.force_update = force_update
+
+    def check(self):
+        return True
+
+
+@model_store_cpn_meta.bind_runner.on_local
 class ModelStore(ComponentBase):
-    def run(self, component_parameters: dict = None, run_args: dict = None):
-        parameters = component_parameters.get("ModelStoreParam", dict)
-        model_storage = ModelStorageClassMap.get(parameters["store_address"]["storage"])()
-        del parameters["store_address"]["storage"]
-        model_storage.store(model_id=parameters["model_id"],
-                            model_version=parameters["model_version"],
-                            store_address=parameters["store_address"],
-                            force_update=parameters.get("force_update", False)
-                            )
+    def _run(self, input_cpn: ComponentInputProtocol):
+        parameters = input_cpn.parameters
+        model_storage = parameters.store_address.storage
+        model_storage.store(
+            model_id=parameters["model_id"],
+            model_version=parameters["model_version"],
+            store_address=parameters["store_address"],
+            force_update=parameters.get("force_update", False),
+        )
 
 
+model_restore_cpn_meta = ComponentMeta("ModelRestore")
+
+
+@model_restore_cpn_meta.bind_param
+class ModelRestoreParam(BaseParam):
+    def __init__(
+        self,
+        model_id: str = None,
+        model_version: str = None,
+        store_address: dict = None,
+    ):
+        self.model_id = model_id
+        self.model_version = model_version
+        self.store_address = store_address
+
+    def check(self):
+        return True
+
+
+@model_restore_cpn_meta.bind_runner.on_local
 class ModelRestore(ComponentBase):
-    def run(self, component_parameters: dict = None, run_args: dict = None):
-        parameters = component_parameters.get("ModelRestoreParam", dict)
-        model_storage = ModelStorageClassMap.get(parameters["store_address"]["storage"])()
-        del parameters["store_address"]["storage"]
-        model_storage.restore(model_id=parameters["model_id"],
-                              model_version=parameters["model_version"],
-                              store_address=parameters["store_address"],
-                              )
+    def _run(self, input_cpn: ComponentInputProtocol):
+        parameters = input_cpn.parameters
+        model_storage = parameters.store_address.storage
+        model_storage.restore(
+            model_id=parameters["model_id"],
+            model_version=parameters["model_version"],
+            store_address=parameters["store_address"],
+        )

@@ -202,8 +202,11 @@ class TrackerClient(object):
             raise Exception(f"create table meta failed:{response['retmsg']}")
         else:
             model_buffers = {}
+            import pprint
+            pprint.pprint(response['data'])
             for model_name, v in response['data'].items():
-                model_buffers[model_name] = parse_proto_object(buffer_name=v[0], serialized_string=base64.b64decode(v[1].encode()))
+                # model_buffers[model_name] = parse_proto_object(buffer_name=v[0], serialized_string=base64.b64decode(v[1].encode()))
+                model_buffers[model_name] = (v[0], base64.b64decode(v[1].encode()))
             return model_buffers
 
     def log_output_data_info(self, data_name: str, table_namespace: str, table_name: str):
