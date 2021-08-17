@@ -14,19 +14,21 @@
 #  limitations under the License.
 #
 import sys
+import logging
 from pathlib import Path
 from time import time
 from base64 import b64encode
 from hmac import HMAC
 from datetime import datetime, timezone
 from importlib.util import spec_from_file_location, module_from_spec
+
 from flask import Flask, Blueprint, request
+
 from fate_arch.common.base_utils import CustomJSONEncoder
-from fate_flow.settings import HTTP_APP_KEY, HTTP_SECRET_KEY, MAX_TIMESTAMP_INTERVAL
-from fate_flow.utils.api_utils import error_response
-from fate_flow.settings import API_VERSION, stat_logger, access_logger
-from fate_flow.utils.api_utils import server_error_response
-import logging
+
+from fate_flow.utils.api_utils import error_response, server_error_response
+from fate_flow.settings import (API_VERSION, HTTP_APP_KEY, HTTP_SECRET_KEY, MAX_TIMESTAMP_INTERVAL,
+                                stat_logger, access_logger)
 
 
 __all__ = ['app']
