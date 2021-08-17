@@ -22,7 +22,12 @@ from fate_arch import storage
 from fate_arch.common import EngineType, file_utils, log, path_utils
 from fate_arch.session import Session
 from fate_arch.storage import DEFAULT_ID_DELIMITER, EggRollStoreType, StorageEngine
-from fate_flow.components._base import BaseParam, ComponentBase, ComponentMeta
+from fate_flow.components._base import (
+    BaseParam,
+    ComponentBase,
+    ComponentMeta,
+    ComponentInputProtocol,
+)
 from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.scheduling_apps.client import ControllerClient
@@ -74,19 +79,20 @@ class Upload(ComponentBase):
         self.parameters = {}
         self.table = None
 
-    def run(self, component_parameters=None, args=None):
-        self.parameters = component_parameters["ComponentParam"]
+    def _run(self, cpn_input: ComponentInputProtocol):
+        self.parameters = cpn_input.parameters
         LOGGER.info(self.parameters)
-        LOGGER.info(args)
-        self.parameters["role"] = component_parameters["role"]
-        self.parameters["local"] = component_parameters["local"]
+        self.parameters["role"] = cpn_input.roles["role"]
+        self.parameters["local"] = cpn_input.roles["local"]
         storage_engine = self.parameters["storage_engine"]
         storage_address = self.parameters["storage_address"]
         # if not set storage, use job storage as default
         if not storage_engine:
-            storage_engine = args["job_parameters"].storage_engine
+            storage_engine = cpn_input.job_parameters.storage_engine
         if not storage_address:
-            storage_address = args["job_parameters"].engines_address[EngineType.STORAGE]
+            storage_address = cpn_input.job_parameters.engines_address[
+                EngineType.STORAGE
+            ]
         job_id = self.task_version_id.split("_")[0]
         if not os.path.isabs(self.parameters.get("file", "")):
             self.parameters["file"] = os.path.join(
@@ -301,7 +307,6 @@ class Upload(ComponentBase):
             table_namespace=dst_table_namespace,
             table_name=dst_table_name,
         )
-
         self.tracker.log_metric_data(
             metric_namespace="upload",
             metric_name="data_access",

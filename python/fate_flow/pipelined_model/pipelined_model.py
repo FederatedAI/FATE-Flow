@@ -77,20 +77,20 @@ class PipelinedModel(Locker):
         component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
         if not tracker_client:
             os.makedirs(component_model_storage_path, exist_ok=True)
-        for model_name, buffer_object in model_buffers.items():
+        for model_name, (proto_index, buffer_object_serialized_string) in model_buffers.items():
             storage_path = os.path.join(component_model_storage_path, model_name)
-            buffer_object_serialized_string = buffer_object.SerializeToString()
-            if not buffer_object_serialized_string:
-                fill_message = default_empty_fill_pb2.DefaultEmptyFillMessage()
-                fill_message.flag = 'set'
-                buffer_object_serialized_string = fill_message.SerializeToString()
+            # buffer_object_serialized_string = buffer_object.SerializeToString()
+            # if not buffer_object_serialized_string:
+            #     fill_message = default_empty_fill_pb2.DefaultEmptyFillMessage()
+            #     fill_message.flag = 'set'
+            #     buffer_object_serialized_string = fill_message.SerializeToString()
             if not tracker_client:
                 with self.lock, open(storage_path, "wb") as fw:
                     fw.write(buffer_object_serialized_string)
             else:
                 component_model["buffer"][storage_path.replace(file_utils.get_project_base_directory(), "")] = \
                     base64.b64encode(buffer_object_serialized_string).decode()
-            model_proto_index[model_name] = type(buffer_object).__name__   # index of model name and proto buffer class name
+            model_proto_index[model_name] = proto_index  # index of model name and proto buffer class name
             stat_logger.info("Save {} {} {} buffer".format(component_name, model_alias, model_name))
         if not tracker_client:
             self.update_component_meta(component_name=component_name,

@@ -14,7 +14,12 @@
 #  limitations under the License.
 #
 from fate_arch.common import log
-from fate_flow.components._base import BaseParam, ComponentBase, ComponentMeta
+from fate_flow.components._base import (
+    BaseParam,
+    ComponentBase,
+    ComponentMeta,
+    ComponentInputProtocol,
+)
 from fate_flow.entity.types import ModelStorage
 from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage
 
@@ -48,12 +53,9 @@ class ModelStoreParam(BaseParam):
 
 @model_store_cpn_meta.bind_runner.on_local
 class ModelStore(ComponentBase):
-    def run(self, component_parameters: dict = None, run_args: dict = None):
-        parameters = component_parameters.get("ModelStoreParam", dict)
-        model_storage = ModelStorageClassMap.get(
-            parameters["store_address"]["storage"]
-        )()
-        del parameters["store_address"]["storage"]
+    def _run(self, input_cpn: ComponentInputProtocol):
+        parameters = input_cpn.parameters
+        model_storage = parameters.store_address.storage
         model_storage.store(
             model_id=parameters["model_id"],
             model_version=parameters["model_version"],
@@ -83,12 +85,9 @@ class ModelRestoreParam(BaseParam):
 
 @model_restore_cpn_meta.bind_runner.on_local
 class ModelRestore(ComponentBase):
-    def run(self, component_parameters: dict = None, run_args: dict = None):
-        parameters = component_parameters.get("ModelRestoreParam", dict)
-        model_storage = ModelStorageClassMap.get(
-            parameters["store_address"]["storage"]
-        )()
-        del parameters["store_address"]["storage"]
+    def _run(self, input_cpn: ComponentInputProtocol):
+        parameters = input_cpn.parameters
+        model_storage = parameters.store_address.storage
         model_storage.restore(
             model_id=parameters["model_id"],
             model_version=parameters["model_version"],

@@ -24,7 +24,12 @@ from fate_arch.common import EngineType, log
 from fate_arch.computing import ComputingEngine
 from fate_arch.session import Session
 from fate_arch.storage import StorageEngine, StorageTableMeta
-from fate_flow.components._base import BaseParam, ComponentBase, ComponentMeta
+from fate_flow.components._base import (
+    BaseParam,
+    ComponentBase,
+    ComponentInputProtocol,
+    ComponentMeta,
+)
 from fate_flow.entity.exceptions import ParameterException
 from fate_flow.entity.metric import MetricMeta
 from fate_flow.entity.types import InputSearchType
@@ -54,9 +59,9 @@ class Reader(ComponentBase):
         self.parameters = None
         self.job_parameters = None
 
-    def run(self, component_parameters=None, args=None):
-        self.parameters = component_parameters["ComponentParam"]
-        self.job_parameters = args["job_parameters"]
+    def _run(self, cpn_input: ComponentInputProtocol):
+        self.parameters = cpn_input.parameters
+        self.job_parameters = cpn_input.job_parameters
         output_storage_address = self.job_parameters.engines_address[EngineType.STORAGE]
         # only support one input table
         table_key = [key for key in self.parameters.keys()][0]
@@ -123,8 +128,8 @@ class Reader(ComponentBase):
             name=output_table.get_name(), namespace=output_table.get_namespace()
         )
         self.tracker.log_output_data_info(
-            data_name=component_parameters.get("output_data_name")[0]
-            if component_parameters.get("output_data_name")
+            data_name=cpn_input.flow_feeded_parameters.get("output_data_name")[0]
+            if cpn_input.flow_feeded_parameters.get("output_data_name")
             else table_key,
             table_namespace=output_table_meta.get_namespace(),
             table_name=output_table_meta.get_name(),

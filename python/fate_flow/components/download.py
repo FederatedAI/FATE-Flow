@@ -18,7 +18,12 @@ import os
 from fate_arch.common import log
 from fate_arch.session import Session
 from fate_arch.storage import DEFAULT_ID_DELIMITER
-from fate_flow.components._base import BaseParam, ComponentBase, ComponentMeta
+from fate_flow.components._base import (
+    BaseParam,
+    ComponentBase,
+    ComponentMeta,
+    ComponentInputProtocol,
+)
 from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.utils import job_utils
@@ -54,10 +59,10 @@ class Download(ComponentBase):
         super(Download, self).__init__()
         self.parameters = {}
 
-    def run(self, component_parameters=None, args=None):
-        self.parameters = component_parameters["ComponentParam"]
-        self.parameters["role"] = component_parameters["role"]
-        self.parameters["local"] = component_parameters["local"]
+    def _run(self, cpn_input: ComponentInputProtocol):
+        self.parameters = cpn_input.parameters
+        self.parameters["role"] = cpn_input.roles["role"]
+        self.parameters["local"] = cpn_input.roles["local"]
         name, namespace = self.parameters.get("name"), self.parameters.get("namespace")
         with open(os.path.abspath(self.parameters["output_path"]), "w") as fw:
             session = Session(

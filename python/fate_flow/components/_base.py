@@ -13,7 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import abc
 import typing
+
 from fate_arch.common import log
 from fate_flow.components.param_extract import ParamExtract
 from fate_flow.scheduling_apps.client.tracker_client import TrackerClient
@@ -21,7 +23,85 @@ from fate_flow.scheduling_apps.client.tracker_client import TrackerClient
 LOGGER = log.getLogger()
 
 
-class ComponentBase(object):
+class ComponentInputProtocol(metaclass=abc.ABCMeta):
+    @property
+    @abc.abstractmethod
+    def parameters(self) -> dict:
+        ...
+
+    @property
+    @abc.abstractmethod
+    def flow_feeded_parameters(self) -> dict:
+        ...
+
+    @property
+    @abc.abstractmethod
+    def roles(self):
+        ...
+
+    @property
+    @abc.abstractmethod
+    def job_parameters(self):
+        ...
+
+    @property
+    @abc.abstractmethod
+    def tracker(self):
+        ...
+
+    @property
+    @abc.abstractmethod
+    def task_version_id(self):
+        ...
+
+    @property
+    @abc.abstractmethod
+    def checkpoint_manager(self):
+        ...
+
+    @property
+    @abc.abstractmethod
+    def datasets(self):
+        ...
+
+    @property
+    @abc.abstractmethod
+    def models(self):
+        ...
+
+
+class ComponentOutput:
+    def __init__(self, data, models) -> None:
+        self._data = data
+        if not isinstance(self._data, list):
+            self._data = [data]
+
+        self._models = models
+        if self._models is None:
+            self._models = {}
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def model(self):
+        serialized_models: typing.Dict[str, typing.Tuple[str, str]] = {}
+        for model_name, buffer_object in self._models.items():
+            serialized_string = buffer_object.SerializeToString()
+            if not serialized_string:
+                from fate_arch.protobuf.python import default_empty_fill_pb2
+
+                buffer_object = default_empty_fill_pb2.DefaultEmptyFillMessage()
+                buffer_object.flag = "set"
+                serialized_string = buffer_object.SerializeToString()
+            pb_name = type(buffer_object).__name__
+            serialized_models[model_name] = (pb_name, serialized_string)
+
+        return serialized_models
+
+
+class ComponentBase(metaclass=abc.ABCMeta):
     def __init__(self):
         self.task_version_id = ""
         self.tracker: TrackerClient = None
@@ -29,23 +109,35 @@ class ComponentBase(object):
         self.model_output = None
         self.data_output = None
 
-    def run(self, component_parameters: dict = None, run_args: dict = None):
-        pass
+    @abc.abstractmethod
+    def _run(self, cpn_input: ComponentInputProtocol):
+        """to be implemented"""
+        ...
 
-    def set_tracker(self, tracker: TrackerClient):
-        self.tracker = tracker
+    def _warn_start(self, component_parameters: dict = None, run_args: dict = None):
+        raise NotImplementedError("warn start for {self} not implemented")
 
-    def set_checkpoint_manager(self, checkpoint_manager):
-        self.checkpoint_manager = checkpoint_manager
+    def run(
+        self,
+        cpn_input: ComponentInputProtocol,
+        warn_start: bool,
+    ):
+        self.task_version_id = cpn_input.task_version_id
+        self.tracker = cpn_input.tracker
+        self.checkpoint_manager = cpn_input.checkpoint_manager
+
+        if not warn_start:
+            self._run(cpn_input=cpn_input)
+        else:
+            self._warn_start(cpn_input.parameters, cpn_input.args)
+
+        return ComponentOutput(data=self.save_data(), models=self.export_model())
 
     def save_data(self):
         return self.data_output
 
     def export_model(self):
         return self.model_output
-
-    def set_task_version_id(self, task_version_id):
-        self.task_version_id = task_version_id
 
 
 class _RunnerDocorator:
@@ -74,9 +166,10 @@ class _RunnerDocorator:
         return self
 
     def __call__(self, cls):
-        if isinstance(cls, ComponentBase):
+        if issubclass(cls, ComponentBase):
             for role in self._roles:
                 self._meta._role_to_runner_cls[role] = cls
+        else:
             raise NotImplementedError(f"type of {cls} not supported")
 
         return cls
@@ -131,10 +224,14 @@ class ComponentMeta:
     def get_param_obj(self, cpn_name: str):
         if self._param_cls is None:
             raise ModuleNotFoundError(f"Param for component `{self.name}` not found")
-        return self._param_cls().set_name(f"{self.name}#{cpn_name}")
+        param_obj = self._param_cls().set_name(f"{self.name}#{cpn_name}")
+        return param_obj
 
     def get_supported_roles(self):
-        return set(self._role_to_runner_cls.keys())
+        roles = set(self._role_to_runner_cls.keys())
+        if not roles:
+            raise ModuleNotFoundError(f"roles for {self.name} is empty")
+        return roles
 
 
 class BaseParam(object):
