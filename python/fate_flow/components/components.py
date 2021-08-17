@@ -58,15 +58,13 @@ class Components:
 
     @classmethod
     def get(cls, name: str, cache) -> ComponentMeta:
-        # if cache:
-        #     importlib.import_module(cache["module"])
-
-        # # temperary
-        # else:
         from .model_operation_components import (
             model_restore_cpn_meta,
             model_store_cpn_meta,
         )
+        from .reader import reader_cpn_meta
+        from .upload import upload_cpn_meta
+        from .download import download_cpn_meta
 
         cpn = ComponentMeta.get_meta(name)
 
