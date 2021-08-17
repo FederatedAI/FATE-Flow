@@ -40,6 +40,64 @@ from fate_flow.component_env_utils import provider_utils
 
 LOGGER = getLogger()
 
+class ComponentInput:
+    def __init__(
+        self,
+        tracker,
+        checkpoint_manager,
+        task_version_id,
+        parameters,
+        datasets,
+        models,
+        job_parameters,
+        roles,
+        flow_feeded_parameters,
+    ) -> None:
+        self._tracker = tracker
+        self._checkpoint_manager = checkpoint_manager
+        self._task_version_id = task_version_id
+        self._parameters = parameters
+        self._datasets = datasets
+        self._models = models
+        self._job_parameters = job_parameters
+        self._roles = roles
+        self._flow_feeded_parameters = flow_feeded_parameters
+
+    @property
+    def tracker(self):
+        return self._tracker
+
+    @property
+    def task_version_id(self):
+        return self._task_version_id
+
+    @property
+    def checkpoint_manager(self):
+        return self._checkpoint_manager
+
+    @property
+    def parameters(self):
+        return self._parameters
+
+    @property
+    def flow_feeded_parameters(self):
+        return self._flow_feeded_parameters
+
+    @property
+    def roles(self):
+        return self._roles
+
+    @property
+    def job_parameters(self):
+        return self._job_parameters
+
+    @property
+    def datasets(self):
+        return self._datasets
+
+    @property
+    def models(self):
+        return {k: v for k, v in self._models.items() if v is not None}
 
 class TaskExecutor(object):
     REPORT_TO_DRIVER_FIELDS = ["run_ip", "run_pid", "party_status", "update_time", "end_time", "elapsed"]
@@ -101,7 +159,8 @@ class TaskExecutor(object):
             module_name = component.get_module()
             task_input_dsl = component.get_input()
             task_output_dsl = component.get_output()
-            component_parameters_on_party['output_data_name'] = task_output_dsl.get('data')
+            # component_parameters_on_party['output_data_name'] = task_output_dsl.get('data')
+            flow_feeded_parameters={'output_data_name' : task_output_dsl.get('data')}
 
             kwargs = {
                 'job_id': job_id,
@@ -160,29 +219,39 @@ class TaskExecutor(object):
                                                                     task_parameters=task_parameters,
                                                                     input_dsl=task_input_dsl,
                                                                     )
+
             if module_name in {"Upload", "Download", "Reader", "Writer"}:
                 task_run_args["job_parameters"] = job_parameters
 
             component_framework = provider_utils.get_component_framework_interface(provider=component_provider)
             run_object = component_framework.get_module(module_name, role)
-            run_object.set_tracker(tracker=tracker_client)
-            run_object.set_checkpoint_manager(checkpoint_manager)
-            run_object.set_task_version_id(task_version_id=job_utils.generate_task_version_id(task_id, task_version))
 
+            cpn_input = ComponentInput(
+                tracker=tracker_client,
+                checkpoint_manager=checkpoint_manager,
+                task_version_id=job_utils.generate_task_version_id(task_id, task_version),
+                parameters=component_parameters_on_party["ComponentParam"],
+                datasets=task_run_args.get("data", None),
+                models=dict(
+                    model=task_run_args.get("model"),
+                    isometric_model=task_run_args.get("isometric_model"),
+                ),
+                job_parameters=job_parameters,
+                roles=dict(
+                    role=component_parameters_on_party["role"],
+                    local=component_parameters_on_party["local"],
+                ),
+                flow_feeded_parameters=flow_feeded_parameters,
+            )
             # add profile logs
             profile.profile_start()
-            if checkpoint_manager.latest_checkpoint is None:
-                run_object.run(component_parameters_on_party, task_run_args)
-            else:
-                run_object.warm_start(component_parameters_on_party, task_run_args)
+            is_warn_start = checkpoint_manager.latest_checkpoint is not None
+            cpn_output = run_object.run(cpn_input, is_warn_start)
             sess.wait_remote_all_done()
             profile.profile_ends()
 
-            output_data = run_object.save_data()
-            if not isinstance(output_data, list):
-                output_data = [output_data]
             output_table_list = []
-            for index, data in enumerate(output_data):
+            for index, data in enumerate(cpn_output.data):
                 data_name = task_output_dsl.get('data')[index] if task_output_dsl.get('data') else '{}'.format(index)
                 #todo: the token depends on the engine type, maybe in job parameters
                 persistent_table_namespace, persistent_table_name = tracker.save_output_data(
@@ -196,9 +265,9 @@ class TaskExecutor(object):
                                                  table_name=persistent_table_name)
                     output_table_list.append({"namespace": persistent_table_namespace, "name": persistent_table_name})
             TaskExecutor.log_output_data_table_tracker(job_id, input_table_list, output_table_list)
-            output_model = run_object.export_model()
+
             # There is only one model output at the current dsl version.
-            tracker.save_output_model(output_model,
+            tracker.save_output_model(cpn_output.model,
                                       task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
                                       tracker_client=tracker_client)
             task_info["party_status"] = TaskStatus.SUCCESS
