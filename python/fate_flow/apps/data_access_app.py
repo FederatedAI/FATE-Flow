@@ -19,6 +19,7 @@ import shutil
 from flask import request
 
 from fate_flow.entity.run_status import StatusSet
+from fate_flow.entity.job import JobConfigurationBase
 from fate_arch import storage
 from fate_arch.common.base_utils import json_loads
 from fate_flow.settings import UPLOAD_DATA_FROM_CLIENT
@@ -84,7 +85,7 @@ def download_upload(access_module):
                                           ' 0 means not to delete and continue uploading, '
                                           '1 means to upload again after deleting the table')
     job_dsl, job_runtime_conf = gen_data_access_job_config(job_config, access_module)
-    submit_result = DAGScheduler.submit({'job_dsl': job_dsl, 'job_runtime_conf': job_runtime_conf}, job_id=job_id)
+    submit_result = DAGScheduler.submit(JobConfigurationBase(**{'dsl': job_dsl, 'runtime_conf': job_runtime_conf}), job_id=job_id)
     data.update(submit_result)
     return get_json_result(job_id=job_id, data=data)
 

@@ -17,7 +17,8 @@ import operator
 import copy
 import typing
 
-from fate_arch.common import EngineType, Party
+from fate_arch.abc import CTableABC
+from fate_arch.common import EngineType, Party, DTable
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
@@ -28,10 +29,11 @@ from fate_flow.db.db_models import (DB, Job, TrackingMetric, TrackingOutputDataI
 from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.pipelined_model import pipelined_model
-from fate_arch import storage
+from fate_flow.manager.cache_manager import CacheManager, CacheInfo
+from fate_arch import storage, session
 from fate_flow.utils import model_utils, job_utils, data_utils
-from fate_arch import session
 from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.operation.job_saver import JobSaver
 
 
 class Tracker(object):
@@ -115,11 +117,10 @@ class Tracker(object):
         return view_data
 
     def save_output_data(self, computing_table, output_storage_engine, output_storage_address: dict,
-                         output_table_namespace=None, output_table_name=None, schema=None,
-                         tracker_client=None, user_name=''):
+                         output_table_namespace=None, output_table_name=None, schema=None, token=None):
         if computing_table:
             if not output_table_namespace or not output_table_name:
-                output_table_namespace, output_table_name = data_utils.default_output_table_info(task_id=self.task_id, task_version=self.task_version)
+                output_table_namespace, output_table_name = data_utils.default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="data")
             schedule_logger(self.job_id).info(
                 'persisting the component output temporary table to {} {}'.format(output_table_namespace,
                                                                                   output_table_name))
@@ -135,16 +136,7 @@ class Tracker(object):
                                        schema=schema,
                                        engine=output_storage_engine,
                                        engine_address=output_storage_address,
-                                       token={"username": user_name})
-
-            """
-            if not tracker_client and not schema:
-                table_meta.create()
-            if tracker_client:
-                tracker_client.create_table_meta(table_meta)
-            else:
-                table_meta.update_metas(schema=schema, part_of_data=part_of_data, count=table_count)
-            """
+                                       token=token)
 
             return output_table_namespace, output_table_name
         else:
@@ -218,6 +210,54 @@ class Tracker(object):
 
     def get_component_define(self):
         return self.pipelined_model.get_component_define(component_name=self.component_name)
+
+    def save_output_cache(self, cache_map: typing.Dict[str, CTableABC], cache_meta: dict, cache_name, output_storage_engine, output_storage_address: dict, token=None):
+        cache_info = CacheInfo(meta=cache_meta)
+        for name, table in cache_map.items():
+            output_table_namespace, output_table_name = data_utils.default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="cache")
+            table_meta = session.Session.persistent(computing_table=table,
+                                                    table_namespace=output_table_namespace,
+                                                    table_name=output_table_name,
+                                                    schema=None,
+                                                    engine=output_storage_engine,
+                                                    engine_address=output_storage_address,
+                                                    token=token)
+            cache_info.data[name] = DTable(namespace=table_meta.namespace, name=table_meta.name, partitions=table_meta.partitions)
+        cache_key = CacheManager.save_tracking(cache_info=cache_info,
+                                               task_id=self.task_id,
+                                               task_version=self.task_version,
+                                               cache_name=cache_name)
+        schedule_logger(self.job_id).info(f"save {self.task_id} {self.task_version} output cache, cache key is {cache_key}")
+        return cache_key
+
+    def get_output_cache(self, cache_key=None, cache_name=None):
+        if not self.task_id or not self.task_version:
+            tasks = JobSaver.query_task(job_id=self.job_id,
+                                        role=self.role,
+                                        party_id=self.party_id,
+                                        component_name=self.component_name,
+                                        only_latest=True
+                                        )
+            if not tasks:
+                raise Exception("can not found task")
+            elif len(tasks) > 1:
+                raise Exception("more than two were found")
+            self.task_id = tasks[0].f_task_id
+            self.task_version = tasks[0].f_task_version
+        caches = CacheManager.query_tracking(task_id=self.task_id, task_version=self.task_version, cache_name=cache_name, cache_key=cache_key)
+        if caches:
+            cache_info = caches[0]
+            cache_map = {}
+            for name, _dtable in cache_info.data.items():
+                storage_table_meta = storage.StorageTableMeta(name=_dtable.name, namespace=_dtable.namespace)
+                computing_table = session.get_latest_opened().computing.load(
+                    storage_table_meta.get_address(),
+                    schema=storage_table_meta.get_schema(),
+                    partitions=_dtable.partitions)
+                cache_map[name] = computing_table
+            return cache_map, cache_info.meta
+        else:
+            return None, None
 
     @DB.connection_context()
     def insert_metrics_into_db(self, metric_namespace: str, metric_name: str, data_type: int, kv, job_level=False):
@@ -426,7 +466,7 @@ class Tracker(object):
         else:
             output_data_infos_tmp = tracking_output_data_info_model.select()
         output_data_infos_group = {}
-        # Only the latest version of the task output data is retrieved
+        # only the latest version of the task output data is retrieved
         for output_data_info in output_data_infos_tmp:
             group_key = cls.get_output_data_group_key(output_data_info.f_task_id, output_data_info.f_data_name)
             if group_key not in output_data_infos_group:

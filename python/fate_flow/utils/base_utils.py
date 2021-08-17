@@ -13,12 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-1. Based on Google Python Code Style
-2. The log or message string begins with an lowercase letter
-3. Strings use double quotes
-4. Import Module but not directly import Class
-5. Using {} instead of Dict
-6. Using [] instead of List
-7. Function parameters need to be typed
-8. Function return need to be typed
-8. Any expression is as clear and unambiguous as possible
+import uuid
+
+
+def new_unique_id():
+    #todo: may be using snowflake?
+    return uuid.uuid1().hex

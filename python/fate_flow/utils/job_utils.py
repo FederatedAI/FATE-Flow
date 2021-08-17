@@ -25,7 +25,8 @@ from fate_arch.common import file_utils
 from fate_arch.common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import DB, Job, Task
-from fate_flow.entity.types import KillProcessRetCode, JobConfiguration
+from fate_flow.entity.types import KillProcessRetCode
+from fate_flow.entity.job import JobConfiguration
 from fate_flow.entity.run_status import JobStatus, TaskStatus
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.settings import SUBPROCESS_STD_LOG_NAME, WORK_MODE
@@ -144,13 +145,13 @@ def new_runtime_conf(job_dir, method, module, role, party_id):
     return os.path.join(conf_path_dir, 'runtime_conf.json')
 
 
-def save_job_conf(job_id, role, party_id, job_dsl, job_runtime_conf, job_runtime_conf_on_party, train_runtime_conf, pipeline_dsl=None):
+def save_job_conf(job_id, role, party_id, dsl, runtime_conf, runtime_conf_on_party, train_runtime_conf, pipeline_dsl=None):
     path_dict = get_job_conf_path(job_id=job_id, role=role, party_id=party_id)
     os.makedirs(os.path.dirname(path_dict.get('job_dsl_path')), exist_ok=True)
     os.makedirs(os.path.dirname(path_dict.get('job_runtime_conf_on_party_path')), exist_ok=True)
-    for data, conf_path in [(job_dsl, path_dict['job_dsl_path']),
-                            (job_runtime_conf, path_dict['job_runtime_conf_path']),
-                            (job_runtime_conf_on_party, path_dict['job_runtime_conf_on_party_path']),
+    for data, conf_path in [(dsl, path_dict['job_dsl_path']),
+                            (runtime_conf, path_dict['job_runtime_conf_path']),
+                            (runtime_conf_on_party, path_dict['job_runtime_conf_on_party_path']),
                             (train_runtime_conf, path_dict['train_runtime_conf_path']),
                             (pipeline_dsl, path_dict['pipeline_dsl_path'])]:
         with open(conf_path, 'w+') as f:

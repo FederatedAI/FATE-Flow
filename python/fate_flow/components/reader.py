@@ -71,12 +71,13 @@ class Reader(ComponentBase):
             role=self.tracker.role,
             party_id=self.tracker.party_id,
         )
-
         (
             output_table_namespace,
             output_table_name,
-        ) = data_utils.default_output_table_info(
-            task_id=self.tracker.task_id, task_version=self.tracker.task_version
+        ) = data_utils.default_output_info(
+            task_id=self.tracker.task_id, 
+            task_version=self.tracker.task_version,
+            output_type="data",
         )
         (
             input_table_meta,

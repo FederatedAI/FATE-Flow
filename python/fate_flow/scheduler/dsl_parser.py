@@ -31,9 +31,9 @@ import json
 
 from fate_flow.settings import stat_logger
 from fate_flow.utils.dsl_exception import DSLNotExistError, ComponentFieldNotExistError, \
-    ModuleFieldNotExistError, ComponentInputTypeError, ComponentInputModelValueTypeError, \
-    ModelInputComponentNotExistError, ModelInputNameNotExistError, ComponentInputDataTypeError, \
-    ComponentInputDataValueTypeError, DataInputComponentNotExistError, DataInputNameNotExistError, \
+    ModuleFieldNotExistError, ComponentInputTypeError, \
+    InputComponentNotExistError, InputNameNotExistError, ComponentInputDataTypeError, \
+    ComponentInputValueTypeError, \
     ComponentNotExistError, ModeError, DataNotExistInSubmitConfError, ComponentOutputTypeError, \
     ComponentOutputKeyTypeError, LoopError, ComponentMultiMappingError, NamingIndexError, \
     NamingError, NamingFormatError, DeployComponentNotExistError, ModuleNotExistError
@@ -186,35 +186,38 @@ class BaseDSLParser(object):
             else:
                 self.components[idx].set_input(upstream_input)
 
-            input_model_keyword = ["model", "isometric_model"]
             if mode == "train":
-                for model_key in input_model_keyword:
-                    if model_key in upstream_input:
-                        model_list = upstream_input.get(model_key)
+                input_keywords = {"model": "model", "isometric_model": "model", "cache": "cache"}
+            else:
+                input_keywords = {"cache": "cache"}
 
-                        if not isinstance(model_list, list):
-                            raise ComponentInputModelValueTypeError(component=name, other_info=model_list)
+            for keyword, out_type in input_keywords.items():
+                if keyword in upstream_input:
+                    input_list = upstream_input.get(keyword)
 
-                        for model in model_list:
-                            module_name = model.split(".", -1)[0]
-                            input_model_name = module_name.split(".")[-1][0]
-                            if module_name in ["args", "pipeline"]:
-                                module_name = model.split(".", -1)[1]
+                    if not isinstance(input_list, list):
+                        raise ComponentInputValueTypeError(component=name, value_type="model",
+                                                           other_info=input_list)
 
-                            if module_name not in self.component_name_index:
-                                raise ModelInputComponentNotExistError(component=name, input_model=module_name)
-                            else:
-                                if module_name not in components_output or "model" not in components_output[
-                                    module_name]:
-                                    raise ModelInputNameNotExistError(component=name, input_model=module_name,
-                                                                      other_info=input_model_name)
+                    for _input in input_list:
+                        module_name = _input.split(".", -1)[0]
+                        input_model_name = _input.split(".")[-1]
+                        if module_name in ["args", "pipeline"] and keyword == "model":
+                            module_name = _input.split(".", -1)[1]
 
-                                idx_dependency = self.component_name_index.get(module_name)
-                                self.component_downstream[idx_dependency].append(name)
-                                self.component_upstream[idx].append(module_name)
+                        if module_name not in self.component_name_index:
+                            raise InputComponentNotExistError(component=name, value_type=keyword, input=module_name)
+                        else:
+                            if module_name not in components_output or out_type not in components_output[module_name]:
+                                raise InputNameNotExistError(component=name, input=module_name,
+                                                             value_type=keyword, other_info=input_model_name)
 
-                                if model_key == "model":
-                                    self.train_input_model[name] = module_name
+                            idx_dependency = self.component_name_index.get(module_name)
+                            self.component_downstream[idx_dependency].append(name)
+                            self.component_upstream[idx].append(module_name)
+
+                            if keyword == "model":
+                                self.train_input_model[name] = module_name
 
             if "data" in upstream_input:
                 data_dict = upstream_input.get("data")
@@ -223,7 +226,8 @@ class BaseDSLParser(object):
 
                 for data_set in data_dict:
                     if not isinstance(data_dict.get(data_set), list):
-                        raise ComponentInputDataValueTypeError(component=name, other_info=data_dict.get(data_set))
+                        raise ComponentInputValueTypeError(component=name, value_type="data",
+                                                           other_info=data_dict.get(data_set))
 
                     if version == 2 and data_set not in ["data", "train_data", "validate_data", "test_data",
                                                          "eval_data"]:
@@ -238,13 +242,14 @@ class BaseDSLParser(object):
                             continue
 
                         if module_name not in self.component_name_index:
-                            raise DataInputComponentNotExistError(component=name, input_data=module_name)
+                            raise InputComponentNotExistError(component=name, value_type="data",
+                                                              input=module_name)
                         else:
                             if module_name not in components_output \
                                     or "data" not in components_output[module_name] \
                                     or input_data_name not in components_output[module_name]["data"]:
-                                raise DataInputNameNotExistError(component=name, input_data=module_name,
-                                                                 other_info=input_data_name)
+                                raise InputNameNotExistError(component=name, input=module_name,
+                                                             value_type="data", other_info=input_data_name)
 
                             idx_dependency = self.component_name_index.get(module_name)
                             self.component_downstream[idx_dependency].append(name)
@@ -329,6 +334,15 @@ class BaseDSLParser(object):
 
         return dependent_components
 
+    def get_downstream_dependent_components(self, component_name):
+        component_idx = self.component_name_index.get(component_name)
+        downstream_components = []
+        for cpn in self.component_downstream[component_idx]:
+            down_cpn_idx = self.component_name_index.get(cpn)
+            downstream_components.append(self.components[down_cpn_idx])
+
+        return downstream_components
+
     def get_topology_components(self):
         topo_components = []
         for i in range(len(self.topo_rank)):
@@ -346,7 +360,7 @@ class BaseDSLParser(object):
                 continue
 
             component_output = components_details.get(name).get("output")
-            output_keys = ["data", "model"]
+            output_keys = ["data", "model", "cache"]
 
             if not isinstance(component_output, dict):
                 raise ComponentOutputTypeError(component=name, other_info=component_output)
@@ -457,25 +471,27 @@ class BaseDSLParser(object):
                                                       "type": data_type,
                                                       "up_output_info": ["data", data_pos]})
 
-            model_keyword = ["model", "isometric_model"]
-            for model_key in model_keyword:
-                if model_key in inputs:
-                    model_input = inputs[model_key]
-                    for model_dep in model_input:
-                        up_component_name = model_dep.split(".", -1)[0]
+            input_keyword_type_mapping = {"model": "model",
+                                          "isometric_model": "model",
+                                          "cache": "cache"}
+            for keyword, v_type in input_keyword_type_mapping.items():
+                if keyword in inputs:
+                    input_list = inputs[keyword]
+                    for _input in input_list:
+                        up_component_name = _input.split(".", -1)[0]
                         if up_component_name == "pipeline":
                             continue
 
-                        model_name = model_dep.split(".", -1)[1]
+                        link_alias = _input.split(".", -1)[1]
                         up_pos = self.component_name_index.get(up_component_name)
                         up_component = self.components[up_pos]
-                        if up_component.get_output().get("model"):
-                            model_pos = up_component.get_output().get("model").index(model_name)
+                        if up_component.get_output().get(v_type):
+                            dep_pos = up_component.get_output().get(v_type).index(link_alias)
                         else:
-                            model_pos = 0
+                            dep_pos = 0
                         dependence_dict[name].append({"component_name": up_component_name,
-                                                      "type": "model",
-                                                      "up_output_info": ["model", model_pos]})
+                                                      "type": v_type,
+                                                      "up_output_info": [v_type, dep_pos]})
 
             if not dependence_dict[name]:
                 del dependence_dict[name]
@@ -572,31 +588,24 @@ class BaseDSLParser(object):
                 if version != 2:
                     raise ValueError("Reader component can only be set in dsl_version 2")
 
-            if self.get_need_deploy_parameter(name=name,
-                                              deploy_cpns=deploy_cpns):
-
+            if self.get_need_deploy_parameter(name=name, deploy_cpns=deploy_cpns):
                 self.predict_dsl["components"][name] = {"module": self.predict_components[i].get_module()}
-
-                """replace output model to pippline"""
+                """replace output model to pipeline"""
                 if "output" in self.dsl["components"][name]:
                     model_list = self.dsl["components"][name]["output"].get("model", None)
                     if model_list is not None:
                         if "input" not in self.predict_dsl["components"][name]:
                             self.predict_dsl["components"][name]["input"] = {}
 
-                        replace_model = []
-                        for model in model_list:
-                            replace_str = ".".join(["pipeline", name, model])
-                            replace_model.append(replace_str)
-
+                        replace_model = [".".join(["pipeline", name, model]) for model in model_list]
                         self.predict_dsl["components"][name]["input"]["model"] = replace_model
 
-                    output_data = copy.deepcopy(self.dsl["components"][name]["output"].get("data", None))
-                    if output_data is not None:
-                        if "output" not in self.predict_dsl["components"][name]:
-                            self.predict_dsl["components"][name]["output"] = {}
+                    for out_key, out_val in self.dsl["components"][name]["output"].items():
+                        if out_val is not None and out_key != "model":
+                            if "output" not in self.predict_dsl["components"][name]:
+                                self.predict_dsl["components"][name]["output"] = {}
 
-                        self.predict_dsl["components"][name]["output"]["data"] = output_data
+                            self.predict_dsl["components"][name]["output"][out_key] = out_val
 
                 if "input" in self.dsl["components"][name]:
                     if "input" not in self.predict_dsl["components"][name]:
@@ -605,54 +614,60 @@ class BaseDSLParser(object):
                     if "data" in self.dsl["components"][name]["input"]:
                         self.predict_dsl["components"][name]["input"]["data"] = {}
                         for data_key, data_value in self._gen_predict_data_mapping():
-                            if data_key in self.dsl["components"][name]["input"]["data"]:
-                                data_set = self.dsl["components"][name]["input"]["data"].get(data_key)
-                                self.predict_dsl["components"][name]["input"]["data"][data_value] = []
-                                for input_data in data_set:
-                                    if version == 1 and input_data.split(".")[0] == "args":
-                                        new_input_data = "args.eval_data"
-                                        self.predict_dsl["components"][name]["input"]["data"][data_value].append(
-                                            new_input_data)
-                                    elif version == 2 and input_data.split(".")[0] == "args":
-                                        self.predict_dsl["components"][name]["input"]["data"][data_value].append(
-                                            input_data)
-                                    elif version == 2 and self.dsl["components"][input_data.split(".")[0]].get(
-                                            "module") == "Reader":
-                                        self.predict_dsl["components"][name]["input"]["data"][data_value].append(
-                                            input_data)
-                                    else:
-                                        pre_name = input_data.split(".")[0]
-                                        data_suffix = input_data.split(".")[1]
-                                        if self.get_need_deploy_parameter(name=pre_name,
-                                                                          deploy_cpns=deploy_cpns):
-                                            self.predict_dsl["components"][name]["input"]["data"][data_value].append(
-                                                input_data)
-                                        else:
-                                            self.predict_dsl["components"][name]["input"]["data"][data_value] = \
-                                                output_data_maps[
-                                                    pre_name][data_suffix]
+                            if data_key not in self.dsl["components"][name]["input"]["data"]:
+                                continue
 
-                                break
+                            data_set = self.dsl["components"][name]["input"]["data"].get(data_key)
+                            self.predict_dsl["components"][name]["input"]["data"][data_value] = []
+                            for input_data in data_set:
+                                if version == 1 and input_data.split(".")[0] == "args":
+                                    new_input_data = "args.eval_data"
+                                    self.predict_dsl["components"][name]["input"]["data"][data_value].append(new_input_data)
+                                elif version == 2 and input_data.split(".")[0] == "args":
+                                    self.predict_dsl["components"][name]["input"]["data"][data_value].append(input_data)
+                                elif version == 2 and self.dsl["components"][input_data.split(".")[0]].get("module") == "Reader":
+                                    self.predict_dsl["components"][name]["input"]["data"][data_value].append(input_data)
+                                else:
+                                    pre_name = input_data.split(".")[0]
+                                    data_suffix = input_data.split(".")[1]
+                                    if self.get_need_deploy_parameter(name=pre_name, deploy_cpns=deploy_cpns):
+                                        self.predict_dsl["components"][name]["input"]["data"][data_value].append(input_data)
+                                    else:
+                                        self.predict_dsl["components"][name]["input"]["data"][data_value].extend(
+                                            output_data_maps[pre_name][data_suffix])
+
+                            break
+
+                        if "cache" in self.dsl["components"][name]["input"]:
+                            cache_set = self.dsl["components"][name]["input"]["cache"]
+                            self.predict_dsl["components"][name]["input"]["cache"] = []
+                            for input_cache in cache_set:
+                                pre_name, cache_suffix = input_cache.split(".")[:2]
+                                input_deploy = self.get_need_deploy_parameter(name=pre_name, deploy_cpns=deploy_cpns)
+                                if version == 1 and not input_deploy:
+                                    raise ValueError("In dsl v1, if cache is enabled, input component should be deploy")
+                                self.predict_dsl["components"][name]["input"]["cache"].append(input_cache)
 
                         if version == 2 and erase_top_data_input:
-                            is_top_component = True
+                            input_dep = {}
                             for data_key, data_set in self.predict_dsl["components"][name]["input"]["data"].items():
+                                final_data_set = []
                                 for input_data in data_set:
                                     cpn_alias = input_data.split(".")[0]
-                                    if cpn_alias == "args":
-                                        is_top_component = False
-                                        break
+                                    if cpn_alias == "args" or cpn_alias in self.predict_dsl["components"]:
+                                        final_data_set.append(input_data)
 
-                                    if cpn_alias in self.predict_dsl["components"]:
-                                        is_top_component = False
+                                if final_data_set:
+                                    input_dep[data_key] = final_data_set
 
-                            if is_top_component:
+                            if not input_dep:
                                 del self.predict_dsl["components"][name]["input"]["data"]
+                            else:
+                                self.predict_dsl["components"][name]["input"]["data"] = input_dep
 
             else:
                 name = self.predict_components[i].get_name()
-                input_data = None
-                output_data = None
+                input_data, output_data = None, None
 
                 if "input" in self.dsl["components"][name] and "data" in self.dsl["components"][name]["input"]:
                     input_data = self.dsl["components"][name]["input"].get("data")
@@ -678,17 +693,14 @@ class BaseDSLParser(object):
                     raise ValueError("train data or eval data or validate data or data should be set")
 
                 up_input_data_component_name = up_input_data.split(".", -1)[0]
-                if up_input_data_component_name == "args" or self.get_need_deploy_parameter(
-                        name=up_input_data_component_name,
-                        deploy_cpns=deploy_cpns):
+                if up_input_data_component_name == "args" \
+                        or self.get_need_deploy_parameter(name=up_input_data_component_name, deploy_cpns=deploy_cpns):
                     output_data_maps[name][output_data_str] = [up_input_data]
-                elif self.components[
-                    self.component_name_index.get(up_input_data_component_name)].get_module() == "Reader":
+                elif self.components[self.component_name_index.get(up_input_data_component_name)].get_module() == "Reader":
                     output_data_maps[name][output_data_str] = [up_input_data]
                 else:
                     up_input_data_suf = up_input_data.split(".", -1)[-1]
-                    output_data_maps[name][output_data_str] = output_data_maps[up_input_data_component_name][
-                        up_input_data_suf]
+                    output_data_maps[name][output_data_str] = output_data_maps[up_input_data_component_name][up_input_data_suf]
 
     def run(self, *args, **kwargs):
         pass

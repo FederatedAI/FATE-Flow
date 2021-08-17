@@ -15,7 +15,7 @@
 #
 from fate_arch.common import FederatedCommunicationType
 from fate_flow.entity.types import RetCode
-from fate_flow.entity.run_status import StatusSet, TaskStatus, EndStatus, AutoRerunStatus
+from fate_flow.entity.run_status import StatusSet, TaskStatus, EndStatus, AutoRerunStatus, InterruptStatus
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.entity.run_status import SchedulingStatusCode
 from fate_flow.entity.run_parameters import RunParameters
@@ -205,22 +205,26 @@ class TaskScheduler(object):
     @classmethod
     def calculate_multi_party_task_status(cls, tasks_party_status):
         # 1. all waiting
-        # 2. have end status, should be interrupted
+        # 2. have interrupt status, should be interrupted
         # 3. have running
-        # 4. waiting + success
+        # 4. waiting + success/pass
         # 5. all the same end status
         tmp_status_set = set(tasks_party_status)
+        if TaskStatus.PASS in tmp_status_set:
+            tmp_status_set.remove(TaskStatus.PASS)
+            tmp_status_set.add(TaskStatus.SUCCESS)
         if len(tmp_status_set) == 1:
             # 1 and 5
             return tmp_status_set.pop()
         else:
             # 2
-            for status in sorted(EndStatus.status_list(), key=lambda s: StatusSet.get_level(status=s), reverse=True):
-                if status == TaskStatus.SUCCESS:
-                    continue
+            for status in sorted(InterruptStatus.status_list(), key=lambda s: StatusSet.get_level(status=s), reverse=True):
                 if status in tmp_status_set:
                     return status
             # 3
-            if TaskStatus.RUNNING in tmp_status_set or TaskStatus.SUCCESS in tmp_status_set:
-                return StatusSet.RUNNING
+            if TaskStatus.RUNNING in tmp_status_set:
+                return TaskStatus.RUNNING
+            # 4
+            if TaskStatus.SUCCESS in tmp_status_set:
+                return TaskStatus.RUNNING
             raise Exception("Calculate task status failed: {}".format(tasks_party_status))

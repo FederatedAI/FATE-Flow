@@ -30,6 +30,7 @@ class StatusSet(BaseStatus):
     CANCELED = "canceled"
     TIMEOUT = "timeout"
     FAILED = "failed"
+    PASS = "pass"
     SUCCESS = "success"
 
     @classmethod
@@ -77,15 +78,17 @@ class TaskStatus(BaseStatus):
     CANCELED = StatusSet.CANCELED
     TIMEOUT = StatusSet.TIMEOUT
     FAILED = StatusSet.FAILED
+    PASS = StatusSet.PASS
     SUCCESS = StatusSet.SUCCESS
 
     class StateTransitionRule(BaseStateTransitionRule):
         RULES = {
             StatusSet.WAITING: [StatusSet.RUNNING, StatusSet.SUCCESS],
-            StatusSet.RUNNING: [StatusSet.CANCELED, StatusSet.TIMEOUT, StatusSet.FAILED, StatusSet.SUCCESS],
+            StatusSet.RUNNING: [StatusSet.CANCELED, StatusSet.TIMEOUT, StatusSet.FAILED, StatusSet.PASS, StatusSet.SUCCESS],
             StatusSet.CANCELED: [StatusSet.WAITING],
             StatusSet.TIMEOUT: [StatusSet.FAILED, StatusSet.SUCCESS],
             StatusSet.FAILED: [],
+            StatusSet.PASS: [],
             StatusSet.SUCCESS: [],
         }
 
@@ -105,6 +108,12 @@ class EndStatus(BaseStatus):
     CANCELED = StatusSet.CANCELED
     TIMEOUT = StatusSet.TIMEOUT
     FAILED = StatusSet.FAILED
+    PASS = StatusSet.PASS
+    SUCCESS = StatusSet.SUCCESS
+
+
+class SuccessStatus(BaseStatus):
+    PASS = StatusSet.PASS
     SUCCESS = StatusSet.SUCCESS
 
 
@@ -117,6 +126,10 @@ class LinkisJobStatus(BaseStatus):
 class AutoRerunStatus(BaseStatus):
     TIMEOUT = StatusSet.TIMEOUT
     FAILED = StatusSet.FAILED
+
+
+class PassException(Exception):
+    pass
 
 
 class SchedulingStatusCode(object):

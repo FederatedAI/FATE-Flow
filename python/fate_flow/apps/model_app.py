@@ -22,13 +22,12 @@ import peewee
 import json
 from copy import deepcopy
 from datetime import date, datetime
+from flask import request, send_file, Response
 
 from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_arch.common.file_utils import get_project_base_directory
 from fate_flow.db.db_models import MachineLearningModelInfo as MLModel
 from fate_flow.db.db_models import Tag, DB, ModelTag, ModelOperationLog as OperLog
-from flask import request, send_file, Response
-
 from fate_flow.pipelined_model.migrate_model import compare_roles
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
@@ -42,6 +41,7 @@ from fate_flow.utils.model_utils import gen_party_model_id, check_if_deployed
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.types import ModelOperation, TagOperation
+from fate_flow.entity.job import JobConfigurationBase
 from fate_arch.common import file_utils, WorkMode, FederatedMode
 
 
@@ -384,7 +384,7 @@ def operate_model(model_operation):
     else:
         data = {}
         job_dsl, job_runtime_conf = gen_model_operation_job_config(request_config, model_operation)
-        submit_result = DAGScheduler.submit({'job_dsl': job_dsl, 'job_runtime_conf': job_runtime_conf}, job_id=job_id)
+        submit_result = DAGScheduler.submit(JobConfigurationBase(**{'dsl': job_dsl, 'runtime_conf': job_runtime_conf}), job_id=job_id)
         data.update(submit_result)
         operation_record(data=job_runtime_conf, oper_type=model_operation, oper_status='')
         return get_json_result(job_id=job_id, data=data)
