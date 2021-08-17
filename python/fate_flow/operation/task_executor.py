@@ -220,7 +220,7 @@ class TaskExecutor(object):
                                                                     input_dsl=task_input_dsl,
                                                                     )
 
-            if module_name in {"Upload", "Download", "Reader", "Writer"}:
+            if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
                 task_run_args["job_parameters"] = job_parameters
 
             component_framework = provider_utils.get_component_framework_interface(provider=component_provider)

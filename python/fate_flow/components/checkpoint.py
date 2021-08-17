@@ -15,18 +15,20 @@
 #
 import hashlib
 from pathlib import Path
-from shutil import rmtree
+from shutil import copytree, rmtree
 from base64 import b64encode
 from datetime import datetime
 from collections import deque, OrderedDict
 
 from ruamel import yaml
 
+from fate_arch.common.file_utils import get_project_base_directory
+
 from fate_flow.settings import stat_logger
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.utils.model_utils import gen_party_model_id
-from fate_arch.common.file_utils import get_project_base_directory
 from fate_flow.model import serialize_buffer_object, parse_proto_object, Locker
+from fate_flow.components.component_base import ComponentBase
 
 
 class Checkpoint(Locker):
@@ -47,7 +49,7 @@ class Checkpoint(Locker):
     def available(self):
         return self.database.exists()
 
-    def save(self, model_buffers):
+    def save(self, model_buffers: dict):
         if not model_buffers:
             raise ValueError('model_buffers is empty.')
 
@@ -88,7 +90,7 @@ class Checkpoint(Locker):
         self.create_time = datetime.fromisoformat(data['create_time'])
         return data
 
-    def read(self, parse_models=True, include_database=False):
+    def read(self, parse_models: bool = True, include_database: bool = False):
         data = self.read_database()
 
         with self.lock:
@@ -120,7 +122,12 @@ class Checkpoint(Locker):
         if self.mkdir:
             self.directory.mkdir(0o755)
 
-    def to_dict(self, include_models=False):
+    def copy(self, new_directory: Path):
+        new_directory = new_directory / f'{self.step_index}#{self.step_name}'
+        with self.lock:
+            copytree(self.directory, new_directory)
+
+    def to_dict(self, include_models: bool = False):
         if not include_models:
             return self.read_database()
         return self.read(False, True)
@@ -148,8 +155,7 @@ class CheckpointManager:
         self.job_parameters = job_parameters
         self.mkdir = mkdir
 
-        self.directory = (Path(get_project_base_directory()) / 'model_local_cache' /
-                          self.party_model_id / self.model_version / 'checkpoint' / self.component_name)
+        self.directory = self.get_directory()
         if self.mkdir:
             self.directory.mkdir(0o755, True, True)
 
@@ -159,6 +165,13 @@ class CheckpointManager:
         elif max_to_keep is not None:
             raise TypeError('max_to_keep must be an integer')
         self.checkpoints = deque(maxlen=max_to_keep)
+
+    def get_directory(self, model_version: str = None):
+        if model_version is None:
+            model_version = self.model_version
+
+        return (Path(get_project_base_directory()) / 'model_local_cache' /
+                self.party_model_id / model_version / 'checkpoint' / self.component_name)
 
     def load_checkpoints_from_disk(self):
         checkpoints = []
@@ -191,10 +204,10 @@ class CheckpointManager:
     def name_indexed_checkpoints(self):
         return OrderedDict((i.step_name, i) for i in self.checkpoints)
 
-    def get_checkpoint_by_index(self, step_index):
+    def get_checkpoint_by_index(self, step_index: int):
         return self.number_indexed_checkpoints.get(step_index)
 
-    def get_checkpoint_by_name(self, step_name):
+    def get_checkpoint_by_name(self, step_name: str):
         return self.name_indexed_checkpoints.get(step_name)
 
     @property
@@ -212,7 +225,7 @@ class CheckpointManager:
         if self.latest_checkpoint is not None:
             return self.latest_checkpoint.step_name
 
-    def new_checkpoint(self, step_index, step_name):
+    def new_checkpoint(self, step_index: int, step_name: str):
         popped_checkpoint = None
         if self.max_checkpoints_number and self.checkpoints_number >= self.max_checkpoints_number:
             popped_checkpoint = self.checkpoints[0]
@@ -231,5 +244,82 @@ class CheckpointManager:
         if self.mkdir:
             self.directory.mkdir(0o755)
 
-    def to_dict(self, include_models=False):
+    def copy(self, new_model_version: str, step_index: int = None, step_name: str = None):
+        if step_index is not None:
+            checkpoint = self.get_checkpoint_by_index(step_index)
+        elif step_name is not None:
+            checkpoint = self.get_checkpoint_by_name(step_name)
+        else:
+            checkpoint = self.latest_checkpoint
+
+        if checkpoint is None:
+            raise ValueError('No checkpoint.')
+
+        new_directory = self.get_directory(new_model_version)
+        new_directory.mkdir(0o755)
+
+        checkpoint.copy(new_directory)
+
+    def to_dict(self, include_models: bool = False):
         return [checkpoint.to_dict(include_models) for checkpoint in self.checkpoints]
+
+
+class CheckpointComponent(ComponentBase):
+
+    def set_checkpoint_manager(self, checkpoint_manager: CheckpointManager):
+        pass
+
+    def run(self, component_parameters: dict = None, run_args: dict = None):
+        params = {}
+        for i in ('model_id', 'model_version', 'component_name'):
+            params[i] = component_parameters['ComponentParam'].get(i)
+            if params[i] is None:
+                raise TypeError(f'Component Checkpoint needs {i}')
+        for i in ('step_index', 'step_name'):
+            params[i] = component_parameters['ComponentParam'].get(i)
+
+        checkpoint_manager = CheckpointManager(
+            role=self.tracker.role, party_id=self.tracker.party_id,
+            model_id=params['model_id'], model_version=params['model_version'],
+            component_name=params['component_name'],
+            mkdir=False,
+        )
+
+        if params['step_index'] is not None:
+            checkpoint = checkpoint_manager.get_checkpoint_by_index(params['step_index'])
+        elif params['step_name'] is not None:
+            checkpoint = checkpoint_manager.get_checkpoint_by_name(params['step_name'])
+        else:
+            raise TypeError('Component Checkpoint needs step_index or step_name.')
+
+        if checkpoint is None:
+            raise TypeError('Checkpoint not found.')
+
+        self.model_output = checkpoint.read()
+
+    def warm_start(self):
+        raise NotImplementedError('Component Checkpoint does not support warm_start.')
+
+
+class CheckpointParam:
+
+    def __init__(self, model_id: str = None, model_version: str = None, component_name: str = None,
+                 step_index: int = None, step_name: str = None):
+        self.model_id = model_id
+        self.model_version = model_version
+        self.component_name = component_name
+        self.step_index = step_index
+        self.step_name = step_name
+
+        if self.step_index is not None:
+            self.step_index = int(self.step_index)
+
+    def check(self):
+        for i in ('model_id', 'model_version', 'component_name'):
+            if getattr(self, i) is None:
+                return False
+
+        # do not set step_index and step_name at the same time
+        if self.step_index is not None:
+            return self.step_name is None
+        return self.step_name is not None
