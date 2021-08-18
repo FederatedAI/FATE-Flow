@@ -31,9 +31,6 @@ from fate_flow.components._base import (
 from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.scheduling_apps.client import ControllerClient
-from fate_arch import storage
-from fate_flow.components.component_base import ComponentBase
-from fate_arch.session import Session
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.utils import data_utils, job_utils
 

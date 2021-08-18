@@ -49,10 +49,11 @@ def get_proto_buffer_class(buffer_name):
     raise e
 
 
-def parse_proto_object(buffer_name, serialized_string, buffer_object=None):
+def parse_proto_object(buffer_name, serialized_string, buffer_class=None):
     try:
-        if buffer_object is None:
-            buffer_object = get_proto_buffer_class(buffer_name)()
+        if buffer_class is None:
+            buffer_class = get_proto_buffer_class(buffer_name)
+        buffer_object = buffer_class()
     except Exception as e:
         stat_logger.exception('Can not restore proto buffer object', e)
         raise e

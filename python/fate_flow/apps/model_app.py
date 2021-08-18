@@ -600,11 +600,9 @@ def query_model():
 @validate_request('model_id', 'model_version')
 def deploy():
     request_data = request.json
+
     model_id = request_data.get("model_id")
     model_version = request_data.get("model_version")
-    check_config(request_data, ['model_id', 'model_version'])
-    model_id = request_data['model_id']
-    model_version = request_data['model_version']
 
     if not isinstance(request_data.get('components_checkpoint'), dict):
         request_data['components_checkpoint'] = {}
