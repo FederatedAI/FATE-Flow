@@ -20,7 +20,7 @@ from fate_flow.db.db_models import Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import TaskStatus, EndStatus
 from fate_flow.entity.types import KillProcessRetCode
-from fate_flow.utils import job_utils
+from fate_flow.utils import job_utils, process_utils
 import os
 from fate_flow.operation.job_saver import JobSaver
 from fate_arch.common.base_utils import json_dumps, current_timestamp
@@ -194,7 +194,7 @@ class TaskController(object):
         kill_status = False
         try:
             # kill task executor
-            kill_status_code = job_utils.kill_task_executor_process(task)
+            kill_status_code = process_utils.kill_task_executor_process(task)
             # session stop
             if kill_status_code == KillProcessRetCode.KILLED or task.f_status not in {TaskStatus.WAITING}:
                 job_utils.start_session_stop(task)

@@ -15,9 +15,12 @@
 #
 
 import copy
-import importlib
+from fate_arch.abc import Components
 from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, ModuleNotExistError, \
     RoleParameterNotListError
+from fate_flow.component_env_utils import provider_utils
+from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.db.runtime_config import RuntimeConfig
 
 
 class RuntimeConfParserUtil(object):
@@ -62,8 +65,8 @@ class RuntimeConfParserUtil(object):
             return RuntimeConfParserV2.generate_predict_conf_template(predict_dsl, train_conf, model_id, model_version)
 
     @staticmethod
-    def get_module_name(module, role, provider):
-        return provider.get_module_name(module, role)
+    def get_module_name(module, role, provider: Components):
+        return provider.get(module, RuntimeConfig.get_provider_components(provider.provider_name, provider.provider_version)).get_run_obj_name(role)
 
     @staticmethod
     def get_component_parameters(provider,
@@ -74,7 +77,8 @@ class RuntimeConfParserUtil(object):
                                  conf_version,
                                  local_role,
                                  local_party_id):
-        support_roles = provider.get_support_role(module)
+        provider_components = RuntimeConfig.get_provider_components(provider.provider_name, provider.provider_version)
+        support_roles = provider.get(module, provider_components).get_supported_roles()
         if runtime_conf["role"] is not None:
             support_roles = [r for r in runtime_conf["role"] if r in support_roles]
         role_on_module = copy.deepcopy(runtime_conf["role"])
@@ -95,12 +99,12 @@ class RuntimeConfParserUtil(object):
         conf["local"].update({"role": local_role,
                               "party_id": local_party_id})
         conf["module"] = module
-        conf["CodePath"] = provider.get_module_name(module, local_role)
+        conf["CodePath"] = provider.get(module, provider_components).get_run_obj_name(local_role)
 
         common_parameters = runtime_conf.get("component_parameters", {}).get("common", {}) if conf_version == 2 \
             else runtime_conf.get("algorithm_parameters", {})
 
-        param_class = provider.get_module_param(module, alias)
+        param_class = provider.get(module, provider_components).get_param_obj(alias)
 
         if alias in common_parameters:
             common_parameters = common_parameters[alias]
@@ -207,14 +211,9 @@ class RuntimeConfParserUtil(object):
     def instantiate_component_provider(provider_detail, alias=None, module=None, provider_name=None,
                                        provider_version=None, local_role=None, local_party_id=None,
                                        detect=True, provider_cache=None, job_parameters=None):
-
         if provider_name and provider_version:
-            provider_import_dir = ".".join(provider_detail["provider"][provider_name][provider_version]["path"])
-            provider_class_path = provider_detail["provider"][provider_name][provider_version].get("class_path", {}).get("framework_interface")
-            if not provider_class_path:
-                provider_class_path = provider_detail["default_settings"]["class_path"]["framework_interface"]
-
-            provider = importlib.import_module(".".join([provider_import_dir, provider_class_path]))
+            provider_path = provider_detail["provider"][provider_name][provider_version]["path"]
+            provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name, version=provider_version, path=provider_path))
             if provider_cache is not None:
                 if provider_name not in provider_cache:
                     provider_cache[provider_name] = {}

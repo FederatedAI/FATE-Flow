@@ -27,8 +27,8 @@ class BaseType(object):
 
 
 class ComponentProviderName(BaseType):
-    FATE_FEDERATED_ALGORITHM = "fate_federated_algorithm"
-    FUSHU_AVATAR_ALGORITHM = "fushu_avatar_algorithm"
+    FATE_ALGORITHM = "fate_algorithm"
+    AVATAR_ALGORITHM = "avatar_algorithm"
     FATE_FLOW_TOOLS = "fate_flow_tools"
 
 

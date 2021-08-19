@@ -22,7 +22,7 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.types import KillProcessRetCode
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.operation.task_executor import TaskExecutor
-from fate_flow.utils import job_utils
+from fate_flow.utils import job_utils, process_utils
 from fate_flow.db.db_models import Task
 
 
@@ -63,15 +63,15 @@ class SparkEngine(EngineABC):
 
 
         schedule_logger(task.f_job_id).info(f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} executor subprocess is ready")
-        p = job_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd, log_dir=log_dir,
+        p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd, log_dir=log_dir,
                                      cwd_dir=cwd_dir)
         return {"run_pid": p.pid}
 
     def kill(self, task):
-        kill_status_code = job_utils.kill_task_executor_process(task)
+        kill_status_code = process_utils.kill_task_executor_process(task)
         # session stop
         if kill_status_code == KillProcessRetCode.KILLED or task.f_status not in {TaskStatus.WAITING}:
             job_utils.start_session_stop(task)
 
     def is_alive(self, task):
-        return job_utils.check_job_process(int(task.f_run_pid))
+        return process_utils.check_job_process(int(task.f_run_pid))
