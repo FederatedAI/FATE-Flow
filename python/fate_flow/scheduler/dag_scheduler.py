@@ -21,7 +21,8 @@ from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.scheduler.task_scheduler import TaskScheduler
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.entity.types import ResourceOperation, RetCode
+from fate_flow.entity.types import ResourceOperation
+from fate_flow.entity.retcode import RetCode
 from fate_flow.entity.run_status import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.entity.run_status import SchedulingStatusCode

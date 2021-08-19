@@ -28,7 +28,7 @@ from fate_flow.settings import stat_logger, TEMP_DIRECTORY
 from fate_flow.utils import job_utils, detect_utils, schedule_utils, log_utils
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode, JobStatus
 from fate_flow.utils.api_utils import get_json_result, error_response
-from fate_flow.entity.types import RetCode
+from fate_flow.entity.retcode import RetCode
 from fate_flow.entity.job import JobConfigurationBase
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.operation.job_saver import JobSaver
@@ -113,9 +113,9 @@ def update_job():
 
 
 @manager.route('/parameter/update', methods=['POST'])
+@detect_utils.validate_request("job_id")
 def update_parameters():
     job_info = request.json
-    detect_utils.check_config(job_info, required_arguments=["job_id"])
     component_parameters = job_info.pop("component_parameters", None)
     job_parameters = job_info.pop("job_parameters", None)
     job_info["is_initiator"] = True
@@ -238,9 +238,9 @@ def dsl_generator():
 
 
 @manager.route('/url/get', methods=['POST'])
+@detect_utils.validate_request('job_id', 'role', 'party_id')
 def get_url():
     request_data = request.json
-    detect_utils.check_config(config=request_data, required_arguments=['job_id', 'role', 'party_id'])
     jobs = JobSaver.query_job(job_id=request_data.get('job_id'), role=request_data.get('role'),
                               party_id=request_data.get('party_id'))
     if jobs:

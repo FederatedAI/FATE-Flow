@@ -145,7 +145,7 @@ class PipelinedModel(Locker):
                 if parse:
                     model_buffers[model_name] = parse_proto_object(buffer_name=buffer_name,
                                                                    serialized_string=buffer_object_serialized_string,
-                                                                   buffer_object=Pipeline)
+                                                                   buffer_class=Pipeline)
                 else:
                     model_buffers[model_name] = [buffer_name, base64.b64encode(buffer_object_serialized_string).decode()]
         return model_buffers

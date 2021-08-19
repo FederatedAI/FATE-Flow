@@ -28,7 +28,7 @@ from fate_flow import set_env
 from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
 from fate_flow.apps import app
 from fate_flow.db.db_models import init_database_tables as init_flow_db
-from fate_arch.storage.metastore.db_models import init_database_tables as init_arch_db
+from fate_arch.metastore.db_models import init_database_tables as init_arch_db
 from fate_flow.scheduler.detector import Detector
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.db.runtime_config import RuntimeConfig
@@ -38,16 +38,17 @@ from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.db.db_services import service_db
 from fate_flow.utils.xthread import ThreadPoolExecutor
-from fate_flow.utils import job_utils
+from fate_flow.utils import job_utils, process_utils
 from fate_arch.common.log import schedule_logger
 from fate_arch.common.versions import get_versions
 from fate_flow.db.config_manager import ConfigManager
+from fate_flow.component_env_utils import provider_utils
 
 
 if __name__ == '__main__':
     # init
     # signal.signal(signal.SIGTERM, job_utils.cleaning)
-    signal.signal(signal.SIGCHLD, job_utils.wait_child_process)
+    signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
     # init db
     init_flow_db()
     init_arch_db()
@@ -62,13 +63,14 @@ if __name__ == '__main__':
         print(get_versions())
         sys.exit(0)
     ConfigManager.load()
+    PrivilegeAuth.init()
     RuntimeConfig.init_env()
     RuntimeConfig.init_config(WORK_MODE=WORK_MODE, JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
-    RuntimeConfig.load_component_registry()
     RuntimeConfig.service_db = service_db()
     RuntimeConfig.service_db.register_models()
-    PrivilegeAuth.init()
+    provider_utils.init_component_registry()
+    RuntimeConfig.load_component_registry()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
     thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)

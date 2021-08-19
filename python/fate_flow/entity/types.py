@@ -27,20 +27,9 @@ class BaseType(object):
 
 
 class ComponentProviderName(BaseType):
-    FATE_FEDERATED_ALGORITHM = "fate_federated_algorithm"
-    FUSHU_AVATAR_ALGORITHM = "fushu_avatar_algorithm"
+    FATE_ALGORITHM = "fate_algorithm"
+    AVATAR_ALGORITHM = "avatar_algorithm"
     FATE_FLOW_TOOLS = "fate_flow_tools"
-
-
-class RetCode(IntEnum):
-    SUCCESS = 0
-    EXCEPTION_ERROR = 100
-    PARAMETER_ERROR = 101
-    DATA_ERROR = 102
-    OPERATING_ERROR = 103
-    FEDERATED_ERROR = 104
-    CONNECTION_ERROR = 105
-    SERVER_ERROR = 500
 
 
 class ModelStorage(object):

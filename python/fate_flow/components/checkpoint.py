@@ -28,7 +28,12 @@ from fate_flow.settings import stat_logger
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.model import serialize_buffer_object, parse_proto_object, Locker
-from fate_flow.components.component_base import ComponentBase
+from fate_flow.components._base import (
+    BaseParam,
+    ComponentBase,
+    ComponentMeta,
+    ComponentInputProtocol,
+)
 
 
 class Checkpoint(Locker):

@@ -31,6 +31,7 @@ from fate_flow.components._base import (
 from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.scheduling_apps.client import ControllerClient
+from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.utils import data_utils, job_utils
 
 LOGGER = log.getLogger()
@@ -242,7 +243,7 @@ class Upload(ComponentBase):
                 get_line = data_utils.get_auto_increasing_sid_data_line
             while True:
                 data = list()
-                lines = fin.readlines(self.MAX_BYTES)
+                lines = fin.readlines(JobDefaultConfig.upload_max_bytes)
                 line_index = 0
                 if lines:
                     # self.append_data_line(lines, data, n)

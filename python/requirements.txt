@@ -37,7 +37,7 @@ libsm3py==0.0.1
 sortedcontainers==2.2.2
 pytorch-lightning>=1.2.1
 filelock==3.0.12
-pulsar-client==2.8.0
+#pulsar-client==2.8.0
 fastavro==1.4.1
 
 # python 3.6

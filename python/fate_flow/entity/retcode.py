@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 #
 #  Copyright 2019 The FATE Authors. All Rights Reserved.
 #
@@ -15,3 +12,16 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+#
+from enum import IntEnum
+
+
+class RetCode(IntEnum):
+    SUCCESS = 0
+    EXCEPTION_ERROR = 100
+    ARGUMENT_ERROR = 101
+    DATA_ERROR = 102
+    OPERATING_ERROR = 103
+    FEDERATED_ERROR = 104
+    CONNECTION_ERROR = 105
+    SERVER_ERROR = 500

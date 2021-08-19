@@ -17,7 +17,7 @@
 from fate_arch.common import base_utils
 from fate_flow.utils.api_utils import federated_api
 from fate_arch.common.log import schedule_logger
-from fate_flow.entity.types import RetCode
+from fate_flow.entity.retcode import RetCode
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.db.db_models import Job, Task
 from fate_flow.operation.job_saver import JobSaver

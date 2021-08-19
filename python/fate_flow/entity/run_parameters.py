@@ -13,14 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common import WorkMode, Backend
-
-
 class RunParameters:
     def __init__(self, **kwargs):
         self.job_type = "train"
-        self.work_mode = WorkMode.STANDALONE
-        self.backend = Backend.EGGROLL  # Pre-v1.5 configuration item
+        self.work_mode = None
+        self.backend = None
         self.computing_engine = None
         self.federation_engine = None
         self.storage_engine = None

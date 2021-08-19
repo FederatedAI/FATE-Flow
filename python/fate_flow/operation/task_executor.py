@@ -99,6 +99,7 @@ class ComponentInput:
     def models(self):
         return {k: v for k, v in self._models.items() if v is not None}
 
+
 class TaskExecutor(object):
     REPORT_TO_DRIVER_FIELDS = ["run_ip", "run_pid", "party_status", "update_time", "end_time", "elapsed"]
 
@@ -113,7 +114,7 @@ class TaskExecutor(object):
             if job_server:
                 RuntimeConfig.init_config(JOB_SERVER_HOST=job_server.split(':')[0],
                                           HTTP_PORT=job_server.split(':')[1])
-                RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
+            RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
             RuntimeConfig.load_component_registry()
             executor_pid = os.getpid()
             task_info.update({
@@ -223,8 +224,10 @@ class TaskExecutor(object):
             if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
                 task_run_args["job_parameters"] = job_parameters
 
-            component_framework = provider_utils.get_component_framework_interface(provider=component_provider)
-            run_object = component_framework.get_module(module_name, role)
+            component_framework = provider_utils.get_provider_interface(provider=component_provider)
+            #run_object = component_framework.get_module(module_name, role)
+            #todo: cache
+            run_object = component_framework.get(module_name, None).get_run_obj(role)
 
             cpn_input = ComponentInput(
                 tracker=tracker_client,

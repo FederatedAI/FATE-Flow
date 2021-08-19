@@ -37,10 +37,11 @@ zookeeper:
   use_acl: true
   user: fate
   password: fate
-# external services
-fateboard:
-  host: 127.0.0.1
-  port: 8080
+# engine services
+default_engines:
+  computing: standalone
+  federation: standalone
+  storage: standalone
 fate_on_standalone:
   standalone:
     cores_per_node: 20
@@ -103,6 +104,10 @@ fate_on_spark:
     host: 127.0.0.1
     http_port: 9300
     grpc_port: 9310
+# external services
+fateboard:
+  host: 127.0.0.1
+  port: 8080
 model_store_address:
   storage: mysql
   name: model

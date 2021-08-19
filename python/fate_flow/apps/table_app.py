@@ -21,14 +21,16 @@ from fate_flow.operation.job_tracker import Tracker
 from fate_flow.operation.task_executor import TaskExecutor
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils import detect_utils, job_utils, schedule_utils
+from fate_flow.utils.detect_utils import validate_request
 from flask import request
+from fate_flow.utils.detect_utils import validate_request
 
 
 @manager.route('/add', methods=['post'])
 @manager.route('/bind', methods=['post'])
+@validate_request("engine", "address", "namespace", "name", "id_delimiter", head=(0, 1))
 def table_add():
     request_data = request.json
-    detect_utils.check_config(request_data, required_arguments=["engine", "address", "namespace", "name", ("head", (0, 1)), "id_delimiter"])
     address_dict = request_data.get('address')
     engine = request_data.get('engine')
     name = request_data.get('name')
@@ -83,8 +85,8 @@ def table_delete():
 
 
 @manager.route('/list', methods=['post'])
+@validate_request('job_id', 'role', 'party_id')
 def get_job_table_list():
-    detect_utils.check_config(config=request.json, required_arguments=['job_id', 'role', 'party_id'])
     jobs = JobSaver.query_job(**request.json)
     if jobs:
         job = jobs[0]

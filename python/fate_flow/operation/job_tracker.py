@@ -206,7 +206,9 @@ class Tracker(object):
         return model_buffers
 
     def save_pipeline_model(self, pipeline_buffer_object):
-        self.save_output_model({self.pipelined_model.pipeline_model_name: pipeline_buffer_object}, self.pipelined_model.pipeline_model_alias)
+        self.save_output_model({
+            self.pipelined_model.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString())
+        }, self.pipelined_model.pipeline_model_alias)
 
     def get_component_define(self):
         return self.pipelined_model.get_component_define(component_name=self.component_name)
@@ -533,7 +535,7 @@ class Tracker(object):
                     sess._federation_session.cleanup(parties)
                     schedule_logger(self.job_id).info('pulsar topic clean up success')
             except Exception as e:
-                schedule_logger(self.job_id).error("cleanup error")
+                schedule_logger(self.job_id).exception("cleanup error", e)
             finally:
                 sess.destroy_all_sessions()
             return True

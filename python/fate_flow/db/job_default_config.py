@@ -37,6 +37,9 @@ class JobDefaultConfig(ReloadConfigBase):
     auto_retry_delay = None
     federated_status_collect_type = None
 
+    # upload
+    upload_max_bytes = None  # bytes
+
     @classmethod
     def load(cls):
         conf = file_utils.load_yaml_conf(FATE_FLOW_JOB_DEFAULT_CONFIG_PATH)

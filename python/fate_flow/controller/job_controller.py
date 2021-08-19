@@ -33,7 +33,7 @@ from fate_flow.protobuf.python import pipeline_pb2
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.settings import USE_AUTHENTICATION, USE_DATA_AUTHENTICATION
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.utils import job_utils, schedule_utils, data_utils
+from fate_flow.utils import job_utils, schedule_utils, data_utils, process_utils
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.utils.authentication_utils import authentication_check
 from fate_flow.operation.task_initializer import TaskInitializer
@@ -283,8 +283,8 @@ class JobController(object):
 
     @classmethod
     def start_initializer(cls, job_id, role, party_id, initialized_config):
-        initializer_id = fate_uuid()
         initialized_components = initialized_config["components"]
+        initializer_id = ".".join(initialized_components)
         party_id = str(party_id)
         schedule_logger(job_id).info('try to start job {} task initializer {} subprocess to initialize {} on {} {}'.format(job_id, initializer_id, initialized_components, role, party_id))
         initialize_dir = os.path.join(job_utils.get_job_directory(job_id=job_id), role, party_id, f"initialize_{initializer_id}")
@@ -305,7 +305,7 @@ class JobController(object):
         ]
         log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), role, party_id, "initialize", initializer_id)
         provider = ComponentProvider(**initialized_config["provider"])
-        p = job_utils.run_subprocess(job_id=job_id, config_dir=initialize_dir, process_cmd=process_cmd, extra_env=provider.env, log_dir=log_dir, cwd_dir=initialize_dir)
+        p = process_utils.run_subprocess(job_id=job_id, config_dir=initialize_dir, process_cmd=process_cmd, extra_env=provider.env, log_dir=log_dir, cwd_dir=initialize_dir)
         schedule_logger(job_id).info('job {} task initializer {} on {} {} subprocess pid {} is ready'.format(job_id, initializer_id, role, party_id, p.pid))
         try:
             p.communicate(timeout=5)

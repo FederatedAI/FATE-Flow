@@ -11,8 +11,7 @@
     },
     "job_parameters": {
         "common": {
-            "work_mode": 1,
-            "backend": 0,
+            "work_mode": 0,
             "task_parallelism": 2,
             "computing_partitions": 8,
             "eggroll_run": {

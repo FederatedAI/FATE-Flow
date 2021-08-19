@@ -22,10 +22,10 @@ import traceback
 from contextlib import closing
 import time
 import re
-
 import requests
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
-
+# be sure to import environment variable before importing fate_arch
+from fate_flow import set_env
 from fate_arch.common import file_utils
 from fate_flow.settings import API_VERSION, HOST, HTTP_PORT
 from fate_flow.utils import detect_utils
