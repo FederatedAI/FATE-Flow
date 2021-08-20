@@ -47,16 +47,15 @@ dsl_parser_v2.run(dsl=dsl_v2,
 
 pprint.pprint(dsl_parser_v2.get_job_parameters())
 print ("\n\n\n")
-pprint.pprint(dsl_parser_v2.get_job_providers(provider_detail=provider_detail,
-                                              local_role="arbiter",
-                                              local_party_id=9999))
+pprint.pprint(dsl_parser_v2.get_job_providers(provider_detail=provider_detail))
+
 print ("\n\n\n")
 pprint.pprint(dsl_parser_v2.get_dependency())
+pprint.pprint(dsl_parser_v2.get_dsl_hierarchical_structure())
 print ("\n\n\n")
 
-job_providers = dsl_parser_v2.get_job_providers(provider_detail=provider_detail,
-                                                local_role="arbiter",
-                                                local_party_id=9999)
+job_providers = dsl_parser_v2.get_job_providers(provider_detail=provider_detail)
+
 component_parameters = dict()
 for component in job_providers.keys():
     provider_info = job_providers[component]["provider"]
@@ -67,11 +66,13 @@ for component in job_providers.keys():
                                                          provider_detail,
                                                          provider_name,
                                                          provider_version,
-                                                         local_role="arbiter",
-                                                         local_party_id=9999)
+                                                         local_role="guest",
+                                                         local_party_id=10000)
 
     component_parameters[component] = parameter
-    pprint.pprint (parameter)
+    pprint.pprint(component)
+    pprint.pprint(parameter)
+    print("\n\n\n")
 
 pprint.pprint(dsl_parser_v2.get_dependency_with_parameters(component_parameters))
 print ("\n\n\n")
@@ -85,9 +86,6 @@ pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "dataio_0"], dsl_v2))
 print ("\n\n\n")
 
 
-pprint.pprint(dsl_parser_v2.get_job_providers_by_conf(dsl_v2, conf_v2, provider_detail,
-                                                      "guest", 9999))
-print ("\n\n\n")
 
 module_object_name_mapping = dict()
 for component in job_providers.keys():
@@ -97,9 +95,10 @@ for component in job_providers.keys():
     provider_version = provider_info["version"]
     module_object = dsl_parser_v2.get_module_object_name(module, "guest", provider_detail,
                                                          provider_name, provider_version)
-    print(f"{component} {module} {module_object}")
 
     module_object_name_mapping[component] = module_object
 
 
 pprint.pprint(dsl_parser_v2.get_predict_dsl(dsl_v2, module_object_name_mapping))
+print(dsl_parser_v2.get_downstream_dependent_components("dataio_0"))
+print(dsl_parser_v2.get_upstream_dependent_components("dataio_0"))

@@ -283,6 +283,10 @@ class BaseDSLParser(object):
         """
         init top input
         """
+        provider = RuntimeConfParserUtil.instantiate_component_provider(provider_detail,
+                                                                        provider_name=provider_name,
+                                                                        provider_version=provider_version)
+
         pos = self.component_name_index[component]
         module = self.components[pos].get_module()
 
@@ -292,12 +296,11 @@ class BaseDSLParser(object):
             if self.train_input_model.get(cur_component, None) is None:
                 break
             else:
-                cur_component = self.train_input_model.get(cur_component)
-                parent_path.append(cur_component)
-
-        provider = RuntimeConfParserUtil.instantiate_component_provider(provider_detail,
-                                                                        provider_name=provider_name,
-                                                                        provider_version=provider_version)
+                if not self._is_warm_start(cur_component):
+                    cur_component = self.train_input_model.get(cur_component)
+                    parent_path.append(cur_component)
+                else:
+                    break
 
         role_parameters = RuntimeConfParserUtil.get_component_parameters(provider,
                                                                          runtime_conf,
@@ -314,6 +317,14 @@ class BaseDSLParser(object):
             self.components[idx].set_role_parameters(role_parameters)
 
         return role_parameters
+
+    def _is_warm_start(self, component_name):
+        component_idx = self.component_name_index.get(component_name)
+        upstream_inputs = self.components[component_idx].get_input()
+        if not upstream_inputs:
+            return False
+
+        return "train_data" in upstream_inputs.get("data", {}) and "model" in upstream_inputs
 
     def parse_component_parameters(self, *args, **kwargs):
         raise NotImplementedError
@@ -728,13 +739,11 @@ class BaseDSLParser(object):
     def get_job_parameters(self):
         return self.job_parameters
 
-    def get_job_providers(self, provider_detail=None, local_role=None, local_party_id=None):
+    def get_job_providers(self, provider_detail=None):
         if self.job_providers:
             return self.job_providers
         else:
-            self.job_providers = RuntimeConfParserUtil.get_job_providers(self.dsl, provider_detail, local_role,
-                                                                         local_party_id, self.job_parameters)
-
+            self.job_providers = RuntimeConfParserUtil.get_job_providers(self.dsl, provider_detail)
             return self.job_providers
 
     @staticmethod
@@ -948,7 +957,7 @@ class DSLParserV2(BaseDSLParser):
         dsl_parser._find_dependencies(mode=mode, version=2)
 
     @staticmethod
-    def deploy_component(components, train_dsl):
+    def deploy_component(components, train_dsl, provider_update_dsl=None):
         training_cpns = set(train_dsl.get("components").keys())
         deploy_cpns = set(components)
         if len(deploy_cpns & training_cpns) != len(deploy_cpns):
@@ -960,7 +969,16 @@ class DSLParserV2(BaseDSLParser):
         dsl_parser._find_dependencies(version=2)
         dsl_parser._auto_deduction(deploy_cpns=deploy_cpns, version=2, erase_top_data_input=True)
 
+        dsl_parser.update_predict_dsl_provider(train_dsl)
+        if provider_update_dsl:
+            dsl_parser.update_predict_dsl_provider(provider_update_dsl)
         return dsl_parser.predict_dsl
+
+    def update_predict_dsl_provider(self, dsl):
+        for component in dsl["components"]:
+            provider = dsl["component"][component].get("provider")
+            if provider and component in self.predict_dsl["components"]:
+                self.predict_dsl["components"][component]["provider"] = provider
 
     def run(self, pipeline_runtime_conf=None, dsl=None, runtime_conf=None,
             provider_detail=None, mode="train",
@@ -1009,24 +1027,6 @@ class DSLParserV2(BaseDSLParser):
             return name in deploy_cpns
 
         return False
-
-    @staticmethod
-    def get_job_providers_by_conf(dsl, runtime_conf, provider_detail,
-                                  local_role, local_party_id, predict_conf=None):
-        if not predict_conf:
-            job_parameters = RuntimeConfParserUtil.get_job_parameters(runtime_conf,
-                                                                      conf_version=2)
-        else:
-            train_job_parameters = RuntimeConfParserUtil.get_job_parameters(runtime_conf,
-                                                                            conf_version=2)
-            predict_job_parameters = RuntimeConfParserUtil.get_job_parameters(runtime_conf,
-                                                                              conf_version=2)
-            job_parameters = RuntimeConfParserUtil.merge_dict(predict_job_parameters, train_job_parameters)
-
-        job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail, local_role,
-                                                                local_party_id, job_parameters)
-
-        return job_providers
 
     @staticmethod
     def get_module_object_name(module, local_role, provider_detail,

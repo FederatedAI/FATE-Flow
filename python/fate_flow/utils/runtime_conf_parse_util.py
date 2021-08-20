@@ -157,16 +157,31 @@ class RuntimeConfParserUtil(object):
         return v2_conf
 
     @staticmethod
-    def get_job_providers(dsl, provider_detail, local_role, local_party_id, job_parameters):
+    def get_job_providers(dsl, provider_detail):
         provider_info = {}
         for component in dsl["components"]:
             module = dsl["components"][component]["module"]
-            name, version = RuntimeConfParserUtil.get_component_provider(alias=component,
-                                                                         module=module,
-                                                                         provider_detail=provider_detail,
-                                                                         local_role=local_role,
-                                                                         local_party_id=local_party_id,
-                                                                         job_parameters=job_parameters)
+            provider = dsl["components"][component].get("provider")
+            if provider:
+                provider_msg = provider.split("@", -1)
+                if provider[0] == "@":
+                    raise ValueError("Provider format should be provider_name@provider_version or provider_name, "
+                                     "@provider_version is not supported")
+                if len(provider_msg) == 2:
+                    name, version = provider.split("@", -1)
+                else:
+                    name = provider_msg[0]
+                    version = RuntimeConfParserUtil.get_component_provider(alias=component,
+                                                                           module=module,
+                                                                           provider_detail=provider_detail,
+                                                                           name=name)
+
+
+            else:
+                name, version = RuntimeConfParserUtil.get_component_provider(alias=component,
+                                                                             module=module,
+                                                                             provider_detail=provider_detail)
+
             provider_info.update({component: {
                 "module": module,
                 "provider": {
@@ -178,34 +193,23 @@ class RuntimeConfParserUtil(object):
         return provider_info
 
     @staticmethod
-    def get_component_provider(alias, module, provider_detail, local_role, local_party_id, job_parameters, detect=True):
+    def get_component_provider(alias, module, provider_detail, detect=True, name=None):
         if module not in provider_detail["components"]:
             if detect:
                 raise ValueError(f"component {alias}, module {module}'s provider does not exist")
             else:
                 return None
 
-        if job_parameters.get(local_role).get(local_party_id) is None or not job_parameters.get(local_role).get(
-                local_party_id).get("provider"):
+        if name is None:
             name = provider_detail["components"][module]["default_provider"]
             version = provider_detail["provider"][name]["default"]["version"]
+            return name, version
         else:
-            provider_setting = job_parameters.get(local_role).get(local_party_id).get("provider")
-            if "name" not in provider_setting:
-                name = provider_detail["components"][module]["default_provider"]
-            else:
-                name = provider_setting.get("name")
-                if name not in provider_detail["components"]["support_provider"]:
-                    raise ValueError(f"Provider {name} does not support, please register in fate-flow")
+            if name not in provider_detail["components"][module]["support_provider"]:
+                raise ValueError(f"Provider {name} does not support, please register in fate-flow")
+            version = provider_detail["provider"][name]["default"]["version"]
 
-            if "version" not in provider_setting:
-                version = provider_detail["provider"][name]["default"]["version"]
-            else:
-                version = provider_setting.get("version")
-                if version not in provider_detail["provider"][name]:
-                    raise ValueError(f"Provider {name} dose not has version {version}")
-
-        return name, version
+            return version
 
     @staticmethod
     def instantiate_component_provider(provider_detail, alias=None, module=None, provider_name=None,
