@@ -976,7 +976,7 @@ class DSLParserV2(BaseDSLParser):
 
     def update_predict_dsl_provider(self, dsl):
         for component in dsl["components"]:
-            provider = dsl["component"][component].get("provider")
+            provider = dsl["components"][component].get("provider")
             if provider and component in self.predict_dsl["components"]:
                 self.predict_dsl["components"][component]["provider"] = provider
 
