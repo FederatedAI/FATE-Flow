@@ -14,6 +14,9 @@
 #  limitations under the License.
 #
 from enum import IntEnum
+from ._base import BaseEntity
+import typing
+from fate_arch.common import DTable
 
 
 class BaseType(object):
@@ -74,3 +77,17 @@ class InputSearchType(IntEnum):
     UNKNOWN = 0
     TABLE_INFO = 1
     JOB_COMPONENT_OUTPUT = 2
+
+
+class OutputCache(BaseEntity):
+    def __init__(self, data: typing.Dict[str, DTable] = None, meta: dict = None):
+        self._data: typing.Dict[str, DTable] = data if data else {}
+        self._meta = meta
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def meta(self):
+        return self._meta

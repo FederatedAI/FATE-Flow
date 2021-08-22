@@ -71,7 +71,7 @@ class ComponentInputProtocol(metaclass=abc.ABCMeta):
 
 
 class ComponentOutput:
-    def __init__(self, data, models) -> None:
+    def __init__(self, data, models, cache: typing.List[tuple]) -> None:
         self._data = data
         if not isinstance(self._data, list):
             self._data = [data]
@@ -79,6 +79,10 @@ class ComponentOutput:
         self._models = models
         if self._models is None:
             self._models = {}
+
+        self._cache = cache
+        if not isinstance(self._cache, list):
+            self._cache = [cache]
 
     @property
     def data(self):
@@ -99,6 +103,10 @@ class ComponentOutput:
             serialized_models[model_name] = (pb_name, serialized_string)
 
         return serialized_models
+
+    @property
+    def cache(self):
+        return self._cache
 
 
 class ComponentBase(metaclass=abc.ABCMeta):
@@ -131,7 +139,7 @@ class ComponentBase(metaclass=abc.ABCMeta):
         else:
             self._warn_start(cpn_input.parameters, cpn_input.args)
 
-        return ComponentOutput(data=self.save_data(), models=self.export_model())
+        return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=None)
 
     def save_data(self):
         return self.data_output

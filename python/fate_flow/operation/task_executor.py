@@ -40,6 +40,7 @@ from fate_flow.component_env_utils import provider_utils
 
 LOGGER = getLogger()
 
+
 class ComponentInput:
     def __init__(
         self,
@@ -49,6 +50,7 @@ class ComponentInput:
         parameters,
         datasets,
         models,
+        caches,
         job_parameters,
         roles,
         flow_feeded_parameters,
@@ -59,6 +61,7 @@ class ComponentInput:
         self._parameters = parameters
         self._datasets = datasets
         self._models = models
+        self._caches = caches
         self._job_parameters = job_parameters
         self._roles = roles
         self._flow_feeded_parameters = flow_feeded_parameters
@@ -98,6 +101,10 @@ class ComponentInput:
     @property
     def models(self):
         return {k: v for k, v in self._models.items() if v is not None}
+
+    @property
+    def caches(self):
+        return self._caches
 
 
 class TaskExecutor(object):
@@ -225,9 +232,7 @@ class TaskExecutor(object):
                 task_run_args["job_parameters"] = job_parameters
 
             component_framework = provider_utils.get_provider_interface(provider=component_provider)
-            #run_object = component_framework.get_module(module_name, role)
-            #todo: cache
-            run_object = component_framework.get(module_name, None).get_run_obj(role)
+            run_object = component_framework.get(module_name, RuntimeConfig.get_provider_components(provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(role)
 
             cpn_input = ComponentInput(
                 tracker=tracker_client,
@@ -235,6 +240,7 @@ class TaskExecutor(object):
                 task_version_id=job_utils.generate_task_version_id(task_id, task_version),
                 parameters=component_parameters_on_party["ComponentParam"],
                 datasets=task_run_args.get("data", None),
+                caches=task_run_args.get("cache", None),
                 models=dict(
                     model=task_run_args.get("model"),
                     isometric_model=task_run_args.get("isometric_model"),
@@ -273,6 +279,17 @@ class TaskExecutor(object):
             tracker.save_output_model(cpn_output.model,
                                       task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
                                       tracker_client=tracker_client)
+            if cpn_output.cache is not None:
+                for i, cache in enumerate(cpn_output.cache):
+                    if cache is None:
+                        continue
+                    name = task_output_dsl.get("cache")[i] if "cache" in task_output_dsl else str(i)
+                    tracker.save_output_cache(cache_data=cache[0],
+                                              cache_meta=cache[1],
+                                              cache_name=name,
+                                              output_storage_engine=job_parameters.storage_engine,
+                                              output_storage_address=job_parameters.engines_address.get(EngineType.STORAGE, {}),
+                                              token={"username": user_name})
             task_info["party_status"] = TaskStatus.SUCCESS
         except PassException as e:
             task_info["party_status"] = TaskStatus.PASS

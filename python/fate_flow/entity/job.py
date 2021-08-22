@@ -13,7 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-class JobConfigurationBase:
+from ._base import BaseEntity
+
+
+class JobConfigurationBase(BaseEntity):
     def __init__(self, dsl=None, runtime_conf=None, **kwargs):
         self._dsl = dsl if dsl else kwargs.get("job_dsl")
         self._runtime_conf = runtime_conf if runtime_conf else kwargs.get("job_runtime_conf")
@@ -25,14 +28,6 @@ class JobConfigurationBase:
     @property
     def runtime_conf(self):
         return self._runtime_conf
-
-    def to_dict(self):
-        d = {}
-        for k, v in self.__dict__.items():
-            if v is None:
-                continue
-            d[k.lstrip("_")] = v
-        return d
 
 
 class JobConfiguration(JobConfigurationBase):

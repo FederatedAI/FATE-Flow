@@ -18,7 +18,8 @@
             },
             "output": {
                 "data": ["train"],
-                "model": ["dataio"]
+                "model": ["dataio"],
+                "cache": ["cache1"]
             },
 			"need_deploy": true
          },
@@ -29,7 +30,8 @@
                     "data": [
                         "dataio_0.train"
                     ]
-                }
+                },
+                "cache": ["dataio_0.cache1"]
             },
             "output": {
                 "data": ["train"],

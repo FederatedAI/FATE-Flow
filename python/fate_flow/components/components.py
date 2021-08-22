@@ -64,7 +64,7 @@ class Components:
         if cache:
             importlib.import_module(cache[name]["module"])
         else:
-            from .model_operation_components import (
+            from .model_operation import (
                 model_restore_cpn_meta,
                 model_store_cpn_meta,
             )
