@@ -17,6 +17,7 @@ import operator
 import copy
 import typing
 
+from google.protobuf import json_format
 from fate_arch.abc import CTableABC
 from fate_arch.common import EngineType, Party, DTable
 from fate_arch.computing import ComputingEngine
@@ -196,10 +197,11 @@ class Tracker(object):
     def write_output_model(self, component_model):
         self.pipelined_model.write_component_model(component_model)
 
-    def get_output_model(self, model_alias, parse=True):
+    def get_output_model(self, model_alias, parse=True, output_json=False):
         model_buffers = self.pipelined_model.read_component_model(component_name=self.component_name,
                                                                   model_alias=model_alias,
-                                                                  parse=parse)
+                                                                  parse=parse,
+                                                                  output_json=output_json)
         return model_buffers
 
     def collect_model(self):
@@ -208,7 +210,7 @@ class Tracker(object):
 
     def save_pipeline_model(self, pipeline_buffer_object):
         self.save_output_model({
-            self.pipelined_model.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString())
+            self.pipelined_model.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString(), json_format.MessageToDict(pipeline_buffer_object, including_default_value_fields=True))
         }, self.pipelined_model.pipeline_model_alias)
 
     def get_component_define(self):
