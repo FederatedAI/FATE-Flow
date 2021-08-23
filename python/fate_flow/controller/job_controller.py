@@ -269,8 +269,6 @@ class JobController(object):
         if task_version:
             common_task_info["task_version"] = task_version
         provider_group = provider_utils.get_job_provider_group(dsl_parser=dsl_parser,
-                                                               role=role,
-                                                               party_id=party_id,
                                                                component_name=component_name)
         for group_key, group_info in provider_group.items():
             initialized_config = {}
