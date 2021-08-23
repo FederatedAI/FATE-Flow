@@ -277,15 +277,15 @@ class JobController(object):
             cls.start_initializer(job_id=job_id,
                                   role=role,
                                   party_id=party_id,
+                                  group_key=group_key,
                                   initialized_config=initialized_config)
 
     @classmethod
-    def start_initializer(cls, job_id, role, party_id, initialized_config):
+    def start_initializer(cls, job_id, role, party_id, group_key, initialized_config):
         initialized_components = initialized_config["components"]
-        initializer_id = ".".join(initialized_components)
         party_id = str(party_id)
-        schedule_logger(job_id).info('try to start job {} task initializer {} subprocess to initialize {} on {} {}'.format(job_id, initializer_id, initialized_components, role, party_id))
-        initialize_dir = os.path.join(job_utils.get_job_directory(job_id=job_id), role, party_id, f"initialize_{initializer_id}")
+        schedule_logger(job_id).info('try to start job {} task initializer {} subprocess to initialize {} on {} {}'.format(job_id, group_key, initialized_components, role, party_id))
+        initialize_dir = os.path.join(job_utils.get_job_directory(job_id=job_id), "initializer", role, party_id, group_key)
         os.makedirs(initialize_dir, exist_ok=True)
         initialized_config_path = os.path.join(initialize_dir, f'initialized_config.json')
         with open(initialized_config_path, 'w') as fw:
@@ -301,22 +301,17 @@ class JobController(object):
             '--run_ip', RuntimeConfig.JOB_SERVER_HOST,
             '--job_server', f'{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}',
         ]
-        log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), role, party_id, "initialize", initializer_id)
+        log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), "initializer", role, party_id, group_key)
         provider = ComponentProvider(**initialized_config["provider"])
         p = process_utils.run_subprocess(job_id=job_id, config_dir=initialize_dir, process_cmd=process_cmd, extra_env=provider.env, log_dir=log_dir, cwd_dir=initialize_dir)
-        schedule_logger(job_id).info('job {} task initializer {} on {} {} subprocess pid {} is ready'.format(job_id, initializer_id, role, party_id, p.pid))
+        schedule_logger(job_id).info('job {} task initializer {} on {} {} subprocess pid {} is ready'.format(job_id, group_key, role, party_id, p.pid))
         try:
-            p.communicate(timeout=5)
-            # return code always 0 because of server wait_child_process, can not use to check
-            st = JobSaver.check_task(job_id=job_id, role=role, party_id=party_id, components=initialized_components)
-            schedule_logger(job_id).info('job {} initialize {} on {} {} {}'.format(job_id, initialized_components, role, party_id, "successfully" if st else "failed"))
-            #todo: check
-            """
-            if not st:
-                raise Exception(job_utils.get_subprocess_std(log_dir=log_dir))
-            """
+            p.communicate(timeout=10)
+            schedule_logger(job_id).info('job {} initialize {} on {} {} {}'.format(job_id, initialized_components, role, party_id, "successfully" if p.returncode == 0 else "failed"))
+            if p.returncode != 0:
+                raise Exception(process_utils.get_subprocess_std(log_dir=log_dir))
         except subprocess.TimeoutExpired as e:
-            err = f"job {job_id} task initializer {initializer_id} on {role} {party_id} subprocess pid {p.pid} run timeout"
+            err = f"job {job_id} task initializer {group_key} on {role} {party_id} subprocess pid {p.pid} run timeout"
             schedule_logger(job_id).exception(err, e)
             p.kill()
             raise Exception(err)
