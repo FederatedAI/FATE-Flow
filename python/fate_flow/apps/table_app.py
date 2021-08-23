@@ -58,11 +58,11 @@ def table_add():
                                          partitions=request_data.get('partitions', None),
                                          hava_head=request_data.get("head"), schema=schema,
                                          id_delimiter=request_data.get("id_delimiter"), in_serialized=in_serialized)
+    response = get_json_result(data={"table_name": name, "namespace": namespace})
     if not table.check_address():
-        table.destroy()
-        sess.destroy_all_sessions()
-        return get_json_result(retcode=100, retmsg=f'engine {engine} address {address_dict} is not exist')
-    return get_json_result(data={"table_name": name, "namespace": namespace})
+        response = get_json_result(retcode=100, retmsg=f'engine {engine} address {address_dict} check failed')
+    sess.destroy_all_sessions()
+    return response
 
 
 
