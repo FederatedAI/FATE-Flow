@@ -32,10 +32,8 @@ def component_provider(provider_info):
     return ComponentProvider(name=name, version=version, path=path)
 
 
-def get_job_provider_group(dsl_parser, role, party_id, component_name=None):
-    providers = dsl_parser.get_job_providers(provider_detail=RuntimeConfig.COMPONENT_REGISTRY,
-                                             local_role=role,
-                                             local_party_id=party_id)
+def get_job_provider_group(dsl_parser, component_name=None):
+    providers = dsl_parser.get_job_providers(provider_detail=RuntimeConfig.COMPONENT_REGISTRY)
     # providers format: {'upload_0': {'module': 'Upload', 'provider': {'name': 'fate_flow_tools', 'version': '1.7.0'}}}
 
     group = {}
@@ -54,19 +52,15 @@ def get_job_provider_group(dsl_parser, role, party_id, component_name=None):
     return group
 
 
-def get_component_provider(dsl_parser, component_name, role, party_id):
-    providers = dsl_parser.get_job_providers(provider_detail=RuntimeConfig.COMPONENT_REGISTRY,
-                                             local_role=role,
-                                             local_party_id=party_id)
+def get_component_provider(dsl_parser, component_name):
+    providers = dsl_parser.get_job_providers(provider_detail=RuntimeConfig.COMPONENT_REGISTRY)
     return component_provider(providers[component_name]["provider"])
 
 
 def get_component_parameters(dsl_parser, component_name, role, party_id, provider: ComponentProvider = None):
     if not provider:
         provider = get_component_provider(dsl_parser=dsl_parser,
-                                          component_name=component_name,
-                                          role=role,
-                                          party_id=party_id)
+                                          component_name=component_name)
     component_parameters_on_party = dsl_parser.parse_component_parameters(component_name,
                                                                           RuntimeConfig.COMPONENT_REGISTRY,
                                                                           provider.name,
@@ -77,7 +71,7 @@ def get_component_parameters(dsl_parser, component_name, role, party_id, provide
 
 
 def get_component_run_info(dsl_parser, component_name, role, party_id):
-    provider = get_component_provider(dsl_parser, component_name, role, party_id)
+    provider = get_component_provider(dsl_parser, component_name)
     parameters = get_component_parameters(dsl_parser, component_name, role, party_id, provider)
     return provider, parameters
 
