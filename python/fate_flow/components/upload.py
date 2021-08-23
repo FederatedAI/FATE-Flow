@@ -218,13 +218,7 @@ class Upload(ComponentBase):
             if head is True:
                 data_head = fin.readline()
                 input_feature_count -= 1
-                self.table.meta.update_metas(
-                    schema=data_utils.get_header_schema(
-                        header_line=data_head,
-                        id_delimiter=self.parameters["id_delimiter"],
-                    )
-                )
-                self.table.meta.update_metas(
+                _, meta = self.table.meta.update_metas(
                     schema=data_utils.get_header_schema(
                         header_line=data_head,
                         id_delimiter=self.parameters["id_delimiter"],
@@ -233,6 +227,7 @@ class Upload(ComponentBase):
                     auto_increasing_sid=self.parameters["auto_increasing_sid"],
                     extend_sid=self.parameters["extend_sid"],
                 )
+                self.table.meta = meta
             n = 0
             fate_uuid = uuid.uuid1().hex
             if not self.parameters["extend_sid"]:
