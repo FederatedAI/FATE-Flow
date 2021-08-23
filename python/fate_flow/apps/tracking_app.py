@@ -135,19 +135,13 @@ def component_parameters():
     tasks = JobSaver.query_task(only_latest=True, **request_data)
     if not tasks:
         return get_json_result(retcode=101, retmsg='can not found this task')
-    parameters = tasks[0].f_component_paramters
-    for role, partys_parameters in parameters.items():
-        for party_parameters in partys_parameters:
-            if party_parameters.get('local', {}).get('role', '') == request_data['role'] and party_parameters.get(
-                    'local', {}).get('party_id', '') == int(request_data['party_id']):
-                output_parameters = {}
-                output_parameters['module'] = party_parameters.get('module', '')
-                for p_k, p_v in party_parameters.items():
-                    if p_k.endswith('Param'):
-                        output_parameters[p_k] = p_v
-                return get_json_result(retcode=0, retmsg='success', data=output_parameters)
-    else:
-        return get_json_result(retcode=0, retmsg='can not found this component parameters')
+    parameters = tasks[0].f_component_parameters
+    output_parameters = {}
+    output_parameters['module'] = parameters.get('module', '')
+    for p_k, p_v in parameters.items():
+        if p_k.endswith('Param'):
+            output_parameters[p_k] = p_v
+    return get_json_result(retcode=0, retmsg='success', data=output_parameters)
 
 
 @manager.route('/component/output/model', methods=['post'])
@@ -185,17 +179,16 @@ def component_output_model():
     component = dsl_parser.get_component_info(request_data['component_name'])
     output_model_json = {}
     # There is only one model output at the current dsl version.
-    output_model = tracker.get_output_model(component.get_output()['model'][0] if component.get_output().get('model') else 'default')
-    for buffer_name, buffer_object in output_model.items():
+    output_model = tracker.get_output_model(component.get_output()['model'][0] if component.get_output().get('model') else 'default', output_json=True)
+    for buffer_name, buffer_object_json_format in output_model.items():
         if buffer_name.endswith('Param'):
-            output_model_json = json_format.MessageToDict(buffer_object, including_default_value_fields=True)
+            output_model_json = buffer_object_json_format
     if output_model_json:
         component_define = tracker.get_component_define()
         this_component_model_meta = {}
-        for buffer_name, buffer_object in output_model.items():
+        for buffer_name, buffer_object_json_format in output_model.items():
             if buffer_name.endswith('Meta'):
-                this_component_model_meta['meta_data'] = json_format.MessageToDict(buffer_object,
-                                                                                   including_default_value_fields=True)
+                this_component_model_meta['meta_data'] = buffer_object_json_format
         this_component_model_meta.update(component_define)
         return get_json_result(retcode=0, retmsg='success', data=output_model_json, meta=this_component_model_meta)
     else:

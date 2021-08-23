@@ -21,6 +21,7 @@ from fate_flow.operation.job_saver import JobSaver
 def pipeline_dag_dependency(job_info):
     try:
         detect_utils.check_config(job_info, required_arguments=["party_id", "role"])
+        component_need_run = {}
         if job_info.get('job_id'):
             jobs = JobSaver.query_job(job_id=job_info["job_id"], party_id=job_info["party_id"], role=job_info["role"])
             if not jobs:
@@ -29,11 +30,17 @@ def pipeline_dag_dependency(job_info):
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                            runtime_conf=job.f_runtime_conf_on_party,
                                                            train_runtime_conf=job.f_train_runtime_conf)
+            tasks = JobSaver.query_task(job_id=job_info["job_id"], party_id=job_info["party_id"], role=job_info["role"], only_latest=True)
+            for task in tasks:
+                need_run = task.f_component_parameters.get("ComponentParam", {}).get("need_run", True)
+                component_need_run[task.f_component_name] = need_run
         else:
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_info.get('job_dsl', {}),
                                                            runtime_conf=job_info.get('job_runtime_conf', {}),
                                                            train_runtime_conf=job_info.get('job_train_runtime_conf', {}))
-        return dsl_parser.get_dependency(role=job_info["role"], party_id=int(job_info["party_id"]))
+        dependency = dsl_parser.get_dependency()
+        dependency["component_need_run"] = component_need_run
+        return dependency
     except Exception as e:
         stat_logger.exception(e)
         raise e
