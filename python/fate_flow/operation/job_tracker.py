@@ -27,9 +27,10 @@ from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingMetric, TrackingOutputDataInfo,
                                     ComponentSummary, MachineLearningModelInfo as MLModel)
 from fate_flow.entity.metric import Metric, MetricMeta
+from fate_flow.entity.types import OutputCache
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.pipelined_model import pipelined_model
-from fate_flow.manager.cache_manager import CacheManager, CacheInfo
+from fate_flow.manager.cache_manager import CacheManager
 from fate_arch import storage, session
 from fate_flow.utils import model_utils, job_utils, data_utils
 from fate_flow.entity.run_parameters import RunParameters
@@ -213,9 +214,9 @@ class Tracker(object):
     def get_component_define(self):
         return self.pipelined_model.get_component_define(component_name=self.component_name)
 
-    def save_output_cache(self, cache_map: typing.Dict[str, CTableABC], cache_meta: dict, cache_name, output_storage_engine, output_storage_address: dict, token=None):
-        cache_info = CacheInfo(meta=cache_meta)
-        for name, table in cache_map.items():
+    def save_output_cache(self, cache_data: typing.Dict[str, CTableABC], cache_meta: dict, cache_name, output_storage_engine, output_storage_address: dict, token=None):
+        cache = OutputCache(meta=cache_meta)
+        for name, table in cache_data.items():
             output_table_namespace, output_table_name = data_utils.default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="cache")
             table_meta = session.Session.persistent(computing_table=table,
                                                     table_namespace=output_table_namespace,
@@ -224,8 +225,10 @@ class Tracker(object):
                                                     engine=output_storage_engine,
                                                     engine_address=output_storage_address,
                                                     token=token)
-            cache_info.data[name] = DTable(namespace=table_meta.namespace, name=table_meta.name, partitions=table_meta.partitions)
-        cache_key = CacheManager.save_tracking(cache_info=cache_info,
+            cache.data[name] = DTable(namespace=table_meta.namespace, name=table_meta.name, partitions=table_meta.partitions)
+        cache_key = CacheManager.save_tracking(cache=cache,
+                                               job_id=self.job_id,
+                                               component_name=self.component_name,
                                                task_id=self.task_id,
                                                task_version=self.task_version,
                                                cache_name=cache_name)
@@ -233,7 +236,8 @@ class Tracker(object):
         return cache_key
 
     def get_output_cache(self, cache_key=None, cache_name=None):
-        if not self.task_id or not self.task_version:
+        task_id, task_version = self.task_id, self.task_version
+        if not task_id or task_version:
             tasks = JobSaver.query_task(job_id=self.job_id,
                                         role=self.role,
                                         party_id=self.party_id,
@@ -244,20 +248,20 @@ class Tracker(object):
                 raise Exception("can not found task")
             elif len(tasks) > 1:
                 raise Exception("more than two were found")
-            self.task_id = tasks[0].f_task_id
-            self.task_version = tasks[0].f_task_version
-        caches = CacheManager.query_tracking(task_id=self.task_id, task_version=self.task_version, cache_name=cache_name, cache_key=cache_key)
+            task_id = tasks[0].f_task_id
+            task_version = tasks[0].f_task_version
+        caches = CacheManager.query_tracking(task_id=task_id, task_version=task_version, cache_name=cache_name, cache_key=cache_key)
         if caches:
-            cache_info = caches[0]
-            cache_map = {}
-            for name, _dtable in cache_info.data.items():
-                storage_table_meta = storage.StorageTableMeta(name=_dtable.name, namespace=_dtable.namespace)
+            output_cache = caches[0]
+            cache_data = {}
+            for name, table in output_cache.data.items():
+                storage_table_meta = storage.StorageTableMeta(name=table.name, namespace=table.namespace)
                 computing_table = session.get_latest_opened().computing.load(
                     storage_table_meta.get_address(),
                     schema=storage_table_meta.get_schema(),
-                    partitions=_dtable.partitions)
-                cache_map[name] = computing_table
-            return cache_map, cache_info.meta
+                    partitions=table.partitions)
+                cache_data[name] = computing_table
+            return cache_data, output_cache.meta
         else:
             return None, None
 

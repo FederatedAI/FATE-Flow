@@ -21,13 +21,19 @@ import sys
 from peewee import (CharField, IntegerField, BigIntegerField,
                     TextField, CompositeKey, BigAutoField, BooleanField)
 from fate_arch.common import log, file_utils
-from fate_arch.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField
+from fate_arch.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField, SerializedField, SerializedType
 from fate_arch.common import WorkMode
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.settings import WORK_MODE, DATABASE, stat_logger
+from fate_flow.utils.object_utils import from_dict_hook
 
 
 LOGGER = log.getLogger()
+
+
+class JsonSerializedField(SerializedField):
+    def __init__(self, object_hook=from_dict_hook, object_pairs_hook=None, **kwargs):
+        super(JsonSerializedField, self).__init__(serialized_type=SerializedType.JSON, object_hook=object_hook, object_pairs_hook=object_pairs_hook, **kwargs)
 
 
 def singleton(cls, *args, **kw):
@@ -304,8 +310,7 @@ class DataTableTracking(DataBaseModel):
 
 class CacheTracking(DataBaseModel):
     f_cache_key = CharField(max_length=500, primary_key=True)
-    f_cache_data = JSONField()
-    f_cache_meta = JSONField()
+    f_cache = JsonSerializedField()
     f_job_id = CharField(max_length=25, index=True)
     f_component_name = TextField()
     f_task_id = CharField(max_length=100, null=True, index=True)

@@ -13,4 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from ._base import BaseEntity
+from fate_arch.common import BaseType
+
+
+class BaseEntity(BaseType):
+    pass

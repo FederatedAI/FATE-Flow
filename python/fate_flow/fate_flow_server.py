@@ -48,7 +48,7 @@ from fate_flow.component_env_utils import provider_utils
 if __name__ == '__main__':
     # init
     # signal.signal(signal.SIGTERM, job_utils.cleaning)
-    signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
+    # signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
     # init db
     init_flow_db()
     init_arch_db()
