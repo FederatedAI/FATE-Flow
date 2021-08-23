@@ -19,3 +19,6 @@ federated_status_collect_type: PULL
 
 # upload
 upload_max_bytes: 4194304000 # bytes
+
+#component output
+output_data_summary_count_limit: 100

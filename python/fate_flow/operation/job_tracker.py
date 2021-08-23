@@ -30,12 +30,14 @@ from fate_flow.db.db_models import (DB, Job, TrackingMetric, TrackingOutputDataI
 from fate_flow.entity.metric import Metric, MetricMeta
 from fate_flow.entity.types import OutputCache
 from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.pipelined_model import pipelined_model
 from fate_flow.manager.cache_manager import CacheManager
 from fate_arch import storage, session
 from fate_flow.utils import model_utils, job_utils, data_utils
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.operation.job_saver import JobSaver
+from fate_flow.component_env_utils import feature_utils
 
 
 class Tracker(object):
@@ -132,10 +134,24 @@ class Tracker(object):
             if output_storage_engine == StorageEngine.HDFS:
                 output_storage_address.update({"path": data_utils.default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=output_storage_address.get("path_prefix"))})
 
+            part_of_limit = JobDefaultConfig.output_data_summary_count_limit
+            part_of_data = {
+                "data_line": [],
+                "is_str": False,
+                "extend_header": []
+            }
+            for k, v in computing_table.collect():
+                data_line, part_of_data["is_str"], part_of_data["extend_header"] = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
+                part_of_data["data_line"].append(data_line)
+                part_of_limit -= 1
+                if part_of_limit == 0:
+                    break
+
             session.Session.persistent(computing_table=computing_table,
                                        table_namespace=output_table_namespace,
                                        table_name=output_table_name,
                                        schema=schema,
+                                       part_of_data=part_of_data,
                                        engine=output_storage_engine,
                                        engine_address=output_storage_address,
                                        token=token)

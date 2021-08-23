@@ -26,6 +26,7 @@ from fate_flow.entity.job import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus, PassException
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.db.config_manager import ConfigManager
 from fate_arch.common.log import schedule_logger, getLogger, LoggerFactory
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.operation.job_tracker import Tracker
@@ -122,6 +123,8 @@ class TaskExecutor(object):
                 RuntimeConfig.init_config(JOB_SERVER_HOST=job_server.split(':')[0],
                                           HTTP_PORT=job_server.split(':')[1])
             RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
+            # todo: get conf from server
+            ConfigManager.load()
             RuntimeConfig.load_component_registry()
             executor_pid = os.getpid()
             task_info.update({
