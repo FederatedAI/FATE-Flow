@@ -38,7 +38,11 @@ class TaskInitializer(object):
             parser.add_argument('-j', '--job_id', required=True, type=str, help="job id")
             parser.add_argument('-r', '--role', required=True, type=str, help="role")
             parser.add_argument('-p', '--party_id', required=True, type=int, help="party id")
-            parser.add_argument('-c', '--config', required=True, type=str, help="task parameters")
+            parser.add_argument('-c', '--config', required=True, type=str, help="parameters")
+            parser.add_argument('--dsl', required=True, type=str, help="dsl")
+            parser.add_argument('--runtime_conf', required=True, type=str, help="runtime_conf")
+            parser.add_argument('--train_runtime_conf', required=True, type=str, help="train_runtime_conf")
+            parser.add_argument('--pipeline_dsl', required=True, type=str, help="pipeline_dsl")
             parser.add_argument('--run_ip', help="run ip", type=str)
             parser.add_argument('--job_server', help="job server", type=str)
             args = parser.parse_args()
@@ -56,13 +60,14 @@ class TaskInitializer(object):
             start_time = current_timestamp()
             RuntimeConfig.load_component_registry()
 
-            job_conf = job_utils.get_job_conf(job_id, role, party_id)
-            job_dsl = job_conf["job_dsl_path"]
-            job_runtime_conf = job_conf["job_runtime_conf_path"]
+            job_dsl = file_utils.load_json_conf(args.dsl)
+            job_runtime_conf = file_utils.load_json_conf(args.runtime_conf)
+            train_runtime_conf = file_utils.load_json_conf(args.train_runtime_conf)
+            pipeline_dsl = file_utils.load_json_conf(args.pipeline_dsl)
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_dsl,
                                                            runtime_conf=job_runtime_conf,
-                                                           train_runtime_conf=job_conf["train_runtime_conf_path"],
-                                                           pipeline_dsl=job_conf["pipeline_dsl_path"])
+                                                           train_runtime_conf=train_runtime_conf,
+                                                           pipeline_dsl=pipeline_dsl)
 
             initialized_config = file_utils.load_json_conf(args.config)
             provider = ComponentProvider(**initialized_config["provider"])

@@ -291,6 +291,8 @@ class JobController(object):
         with open(initialized_config_path, 'w') as fw:
             fw.write(json_dumps(initialized_config))
 
+        job_conf = job_utils.get_job_conf_path(job_id, role, party_id)
+
         process_cmd = [
             sys.executable,
             sys.modules[TaskInitializer.__module__].__file__,
@@ -298,6 +300,10 @@ class JobController(object):
             '-r', role,
             '-p', party_id,
             '-c', initialized_config_path,
+            '--dsl', job_conf["job_dsl_path"],
+            '--runtime_conf', job_conf["job_runtime_conf_path"],
+            '--train_runtime_conf', job_conf["train_runtime_conf_path"],
+            '--pipeline_dsl', job_conf["pipeline_dsl_path"],
             '--run_ip', RuntimeConfig.JOB_SERVER_HOST,
             '--job_server', f'{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}',
         ]
