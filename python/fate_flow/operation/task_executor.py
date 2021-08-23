@@ -54,6 +54,7 @@ class ComponentInput:
         job_parameters,
         roles,
         flow_feeded_parameters,
+        caches,
     ) -> None:
         self._tracker = tracker
         self._checkpoint_manager = checkpoint_manager
@@ -65,6 +66,7 @@ class ComponentInput:
         self._job_parameters = job_parameters
         self._roles = roles
         self._flow_feeded_parameters = flow_feeded_parameters
+        self._caches = caches
 
     @property
     def tracker(self):
