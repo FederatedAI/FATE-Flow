@@ -18,26 +18,27 @@ import argparse
 import importlib
 import traceback
 
+from fate_arch import session, storage
+from fate_arch.computing import ComputingEngine
 from fate_arch.common import file_utils, EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, timestamp_to_date, json_dumps
-from fate_arch import session
+from fate_arch.common.log import schedule_logger, getLogger, LoggerFactory
+
 from fate_flow.entity.types import ProcessRole
 from fate_flow.entity.job import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus, PassException
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.config_manager import ConfigManager
-from fate_arch.common.log import schedule_logger, getLogger, LoggerFactory
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.components.checkpoint import CheckpointManager
-from fate_arch import storage
+from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.scheduling_apps.client.operation_client import OperationClient
 from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.scheduling_apps.client import ControllerClient, TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
-from fate_arch.computing import ComputingEngine
 from fate_flow.component_env_utils import provider_utils
+
 
 LOGGER = getLogger()
 

@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 
 from ruamel import yaml
 
-from fate_flow.components import checkpoint
+from fate_flow.model import checkpoint
 
 
 model_string = (Path(__file__).parent.parent / 'misc' / 'DataIOMeta.pb').read_bytes()
