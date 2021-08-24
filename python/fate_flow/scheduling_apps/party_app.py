@@ -32,7 +32,7 @@ def create_job(job_id, role, party_id):
         JobController.create_job(job_id=job_id, role=role, party_id=int(party_id), job_info=request.json)
         return get_json_result(retcode=0, retmsg='success')
     except RuntimeError as e:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=str(e))
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=str(e), data={"job_id": job_id})
 
 
 @manager.route('/<job_id>/<role>/<party_id>/resource/apply', methods=['POST'])

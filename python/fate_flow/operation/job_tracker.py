@@ -33,6 +33,7 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.pipelined_model import pipelined_model
 from fate_flow.manager.cache_manager import CacheManager
+from fate_flow.manager.metric_manager import MetricManager
 from fate_arch import storage, session
 from fate_flow.utils import model_utils, job_utils, data_utils
 from fate_flow.entity.run_parameters import RunParameters
@@ -73,6 +74,7 @@ class Tracker(object):
         if self.party_model_id and self.model_version:
             self.pipelined_model = pipelined_model.PipelinedModel(model_id=self.party_model_id,
                                                                   model_version=self.model_version)
+        self.metric_manager = MetricManager(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name, task_id=self.task_id, task_version=self.task_version)
 
     def save_metric_data(self, metric_namespace: str, metric_name: str, metrics: typing.List[Metric], job_level=False):
         schedule_logger(self.job_id).info(
@@ -81,7 +83,7 @@ class Tracker(object):
         kv = []
         for metric in metrics:
             kv.append((metric.key, metric.value))
-        self.insert_metrics_into_db(metric_namespace, metric_name, 1, kv, job_level)
+        self.metric_manager.insert_metrics_into_db(metric_namespace, metric_name, 1, kv, job_level)
 
     def get_job_metric_data(self, metric_namespace: str, metric_name: str):
         return self.read_metric_data(metric_namespace=metric_namespace, metric_name=metric_name, job_level=True)
@@ -92,7 +94,7 @@ class Tracker(object):
     @DB.connection_context()
     def read_metric_data(self, metric_namespace: str, metric_name: str, job_level=False):
         metrics = []
-        for k, v in self.read_metrics_from_db(metric_namespace, metric_name, 1, job_level):
+        for k, v in self.metric_manager.read_metrics_from_db(metric_namespace, metric_name, 1, job_level):
             metrics.append(Metric(key=k, value=v))
         return metrics
 
@@ -101,22 +103,22 @@ class Tracker(object):
         schedule_logger(self.job_id).info(
             'save job {} component {} on {} {} {} {} metric meta'.format(self.job_id, self.component_name, self.role,
                                                                          self.party_id, metric_namespace, metric_name))
-        self.insert_metrics_into_db(metric_namespace, metric_name, 0, metric_meta.to_dict().items(), job_level)
+        self.metric_manager.insert_metrics_into_db(metric_namespace, metric_name, 0, metric_meta.to_dict().items(), job_level)
 
     @DB.connection_context()
     def get_metric_meta(self, metric_namespace: str, metric_name: str, job_level: bool = False):
         kv = dict()
-        for k, v in self.read_metrics_from_db(metric_namespace, metric_name, 0, job_level):
+        for k, v in self.metric_manager.read_metrics_from_db(metric_namespace, metric_name, 0, job_level):
             kv[k] = v
         return MetricMeta(name=kv.get('name'), metric_type=kv.get('metric_type'), extra_metas=kv)
 
     def log_job_view(self, view_data: dict):
-        self.insert_metrics_into_db('job', 'job_view', 2, view_data.items(), job_level=True)
+        self.metric_manager.insert_metrics_into_db('job', 'job_view', 2, view_data.items(), job_level=True)
 
     @DB.connection_context()
     def get_job_view(self):
         view_data = {}
-        for k, v in self.read_metrics_from_db('job', 'job_view', 2, job_level=True):
+        for k, v in self.metric_manager.read_metrics_from_db('job', 'job_view', 2, job_level=True):
             view_data[k] = v
         return view_data
 
@@ -284,36 +286,6 @@ class Tracker(object):
             return None, None
 
     @DB.connection_context()
-    def insert_metrics_into_db(self, metric_namespace: str, metric_name: str, data_type: int, kv, job_level=False):
-        try:
-            tracking_metric = self.get_dynamic_db_model(TrackingMetric, self.job_id)()
-            tracking_metric.f_job_id = self.job_id
-            tracking_metric.f_component_name = (self.component_name if not job_level else job_utils.job_pipeline_component_name())
-            tracking_metric.f_task_id = self.task_id
-            tracking_metric.f_task_version = self.task_version
-            tracking_metric.f_role = self.role
-            tracking_metric.f_party_id = self.party_id
-            tracking_metric.f_metric_namespace = metric_namespace
-            tracking_metric.f_metric_name = metric_name
-            tracking_metric.f_type = data_type
-            default_db_source = tracking_metric.to_json()
-            tracking_metric_data_source = []
-            for k, v in kv:
-                db_source = default_db_source.copy()
-                db_source['f_key'] = serialize_b64(k)
-                db_source['f_value'] = serialize_b64(v)
-                db_source['f_create_time'] = current_timestamp()
-                tracking_metric_data_source.append(db_source)
-            self.bulk_insert_into_db(self.get_dynamic_db_model(TrackingMetric, self.job_id),
-                                     tracking_metric_data_source)
-        except Exception as e:
-            schedule_logger(self.job_id).exception("An exception where inserted metric {} of metric namespace: {} to database:\n{}".format(
-                metric_name,
-                metric_namespace,
-                e
-            ))
-
-    @DB.connection_context()
     def insert_summary_into_db(self, summary_data: dict):
         try:
             summary_model = self.get_dynamic_db_model(ComponentSummary, self.job_id)
@@ -418,50 +390,12 @@ class Tracker(object):
                               output_table_namespace=namespace, output_table_name=name)
 
     @DB.connection_context()
-    def read_metrics_from_db(self, metric_namespace: str, metric_name: str, data_type, job_level=False):
-        metrics = []
-        try:
-            tracking_metric_model = self.get_dynamic_db_model(TrackingMetric, self.job_id)
-            tracking_metrics = tracking_metric_model.select(tracking_metric_model.f_key, tracking_metric_model.f_value).where(
-                tracking_metric_model.f_job_id == self.job_id,
-                tracking_metric_model.f_component_name == (self.component_name if not job_level else job_utils.job_pipeline_component_name()),
-                tracking_metric_model.f_role == self.role,
-                tracking_metric_model.f_party_id == self.party_id,
-                tracking_metric_model.f_metric_namespace == metric_namespace,
-                tracking_metric_model.f_metric_name == metric_name,
-                tracking_metric_model.f_type == data_type
-            )
-            for tracking_metric in tracking_metrics:
-                yield deserialize_b64(tracking_metric.f_key), deserialize_b64(tracking_metric.f_value)
-        except Exception as e:
-            schedule_logger(self.job_id).exception(e)
-            raise e
-        return metrics
-
-    @DB.connection_context()
     def clean_metrics(self):
-        tracking_metric_model = self.get_dynamic_db_model(TrackingMetric, self.job_id)
-        operate = tracking_metric_model.delete().where(
-            tracking_metric_model.f_task_id==self.task_id,
-            tracking_metric_model.f_task_version==self.task_version,
-            tracking_metric_model.f_role==self.role,
-            tracking_metric_model.f_party_id==self.party_id
-        )
-        return operate.execute() > 0
+        return self.metric_manager.clean_metrics()
 
     @DB.connection_context()
     def get_metric_list(self, job_level: bool = False):
-        metrics = dict()
-        tracking_metric_model = self.get_dynamic_db_model(TrackingMetric, self.job_id)
-        tracking_metrics = tracking_metric_model.select(tracking_metric_model.f_metric_namespace, tracking_metric_model.f_metric_name).where(
-                                tracking_metric_model.f_job_id==self.job_id,
-                                tracking_metric_model.f_component_name==(self.component_name if not job_level else 'dag'),
-                                tracking_metric_model.f_role==self.role,
-                                tracking_metric_model.f_party_id==self.party_id).distinct()
-        for tracking_metric in tracking_metrics:
-            metrics[tracking_metric.f_metric_namespace] = metrics.get(tracking_metric.f_metric_namespace, [])
-            metrics[tracking_metric.f_metric_namespace].append(tracking_metric.f_metric_name)
-        return metrics
+        return self.metric_manager.get_metric_list(job_level=job_level)
 
     def get_output_data_info(self, data_name=None):
         return self.read_output_data_info_from_db(data_name=data_name)

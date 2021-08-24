@@ -321,6 +321,8 @@ def start_session_stop(task):
         '-c', 'stop' if task.f_status == JobStatus.SUCCESS else 'kill'
     ]
     p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=task_dir, process_cmd=process_cmd, log_dir=None)
+    p.wait()
+    p.poll()
 
 
 def get_timeout(job_id, timeout, runtime_conf, dsl):
