@@ -120,7 +120,7 @@ class DAGScheduler(Cron):
                 for party, res in response[role].items():
                     need_run_components[role][party] = [name for name, value in response[role][party]["data"]["components"].items() if value["need_run"] is True]
             if common_job_parameters.work_mode == WorkMode.CLUSTER:
-                # create task row of all participants in the initiator for scheduling, only save status
+                # create the task holder in db to record information of all participants in the initiator for scheduling
                 for role, party_ids in job.f_roles.items():
                     for party_id in party_ids:
                         if role == job.f_initiator_role and party_id == job.f_initiator_party_id:
