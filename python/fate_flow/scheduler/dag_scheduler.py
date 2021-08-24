@@ -114,13 +114,20 @@ class DAGScheduler(Cron):
             FederatedScheduler.sync_job_status(job=job)
             raise Exception("create job failed", response)
         else:
+            need_run_components = {}
+            for role in response:
+                need_run_components[role] = {}
+                for party, res in response[role].items():
+                    need_run_components[role][party] = [name for name, value in response[role][party]["data"]["components"].items() if value["need_run"] is True]
             if common_job_parameters.work_mode == WorkMode.CLUSTER:
                 # create task row of all participants in the initiator for scheduling, only save status
                 for role, party_ids in job.f_roles.items():
                     for party_id in party_ids:
                         if role == job.f_initiator_role and party_id == job.f_initiator_party_id:
                             continue
-                        JobController.initialize_tasks(job_id, role, party_id, False, job.f_initiator_role, job.f_initiator_party_id, common_job_parameters, dsl_parser)
+                        if not need_run_components[role][party_id]:
+                            continue
+                        JobController.initialize_tasks(job_id, role, party_id, False, job.f_initiator_role, job.f_initiator_party_id, common_job_parameters, dsl_parser, components=need_run_components[role][party_id])
             job.f_status = JobStatus.WAITING
             status_code, response = FederatedScheduler.sync_job_status(job=job)
             if status_code != FederatedSchedulingStatusCode.SUCCESS:
