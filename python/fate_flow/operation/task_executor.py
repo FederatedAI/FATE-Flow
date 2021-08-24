@@ -187,7 +187,7 @@ class TaskExecutor(object):
             }
             tracker = Tracker(**kwargs)
             tracker_client = TrackerClient(**kwargs)
-            checkpoint_manager = CheckpointManager(**kwargs, max_to_keep=3)
+            checkpoint_manager = CheckpointManager(**kwargs)
 
             task_info["party_status"] = TaskStatus.RUNNING
             cls.report_task_update_to_driver(task_info)
@@ -257,8 +257,7 @@ class TaskExecutor(object):
             )
             # add profile logs
             profile.profile_start()
-            is_warn_start = checkpoint_manager.latest_checkpoint is not None
-            cpn_output = run_object.run(cpn_input, is_warn_start)
+            cpn_output = run_object.run(cpn_input)
             sess.wait_remote_all_done()
             profile.profile_ends()
 
