@@ -32,14 +32,17 @@ def component_provider(provider_info):
     return ComponentProvider(name=name, version=version, path=path)
 
 
-def get_job_provider_group(dsl_parser, component_name=None):
-    providers = dsl_parser.get_job_providers(provider_detail=RuntimeConfig.COMPONENT_REGISTRY)
+def get_job_provider_group(dsl_parser, components: list = None):
+    providers_info = dsl_parser.get_job_providers(provider_detail=RuntimeConfig.COMPONENT_REGISTRY)
     # providers format: {'upload_0': {'module': 'Upload', 'provider': {'name': 'fate_flow_tools', 'version': '1.7.0'}}}
 
     group = {}
-    if component_name is not None:
-        providers = {component_name: providers.get(component_name)}
-    for component_name, provider_info in providers.items():
+    if components is not None:
+        _providers_info = {}
+        for component_name in components:
+            _providers_info[component_name] = providers_info.get(component_name)
+        providers_info = _providers_info
+    for component_name, provider_info in providers_info.items():
         provider = component_provider(provider_info["provider"])
         group_key = ":".join([provider.name, provider.version])
         if group_key not in group:

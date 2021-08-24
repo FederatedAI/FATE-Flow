@@ -29,10 +29,10 @@ from fate_flow.manager.resource_manager import ResourceManager
 @request_authority_certification(party_id_index=-2, role_index=-3, command='create')
 def create_job(job_id, role, party_id):
     try:
-        JobController.create_job(job_id=job_id, role=role, party_id=int(party_id), job_info=request.json)
-        return get_json_result(retcode=0, retmsg='success')
+        result = JobController.create_job(job_id=job_id, role=role, party_id=int(party_id), job_info=request.json)
+        return get_json_result(retcode=0, retmsg='success', data=result)
     except RuntimeError as e:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=str(e))
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=str(e), data={"job_id": job_id})
 
 
 @manager.route('/<job_id>/<role>/<party_id>/resource/apply', methods=['POST'])
