@@ -155,7 +155,8 @@ class TaskScheduler(object):
             for _party_id in _party_ids:
                 if _role == job.f_initiator_role and _party_id == job.f_initiator_party_id:
                     continue
-                JobController.initialize_tasks(job.f_job_id, _role, _party_id, False, job.f_initiator_role, job.f_initiator_party_id, RunParameters(**job.f_runtime_conf_on_party["job_parameters"]), dsl_parser, component_name=task.f_component_name, task_version=task.f_task_version, auto_retries=task.f_auto_retries)
+                # todo: check this task should init or not on this role and party
+                JobController.initialize_tasks(job.f_job_id, _role, _party_id, False, job.f_initiator_role, job.f_initiator_party_id, RunParameters(**job.f_runtime_conf_on_party["job_parameters"]), dsl_parser, components=[task.f_component_name], task_version=task.f_task_version, auto_retries=task.f_auto_retries)
         schedule_logger(job_id=job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
 
     @classmethod

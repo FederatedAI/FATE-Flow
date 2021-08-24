@@ -18,7 +18,8 @@ import os
 from fate_arch.common import engine_utils
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import EngineType
-from fate_arch.common.base_utils import json_dumps, current_timestamp, fate_uuid
+from fate_arch.common.base_utils import json_dumps, current_timestamp
+from fate_arch.common.file_utils import load_json_conf
 from fate_flow.utils.authentication_utils import data_authentication_check
 from fate_arch.common.log import schedule_logger
 from fate_flow.controller.task_controller import TaskController
@@ -105,12 +106,13 @@ class JobController(object):
                                 train_runtime_conf=train_runtime_conf,
                                 pipeline_dsl=None)
 
-        cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
-                             initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
+        initialized_result = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
+                                                  initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
         roles = job_info['roles']
         cls.initialize_job_tracker(job_id=job_id, role=role, party_id=party_id,
                                    job_parameters=job_parameters, roles=roles, is_initiator=is_initiator, dsl_parser=dsl_parser)
         JobSaver.create_job(job_info=job_info)
+        return {"components": initialized_result}
 
     @classmethod
     def get_job_engines(cls, job_parameters: RunParameters):
@@ -254,7 +256,7 @@ class JobController(object):
         JobSaver.update_job(job_info)
 
     @classmethod
-    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id, job_parameters: RunParameters, dsl_parser, component_name=None, task_version=None, auto_retries=None):
+    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id, job_parameters: RunParameters, dsl_parser, components: list = None, task_version=None, auto_retries=None):
         common_task_info = {}
         common_task_info["job_id"] = job_id
         common_task_info["initiator_role"] = initiator_role
@@ -269,16 +271,39 @@ class JobController(object):
         if task_version:
             common_task_info["task_version"] = task_version
         provider_group = provider_utils.get_job_provider_group(dsl_parser=dsl_parser,
-                                                               component_name=component_name)
+                                                               components=components)
+        initialized_result = {}
         for group_key, group_info in provider_group.items():
             initialized_config = {}
             initialized_config.update(group_info)
             initialized_config["common_task_info"] = common_task_info
-            cls.start_initializer(job_id=job_id,
-                                  role=role,
-                                  party_id=party_id,
-                                  group_key=group_key,
-                                  initialized_config=initialized_config)
+            if run_on_this_party:
+                _result = cls.start_initializer(job_id=job_id,
+                                                role=role,
+                                                party_id=party_id,
+                                                group_key=group_key,
+                                                initialized_config=initialized_config)
+                initialized_result.update(_result)
+            else:
+                cls.initialize_task_holder_for_scheduling(role=role,
+                                                          party_id=party_id,
+                                                          components=initialized_config["components"],
+                                                          common_task_info=common_task_info,
+                                                          provider_info=initialized_config["provider"])
+        return initialized_result
+
+    @classmethod
+    def initialize_task_holder_for_scheduling(cls, role, party_id, components, common_task_info, provider_info):
+        for component_name in components:
+            task_info = {}
+            task_info.update(common_task_info)
+            task_info["component_name"] = component_name
+            task_info["component_module"] = ""
+            task_info["provider_info"] = provider_info
+            task_info["component_parameters"] = {}
+            TaskController.create_task(role=role, party_id=party_id,
+                                       run_on_this_party=common_task_info["run_on_this_party"],
+                                       task_info=task_info)
 
     @classmethod
     def start_initializer(cls, job_id, role, party_id, group_key, initialized_config):
@@ -286,12 +311,14 @@ class JobController(object):
         party_id = str(party_id)
         schedule_logger(job_id).info('try to start job {} task initializer {} subprocess to initialize {} on {} {}'.format(job_id, group_key, initialized_components, role, party_id))
         initialize_dir = os.path.join(job_utils.get_job_directory(job_id=job_id), "initializer", role, party_id, group_key)
+        log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), "initializer", role, party_id, group_key)
         os.makedirs(initialize_dir, exist_ok=True)
         initialized_config_path = os.path.join(initialize_dir, f'initialized_config.json')
         with open(initialized_config_path, 'w') as fw:
             fw.write(json_dumps(initialized_config))
 
         job_conf = job_utils.get_job_conf_path(job_id, role, party_id)
+        result_conf_path = os.path.join(log_dir, "initialized_result.json")
 
         process_cmd = [
             sys.executable,
@@ -300,6 +327,7 @@ class JobController(object):
             '-r', role,
             '-p', party_id,
             '-c', initialized_config_path,
+            '--result', result_conf_path,
             '--dsl', job_conf["job_dsl_path"],
             '--runtime_conf', job_conf["job_runtime_conf_path"],
             '--train_runtime_conf', job_conf["train_runtime_conf_path"],
@@ -307,14 +335,15 @@ class JobController(object):
             '--run_ip', RuntimeConfig.JOB_SERVER_HOST,
             '--job_server', f'{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}',
         ]
-        log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), "initializer", role, party_id, group_key)
         provider = ComponentProvider(**initialized_config["provider"])
         p = process_utils.run_subprocess(job_id=job_id, config_dir=initialize_dir, process_cmd=process_cmd, extra_env=provider.env, log_dir=log_dir, cwd_dir=initialize_dir)
         schedule_logger(job_id).info('job {} task initializer {} on {} {} subprocess pid {} is ready'.format(job_id, group_key, role, party_id, p.pid))
         try:
             p.wait(timeout=10)
             schedule_logger(job_id).info('job {} initialize {} on {} {} {}'.format(job_id, initialized_components, role, party_id, "successfully" if p.returncode == 0 else "failed"))
-            if p.returncode != 0:
+            if p.returncode == 0:
+                return load_json_conf(result_conf_path)
+            else:
                 raise Exception(process_utils.get_subprocess_std(log_dir=log_dir))
         except subprocess.TimeoutExpired as e:
             err = f"job {job_id} task initializer {group_key} on {role} {party_id} subprocess pid {p.pid} run timeout"
