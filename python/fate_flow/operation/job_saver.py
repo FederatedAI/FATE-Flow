@@ -19,7 +19,7 @@ import time
 import typing
 
 from fate_arch.common.base_utils import current_timestamp
-from fate_flow.db.db_models import DB, Job, Task
+from fate_flow.db.db_models import DB, Job, Task, DataBaseModel
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
 from fate_arch.common.log import schedule_logger, sql_logger
 import peewee
@@ -115,7 +115,7 @@ class JobSaver(object):
 
     @classmethod
     @DB.connection_context()
-    def update_status(cls, entity_model, entity_info):
+    def update_status(cls, entity_model: DataBaseModel, entity_info: dict):
         query_filters = []
         primary_keys = entity_model.get_primary_keys_name()
         for p_k in primary_keys:
@@ -124,7 +124,7 @@ class JobSaver(object):
         if objs:
             obj = objs[0]
         else:
-            raise Exception("can not found the obj to update")
+            raise Exception(f"can not found the {entity_model.__name__} record to update")
         update_filters = query_filters[:]
         update_info = {"job_id": entity_info["job_id"]}
         for status_field in cls.STATUS_FIELDS:
