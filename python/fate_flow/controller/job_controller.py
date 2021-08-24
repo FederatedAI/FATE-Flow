@@ -312,15 +312,20 @@ class JobController(object):
         p = process_utils.run_subprocess(job_id=job_id, config_dir=initialize_dir, process_cmd=process_cmd, extra_env=provider.env, log_dir=log_dir, cwd_dir=initialize_dir)
         schedule_logger(job_id).info('job {} task initializer {} on {} {} subprocess pid {} is ready'.format(job_id, group_key, role, party_id, p.pid))
         try:
-            p.communicate(timeout=10)
+            p.wait(timeout=10)
             schedule_logger(job_id).info('job {} initialize {} on {} {} {}'.format(job_id, initialized_components, role, party_id, "successfully" if p.returncode == 0 else "failed"))
             if p.returncode != 0:
                 raise Exception(process_utils.get_subprocess_std(log_dir=log_dir))
         except subprocess.TimeoutExpired as e:
             err = f"job {job_id} task initializer {group_key} on {role} {party_id} subprocess pid {p.pid} run timeout"
             schedule_logger(job_id).exception(err, e)
-            p.kill()
             raise Exception(err)
+        finally:
+            try:
+                p.kill()
+                p.poll()
+            except Exception as e:
+                schedule_logger(job_id).exception(e)
 
     @classmethod
     def initialize_job_tracker(cls, job_id, role, party_id, job_parameters: RunParameters, roles, is_initiator, dsl_parser):
