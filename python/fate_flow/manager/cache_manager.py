@@ -46,6 +46,6 @@ class CacheManager:
     @classmethod
     def generate_cache_key(cls, task_id: str = None, task_version: int = None, cache_name: str = None):
         if task_id and task_version and cache_name:
-            return "-".join([task_id, str(task_version), cache_name])
+            return "-".join([task_id, str(task_version), cache_name, base_utils.new_unique_id()])
         else:
             return base_utils.new_unique_id()

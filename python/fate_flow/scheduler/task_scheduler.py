@@ -148,14 +148,14 @@ class TaskScheduler(object):
             task.f_auto_retries = task.f_auto_retries - 1
         task.f_run_pid = None
         task.f_run_ip = None
-        FederatedScheduler.create_task(job=job, task=task)
-        # Save the status information of all participants in the initiator for scheduling
-        schedule_logger(job_id=job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version}")
-        for _role, _party_ids in job.f_runtime_conf_on_party["role"].items():
-            for _party_id in _party_ids:
+        status_code, response = FederatedScheduler.create_task(job=job, task=task)
+        if status_code != FederatedSchedulingStatusCode.SUCCESS:
+            raise Exception(f"create {task.f_task_id} new version failed")
+        # create the task holder in db to record information of all participants in the initiator for scheduling
+        for _role in response:
+            for _party_id in response[_role]:
                 if _role == job.f_initiator_role and _party_id == job.f_initiator_party_id:
                     continue
-                # todo: check this task should init or not on this role and party
                 JobController.initialize_tasks(job.f_job_id, _role, _party_id, False, job.f_initiator_role, job.f_initiator_party_id, RunParameters(**job.f_runtime_conf_on_party["job_parameters"]), dsl_parser, components=[task.f_component_name], task_version=task.f_task_version, auto_retries=task.f_auto_retries)
         schedule_logger(job_id=job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
 
