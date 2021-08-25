@@ -15,7 +15,7 @@
 #
 from flask import request, abort
 
-from fate_flow.components.checkpoint import CheckpointManager
+from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.detect_utils import check_config
 

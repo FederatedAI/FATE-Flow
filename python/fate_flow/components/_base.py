@@ -122,22 +122,19 @@ class ComponentBase(metaclass=abc.ABCMeta):
         """to be implemented"""
         ...
 
-    def _warn_start(self, component_parameters: dict = None, run_args: dict = None):
-        raise NotImplementedError("warn start for {self} not implemented")
+    def _warm_start(self, cpn_input: ComponentInputProtocol):
+        raise NotImplementedError(f"warn start for {type(self)} not implemented")
 
-    def run(
-        self,
-        cpn_input: ComponentInputProtocol,
-        warn_start: bool,
-    ):
+    def run(self, cpn_input: ComponentInputProtocol, retry: bool = True):
         self.task_version_id = cpn_input.task_version_id
         self.tracker = cpn_input.tracker
         self.checkpoint_manager = cpn_input.checkpoint_manager
 
-        if not warn_start:
-            self._run(cpn_input=cpn_input)
-        else:
-            self._warn_start(cpn_input.parameters, cpn_input.args)
+        method = (self._warm_start if retry and
+                  self.checkpoint_manager is not None and
+                  self.checkpoint_manager.latest_checkpoint is not None
+                  else self._run)
+        method(cpn_input)
 
         return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=None)
 
@@ -243,8 +240,6 @@ class ComponentMeta:
 
 
 class BaseParam(object):
-    def __init__(self):
-        pass
 
     def set_name(self, name: str):
         self._name = name
