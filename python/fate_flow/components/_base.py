@@ -125,12 +125,15 @@ class ComponentBase(metaclass=abc.ABCMeta):
     def _warm_start(self, cpn_input: ComponentInputProtocol):
         raise NotImplementedError(f"warn start for {type(self)} not implemented")
 
-    def run(self, cpn_input: ComponentInputProtocol, is_warn_start: bool = False):
+    def run(self, cpn_input: ComponentInputProtocol, retry: bool = True):
         self.task_version_id = cpn_input.task_version_id
         self.tracker = cpn_input.tracker
         self.checkpoint_manager = cpn_input.checkpoint_manager
 
-        method = self._run if self.checkpoint_manager.latest_checkpoint is None else self._warm_start
+        method = (self._warm_start if retry and
+                  self.checkpoint_manager is not None and
+                  self.checkpoint_manager.latest_checkpoint is not None
+                  else self._run)
         method(cpn_input)
 
         return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=None)
