@@ -80,9 +80,16 @@ class InputSearchType(IntEnum):
 
 
 class OutputCache(BaseEntity):
-    def __init__(self, data: typing.Dict[str, DTable] = None, meta: dict = None):
+    def __init__(self, name: str, data: typing.Dict[str, DTable] = None, meta: dict = None, task_id: str = None, task_version: int = None):
+        self._name: str = name
         self._data: typing.Dict[str, DTable] = data if data else {}
-        self._meta = meta
+        self._meta: dict = meta
+        self._task_id: str = task_id
+        self._task_version: int = task_version
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def data(self):
@@ -91,3 +98,19 @@ class OutputCache(BaseEntity):
     @property
     def meta(self):
         return self._meta
+
+    @property
+    def task_id(self):
+        return self._task_id
+
+    @task_id.setter
+    def task_id(self, task_id: str):
+        self._task_id = task_id
+
+    @property
+    def task_version(self):
+        return self._task_version
+
+    @task_version.setter
+    def task_version(self, task_version: int):
+        self._task_version = task_version

@@ -308,18 +308,20 @@ class DataTableTracking(DataBaseModel):
         db_table = "t_data_table_tracking"
 
 
-class CacheTracking(DataBaseModel):
+class CacheRecord(DataBaseModel):
     f_cache_key = CharField(max_length=500, primary_key=True)
     f_cache = JsonSerializedField()
-    f_job_id = CharField(max_length=25, index=True)
-    f_component_name = TextField()
+    f_job_id = CharField(max_length=25, index=True, null=True)
+    f_role = CharField(max_length=50, index=True, null=True)
+    f_party_id = CharField(max_length=10, index=True, null=True)
+    f_component_name = TextField(null=True)
     f_task_id = CharField(max_length=100, null=True, index=True)
     f_task_version = BigIntegerField(null=True, index=True)
-    f_cache_name = CharField(max_length=50)
+    f_cache_name = CharField(max_length=50, null=True)
     t_ttl = BigIntegerField(default=0)
 
     class Meta:
-        db_table = "t_cache_tracking"
+        db_table = "t_cache_record"
 
 
 class ModelTag(DataBaseModel):

@@ -22,7 +22,7 @@ from fate_flow.utils.object_utils import from_dict_hook
 
 class TestType(unittest.TestCase):
     def test1(self):
-        cache = OutputCache(data={"t1": DTable(namespace="test", name="test1")}, meta={"t1": {"a": 1}})
+        cache = OutputCache(name="test_cache", data={"t1": DTable(namespace="test", name="test1")}, meta={"t1": {"a": 1}})
         a = json_loads(json_dumps(cache))
         self.assertEqual(a["data"]["t1"]["namespace"], "test")
         b = json_loads(json_dumps(cache, with_type=True), object_hook=from_dict_hook)
