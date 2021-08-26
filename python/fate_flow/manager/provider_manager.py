@@ -92,8 +92,10 @@ class ProviderManager:
                 stat_logger.exception(e)
 
     @classmethod
-    def get_provider_object(cls, provider_info):
+    def get_provider_object(cls, provider_info, check_registration=True):
         name, version = provider_info["name"], provider_info["version"]
+        if check_registration and ComponentRegistry.get_providers().get(name, {}).get(version, None) is None:
+            raise Exception(f"{name} {version} provider is not registered")
         path = ComponentRegistry.get_providers().get(name, {}).get(version, {}).get("path", [])
         class_path = ComponentRegistry.get_providers().get(name, {}).get(version, {}).get("class_path", None)
         if class_path is None:
@@ -101,7 +103,7 @@ class ProviderManager:
         return ComponentProvider(name=name, version=version, path=path, class_path=class_path)
 
     @classmethod
-    def get_job_provider_group(cls, dsl_parser, components: list = None):
+    def get_job_provider_group(cls, dsl_parser, components: list = None, check_registration=True):
         providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY)
         # providers format: {'upload_0': {'module': 'Upload', 'provider': {'name': 'fate_flow_tools', 'version': '1.7.0'}}}
 
@@ -112,7 +114,7 @@ class ProviderManager:
                 _providers_info[component_name] = providers_info.get(component_name)
             providers_info = _providers_info
         for component_name, provider_info in providers_info.items():
-            provider = cls.get_provider_object(provider_info["provider"])
+            provider = cls.get_provider_object(provider_info["provider"], check_registration=check_registration)
             group_key = ":".join([provider.name, provider.version])
             if group_key not in group:
                 group[group_key] = {
