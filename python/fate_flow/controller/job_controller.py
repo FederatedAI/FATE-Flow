@@ -37,7 +37,7 @@ from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.utils import job_utils, schedule_utils, data_utils, process_utils
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.utils.authentication_utils import authentication_check
-from fate_flow.operation.task_initializer import TaskInitializer
+from fate_flow.worker.task_initializer import TaskInitializer
 from fate_flow.manager.provider_manager import ProviderManager
 import subprocess
 

@@ -20,7 +20,7 @@ import sys
 from fate_arch.common import file_utils
 from fate_arch.common.versions import get_versions
 from fate_flow.entity.component_provider import ComponentProvider
-from fate_flow.operation.provider_registrar import ProviderRegistrar
+from fate_flow.worker.provider_registrar import ProviderRegistrar
 from fate_flow.settings import stat_logger
 from fate_flow.utils import process_utils, job_utils, base_utils
 from fate_flow.db.component_registry import ComponentRegistry
