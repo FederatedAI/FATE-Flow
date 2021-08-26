@@ -29,10 +29,10 @@ from fate_flow.db.component_registry import ComponentRegistry
 class ProviderManager:
     @classmethod
     def register_default_providers(cls):
-        code = cls.register_fate_flow_component_provider()
+        code, std = cls.register_fate_flow_component_provider()
         if code != 0:
             raise Exception(f"register fate flow tools component failed")
-        code = cls.register_default_fate_algorithm_component_provider()
+        code, std = cls.register_default_fate_algorithm_component_provider()
         if code != 0:
             raise Exception(f"register default fate algorithm component failed")
 
@@ -79,7 +79,7 @@ class ProviderManager:
         stat_logger.info(f'{message} pid {p.pid} start')
         try:
             p.wait(timeout=5)
-            return p.returncode
+            return p.returncode, process_utils.get_subprocess_std(log_dir)
         except subprocess.TimeoutExpired as e:
             err = f"{message} pid {p.pid} run timeout"
             stat_logger.exception(err, e)

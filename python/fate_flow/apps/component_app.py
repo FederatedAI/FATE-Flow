@@ -39,11 +39,15 @@ def register():
                                  version=info["version"],
                                  path=info["path"],
                                  class_path=info.get("class_path", ComponentRegistry.get_default_class_path()))
-    code = ProviderManager.start_registrar_process(provider=provider)
+    code, std = ProviderManager.start_registrar_process(provider=provider)
     if code == 0:
-        return get_json_result()
+        ComponentRegistry.load()
+        if ComponentRegistry.get_providers().get(provider.name, {}).get(provider.version, None) is None:
+            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"not load into memory")
+        else:
+            return get_json_result()
     else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="register failed")
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"register failed:\n{std}")
 
 @manager.route('/provider/get', methods=['POST'])
 def get_providers():

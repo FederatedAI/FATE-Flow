@@ -30,9 +30,9 @@ class ComponentRegistry:
     def load(cls):
         # todo: use database instead of file, and add lock
         if os.path.exists(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME):
-            component_registry = file_utils.load_json_conf(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME)
+            component_registry = file_utils.load_json_conf_real_time(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME)
         else:
-            component_registry = file_utils.load_json_conf(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH)
+            component_registry = file_utils.load_json_conf_real_time(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH)
         cls.REGISTRY.update(component_registry)
         for provider_name, provider_info in cls.REGISTRY.get("providers", {}).items():
             if not ComponentProviderName.contains(provider_name):
@@ -72,7 +72,7 @@ class ComponentRegistry:
     @classmethod
     def dump(cls):
         # todo: use database instead of file, and add lock
-        file_utils.rewrite_json_file(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME, cls.REGISTRY)
+        file_utils.dump_json_conf(cls.REGISTRY, FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME)
 
     @classmethod
     def get_providers(cls):
