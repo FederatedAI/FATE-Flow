@@ -38,11 +38,11 @@ from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.db.db_services import service_db
 from fate_flow.utils.xthread import ThreadPoolExecutor
-from fate_flow.utils import job_utils, process_utils
 from fate_arch.common.log import schedule_logger
 from fate_arch.common.versions import get_versions
 from fate_flow.db.config_manager import ConfigManager
-from fate_flow.component_env_utils import provider_utils
+from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.manager.provider_manager import ProviderManager
 
 
 if __name__ == '__main__':
@@ -62,6 +62,7 @@ if __name__ == '__main__':
     if args.version:
         print(get_versions())
         sys.exit(0)
+    # todo: add a general init steps?
     ConfigManager.load()
     PrivilegeAuth.init()
     RuntimeConfig.init_env()
@@ -69,8 +70,9 @@ if __name__ == '__main__':
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
     RuntimeConfig.service_db = service_db()
     RuntimeConfig.service_db.register_models()
-    provider_utils.init_component_registry()
-    RuntimeConfig.load_component_registry()
+    ComponentRegistry.load()
+    ProviderManager.register_default_providers()
+    ComponentRegistry.load()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
     thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)
