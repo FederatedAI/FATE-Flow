@@ -56,7 +56,7 @@ class MetricManager:
             tracking_metric.f_metric_namespace = metric_namespace
             tracking_metric.f_metric_name = metric_name
             tracking_metric.f_type = data_type
-            default_db_source = tracking_metric.to_json()
+            default_db_source = tracking_metric.to_dict()
             tracking_metric_data_source = []
             for k, v in kv:
                 db_source = default_db_source.copy()

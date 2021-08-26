@@ -108,7 +108,7 @@ class ResourceManager(object):
             used.append({"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id,
                          "core": job.f_cores, "memory": job.f_memory})
         computing_engine_resource = cls.get_engine_registration_info(engine_type=EngineType.COMPUTING, engine_name=engine_name)
-        return used, computing_engine_resource.to_json() if computing_engine_resource else {}
+        return used, computing_engine_resource.to_dict() if computing_engine_resource else {}
 
     @classmethod
     def return_resource(cls, job_id):

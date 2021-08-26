@@ -92,7 +92,7 @@ def query_model_info_from_db(model_version, role=None, party_id=None, model_id=N
         models = MLModel.select().where(*conditions)
 
     if models:
-        return 0, 'Query model info from db success.', [model.to_json() for model in models]
+        return 0, 'Query model info from db success.', [model.to_dict() for model in models]
     else:
         return 100, 'Query model info failed, cannot find model from db. ', []
 

@@ -58,7 +58,7 @@ def stop_job():
         kill_status, kill_details = JobController.stop_jobs(job_id=job_id, stop_status=stop_status)
         schedule_logger(job_id).info(f"stop job on this party status {kill_status}")
         schedule_logger(job_id).info(f"request stop job {jobs[0]} to {stop_status}")
-        status_code, response = FederatedScheduler.request_stop_job(job=jobs[0], stop_status=stop_status, command_body=jobs[0].to_json())
+        status_code, response = FederatedScheduler.request_stop_job(job=jobs[0], stop_status=stop_status, command_body=jobs[0].to_dict())
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
             return get_json_result(retcode=RetCode.SUCCESS, retmsg=f"stop job on this party {kill_status};\n"
                                                                    f"stop job on all party success")
@@ -89,7 +89,7 @@ def query_job():
     jobs = JobSaver.query_job(**request.json)
     if not jobs:
         return get_json_result(retcode=0, retmsg='no job could be found', data=[])
-    return get_json_result(retcode=0, retmsg='success', data=[job.to_json() for job in jobs])
+    return get_json_result(retcode=0, retmsg='success', data=[job.to_dict() for job in jobs])
 
 
 @manager.route('/list/job', methods=['POST'])
@@ -97,7 +97,7 @@ def list_job():
     jobs = job_utils.list_job(request.json.get('limit'))
     if not jobs:
         return get_json_result(retcode=101, retmsg='No job found')
-    return get_json_result(retcode=0, retmsg='success', data=[job.to_json() for job in jobs])
+    return get_json_result(retcode=0, retmsg='success', data=[job.to_dict() for job in jobs])
 
 
 @manager.route('/update', methods=['POST'])
@@ -171,7 +171,7 @@ def query_task():
     tasks = JobSaver.query_task(**request.json)
     if not tasks:
         return get_json_result(retcode=101, retmsg='find task failed')
-    return get_json_result(retcode=0, retmsg='success', data=[task.to_json() for task in tasks])
+    return get_json_result(retcode=0, retmsg='success', data=[task.to_dict() for task in tasks])
 
 
 @manager.route('/list/task', methods=['POST'])
@@ -179,7 +179,7 @@ def list_task():
     tasks = job_utils.list_task(request.json.get('limit'))
     if not tasks:
         return get_json_result(retcode=100, retmsg='No task found')
-    return get_json_result(retcode=0, retmsg='success', data=[task.to_json() for task in tasks])
+    return get_json_result(retcode=0, retmsg='success', data=[task.to_dict() for task in tasks])
 
 
 @manager.route('/data/view/query', methods=['POST'])
@@ -187,7 +187,7 @@ def query_component_output_data_info():
     output_data_infos = Tracker.query_output_data_infos(**request.json)
     if not output_data_infos:
         return get_json_result(retcode=101, retmsg='find data view failed')
-    return get_json_result(retcode=0, retmsg='success', data=[output_data_info.to_json() for output_data_info in output_data_infos])
+    return get_json_result(retcode=0, retmsg='success', data=[output_data_info.to_dict() for output_data_info in output_data_infos])
 
 
 @manager.route('/clean', methods=['POST'])
