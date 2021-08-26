@@ -28,6 +28,7 @@ from fate_flow.settings import stat_logger
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
+from fate_flow.utils import job_utils
 
 
 gen_key_string_separator = '#'
@@ -133,7 +134,7 @@ def query_model_info_from_file(model_id=None, model_version=None, role=None, par
 
 def gather_model_info_data(model: PipelinedModel, query_filters=None):
     if model.exists():
-        pipeline = model.read_component_model('pipeline', 'pipeline')['Pipeline']
+        pipeline = model.read_pipelined_model(component_name=job_utils.job_pipeline_component_name())["Pipeline"]
         model_info = OrderedDict()
         if query_filters and isinstance(query_filters, list):
             for attr, field in pipeline.ListFields():
