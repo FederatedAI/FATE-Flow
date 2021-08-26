@@ -101,6 +101,14 @@ def get_job_log_directory(job_id, *args):
     return os.path.join(file_utils.get_project_base_directory(), 'logs', job_id, *args)
 
 
+def get_worker_directory(worker_type, worker_id, *args):
+    return os.path.join(file_utils.get_project_base_directory(), 'worker', worker_type, worker_id, *args)
+
+
+def get_worker_log_directory(worker_type, worker_id, *args):
+    return os.path.join(file_utils.get_project_base_directory(), 'worker', worker_type, worker_id, *args)
+
+
 def check_config(config: typing.Dict, required_parameters: typing.List):
     for parameter in required_parameters:
         if parameter not in config:

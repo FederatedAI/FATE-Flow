@@ -18,7 +18,7 @@ from fate_arch.session import Session
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.operation.task_executor import TaskExecutor
+from fate_flow.worker.task_executor import TaskExecutor
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils import detect_utils, job_utils, schedule_utils
 from fate_flow.utils.detect_utils import validate_request

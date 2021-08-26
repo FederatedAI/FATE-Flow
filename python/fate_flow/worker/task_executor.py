@@ -30,7 +30,9 @@ from fate_flow.entity.run_status import TaskStatus, PassException
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.config_manager import ConfigManager
+from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.manager.data_manager import DataTableTracker
+from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.scheduling_apps.client.operation_client import OperationClient
@@ -126,7 +128,7 @@ class TaskExecutor(object):
             RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
             # todo: get conf from server
             ConfigManager.load()
-            RuntimeConfig.load_component_registry()
+            ComponentRegistry.load()
             executor_pid = os.getpid()
             task_info.update({
                 "job_id": job_id,
@@ -163,10 +165,10 @@ class TaskExecutor(object):
 
             job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser, job_configuration.runtime_conf_on_party, role, party_id)
             component = dsl_parser.get_component_info(component_name=component_name)
-            component_provider, component_parameters_on_party = provider_utils.get_component_run_info(dsl_parser=dsl_parser,
-                                                                                                      component_name=component_name,
-                                                                                                      role=role,
-                                                                                                      party_id=party_id)
+            component_provider, component_parameters_on_party = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
+                                                                                                       component_name=component_name,
+                                                                                                       role=role,
+                                                                                                       party_id=party_id)
             RuntimeConfig.set_component_provider(component_provider)
             module_name = component.get_module()
             task_input_dsl = component.get_input()
@@ -235,8 +237,8 @@ class TaskExecutor(object):
             if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
                 task_run_args["job_parameters"] = job_parameters
 
-            component_framework = provider_utils.get_provider_interface(provider=component_provider)
-            run_object = component_framework.get(module_name, RuntimeConfig.get_provider_components(provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(role)
+            provider_interface = provider_utils.get_provider_interface(provider=component_provider)
+            run_object = provider_interface.get(module_name, ComponentRegistry.get_provider_components(provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(role)
 
             cpn_input = ComponentInput(
                 tracker=tracker_client,

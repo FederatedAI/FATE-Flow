@@ -14,7 +14,8 @@
             "work_mode": 0,
             "task_parallelism": 2,
             "computing_partitions": 8,
-            "task_cores": 4
+            "task_cores": 4,
+            "auto_retries": 1
         }
     },
     "component_parameters": {

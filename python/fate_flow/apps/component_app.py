@@ -19,7 +19,52 @@ from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.detect_utils import check_config
 from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
+from fate_flow.utils.api_utils import get_json_result
+from fate_flow.utils.detect_utils import validate_request
+from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity.retcode import RetCode
+from fate_flow.manager.provider_manager import ProviderManager
 
+
+@manager.route('/registry/get', methods=['POST'])
+def get_registry():
+    return get_json_result(data=ComponentRegistry.REGISTRY)
+
+@manager.route('/provider/register', methods=['POST'])
+@validate_request("name", "version", "path")
+def register():
+    info = request.json or request.form.to_dict()
+    provider = ComponentProvider(name=info["name"],
+                                 version=info["version"],
+                                 path=info["path"],
+                                 class_path=info.get("class_path", ComponentRegistry.get_default_class_path()))
+    code, std = ProviderManager.start_registrar_process(provider=provider)
+    if code == 0:
+        ComponentRegistry.load()
+        if ComponentRegistry.get_providers().get(provider.name, {}).get(provider.version, None) is None:
+            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"not load into memory")
+        else:
+            return get_json_result()
+    else:
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"register failed:\n{std}")
+
+@manager.route('/provider/get', methods=['POST'])
+def get_providers():
+    return get_json_result(data=ComponentRegistry.get_providers())
+
+@manager.route('/provider/<provider_name>/get', methods=['POST'])
+def get_provider(provider_name):
+    return get_json_result(data=ComponentRegistry.get_providers().get(provider_name))
+
+
+@manager.route('/get', methods=['POST'])
+def get_components():
+    return get_json_result(data=ComponentRegistry.get_components())
+
+@manager.route('/<component_name>/get', methods=['POST'])
+def get_component(component_name):
+    return get_json_result(data=ComponentRegistry.get_components().get(component_name))
 
 @manager.route('/validate', methods=['POST'])
 def validate_component_param():

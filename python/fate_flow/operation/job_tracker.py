@@ -341,7 +341,7 @@ class Tracker(object):
             tracking_output_data_info.f_table_name = table_name
             tracking_output_data_info.f_create_time = current_timestamp()
             self.bulk_insert_into_db(self.get_dynamic_db_model(TrackingOutputDataInfo, self.job_id),
-                                     [tracking_output_data_info.to_json()])
+                                     [tracking_output_data_info.to_dict()])
         except Exception as e:
             schedule_logger(self.job_id).exception("An exception where inserted output data info {} {} {} to database:\n{}".format(
                 data_name,
@@ -495,7 +495,7 @@ class Tracker(object):
                 job = Job.get_or_none(Job.f_job_id == self.job_id)
                 pipeline = self.pipelined_model.read_pipelined_model(component_name=job_utils.job_pipeline_component_name())[self.pipelined_model.pipeline_model_name]
                 if job:
-                    job_data = job.to_json()
+                    job_data = job.to_dict()
                     model_info = {
                         'job_id': job_data.get("f_job_id"),
                         'role': self.role,

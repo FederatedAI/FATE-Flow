@@ -15,13 +15,11 @@
 #
 
 import copy
-from fate_arch import common
 from fate_arch.abc import Components
-from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, ModuleNotExistError, \
-    RoleParameterNotListError
+from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, RoleParameterNotListError
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.entity.component_provider import ComponentProvider
-from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.db.component_registry import ComponentRegistry
 
 
 class RuntimeConfParserUtil(object):
@@ -67,7 +65,7 @@ class RuntimeConfParserUtil(object):
 
     @staticmethod
     def get_module_name(module, role, provider: Components):
-        return provider.get(module, RuntimeConfig.get_provider_components(provider.provider_name, provider.provider_version)).get_run_obj_name(role)
+        return provider.get(module, ComponentRegistry.get_provider_components(provider.provider_name, provider.provider_version)).get_run_obj_name(role)
 
     @staticmethod
     def get_component_parameters(
@@ -80,7 +78,7 @@ class RuntimeConfParserUtil(object):
         local_role,
         local_party_id,
     ):
-        provider_components = RuntimeConfig.get_provider_components(
+        provider_components = ComponentRegistry.get_provider_components(
             provider.provider_name, provider.provider_version
         )
         support_roles = provider.get(module, provider_components).get_supported_roles()
@@ -236,12 +234,12 @@ class RuntimeConfParserUtil(object):
 
         if name is None:
             name = provider_detail["components"][module]["default_provider"]
-            version = provider_detail["provider"][name]["default"]["version"]
+            version = provider_detail["providers"][name]["default"]["version"]
             return name, version
         else:
             if name not in provider_detail["components"][module]["support_provider"]:
                 raise ValueError(f"Provider {name} does not support, please register in fate-flow")
-            version = provider_detail["provider"][name]["default"]["version"]
+            version = provider_detail["providers"][name]["default"]["version"]
 
             return version
 
@@ -250,8 +248,8 @@ class RuntimeConfParserUtil(object):
                                        provider_version=None, local_role=None, local_party_id=None,
                                        detect=True, provider_cache=None, job_parameters=None):
         if provider_name and provider_version:
-            provider_path = provider_detail["provider"][provider_name][provider_version]["path"]
-            provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name, version=provider_version, path=provider_path))
+            provider_path = provider_detail["providers"][provider_name][provider_version]["path"]
+            provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name, version=provider_version, path=provider_path, class_path=ComponentRegistry.get_default_class_path()))
             if provider_cache is not None:
                 if provider_name not in provider_cache:
                     provider_cache[provider_name] = {}
