@@ -94,8 +94,8 @@ class ProviderManager:
     @classmethod
     def get_provider_object(cls, provider_info):
         name, version = provider_info["name"], provider_info["version"]
-        path = ComponentRegistry.REGISTRY["provider"].get(name, {}).get(version, {}).get("path", [])
-        class_path = ComponentRegistry.REGISTRY["provider"].get(name, {}).get(version, {}).get("class_path", None)
+        path = ComponentRegistry.get_providers().get(name, {}).get(version, {}).get("path", [])
+        class_path = ComponentRegistry.get_providers().get(name, {}).get(version, {}).get("class_path", None)
         if class_path is None:
             class_path = ComponentRegistry.REGISTRY["default_settings"]["class_path"]
         return ComponentProvider(name=name, version=version, path=path, class_path=class_path)

@@ -34,10 +34,10 @@ class ComponentRegistry:
         else:
             component_registry = file_utils.load_json_conf(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH)
         cls.REGISTRY.update(component_registry)
-        for provider_name, provider_info in cls.REGISTRY.get("provider", {}).items():
+        for provider_name, provider_info in cls.REGISTRY.get("providers", {}).items():
             if not ComponentProviderName.contains(provider_name):
                 raise Exception(f"not support component provider: {provider_name}")
-        cls.REGISTRY["provider"] = cls.REGISTRY.get("provider", {})
+        cls.REGISTRY["providers"] = cls.REGISTRY.get("providers", {})
         cls.REGISTRY["components"] = cls.REGISTRY.get("components", {})
 
     @classmethod
@@ -49,13 +49,13 @@ class ComponentRegistry:
                 "version": provider.version
             }
         }
-        register_info = cls.REGISTRY["provider"].get(provider.name, register_info)
+        register_info = cls.get_providers().get(provider.name, register_info)
         register_info[provider.version] = {
                 "path": provider.path,
                 "class_path": provider.class_path,
                 "components": support_components
         }
-        cls.REGISTRY["provider"][provider.name] = register_info
+        cls.REGISTRY["providers"][provider.name] = register_info
         return support_components
 
     @classmethod
@@ -75,8 +75,16 @@ class ComponentRegistry:
         file_utils.rewrite_json_file(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME, cls.REGISTRY)
 
     @classmethod
+    def get_providers(cls):
+        return cls.REGISTRY.get("providers", {})
+
+    @classmethod
+    def get_components(cls):
+        return cls.REGISTRY.get("components", {})
+
+    @classmethod
     def get_provider_components(cls, provider_name, provider_version):
-        return cls.REGISTRY["provider"][provider_name][provider_version]["components"]
+        return cls.get_providers()[provider_name][provider_version]["components"]
 
     @classmethod
     def get_default_class_path(cls):

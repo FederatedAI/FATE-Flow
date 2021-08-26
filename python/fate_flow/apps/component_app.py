@@ -27,7 +27,11 @@ from fate_flow.entity.retcode import RetCode
 from fate_flow.manager.provider_manager import ProviderManager
 
 
-@manager.route('/register', methods=['POST'])
+@manager.route('/registry/get', methods=['POST'])
+def get_registry():
+    return get_json_result(data=ComponentRegistry.REGISTRY)
+
+@manager.route('/provider/register', methods=['POST'])
 @validate_request("name", "version", "path")
 def register():
     info = request.json or request.form.to_dict()
@@ -41,6 +45,22 @@ def register():
     else:
         return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="register failed")
 
+@manager.route('/provider/get', methods=['POST'])
+def get_providers():
+    return get_json_result(data=ComponentRegistry.get_providers())
+
+@manager.route('/provider/<provider_name>/get', methods=['POST'])
+def get_provider(provider_name):
+    return get_json_result(data=ComponentRegistry.get_providers().get(provider_name))
+
+
+@manager.route('/get', methods=['POST'])
+def get_components():
+    return get_json_result(data=ComponentRegistry.get_components())
+
+@manager.route('/<component_name>/get', methods=['POST'])
+def get_component(component_name):
+    return get_json_result(data=ComponentRegistry.get_components().get(component_name))
 
 @manager.route('/validate', methods=['POST'])
 def validate_component_param():

@@ -234,12 +234,12 @@ class RuntimeConfParserUtil(object):
 
         if name is None:
             name = provider_detail["components"][module]["default_provider"]
-            version = provider_detail["provider"][name]["default"]["version"]
+            version = provider_detail["providers"][name]["default"]["version"]
             return name, version
         else:
             if name not in provider_detail["components"][module]["support_provider"]:
                 raise ValueError(f"Provider {name} does not support, please register in fate-flow")
-            version = provider_detail["provider"][name]["default"]["version"]
+            version = provider_detail["providers"][name]["default"]["version"]
 
             return version
 
@@ -248,7 +248,7 @@ class RuntimeConfParserUtil(object):
                                        provider_version=None, local_role=None, local_party_id=None,
                                        detect=True, provider_cache=None, job_parameters=None):
         if provider_name and provider_version:
-            provider_path = provider_detail["provider"][provider_name][provider_version]["path"]
+            provider_path = provider_detail["providers"][provider_name][provider_version]["path"]
             provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name, version=provider_version, path=provider_path, class_path=ComponentRegistry.get_default_class_path()))
             if provider_cache is not None:
                 if provider_name not in provider_cache:
