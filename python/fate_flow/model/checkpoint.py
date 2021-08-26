@@ -15,6 +15,7 @@
 #
 import hashlib
 from pathlib import Path
+from typing import Dict, Tuple
 from shutil import copytree, rmtree
 from base64 import b64encode
 from datetime import datetime
@@ -22,12 +23,13 @@ from collections import deque, OrderedDict
 
 from ruamel import yaml
 
+from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.file_utils import get_project_base_directory
 
 from fate_flow.settings import stat_logger
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.utils.model_utils import gen_party_model_id
-from fate_flow.model import serialize_buffer_object, parse_proto_object, Locker
+from fate_flow.model import Locker
 
 
 class Checkpoint(Locker):
@@ -48,7 +50,7 @@ class Checkpoint(Locker):
     def available(self):
         return self.database.exists()
 
-    def save(self, model_buffers: dict):
+    def save(self, model_buffers: Dict[str, Tuple[str, bytes, dict]]):
         if not model_buffers:
             raise ValueError('model_buffers is empty.')
 
@@ -60,18 +62,21 @@ class Checkpoint(Locker):
             'models': {},
         }
 
-        model_strings = {}
-        for model_name, buffer_object in model_buffers.items():
-            model_strings[model_name] = serialize_buffer_object(buffer_object)
+        model_data = {}
+        for model_name, (pb_name, serialized_string, json_format_dict) in model_buffers.items():
+            model_data[model_name] = (serialized_string, json_format_dict)
+
             data['models'][model_name] = {
-                'filename': f'{model_name}.pb',
-                'sha1': hashlib.sha1(model_strings[model_name]).hexdigest(),
-                'buffer_name': type(buffer_object).__name__,
+                'sha1': hashlib.sha1(serialized_string).hexdigest(),
+                'buffer_name': pb_name,
             }
 
         with self.lock:
             for model_name, model in data['models'].items():
-                (self.directory / model['filename']).write_bytes(model_strings[model_name])
+                serialized_string, json_format_dict = model_data[model_name]
+                (self.directory / f'{model_name}.pb').write_bytes(serialized_string)
+                (self.directory / f'{model_name}.json').write_text(json_dumps(json_format_dict), 'utf8')
+
             self.database.write_text(yaml.dump(data, Dumper=yaml.RoundTripDumper), 'utf8')
 
         stat_logger.info(f'Checkpoint saved. path: {self.directory}')
@@ -94,23 +99,37 @@ class Checkpoint(Locker):
 
         with self.lock:
             for model_name, model in data['models'].items():
-                model['filepath'] = self.directory / model['filename']
-                if not model['filepath'].exists():
-                    raise FileNotFoundError('Checkpoint is incorrect: protobuf file not found. '
-                                            f'filepath: {model["filepath"]}')
+                model['filepath_pb'] = self.directory / f'{model_name}.pb'
+                model['filepath_json'] = self.directory / f'{model_name}.json'
+                if not model['filepath_pb'].exists() or not model['filepath_json'].exists():
+                    raise FileNotFoundError(
+                        'Checkpoint is incorrect: protobuf file or json file not found. '
+                        f'protobuf filepath: {model["filepath_pb"]} json filepath: {model["filepath_json"]}'
+                    )
 
-            model_strings = {model_name: model['filepath'].read_bytes()
-                             for model_name, model in data['models'].items()}
+            model_data = {
+                model_name: (
+                    model['filepath_pb'].read_bytes(),
+                    json_loads(model['filepath_json'].read_text('utf8')),
+
+                )
+                for model_name, model in data['models'].items()
+            }
 
         for model_name, model in data['models'].items():
-            sha1 = hashlib.sha1(model_strings[model_name]).hexdigest()
+            serialized_string, json_format_dict = model_data[model_name]
+
+            sha1 = hashlib.sha1(serialized_string).hexdigest()
             if sha1 != model['sha1']:
                 raise ValueError('Checkpoint may be incorrect: hash dose not match. '
                                  f'filepath: {model["filepath"]} expected: {model["sha1"]} actual: {sha1}')
 
         data['models'] = {
-            model_name: parse_proto_object(model['buffer_name'], model_strings[model_name])
-            if parse_models else b64encode(model_strings[model_name]).decode('ascii')
+            model_name: (
+                model['buffer_name'],
+                *model_data[model_name],
+            ) if parse_models
+            else b64encode(model_data[model_name][0]).decode('ascii')
             for model_name, model in data['models'].items()
         }
         return data if include_database else data['models']
