@@ -38,7 +38,7 @@ class ProviderManager:
 
     @classmethod
     def register_fate_flow_component_provider(cls):
-        path = ["fate_flow"]
+        path = file_utils.get_python_base_directory("fate_flow")
         provider = ComponentProvider(name="fate_flow_tools", version=get_versions()["FATEFlow"], path=path, class_path=ComponentRegistry.get_default_class_path())
         return cls.start_registrar_process(provider)
 
@@ -48,6 +48,7 @@ class ProviderManager:
                 "fate",
                 "python",
                 "federatedml"]
+        path = file_utils.get_python_base_directory(*path)
         provider = ComponentProvider(name="fate_algorithm", version=get_versions()["FATE"], path=path, class_path=ComponentRegistry.get_default_class_path())
         return cls.start_registrar_process(provider)
 
@@ -73,12 +74,7 @@ class ProviderManager:
             '-c', config_path,
         ]
 
-        env = {
-            "PYTHONPATH": file_utils.get_python_base_directory(*provider.path[:-1])
-        }
-
-        stat_logger.info(f"{message} extra env {env}")
-        p = process_utils.run_subprocess(job_id=None, config_dir=config_dir, process_cmd=process_cmd, extra_env=env,
+        p = process_utils.run_subprocess(job_id=None, config_dir=config_dir, process_cmd=process_cmd, extra_env=provider.env,
                                          log_dir=log_dir, cwd_dir=config_dir)
         stat_logger.info(f'{message} pid {p.pid} start')
         try:

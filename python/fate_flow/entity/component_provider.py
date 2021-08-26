@@ -14,15 +14,13 @@
 #  limitations under the License.
 #
 import os
-import typing
 
-from fate_arch.common import file_utils
 from fate_flow.entity.types import ComponentProviderName
 from fate_flow.entity.types import BaseEntity
 
 
 class ComponentProvider(BaseEntity):
-    def __init__(self, name: str, version: str, path: typing.List[str], class_path: dict, **kwargs):
+    def __init__(self, name: str, version: str, path: str, class_path: dict, **kwargs):
         if not ComponentProviderName.contains(name):
             raise ValueError(f"not support {name} provider")
         self._name = name
@@ -33,7 +31,7 @@ class ComponentProvider(BaseEntity):
         self.init_env()
 
     def init_env(self):
-        self._env["PYTHONPATH"] = os.path.join(file_utils.get_python_base_directory(), *self._path[:-1])
+        self._env["PYTHONPATH"] = os.path.join("/", *self._path.split("/")[:-1])
 
     @property
     def name(self):

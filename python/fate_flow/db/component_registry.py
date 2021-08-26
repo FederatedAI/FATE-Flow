@@ -47,12 +47,13 @@ class ComponentRegistry:
         register_info = {
             "default": {
                 "version": provider.version
-            },
-            provider.version: {
+            }
+        }
+        register_info = cls.REGISTRY["provider"].get(provider.name, register_info)
+        register_info[provider.version] = {
                 "path": provider.path,
                 "class_path": provider.class_path,
                 "components": support_components
-            }
         }
         cls.REGISTRY["provider"][provider.name] = register_info
         return support_components
@@ -60,12 +61,13 @@ class ComponentRegistry:
     @classmethod
     def register_components(cls, provider: ComponentProvider, components):
         for _cpn in components.keys():
-            cls.REGISTRY["components"][_cpn] = cls.REGISTRY["components"].get(_cpn, {
-                "default_provider": "", "support_provider": []})
+            cls.REGISTRY["components"][_cpn] = cls.REGISTRY["components"].get(_cpn,
+                                                                              {
+                                                                                  "default_provider": provider.name, "support_provider": []
+                                                                              })
             if provider.name not in cls.REGISTRY["components"][_cpn]["support_provider"]:
                 # do not use set because the json format is not supported
                 cls.REGISTRY["components"][_cpn]["support_provider"].append(provider.name)
-            cls.REGISTRY["components"][_cpn]["default_provider"] = provider.name
 
     @classmethod
     def dump(cls):

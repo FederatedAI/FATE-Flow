@@ -19,6 +19,27 @@ from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.detect_utils import check_config
 from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
+from fate_flow.utils.api_utils import get_json_result
+from fate_flow.utils.detect_utils import validate_request
+from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity.retcode import RetCode
+from fate_flow.manager.provider_manager import ProviderManager
+
+
+@manager.route('/register', methods=['POST'])
+@validate_request("name", "version", "path")
+def register():
+    info = request.json or request.form.to_dict()
+    provider = ComponentProvider(name=info["name"],
+                                 version=info["version"],
+                                 path=info["path"],
+                                 class_path=info.get("class_path", ComponentRegistry.get_default_class_path()))
+    code = ProviderManager.start_registrar_process(provider=provider)
+    if code == 0:
+        return get_json_result()
+    else:
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="register failed")
 
 
 @manager.route('/validate', methods=['POST'])

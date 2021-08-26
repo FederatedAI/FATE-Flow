@@ -38,4 +38,4 @@ def get_component_class(provider: ComponentProvider, class_name):
 
 
 def get_component_class_path(provider: ComponentProvider, class_name):
-    return f"{provider.path[-1]}.{provider.class_path.get(class_name)}".split(".")
+    return f"{provider.path.split('/')[-1]}.{provider.class_path.get(class_name)}".split(".")
