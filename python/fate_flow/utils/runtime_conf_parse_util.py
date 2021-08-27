@@ -201,6 +201,10 @@ class RuntimeConfParserUtil(object):
                                      "@provider_version is not supported")
                 if len(provider_msg) == 2:
                     name, version = provider.split("@", -1)
+                    if name not in provider_detail["components"][module]["support_provider"]:
+                        raise ValueError(f"Provider: {name} does not support, please register")
+                    if version not in provider_detail["provider"][name]:
+                        raise ValueError(f"Provider: {name} version: {version} does not support, please register")
                 else:
                     name = provider_msg[0]
                     version = RuntimeConfParserUtil.get_component_provider(alias=component,
