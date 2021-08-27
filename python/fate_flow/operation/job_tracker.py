@@ -476,7 +476,7 @@ class Tracker(object):
                     sess._federation_session.cleanup(parties)
                     schedule_logger(self.job_id).info('pulsar topic clean up success')
             except Exception as e:
-                schedule_logger(self.job_id).exception("cleanup error", e)
+                schedule_logger(self.job_id).exception("cleanup error")
             finally:
                 sess.destroy_all_sessions()
             return True
