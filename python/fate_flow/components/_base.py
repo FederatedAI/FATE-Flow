@@ -123,7 +123,8 @@ class ComponentBase(metaclass=abc.ABCMeta):
         ...
 
     def _warm_start(self, cpn_input: ComponentInputProtocol):
-        raise NotImplementedError(f"warn start for {type(self)} not implemented")
+        ...
+        #raise NotImplementedError(f"warn start for {type(self)} not implemented")
 
     def run(self, cpn_input: ComponentInputProtocol, retry: bool = True):
         self.task_version_id = cpn_input.task_version_id

@@ -119,8 +119,13 @@ class TaskExecutor(object):
         task_info = {}
         try:
             job_id, component_name, task_id, task_version, role, party_id, run_ip, config, job_server = cls.get_run_task_args(kwargs)
-            schedule_logger().info('\nenter task executor process')
-            schedule_logger().info("python env: {}, python path: {}".format(os.getenv("VIRTUAL_ENV"), os.getenv("PYTHONPATH")))
+            job_log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), role, str(party_id))
+            task_log_dir = os.path.join(job_log_dir, component_name)
+            LoggerFactory.set_directory(directory=task_log_dir, parent_log_dir=job_log_dir,
+                                        append_to_parent_log=True, force=True)
+            logger = schedule_logger()
+            logger.info('enter task executor process')
+            logger.info("python env: {}, python path: {}".format(os.getenv("VIRTUAL_ENV"), os.getenv("PYTHONPATH")))
             # init function args
             if job_server:
                 RuntimeConfig.init_config(JOB_SERVER_HOST=job_server.split(':')[0],
@@ -144,19 +149,13 @@ class TaskExecutor(object):
             operation_client = OperationClient()
             job_configuration = JobConfiguration(**operation_client.get_job_conf(job_id, role, party_id))
             task_parameters_conf = operation_client.load_json_conf(job_id, config)
-
-            job_log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), role, str(party_id))
-            task_log_dir = os.path.join(job_log_dir, component_name)
-            LoggerFactory.set_directory(directory=task_log_dir, parent_log_dir=job_log_dir,
-                                        append_to_parent_log=True, force=True)
-
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
                                                            runtime_conf=job_configuration.runtime_conf,
                                                            train_runtime_conf=job_configuration.train_runtime_conf,
                                                            pipeline_dsl=None)
 
             user_name = dsl_parser.get_job_parameters().get(role, {}).get(party_id, {}).get("user", '')
-            schedule_logger().info(f"user name:{user_name}")
+            logger.info(f"user name:{user_name}")
             src_user = task_parameters_conf.get("src_user")
             task_parameters = RunParameters(**task_parameters_conf)
             job_parameters = task_parameters
@@ -217,14 +216,9 @@ class TaskExecutor(object):
                                  runtime_conf=component_parameters_on_party,
                                  service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
             sess.as_default()
-
-            schedule_logger().info(f'run {component_name} {task_id} {task_version} on {role} {party_id} task')
-            schedule_logger().info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
-            schedule_logger().info(f"task input dsl {task_input_dsl}")
-            need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
-            if not need_run:
-                schedule_logger().info("need run component parameters is {}".format(component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)))
-                raise PassException()
+            logger.info(f'run {component_name} {task_id} {task_version} on {role} {party_id} task')
+            logger.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
+            logger.info(f"task input dsl {task_input_dsl}")
             task_run_args, input_table_list = cls.get_task_run_args(job_id=job_id, role=role, party_id=party_id,
                                                                     task_id=task_id,
                                                                     task_version=task_version,
@@ -233,9 +227,17 @@ class TaskExecutor(object):
                                                                     task_parameters=task_parameters,
                                                                     input_dsl=task_input_dsl,
                                                                     )
-
             if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
                 task_run_args["job_parameters"] = job_parameters
+
+            logger.info(f"task input args {task_run_args}")
+
+            need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
+            """
+            if not need_run:
+                logger.info("need run component parameters is {}".format(component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)))
+                raise PassException()
+            """
 
             provider_interface = provider_utils.get_provider_interface(provider=component_provider)
             run_object = provider_interface.get(module_name, ComponentRegistry.get_provider_components(provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(role)
@@ -265,6 +267,7 @@ class TaskExecutor(object):
             profile.profile_ends()
 
             output_table_list = []
+            logger.info(f"task output data {cpn_output.data}")
             for index, data in enumerate(cpn_output.data):
                 data_name = task_output_dsl.get('data')[index] if task_output_dsl.get('data') else '{}'.format(index)
                 #todo: the token depends on the engine type, maybe in job parameters
@@ -295,7 +298,10 @@ class TaskExecutor(object):
                                               output_storage_engine=job_parameters.storage_engine,
                                               output_storage_address=job_parameters.engines_address.get(EngineType.STORAGE, {}),
                                               token={"username": user_name})
-            task_info["party_status"] = TaskStatus.SUCCESS
+            if need_run:
+                task_info["party_status"] = TaskStatus.SUCCESS
+            else:
+                task_info["party_status"] = TaskStatus.PASS
         except PassException as e:
             task_info["party_status"] = TaskStatus.PASS
         except Exception as e:

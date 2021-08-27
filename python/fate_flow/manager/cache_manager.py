@@ -20,7 +20,7 @@ from fate_arch.abc import CTableABC
 from fate_arch.common import DTable
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, CacheRecord
-from fate_flow.entity.types import OutputCache
+from fate_flow.entity.types import DataCache
 from fate_flow.utils import base_utils
 
 
@@ -28,8 +28,8 @@ class CacheManager:
     @classmethod
     def persistent(cls, cache_name: str, cache_data: typing.Dict[str, CTableABC], cache_meta: dict, output_namespace: str,
                    output_name: str, output_storage_engine: str, output_storage_address: dict,
-                   token=None) -> OutputCache:
-        cache = OutputCache(name=cache_name, meta=cache_meta)
+                   token=None) -> DataCache:
+        cache = DataCache(name=cache_name, meta=cache_meta)
         for name, table in cache_data.items():
             table_meta = session.Session.persistent(computing_table=table,
                                                     table_namespace=output_namespace,
@@ -43,7 +43,7 @@ class CacheManager:
         return cache
 
     @classmethod
-    def load(cls, cache: OutputCache) -> typing.Tuple[typing.Dict[str, CTableABC], dict]:
+    def load(cls, cache: DataCache) -> typing.Tuple[typing.Dict[str, CTableABC], dict]:
         cache_data = {}
         for name, table in cache.data.items():
             storage_table_meta = storage.StorageTableMeta(name=table.name, namespace=table.namespace)
@@ -56,12 +56,11 @@ class CacheManager:
 
     @classmethod
     @DB.connection_context()
-    def record(cls, cache: OutputCache, job_id: str = None, role: str = None, party_id: int = None, component_name: str = None, task_id: str = None, task_version: int = None,
+    def record(cls, cache: DataCache, job_id: str = None, role: str = None, party_id: int = None, component_name: str = None, task_id: str = None, task_version: int = None,
                cache_name: str = None):
-        if cache.task_id is None:
-            cache.task_id = task_id
-        if cache.task_version is None:
-            cache.task_version = task_version
+        for attr in {"job_id", "component_name", "task_id", "task_version"}:
+            if getattr(cache, attr) is None and locals().get(attr) is not None:
+                setattr(cache, attr, locals().get(attr))
         tracking = CacheRecord()
         tracking.f_create_time = current_timestamp()
         tracking.f_cache_key = base_utils.new_unique_id()
@@ -81,7 +80,7 @@ class CacheManager:
     @classmethod
     @DB.connection_context()
     def query(cls, cache_key: str = None, role: str = None, party_id: int = None, component_name: str = None, cache_name: str = None,
-              **kwargs) -> typing.List[OutputCache]:
+              **kwargs) -> typing.List[DataCache]:
         if cache_key is not None:
             trackings = CacheRecord.query(cache_key=cache_key)
         else:
