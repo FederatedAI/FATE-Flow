@@ -8,7 +8,6 @@
         },
         "dataio_0": {
             "module": "DataIO",
-            "provider": "fate_algorithm@1.7.0",
             "input": {
                 "data": {
                     "data": [
@@ -22,6 +21,12 @@
             },
 			"need_deploy": true
          },
+        "cache_loader_0": {
+            "module": "CacheLoader",
+            "output": {
+                "cache": ["cache1"]
+            }
+        },
         "hetero_feature_binning_0": {
             "module": "HeteroFeatureBinning",
             "input": {
@@ -29,7 +34,8 @@
                     "data": [
                         "dataio_0.train"
                     ]
-                }
+                },
+                "cache": ["cache_loader_0.cache1"]
             },
             "output": {
                 "data": ["train"],

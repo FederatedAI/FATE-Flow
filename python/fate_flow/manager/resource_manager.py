@@ -108,14 +108,17 @@ class ResourceManager(object):
             used.append({"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id,
                          "core": job.f_cores, "memory": job.f_memory})
         computing_engine_resource = cls.get_engine_registration_info(engine_type=EngineType.COMPUTING, engine_name=engine_name)
-        return used, computing_engine_resource.to_json() if computing_engine_resource else {}
+        return used, computing_engine_resource.to_dict() if computing_engine_resource else {}
 
     @classmethod
     def return_resource(cls, job_id):
         jobs = JobSaver.query_job(job_id=job_id)
+        if not jobs:
+            raise Exception(f'no found job {job_id}')
         return_resource_job_list = []
         for job in jobs:
-            job_info = {"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id, "resource_in_use": job.f_resource_in_use}
+            job_info = {"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id,
+                        "resource_in_use": job.f_resource_in_use, "resource_return_status": False}
             if job.f_resource_in_use:
                 return_status = cls.return_job_resource(job.f_job_id, job.f_role, job.f_party_id)
                 job_info["resource_return_status"] = return_status

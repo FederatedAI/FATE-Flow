@@ -18,7 +18,7 @@ from fate_arch.session import Session
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.operation.task_executor import TaskExecutor
+from fate_flow.worker.task_executor import TaskExecutor
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils import detect_utils, job_utils, schedule_utils
 from fate_flow.utils.detect_utils import validate_request
@@ -58,11 +58,11 @@ def table_add():
                                          partitions=request_data.get('partitions', None),
                                          hava_head=request_data.get("head"), schema=schema,
                                          id_delimiter=request_data.get("id_delimiter"), in_serialized=in_serialized)
+    response = get_json_result(data={"table_name": name, "namespace": namespace})
     if not table.check_address():
-        table.destroy()
-        sess.destroy_all_sessions()
-        return get_json_result(retcode=100, retmsg=f'engine {engine} address {address_dict} is not exist')
-    return get_json_result(data={"table_name": name, "namespace": namespace})
+        response = get_json_result(retcode=100, retmsg=f'engine {engine} address {address_dict} check failed')
+    sess.destroy_all_sessions()
+    return response
 
 
 

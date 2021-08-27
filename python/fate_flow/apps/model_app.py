@@ -620,7 +620,7 @@ def deploy():
         init_party_id = key.split('/')[-2].split('#')[1]
         model_init_role = (value['f_initiator_role'] if value.get('f_initiator_role')
                            else value.get('f_train_runtime_conf', {}).get('initiator', {}).get('role', ''))
-        model_init_party_id = (value['f_initiator_role_party_id'] if value.get('f_initiator_role_party_id')
+        model_init_party_id = (value['f_initiator_party_id'] if value.get('f_initiator_party_id')
                                else value.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id', ''))
 
         if init_role == model_init_role and init_party_id == str(model_init_party_id):

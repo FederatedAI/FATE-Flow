@@ -19,16 +19,16 @@ import typing
 
 from google.protobuf import json_format
 from fate_arch.abc import CTableABC
-from fate_arch.common import EngineType, Party, DTable
+from fate_arch.common import EngineType, Party
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
 from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64, json_loads
 from fate_arch.common.log import schedule_logger
-from fate_flow.db.db_models import (DB, Job, TrackingMetric, TrackingOutputDataInfo,
+from fate_flow.db.db_models import (DB, Job, TrackingOutputDataInfo,
                                     ComponentSummary, MachineLearningModelInfo as MLModel)
 from fate_flow.entity.metric import Metric, MetricMeta
-from fate_flow.entity.types import OutputCache
+from fate_flow.entity.types import DataCache
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.pipelined_model import pipelined_model
@@ -37,7 +37,6 @@ from fate_flow.manager.metric_manager import MetricManager
 from fate_arch import storage, session
 from fate_flow.utils import model_utils, job_utils, data_utils
 from fate_flow.entity.run_parameters import RunParameters
-from fate_flow.operation.job_saver import JobSaver
 from fate_flow.component_env_utils import feature_utils
 
 
@@ -235,55 +234,41 @@ class Tracker(object):
         return self.pipelined_model.get_component_define(component_name=self.component_name)
 
     def save_output_cache(self, cache_data: typing.Dict[str, CTableABC], cache_meta: dict, cache_name, output_storage_engine, output_storage_address: dict, token=None):
-        cache = OutputCache(meta=cache_meta)
-        for name, table in cache_data.items():
-            output_table_namespace, output_table_name = data_utils.default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="cache")
-            table_meta = session.Session.persistent(computing_table=table,
-                                                    table_namespace=output_table_namespace,
-                                                    table_name=output_table_name,
-                                                    schema=None,
-                                                    engine=output_storage_engine,
-                                                    engine_address=output_storage_address,
-                                                    token=token)
-            cache.data[name] = DTable(namespace=table_meta.namespace, name=table_meta.name, partitions=table_meta.partitions)
-        cache_key = CacheManager.save_tracking(cache=cache,
-                                               job_id=self.job_id,
-                                               component_name=self.component_name,
-                                               task_id=self.task_id,
-                                               task_version=self.task_version,
-                                               cache_name=cache_name)
-        schedule_logger(self.job_id).info(f"save {self.task_id} {self.task_version} output cache, cache key is {cache_key}")
+        output_namespace, output_name = data_utils.default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="cache")
+        cache = CacheManager.persistent(cache_name, cache_data, cache_meta, output_namespace, output_name, output_storage_engine, output_storage_address, token=token)
+        cache_key = self.tracking_output_cache(cache=cache, cache_name=cache_name)
         return cache_key
 
-    def get_output_cache(self, cache_key=None, cache_name=None):
-        task_id, task_version = self.task_id, self.task_version
-        if not task_id or task_version:
-            tasks = JobSaver.query_task(job_id=self.job_id,
+    def tracking_output_cache(self, cache: DataCache, cache_name: str) -> str:
+        cache_key = CacheManager.record(cache=cache,
+                                        job_id=self.job_id,
                                         role=self.role,
                                         party_id=self.party_id,
                                         component_name=self.component_name,
-                                        only_latest=True
-                                        )
-            if not tasks:
-                raise Exception("can not found task")
-            elif len(tasks) > 1:
-                raise Exception("more than two were found")
-            task_id = tasks[0].f_task_id
-            task_version = tasks[0].f_task_version
-        caches = CacheManager.query_tracking(task_id=task_id, task_version=task_version, cache_name=cache_name, cache_key=cache_key)
+                                        task_id=self.task_id,
+                                        task_version=self.task_version,
+                                        cache_name=cache_name)
+        schedule_logger(self.job_id).info(f"tracking {self.task_id} {self.task_version} output cache, cache key is {cache_key}")
+        return cache_key
+
+    def get_output_cache(self, cache_key=None, cache_name=None):
+        caches = self.query_output_cache(cache_key=cache_key, cache_name=cache_name)
         if caches:
-            output_cache = caches[0]
-            cache_data = {}
-            for name, table in output_cache.data.items():
-                storage_table_meta = storage.StorageTableMeta(name=table.name, namespace=table.namespace)
-                computing_table = session.get_latest_opened().computing.load(
-                    storage_table_meta.get_address(),
-                    schema=storage_table_meta.get_schema(),
-                    partitions=table.partitions)
-                cache_data[name] = computing_table
-            return cache_data, output_cache.meta
+            return CacheManager.load(cache=caches[0])
         else:
             return None, None
+
+    def query_output_cache(self, cache_key=None, cache_name=None) -> typing.List[DataCache]:
+        caches = CacheManager.query(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name, cache_name=cache_name, cache_key=cache_key)
+        group = {}
+        # only the latest version of the task output is retrieved
+        for cache in caches:
+            group_key = f"{cache.task_id}-{cache.name}"
+            if group_key not in group:
+                group[group_key] = cache
+            elif cache.task_version > group[group_key].task_version:
+                group[group_key] = cache
+        return list(group.values())
 
     @DB.connection_context()
     def insert_summary_into_db(self, summary_data: dict):
@@ -356,7 +341,7 @@ class Tracker(object):
             tracking_output_data_info.f_table_name = table_name
             tracking_output_data_info.f_create_time = current_timestamp()
             self.bulk_insert_into_db(self.get_dynamic_db_model(TrackingOutputDataInfo, self.job_id),
-                                     [tracking_output_data_info.to_json()])
+                                     [tracking_output_data_info.to_dict()])
         except Exception as e:
             schedule_logger(self.job_id).exception("An exception where inserted output data info {} {} {} to database:\n{}".format(
                 data_name,
@@ -510,7 +495,7 @@ class Tracker(object):
                 job = Job.get_or_none(Job.f_job_id == self.job_id)
                 pipeline = self.pipelined_model.read_pipelined_model(component_name=job_utils.job_pipeline_component_name())[self.pipelined_model.pipeline_model_name]
                 if job:
-                    job_data = job.to_json()
+                    job_data = job.to_dict()
                     model_info = {
                         'job_id': job_data.get("f_job_id"),
                         'role': self.role,

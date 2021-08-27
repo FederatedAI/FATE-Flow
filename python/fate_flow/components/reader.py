@@ -91,14 +91,15 @@ class Reader(ComponentBase):
             computing_engine=self.job_parameters.computing_engine,
             output_storage_address=output_storage_address,
         )
-        sess = Session(
-            session_id=job_utils.generate_session_id(
-                self.tracker.task_id,
-                self.tracker.task_version,
-                self.tracker.role,
-                self.tracker.party_id,
-            )
+        session_id = job_utils.generate_session_id(
+            self.tracker.task_id,
+            self.tracker.task_version,
+            self.tracker.role,
+            self.tracker.party_id,
         )
+        sess = Session(session_id=session_id, computing=self.job_parameters.computing_engine)
+        sess.init_computing(computing_session_id=session_id)
+        sess.as_default()
         input_table_session = sess.storage(storage_engine=input_table_meta.get_engine())
         input_table = input_table_session.get_table(
             name=input_table_meta.get_name(), namespace=input_table_meta.get_namespace()
@@ -122,7 +123,7 @@ class Reader(ComponentBase):
             namespace=output_table_namespace,
             partitions=input_table_meta.partitions,
         )
-        self.copy_table(src_table=input_table, dest_table=output_table)
+        self.save_table(src_table=input_table, dest_table=output_table)
         # update real count to meta info
         output_table.count()
         output_table_meta = StorageTableMeta(
@@ -329,25 +330,13 @@ class Reader(ComponentBase):
         LOGGER.info(
             f"destination table name: {dest_table.get_name()} namespace: {dest_table.get_namespace()} engine: {dest_table.get_engine()}"
         )
-        if dest_table.get_engine() == dest_table.get_engine():
+        if src_table.get_engine() == dest_table.get_engine():
             self.to_save(src_table, dest_table)
         else:
             self.copy_table(src_table, dest_table)
 
     def to_save(self, src_table, dest_table):
         src_table_meta = src_table.meta
-        sess = session.Session(
-            computing_type=self.job_parameters.computing_engine,
-            federation_type=self.job_parameters.federation_engine,
-        )
-        computing_session_id = job_utils.generate_session_id(
-            self.tracker.task_id,
-            self.tracker.task_version,
-            self.tracker.role,
-            self.tracker.party_id,
-        )
-        sess.init_computing(computing_session_id=computing_session_id)
-        sess.as_default()
         src_computing_table = session.get_latest_opened().computing.load(
             src_table_meta.get_address(),
             schema=src_table_meta.get_schema(),
@@ -365,11 +354,12 @@ class Reader(ComponentBase):
         self.tracker.job_tracker.save_output_data(
             src_computing_table,
             output_storage_engine=dest_table.get_engine(),
-            output_storage_address=dest_table.get_address(),
+            output_storage_address=dest_table.get_address().__dict__,
             output_table_namespace=dest_table.get_namespace(),
             output_table_name=dest_table.get_name(),
             schema=schema,
         )
+        dest_table.meta.update_metas(schema=schema, part_of_data=src_table_meta.get_part_of_data())
         LOGGER.info(
             f"save {dest_table.get_namespace()} {dest_table.get_name()} success"
         )
