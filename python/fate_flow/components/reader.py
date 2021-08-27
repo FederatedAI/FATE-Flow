@@ -330,10 +330,10 @@ class Reader(ComponentBase):
         LOGGER.info(
             f"destination table name: {dest_table.get_name()} namespace: {dest_table.get_namespace()} engine: {dest_table.get_engine()}"
         )
-        if src_table.get_engine() == dest_table.get_engine():
-            self.to_save(src_table, dest_table)
-        else:
-            self.copy_table(src_table, dest_table)
+        # if src_table.get_engine() == dest_table.get_engine():
+        #     self.to_save(src_table, dest_table)
+        # else:
+        self.copy_table(src_table, dest_table)
 
     def to_save(self, src_table, dest_table):
         src_table_meta = src_table.meta
