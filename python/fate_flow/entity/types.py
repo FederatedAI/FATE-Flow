@@ -79,11 +79,13 @@ class InputSearchType(IntEnum):
     JOB_COMPONENT_OUTPUT = 2
 
 
-class OutputCache(BaseEntity):
-    def __init__(self, name: str, data: typing.Dict[str, DTable] = None, meta: dict = None, task_id: str = None, task_version: int = None):
+class DataCache(BaseEntity):
+    def __init__(self, name: str, data: typing.Dict[str, DTable] = None, meta: dict = None, job_id: str = None, component_name: str = None, task_id: str = None, task_version: int = None):
         self._name: str = name
         self._data: typing.Dict[str, DTable] = data if data else {}
         self._meta: dict = meta
+        self._job_id = job_id
+        self._component_name = component_name
         self._task_id: str = task_id
         self._task_version: int = task_version
 
@@ -98,6 +100,22 @@ class OutputCache(BaseEntity):
     @property
     def meta(self):
         return self._meta
+
+    @property
+    def job_id(self):
+        return self._job_id
+
+    @job_id.setter
+    def job_id(self, job_id: str):
+        self._job_id = job_id
+
+    @property
+    def component_name(self):
+        return self._component_name
+
+    @component_name.setter
+    def component_name(self, component_name: str):
+        self._component_name = component_name
 
     @property
     def task_id(self):

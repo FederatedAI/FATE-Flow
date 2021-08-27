@@ -28,7 +28,7 @@ from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingOutputDataInfo,
                                     ComponentSummary, MachineLearningModelInfo as MLModel)
 from fate_flow.entity.metric import Metric, MetricMeta
-from fate_flow.entity.types import OutputCache
+from fate_flow.entity.types import DataCache
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.pipelined_model import pipelined_model
@@ -239,7 +239,7 @@ class Tracker(object):
         cache_key = self.tracking_output_cache(cache=cache, cache_name=cache_name)
         return cache_key
 
-    def tracking_output_cache(self, cache: OutputCache, cache_name: str) -> str:
+    def tracking_output_cache(self, cache: DataCache, cache_name: str) -> str:
         cache_key = CacheManager.record(cache=cache,
                                         job_id=self.job_id,
                                         role=self.role,
@@ -258,7 +258,7 @@ class Tracker(object):
         else:
             return None, None
 
-    def query_output_cache(self, cache_key=None, cache_name=None) -> typing.List[OutputCache]:
+    def query_output_cache(self, cache_key=None, cache_name=None) -> typing.List[DataCache]:
         caches = CacheManager.query(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name, cache_name=cache_name, cache_key=cache_key)
         group = {}
         # only the latest version of the task output is retrieved
