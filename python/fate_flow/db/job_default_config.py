@@ -40,6 +40,9 @@ class JobDefaultConfig(ReloadConfigBase):
     # upload
     upload_max_bytes = None  # bytes
 
+    # component output
+    output_data_summary_count_limit = None
+
     @classmethod
     def load(cls):
         conf = file_utils.load_yaml_conf(FATE_FLOW_JOB_DEFAULT_CONFIG_PATH)

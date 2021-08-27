@@ -13,21 +13,61 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.db.db_models import DB, CacheTracking
-from fate_flow.utils import base_utils
-from fate_flow.entity.types import OutputCache
+import typing
+
+from fate_arch import session, storage
+from fate_arch.abc import CTableABC
+from fate_arch.common import DTable
 from fate_arch.common.base_utils import current_timestamp
+from fate_flow.db.db_models import DB, CacheRecord
+from fate_flow.entity.types import DataCache
+from fate_flow.utils import base_utils
 
 
 class CacheManager:
     @classmethod
+    def persistent(cls, cache_name: str, cache_data: typing.Dict[str, CTableABC], cache_meta: dict, output_namespace: str,
+                   output_name: str, output_storage_engine: str, output_storage_address: dict,
+                   token=None) -> DataCache:
+        cache = DataCache(name=cache_name, meta=cache_meta)
+        for name, table in cache_data.items():
+            table_meta = session.Session.persistent(computing_table=table,
+                                                    table_namespace=output_namespace,
+                                                    table_name=f"{output_name}_{name}",
+                                                    schema=None,
+                                                    engine=output_storage_engine,
+                                                    engine_address=output_storage_address,
+                                                    token=token)
+            cache.data[name] = DTable(namespace=table_meta.namespace, name=table_meta.name,
+                                      partitions=table_meta.partitions)
+        return cache
+
+    @classmethod
+    def load(cls, cache: DataCache) -> typing.Tuple[typing.Dict[str, CTableABC], dict]:
+        cache_data = {}
+        for name, table in cache.data.items():
+            storage_table_meta = storage.StorageTableMeta(name=table.name, namespace=table.namespace)
+            computing_table = session.get_latest_opened().computing.load(
+                storage_table_meta.get_address(),
+                schema=storage_table_meta.get_schema(),
+                partitions=table.partitions)
+            cache_data[name] = computing_table
+        return cache_data, cache.meta
+
+    @classmethod
     @DB.connection_context()
-    def save_tracking(cls, cache: OutputCache, job_id, component_name, task_id: str = None, task_version: int = None, cache_name: str = None):
-        tracking = CacheTracking()
+    def record(cls, cache: DataCache, job_id: str = None, role: str = None, party_id: int = None, component_name: str = None, task_id: str = None, task_version: int = None,
+               cache_name: str = None):
+        for attr in {"job_id", "component_name", "task_id", "task_version"}:
+            if getattr(cache, attr) is None and locals().get(attr) is not None:
+                setattr(cache, attr, locals().get(attr))
+        tracking = CacheRecord()
         tracking.f_create_time = current_timestamp()
-        tracking.f_cache_key = cls.generate_cache_key(task_id, task_version, cache_name)
+        tracking.f_cache_key = base_utils.new_unique_id()
         tracking.f_cache = cache
         tracking.f_job_id = job_id
+        tracking.f_role = role
+        tracking.f_party_id = party_id
         tracking.f_component_name = component_name
         tracking.f_task_id = task_id
         tracking.f_task_version = task_version
@@ -39,13 +79,11 @@ class CacheManager:
 
     @classmethod
     @DB.connection_context()
-    def query_tracking(cls, cache_key: str = None, task_id: str = None, task_version: int = None, cache_name: str = None, **kwargs):
-        trackings = CacheTracking.query(cache_key=cache_key, task_id=task_id, task_version=task_version, cache_name=cache_name, **kwargs)
-        return [tracking.f_cache for tracking in trackings]
-
-    @classmethod
-    def generate_cache_key(cls, task_id: str = None, task_version: int = None, cache_name: str = None):
-        if task_id and task_version and cache_name:
-            return "-".join([task_id, str(task_version), cache_name])
+    def query(cls, cache_key: str = None, role: str = None, party_id: int = None, component_name: str = None, cache_name: str = None,
+              **kwargs) -> typing.List[DataCache]:
+        if cache_key is not None:
+            trackings = CacheRecord.query(cache_key=cache_key)
         else:
-            return base_utils.new_unique_id()
+            trackings = CacheRecord.query(role=role, party_id=party_id, component_name=component_name,
+                                          cache_name=cache_name, **kwargs)
+        return [tracking.f_cache for tracking in trackings]

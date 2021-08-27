@@ -20,7 +20,7 @@ from fate_flow.controller.engine_controller.engine import EngineABC
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.entity.types import KillProcessRetCode
-from fate_flow.operation.task_executor import TaskExecutor
+from fate_flow.worker.task_executor import TaskExecutor
 from fate_flow.utils import job_utils, process_utils
 from fate_flow.db.db_models import Task
 from fate_flow.entity.component_provider import ComponentProvider

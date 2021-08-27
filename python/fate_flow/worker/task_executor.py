@@ -18,25 +18,29 @@ import argparse
 import importlib
 import traceback
 
+from fate_arch import session, storage
+from fate_arch.computing import ComputingEngine
 from fate_arch.common import file_utils, EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, timestamp_to_date, json_dumps
-from fate_arch import session
+from fate_arch.common.log import schedule_logger, getLogger, LoggerFactory
+
 from fate_flow.entity.types import ProcessRole
 from fate_flow.entity.job import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus, PassException
 from fate_flow.entity.run_parameters import RunParameters
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_arch.common.log import schedule_logger, getLogger, LoggerFactory
+from fate_flow.db.config_manager import ConfigManager
+from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.manager.data_manager import DataTableTracker
+from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.components.checkpoint import CheckpointManager
-from fate_arch import storage
+from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.scheduling_apps.client.operation_client import OperationClient
 from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.scheduling_apps.client import ControllerClient, TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
-from fate_arch.computing import ComputingEngine
 from fate_flow.component_env_utils import provider_utils
+
 
 LOGGER = getLogger()
 
@@ -115,14 +119,21 @@ class TaskExecutor(object):
         task_info = {}
         try:
             job_id, component_name, task_id, task_version, role, party_id, run_ip, config, job_server = cls.get_run_task_args(kwargs)
-            schedule_logger().info('\nenter task executor process')
-            schedule_logger().info("python env: {}, python path: {}".format(os.getenv("VIRTUAL_ENV"), os.getenv("PYTHONPATH")))
+            job_log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), role, str(party_id))
+            task_log_dir = os.path.join(job_log_dir, component_name)
+            LoggerFactory.set_directory(directory=task_log_dir, parent_log_dir=job_log_dir,
+                                        append_to_parent_log=True, force=True)
+            logger = schedule_logger()
+            logger.info('enter task executor process')
+            logger.info("python env: {}, python path: {}".format(os.getenv("VIRTUAL_ENV"), os.getenv("PYTHONPATH")))
             # init function args
             if job_server:
                 RuntimeConfig.init_config(JOB_SERVER_HOST=job_server.split(':')[0],
                                           HTTP_PORT=job_server.split(':')[1])
             RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
-            RuntimeConfig.load_component_registry()
+            # todo: get conf from server
+            ConfigManager.load()
+            ComponentRegistry.load()
             executor_pid = os.getpid()
             task_info.update({
                 "job_id": job_id,
@@ -138,19 +149,13 @@ class TaskExecutor(object):
             operation_client = OperationClient()
             job_configuration = JobConfiguration(**operation_client.get_job_conf(job_id, role, party_id))
             task_parameters_conf = operation_client.load_json_conf(job_id, config)
-
-            job_log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job_id), role, str(party_id))
-            task_log_dir = os.path.join(job_log_dir, component_name)
-            LoggerFactory.set_directory(directory=task_log_dir, parent_log_dir=job_log_dir,
-                                        append_to_parent_log=True, force=True)
-
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
                                                            runtime_conf=job_configuration.runtime_conf,
                                                            train_runtime_conf=job_configuration.train_runtime_conf,
                                                            pipeline_dsl=None)
 
             user_name = dsl_parser.get_job_parameters().get(role, {}).get(party_id, {}).get("user", '')
-            schedule_logger().info(f"user name:{user_name}")
+            logger.info(f"user name:{user_name}")
             src_user = task_parameters_conf.get("src_user")
             task_parameters = RunParameters(**task_parameters_conf)
             job_parameters = task_parameters
@@ -159,10 +164,10 @@ class TaskExecutor(object):
 
             job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser, job_configuration.runtime_conf_on_party, role, party_id)
             component = dsl_parser.get_component_info(component_name=component_name)
-            component_provider, component_parameters_on_party = provider_utils.get_component_run_info(dsl_parser=dsl_parser,
-                                                                                                      component_name=component_name,
-                                                                                                      role=role,
-                                                                                                      party_id=party_id)
+            component_provider, component_parameters_on_party = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
+                                                                                                       component_name=component_name,
+                                                                                                       role=role,
+                                                                                                       party_id=party_id)
             RuntimeConfig.set_component_provider(component_provider)
             module_name = component.get_module()
             task_input_dsl = component.get_input()
@@ -184,7 +189,7 @@ class TaskExecutor(object):
             }
             tracker = Tracker(**kwargs)
             tracker_client = TrackerClient(**kwargs)
-            checkpoint_manager = CheckpointManager(**kwargs, max_to_keep=3)
+            checkpoint_manager = CheckpointManager(**kwargs)
 
             task_info["party_status"] = TaskStatus.RUNNING
             cls.report_task_update_to_driver(task_info)
@@ -211,14 +216,9 @@ class TaskExecutor(object):
                                  runtime_conf=component_parameters_on_party,
                                  service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
             sess.as_default()
-
-            schedule_logger().info(f'run {component_name} {task_id} {task_version} on {role} {party_id} task')
-            schedule_logger().info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
-            schedule_logger().info(f"task input dsl {task_input_dsl}")
-            need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
-            if not need_run:
-                schedule_logger().info("need run component parameters is {}".format(component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)))
-                raise PassException()
+            logger.info(f'run {component_name} {task_id} {task_version} on {role} {party_id} task')
+            logger.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
+            logger.info(f"task input dsl {task_input_dsl}")
             task_run_args, input_table_list = cls.get_task_run_args(job_id=job_id, role=role, party_id=party_id,
                                                                     task_id=task_id,
                                                                     task_version=task_version,
@@ -227,12 +227,20 @@ class TaskExecutor(object):
                                                                     task_parameters=task_parameters,
                                                                     input_dsl=task_input_dsl,
                                                                     )
-
             if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
                 task_run_args["job_parameters"] = job_parameters
 
-            component_framework = provider_utils.get_provider_interface(provider=component_provider)
-            run_object = component_framework.get(module_name, RuntimeConfig.get_provider_components(provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(role)
+            logger.info(f"task input args {task_run_args}")
+
+            need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
+            """
+            if not need_run:
+                logger.info("need run component parameters is {}".format(component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)))
+                raise PassException()
+            """
+
+            provider_interface = provider_utils.get_provider_interface(provider=component_provider)
+            run_object = provider_interface.get(module_name, ComponentRegistry.get_provider_components(provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(role)
 
             cpn_input = ComponentInput(
                 tracker=tracker_client,
@@ -254,12 +262,12 @@ class TaskExecutor(object):
             )
             # add profile logs
             profile.profile_start()
-            is_warn_start = checkpoint_manager.latest_checkpoint is not None
-            cpn_output = run_object.run(cpn_input, is_warn_start)
+            cpn_output = run_object.run(cpn_input)
             sess.wait_remote_all_done()
             profile.profile_ends()
 
             output_table_list = []
+            logger.info(f"task output data {cpn_output.data}")
             for index, data in enumerate(cpn_output.data):
                 data_name = task_output_dsl.get('data')[index] if task_output_dsl.get('data') else '{}'.format(index)
                 #todo: the token depends on the engine type, maybe in job parameters
@@ -290,7 +298,10 @@ class TaskExecutor(object):
                                               output_storage_engine=job_parameters.storage_engine,
                                               output_storage_address=job_parameters.engines_address.get(EngineType.STORAGE, {}),
                                               token={"username": user_name})
-            task_info["party_status"] = TaskStatus.SUCCESS
+            if need_run:
+                task_info["party_status"] = TaskStatus.SUCCESS
+            else:
+                task_info["party_status"] = TaskStatus.PASS
         except PassException as e:
             task_info["party_status"] = TaskStatus.PASS
         except Exception as e:
