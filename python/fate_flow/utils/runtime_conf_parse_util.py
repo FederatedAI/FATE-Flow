@@ -185,8 +185,8 @@ class RuntimeConfParserUtil(object):
         else:
             raise NotImplementedError(f"conf version = `{conf_version}` is not supported")
 
-        param_class.check()
         conf["ComponentParam"] = param_class.as_dict()
+        param_class.check()
 
         return conf
 
