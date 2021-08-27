@@ -78,7 +78,7 @@ class ProviderManager:
                                          log_dir=log_dir, cwd_dir=config_dir)
         stat_logger.info(f'{message} pid {p.pid} start')
         try:
-            p.wait(timeout=5)
+            p.wait(timeout=60)
             return p.returncode, process_utils.get_subprocess_std(log_dir)
         except subprocess.TimeoutExpired as e:
             err = f"{message} pid {p.pid} run timeout"
