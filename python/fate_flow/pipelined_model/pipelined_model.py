@@ -17,11 +17,10 @@ import os
 import base64
 import hashlib
 import shutil
-import typing
 from copy import deepcopy
-
-from ruamel import yaml
 from google.protobuf import json_format
+import typing
+from ruamel import yaml
 
 from fate_arch.common import file_utils, base_utils
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
@@ -71,31 +70,23 @@ class PipelinedModel(Locker):
             with open(self.define_meta_path, "x", encoding="utf-8") as fw:
                 yaml.dump({"describe": "This is the model definition meta"}, fw, Dumper=yaml.RoundTripDumper)
 
-    def save_component_model(self, component_name, component_module_name, model_alias,
-                             model_buffers: typing.Dict[str, typing.Tuple[str, bytes, dict]], tracker_client=None):
+    def save_component_model(self, component_name, component_module_name, model_alias, model_buffers: typing.Dict[str, typing.Tuple[str, bytes, dict]], tracker_client=None):
         model_proto_index = {}
         component_model = {"buffer": {}}
         component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
         if not tracker_client:
             os.makedirs(component_model_storage_path, exist_ok=True)
-
-        for model_name, (pb_name, serialized_string, json_format_dict) in model_buffers.items():
+        for model_name, (proto_index, buffer_object_serialized_string, buffer_object_json_format) in model_buffers.items():
             storage_path = os.path.join(component_model_storage_path, model_name)
             if not tracker_client:
-                with self.lock:
-                    with open(storage_path, "wb") as fw:
-                        fw.write(serialized_string)
-                    with open(f"{storage_path}.json", "w") as fw:
-                        fw.write(base_utils.json_dumps(json_format_dict))
+                with self.lock, open(storage_path, "wb") as fw:
+                    fw.write(buffer_object_serialized_string)
+                with self.lock, open(f"{storage_path}.json", "w") as fw:
+                    fw.write(base_utils.json_dumps(buffer_object_json_format))
             else:
-                component_model["buffer"][storage_path.replace(file_utils.get_project_base_directory(), "")] = (
-                    base64.b64encode(serialized_string).decode(),
-                    json_format_dict,
-                )
-
-            model_proto_index[model_name] = pb_name  # index of model name and proto buffer class name
+                component_model["buffer"][storage_path.replace(file_utils.get_project_base_directory(), "")] = (base64.b64encode(buffer_object_serialized_string).decode(), buffer_object_json_format)
+            model_proto_index[model_name] = proto_index  # index of model name and proto buffer class name
             stat_logger.info("Save {} {} {} buffer".format(component_name, model_alias, model_name))
-
         if not tracker_client:
             self.update_component_meta(component_name=component_name,
                                        component_module_name=component_module_name,

@@ -24,7 +24,7 @@ from fate_flow.scheduling_apps.client.tracker_client import TrackerClient
 LOGGER = log.getLogger()
 
 
-class ComponentInputProtocol(abc.ABC):
+class ComponentInputProtocol(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
@@ -102,7 +102,6 @@ class ComponentOutput:
                 buffer_object = default_empty_fill_pb2.DefaultEmptyFillMessage()
                 buffer_object.flag = "set"
                 serialized_string = buffer_object.SerializeToString()
-
             pb_name = type(buffer_object).__name__
             serialized_models[model_name] = (pb_name, serialized_string)
 
@@ -113,7 +112,7 @@ class ComponentOutput:
         return self._cache
 
 
-class ComponentBase(abc.ABC):
+class ComponentBase(metaclass=abc.ABCMeta):
 
     def __init__(self):
         self.task_version_id = ""
