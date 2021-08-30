@@ -27,5 +27,5 @@ def build_engine(computing_engine):
     elif computing_engine == ComputingEngine.LINKIS_SPARK:
         engine_session = LinkisSparkEngine()
     else:
-        raise ValueError(f"${computing_engine} is not supported")
+        raise ValueError(f"{computing_engine} is not supported")
     return engine_session

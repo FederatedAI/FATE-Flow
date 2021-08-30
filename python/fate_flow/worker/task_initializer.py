@@ -25,7 +25,9 @@ from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.types import ProcessRole
 from fate_flow.entity.component_provider import ComponentProvider
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.utils import job_utils, schedule_utils
+from fate_flow.utils import schedule_utils
+from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.manager.provider_manager import ProviderManager
 
 LOGGER = getLogger()
 
@@ -60,8 +62,7 @@ class TaskInitializer(object):
                                           HTTP_PORT=args.job_server.split(":")[1])
                 RuntimeConfig.set_process_role(ProcessRole.EXECUTOR)
             start_time = current_timestamp()
-            RuntimeConfig.load_component_registry()
-
+            ComponentRegistry.load()
             job_dsl = file_utils.load_json_conf(args.dsl)
             job_runtime_conf = file_utils.load_json_conf(args.runtime_conf)
             train_runtime_conf = file_utils.load_json_conf(args.train_runtime_conf)
@@ -80,17 +81,17 @@ class TaskInitializer(object):
                 task_info = {}
                 task_info.update(common_task_info)
 
-                parameters = provider_utils.get_component_parameters(dsl_parser=dsl_parser,
-                                                                     component_name=component_name,
-                                                                     role=role,
-                                                                     party_id=party_id,
-                                                                     provider=provider)
+                parameters = ProviderManager.get_component_parameters(dsl_parser=dsl_parser,
+                                                                      component_name=component_name,
+                                                                      role=role,
+                                                                      party_id=party_id,
+                                                                      provider=provider)
                 if parameters:
                     task_info = {}
                     task_info.update(common_task_info)
                     task_info["component_name"] = component_name
                     task_info["component_module"] = parameters["module"]
-                    task_info["provider_info"] = provider.to_json()
+                    task_info["provider_info"] = provider.to_dict()
                     task_info["component_parameters"] = parameters
                     TaskController.create_task(role=role, party_id=party_id,
                                                run_on_this_party=common_task_info["run_on_this_party"],

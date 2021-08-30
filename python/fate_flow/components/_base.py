@@ -127,7 +127,8 @@ class ComponentBase(metaclass=abc.ABCMeta):
         ...
 
     def _retry(self, cpn_input: ComponentInputProtocol):
-        raise NotImplementedError(f"_retry for {type(self)} not implemented")
+        ...
+        # raise NotImplementedError(f"_retry for {type(self)} not implemented")
 
     def run(self, cpn_input: ComponentInputProtocol, retry: bool = True):
         self.task_version_id = cpn_input.task_version_id

@@ -39,7 +39,7 @@ class LinkisSparkEngine(EngineABC):
         schedule_logger(Task.f_job_id).info(f"headers:{headers}")
         python_path = ServiceRegistry.LINKIS_SPARK_CONFIG.get("python_path")
         execution_code = 'import sys\nsys.path.append("{}")\n' \
-                         'from fate_flow.operation.task_executor import TaskExecutor\n' \
+                         'from fate_flow.worker.task_executor import TaskExecutor\n' \
                          'task_info = TaskExecutor.run_task(job_id="{}",component_name="{}",' \
                          'task_id="{}",task_version={},role="{}",party_id={},' \
                          'run_ip="{}",config="{}",job_server="{}")\n' \

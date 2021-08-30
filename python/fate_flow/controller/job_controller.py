@@ -37,7 +37,8 @@ from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.utils import job_utils, schedule_utils, data_utils, process_utils
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.utils.authentication_utils import authentication_check
-from fate_flow.operation.task_initializer import TaskInitializer
+from fate_flow.worker.task_initializer import TaskInitializer
+from fate_flow.manager.provider_manager import ProviderManager
 import subprocess
 
 
@@ -270,8 +271,8 @@ class JobController(object):
         common_task_info["auto_retry_delay"] = job_parameters.auto_retry_delay
         if task_version:
             common_task_info["task_version"] = task_version
-        provider_group = provider_utils.get_job_provider_group(dsl_parser=dsl_parser,
-                                                               components=components)
+        provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser,
+                                                                components=components)
         initialized_result = {}
         for group_key, group_info in provider_group.items():
             initialized_config = {}

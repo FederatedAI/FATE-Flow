@@ -28,7 +28,7 @@ from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingOutputDataInfo,
                                     ComponentSummary, MachineLearningModelInfo as MLModel)
 from fate_flow.entity.metric import Metric, MetricMeta
-from fate_flow.entity.types import OutputCache
+from fate_flow.entity.types import DataCache
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.pipelined_model import pipelined_model
@@ -239,7 +239,7 @@ class Tracker(object):
         cache_key = self.tracking_output_cache(cache=cache, cache_name=cache_name)
         return cache_key
 
-    def tracking_output_cache(self, cache: OutputCache, cache_name: str) -> str:
+    def tracking_output_cache(self, cache: DataCache, cache_name: str) -> str:
         cache_key = CacheManager.record(cache=cache,
                                         job_id=self.job_id,
                                         role=self.role,
@@ -258,7 +258,7 @@ class Tracker(object):
         else:
             return None, None
 
-    def query_output_cache(self, cache_key=None, cache_name=None) -> typing.List[OutputCache]:
+    def query_output_cache(self, cache_key=None, cache_name=None) -> typing.List[DataCache]:
         caches = CacheManager.query(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name, cache_name=cache_name, cache_key=cache_key)
         group = {}
         # only the latest version of the task output is retrieved
@@ -341,7 +341,7 @@ class Tracker(object):
             tracking_output_data_info.f_table_name = table_name
             tracking_output_data_info.f_create_time = current_timestamp()
             self.bulk_insert_into_db(self.get_dynamic_db_model(TrackingOutputDataInfo, self.job_id),
-                                     [tracking_output_data_info.to_json()])
+                                     [tracking_output_data_info.to_dict()])
         except Exception as e:
             schedule_logger(self.job_id).exception("An exception where inserted output data info {} {} {} to database:\n{}".format(
                 data_name,
@@ -476,7 +476,7 @@ class Tracker(object):
                     sess._federation_session.cleanup(parties)
                     schedule_logger(self.job_id).info('pulsar topic clean up success')
             except Exception as e:
-                schedule_logger(self.job_id).exception("cleanup error", e)
+                schedule_logger(self.job_id).exception("cleanup error")
             finally:
                 sess.destroy_all_sessions()
             return True
@@ -495,7 +495,7 @@ class Tracker(object):
                 job = Job.get_or_none(Job.f_job_id == self.job_id)
                 pipeline = self.pipelined_model.read_pipelined_model(component_name=job_utils.job_pipeline_component_name())[self.pipelined_model.pipeline_model_name]
                 if job:
-                    job_data = job.to_json()
+                    job_data = job.to_dict()
                     model_info = {
                         'job_id': job_data.get("f_job_id"),
                         'role': self.role,

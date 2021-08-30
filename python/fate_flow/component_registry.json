@@ -1,7 +1,7 @@
 {
   "components": {
   },
-  "provider": {
+  "providers": {
   },
   "default_settings": {
     "class_path": {

@@ -144,8 +144,6 @@ def gen_data_access_job_config(config_data, access_module):
     for _ in job_parameters_fields:
         if _ in config_data:
             job_runtime_conf["job_parameters"]["common"][_] = config_data[_]
-    #todo: component_type may be not in job parameter
-    job_runtime_conf["job_parameters"]["common"]["component_provider"] = "fate_flow_tools"
     job_runtime_conf["role"][initiator_role] = [initiator_party_id]
     job_dsl = {
         "components": {}
@@ -163,7 +161,8 @@ def gen_data_access_job_config(config_data, access_module):
                 "storage_address",
                 "destroy",
                 "extend_sid",
-                "auto_increasing_sid"
+                "auto_increasing_sid",
+                "block_size"
             }
         job_runtime_conf["component_parameters"]["role"][initiator_role]["0"]["upload_0"] = {}
         for p in parameters:
