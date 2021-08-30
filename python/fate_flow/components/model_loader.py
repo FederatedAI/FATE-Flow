@@ -15,6 +15,7 @@
 #
 from fate_flow.components._base import BaseParam, ComponentBase, ComponentMeta, ComponentInputProtocol
 from fate_flow.model.checkpoint import CheckpointManager
+from fate_flow.entity.metric import MetricMeta
 
 
 model_loader_cpn_meta = ComponentMeta('ModelLoader')
@@ -28,7 +29,7 @@ class ModelLoader(ComponentBase):
         for i in ('model_id', 'model_version', 'component_name'):
             params[i] = cpn_input.parameters.get(i)
             if params[i] is None:
-                raise TypeError(f'Component Checkpoint needs {i}')
+                raise TypeError(f'Component ModelLoader needs {i}')
         for i in ('step_index', 'step_name'):
             params[i] = cpn_input.parameters.get(i)
 
@@ -51,6 +52,9 @@ class ModelLoader(ComponentBase):
             raise TypeError('Checkpoint not found.')
 
         self.model_output = checkpoint.read()
+
+        self.tracker.set_metric_meta('model_loader', f'{checkpoint.step_index}#{checkpoint.step_name}',
+                                     MetricMeta('checkpoint', 'checkpoint_info', checkpoint.to_dict()))
 
 
 @model_loader_cpn_meta.bind_param
