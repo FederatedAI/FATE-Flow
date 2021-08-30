@@ -111,7 +111,6 @@ class Checkpoint(Locker):
                 model_name: (
                     model['filepath_pb'].read_bytes(),
                     json_loads(model['filepath_json'].read_text('utf8')),
-
                 )
                 for model_name, model in data['models'].items()
             }
