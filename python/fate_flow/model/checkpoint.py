@@ -271,7 +271,7 @@ class CheckpointManager:
             checkpoint = self.latest_checkpoint
 
         if checkpoint is None:
-            raise ValueError('No checkpoint.')
+            raise TypeError('No checkpoint.')
 
         new_directory = self.get_directory(new_model_version)
         new_directory.mkdir(0o755)
