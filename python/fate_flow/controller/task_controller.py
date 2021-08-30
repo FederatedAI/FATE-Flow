@@ -199,7 +199,8 @@ class TaskController(object):
             if kill_status_code == KillProcessRetCode.KILLED or task.f_status not in {TaskStatus.WAITING}:
                 job_utils.start_session_stop(task)
             backend_engine = build_engine(task.f_engine_conf.get("computing_engine"))
-            backend_engine.kill(task)
+            if backend_engine:
+                backend_engine.kill(task)
         except Exception as e:
             schedule_logger(task.f_job_id).exception(e)
         else:

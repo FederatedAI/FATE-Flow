@@ -122,7 +122,7 @@ class Tracker(object):
         return view_data
 
     def save_output_data(self, computing_table, output_storage_engine, output_storage_address: dict,
-                         output_table_namespace=None, output_table_name=None, schema=None, token=None):
+                         output_table_namespace=None, output_table_name=None, schema=None, token=None, need_read=True):
         if computing_table:
             if not output_table_namespace or not output_table_name:
                 output_table_namespace, output_table_name = data_utils.default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="data")
@@ -141,12 +141,13 @@ class Tracker(object):
                 "is_str": False,
                 "extend_header": []
             }
-            for k, v in computing_table.collect():
-                data_line, part_of_data["is_str"], part_of_data["extend_header"] = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
-                part_of_data["data_line"].append(data_line)
-                part_of_limit -= 1
-                if part_of_limit == 0:
-                    break
+            if need_read:
+                for k, v in computing_table.collect():
+                    data_line, part_of_data["is_str"], part_of_data["extend_header"] = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
+                    part_of_data["data_line"].append(data_line)
+                    part_of_limit -= 1
+                    if part_of_limit == 0:
+                        break
 
             session.Session.persistent(computing_table=computing_table,
                                        table_namespace=output_table_namespace,
