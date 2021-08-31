@@ -16,10 +16,10 @@
 import numpy
 
 from component_plugins.fate.python.federatedml.feature.sparse_vector import SparseVector
+from component_plugins.fate.python.federatedml.feature.instance import Instance
 
 
 def get_component_output_data_line(src_key, src_value):
-    from federatedml.feature.instance import Instance
     data_line = [src_key]
     is_str = False
     extend_header = []
