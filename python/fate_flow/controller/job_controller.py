@@ -530,7 +530,8 @@ class JobController(object):
         pipeline = pipeline_pb2.Pipeline()
         pipeline.inference_dsl = json_dumps(predict_dsl, byte=True)
         pipeline.train_dsl = json_dumps(job_configuration.dsl, byte=True)
-        pipeline.train_runtime_conf = json_dumps(job_configuration.train_runtime_conf, byte=True)
+        # TODO: job_configuration.train_runtime_conf is empty
+        pipeline.train_runtime_conf = json_dumps(job_configuration.runtime_conf, byte=True)
         pipeline.fate_version = RuntimeConfig.get_env("FATE")
         pipeline.model_id = model_id
         pipeline.model_version = model_version

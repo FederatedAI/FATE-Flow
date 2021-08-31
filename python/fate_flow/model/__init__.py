@@ -20,6 +20,7 @@ from pathlib import Path
 from filelock import FileLock
 
 from fate_arch.protobuf.python.default_empty_fill_pb2 import DefaultEmptyFillMessage
+from federatedml.protobuf import get_proto_buffer_class
 from fate_flow.settings import stat_logger
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.component_env_utils import provider_utils
@@ -35,18 +36,19 @@ def serialize_buffer_object(buffer_object):
     return serialized_string
 
 
-def get_proto_buffer_class(buffer_name):
-    package_path, package_module = provider_utils.get_component_model(provider=RuntimeConfig.COMPONENT_PROVIDER)
-    e = ModuleNotFoundError(f'No module named {buffer_name}')
-    for f in package_path.glob('*.py'):
-        try:
-            proto_module = importlib.import_module('.'.join([package_module, f.stem]))
-            for name, obj in inspect.getmembers(proto_module):
-                if inspect.isclass(obj) and name == buffer_name:
-                    return obj
-        except Exception as e:
-            stat_logger.warning(e)
-    raise e
+# TODO: RuntimeConfig.COMPONENT_PROVIDER is None
+# def get_proto_buffer_class(buffer_name):
+#     package_path, package_module = provider_utils.get_component_model(provider=RuntimeConfig.COMPONENT_PROVIDER)
+#     e = ModuleNotFoundError(f'No module named {buffer_name}')
+#     for f in package_path.glob('*.py'):
+#         try:
+#             proto_module = importlib.import_module('.'.join([package_module, f.stem]))
+#             for name, obj in inspect.getmembers(proto_module):
+#                 if inspect.isclass(obj) and name == buffer_name:
+#                     return obj
+#         except Exception as e:
+#             stat_logger.warning(e)
+#     raise e
 
 
 def parse_proto_object(buffer_name, serialized_string, buffer_class=None):
@@ -55,7 +57,7 @@ def parse_proto_object(buffer_name, serialized_string, buffer_class=None):
             buffer_class = get_proto_buffer_class(buffer_name)
         buffer_object = buffer_class()
     except Exception as e:
-        stat_logger.exception('Can not restore proto buffer object', e)
+        stat_logger.exception('Can not restore proto buffer object')
         raise e
     buffer_name = type(buffer_object).__name__
 
