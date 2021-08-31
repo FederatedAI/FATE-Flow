@@ -52,6 +52,7 @@ class ModelLoader(ComponentBase):
             raise TypeError('Checkpoint not found.')
 
         self.model_output = checkpoint.read()
+        self.serialize = False
 
         self.tracker.set_metric_meta('model_loader', f'{checkpoint.step_index}#{checkpoint.step_name}',
                                      MetricMeta('checkpoint', 'checkpoint_info', checkpoint.to_dict()))
