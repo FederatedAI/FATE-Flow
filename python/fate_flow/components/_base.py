@@ -73,7 +73,7 @@ class ComponentInputProtocol(metaclass=abc.ABCMeta):
 
 
 class ComponentOutput:
-    def __init__(self, data, models, cache: typing.List[tuple]) -> None:
+    def __init__(self, data, models, cache: typing.List[tuple], serialize: bool = True) -> None:
         self._data = data
         if not isinstance(self._data, list):
             self._data = [data]
@@ -86,12 +86,17 @@ class ComponentOutput:
         if not isinstance(self._cache, list):
             self._cache = [cache]
 
+        self.serialize = serialize
+
     @property
     def data(self):
         return self._data
 
     @property
     def model(self):
+        if not self.serialize:
+            return self._models
+
         serialized_models: typing.Dict[str, typing.Tuple[str, bytes]] = {}
 
         for model_name, buffer_object in self._models.items():
@@ -120,6 +125,7 @@ class ComponentBase(metaclass=abc.ABCMeta):
         self.checkpoint_manager = None
         self.model_output = None
         self.data_output = None
+        self.serialize = True
 
     @abc.abstractmethod
     def _run(self, cpn_input: ComponentInputProtocol):
@@ -141,7 +147,7 @@ class ComponentBase(metaclass=abc.ABCMeta):
                   else self._run)
         method(cpn_input)
 
-        return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=None)
+        return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=None, serialize=self.serialize)
 
     def save_data(self):
         return self.data_output
