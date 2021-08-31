@@ -21,7 +21,7 @@ from fate_flow.entity.metric import MetricMeta
 model_loader_cpn_meta = ComponentMeta('ModelLoader')
 
 
-@model_loader_cpn_meta.bind_runner.on_guest.on_host
+@model_loader_cpn_meta.bind_runner.on_guest.on_host.on_arbiter
 class ModelLoader(ComponentBase):
 
     def _run(self, cpn_input: ComponentInputProtocol):
