@@ -16,10 +16,10 @@
 import numpy
 
 from component_plugins.fate.python.federatedml.feature.sparse_vector import SparseVector
-from component_plugins.fate.python.federatedml.feature.instance import Instance
 
 
 def get_component_output_data_line(src_key, src_value):
+    from federatedml.feature.instance import Instance
     data_line = [src_key]
     is_str = False
     extend_header = []
@@ -27,7 +27,10 @@ def get_component_output_data_line(src_key, src_value):
         for inst in ["inst_id", "label", "weight"]:
             if getattr(src_value, inst) is not None:
                 data_line.append(getattr(src_value, inst))
-                extend_header.append(inst)
+                if inst == "inst_id":
+                    extend_header.append(getattr(src_value, "schema").get("match_id_name"))
+                else:
+                    extend_header.append(inst)
         data_line.extend(dataset_to_list(src_value.features))
     elif isinstance(src_value, str):
         data_line.extend([value for value in src_value.split(',')])
