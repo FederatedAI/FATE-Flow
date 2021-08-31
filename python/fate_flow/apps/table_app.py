@@ -74,10 +74,11 @@ def table_delete():
     data = None
     sess = Session()
     storage_session = sess.storage(name=table_name, namespace=namespace)
-    table = storage_session.get_table()
-    if table:
-        table.destroy()
-        data = {'table_name': table_name, 'namespace': namespace}
+    if storage_session:
+        table = storage_session.get_table()
+        if table:
+            table.destroy()
+            data = {'table_name': table_name, 'namespace': namespace}
     sess.destroy_all_sessions()
     if data:
         return get_json_result(data=data)

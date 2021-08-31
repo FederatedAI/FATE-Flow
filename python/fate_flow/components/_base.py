@@ -20,10 +20,12 @@ from fate_arch.common import log
 from fate_flow.components.param_extract import ParamExtract
 from fate_flow.scheduling_apps.client.tracker_client import TrackerClient
 
+
 LOGGER = log.getLogger()
 
 
 class ComponentInputProtocol(metaclass=abc.ABCMeta):
+
     @property
     @abc.abstractmethod
     def parameters(self) -> dict:
@@ -90,7 +92,8 @@ class ComponentOutput:
 
     @property
     def model(self):
-        serialized_models: typing.Dict[str, typing.Tuple[str, str]] = {}
+        serialized_models: typing.Dict[str, typing.Tuple[str, bytes]] = {}
+
         for model_name, buffer_object in self._models.items():
             serialized_string = buffer_object.SerializeToString()
             if not serialized_string:
@@ -110,6 +113,7 @@ class ComponentOutput:
 
 
 class ComponentBase(metaclass=abc.ABCMeta):
+
     def __init__(self):
         self.task_version_id = ""
         self.tracker: TrackerClient = None
@@ -122,16 +126,16 @@ class ComponentBase(metaclass=abc.ABCMeta):
         """to be implemented"""
         ...
 
-    def _warm_start(self, cpn_input: ComponentInputProtocol):
+    def _retry(self, cpn_input: ComponentInputProtocol):
         ...
-        #raise NotImplementedError(f"warn start for {type(self)} not implemented")
+        # raise NotImplementedError(f"_retry for {type(self)} not implemented")
 
     def run(self, cpn_input: ComponentInputProtocol, retry: bool = True):
         self.task_version_id = cpn_input.task_version_id
         self.tracker = cpn_input.tracker
         self.checkpoint_manager = cpn_input.checkpoint_manager
 
-        method = (self._warm_start if retry and
+        method = (self._retry if retry and
                   self.checkpoint_manager is not None and
                   self.checkpoint_manager.latest_checkpoint is not None
                   else self._run)

@@ -15,20 +15,21 @@
 #
 from fate_flow.components._base import BaseParam, ComponentBase, ComponentMeta, ComponentInputProtocol
 from fate_flow.model.checkpoint import CheckpointManager
+from fate_flow.entity.metric import MetricMeta
 
 
-checkpoint_cpn_meta = ComponentMeta('Checkpoint')
+model_loader_cpn_meta = ComponentMeta('ModelLoader')
 
 
-@checkpoint_cpn_meta.bind_runner.on_local
-class CheckpointComponent(ComponentBase):
+@model_loader_cpn_meta.bind_runner.on_guest.on_host
+class ModelLoader(ComponentBase):
 
     def _run(self, cpn_input: ComponentInputProtocol):
         params = {}
         for i in ('model_id', 'model_version', 'component_name'):
             params[i] = cpn_input.parameters.get(i)
             if params[i] is None:
-                raise TypeError(f'Component Checkpoint needs {i}')
+                raise TypeError(f'Component ModelLoader needs {i}')
         for i in ('step_index', 'step_name'):
             params[i] = cpn_input.parameters.get(i)
 
@@ -38,22 +39,26 @@ class CheckpointComponent(ComponentBase):
             component_name=params['component_name'],
             mkdir=False,
         )
+        checkpoint_manager.load_checkpoints_from_disk()
 
         if params['step_index'] is not None:
             checkpoint = checkpoint_manager.get_checkpoint_by_index(params['step_index'])
         elif params['step_name'] is not None:
             checkpoint = checkpoint_manager.get_checkpoint_by_name(params['step_name'])
         else:
-            raise TypeError('Component Checkpoint needs step_index or step_name.')
+            checkpoint = checkpoint_manager.latest_checkpoint
 
         if checkpoint is None:
             raise TypeError('Checkpoint not found.')
 
         self.model_output = checkpoint.read()
 
+        self.tracker.set_metric_meta('model_loader', f'{checkpoint.step_index}#{checkpoint.step_name}',
+                                     MetricMeta('checkpoint', 'checkpoint_info', checkpoint.to_dict()))
 
-@checkpoint_cpn_meta.bind_param
-class CheckpointParam(BaseParam):
+
+@model_loader_cpn_meta.bind_param
+class ModelLoaderParam(BaseParam):
 
     def __init__(self, model_id: str = None, model_version: str = None, component_name: str = None,
                  step_index: int = None, step_name: str = None):
@@ -72,6 +77,4 @@ class CheckpointParam(BaseParam):
                 return False
 
         # do not set step_index and step_name at the same time
-        if self.step_index is not None:
-            return self.step_name is None
-        return self.step_name is not None
+        return not (self.step_index and self.step_name)
