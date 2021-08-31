@@ -150,7 +150,7 @@ class RuntimeConfParserUtil(object):
 
             if parameters:
                 # convert v1 to v2
-                extract_not_builtin = getattr(param_class, "extract_not_buildin", None)
+                extract_not_builtin = getattr(param_class, "extract_not_builtin", None)
                 if extract_not_builtin is None:
                     raise NotImplementedError(
                         f"param class of `{type(param_class)}` not support v1 style conf"
