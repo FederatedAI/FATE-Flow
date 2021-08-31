@@ -54,7 +54,7 @@ class ModelLoader(ComponentBase):
         self.model_output = checkpoint.read()
         self.serialize = False
 
-        self.tracker.set_metric_meta('model_loader', f'{checkpoint.step_index}#{checkpoint.step_name}',
+        self.tracker.set_metric_meta('model_loader', f'{checkpoint.step_index}_{checkpoint.step_name}',
                                      MetricMeta('checkpoint', 'checkpoint_info', checkpoint.to_dict()))
 
 
