@@ -462,7 +462,7 @@ class DAGScheduler(Cron):
     def calculate_job_progress(cls, tasks_status):
         total = 0
         finished_count = 0
-        for task_status in tasks_status:
+        for task_status in tasks_status.values():
             total += 1
             if EndStatus.contains(task_status):
                 finished_count += 1
