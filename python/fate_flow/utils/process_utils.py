@@ -64,7 +64,7 @@ def run_subprocess(job_id, config_dir, process_cmd, extra_env: dict = None, log_
     return p
 
 
-def check_job_process(pid):
+def check_job_process(pid, task: Task = None):
     if pid < 0:
         return False
     if pid == 0:
@@ -74,16 +74,21 @@ def check_job_process(pid):
     except OSError as err:
         if err.errno == errno.ESRCH:
             # ESRCH == No such process
-            return False
+            ret = False
         elif err.errno == errno.EPERM:
             # EPERM clearly means there's a process to deny access to
-            return True
+            ret = True
         else:
             # According to "man 2 kill" possible error values are
             # (EINVAL, EPERM, ESRCH)
             raise
     else:
-        return True
+        ret = True
+    if ret and task is not None:
+        p = psutil.Process(int(pid))
+        return is_task_executor_process(task=task, process=p)
+    else:
+        return ret
 
 
 def check_process_by_keyword(keywords):
@@ -164,16 +169,16 @@ def kill_task_executor_process(task: Task, only_child=False):
             schedule_logger(task.f_job_id).info("can not found job {} task {} {} {} with {} party status process pid:{}".format(
                 task.f_job_id, task.f_task_id, task.f_role, task.f_party_id, task.f_party_status, pid))
             return KillProcessRetCode.NOT_FOUND
-        p = psutil.Process(int(pid))
+        p = psutil.Process(pid)
         if not is_task_executor_process(task=task, process=p):
             schedule_logger(task.f_job_id).warning("this pid {} is not job {} task {} {} {} executor".format(
                 pid, task.f_job_id, task.f_task_id, task.f_role, task.f_party_id))
             return KillProcessRetCode.ERROR_PID
         for child in p.children(recursive=True):
-            if check_job_process(child.pid) and is_task_executor_process(task=task, process=child):
+            if check_job_process(pid=child.pid, task=task):
                 child.kill()
         if not only_child:
-            if check_job_process(p.pid) and is_task_executor_process(task=task, process=p):
+            if check_job_process(pid, task=task):
                 p.kill()
         schedule_logger(task.f_job_id).info("successfully stop job {} task {} {} {} process pid:{}".format(
             task.f_job_id, task.f_task_id, task.f_role, task.f_party_id, pid))

@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import time
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.controller.engine_adapt import build_engine
@@ -49,15 +50,18 @@ class Detector(cron.Cron):
                 try:
                     process_exist = build_engine(task.f_engine_conf.get("computing_engine")).is_alive(task)
                     if not process_exist:
-                        detect_logger(job_id=task.f_job_id).info(
-                                'the {} task {} {} on {} {} process {} does not exist'.format(
-                                    task.f_party_status,
-                                    task.f_task_id,
-                                    task.f_task_version,
-                                    task.f_role,
-                                    task.f_party_id,
-                                    task.f_run_pid))
-                        stop_job_ids.add(task.f_job_id)
+                        msg = f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id}"
+                        detect_logger(job_id=task.f_job_id).info(f"{msg} with {task.f_party_status} process {task.f_run_pid} does not exist")
+                        time.sleep(3)
+                        _tasks = JobSaver.query_task(task_id=task.f_task_id, task_version=task.f_task_version, role=task.f_role, party_id=task.f_party_id)
+                        if _tasks:
+                            if _tasks[0].f_party_status == TaskStatus.RUNNING:
+                                stop_job_ids.add(task.f_job_id)
+                                detect_logger(task.f_job_id).info(f"{msg} party status has been checked twice, try to stop job")
+                            else:
+                                detect_logger(task.f_job_id).info(f"{msg} party status has changed to {_tasks[0].f_party_status}, may be stopped by task_controller.stop_task, pass stop job again")
+                        else:
+                            detect_logger(task.f_job_id).warning(f"{msg} can not found on db")
                 except Exception as e:
                     detect_logger(job_id=task.f_job_id).exception(e)
             if stop_job_ids:
@@ -67,7 +71,7 @@ class Detector(cron.Cron):
                 jobs = JobSaver.query_job(job_id=job_id)
                 if jobs:
                     stop_jobs.add(jobs[0])
-            cls.request_stop_jobs(jobs=stop_jobs, stop_msg="task executor process abort", stop_status=JobStatus.CANCELED)
+            cls.request_stop_jobs(jobs=stop_jobs, stop_msg="task executor process abort", stop_status=JobStatus.FAILED)
         except Exception as e:
             detect_logger().exception(e)
         finally:

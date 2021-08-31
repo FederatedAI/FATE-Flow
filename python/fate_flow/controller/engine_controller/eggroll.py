@@ -55,4 +55,4 @@ class EggrollEngine(EngineABC):
             job_utils.start_session_stop(task)
 
     def is_alive(self, task):
-        return process_utils.check_job_process(int(task.f_run_pid))
+        return process_utils.check_job_process(pid=int(task.f_run_pid), task=task)
