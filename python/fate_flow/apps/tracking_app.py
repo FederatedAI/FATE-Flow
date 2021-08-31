@@ -210,7 +210,12 @@ def component_output_data():
         is_str = False
         if output_table_meta:
             part_of_data = output_table_meta.get_part_of_data()
-            output_data, is_str, extend_header = part_of_data["data_line"], part_of_data["is_str"], part_of_data["extend_header"]
+            if isinstance(part_of_data, dict):
+                output_data, is_str, extend_header = part_of_data["data_line"], part_of_data["is_str"], part_of_data["extend_header"]
+            else:
+                for k, v in output_table_meta.get_part_of_data():
+                    data_line, is_str, extend_header = get_component_output_data_line(src_key=k, src_value=v)
+                    output_data.append(data_line)
             total = output_table_meta.get_count()
             output_data_list.append(output_data)
             data_names.append(output_name)
