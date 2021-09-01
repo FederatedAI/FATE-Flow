@@ -142,8 +142,10 @@ class Tracker(object):
                 "extend_header": []
             }
             if need_read:
+                match_id_name = computing_table.schema.get("match_id_name")
+                schedule_logger(self.job_id).info(f'match id name:{match_id_name}')
                 for k, v in computing_table.collect():
-                    data_line, part_of_data["is_str"], part_of_data["extend_header"] = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
+                    data_line, part_of_data["is_str"], part_of_data["extend_header"] = feature_utils.get_component_output_data_line(src_key=k, src_value=v, match_id_name=match_id_name)
                     part_of_data["data_line"].append(data_line)
                     part_of_limit -= 1
                     if part_of_limit == 0:
