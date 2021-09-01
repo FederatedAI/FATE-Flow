@@ -26,6 +26,7 @@ from fate_arch.common import file_utils, base_utils
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
 from fate_flow.model import serialize_buffer_object, parse_proto_object, Locker
 from fate_flow.settings import stat_logger, TEMP_DIRECTORY
+from fate_flow.utils import job_utils
 
 
 def local_cache_required(method):
@@ -100,6 +101,13 @@ class PipelinedModel(Locker):
             component_model["model_proto_index"] = model_proto_index
             tracker_client.save_component_output_model(component_model)
 
+    def save_pipeline_model(self, pipeline_buffer_object):
+        model_buffers = {self.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString(), json_format.MessageToDict(pipeline_buffer_object, including_default_value_fields=True))}
+        self.save_component_model(component_name=job_utils.job_pipeline_component_name(),
+                                  component_module_name=job_utils.job_pipeline_component_module_name(),
+                                  model_alias=self.pipeline_model_alias,
+                                  model_buffers=model_buffers)
+
     def write_component_model(self, component_model):
         for storage_path, (buffer_object_serialized_string, buffer_object_json_format) in component_model.get("buffer").items():
             storage_path = file_utils.get_project_base_directory()+storage_path
@@ -139,7 +147,9 @@ class PipelinedModel(Locker):
                     model_buffers[model_name] = [buffer_name, base64.b64encode(buffer_object_serialized_string).decode()]
         return model_buffers
 
-    def read_pipelined_model(self, component_name, parse=True):
+    def read_pipeline_model(self, parse=True):
+        # todo: integration with read_component_model
+        component_name = job_utils.job_pipeline_component_name()
         model_alias = self.pipeline_model_alias
         component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
         model_proto_index = self.get_model_proto_index(component_name=component_name,
@@ -154,7 +164,7 @@ class PipelinedModel(Locker):
                                                                    buffer_class=Pipeline)
                 else:
                     model_buffers[model_name] = [buffer_name, base64.b64encode(buffer_object_serialized_string).decode()]
-        return model_buffers
+        return model_buffers[self.pipeline_model_name]
 
     @local_cache_required
     def collect_models(self, in_bytes=False, b64encode=True):

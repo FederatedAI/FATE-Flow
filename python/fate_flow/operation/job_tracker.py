@@ -227,9 +227,10 @@ class Tracker(object):
         return model_buffers
 
     def save_pipeline_model(self, pipeline_buffer_object):
-        self.save_output_model({
-            self.pipelined_model.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString(), json_format.MessageToDict(pipeline_buffer_object, including_default_value_fields=True))
-        }, self.pipelined_model.pipeline_model_alias)
+        self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
+
+    def get_pipeline_model(self):
+        return self.pipelined_model.read_pipeline_model()
 
     def get_component_define(self):
         return self.pipelined_model.get_component_define(component_name=self.component_name)
@@ -494,7 +495,7 @@ class Tracker(object):
                                          MLModel.f_party_id == self.party_id)
             if not record:
                 job = Job.get_or_none(Job.f_job_id == self.job_id)
-                pipeline = self.pipelined_model.read_pipelined_model(component_name=job_utils.job_pipeline_component_name())[self.pipelined_model.pipeline_model_name]
+                pipeline = self.pipelined_model.read_pipeline_model()
                 if job:
                     job_data = job.to_dict()
                     model_info = {

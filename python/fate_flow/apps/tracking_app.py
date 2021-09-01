@@ -30,7 +30,7 @@ from fate_flow.operation.job_tracker import Tracker
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import stat_logger, TEMP_DIRECTORY
-from fate_flow.utils import job_utils, schedule_utils
+from fate_flow.utils import job_utils, schedule_utils, model_utils
 from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.detect_utils import validate_request
@@ -157,9 +157,9 @@ def component_output_model():
         model_id = job_configuration.runtime_conf_on_party['job_parameters']['model_id']
         model_version = job_configuration.runtime_conf_on_party['job_parameters']['model_version']
     except Exception as e:
-        job_dsl, job_runtime_conf, train_runtime_conf = job_utils.get_model_configuration(job_id=request_data['job_id'],
-                                                                                          role=request_data['role'],
-                                                                                          party_id=request_data['party_id'])
+        job_dsl, job_runtime_conf, train_runtime_conf = model_utils.get_job_configuration_from_model(job_id=request_data['job_id'],
+                                                                                                     role=request_data['role'],
+                                                                                                     party_id=request_data['party_id'])
         if any([job_dsl, job_runtime_conf, train_runtime_conf]):
             adapter = JobRuntimeConfigAdapter(job_runtime_conf)
             model_id = adapter.get_common_parameters().to_dict().get('model_id')
