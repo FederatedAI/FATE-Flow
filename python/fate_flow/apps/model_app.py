@@ -320,7 +320,7 @@ def operate_model(model_operation):
                 model = pipelined_model.PipelinedModel(model_id=request_config["model_id"], model_version=request_config["model_version"])
                 model.unpack_model(file_path)
 
-                pipeline = model.read_component_model('pipeline', 'pipeline')['Pipeline']
+                pipeline = model.read_pipeline_model()
                 train_runtime_conf = json_loads(pipeline.train_runtime_conf)
                 permitted_party_id = []
                 for key, value in train_runtime_conf.get('role', {}).items():
@@ -714,7 +714,7 @@ def get_predict_conf():
     if model_fp_list:
         fp = model_fp_list[0]
         pipeline_model = PipelinedModel(model_id=fp.split('/')[-2], model_version=fp.split('/')[-1])
-        pipeline = pipeline_model.read_component_model('pipeline', 'pipeline')['Pipeline']
+        pipeline = pipeline_model.read_pipeline_model()
         predict_dsl = json_loads(pipeline.inference_dsl)
 
         train_runtime_conf = json_loads(pipeline.train_runtime_conf)

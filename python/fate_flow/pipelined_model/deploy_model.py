@@ -16,7 +16,6 @@
 import os
 import shutil
 
-from fate_arch.common import file_utils
 from fate_arch.common.base_utils import json_loads, json_dumps
 
 from fate_flow.settings import stat_logger
@@ -26,6 +25,7 @@ from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.model_utils import (gen_party_model_id, check_before_deploy, compare_version,
                                          gather_model_info_data, save_model_info)
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
+from fate_flow.operation.job_saver import JobSaver
 
 
 def deploy(config_data):
@@ -50,26 +50,26 @@ def deploy(config_data):
         # copy proto content from parent model and generate a child model
         deploy_model = PipelinedModel(model_id=party_model_id, model_version=child_model_version)
         shutil.copytree(src=model.model_path, dst=deploy_model.model_path)
-        pipeline = deploy_model.read_component_model('pipeline', 'pipeline')['Pipeline']
+        pipeline_model = deploy_model.read_pipeline_model()
 
         # modify two pipeline files (model version/ train_runtime_conf)
-        train_runtime_conf = json_loads(pipeline.train_runtime_conf)
+        train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
         adapter = JobRuntimeConfigAdapter(train_runtime_conf)
         train_runtime_conf = adapter.update_model_id_version(model_version=deploy_model.model_version)
-        pipeline.model_version = child_model_version
-        pipeline.train_runtime_conf = json_dumps(train_runtime_conf, byte=True)
+        pipeline_model.model_version = child_model_version
+        pipeline_model.train_runtime_conf = json_dumps(train_runtime_conf, byte=True)
 
         parser = get_dsl_parser_by_version(train_runtime_conf.get('dsl_version', '1'))
-        train_dsl = json_loads(pipeline.train_dsl)
-        parent_predict_dsl = json_loads(pipeline.inference_dsl)
+        train_dsl = json_loads(pipeline_model.train_dsl)
+        parent_predict_dsl = json_loads(pipeline_model.inference_dsl)
 
         if str(train_runtime_conf.get('dsl_version', '1')) == '1':
-            predict_dsl = json_loads(pipeline.inference_dsl)
+            inference_dsl = json_loads(pipeline_model.inference_dsl)
         else:
             if config_data.get('dsl') or config_data.get('predict_dsl'):
-                predict_dsl = config_data.get('dsl') if config_data.get('dsl') else config_data.get('predict_dsl')
-                if not isinstance(predict_dsl, dict):
-                    predict_dsl = json_loads(predict_dsl)
+                inference_dsl = config_data.get('dsl') if config_data.get('dsl') else config_data.get('predict_dsl')
+                if not isinstance(inference_dsl, dict):
+                    inference_dsl = json_loads(inference_dsl)
             else:
                 if config_data.get('cpn_list', None):
                     cpn_list = config_data.pop('cpn_list')
@@ -77,26 +77,24 @@ def deploy(config_data):
                     cpn_list = list(train_dsl.get('components', {}).keys())
                 parser_version = train_runtime_conf.get('dsl_version', '1')
                 if str(parser_version) == '1':
-                    predict_dsl = parent_predict_dsl
+                    inference_dsl = parent_predict_dsl
                 else:
                     parser = get_dsl_parser_by_version(parser_version)
-                    predict_dsl = parser.deploy_component(cpn_list, train_dsl)
+                    inference_dsl = parser.deploy_component(cpn_list, train_dsl)
 
         #  save predict dsl into child model file
-        parser.verify_dsl(predict_dsl, "predict")
-        inference_dsl = parser.get_predict_dsl(role=local_role,
-                                               predict_dsl=predict_dsl,
-                                               setting_conf_prefix=file_utils.get_federatedml_setting_conf_directory())
-        pipeline.inference_dsl = json_dumps(inference_dsl, byte=True)
-        if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
-            pipeline.parent_info = json_dumps({'parent_model_id': model_id, 'parent_model_version': model_version}, byte=True)
-            pipeline.parent = False
-            runtime_conf_on_party = json_loads(pipeline.runtime_conf_on_party)
+        parser.verify_dsl(inference_dsl, "predict")
+        inference_dsl = JobSaver.fill_job_inference_dsl(job_id=model_id, role=local_role, party_id=local_party_id, dsl_parser=parser, origin_inference_dsl=inference_dsl)
+        pipeline_model.inference_dsl = json_dumps(inference_dsl, byte=True)
+        if compare_version(pipeline_model.fate_version, '1.5.0') == 'gt':
+            pipeline_model.parent_info = json_dumps({'parent_model_id': model_id, 'parent_model_version': model_version}, byte=True)
+            pipeline_model.parent = False
+            runtime_conf_on_party = json_loads(pipeline_model.runtime_conf_on_party)
             runtime_conf_on_party['job_parameters']['model_version'] = child_model_version
-            pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
+            pipeline_model.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
 
         # save model file
-        deploy_model.save_pipeline(pipeline)
+        deploy_model.save_pipeline(pipeline_model)
         shutil.copyfile(os.path.join(deploy_model.model_path, "pipeline.pb"),
                         os.path.join(deploy_model.model_path, "variables", "data", "pipeline", "pipeline", "Pipeline"))
 
@@ -113,18 +111,22 @@ def deploy(config_data):
             model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
         save_model_info(model_info)
 
-        for component_name, component in inference_dsl['components'].items():
-            step_index = components_checkpoint.get(component_name, {}).get('step_index')
-            step_name = components_checkpoint.get(component_name, {}).get('step_name')
+        # todo: Check whether a checkpoint exists
+        try:
+            for component_name, component in inference_dsl['components'].items():
+                step_index = components_checkpoint.get(component_name, {}).get('step_index')
+                step_name = components_checkpoint.get(component_name, {}).get('step_name')
 
-            checkpoint_manager = CheckpointManager(
-                role=local_role, party_id=local_party_id,
-                model_id=model_id, model_version=model_version,
-                component_name=component_name,
-                mkdir=False,
-            )
-            checkpoint_manager.load_checkpoints_from_disk()
-            checkpoint_manager.copy(child_model_version, step_index, step_name)
+                checkpoint_manager = CheckpointManager(
+                    role=local_role, party_id=local_party_id,
+                    model_id=model_id, model_version=model_version,
+                    component_name=component_name,
+                    mkdir=False,
+                )
+                checkpoint_manager.load_checkpoints_from_disk()
+                checkpoint_manager.copy(child_model_version, step_index, step_name)
+        except Exception as e:
+            stat_logger.exception(e)
     except Exception as e:
         stat_logger.exception(e)
         return 100, f"deploy model of role {local_role} {local_party_id} failed, details: {str(e)}"

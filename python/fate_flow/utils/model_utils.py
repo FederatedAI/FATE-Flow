@@ -28,7 +28,6 @@ from fate_flow.settings import stat_logger
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
-from fate_flow.utils import job_utils
 
 
 gen_key_string_separator = '#'
@@ -134,7 +133,7 @@ def query_model_info_from_file(model_id=None, model_version=None, role=None, par
 
 def gather_model_info_data(model: PipelinedModel, query_filters=None):
     if model.exists():
-        pipeline = model.read_pipelined_model(component_name=job_utils.job_pipeline_component_name())["Pipeline"]
+        pipeline = model.read_pipeline_model()
         model_info = OrderedDict()
         if query_filters and isinstance(query_filters, list):
             for attr, field in pipeline.ListFields():
@@ -224,7 +223,7 @@ def check_if_parent_model(pipeline):
 
 
 def check_before_deploy(pipeline_model: PipelinedModel):
-    pipeline = pipeline_model.read_component_model('pipeline', 'pipeline')['Pipeline']
+    pipeline = pipeline_model.read_pipeline_model()
 
     if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
         if pipeline.parent:
@@ -240,7 +239,7 @@ def check_if_deployed(role, party_id, model_id, model_version):
     if not pipeline_model.exists():
         raise Exception(f"Model {party_model_id} {model_version} not exists in model local cache.")
     else:
-        pipeline = pipeline_model.read_component_model('pipeline', 'pipeline')['Pipeline']
+        pipeline = pipeline_model.read_pipeline_model()
         if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
             train_runtime_conf = json_loads(pipeline.train_runtime_conf)
             if str(train_runtime_conf.get('dsl_version', '1')) != '1':
@@ -263,3 +262,15 @@ def models_group_by_party_model_id_and_model_version():
                                                     party_id=model.f_party_id,
                                                     model_id=model.f_model_id)
     return models
+
+
+@DB.connection_context()
+def get_job_configuration_from_model(job_id, role, party_id):
+    retcode, retmsg, res = query_model_info(model_version=job_id, role=role, party_id=party_id,
+                                            query_filters=['train_dsl', 'dsl', 'train_runtime_conf', 'runtime_conf'])
+    if res:
+        dsl = res[0].get('train_dsl') if res[0].get('train_dsl') else res[0].get('dsl')
+        runtime_conf = res[0].get('runtime_conf')
+        train_runtime_conf = res[0].get('train_runtime_conf')
+        return dsl, runtime_conf, train_runtime_conf
+    return {}, {}, {}

@@ -79,12 +79,13 @@ def get_dsl_parser_by_version(version: str = "1"):
     return mapping[version]
 
 
-def get_predict_dsl(dsl_parser: typing.Union[DSLParser, DSLParserV2], dsl, components_parameters: dict = None):
+def fill_inference_dsl(dsl_parser: typing.Union[DSLParser, DSLParserV2], origin_inference_dsl, components_parameters: dict = None):
+    # must fill dsl for fate serving
     if isinstance(dsl_parser, DSLParserV2):
         components_module_name = {}
         for component, param in components_parameters.items():
             components_module_name[component] = param["CodePath"]
-        return dsl_parser.get_predict_dsl(predict_dsl=dsl, module_object_dict=components_module_name)
+        return dsl_parser.get_predict_dsl(predict_dsl=origin_inference_dsl, module_object_dict=components_module_name)
     elif isinstance(dsl_parser, DSLParser):
         return dsl_parser.get_predict_dsl(component_parameters=components_parameters)
     else:

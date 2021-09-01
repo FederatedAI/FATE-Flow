@@ -51,11 +51,16 @@ class ModelLoader(ComponentBase):
         if checkpoint is None:
             raise TypeError('Checkpoint not found.')
 
-        self.model_output = checkpoint.read()
+        data = checkpoint.read(include_database=True)
+        data['model_id'] = checkpoint_manager.model_id
+        data['model_version'] = checkpoint_manager.model_version
+        data['component_name'] = checkpoint_manager.component_name
+
+        self.model_output = data.pop('models')
         self.serialize = False
 
-        self.tracker.set_metric_meta('model_loader', f'{checkpoint.step_index}#{checkpoint.step_name}',
-                                     MetricMeta('checkpoint', 'checkpoint_info', checkpoint.to_dict()))
+        self.tracker.set_metric_meta('model_loader', f'{checkpoint.step_index}_{checkpoint.step_name}',
+                                     MetricMeta('checkpoint', 'checkpoint_info', data))
 
 
 @model_loader_cpn_meta.bind_param

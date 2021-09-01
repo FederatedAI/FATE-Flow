@@ -22,6 +22,7 @@ from fate_arch.common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, Job, Task, DataBaseModel
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
 from fate_arch.common.log import schedule_logger, sql_logger
+from fate_flow.utils import schedule_utils
 import peewee
 
 
@@ -240,6 +241,15 @@ class JobSaver(object):
                 # update new version task
                 tasks_group[task_key] = task
         return tasks_group
+
+    @classmethod
+    def fill_job_inference_dsl(cls, job_id, role, party_id, dsl_parser, origin_inference_dsl):
+        # must fill dsl for fate serving
+        components_parameters = {}
+        tasks = cls.query_task(job_id=job_id, role=role, party_id=party_id, only_latest=True)
+        for task in tasks:
+            components_parameters[task.f_component_name] = task.f_component_parameters
+        return schedule_utils.fill_inference_dsl(dsl_parser, origin_inference_dsl=origin_inference_dsl, components_parameters=components_parameters)
 
     @classmethod
     def task_key(cls, task_id, role, party_id):
