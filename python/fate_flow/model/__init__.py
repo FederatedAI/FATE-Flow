@@ -36,8 +36,6 @@ def serialize_buffer_object(buffer_object):
 
 
 def get_proto_buffer_class(buffer_name):
-    # dev debug
-    print(f"component provider {RuntimeConfig.COMPONENT_PROVIDER}")
     package_path, package_module = provider_utils.get_component_model(provider=RuntimeConfig.COMPONENT_PROVIDER)
     e = ModuleNotFoundError(f'No module named {buffer_name}')
     for f in package_path.glob('*.py'):
