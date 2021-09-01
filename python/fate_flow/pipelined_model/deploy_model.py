@@ -84,6 +84,7 @@ def deploy(config_data):
 
         #  save predict dsl into child model file
         parser.verify_dsl(predict_dsl, "predict")
+        # TODO: the arguments of get_predict_dsl has changed
         inference_dsl = parser.get_predict_dsl(role=local_role,
                                                predict_dsl=predict_dsl,
                                                setting_conf_prefix=file_utils.get_federatedml_setting_conf_directory())
