@@ -18,3 +18,8 @@ _build
 .vscode/*
 /eggroll/
 /fateboard/
+/worker/
+/model_local_cache/
+*.db
+*.whl
+component_registry_realtime.json

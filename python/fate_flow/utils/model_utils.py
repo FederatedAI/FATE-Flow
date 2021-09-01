@@ -104,7 +104,7 @@ def query_model_info_from_file(model_id=None, model_version=None, role=None, par
     model_fp_list = glob.glob(glob_dir)
     if model_fp_list:
         for fp in model_fp_list:
-            pipeline_model = PipelinedModel(model_id=fp.split('/')[-2], model_version=fp.split('/')[-1])
+            pipeline_model = PipelinedModel(model_id=fp.split(os.path.sep)[-2], model_version=fp.split(os.path.sep)[-1])
             model_info = gather_model_info_data(pipeline_model, query_filters=query_filters)
             if model_info:
                 if isinstance(res, dict):
