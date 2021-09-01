@@ -62,14 +62,14 @@ class DAGScheduler(Cron):
             # get inference dsl from pipeline model as job dsl
             tracker = Tracker(job_id=job_id, role=job_initiator["role"], party_id=job_initiator["party_id"],
                               model_id=common_job_parameters.model_id, model_version=common_job_parameters.model_version)
-            pipeline_model = tracker.get_output_model("pipeline")
-            train_runtime_conf = json_loads(pipeline_model["Pipeline"].train_runtime_conf)
+            pipeline_model = tracker.get_pipeline_model()
+            train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
             if not model_utils.check_if_deployed(role=job_initiator["role"],
                                                  party_id=job_initiator["party_id"],
                                                  model_id=common_job_parameters.model_id,
                                                  model_version=common_job_parameters.model_version):
                 raise Exception(f"Model {common_job_parameters.model_id} {common_job_parameters.model_version} has not been deployed yet.")
-            dsl = json_loads(pipeline_model["Pipeline"].inference_dsl)
+            dsl = json_loads(pipeline_model.inference_dsl)
 
         job = Job()
         job.f_job_id = job_id

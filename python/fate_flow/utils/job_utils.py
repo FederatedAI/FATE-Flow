@@ -1,4 +1,3 @@
-#
 #  Copyright 2019 The FATE Authors. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +29,7 @@ from fate_flow.settings import WORK_MODE
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.db.service_registry import ServiceRegistry
-from fate_flow.utils import detect_utils, model_utils, process_utils
+from fate_flow.utils import detect_utils, process_utils
 from fate_flow.utils import session_utils
 
 
@@ -211,18 +210,6 @@ def get_upload_job_configuration_summary(upload_tasks: typing.List[Task]):
         jobs_run_conf[job.f_job_id] = job.f_runtime_conf_on_party["component_parameters"]["role"]["local"]["0"]["upload_0"]
         jobs_run_conf[job.f_job_id]["notes"] = job.f_description
     return jobs_run_conf
-
-
-@DB.connection_context()
-def get_model_configuration(job_id, role, party_id):
-    res = model_utils.query_model_info(model_version=job_id, role=role, party_id=party_id,
-                                       query_filters=['train_dsl', 'dsl', 'train_runtime_conf', 'runtime_conf'])
-    if res:
-        dsl = res[0].get('train_dsl') if res[0].get('train_dsl') else res[0].get('dsl')
-        runtime_conf = res[0].get('runtime_conf')
-        train_runtime_conf = res[0].get('train_runtime_conf')
-        return dsl, runtime_conf, train_runtime_conf
-    return {}, {}, {}
 
 
 @DB.connection_context()

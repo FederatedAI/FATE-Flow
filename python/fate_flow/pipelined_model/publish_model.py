@@ -173,7 +173,7 @@ def deploy_homo_model(request_data):
         return 100, 'Model {} {} does not exist'.format(party_model_id, model_version), None
 
     # get the model alias from the dsl saved with the pipeline
-    pipeline = model.read_component_model('pipeline', 'pipeline')['Pipeline']
+    pipeline = model.read_pipeline_model()
     train_dsl = json_loads(pipeline.train_dsl)
     if component_name not in train_dsl.get('components', {}):
         return 100, 'Model {} {} does not contain component {}'.\

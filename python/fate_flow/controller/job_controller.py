@@ -525,12 +525,11 @@ class JobController(object):
         tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, only_latest=True)
         for task in tasks:
             components_parameters[task.f_component_name] = task.f_component_parameters
-        predict_dsl = schedule_utils.get_predict_dsl(dsl_parser, dsl=job_configuration.dsl, components_parameters=components_parameters)
+        predict_dsl = schedule_utils.fill_inference_dsl(dsl_parser, origin_inference_dsl=job_configuration.dsl, components_parameters=components_parameters)
 
         pipeline = pipeline_pb2.Pipeline()
         pipeline.inference_dsl = json_dumps(predict_dsl, byte=True)
         pipeline.train_dsl = json_dumps(job_configuration.dsl, byte=True)
-        # TODO: job_configuration.train_runtime_conf is empty
         pipeline.train_runtime_conf = json_dumps(job_configuration.runtime_conf, byte=True)
         pipeline.fate_version = RuntimeConfig.get_env("FATE")
         pipeline.model_id = model_id
