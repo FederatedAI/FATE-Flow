@@ -275,7 +275,7 @@ class MachineLearningModelInfo(DataBaseModel):
     f_initiator_role = CharField(max_length=50, index=True)
     f_initiator_party_id = CharField(max_length=50, index=True, default=-1)
     f_runtime_conf = JSONField(default={})
-    f_work_mode = IntegerField()
+    f_work_mode = IntegerField(null=True)
     f_train_dsl = JSONField(default={})
     f_train_runtime_conf = JSONField(default={})
     f_imported = IntegerField(default=0)
