@@ -199,24 +199,24 @@ class BaseDSLParser(object):
                                                            other_info=input_list)
 
                     for _input in input_list:
-                        module_name = _input.split(".", -1)[0]
+                        input_component = _input.split(".", -1)[0]
                         input_model_name = _input.split(".")[-1]
-                        if module_name in ["args", "pipeline"] and keyword == "model":
+                        if input_component in ["args", "pipeline"] and keyword == "model":
                             module_name = _input.split(".", -1)[1]
 
-                        if module_name not in self.component_name_index:
-                            raise InputComponentNotExistError(component=name, value_type=keyword, input=module_name)
+                        if input_component not in self.component_name_index:
+                            raise InputComponentNotExistError(component=name, value_type=keyword, input=input_component)
                         else:
-                            if module_name not in components_output or out_type not in components_output[module_name]:
-                                raise InputNameNotExistError(component=name, input=module_name,
+                            if input_component not in components_output or out_type not in components_output[input_component]:
+                                raise InputNameNotExistError(component=name, input=input_component,
                                                              value_type=keyword, other_info=input_model_name)
 
-                            idx_dependency = self.component_name_index.get(module_name)
+                            idx_dependency = self.component_name_index.get(input_component)
                             self.component_downstream[idx_dependency].append(name)
-                            self.component_upstream[idx].append(module_name)
+                            self.component_upstream[idx].append(input_component)
 
                             if keyword == "model":
-                                self.train_input_model[name] = module_name
+                                self.train_input_model[name] = input_component
 
             if "data" in upstream_input:
                 data_dict = upstream_input.get("data")
@@ -234,25 +234,25 @@ class BaseDSLParser(object):
                             "DSLParser Warning: make sure that input data's data key should be in {}, but {} found".format(
                                 ["data", "train_data", "validate_data", "test_data", "eval_data"], data_set))
                     for data_key in data_dict.get(data_set):
-                        module_name = data_key.split(".", -1)[0]
+                        input_component = data_key.split(".", -1)[0]
                         input_data_name = data_key.split(".", -1)[-1]
-                        if module_name in ["args", "pipeline"]:
+                        if input_component in ["args", "pipeline"]:
                             self.args_input_to_check.add(input_data_name)
                             continue
 
-                        if module_name not in self.component_name_index:
+                        if input_component not in self.component_name_index:
                             raise InputComponentNotExistError(component=name, value_type="data",
-                                                              input=module_name)
+                                                              input=input_component)
                         else:
-                            if module_name not in components_output \
-                                    or "data" not in components_output[module_name] \
-                                    or input_data_name not in components_output[module_name]["data"]:
-                                raise InputNameNotExistError(component=name, input=module_name,
+                            if input_component not in components_output \
+                                    or "data" not in components_output[input_component] \
+                                    or input_data_name not in components_output[input_component]["data"]:
+                                raise InputNameNotExistError(component=name, input=input_component,
                                                              value_type="data", other_info=input_data_name)
 
-                            idx_dependency = self.component_name_index.get(module_name)
+                            idx_dependency = self.component_name_index.get(input_component)
                             self.component_downstream[idx_dependency].append(name)
-                            self.component_upstream[idx].append(module_name)
+                            self.component_upstream[idx].append(input_component)
 
         self.in_degree = [0 for i in range(len(self.components))]
         for i in range(len(self.components)):
@@ -299,7 +299,13 @@ class BaseDSLParser(object):
                     cur_component = self.train_input_model.get(cur_component)
                     parent_path.append(cur_component)
                 else:
-                    break
+                    input_component = self.train_input_model.get(cur_component)
+                    input_pos = self.component_name_index[input_component]
+                    if self.component_name_index[input_pos].get_module() != module:
+                        break
+
+                    cur_component = self.train_input_model.get(cur_component)
+                    parent_path.append(cur_component)
 
         role_parameters = RuntimeConfParserUtil.get_component_parameters(provider,
                                                                          runtime_conf,
