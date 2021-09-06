@@ -295,17 +295,18 @@ class BaseDSLParser(object):
             if self.train_input_model.get(cur_component, None) is None:
                 break
             else:
-                if not self._is_warm_start(cur_component):
+                is_warm_start = self._is_warm_start(cur_component)
+                is_same_module = True
+                input_component = self.train_input_model.get(cur_component)
+                input_pos = self.component_name_index[input_component]
+                if self.components[input_pos].get_module() != module:
+                    is_same_module = False
+
+                if not is_warm_start and is_same_module:
                     cur_component = self.train_input_model.get(cur_component)
                     parent_path.append(cur_component)
                 else:
-                    input_component = self.train_input_model.get(cur_component)
-                    input_pos = self.component_name_index[input_component]
-                    if self.component_name_index[input_pos].get_module() != module:
-                        break
-
-                    cur_component = self.train_input_model.get(cur_component)
-                    parent_path.append(cur_component)
+                    break
 
         role_parameters = RuntimeConfParserUtil.get_component_parameters(provider,
                                                                          runtime_conf,
