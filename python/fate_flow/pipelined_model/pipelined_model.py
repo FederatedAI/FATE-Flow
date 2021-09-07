@@ -114,7 +114,7 @@ class PipelinedModel(Locker):
             os.makedirs(os.path.dirname(storage_path), exist_ok=True)
             with self.lock, open(storage_path, "wb") as fw:
                 fw.write(base64.b64decode(buffer_object_serialized_string.encode()))
-            with self.lock, open(f"{storage_path}.json", "w") as fw:
+            with self.lock, open(f"{storage_path}.json", "w", encoding="utf8") as fw:
                 fw.write(base_utils.json_dumps(buffer_object_json_format))
         self.update_component_meta(component_name=component_model["component_name"],
                                    component_module_name=component_model["component_module_name"],
@@ -123,28 +123,57 @@ class PipelinedModel(Locker):
         stat_logger.info("save {} {} successfully".format(component_model["component_name"],
                                                           component_model["model_alias"]))
 
-    def read_component_model(self, component_name, model_alias, parse=True, output_json=False):
+    @local_cache_required
+    def _read_component_model(self, component_name, model_alias):
         component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
-        model_proto_index = self.get_model_proto_index(component_name=component_name,
-                                                       model_alias=model_alias)
+        model_proto_index = self.get_model_proto_index(component_name=component_name, model_alias=model_alias)
+
         model_buffers = {}
         for model_name, buffer_name in model_proto_index.items():
             storage_path = os.path.join(component_model_storage_path, model_name)
-            if output_json and os.path.exists(f"{storage_path}.json"):
-                # for releases later than 1.7
-                with open(f"{storage_path}.json") as fr:
-                    model_buffers[model_name] = base_utils.json_loads(fr.read())
-                continue
-            with open(os.path.join(component_model_storage_path, model_name), "rb") as fr:
-                buffer_object_serialized_string = fr.read()
-                if parse:
-                    model_buffers[model_name] = parse_proto_object(buffer_name=buffer_name,
-                                                                   serialized_string=buffer_object_serialized_string)
-                    if output_json:
-                        model_buffers[model_name] = json_format.MessageToDict(model_buffers[model_name], including_default_value_fields=True)
-                else:
-                    # todo: use another func may be better
-                    model_buffers[model_name] = [buffer_name, base64.b64encode(buffer_object_serialized_string).decode()]
+
+            with open(os.path.join(component_model_storage_path, model_name), "rb") as f:
+                buffer_object_serialized_string = f.read()
+
+            try:
+                with open(f"{storage_path}.json", encoding="utf8") as f:
+                    buffer_object_json_format = base_utils.json_loads(f.read())
+            except FileNotFoundError:
+                buffer_object_json_format = json_format.MessageToDict(
+                    parse_proto_object(buffer_name, buffer_object_serialized_string),
+                    including_default_value_fields=True
+                )
+                with self.lock, open(f"{storage_path}.json", "w", encoding="utf8") as f:
+                    f.write(base_utils.json_dumps(buffer_object_json_format))
+
+            model_buffers[model_name] = (
+                buffer_name,
+                buffer_object_serialized_string,
+                buffer_object_json_format,
+            )
+
+        return model_buffers
+
+    # TODO: use different functions instead of passing arguments
+    def read_component_model(self, component_name, model_alias, parse=True, output_json=False):
+        _model_buffers = self._read_component_model(component_name, model_alias)
+
+        model_buffers = {}
+        for model_name, (
+            buffer_name,
+            buffer_object_serialized_string,
+            buffer_object_json_format,
+        ) in _model_buffers.items():
+            if output_json:
+                model_buffers[model_name] = buffer_object_json_format
+            elif parse:
+                model_buffers[model_name] = parse_proto_object(buffer_name, buffer_object_serialized_string)
+            else:
+                model_buffers[model_name] = [
+                    buffer_name,
+                    base64.b64encode(buffer_object_serialized_string).decode("ascii"),
+                ]
+
         return model_buffers
 
     def read_pipeline_model(self, parse=True):

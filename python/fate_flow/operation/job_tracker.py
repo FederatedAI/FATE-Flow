@@ -217,6 +217,7 @@ class Tracker(object):
     def write_output_model(self, component_model):
         self.pipelined_model.write_component_model(component_model)
 
+    # TODO: use different functions instead of passing arguments
     def get_output_model(self, model_alias, parse=True, output_json=False):
         model_buffers = self.pipelined_model.read_component_model(component_name=self.component_name,
                                                                   model_alias=model_alias,
