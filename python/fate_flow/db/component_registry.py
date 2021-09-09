@@ -13,14 +13,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
-
 from fate_arch.common import file_utils
+from fate_arch.common.versions import get_versions
+
 from fate_flow.component_env_utils import provider_utils
+from fate_flow.db.db_models import ComponentVersionInfo, ComponentRegistryInfo, ComponentInfo, DB, DatabaseLock
 from fate_flow.entity.component_provider import ComponentProvider
 from fate_flow.entity.types import ComponentProviderName
-from fate_flow.settings import FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH, \
-    FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME
+from fate_flow.settings import FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH
 
 
 class ComponentRegistry:
@@ -28,11 +28,7 @@ class ComponentRegistry:
 
     @classmethod
     def load(cls):
-        # todo: use database instead of file, and add lock
-        if os.path.exists(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME):
-            component_registry = file_utils.load_json_conf_real_time(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME)
-        else:
-            component_registry = file_utils.load_json_conf_real_time(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH)
+        component_registry = cls.get_from_db(file_utils.load_json_conf_real_time(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH))
         cls.REGISTRY.update(component_registry)
         for provider_name, provider_info in cls.REGISTRY.get("providers", {}).items():
             if not ComponentProviderName.contains(provider_name):
@@ -71,8 +67,81 @@ class ComponentRegistry:
 
     @classmethod
     def dump(cls):
-        # todo: use database instead of file, and add lock
-        file_utils.dump_json_conf(cls.REGISTRY, FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME)
+        cls.save_to_db()
+
+    @classmethod
+    @DB.connection_context()
+    def save_to_db(cls):
+        # save component registry info
+        with DB.lock("component_register"):
+            for provider_name, register_info in cls.REGISTRY["providers"].items():
+                for version, version_register_info in register_info.items():
+                    if version != "default":
+                        version_nfo = {
+                            "f_path": version_register_info.get("path"),
+                            "f_python": version_register_info.get("python", ""),
+                            "f_class_path": version_register_info.get("class_path"),
+                            "f_version": version,
+                            "f_provider_name": provider_name
+                        }
+                        cls.safe_save(ComponentVersionInfo, version_nfo, f_version=version, f_provider_name=provider_name)
+                        for component_name, module_info in version_register_info.get("components").items():
+                            component_registry_info = {
+                                "f_version": version,
+                                "f_provider_name": provider_name,
+                                "f_component_name": component_name,
+                                "f_module": module_info.get("module")
+                            }
+                            cls.safe_save(ComponentRegistryInfo, component_registry_info, f_version=version,
+                                          f_provider_name=provider_name, f_component_name=component_name)
+
+            for component_name, provider_info in cls.REGISTRY["components"].items():
+                component_info = {
+                    "f_component_name": component_name,
+                    "f_default_provider": provider_info.get("default_provider"),
+                    "f_support_provider": provider_info.get("support_provider")
+                }
+                cls.safe_save(ComponentInfo, component_info, f_component_name=component_name)
+
+
+    @classmethod
+    def safe_save(cls, model, defaults, **kwargs):
+        entity_model, status = model.get_or_create(
+            **kwargs,
+            defaults=defaults)
+        if status is False:
+            for key in defaults:
+                setattr(entity_model, key, defaults[key])
+            entity_model.save(force_insert=False)
+
+
+    @classmethod
+    @DB.connection_context()
+    def get_from_db(cls, component_registry):
+        # get component registry info
+        version_list = ComponentVersionInfo.select()
+        for version in version_list:
+            component_registry["providers"][version.f_provider_name] = {
+                "default": {"version": get_versions()[component_registry["default_settings"][version.f_provider_name]["default_version_key"]]}
+            }
+            component_registry["providers"][version.f_provider_name][version.f_version] = {
+                "path": version.f_path, "f_python": version.f_python,
+                "class_path": version.f_class_path
+            }
+            modules_list = ComponentRegistryInfo.select().where(
+                ComponentRegistryInfo.f_provider_name==version.f_provider_name,
+                ComponentRegistryInfo.f_version==version.f_version
+            )
+            modules = {}
+            for module in modules_list:
+                modules[module.f_component_name] = {"module": module.f_module}
+            component_registry["providers"][version.f_provider_name][version.f_version]["components"] = modules
+        component_list = ComponentInfo.select()
+        for component in component_list:
+            component_registry["components"][component.f_component_name] = {
+                "default_provider": component.f_default_provider, "support_provider": component.f_support_provider
+            }
+        return component_registry
 
     @classmethod
     def get_providers(cls):

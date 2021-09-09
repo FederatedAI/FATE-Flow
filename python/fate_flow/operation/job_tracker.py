@@ -136,17 +136,12 @@ class Tracker(object):
                 output_storage_address.update({"path": data_utils.default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=output_storage_address.get("path_prefix"))})
 
             part_of_limit = JobDefaultConfig.output_data_summary_count_limit
-            part_of_data = {
-                "data_line": [],
-                "is_str": False,
-                "extend_header": []
-            }
+            part_of_data = []
             if need_read:
                 match_id_name = computing_table.schema.get("match_id_name")
                 schedule_logger(self.job_id).info(f'match id name:{match_id_name}')
                 for k, v in computing_table.collect():
-                    data_line, part_of_data["is_str"], part_of_data["extend_header"] = feature_utils.get_component_output_data_line(src_key=k, src_value=v, match_id_name=match_id_name)
-                    part_of_data["data_line"].append(data_line)
+                    part_of_data.append((k, v))
                     part_of_limit -= 1
                     if part_of_limit == 0:
                         break
