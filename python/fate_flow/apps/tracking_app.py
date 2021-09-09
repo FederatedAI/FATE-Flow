@@ -23,6 +23,7 @@ from flask import request, send_file, jsonify
 
 from fate_arch.common.base_utils import fate_uuid
 from fate_arch.session import Session
+from fate_flow.component_env_utils.env_utils import import_component_output_depend
 
 from fate_flow.db.db_models import Job, DB
 from fate_flow.manager.data_manager import delete_metric_data
@@ -198,6 +199,12 @@ def component_output_model():
 @manager.route('/component/output/data', methods=['post'])
 def component_output_data():
     request_data = request.json
+    tasks = JobSaver.query_task(only_latest=True, job_id=request_data['job_id'],
+                                component_name=request_data['component_name'],
+                                role=request_data['role'], party_id=request_data['party_id'])
+    if not tasks:
+        raise ValueError(f'no found task, please check if the parameters are correct:{request_data}')
+    import_component_output_depend(tasks[0].f_provider_info)
     output_tables_meta = get_component_output_tables_meta(task_data=request_data)
     if not output_tables_meta:
         return get_json_result(retcode=0, retmsg='no data', data=[])
@@ -209,13 +216,9 @@ def component_output_data():
         output_data = []
         is_str = False
         if output_table_meta:
-            part_of_data = output_table_meta.get_part_of_data()
-            if isinstance(part_of_data, dict):
-                output_data, is_str, extend_header = part_of_data["data_line"], part_of_data["is_str"], part_of_data["extend_header"]
-            else:
-                for k, v in output_table_meta.get_part_of_data():
-                    data_line, is_str, extend_header = get_component_output_data_line(src_key=k, src_value=v)
-                    output_data.append(data_line)
+            for k, v in output_table_meta.get_part_of_data():
+                data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
+                output_data.append(data_line)
             total = output_table_meta.get_count()
             output_data_list.append(output_data)
             data_names.append(output_name)
@@ -233,6 +236,12 @@ def component_output_data():
 @manager.route('/component/output/data/download', methods=['get'])
 def component_output_data_download():
     request_data = request.json
+    tasks = JobSaver.query_task(only_latest=True, job_id=request_data['job_id'],
+                                component_name=request_data['component_name'],
+                                role=request_data['role'], party_id=request_data['party_id'])
+    if not tasks:
+        raise ValueError(f'no found task, please check if the parameters are correct:{request_data}')
+    import_component_output_depend(tasks[0].f_provider_info)
     try:
         output_tables_meta = get_component_output_tables_meta(task_data=request_data)
     except Exception as e:
@@ -256,7 +265,7 @@ def component_output_data_download():
             with Session().new_storage(name=output_table_meta.get_name(), namespace=output_table_meta.get_namespace()) as storage_session:
                 output_table = storage_session.get_table()
                 for k, v in output_table.collect():
-                    data_line, is_str, extend_header = get_component_output_data_line(src_key=k, src_value=v)
+                    data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
                     fw.write('{}\n'.format(','.join(map(lambda x: str(x), data_line))))
                     output_data_count += 1
                     if output_data_count == limit:
@@ -351,22 +360,22 @@ def get_component_output_tables_meta(task_data):
     return output_tables_meta
 
 
-def get_component_output_data_line(src_key, src_value):
-    data_line = [src_key]
-    is_str = False
-    extend_header = []
-    if isinstance(src_value, feature_utils.Instance):
-        for inst in ["inst_id", "label", "weight"]:
-            if getattr(src_value, inst) is not None:
-                data_line.append(getattr(src_value, inst))
-                extend_header.append(inst)
-        data_line.extend(feature_utils.dataset_to_list(src_value.features))
-    elif isinstance(src_value, str):
-        data_line.extend([value for value in src_value.split(',')])
-        is_str = True
-    else:
-        data_line.extend(feature_utils.dataset_to_list(src_value))
-    return data_line, is_str, extend_header
+# def get_component_output_data_line(src_key, src_value):
+#     data_line = [src_key]
+#     is_str = False
+#     extend_header = []
+#     if hasattr(src_value, "is_instance"):
+#         for inst in ["inst_id", "label", "weight"]:
+#             if getattr(src_value, inst) is not None:
+#                 data_line.append(getattr(src_value, inst))
+#                 extend_header.append(inst)
+#         data_line.extend(feature_utils.dataset_to_list(src_value.features))
+#     elif isinstance(src_value, str):
+#         data_line.extend([value for value in src_value.split(',')])
+#         is_str = True
+#     else:
+#         data_line.extend(feature_utils.dataset_to_list(src_value))
+#     return data_line, is_str, extend_header
 
 
 def get_component_output_data_schema(output_table_meta, extend_header, is_str=False):

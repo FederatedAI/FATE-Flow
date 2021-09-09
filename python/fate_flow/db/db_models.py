@@ -20,8 +20,11 @@ import sys
 
 from peewee import (CharField, IntegerField, BigIntegerField,
                     TextField, CompositeKey, BigAutoField, BooleanField)
+from playhouse.pool import PooledMySQLDatabase
+
 from fate_arch.common import log, file_utils
-from fate_arch.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField, SerializedField, SerializedType
+from fate_arch.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField, SerializedField, \
+    SerializedType, ListField
 from fate_arch.common import WorkMode
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.settings import WORK_MODE, DATABASE, stat_logger
@@ -59,7 +62,6 @@ class BaseDataBase(object):
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
             stat_logger.info('init sqlite database on standalone mode successfully')
         elif WORK_MODE == WorkMode.CLUSTER:
-            from playhouse.pool import PooledMySQLDatabase
             self.database_connection = PooledMySQLDatabase(db_name, **database_config)
             stat_logger.info('init mysql database on cluster mode successfully')
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=False)
@@ -67,7 +69,46 @@ class BaseDataBase(object):
             raise Exception('can not init database')
 
 
+class DatabaseLock():
+    def __init__(self, lock_name, timeout=10, db=None):
+        self.lock_name = lock_name
+        self.timeout = timeout
+        self.db = db if db else DB
+
+    def lock(self):
+        sql = "SELECT GET_LOCK('%s', %s)" % (self.lock_name, self.timeout)
+        cursor = self.db.execute_sql(sql)
+        ret = cursor.fetchone()
+        if ret[0] == 0:
+            raise Exception('mysql lock {} is already used'.format(self.lock_name))
+        elif ret[0] == 1:
+            return True
+        else:
+            raise Exception('mysql lock {} error occurred!')
+
+    def unlock(self):
+        sql = "SELECT RELEASE_LOCK('%s')" % (self.lock_name)
+        cursor = self.db.execute_sql(sql)
+        ret = cursor.fetchone()
+        if ret[0] == 0:
+            raise Exception('mysql lock {} is not released'.format(self.lock_name))
+        elif ret[0] == 1:
+            return True
+        else:
+            raise Exception('mysql lock {} did not exist.'.format(self.lock_name))
+
+    def __enter__(self):
+        if isinstance(self.db, PooledMySQLDatabase):
+            self.lock()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if isinstance(self.db, PooledMySQLDatabase):
+            self.unlock()
+
+
 DB = BaseDataBase().database_connection
+DB.lock = DatabaseLock
 
 
 def close_connection():
@@ -400,3 +441,36 @@ class EngineRegistry(DataBaseModel):
     class Meta:
         db_table = "t_engine_registry"
         primary_key = CompositeKey('f_engine_name', 'f_engine_type')
+
+
+# component registry
+class ComponentRegistryInfo(DataBaseModel):
+    f_provider_name = CharField(max_length=20, index=True)
+    f_version = CharField(max_length=10, index=True)
+    f_component_name = CharField(max_length=30, index=True)
+    f_module = CharField(max_length=128)
+
+    class Meta:
+        db_table = "t_component_registry"
+        primary_key = CompositeKey('f_provider_name', 'f_version', 'f_component_name')
+
+
+class ComponentVersionInfo(DataBaseModel):
+    f_provider_name = CharField(max_length=20, index=True)
+    f_version = CharField(max_length=10, index=True)
+    f_class_path = JSONField()
+    f_path = CharField(max_length=128, null=False)
+    f_python = CharField(max_length=128, null=False)
+
+    class Meta:
+        db_table = "t_component_version_info"
+        primary_key = CompositeKey('f_provider_name', 'f_version')
+
+
+class ComponentInfo(DataBaseModel):
+    f_component_name = CharField(max_length=30, primary_key=True)
+    f_default_provider = CharField(max_length=20)
+    f_support_provider = ListField(null=True)
+
+    class Meta:
+        db_table = "t_component_info"
