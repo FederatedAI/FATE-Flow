@@ -81,8 +81,9 @@ class InputSearchType(IntEnum):
 
 
 class DataCache(BaseEntity):
-    def __init__(self, name: str, data: typing.Dict[str, DTable] = None, meta: dict = None, job_id: str = None, component_name: str = None, task_id: str = None, task_version: int = None):
+    def __init__(self, name: str, key: str = None, data: typing.Dict[str, DTable] = None, meta: dict = None, job_id: str = None, component_name: str = None, task_id: str = None, task_version: int = None):
         self._name: str = name
+        self._key: str = key
         self._data: typing.Dict[str, DTable] = data if data else {}
         self._meta: dict = meta
         self._job_id = job_id
@@ -93,6 +94,14 @@ class DataCache(BaseEntity):
     @property
     def name(self):
         return self._name
+
+    @property
+    def key(self):
+        return self._key
+
+    @key.setter
+    def key(self, key: str):
+        self._key = key
 
     @property
     def data(self):

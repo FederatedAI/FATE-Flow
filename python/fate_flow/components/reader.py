@@ -129,6 +129,7 @@ class Reader(ComponentBase):
         output_table_meta = StorageTableMeta(
             name=output_table.get_name(), namespace=output_table.get_namespace()
         )
+        # todo: may be set output data, and executor support pass persistent
         self.tracker.log_output_data_info(
             data_name=cpn_input.flow_feeded_parameters.get("output_data_name")[0]
             if cpn_input.flow_feeded_parameters.get("output_data_name")

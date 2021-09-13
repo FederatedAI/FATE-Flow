@@ -27,6 +27,7 @@ from fate_arch.common.log import schedule_logger, getLogger
 from fate_flow.entity.job import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus, PassException
 from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity.types import DataCache
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.manager.data_manager import DataTableTracker
@@ -208,12 +209,17 @@ class TaskExecutor(BaseTaskWorker):
                     if cache is None:
                         continue
                     name = task_output_dsl.get("cache")[i] if "cache" in task_output_dsl else str(i)
-                    tracker.save_output_cache(cache_data=cache[0],
-                                              cache_meta=cache[1],
-                                              cache_name=name,
-                                              output_storage_engine=job_parameters.storage_engine,
-                                              output_storage_address=job_parameters.engines_address.get(EngineType.STORAGE, {}),
-                                              token={"username": user_name})
+                    if isinstance(cache, DataCache):
+                        tracker.tracking_output_cache(cache, cache_name=name)
+                    elif isinstance(cache, tuple):
+                        tracker.save_output_cache(cache_data=cache[0],
+                                                  cache_meta=cache[1],
+                                                  cache_name=name,
+                                                  output_storage_engine=job_parameters.storage_engine,
+                                                  output_storage_address=job_parameters.engines_address.get(EngineType.STORAGE, {}),
+                                                  token={"username": user_name})
+                    else:
+                        raise RuntimeError(f"can not support type {type(cache)} module run object output cache")
             if need_run:
                 self.report_info["party_status"] = TaskStatus.SUCCESS
             else:

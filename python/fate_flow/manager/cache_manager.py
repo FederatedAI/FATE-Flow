@@ -61,29 +61,30 @@ class CacheManager:
         for attr in {"job_id", "component_name", "task_id", "task_version"}:
             if getattr(cache, attr) is None and locals().get(attr) is not None:
                 setattr(cache, attr, locals().get(attr))
-        tracking = CacheRecord()
-        tracking.f_create_time = current_timestamp()
-        tracking.f_cache_key = base_utils.new_unique_id()
-        tracking.f_cache = cache
-        tracking.f_job_id = job_id
-        tracking.f_role = role
-        tracking.f_party_id = party_id
-        tracking.f_component_name = component_name
-        tracking.f_task_id = task_id
-        tracking.f_task_version = task_version
-        tracking.f_cache_name = cache_name
-        rows = tracking.save(force_insert=True)
+        record = CacheRecord()
+        record.f_create_time = current_timestamp()
+        record.f_cache_key = base_utils.new_unique_id()
+        cache.key = record.f_cache_key
+        record.f_cache = cache
+        record.f_job_id = job_id
+        record.f_role = role
+        record.f_party_id = party_id
+        record.f_component_name = component_name
+        record.f_task_id = task_id
+        record.f_task_version = task_version
+        record.f_cache_name = cache_name
+        rows = record.save(force_insert=True)
         if rows != 1:
             raise Exception("save cache tracking failed")
-        return tracking.f_cache_key
+        return record.f_cache_key
 
     @classmethod
     @DB.connection_context()
     def query(cls, cache_key: str = None, role: str = None, party_id: int = None, component_name: str = None, cache_name: str = None,
               **kwargs) -> typing.List[DataCache]:
         if cache_key is not None:
-            trackings = CacheRecord.query(cache_key=cache_key)
+            records = CacheRecord.query(cache_key=cache_key)
         else:
-            trackings = CacheRecord.query(role=role, party_id=party_id, component_name=component_name,
-                                          cache_name=cache_name, **kwargs)
-        return [tracking.f_cache for tracking in trackings]
+            records = CacheRecord.query(role=role, party_id=party_id, component_name=component_name,
+                                        cache_name=cache_name, **kwargs)
+        return [record.f_cache for record in records]
