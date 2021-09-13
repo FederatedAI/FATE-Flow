@@ -47,7 +47,7 @@ class ModelLoader(ComponentBase):
         job_configuration = OperationClient().get_job_conf(
             self.model_version, self.tracker.role, self.tracker.party_id)
         if not job_configuration:
-            raise ValueError('Job not found.')
+            raise ValueError('The job was not found.')
         job_configuration = JobConfiguration(**job_configuration)
 
         dsl_parser = get_job_dsl_parser(job_configuration.dsl, job_configuration.runtime_conf,
@@ -62,11 +62,11 @@ class ModelLoader(ComponentBase):
             self.model_id, self.tracker.role, self.tracker.party_id
         ), self.model_version)
 
-        model_buffers = pipelined_model._read_component_model(self.component_name, self.model_alias)
-        if not model_buffers:
-            raise ValueError('Component model is empty.')
+        component_model = pipelined_model._read_component_model(self.component_name, self.model_alias)
+        if not component_model:
+            raise ValueError('The component model is empty.')
 
-        self.model_output = model_buffers
+        self.model_output = component_model
         self.tracker.set_metric_meta('model_loader', f'{self.component_name}-{self.model_alias}',
                                      MetricMeta('component_model', 'component_model_info', {
                                          'model_id': self.model_id,
@@ -92,7 +92,7 @@ class ModelLoader(ComponentBase):
             checkpoint = checkpoint_manager.latest_checkpoint
 
         if checkpoint is None:
-            raise TypeError('Checkpoint not found.')
+            raise ValueError('The checkpoint was not found.')
 
         data = checkpoint.read(include_database=True)
         data['model_id'] = checkpoint_manager.model_id
@@ -111,10 +111,10 @@ class ModelLoader(ComponentBase):
         for k in ('model_id', 'model_version', 'component_name'):
             v = cpn_input.parameters.get(k)
             if v is None:
-                raise KeyError(f'Component ModelLoader needs {k}')
+                raise KeyError(f"The component ModelLoader needs '{k}'")
             setattr(self, k, v)
 
-        for k in ('step_index', 'step_name'):
+        for k in ('model_alias', 'step_index', 'step_name'):
             v = cpn_input.parameters.get(k)
             if v is not None:
                 setattr(self, k, v)
@@ -123,22 +123,22 @@ class ModelLoader(ComponentBase):
             try:
                 self.get_model_alias()
             except Exception:
-                LOGGER.exception("Get 'model_alias' failed.")
+                # This should not have happened. But give me a chance to find a checkpoint.
+                LOGGER.exception("Get 'model_alias' failed. Trying to find a checkpoint...")
 
         if self.model_alias is not None:
             try:
-                self.read_component_model()
+                return self.read_component_model()
             except Exception:
-                LOGGER.exception('Component model not found.')
-            else:
-                return
+                LOGGER.exception('Read component model error. Trying to find a checkpoint...')
 
         try:
-            self.read_checkpoint()
+            return self.read_checkpoint()
         except Exception:
             LOGGER.exception('Read checkpoint error.')
-            raise EnvironmentError('Checkpoint not found.' if self.model_alias is None else
-                                   'Component model and checkpoint not found.')
+            raise EnvironmentError('No component model or checkpoint was found.'
+                                   if self.model_alias is not None
+                                   else 'No checkpoint was found.')
 
 
 @model_loader_cpn_meta.bind_param
