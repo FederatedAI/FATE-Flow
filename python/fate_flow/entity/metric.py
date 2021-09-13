@@ -14,20 +14,25 @@
 #  limitations under the License.
 #
 from enum import Enum
+from fate_flow.entity import BaseEntity
 
 
 class MetricType(Enum):
     LOSS = 'LOSS'
 
 
-class Metric(object):
+class Metric(BaseEntity):
     def __init__(self, key, value: float, timestamp: float = None):
         self.key = key
         self.value = value
         self.timestamp = timestamp
 
+    @classmethod
+    def from_dict(cls, d: dict):
+        return Metric(d.get("key"), d.get("value"), d.get("timestamp"))
 
-class MetricMeta(object):
+
+class MetricMeta(BaseEntity):
     def __init__(self, name: str, metric_type: MetricType, extra_metas: dict = None):
         self.name = name
         self.metric_type = metric_type
@@ -42,5 +47,12 @@ class MetricMeta(object):
 
     def to_dict(self):
         return self.metas
+
+    @classmethod
+    def from_dict(cls, d: dict):
+        metas = d.get("metas", {})
+        if d.get("extra_metas"):
+            metas.update(metas)
+        return MetricMeta(d.get("name"), d.get("metric_type"), extra_metas=metas)
 
 

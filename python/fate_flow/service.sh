@@ -28,8 +28,6 @@ INI_ENV_SCRIPT=${PROJECT_BASE}/bin/init_env.sh
 if test -f "${INI_ENV_SCRIPT}"; then
   source ${PROJECT_BASE}/bin/init_env.sh
   echo "PYTHONPATH: "${PYTHONPATH}
-  echo "EGGROLL_HOME: "${EGGROLL_HOME}
-  echo "SPARK_HOME: "${SPARK_HOME}
 else
   echo "file not found: ${INI_ENV_SCRIPT}"
   exit

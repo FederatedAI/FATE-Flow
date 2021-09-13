@@ -20,6 +20,7 @@ from fate_arch.common import DTable
 
 
 class BaseType(object):
+    #todo: may be use enum?
     @classmethod
     def types(cls):
         return [cls.__dict__[k] for k in cls.__dict__.keys() if not callable(getattr(cls, k)) and not k.startswith("__")]
@@ -51,7 +52,7 @@ class ModelOperation(object):
 
 class ProcessRole(object):
     DRIVER = "driver"
-    EXECUTOR = "executor"
+    WORKER = "worker"
 
 
 class TagOperation(object):
@@ -132,3 +133,9 @@ class DataCache(BaseEntity):
     @task_version.setter
     def task_version(self, task_version: int):
         self._task_version = task_version
+
+
+class WorkerName:
+    TASK_EXECUTOR = "task_executor"
+    TASK_INITIALIZER = "task_initializer"
+    PROVIDER_REGISTRAR = "provider_registrar"

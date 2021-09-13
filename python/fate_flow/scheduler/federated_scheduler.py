@@ -16,6 +16,7 @@
 
 from fate_arch.common import base_utils
 from fate_flow.utils.api_utils import federated_api
+from fate_flow.utils.log_utils import start_log, failed_log, successful_log
 from fate_arch.common.log import schedule_logger
 from fate_flow.entity.retcode import RetCode
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
@@ -204,7 +205,8 @@ class FederatedScheduler(object):
         return status_code, response
 
     @classmethod
-    def task_command(cls, job, task, command, command_body=None, parallel=False, need_user=False):
+    def task_command(cls, job: Job, task: Task, command, command_body=None, parallel=False, need_user=False):
+        msg = f"execute federated task {task.f_component_name} command({command})"
         federated_response = {}
         job_parameters = job.f_runtime_conf_on_party["job_parameters"]
         tasks = JobSaver.query_task(task_id=task.f_task_id, only_latest=True)
@@ -226,7 +228,12 @@ class FederatedScheduler(object):
                 cls.federated_command(*args)
         for thread in threads:
             thread.join()
-        return cls.return_federated_response(federated_response=federated_response)
+        status_code, response = cls.return_federated_response(federated_response=federated_response)
+        if status_code == FederatedSchedulingStatusCode.SUCCESS:
+            schedule_logger(job.f_job_id).info(successful_log(msg))
+        else:
+            schedule_logger(job.f_job_id).error(failed_log(msg, detail=response))
+        return status_code, response
 
     @classmethod
     def federated_command(cls, job_id, src_role, src_party_id, dest_role, dest_party_id, endpoint, body, federated_mode, federated_response):
