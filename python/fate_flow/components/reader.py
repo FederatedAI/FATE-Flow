@@ -125,7 +125,6 @@ class Reader(ComponentBase):
         )
         self.save_table(src_table=input_table, dest_table=output_table)
         # update real count to meta info
-        output_table.count()
         output_table_meta = StorageTableMeta(
             name=output_table.get_name(), namespace=output_table.get_namespace()
         )
@@ -430,6 +429,7 @@ class Reader(ComponentBase):
             dest_table.put_all(data_temp)
         LOGGER.info("copy successfully")
         dest_table.meta.update_metas(schema=schema, part_of_data=part_of_data)
+        dest_table.count()
 
     def put_in_table(self, table: StorageTableABC, k, v, temp, count, part_of_data):
         temp.append((k, v))

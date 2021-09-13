@@ -19,6 +19,7 @@ import sys
 from fate_arch.common.log import schedule_logger
 from fate_flow.controller.engine_controller.engine import EngineABC
 from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.entity.component_provider import ComponentProvider
 from fate_flow.entity.types import KillProcessRetCode
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.worker.task_executor import TaskExecutor
@@ -27,7 +28,7 @@ from fate_flow.db.db_models import Task
 
 
 class SparkEngine(EngineABC):
-    def run(self, task: Task, run_parameters, run_parameter_path, config_dir, log_dir, cwd_dir, **kwargs):
+    def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
         if "SPARK_HOME" not in os.environ:
             raise EnvironmentError("SPARK_HOME not found")
         spark_home = os.environ["SPARK_HOME"]
@@ -48,6 +49,12 @@ class SparkEngine(EngineABC):
             for ck, cv in spark_submit_config["conf"].items():
                 process_cmd.append(f"--conf")
                 process_cmd.append(f"{ck}={cv}")
+        provider = ComponentProvider(**task.f_provider_info)
+        schedule_logger(task.f_job_id).info(f"provider env:{provider.env}")
+        extra_env = provider.env
+        extra_env_pythonpath = extra_env.get("PYTHONPATH")
+        process_cmd.append(f'--conf')
+        process_cmd.append(f'spark.executorEnv.PYTHONPATH={extra_env_pythonpath}:$PYTHONPATH')
         process_cmd.extend([
             sys.modules[TaskExecutor.__module__].__file__,
             "-j", task.f_job_id,
@@ -56,15 +63,14 @@ class SparkEngine(EngineABC):
             "-v", task.f_task_version,
             "-r", task.f_role,
             "-p", task.f_party_id,
-            "-c", run_parameter_path,
+            "-c", run_parameters_path,
             "--run_ip", RuntimeConfig.JOB_SERVER_HOST,
             "--job_server", f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
         ])
-
-
+        schedule_logger(task.f_job_id).info(f"process cmd {process_cmd}")
         schedule_logger(task.f_job_id).info(f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} executor subprocess is ready")
         p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd, log_dir=log_dir,
-                                     cwd_dir=cwd_dir)
+                                     cwd_dir=cwd_dir,extra_env=extra_env)
         return {"run_pid": p.pid}
 
     def kill(self, task):
