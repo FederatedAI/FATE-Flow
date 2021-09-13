@@ -111,22 +111,19 @@ def deploy(config_data):
             model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
         save_model_info(model_info)
 
-        # todo: Check whether a checkpoint exists
-        try:
-            for component_name, component in inference_dsl['components'].items():
-                step_index = components_checkpoint.get(component_name, {}).get('step_index')
-                step_name = components_checkpoint.get(component_name, {}).get('step_name')
+        for component_name, component in inference_dsl.get('components', {}).items():
+            step_index = components_checkpoint.get(component_name, {}).get('step_index')
+            step_name = components_checkpoint.get(component_name, {}).get('step_name')
 
-                checkpoint_manager = CheckpointManager(
-                    role=local_role, party_id=local_party_id,
-                    model_id=model_id, model_version=model_version,
-                    component_name=component_name,
-                    mkdir=False,
-                )
-                checkpoint_manager.load_checkpoints_from_disk()
+            checkpoint_manager = CheckpointManager(
+                role=local_role, party_id=local_party_id,
+                model_id=model_id, model_version=model_version,
+                component_name=component_name,
+                mkdir=False,
+            )
+            checkpoint_manager.load_checkpoints_from_disk()
+            if checkpoint_manager.latest_checkpoint is not None:
                 checkpoint_manager.copy(child_model_version, step_index, step_name)
-        except Exception as e:
-            stat_logger.exception(e)
     except Exception as e:
         stat_logger.exception(e)
         return 100, f"deploy model of role {local_role} {local_party_id} failed, details: {str(e)}"

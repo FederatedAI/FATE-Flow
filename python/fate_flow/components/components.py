@@ -29,12 +29,11 @@ LOGGER = log.getLogger()
 
 def _search_components(path):
     try:
-        module_name = (
+        module_name = '.'.join(
             path.absolute()
             .relative_to(_flow_base)
             .with_suffix("")
-            .__str__()
-            .replace("/", ".")
+            .parts
         )
         module = importlib.import_module(module_name)
     except ImportError as e:
