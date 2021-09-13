@@ -23,7 +23,7 @@ from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_arch.common.file_utils import load_json_conf
 from fate_arch.common.log import schedule_logger
 from fate_arch.metastore.base_model import auto_date_timestamp_db_field
-from fate_flow.db.db_models import DB, Task, Worker
+from fate_flow.db.db_models import DB, Task, WorkerInfo
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.component_provider import ComponentProvider
 from fate_flow.entity.run_parameters import RunParameters
@@ -229,7 +229,7 @@ class WorkerManager:
     @classmethod
     @DB.connection_context()
     def save_worker_info(cls, task: Task, worker_name, worker_id, **kwargs):
-        worker = Worker()
+        worker = WorkerInfo()
         worker.f_create_time = current_timestamp()
         worker.f_worker_name = worker_name
         worker.f_worker_id = worker_id
@@ -249,8 +249,8 @@ class WorkerManager:
     @DB.connection_context()
     def kill_task_all_workers(cls, task: Task):
         schedule_logger(task.f_job_id).info(start_log("kill all workers", task=task))
-        workers = Worker.query(task_id=task.f_task_id, task_version=task.f_task_version, role=task.f_role,
-                               party_id=task.f_party_id)
+        workers = WorkerInfo.query(task_id=task.f_task_id, task_version=task.f_task_version, role=task.f_role,
+                                   party_id=task.f_party_id)
         for worker in workers:
             schedule_logger(task.f_job_id).info(
                 start_log(f"kill {worker.f_worker_name}({worker.f_run_pid})", task=task))
@@ -264,6 +264,6 @@ class WorkerManager:
         schedule_logger(task.f_job_id).info(successful_log("kill all workers", task=task))
 
     @classmethod
-    def kill_worker(cls, worker: Worker):
+    def kill_worker(cls, worker: WorkerInfo):
         process = psutil.Process(worker.f_run_pid)
         process_utils.kill_process(process=process, expected_cmdline=worker.f_cmd)

@@ -477,7 +477,8 @@ class ComponentInfo(DataBaseModel):
     class Meta:
         db_table = "t_component_info"
 
-class Worker(DataBaseModel):
+
+class WorkerInfo(DataBaseModel):
     f_worker_id = CharField(max_length=100, primary_key=True)
     f_worker_name = CharField(max_length=50, index=True)
     f_job_id = CharField(max_length=25, index=True)
