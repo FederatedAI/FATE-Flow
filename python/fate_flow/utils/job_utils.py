@@ -197,8 +197,6 @@ def get_job_configuration(job_id, role, party_id) -> JobConfiguration:
     if jobs:
         job = jobs[0]
         return JobConfiguration(**job.to_human_model_dict())
-    else:
-        return None
 
 
 @DB.connection_context()
