@@ -275,7 +275,6 @@ class JobController(object):
             initialized_config.update(group_info)
             initialized_config["common_task_info"] = common_task_info
             if run_on_this_party:
-                print(initialized_config)
                 code, _result = WorkerManager.start_general_worker(worker_name=WorkerName.TASK_INITIALIZER,
                                                                    job_id=job_id,
                                                                    role=role,

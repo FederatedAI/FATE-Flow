@@ -149,15 +149,6 @@ def is_task_executor_process(task: Task, process: psutil.Process):
     :param process:
     :return:
     """
-    # Todo: The same map should be used for run task command
-    run_cmd_map = {
-        3: "f_job_id",
-        5: "f_component_name",
-        7: "f_task_id",
-        9: "f_task_version",
-        11: "f_role",
-        13: "f_party_id"
-    }
     try:
         cmdline = process.cmdline()
         schedule_logger(task.f_job_id).info(cmdline)
@@ -165,13 +156,12 @@ def is_task_executor_process(task: Task, process: psutil.Process):
         # Not sure whether the process is a task executor process, operations processing is required
         schedule_logger(task.f_job_id).warning(e)
         return False
-    for i, k in run_cmd_map.items():
-        if len(cmdline) > i and cmdline[i] == str(getattr(task, k)):
+    if len(cmdline) != len(task.f_cmd):
+        return False
+    for i, v in enumerate(task.f_cmd):
+        if cmdline[i] == str(v):
             continue
         else:
-            # todo: The logging level should be obtained first
-            if len(cmdline) > i:
-                schedule_logger(task.f_job_id).debug(f"cmd map {i} {k}, cmd value {cmdline[i]} task value {getattr(task, k)}")
             return False
     else:
         return True

@@ -190,7 +190,8 @@ class WorkerManager:
         p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name,
                                          process_id=worker_id)
-        return {"run_pid": p.pid, "worker_id": worker_id}
+        cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id, run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=config, cmd=process_cmd, **info_kwargs)
+        return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd}
 
     @classmethod
     def get_process_dirs(cls, worker_name, job_id=None, role=None, party_id=None, task: Task = None):
@@ -227,10 +228,11 @@ class WorkerManager:
 
     @classmethod
     @DB.connection_context()
-    def save_worker_info(cls, task: Task, worker_name, **kwargs):
+    def save_worker_info(cls, task: Task, worker_name, worker_id, **kwargs):
         worker = Worker()
         worker.f_create_time = current_timestamp()
         worker.f_worker_name = worker_name
+        worker.f_worker_id = worker_id
         ignore_attr = auto_date_timestamp_db_field()
         for attr, value in task.to_dict().items():
             if hasattr(worker, attr) and attr not in ignore_attr and value is not None:
@@ -239,11 +241,9 @@ class WorkerManager:
             attr = f"f_{k}"
             if hasattr(worker, attr) and v is not None:
                 setattr(worker, attr, v)
-        worker.f_worker_id = base_utils.new_unique_id()
         rows = worker.save(force_insert=True)
         if rows != 1:
             raise Exception("save worker info failed")
-        return worker.f_worker_id
 
     @classmethod
     @DB.connection_context()
