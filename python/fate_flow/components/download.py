@@ -24,7 +24,7 @@ from fate_flow.components._base import (
     ComponentMeta,
     ComponentInputProtocol,
 )
-from fate_flow.entity.metric import Metric, MetricMeta
+from fate_flow.entity import Metric, MetricMeta
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.utils import job_utils
 

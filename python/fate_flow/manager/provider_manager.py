@@ -15,7 +15,7 @@
 #
 from fate_arch.common import file_utils
 from fate_arch.common.versions import get_versions
-from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity import ComponentProvider
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import WorkerName

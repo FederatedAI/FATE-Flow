@@ -30,8 +30,8 @@ from fate_flow.components._base import (
     ComponentInputProtocol,
     ComponentMeta,
 )
-from fate_flow.entity.exceptions import ParameterException
-from fate_flow.entity.metric import MetricMeta
+from fate_flow.errors import ParameterError
+from fate_flow.entity import MetricMeta
 from fate_flow.entity.types import InputSearchType
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.operation.job_tracker import Tracker
@@ -207,7 +207,7 @@ class Reader(ComponentBase):
                 LOGGER.info(f"found input table {namespace} {name} by {parameters}")
                 return namespace, name
         else:
-            raise ParameterException(
+            raise ParameterError(
                 f"can not found input table info by parameters {parameters}"
             )
 

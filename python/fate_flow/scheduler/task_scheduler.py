@@ -14,11 +14,11 @@
 #  limitations under the License.
 #
 from fate_arch.common import FederatedCommunicationType
-from fate_flow.entity.retcode import RetCode
+from fate_flow.entity import RetCode
 from fate_flow.entity.run_status import StatusSet, TaskStatus, EndStatus, AutoRerunStatus, InterruptStatus
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.entity.run_status import SchedulingStatusCode
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_flow.utils import job_utils
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.operation.job_saver import JobSaver

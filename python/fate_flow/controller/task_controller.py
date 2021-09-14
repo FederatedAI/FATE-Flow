@@ -24,7 +24,7 @@ from fate_flow.utils import job_utils
 from fate_flow.operation.job_saver import JobSaver
 from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_arch.common import base_utils
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker

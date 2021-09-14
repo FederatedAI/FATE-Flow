@@ -20,13 +20,14 @@ import traceback
 
 from fate_arch import session, storage
 from fate_arch.computing import ComputingEngine
-from fate_arch.common import file_utils, EngineType, profile, Party
+from fate_arch.common import file_utils, EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
 from fate_arch.common.log import schedule_logger, getLogger
 
-from fate_flow.entity.job import JobConfiguration
-from fate_flow.entity.run_status import TaskStatus, PassException
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import JobConfiguration
+from fate_flow.entity.run_status import TaskStatus
+from fate_flow.errors import PassError
+from fate_flow.entity import RunParameters
 from fate_flow.entity import DataCache
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.component_registry import ComponentRegistry
@@ -224,7 +225,7 @@ class TaskExecutor(BaseTaskWorker):
                 self.report_info["party_status"] = TaskStatus.SUCCESS
             else:
                 self.report_info["party_status"] = TaskStatus.PASS
-        except PassException as e:
+        except PassError as e:
             self.report_info["party_status"] = TaskStatus.PASS
         except Exception as e:
             traceback.print_exc()

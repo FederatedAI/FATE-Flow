@@ -22,8 +22,8 @@ from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.detect_utils import validate_request
 from fate_flow.db.component_registry import ComponentRegistry
-from fate_flow.entity.component_provider import ComponentProvider
-from fate_flow.entity.retcode import RetCode
+from fate_flow.entity import ComponentProvider
+from fate_flow.entity import RetCode
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import WorkerName
 

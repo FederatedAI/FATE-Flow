@@ -25,8 +25,8 @@ from fate_arch.common.log import schedule_logger
 from fate_arch.metastore.base_model import auto_date_timestamp_db_field
 from fate_flow.db.db_models import DB, Task, WorkerInfo
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.entity.component_provider import ComponentProvider
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import ComponentProvider
+from fate_flow.entity import RunParameters
 from fate_flow.entity.types import WorkerName
 from fate_flow.settings import stat_logger
 from fate_flow.utils import job_utils, process_utils, base_utils

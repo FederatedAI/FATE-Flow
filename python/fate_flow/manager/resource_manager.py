@@ -24,7 +24,7 @@ from fate_arch.storage import StorageEngine
 from fate_arch.common import engine_utils
 from fate_flow.db.db_models import DB, EngineRegistry, Job
 from fate_flow.entity.types import ResourceOperation
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, SUPPORT_IGNORE_RESOURCE_ENGINES, IGNORE_RESOURCE_COMPUTING_ENGINE
 from fate_flow.utils import job_utils

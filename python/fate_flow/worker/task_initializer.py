@@ -15,7 +15,7 @@
 #
 from fate_arch.common.log import getLogger
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity import ComponentProvider
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.utils import schedule_utils
 from fate_flow.worker.base_worker import BaseWorker

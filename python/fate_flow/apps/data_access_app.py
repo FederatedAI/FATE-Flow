@@ -19,7 +19,7 @@ import shutil
 from flask import request
 
 from fate_flow.entity.run_status import StatusSet
-from fate_flow.entity.job import JobConfigurationBase
+from fate_flow.entity import JobConfigurationBase
 from fate_arch import storage
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_loads

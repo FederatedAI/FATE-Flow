@@ -28,8 +28,8 @@ from fate_flow.settings import stat_logger, TEMP_DIRECTORY
 from fate_flow.utils import job_utils, detect_utils, schedule_utils, log_utils
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode, JobStatus
 from fate_flow.utils.api_utils import get_json_result, error_response
-from fate_flow.entity.retcode import RetCode
-from fate_flow.entity.job import JobConfigurationBase
+from fate_flow.entity import RetCode
+from fate_flow.entity import JobConfigurationBase
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_clean import JobClean

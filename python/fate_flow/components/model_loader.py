@@ -16,8 +16,8 @@
 from fate_arch.common.log import getLogger
 
 from fate_flow.components._base import BaseParam, ComponentBase, ComponentInputProtocol, ComponentMeta
-from fate_flow.entity.job import JobConfiguration
-from fate_flow.entity.metric import MetricMeta
+from fate_flow.entity import JobConfiguration
+from fate_flow.entity import MetricMeta
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.scheduling_apps.client.operation_client import OperationClient

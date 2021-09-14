@@ -17,7 +17,7 @@ import importlib
 import pathlib
 
 from fate_arch.common import file_utils
-from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity import ComponentProvider
 
 
 def get_provider_interface(provider: ComponentProvider):

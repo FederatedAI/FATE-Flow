@@ -18,7 +18,7 @@ import copy
 from fate_arch.abc import Components
 from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, RoleParameterNotListError
 from fate_flow.component_env_utils import provider_utils
-from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity import ComponentProvider
 from fate_flow.db.component_registry import ComponentRegistry
 
 

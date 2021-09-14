@@ -29,7 +29,7 @@ from fate_flow.components._base import (
     ComponentMeta,
     ComponentInputProtocol,
 )
-from fate_flow.entity.metric import Metric, MetricMeta
+from fate_flow.entity import Metric, MetricMeta
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.db.job_default_config import JobDefaultConfig

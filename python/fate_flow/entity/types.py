@@ -84,6 +84,17 @@ class InputSearchType(IntEnum, CustomEnum):
     JOB_COMPONENT_OUTPUT = 2
 
 
+class RetCode(IntEnum, CustomEnum):
+    SUCCESS = 0
+    EXCEPTION_ERROR = 100
+    ARGUMENT_ERROR = 101
+    DATA_ERROR = 102
+    OPERATING_ERROR = 103
+    FEDERATED_ERROR = 104
+    CONNECTION_ERROR = 105
+    SERVER_ERROR = 500
+
+
 class WorkerName(CustomEnum):
     TASK_EXECUTOR = "task_executor"
     TASK_INITIALIZER = "task_initializer"
