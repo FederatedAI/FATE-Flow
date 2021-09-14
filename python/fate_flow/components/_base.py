@@ -160,7 +160,7 @@ class ComponentBase(metaclass=abc.ABCMeta):
         return self.cache_output
 
 
-class _RunnerDocorator:
+class _RunnerDecorator:
     def __init__(self, meta) -> None:
         self._roles = set()
         self._meta = meta
@@ -207,7 +207,7 @@ class ComponentMeta:
 
     @property
     def bind_runner(self):
-        return _RunnerDocorator(self)
+        return _RunnerDecorator(self)
 
     @property
     def bind_param(self):
