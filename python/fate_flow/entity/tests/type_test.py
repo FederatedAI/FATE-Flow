@@ -14,10 +14,11 @@
 #  limitations under the License.
 #
 import unittest
-from fate_flow.entity.types import DataCache
-from fate_arch.common import DTable
 from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_flow.utils.object_utils import from_dict_hook
+from fate_flow.entity.types import *
+from fate_flow.entity import DataCache
+from fate_arch.common import DTable
 
 
 class TestType(unittest.TestCase):
@@ -27,6 +28,21 @@ class TestType(unittest.TestCase):
         self.assertEqual(a["data"]["t1"]["namespace"], "test")
         b = json_loads(json_dumps(cache, with_type=True), object_hook=from_dict_hook)
         self.assertEqual(b.data["t1"].namespace, "test")
+
+    def test2(self):
+        self.assertTrue(ComponentProviderName.valid("fate_flow_tools"))
+        self.assertFalse(ComponentProviderName.valid("fate_flow"))
+        self.assertTrue(ComponentProviderName("fate_flow_tools") in ComponentProviderName)
+        self.assertTrue(ComponentProviderName["FATE_FLOW_TOOLS"] in ComponentProviderName)
+        self.assertTrue(ComponentProviderName("fate_flow_tools") == ComponentProviderName.FATE_FLOW_TOOLS)
+        self.assertTrue(ComponentProviderName("fate_flow_tools") is ComponentProviderName.FATE_FLOW_TOOLS)
+        print(ComponentProviderName.values())
+        print(ComponentProviderName.FATE_FLOW_TOOLS)
+
+        self.assertTrue(0 == KillProcessRetCode.KILLED)
+        self.assertTrue(KillProcessRetCode.valid(0))
+        self.assertFalse(KillProcessRetCode.valid(10))
+        print(KillProcessRetCode.KILLED)
 
 
 if __name__ == '__main__':

@@ -27,7 +27,7 @@ from fate_arch.common.log import schedule_logger, getLogger
 from fate_flow.entity.job import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus, PassException
 from fate_flow.entity.run_parameters import RunParameters
-from fate_flow.entity.types import DataCache
+from fate_flow.entity import DataCache
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.manager.data_manager import DataTableTracker

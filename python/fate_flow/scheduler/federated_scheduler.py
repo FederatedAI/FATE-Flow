@@ -20,6 +20,7 @@ from fate_flow.utils.log_utils import start_log, failed_log, successful_log
 from fate_arch.common.log import schedule_logger
 from fate_flow.entity.retcode import RetCode
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
+from fate_flow.entity.types import ResourceOperation
 from fate_flow.db.db_models import Job, Task
 from fate_flow.operation.job_saver import JobSaver
 import threading
@@ -44,9 +45,9 @@ class FederatedScheduler(object):
         return cls.job_command(job=job, command="parameter/update", command_body=updated_parameters, parallel=True)
 
     @classmethod
-    def resource_for_job(cls, job, operation_type, specific_dest=None):
+    def resource_for_job(cls, job, operation_type: ResourceOperation, specific_dest=None):
         schedule_logger(job_id=job.f_job_id).info(f"try to {operation_type} job {job.f_job_id} resource")
-        status_code, response = cls.job_command(job=job, command=f"resource/{operation_type}", specific_dest=specific_dest)
+        status_code, response = cls.job_command(job=job, command=f"resource/{operation_type.value}", specific_dest=specific_dest)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
             schedule_logger(job_id=job.f_job_id).info(f"{operation_type} job {job.f_job_id} resource successfully")
         else:

@@ -24,7 +24,8 @@ from fate_arch.common.log import getLogger, LoggerFactory
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.db.config_manager import ConfigManager
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.entity.types import ProcessRole, BaseEntity
+from fate_flow.entity.types import ProcessRole
+from fate_flow.entity import BaseEntity
 
 LOGGER = getLogger()
 

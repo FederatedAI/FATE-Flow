@@ -35,13 +35,13 @@ from fate_flow.utils.log_utils import ready_log, start_log, successful_log, fail
 
 class WorkerManager:
     @classmethod
-    def start_general_worker(cls, worker_name, job_id="", role="", party_id=0, provider: ComponentProvider = None,
+    def start_general_worker(cls, worker_name: WorkerName, job_id="", role="", party_id=0, provider: ComponentProvider = None,
                              initialized_config: dict = None):
         worker_id, config_dir, log_dir = cls.get_process_dirs(worker_name=worker_name,
                                                               job_id=job_id,
                                                               role=role,
                                                               party_id=party_id)
-        if worker_name == WorkerName.PROVIDER_REGISTRAR:
+        if worker_name is WorkerName.PROVIDER_REGISTRAR:
             if not provider:
                 raise ValueError("no provider argument")
             config = {
@@ -52,7 +52,7 @@ class WorkerManager:
             module_file_path = sys.modules[ProviderRegistrar.__module__].__file__
             specific_cmd = []
             provider_info = provider.to_dict()
-        elif worker_name == WorkerName.TASK_INITIALIZER:
+        elif worker_name is WorkerName.TASK_INITIALIZER:
             if not initialized_config:
                 raise ValueError("no initialized_config argument")
             config = initialized_config
@@ -100,7 +100,7 @@ class WorkerManager:
         process_cmd.extend(specific_cmd)
         p = process_utils.run_subprocess(job_id=job_id, config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=cls.get_env(job_id, provider_info), log_dir=log_dir,
-                                         cwd_dir=config_dir, process_name=worker_name, process_id=worker_id)
+                                         cwd_dir=config_dir, process_name=worker_name.value, process_id=worker_id)
         if job_id and role and party_id:
             logger = schedule_logger(job_id)
             msg = f"{worker_name} worker {worker_id} subprocess {p.pid}"
@@ -118,7 +118,7 @@ class WorkerManager:
                 return p.returncode, load_json_conf(result_path)
             else:
                 raise Exception(
-                    process_utils.get_subprocess_std(log_dir=log_dir, process_name=worker_name, process_id=worker_id))
+                    process_utils.get_subprocess_std(log_dir=log_dir, process_name=worker_name.value, process_id=worker_id))
         except subprocess.TimeoutExpired as e:
             err = failed_log(msg=f"{msg} run timeout", role=role, party_id=party_id)
             logger.exception(err)
@@ -144,7 +144,7 @@ class WorkerManager:
 
         info_kwargs = {}
         specific_cmd = []
-        if worker_name == WorkerName.TASK_EXECUTOR:
+        if worker_name is WorkerName.TASK_EXECUTOR:
             from fate_flow.worker.task_executor import TaskExecutor
             module_file_path = sys.modules[TaskExecutor.__module__].__file__
         else:
@@ -188,13 +188,13 @@ class WorkerManager:
         schedule_logger(task.f_job_id).info(
             f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} {worker_name} worker subprocess is ready")
         p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
-                                         added_env=env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name,
+                                         added_env=env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
                                          process_id=worker_id)
         cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id, run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=config, cmd=process_cmd, **info_kwargs)
         return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd}
 
     @classmethod
-    def get_process_dirs(cls, worker_name, job_id=None, role=None, party_id=None, task: Task = None):
+    def get_process_dirs(cls, worker_name: WorkerName, job_id=None, role=None, party_id=None, task: Task = None):
         worker_id = base_utils.new_unique_id()
         party_id = str(party_id)
         if task:
@@ -205,17 +205,17 @@ class WorkerManager:
             config_dir = job_utils.get_job_directory(job_id, role, party_id)
             log_dir = job_utils.get_job_log_directory(job_id, role, party_id)
         else:
-            config_dir = job_utils.get_general_worker_directory(worker_name, worker_id)
-            log_dir = job_utils.get_general_worker_log_directory(worker_name, worker_id)
+            config_dir = job_utils.get_general_worker_directory(worker_name.value, worker_id)
+            log_dir = job_utils.get_general_worker_log_directory(worker_name.value, worker_id)
         os.makedirs(config_dir, exist_ok=True)
         return worker_id, config_dir, log_dir
 
     @classmethod
-    def get_config(cls, worker_name, worker_id, config_dir, config, log_dir):
-        config_path = os.path.join(config_dir, f"{worker_name}_{worker_id}_config.json")
+    def get_config(cls, worker_name: WorkerName, worker_id, config_dir, config, log_dir):
+        config_path = os.path.join(config_dir, f"{worker_name.value}_{worker_id}_config.json")
         with open(config_path, 'w') as fw:
             fw.write(json_dumps(config))
-        result_path = os.path.join(log_dir, f"{worker_name}_{worker_id}_result.json")
+        result_path = os.path.join(log_dir, f"{worker_name.value}_{worker_id}_result.json")
         return config_path, result_path
 
     @classmethod
@@ -228,10 +228,10 @@ class WorkerManager:
 
     @classmethod
     @DB.connection_context()
-    def save_worker_info(cls, task: Task, worker_name, worker_id, **kwargs):
+    def save_worker_info(cls, task: Task, worker_name: WorkerName, worker_id, **kwargs):
         worker = WorkerInfo()
         worker.f_create_time = current_timestamp()
-        worker.f_worker_name = worker_name
+        worker.f_worker_name = worker_name.value
         worker.f_worker_id = worker_id
         ignore_attr = auto_date_timestamp_db_field()
         for attr, value in task.to_dict().items():
@@ -249,21 +249,21 @@ class WorkerManager:
     @DB.connection_context()
     def kill_task_all_workers(cls, task: Task):
         schedule_logger(task.f_job_id).info(start_log("kill all workers", task=task))
-        workers = WorkerInfo.query(task_id=task.f_task_id, task_version=task.f_task_version, role=task.f_role,
-                                   party_id=task.f_party_id)
-        for worker in workers:
+        workers_info = WorkerInfo.query(task_id=task.f_task_id, task_version=task.f_task_version, role=task.f_role,
+                                        party_id=task.f_party_id)
+        for worker_info in workers_info:
             schedule_logger(task.f_job_id).info(
-                start_log(f"kill {worker.f_worker_name}({worker.f_run_pid})", task=task))
+                start_log(f"kill {worker_info.f_worker_name}({worker_info.f_run_pid})", task=task))
             try:
-                cls.kill_worker(worker)
+                cls.kill_worker(worker_info)
                 schedule_logger(task.f_job_id).info(
-                    successful_log(f"kill {worker.f_worker_name}({worker.f_run_pid})", task=task))
+                    successful_log(f"kill {worker_info.f_worker_name}({worker_info.f_run_pid})", task=task))
             except Exception as e:
                 schedule_logger(task.f_job_id).warning(
-                    failed_log(f"kill {worker.f_worker_name}({worker.f_run_pid})", task=task), exc_info=True)
+                    failed_log(f"kill {worker_info.f_worker_name}({worker_info.f_run_pid})", task=task), exc_info=True)
         schedule_logger(task.f_job_id).info(successful_log("kill all workers", task=task))
 
     @classmethod
-    def kill_worker(cls, worker: WorkerInfo):
-        process = psutil.Process(worker.f_run_pid)
-        process_utils.kill_process(process=process, expected_cmdline=worker.f_cmd)
+    def kill_worker(cls, worker_info: WorkerInfo):
+        process = psutil.Process(worker_info.f_run_pid)
+        process_utils.kill_process(process=process, expected_cmdline=worker_info.f_cmd)

@@ -187,9 +187,9 @@ class Reader(ComponentBase):
     @staticmethod
     def get_input_table_info(parameters, role, party_id):
         search_type = data_utils.get_input_search_type(parameters)
-        if search_type == InputSearchType.TABLE_INFO:
+        if search_type is InputSearchType.TABLE_INFO:
             return parameters["namespace"], parameters["name"]
-        elif search_type == InputSearchType.JOB_COMPONENT_OUTPUT:
+        elif search_type is InputSearchType.JOB_COMPONENT_OUTPUT:
             output_data_infos = Tracker.query_output_data_infos(
                 job_id=parameters["job_id"],
                 component_name=parameters["component_name"],

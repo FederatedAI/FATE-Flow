@@ -30,7 +30,7 @@ class EggrollEngine(EngineABC):
     def kill(self, task):
         kill_status_code = process_utils.kill_task_executor_process(task)
         # session stop
-        if kill_status_code == KillProcessRetCode.KILLED or task.f_status not in {TaskStatus.WAITING}:
+        if kill_status_code is KillProcessRetCode.KILLED or task.f_status not in {TaskStatus.WAITING}:
             job_utils.start_session_stop(task)
 
     def is_alive(self, task):

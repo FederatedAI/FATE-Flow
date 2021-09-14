@@ -16,12 +16,12 @@
 import os
 
 from fate_flow.entity.types import ComponentProviderName
-from fate_flow.entity.types import BaseEntity
+from fate_flow.entity import BaseEntity
 
 
 class ComponentProvider(BaseEntity):
     def __init__(self, name: str, version: str, path: str, class_path: dict, **kwargs):
-        if not ComponentProviderName.contains(name):
+        if not ComponentProviderName.valid(name):
             raise ValueError(f"not support {name} provider")
         self._name = name
         self._version = version

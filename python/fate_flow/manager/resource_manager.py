@@ -128,7 +128,7 @@ class ResourceManager(object):
 
     @classmethod
     @DB.connection_context()
-    def resource_for_job(cls, job_id, role, party_id, operation_type):
+    def resource_for_job(cls, job_id, role, party_id, operation_type: ResourceOperation):
         operate_status = False
         engine_name, cores, memory = cls.calculate_job_resource(job_id=job_id, role=role, party_id=party_id)
         try:
@@ -144,13 +144,13 @@ class ResourceManager(object):
                     Job.f_role == role,
                     Job.f_party_id == party_id,
                 ]
-                if operation_type == ResourceOperation.APPLY:
+                if operation_type is ResourceOperation.APPLY:
                     updates[Job.f_remaining_cores] = cores
                     updates[Job.f_remaining_memory] = memory
                     updates[Job.f_resource_in_use] = True
                     updates[Job.f_apply_resource_time] = base_utils.current_timestamp()
                     filters.append(Job.f_resource_in_use == False)
-                elif operation_type == ResourceOperation.RETURN:
+                elif operation_type is ResourceOperation.RETURN:
                     updates[Job.f_resource_in_use] = False
                     updates[Job.f_return_resource_time] = base_utils.current_timestamp()
                     filters.append(Job.f_resource_in_use == True)
@@ -311,15 +311,15 @@ class ResourceManager(object):
         return operate_status
 
     @classmethod
-    def update_resource_sql(cls, resource_model: typing.Union[EngineRegistry, Job], cores, memory, operation_type):
-        if operation_type == ResourceOperation.APPLY:
+    def update_resource_sql(cls, resource_model: typing.Union[EngineRegistry, Job], cores, memory, operation_type: ResourceOperation):
+        if operation_type is ResourceOperation.APPLY:
             filters = [
                 resource_model.f_remaining_cores >= cores,
                 resource_model.f_remaining_memory >= memory
             ]
             updates = {resource_model.f_remaining_cores: resource_model.f_remaining_cores - cores,
                        resource_model.f_remaining_memory: resource_model.f_remaining_memory - memory}
-        elif operation_type == ResourceOperation.RETURN:
+        elif operation_type is ResourceOperation.RETURN:
             filters = []
             updates = {resource_model.f_remaining_cores: resource_model.f_remaining_cores + cores,
                        resource_model.f_remaining_memory: resource_model.f_remaining_memory + memory}

@@ -31,7 +31,7 @@ class ComponentRegistry:
         component_registry = cls.get_from_db(file_utils.load_json_conf_real_time(FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH))
         cls.REGISTRY.update(component_registry)
         for provider_name, provider_info in cls.REGISTRY.get("providers", {}).items():
-            if not ComponentProviderName.contains(provider_name):
+            if not ComponentProviderName.valid(provider_name):
                 raise Exception(f"not support component provider: {provider_name}")
         cls.REGISTRY["providers"] = cls.REGISTRY.get("providers", {})
         cls.REGISTRY["components"] = cls.REGISTRY.get("components", {})
