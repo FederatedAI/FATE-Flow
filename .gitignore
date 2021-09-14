@@ -20,6 +20,7 @@ venv
 /eggroll/
 /fateboard/
 /worker/
+/provider_registrar/
 /model_local_cache/
 *.db
 *.whl
