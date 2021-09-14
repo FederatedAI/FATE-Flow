@@ -1,0 +1,14 @@
+{
+  "engine": "FILE",
+  "address": {
+    "path": "/Users/jarviszeng/Work/run/guest/fate-flow/examples/data/breast_hetero_guest.csv",
+    "path_type": "csv"
+  },
+  "namespace": "spark_experiment",
+  "name": "breast_hetero_guest",
+  "head": 1,
+  "id_delimiter": ",",
+  "partitions": 10,
+  "id_column": "id",
+  "feature_column": "y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9"
+}

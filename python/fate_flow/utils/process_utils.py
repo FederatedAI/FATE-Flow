@@ -24,16 +24,19 @@ from fate_flow.settings import SUBPROCESS_STD_LOG_NAME
 from fate_flow.settings import stat_logger
 
 
-def run_subprocess(job_id, config_dir, process_cmd, extra_env: dict = None, log_dir=None, cwd_dir=None):
+def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_dir=None, cwd_dir=None, process_name="", process_id=""):
     logger = schedule_logger(job_id) if job_id else stat_logger
     process_cmd = [str(cmd) for cmd in process_cmd]
-    logger.info('start process command: {}'.format(' '.join(process_cmd)))
+    logger.info("start process command: \n{}".format(" ".join(process_cmd)))
 
     os.makedirs(config_dir, exist_ok=True)
+    if not log_dir:
+        log_dir = config_dir
     if log_dir:
         os.makedirs(log_dir, exist_ok=True)
-    std_log = open(os.path.join(log_dir if log_dir else config_dir, SUBPROCESS_STD_LOG_NAME), 'w')
-    pid_path = os.path.join(config_dir, 'pid')
+    std_path = get_std_path(log_dir=log_dir, process_name=process_name, process_id=process_id)
+    std = open(std_path, 'w')
+    pid_path = os.path.join(config_dir, f"{process_name}_pid")
 
     if os.name == 'nt':
         startupinfo = subprocess.STARTUPINFO()
@@ -42,16 +45,16 @@ def run_subprocess(job_id, config_dir, process_cmd, extra_env: dict = None, log_
     else:
         startupinfo = None
     subprocess_env = None
-    if extra_env:
+    if added_env:
         subprocess_env = os.environ.copy()
-        for name, value in extra_env.items():
+        for name, value in added_env.items():
             if name.endswith("PATH"):
                 subprocess_env[name] = subprocess_env.get(name, "") + f":{value}"
             else:
                 subprocess_env[name] = value
     p = subprocess.Popen(process_cmd,
-                         stdout=std_log,
-                         stderr=std_log,
+                         stdout=std,
+                         stderr=std,
                          startupinfo=startupinfo,
                          cwd=cwd_dir,
                          env=subprocess_env
@@ -60,11 +63,11 @@ def run_subprocess(job_id, config_dir, process_cmd, extra_env: dict = None, log_
         f.truncate()
         f.write(str(p.pid) + "\n")
         f.flush()
-    logger.info('start process command: {} successfully, pid is {}'.format(' '.join(process_cmd), p.pid))
+    logger.info(f"start process successfully, pid: {p.pid}, std log path: {std_path}")
     return p
 
 
-def check_job_process(pid, task: Task = None):
+def check_process(pid, task: Task = None, expected_cmdline: list = None):
     if pid < 0:
         return False
     if pid == 0:
@@ -87,6 +90,9 @@ def check_job_process(pid, task: Task = None):
     if ret and task is not None:
         p = psutil.Process(int(pid))
         return is_task_executor_process(task=task, process=p)
+    elif ret and expected_cmdline is not None:
+        p = psutil.Process(int(pid))
+        return check_process_by_cmdline(actual=p.cmdline(), expected=expected_cmdline)
     else:
         return ret
 
@@ -99,8 +105,23 @@ def check_process_by_keyword(keywords):
     return ret == 0
 
 
-def get_subprocess_std(log_dir):
-    with open(os.path.join(log_dir, SUBPROCESS_STD_LOG_NAME), "r") as fr:
+def check_process_by_cmdline(actual: list, expected: list):
+    if len(actual) != len(expected):
+        return False
+    for i, v in enumerate(actual):
+        if str(v) != str(expected[i]):
+            return False
+    else:
+        return True
+
+
+def get_std_path(log_dir, process_name="", process_id=""):
+    std_log_path = f"{process_name}_{process_id}_{SUBPROCESS_STD_LOG_NAME}" if process_name else SUBPROCESS_STD_LOG_NAME
+    return os.path.join(log_dir, std_log_path)
+
+
+def get_subprocess_std(log_dir, process_name="", process_id=""):
+    with open(get_std_path(log_dir, process_name, process_id), "r") as fr:
         text = fr.read()
     return text
 
@@ -128,15 +149,6 @@ def is_task_executor_process(task: Task, process: psutil.Process):
     :param process:
     :return:
     """
-    # Todo: The same map should be used for run task command
-    run_cmd_map = {
-        3: "f_job_id",
-        5: "f_component_name",
-        7: "f_task_id",
-        9: "f_task_version",
-        11: "f_role",
-        13: "f_party_id"
-    }
     try:
         cmdline = process.cmdline()
         schedule_logger(task.f_job_id).info(cmdline)
@@ -144,13 +156,12 @@ def is_task_executor_process(task: Task, process: psutil.Process):
         # Not sure whether the process is a task executor process, operations processing is required
         schedule_logger(task.f_job_id).warning(e)
         return False
-    for i, k in run_cmd_map.items():
-        if len(cmdline) > i and cmdline[i] == str(getattr(task, k)):
+    if len(cmdline) != len(task.f_cmd):
+        return False
+    for i, v in enumerate(task.f_cmd):
+        if cmdline[i] == str(v):
             continue
         else:
-            # todo: The logging level should be obtained first
-            if len(cmdline) > i:
-                schedule_logger(task.f_job_id).debug(f"cmd map {i} {k}, cmd value {cmdline[i]} task value {getattr(task, k)}")
             return False
     else:
         return True
@@ -165,7 +176,7 @@ def kill_task_executor_process(task: Task, only_child=False):
         pid = int(task.f_run_pid)
         schedule_logger(task.f_job_id).info("try to stop job {} task {} {} {} with {} party status process pid:{}".format(
             task.f_job_id, task.f_task_id, task.f_role, task.f_party_id, task.f_party_status, pid))
-        if not check_job_process(pid):
+        if not check_process(pid):
             schedule_logger(task.f_job_id).info("can not found job {} task {} {} {} with {} party status process pid:{}".format(
                 task.f_job_id, task.f_task_id, task.f_role, task.f_party_id, task.f_party_status, pid))
             return KillProcessRetCode.NOT_FOUND
@@ -175,13 +186,25 @@ def kill_task_executor_process(task: Task, only_child=False):
                 pid, task.f_job_id, task.f_task_id, task.f_role, task.f_party_id))
             return KillProcessRetCode.ERROR_PID
         for child in p.children(recursive=True):
-            if check_job_process(pid=child.pid, task=task):
+            if check_process(pid=child.pid, task=task):
                 child.kill()
         if not only_child:
-            if check_job_process(pid, task=task):
+            if check_process(pid, task=task):
                 p.kill()
         schedule_logger(task.f_job_id).info("successfully stop job {} task {} {} {} process pid:{}".format(
             task.f_job_id, task.f_task_id, task.f_role, task.f_party_id, pid))
         return KillProcessRetCode.KILLED
     except Exception as e:
         raise e
+
+
+def kill_process(process: psutil.Process = None, pid: int = None, expected_cmdline: list = None):
+    process = process if process is not None else psutil.Process(pid)
+    for child in process.children(recursive=True):
+        try:
+            if check_process(pid=child.pid):
+                child.kill()
+        except Exception as e:
+            stat_logger.warning(f"kill {child.pid} process failed", exc_info=True)
+    if check_process(pid=process.pid, expected_cmdline=expected_cmdline):
+        process.kill()

@@ -92,7 +92,7 @@ class Upload(ComponentBase):
         LOGGER.info(self.parameters)
         self.parameters["role"] = cpn_input.roles["role"]
         self.parameters["local"] = cpn_input.roles["local"]
-        storage_engine = self.parameters["storage_engine"]
+        storage_engine = self.parameters["storage_engine"].upper()
         storage_address = self.parameters["storage_address"]
         # if not set storage, use job storage as default
         if not storage_engine:

@@ -100,12 +100,12 @@ def get_job_log_directory(job_id, *args):
     return os.path.join(file_utils.get_project_base_directory(), 'logs', job_id, *args)
 
 
-def get_worker_directory(worker_type, worker_id, *args):
-    return os.path.join(file_utils.get_project_base_directory(), 'worker', worker_type, worker_id, *args)
+def get_general_worker_directory(worker_name, worker_id, *args):
+    return os.path.join(file_utils.get_project_base_directory(), worker_name, worker_id, *args)
 
 
-def get_worker_log_directory(worker_type, worker_id, *args):
-    return os.path.join(file_utils.get_project_base_directory(), 'worker', worker_type, worker_id, *args)
+def get_general_worker_log_directory(worker_name, worker_id, *args):
+    return os.path.join(file_utils.get_project_base_directory(), 'logs', worker_name, worker_id, *args)
 
 
 def check_config(config: typing.Dict, required_parameters: typing.List):
@@ -313,7 +313,7 @@ def start_session_stop(task):
         '--storage', job_parameters.storage_engine,
         '-c', 'stop' if task.f_status == JobStatus.SUCCESS else 'kill'
     ]
-    p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=task_dir, process_cmd=process_cmd, log_dir=None)
+    p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=task_dir, process_cmd=process_cmd)
     p.wait()
     p.poll()
 

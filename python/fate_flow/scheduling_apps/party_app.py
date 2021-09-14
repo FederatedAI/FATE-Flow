@@ -147,7 +147,7 @@ def report_task(job_id, component_name, task_id, task_version, role, party_id):
     TaskController.update_task(task_info=task_info)
     if task_info.get("party_status"):
         if not TaskController.update_task_status(task_info=task_info):
-            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update task status failed")
+            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update job status does not take effect")
     return get_json_result(retcode=0, retmsg='success')
 
 
@@ -189,7 +189,7 @@ def task_status(job_id, component_name, task_id, task_version, role, party_id, s
     if TaskController.update_task_status(task_info=task_info):
         return get_json_result(retcode=0, retmsg='success')
     else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update task status failed")
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update job status does not take effect")
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/stop/<stop_status>', methods=['POST'])

@@ -154,7 +154,7 @@ class Job(DataBaseModel):
     f_runtime_conf_on_party = JSONField()
     f_train_runtime_conf = JSONField(null=True)
     f_roles = JSONField()
-    f_work_mode = IntegerField()
+    f_work_mode = IntegerField(null=True)
     f_initiator_role = CharField(max_length=50, index=True)
     f_initiator_party_id = CharField(max_length=50, index=True)
     f_status = CharField(max_length=50, index=True)
@@ -212,6 +212,8 @@ class Task(DataBaseModel):
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=10, index=True)
     f_run_on_this_party = BooleanField(null=True, index=True, default=False)
+    f_worker_id = CharField(null=True, max_length=100, index=True)
+    f_cmd = JSONField(null=True)
     f_run_ip = CharField(max_length=100, null=True)
     f_run_pid = IntegerField(null=True)
     f_party_status = CharField(max_length=50, index=True)
@@ -316,7 +318,7 @@ class MachineLearningModelInfo(DataBaseModel):
     f_initiator_role = CharField(max_length=50, index=True)
     f_initiator_party_id = CharField(max_length=50, index=True, default=-1)
     f_runtime_conf = JSONField(default={})
-    f_work_mode = IntegerField()
+    f_work_mode = IntegerField(null=True)
     f_train_dsl = JSONField(default={})
     f_train_runtime_conf = JSONField(default={})
     f_imported = IntegerField(default=0)
@@ -474,3 +476,26 @@ class ComponentInfo(DataBaseModel):
 
     class Meta:
         db_table = "t_component_info"
+
+
+class WorkerInfo(DataBaseModel):
+    f_worker_id = CharField(max_length=100, primary_key=True)
+    f_worker_name = CharField(max_length=50, index=True)
+    f_job_id = CharField(max_length=25, index=True)
+    f_task_id = CharField(max_length=100, index=True)
+    f_task_version = BigIntegerField(index=True)
+    f_role = CharField(max_length=50, index=True)
+    f_party_id = CharField(max_length=10, index=True)
+    f_run_ip = CharField(max_length=100, null=True)
+    f_run_pid = IntegerField(null=True)
+    f_http_port = IntegerField(null=True)
+    f_grpc_port = IntegerField(null=True)
+    f_config = JSONField(null=True)
+    f_cmd = JSONField(null=True)
+    f_start_time = BigIntegerField(null=True)
+    f_start_date = DateTimeField(null=True)
+    f_end_time = BigIntegerField(null=True)
+    f_end_date = DateTimeField(null=True)
+
+    class Meta:
+        db_table = "t_worker"

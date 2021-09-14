@@ -20,6 +20,7 @@ from fate_arch.common import DTable
 
 
 class BaseType(object):
+    #todo: may be use enum?
     @classmethod
     def types(cls):
         return [cls.__dict__[k] for k in cls.__dict__.keys() if not callable(getattr(cls, k)) and not k.startswith("__")]
@@ -51,7 +52,7 @@ class ModelOperation(object):
 
 class ProcessRole(object):
     DRIVER = "driver"
-    EXECUTOR = "executor"
+    WORKER = "worker"
 
 
 class TagOperation(object):
@@ -80,8 +81,9 @@ class InputSearchType(IntEnum):
 
 
 class DataCache(BaseEntity):
-    def __init__(self, name: str, data: typing.Dict[str, DTable] = None, meta: dict = None, job_id: str = None, component_name: str = None, task_id: str = None, task_version: int = None):
+    def __init__(self, name: str, key: str = None, data: typing.Dict[str, DTable] = None, meta: dict = None, job_id: str = None, component_name: str = None, task_id: str = None, task_version: int = None):
         self._name: str = name
+        self._key: str = key
         self._data: typing.Dict[str, DTable] = data if data else {}
         self._meta: dict = meta
         self._job_id = job_id
@@ -92,6 +94,14 @@ class DataCache(BaseEntity):
     @property
     def name(self):
         return self._name
+
+    @property
+    def key(self):
+        return self._key
+
+    @key.setter
+    def key(self, key: str):
+        self._key = key
 
     @property
     def data(self):
@@ -132,3 +142,9 @@ class DataCache(BaseEntity):
     @task_version.setter
     def task_version(self, task_version: int):
         self._task_version = task_version
+
+
+class WorkerName:
+    TASK_EXECUTOR = "task_executor"
+    TASK_INITIALIZER = "task_initializer"
+    PROVIDER_REGISTRAR = "provider_registrar"

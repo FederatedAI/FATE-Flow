@@ -125,6 +125,7 @@ class ComponentBase(metaclass=abc.ABCMeta):
         self.checkpoint_manager = None
         self.model_output = None
         self.data_output = None
+        self.cache_output = None
         self.serialize = True
 
     @abc.abstractmethod
@@ -147,13 +148,16 @@ class ComponentBase(metaclass=abc.ABCMeta):
                   else self._run)
         method(cpn_input)
 
-        return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=None, serialize=self.serialize)
+        return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=self.save_cache(), serialize=self.serialize)
 
     def save_data(self):
         return self.data_output
 
     def export_model(self):
         return self.model_output
+
+    def save_cache(self):
+        return self.cache_output
 
 
 class _RunnerDecorator:

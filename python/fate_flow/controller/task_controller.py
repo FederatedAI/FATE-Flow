@@ -13,22 +13,23 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common import FederatedCommunicationType
+import os
+from fate_arch.common import FederatedCommunicationType, FederatedMode
 from fate_arch.common.log import schedule_logger
 from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.db.db_models import Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import TaskStatus, EndStatus
-from fate_flow.entity.types import KillProcessRetCode
-from fate_flow.utils import job_utils, process_utils
-import os
+from fate_flow.utils import job_utils
 from fate_flow.operation.job_saver import JobSaver
 from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_arch.common import base_utils
 from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity.types import WorkerName
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.utils.authentication_utils import PrivilegeAuth
+from fate_flow.manager.worker_manager import WorkerManager
 
 
 class TaskController(object):
@@ -77,21 +78,18 @@ class TaskController(object):
         is_failed = False
         try:
             task = JobSaver.query_task(task_id=task_id, task_version=task_version, role=role, party_id=party_id)[0]
+            run_parameters_dict = job_utils.get_job_parameters(job_id, role, party_id)
+            run_parameters_dict["src_user"] = kwargs.get("src_user")
+            run_parameters = RunParameters(**run_parameters_dict)
 
             config_dir = job_utils.get_job_directory(job_id, role, party_id, component_name, task_id, task_version)
             os.makedirs(config_dir, exist_ok=True)
-
-            run_parameters_dict = job_utils.get_job_parameters(job_id, role, party_id)
-            run_parameters_dict["src_user"] = kwargs.get("src_user")
 
             run_parameters_path = os.path.join(config_dir, 'task_parameters.json')
             with open(run_parameters_path, 'w') as fw:
                 fw.write(json_dumps(run_parameters_dict))
 
-            run_parameters = RunParameters(**run_parameters_dict)
-
             schedule_logger(job_id=job_id).info(f"use computing engine {run_parameters.computing_engine}")
-
             task_info["engine_conf"] = {"computing_engine": run_parameters.computing_engine}
             backend_engine = build_engine(run_parameters.computing_engine)
             run_info = backend_engine.run(task=task,
@@ -110,11 +108,11 @@ class TaskController(object):
         finally:
             try:
                 cls.update_task(task_info=task_info)
-                if not is_failed:
-                    task_info["party_status"] = TaskStatus.RUNNING
-                else:
-                    task_info["party_status"] = TaskStatus.FAILED
+                task_info["party_status"] = TaskStatus.RUNNING
                 cls.update_task_status(task_info=task_info)
+                if is_failed:
+                    task_info["party_status"] = TaskStatus.FAILED
+                    cls.update_task_status(task_info=task_info)
             except Exception as e:
                 schedule_logger(job_id).exception(e)
             schedule_logger(job_id).info(
@@ -194,13 +192,10 @@ class TaskController(object):
         kill_status = False
         try:
             # kill task executor
-            kill_status_code = process_utils.kill_task_executor_process(task)
-            # session stop
-            if kill_status_code == KillProcessRetCode.KILLED or task.f_status not in {TaskStatus.WAITING}:
-                job_utils.start_session_stop(task)
             backend_engine = build_engine(task.f_engine_conf.get("computing_engine"))
             if backend_engine:
                 backend_engine.kill(task)
+            WorkerManager.kill_task_all_workers(task)
         except Exception as e:
             schedule_logger(task.f_job_id).exception(e)
         else:
