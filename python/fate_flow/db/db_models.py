@@ -474,3 +474,16 @@ class ComponentInfo(DataBaseModel):
 
     class Meta:
         db_table = "t_component_info"
+
+
+class DependenciesStorageMeta(DataBaseModel):
+    f_storage_engine = CharField(max_length=30)
+    f_type = CharField(max_length=20)
+    f_version = CharField(max_length=10, index=True)
+    f_storage_path = CharField(max_length=256)
+    f_snapshot_time = BigIntegerField()
+    f_dependencies_conf = JSONField()
+
+    class Meta:
+        db_table = "t_dependencies_storage_meta"
+        primary_key = CompositeKey('f_storage_engine', 'f_type', 'f_version')

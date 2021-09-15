@@ -77,14 +77,14 @@ class ComponentRegistry:
             for provider_name, register_info in cls.REGISTRY["providers"].items():
                 for version, version_register_info in register_info.items():
                     if version != "default":
-                        version_nfo = {
+                        version_info = {
                             "f_path": version_register_info.get("path"),
                             "f_python": version_register_info.get("python", ""),
                             "f_class_path": version_register_info.get("class_path"),
                             "f_version": version,
                             "f_provider_name": provider_name
                         }
-                        cls.safe_save(ComponentVersionInfo, version_nfo, f_version=version, f_provider_name=provider_name)
+                        cls.safe_save(ComponentVersionInfo, version_info, f_version=version, f_provider_name=provider_name)
                         for component_name, module_info in version_register_info.get("components").items():
                             component_registry_info = {
                                 "f_version": version,

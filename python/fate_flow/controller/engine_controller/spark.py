@@ -22,6 +22,7 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.component_provider import ComponentProvider
 from fate_flow.entity.types import KillProcessRetCode
 from fate_flow.entity.run_status import TaskStatus
+from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.worker.task_executor import TaskExecutor
 from fate_flow.utils import job_utils, process_utils
 from fate_flow.db.db_models import Task
@@ -52,9 +53,21 @@ class SparkEngine(EngineABC):
         provider = ComponentProvider(**task.f_provider_info)
         schedule_logger(task.f_job_id).info(f"provider env:{provider.env}")
         extra_env = provider.env
-        extra_env_pythonpath = extra_env.get("PYTHONPATH")
+        dependence = DependenceManager(task.f_provider_info, job_id=task.f_job_id)
+        executor_env_pythonpath = dependence.get_executor_env_pythonpath()
+        executor_env_python = dependence.get_executor_python_env()
+        driver_env_python = dependence.get_driver_python_env()
+        archives = dependence.get_archives()
+        schedule_logger(task.f_job_id).info(f"executor_env_python {process_cmd}，executor_env_python {executor_env_python}，"
+                                            f"driver_env_python {driver_env_python}， archives {archives}")
+        process_cmd.append(f'--archives')
+        process_cmd.append(archives)
         process_cmd.append(f'--conf')
-        process_cmd.append(f'spark.executorEnv.PYTHONPATH={extra_env_pythonpath}:$PYTHONPATH')
+        process_cmd.append(f'spark.pyspark.python={executor_env_python}')
+        process_cmd.append(f'--conf')
+        process_cmd.append(f'spark.executorEnv.PYTHONPATH={executor_env_pythonpath}')
+        process_cmd.append(f'--conf')
+        process_cmd.append(f'spark.pyspark.driver.python={driver_env_python}')
         process_cmd.extend([
             sys.modules[TaskExecutor.__module__].__file__,
             "-j", task.f_job_id,

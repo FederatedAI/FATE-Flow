@@ -35,6 +35,16 @@ class ComponentProviderName(BaseType):
     FATE_FLOW_TOOLS = "fate_flow_tools"
 
 
+class FateDependenceName(BaseType):
+    Fate_Source_Code = "fate_code"
+    Python_Env = "python_env"
+
+
+class PythonDependenceName(BaseType):
+    Fate_Source_Code = "python"
+    Python_Env = "miniconda"
+
+
 class ModelStorage(object):
     REDIS = "redis"
     MYSQL = "mysql"

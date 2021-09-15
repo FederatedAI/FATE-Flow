@@ -28,6 +28,7 @@ FATE_FLOW_DIRECTORY = os.path.join(file_utils.get_python_base_directory(), "fate
 FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_DIRECTORY, "job_default_config.yaml")
 FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH = os.path.join(FATE_FLOW_DIRECTORY, "component_registry.json")
 FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME = os.path.join(FATE_FLOW_DIRECTORY, "component_registry_realtime.json")
+FATE_VERSION_DEPENDENCIES_PATH = os.path.join(file_utils.get_project_base_directory(), "version_dependencies")
 SUBPROCESS_STD_LOG_NAME = "std.log"
 HEADERS = {
     "Content-Type": "application/json",
