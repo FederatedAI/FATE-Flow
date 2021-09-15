@@ -696,7 +696,7 @@ class BaseDSLParser(object):
                     continue
 
                 output_data_maps[name] = {}
-                for output_data_str in output_data[0]:
+                for output_data_str in output_data:
                     if "train_data" in input_data or "eval_data" in input_data or "test_data" in input_data:
                         if "train_data" in input_data:
                             up_input_data = input_data.get("train_data")[0]
