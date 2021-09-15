@@ -21,7 +21,7 @@ from fate_flow.components._base import (
     ComponentInputProtocol,
 )
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.entity.metric import MetricMeta
+from fate_flow.entity import MetricMeta
 
 LOGGER = log.getLogger()
 

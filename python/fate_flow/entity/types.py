@@ -13,35 +13,39 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from enum import IntEnum
-from ._base import BaseEntity
-import typing
-from fate_arch.common import DTable
+from enum import IntEnum, Enum
 
 
-class BaseType(object):
-    #todo: may be use enum?
+class CustomEnum(Enum):
     @classmethod
-    def types(cls):
-        return [cls.__dict__[k] for k in cls.__dict__.keys() if not callable(getattr(cls, k)) and not k.startswith("__")]
+    def valid(cls, value):
+        try:
+            cls(value)
+            return True
+        except:
+            return False
 
     @classmethod
-    def contains(cls, status):
-        return status in cls.types()
+    def values(cls):
+        return [member.value for member in cls.__members__.values()]
+
+    @classmethod
+    def names(cls):
+        return [member.name for member in cls.__members__.values()]
 
 
-class ComponentProviderName(BaseType):
+class ComponentProviderName(CustomEnum):
     FATE_ALGORITHM = "fate_algorithm"
     AVATAR_ALGORITHM = "avatar_algorithm"
     FATE_FLOW_TOOLS = "fate_flow_tools"
 
 
-class ModelStorage(object):
+class ModelStorage(CustomEnum):
     REDIS = "redis"
     MYSQL = "mysql"
 
 
-class ModelOperation(object):
+class ModelOperation(CustomEnum):
     STORE = "store"
     RESTORE = "restore"
     EXPORT = "export"
@@ -50,12 +54,12 @@ class ModelOperation(object):
     BIND = "bind"
 
 
-class ProcessRole(object):
+class ProcessRole(CustomEnum):
     DRIVER = "driver"
     WORKER = "worker"
 
 
-class TagOperation(object):
+class TagOperation(CustomEnum):
     CREATE = "create"
     RETRIEVE = "retrieve"
     UPDATE = "update"
@@ -63,88 +67,35 @@ class TagOperation(object):
     LIST = "list"
 
 
-class ResourceOperation(object):
+class ResourceOperation(CustomEnum):
     APPLY = "apply"
     RETURN = "return"
 
 
-class KillProcessRetCode(object):
+class KillProcessRetCode(IntEnum, CustomEnum):
     KILLED = 0
     NOT_FOUND = 1
     ERROR_PID = 2
 
 
-class InputSearchType(IntEnum):
+class InputSearchType(IntEnum, CustomEnum):
     UNKNOWN = 0
     TABLE_INFO = 1
     JOB_COMPONENT_OUTPUT = 2
 
 
-class DataCache(BaseEntity):
-    def __init__(self, name: str, key: str = None, data: typing.Dict[str, DTable] = None, meta: dict = None, job_id: str = None, component_name: str = None, task_id: str = None, task_version: int = None):
-        self._name: str = name
-        self._key: str = key
-        self._data: typing.Dict[str, DTable] = data if data else {}
-        self._meta: dict = meta
-        self._job_id = job_id
-        self._component_name = component_name
-        self._task_id: str = task_id
-        self._task_version: int = task_version
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def key(self):
-        return self._key
-
-    @key.setter
-    def key(self, key: str):
-        self._key = key
-
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def meta(self):
-        return self._meta
-
-    @property
-    def job_id(self):
-        return self._job_id
-
-    @job_id.setter
-    def job_id(self, job_id: str):
-        self._job_id = job_id
-
-    @property
-    def component_name(self):
-        return self._component_name
-
-    @component_name.setter
-    def component_name(self, component_name: str):
-        self._component_name = component_name
-
-    @property
-    def task_id(self):
-        return self._task_id
-
-    @task_id.setter
-    def task_id(self, task_id: str):
-        self._task_id = task_id
-
-    @property
-    def task_version(self):
-        return self._task_version
-
-    @task_version.setter
-    def task_version(self, task_version: int):
-        self._task_version = task_version
+class RetCode(IntEnum, CustomEnum):
+    SUCCESS = 0
+    EXCEPTION_ERROR = 100
+    ARGUMENT_ERROR = 101
+    DATA_ERROR = 102
+    OPERATING_ERROR = 103
+    FEDERATED_ERROR = 104
+    CONNECTION_ERROR = 105
+    SERVER_ERROR = 500
 
 
-class WorkerName:
+class WorkerName(CustomEnum):
     TASK_EXECUTOR = "task_executor"
     TASK_INITIALIZER = "task_initializer"
     PROVIDER_REGISTRAR = "provider_registrar"

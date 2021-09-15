@@ -22,9 +22,9 @@ from fate_arch.common import file_utils
 from fate_arch.common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import DB, Job, Task
-from fate_flow.entity.job import JobConfiguration
+from fate_flow.entity import JobConfiguration
 from fate_flow.entity.run_status import JobStatus, TaskStatus
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_flow.settings import WORK_MODE
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT

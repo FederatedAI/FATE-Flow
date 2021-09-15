@@ -52,7 +52,7 @@ class MetricMeta(BaseEntity):
     def from_dict(cls, d: dict):
         metas = d.get("metas", {})
         if d.get("extra_metas"):
-            metas.update(metas)
+            metas.update(d["extra_metas"])
         return MetricMeta(d.get("name"), d.get("metric_type"), extra_metas=metas)
 
 

@@ -30,7 +30,7 @@ from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.utils.grpc_utils import wrap_grpc_packet, get_command_federation_channel, gen_routing_metadata, \
     forward_grpc_packet
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.entity.retcode import RetCode
+from fate_flow.entity import RetCode
 
 
 def get_json_result(retcode=RetCode.SUCCESS, retmsg='success', data=None, job_id=None, meta=None):

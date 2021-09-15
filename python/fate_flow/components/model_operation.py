@@ -26,8 +26,8 @@ from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage
 LOGGER = log.getLogger()
 
 ModelStorageClassMap = {
-    ModelStorage.REDIS: redis_model_storage.RedisModelStorage,
-    ModelStorage.MYSQL: mysql_model_storage.MysqlModelStorage,
+    ModelStorage.REDIS.value: redis_model_storage.RedisModelStorage,
+    ModelStorage.MYSQL.value: mysql_model_storage.MysqlModelStorage,
 }
 
 model_store_cpn_meta = ComponentMeta("ModelStore")

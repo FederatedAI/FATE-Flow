@@ -20,7 +20,7 @@ from fate_arch.abc import CTableABC
 from fate_arch.common import DTable
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, CacheRecord
-from fate_flow.entity.types import DataCache
+from fate_flow.entity import DataCache
 from fate_flow.utils import base_utils
 
 

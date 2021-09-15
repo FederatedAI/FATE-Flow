@@ -16,7 +16,7 @@
 import typing
 from functools import wraps
 import flask
-from fate_flow.entity.retcode import RetCode
+from fate_flow.entity import RetCode
 from fate_flow.utils.api_utils import get_json_result
 
 

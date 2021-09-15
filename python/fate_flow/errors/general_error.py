@@ -13,15 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from enum import IntEnum
+class ParameterError(Exception):
+    pass
 
 
-class RetCode(IntEnum):
-    SUCCESS = 0
-    EXCEPTION_ERROR = 100
-    ARGUMENT_ERROR = 101
-    DATA_ERROR = 102
-    OPERATING_ERROR = 103
-    FEDERATED_ERROR = 104
-    CONNECTION_ERROR = 105
-    SERVER_ERROR = 500
+class PassError(Exception):
+    pass

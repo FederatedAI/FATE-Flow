@@ -23,7 +23,7 @@ from fate_flow.utils.authentication_utils import data_authentication_check
 from fate_arch.common.log import schedule_logger
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.run_status import JobStatus, EndStatus
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_flow.entity.types import InputSearchType, WorkerName
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
@@ -359,9 +359,9 @@ class JobController(object):
                             for key in _role_party_args[_party_index].keys():
                                 for _data_type, _data_location in _role_party_args[_party_index][key].items():
                                     search_type = data_utils.get_input_search_type(parameters=_data_location)
-                                    if search_type == InputSearchType.TABLE_INFO:
+                                    if search_type is InputSearchType.TABLE_INFO:
                                         dataset[_role][_party_id][key] = '{}.{}'.format(_data_location['namespace'], _data_location['name'])
-                                    elif search_type == InputSearchType.JOB_COMPONENT_OUTPUT:
+                                    elif search_type is InputSearchType.JOB_COMPONENT_OUTPUT:
                                         dataset[_role][_party_id][key] = '{}.{}.{}'.format(_data_location['job_id'], _data_location['component_name'], _data_location['data'])
                                     else:
                                         dataset[_role][_party_id][key] = "unknown"

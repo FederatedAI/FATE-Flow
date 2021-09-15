@@ -1,3 +1,5 @@
+from .general_error import *
+
 
 class FateFlowError(Exception):
     message = 'Unknown Fate Flow Error'

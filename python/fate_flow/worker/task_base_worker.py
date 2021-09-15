@@ -17,7 +17,7 @@
 import requests
 
 from fate_arch.common.log import getLogger
-from fate_flow.entity.retcode import RetCode
+from fate_flow.entity import RetCode
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.settings import HEADERS

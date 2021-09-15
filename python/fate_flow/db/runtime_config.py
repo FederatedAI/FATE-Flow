@@ -15,7 +15,7 @@
 #
 from fate_arch.common.versions import get_versions
 from fate_flow.entity.types import ProcessRole
-from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity import ComponentProvider
 from .reload_config_base import ReloadConfigBase
 
 
