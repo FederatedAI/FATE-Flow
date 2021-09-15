@@ -13,46 +13,5 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from enum import Enum
-from fate_flow.entity import BaseEntity
-
-
-class MetricType(Enum):
-    LOSS = 'LOSS'
-
-
-class Metric(BaseEntity):
-    def __init__(self, key, value: float, timestamp: float = None):
-        self.key = key
-        self.value = value
-        self.timestamp = timestamp
-
-    @classmethod
-    def from_dict(cls, d: dict):
-        return Metric(d.get("key"), d.get("value"), d.get("timestamp"))
-
-
-class MetricMeta(BaseEntity):
-    def __init__(self, name: str, metric_type: MetricType, extra_metas: dict = None):
-        self.name = name
-        self.metric_type = metric_type
-        self.metas = {}
-        if extra_metas:
-            self.metas.update(extra_metas)
-        self.metas['name'] = name
-        self.metas['metric_type'] = metric_type
-
-    def update_metas(self, metas: dict):
-        self.metas.update(metas)
-
-    def to_dict(self):
-        return self.metas
-
-    @classmethod
-    def from_dict(cls, d: dict):
-        metas = d.get("metas", {})
-        if d.get("extra_metas"):
-            metas.update(d["extra_metas"])
-        return MetricMeta(d.get("name"), d.get("metric_type"), extra_metas=metas)
-
-
+from ._metric import Metric, MetricMeta, MetricType
+# Available for use with federatedml components earlier than version 1.7

@@ -17,6 +17,6 @@ from ._base import BaseEntity
 from ._data_cache import DataCache
 from ._component_provider import ComponentProvider
 from ._job import JobConfigurationBase, JobConfiguration
-from .metric import MetricType, Metric, MetricMeta
+from ._metric import MetricType, Metric, MetricMeta
 from .types import RetCode
 from ._run_parameters import RunParameters
