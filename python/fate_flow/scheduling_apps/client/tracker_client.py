@@ -88,7 +88,8 @@ class TrackerClient(object):
                                            self.role,
                                            self.party_id),
                                        json_body=request_body)
-        return response['retcode'] == RetCode.SUCCESS
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"log metric(namespace: {metric_namespace}, name: {metric_name}) data error, response code: {response['retcode']}, msg: {response['retmsg']}")
 
     def set_job_metric_meta(self, metric_namespace: str, metric_name: str, metric_meta: typing.Union[MetricMeta, dict]):
         self.set_metric_meta_common(metric_namespace=metric_namespace, metric_name=metric_name, metric_meta=metric_meta,
@@ -121,7 +122,8 @@ class TrackerClient(object):
                                            self.role,
                                            self.party_id),
                                        json_body=request_body)
-        return response['retcode'] == RetCode.SUCCESS
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"log metric(namespace: {metric_namespace}, name: {metric_name}) meta error, response code: {response['retcode']}, msg: {response['retmsg']}")
 
     def create_table_meta(self, table_meta):
         request_body = dict()
@@ -229,7 +231,8 @@ class TrackerClient(object):
                                            self.role,
                                            self.party_id),
                                        json_body=request_body)
-        return response['retcode'] == RetCode.SUCCESS
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"log output data info error, response code: {response['retcode']}, msg: {response['retmsg']}")
 
     def get_output_data_info(self, data_name=None):
         LOGGER.info("Request read job {} task {} {} on {} {} data {} info".format(self.job_id,
@@ -273,4 +276,5 @@ class TrackerClient(object):
                                            self.role,
                                            self.party_id),
                                        json_body=request_body)
-        return response['retcode'] == RetCode.SUCCESS
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"log component summary error, response code: {response['retcode']}, msg: {response['retmsg']}")
