@@ -14,16 +14,16 @@
 #  limitations under the License.
 #
 import base64
+import typing
 from typing import List
 
 from fate_arch import storage
 from fate_arch.abc import AddressABC
 from fate_arch.common import log
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_arch.common.base_utils import serialize_b64, deserialize_b64
-from fate_flow.entity.retcode import RetCode
-from fate_flow.entity.metric import Metric, MetricMeta
-from fate_flow.model import parse_proto_object
+from fate_flow.entity import RetCode
+from fate_flow.entity import Metric, MetricMeta
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.utils import api_utils
 
@@ -57,15 +57,15 @@ class TrackerClient(object):
                                    model_version=model_version,
                                    job_parameters=job_parameters)
 
-    def log_job_metric_data(self, metric_namespace: str, metric_name: str, metrics: List[Metric]):
+    def log_job_metric_data(self, metric_namespace: str, metric_name: str, metrics: List[typing.Union[Metric, dict]]):
         self.log_metric_data_common(metric_namespace=metric_namespace, metric_name=metric_name, metrics=metrics,
                                     job_level=True)
 
-    def log_metric_data(self, metric_namespace: str, metric_name: str, metrics: List[Metric]):
+    def log_metric_data(self, metric_namespace: str, metric_name: str, metrics: List[typing.Union[Metric, dict]]):
         self.log_metric_data_common(metric_namespace=metric_namespace, metric_name=metric_name, metrics=metrics,
                                     job_level=False)
 
-    def log_metric_data_common(self, metric_namespace: str, metric_name: str, metrics: List[Metric], job_level=False):
+    def log_metric_data_common(self, metric_namespace: str, metric_name: str, metrics: List[typing.Union[Metric, dict]], job_level=False):
         LOGGER.info("Request save job {} task {} {} on {} {} metric {} {} data".format(self.job_id,
                                                                                        self.task_id,
                                                                                        self.task_version,
@@ -76,7 +76,7 @@ class TrackerClient(object):
         request_body = {}
         request_body['metric_namespace'] = metric_namespace
         request_body['metric_name'] = metric_name
-        request_body['metrics'] = [serialize_b64(metric, to_str=True) for metric in metrics]
+        request_body['metrics'] = [serialize_b64(metric if isinstance(metric, Metric) else Metric.from_dict(metric), to_str=True) for metric in metrics]
         request_body['job_level'] = job_level
         response = api_utils.local_api(job_id=self.job_id,
                                        method='POST',
@@ -88,17 +88,18 @@ class TrackerClient(object):
                                            self.role,
                                            self.party_id),
                                        json_body=request_body)
-        return response['retcode'] == RetCode.SUCCESS
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"log metric(namespace: {metric_namespace}, name: {metric_name}) data error, response code: {response['retcode']}, msg: {response['retmsg']}")
 
-    def set_job_metric_meta(self, metric_namespace: str, metric_name: str, metric_meta: MetricMeta):
+    def set_job_metric_meta(self, metric_namespace: str, metric_name: str, metric_meta: typing.Union[MetricMeta, dict]):
         self.set_metric_meta_common(metric_namespace=metric_namespace, metric_name=metric_name, metric_meta=metric_meta,
                                     job_level=True)
 
-    def set_metric_meta(self, metric_namespace: str, metric_name: str, metric_meta: MetricMeta):
+    def set_metric_meta(self, metric_namespace: str, metric_name: str, metric_meta: typing.Union[MetricMeta, dict]):
         self.set_metric_meta_common(metric_namespace=metric_namespace, metric_name=metric_name, metric_meta=metric_meta,
                                     job_level=False)
 
-    def set_metric_meta_common(self, metric_namespace: str, metric_name: str, metric_meta: MetricMeta, job_level=False):
+    def set_metric_meta_common(self, metric_namespace: str, metric_name: str, metric_meta: typing.Union[MetricMeta, dict], job_level=False):
         LOGGER.info("Request save job {} task {} {} on {} {} metric {} {} meta".format(self.job_id,
                                                                                        self.task_id,
                                                                                        self.task_version,
@@ -109,7 +110,7 @@ class TrackerClient(object):
         request_body = dict()
         request_body['metric_namespace'] = metric_namespace
         request_body['metric_name'] = metric_name
-        request_body['metric_meta'] = serialize_b64(metric_meta, to_str=True)
+        request_body['metric_meta'] = serialize_b64(metric_meta if isinstance(metric_meta, MetricMeta) else MetricMeta.from_dict(metric_meta), to_str=True)
         request_body['job_level'] = job_level
         response = api_utils.local_api(job_id=self.job_id,
                                        method='POST',
@@ -121,7 +122,8 @@ class TrackerClient(object):
                                            self.role,
                                            self.party_id),
                                        json_body=request_body)
-        return response['retcode'] == RetCode.SUCCESS
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"log metric(namespace: {metric_namespace}, name: {metric_name}) meta error, response code: {response['retcode']}, msg: {response['retmsg']}")
 
     def create_table_meta(self, table_meta):
         request_body = dict()
@@ -229,7 +231,8 @@ class TrackerClient(object):
                                            self.role,
                                            self.party_id),
                                        json_body=request_body)
-        return response['retcode'] == RetCode.SUCCESS
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"log output data info error, response code: {response['retcode']}, msg: {response['retmsg']}")
 
     def get_output_data_info(self, data_name=None):
         LOGGER.info("Request read job {} task {} {} on {} {} data {} info".format(self.job_id,
@@ -273,4 +276,5 @@ class TrackerClient(object):
                                            self.role,
                                            self.party_id),
                                        json_body=request_body)
-        return response['retcode'] == RetCode.SUCCESS
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"log component summary error, response code: {response['retcode']}, msg: {response['retmsg']}")

@@ -22,9 +22,10 @@ from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.detect_utils import validate_request
 from fate_flow.db.component_registry import ComponentRegistry
-from fate_flow.entity.component_provider import ComponentProvider
-from fate_flow.entity.retcode import RetCode
-from fate_flow.manager.provider_manager import ProviderManager
+from fate_flow.entity import ComponentProvider
+from fate_flow.entity import RetCode
+from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.entity.types import WorkerName
 
 
 @manager.route('/registry/get', methods=['POST'])
@@ -39,7 +40,7 @@ def register():
                                  version=info["version"],
                                  path=info["path"],
                                  class_path=info.get("class_path", ComponentRegistry.get_default_class_path()))
-    code, std = ProviderManager.start_registrar_process(provider=provider)
+    code, std = WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
     if code == 0:
         ComponentRegistry.load()
         if ComponentRegistry.get_providers().get(provider.name, {}).get(provider.version, None) is None:

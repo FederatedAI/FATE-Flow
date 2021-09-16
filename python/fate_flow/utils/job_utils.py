@@ -22,9 +22,9 @@ from fate_arch.common import file_utils
 from fate_arch.common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import DB, Job, Task
-from fate_flow.entity.job import JobConfiguration
+from fate_flow.entity import JobConfiguration
 from fate_flow.entity.run_status import JobStatus, TaskStatus
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_flow.settings import WORK_MODE
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
@@ -100,12 +100,12 @@ def get_job_log_directory(job_id, *args):
     return os.path.join(file_utils.get_project_base_directory(), 'logs', job_id, *args)
 
 
-def get_worker_directory(worker_type, worker_id, *args):
-    return os.path.join(file_utils.get_project_base_directory(), 'worker', worker_type, worker_id, *args)
+def get_general_worker_directory(worker_name, worker_id, *args):
+    return os.path.join(file_utils.get_project_base_directory(), worker_name, worker_id, *args)
 
 
-def get_worker_log_directory(worker_type, worker_id, *args):
-    return os.path.join(file_utils.get_project_base_directory(), 'worker', worker_type, worker_id, *args)
+def get_general_worker_log_directory(worker_name, worker_id, *args):
+    return os.path.join(file_utils.get_project_base_directory(), 'logs', worker_name, worker_id, *args)
 
 
 def check_config(config: typing.Dict, required_parameters: typing.List):
@@ -197,8 +197,6 @@ def get_job_configuration(job_id, role, party_id) -> JobConfiguration:
     if jobs:
         job = jobs[0]
         return JobConfiguration(**job.to_human_model_dict())
-    else:
-        return None
 
 
 @DB.connection_context()
@@ -315,7 +313,7 @@ def start_session_stop(task):
         '--storage', job_parameters.storage_engine,
         '-c', 'stop' if task.f_status == JobStatus.SUCCESS else 'kill'
     ]
-    p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=task_dir, process_cmd=process_cmd, log_dir=None)
+    p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=task_dir, process_cmd=process_cmd)
     p.wait()
     p.poll()
 

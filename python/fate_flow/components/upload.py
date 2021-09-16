@@ -29,7 +29,7 @@ from fate_flow.components._base import (
     ComponentMeta,
     ComponentInputProtocol,
 )
-from fate_flow.entity.metric import Metric, MetricMeta
+from fate_flow.entity import Metric, MetricMeta
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.db.job_default_config import JobDefaultConfig
@@ -92,7 +92,7 @@ class Upload(ComponentBase):
         LOGGER.info(self.parameters)
         self.parameters["role"] = cpn_input.roles["role"]
         self.parameters["local"] = cpn_input.roles["local"]
-        storage_engine = self.parameters["storage_engine"]
+        storage_engine = self.parameters["storage_engine"].upper()
         storage_address = self.parameters["storage_address"]
         # if not set storage, use job storage as default
         if not storage_engine:

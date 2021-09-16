@@ -13,34 +13,5 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from enum import Enum
-
-
-class MetricType(Enum):
-    LOSS = 'LOSS'
-
-
-class Metric(object):
-    def __init__(self, key, value: float, timestamp: float = None):
-        self.key = key
-        self.value = value
-        self.timestamp = timestamp
-
-
-class MetricMeta(object):
-    def __init__(self, name: str, metric_type: MetricType, extra_metas: dict = None):
-        self.name = name
-        self.metric_type = metric_type
-        self.metas = {}
-        if extra_metas:
-            self.metas.update(extra_metas)
-        self.metas['name'] = name
-        self.metas['metric_type'] = metric_type
-
-    def update_metas(self, metas: dict):
-        self.metas.update(metas)
-
-    def to_dict(self):
-        return self.metas
-
-
+from ._metric import Metric, MetricMeta, MetricType
+# Available for use with federatedml components earlier than version 1.7

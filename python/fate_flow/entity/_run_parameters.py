@@ -13,7 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-class RunParameters:
+from ._base import BaseEntity
+
+
+class RunParameters(BaseEntity):
     def __init__(self, **kwargs):
         self.job_type = "train"
         self.work_mode = None

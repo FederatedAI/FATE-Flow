@@ -21,7 +21,7 @@ from fate_flow.settings import API_VERSION
 from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.db.config_manager import ConfigManager
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.entity.retcode import RetCode
+from fate_flow.entity import RetCode
 
 @manager.route('/version/get', methods=['POST'])
 def get_fate_version_info():

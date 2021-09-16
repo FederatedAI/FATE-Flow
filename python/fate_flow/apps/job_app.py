@@ -28,8 +28,8 @@ from fate_flow.settings import stat_logger, TEMP_DIRECTORY
 from fate_flow.utils import job_utils, detect_utils, schedule_utils, log_utils
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode, JobStatus
 from fate_flow.utils.api_utils import get_json_result, error_response
-from fate_flow.entity.retcode import RetCode
-from fate_flow.entity.job import JobConfigurationBase
+from fate_flow.entity import RetCode
+from fate_flow.entity import JobConfigurationBase
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_clean import JobClean
@@ -41,7 +41,6 @@ from fate_flow.controller.job_controller import JobController
 @manager.route('/submit', methods=['POST'])
 def submit_job():
     work_mode = JobRuntimeConfigAdapter(request.json.get('job_runtime_conf', {})).get_job_work_mode()
-    detect_utils.check_config({'work_mode': work_mode}, required_arguments=[('work_mode', (WorkMode.CLUSTER, WorkMode.STANDALONE))])
     submit_result = DAGScheduler.submit(JobConfigurationBase(**request.json))
     return get_json_result(retcode=0, retmsg='success',
                            job_id=submit_result.get("job_id"),

@@ -19,8 +19,9 @@ import shutil
 from flask import request
 
 from fate_flow.entity.run_status import StatusSet
-from fate_flow.entity.job import JobConfigurationBase
+from fate_flow.entity import JobConfigurationBase
 from fate_arch import storage
+from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_loads
 from fate_flow.settings import UPLOAD_DATA_FROM_CLIENT
 from fate_flow.utils.api_utils import get_json_result
@@ -140,10 +141,11 @@ def gen_data_access_job_config(config_data, access_module):
     initiator_party_id = config_data.get('party_id', 0)
     job_runtime_conf["initiator"]["role"] = initiator_role
     job_runtime_conf["initiator"]["party_id"] = initiator_party_id
-    job_parameters_fields = {"work_mode", "backend", "task_cores", "eggroll_run", "spark_run"}
+    job_parameters_fields = {"work_mode", "backend", "task_cores", "eggroll_run", "spark_run", "computing_engine", "storage_engine", "federation_engine"}
     for _ in job_parameters_fields:
         if _ in config_data:
             job_runtime_conf["job_parameters"]["common"][_] = config_data[_]
+    job_runtime_conf["job_parameters"]["common"]["federated_mode"] = FederatedMode.SINGLE
     job_runtime_conf["role"][initiator_role] = [initiator_party_id]
     job_dsl = {
         "components": {}

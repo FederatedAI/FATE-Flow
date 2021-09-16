@@ -18,7 +18,7 @@ import copy
 from fate_arch.abc import Components
 from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, RoleParameterNotListError
 from fate_flow.component_env_utils import provider_utils
-from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity import ComponentProvider
 from fate_flow.db.component_registry import ComponentRegistry
 
 
@@ -116,12 +116,11 @@ class RuntimeConfParserUtil(object):
         if conf_version == 2:
             # update common parameters
             common_parameters = (
-                runtime_conf.get("component_parameters", {}).get("common", {}).get(alias)
+                runtime_conf.get("component_parameters", {}).get("common", {}).get(alias, {})
             )
-            if common_parameters is not None:
-                param_class = param_class.update(
-                    common_parameters, not redundant_param_check
-                )
+            param_class = param_class.update(
+                common_parameters, not redundant_param_check
+            )
 
             # update role parameters
             for role_id, role_id_parameters in (
@@ -131,9 +130,8 @@ class RuntimeConfParserUtil(object):
                 .items()
             ):
                 if role_id == "all" or str(role_idx) in role_id.split("|"):
-                    parameters = role_id_parameters.get(alias, None)
-                    if parameters is not None:
-                        param_class.update(parameters, not redundant_param_check)
+                    parameters = role_id_parameters.get(alias, {})
+                    param_class.update(parameters, not redundant_param_check)
 
         elif conf_version == 1:
             # update common parameters
@@ -203,7 +201,7 @@ class RuntimeConfParserUtil(object):
                     name, version = provider.split("@", -1)
                     if name not in provider_detail["components"][module]["support_provider"]:
                         raise ValueError(f"Provider: {name} does not support, please register")
-                    if version not in provider_detail["provider"][name]:
+                    if version not in provider_detail["providers"][name]:
                         raise ValueError(f"Provider: {name} version: {version} does not support, please register")
                 else:
                     name = provider_msg[0]

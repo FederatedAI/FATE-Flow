@@ -27,8 +27,8 @@ from fate_arch.common.base_utils import current_timestamp, serialize_b64, deseri
 from fate_arch.common.log import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingOutputDataInfo,
                                     ComponentSummary, MachineLearningModelInfo as MLModel)
-from fate_flow.entity.metric import Metric, MetricMeta
-from fate_flow.entity.types import DataCache
+from fate_flow.entity import Metric, MetricMeta
+from fate_flow.entity import DataCache
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.pipelined_model import pipelined_model
@@ -36,8 +36,7 @@ from fate_flow.manager.cache_manager import CacheManager
 from fate_flow.manager.metric_manager import MetricManager
 from fate_arch import storage, session
 from fate_flow.utils import model_utils, job_utils, data_utils
-from fate_flow.entity.run_parameters import RunParameters
-from fate_flow.component_env_utils import feature_utils
+from fate_flow.entity import RunParameters
 
 
 class Tracker(object):
@@ -212,6 +211,7 @@ class Tracker(object):
     def write_output_model(self, component_model):
         self.pipelined_model.write_component_model(component_model)
 
+    # TODO: use different functions instead of passing arguments
     def get_output_model(self, model_alias, parse=True, output_json=False):
         model_buffers = self.pipelined_model.read_component_model(component_name=self.component_name,
                                                                   model_alias=model_alias,

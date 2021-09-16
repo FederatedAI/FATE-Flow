@@ -27,7 +27,7 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.file_utils import get_project_base_directory
 
 from fate_flow.settings import stat_logger
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.model import Locker
 

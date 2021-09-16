@@ -9,6 +9,7 @@ __pycache__
 .project
 *.prefs
 _build
+venv
 
 # excluded paths
 /data/
@@ -19,6 +20,7 @@ _build
 /eggroll/
 /fateboard/
 /worker/
+/provider_registrar/
 /model_local_cache/
 *.db
 *.whl

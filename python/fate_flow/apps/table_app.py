@@ -15,7 +15,7 @@
 #
 from fate_arch import storage
 from fate_arch.session import Session
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.worker.task_executor import TaskExecutor
@@ -29,7 +29,7 @@ from fate_flow.utils.detect_utils import validate_request
 @manager.route('/add', methods=['post'])
 @manager.route('/bind', methods=['post'])
 @validate_request("engine", "address", "namespace", "name", "id_delimiter", head=(0, 1))
-def table_add():
+def table_bind():
     request_data = request.json
     address_dict = request_data.get('address')
     engine = request_data.get('engine')
@@ -47,11 +47,11 @@ def table_add():
                                    retmsg='The data table already exists.'
                                           'If you still want to continue uploading, please add the parameter -drop.'
                                           '1 means to add again after deleting the table')
-    id_name = request_data.get("id_name")
-    feature_name = request_data.get("feature_name")
+    id_column = request_data.get("id_column")
+    feature_column = request_data.get("feature_column")
     schema = None
-    if id_name and feature_name:
-        schema = {'header': feature_name, 'sid': id_name}
+    if id_column and feature_column:
+        schema = {'header': feature_column, 'sid': id_column}
     sess = Session()
     storage_session = sess.storage(storage_engine=engine, options=request_data.get("options"))
     table = storage_session.create_table(address=address, name=name, namespace=namespace,

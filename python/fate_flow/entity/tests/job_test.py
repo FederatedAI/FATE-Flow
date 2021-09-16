@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 import unittest
-from fate_flow.entity.job import JobConfigurationBase, JobConfiguration
+from fate_flow.entity import JobConfigurationBase, JobConfiguration
 
 
 class TestJobConfiguration(unittest.TestCase):
