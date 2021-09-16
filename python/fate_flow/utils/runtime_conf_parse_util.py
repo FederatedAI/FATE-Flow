@@ -77,6 +77,7 @@ class RuntimeConfParserUtil(object):
         conf_version,
         local_role,
         local_party_id,
+        parse_user_specified_only
     ):
         provider_components = ComponentRegistry.get_provider_components(
             provider.provider_name, provider.provider_version
@@ -112,6 +113,7 @@ class RuntimeConfParserUtil(object):
         param_class = provider.get(module, provider_components).get_param_obj(alias)
         role_idx = role_on_module[local_role].index(local_party_id)
 
+        user_specified_parameters = dict()
         # conf_version == 2
         if conf_version == 2:
             # update common parameters
@@ -119,9 +121,12 @@ class RuntimeConfParserUtil(object):
                 runtime_conf.get("component_parameters", {}).get("common", {}).get(alias)
             )
             if common_parameters is not None:
-                param_class = param_class.update(
-                    common_parameters, not redundant_param_check
-                )
+                if parse_user_specified_only:
+                    user_specified_parameters.update(common_parameters)
+                else:
+                    param_class = param_class.update(
+                        common_parameters, not redundant_param_check
+                    )
 
             # update role parameters
             for role_id, role_id_parameters in (
@@ -133,7 +138,10 @@ class RuntimeConfParserUtil(object):
                 if role_id == "all" or str(role_idx) in role_id.split("|"):
                     parameters = role_id_parameters.get(alias, None)
                     if parameters is not None:
-                        param_class.update(parameters, not redundant_param_check)
+                        if parse_user_specified_only:
+                            user_specified_parameters.update()
+                        else:
+                            param_class.update(parameters, not redundant_param_check)
 
         elif conf_version == 1:
             # update common parameters
@@ -150,7 +158,7 @@ class RuntimeConfParserUtil(object):
 
             if parameters:
                 # convert v1 to v2
-                extract_not_builtin = getattr(param_class, "extract_not_builtin", None)
+                extract_not_builtin = getattr(param_class, "extract_not_buildin", None)
                 if extract_not_builtin is None:
                     raise NotImplementedError(
                         f"param class of `{type(param_class)}` not support v1 style conf"
@@ -183,8 +191,11 @@ class RuntimeConfParserUtil(object):
         else:
             raise NotImplementedError(f"conf version = `{conf_version}` is not supported")
 
-        conf["ComponentParam"] = param_class.as_dict()
-        param_class.check()
+        if not parse_user_specified_only:
+            param_class.check()
+            conf["ComponentParam"] = param_class.as_dict()
+        else:
+            conf["ComponentParam"] = user_specified_parameters
 
         return conf
 
@@ -203,7 +214,7 @@ class RuntimeConfParserUtil(object):
                     name, version = provider.split("@", -1)
                     if name not in provider_detail["components"][module]["support_provider"]:
                         raise ValueError(f"Provider: {name} does not support, please register")
-                    if version not in provider_detail["providers"][name]:
+                    if version not in provider_detail["provider"][name]:
                         raise ValueError(f"Provider: {name} version: {version} does not support, please register")
                 else:
                     name = provider_msg[0]
@@ -253,7 +264,10 @@ class RuntimeConfParserUtil(object):
                                        detect=True, provider_cache=None, job_parameters=None):
         if provider_name and provider_version:
             provider_path = provider_detail["providers"][provider_name][provider_version]["path"]
-            provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name, version=provider_version, path=provider_path, class_path=ComponentRegistry.get_default_class_path()))
+            provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name,
+                                                                               version=provider_version,
+                                                                               path=provider_path,
+                                                                               class_path=ComponentRegistry.get_default_class_path()))
             if provider_cache is not None:
                 if provider_name not in provider_cache:
                     provider_cache[provider_name] = {}

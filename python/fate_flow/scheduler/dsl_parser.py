@@ -278,7 +278,10 @@ class BaseDSLParser(object):
                                 local_role,
                                 local_party_id,
                                 runtime_conf,
-                                redundant_param_check=True):
+                                redundant_param_check=True,
+                                parse_user_specified_only=False,
+                                previous_parameters=None
+                                ):
         """
         init top input
         """
@@ -315,7 +318,13 @@ class BaseDSLParser(object):
                                                                          redundant_param_check=redundant_param_check,
                                                                          conf_version=self.version,
                                                                          local_role=local_role,
-                                                                         local_party_id=local_party_id)
+                                                                         local_party_id=local_party_id,
+                                                                         parse_user_specified_only=parse_user_specified_only)
+
+        if previous_parameters is not None:
+            pre_parameters = previous_parameters.get(cur_component, {})
+            if pre_parameters:
+                role_parameters = RuntimeConfParserUtil.merge_dict(pre_parameters, role_parameters)
 
         for component in parent_path:
             idx = self.component_name_index.get(component)
@@ -1064,7 +1073,8 @@ class DSLParserV2(BaseDSLParser):
 
             return role_predict_dsl
 
-    def parse_component_parameters(self, component_name, provider_detail, provider_name, provider_version, local_role, local_party_id):
+    def parse_component_parameters(self, component_name, provider_detail, provider_name, provider_version, local_role,
+                                   local_party_id, previous_parameters=None):
         if self.mode == "predict":
             runtime_conf = self.predict_runtime_conf
         else:
@@ -1078,7 +1088,29 @@ class DSLParserV2(BaseDSLParser):
                                                   local_role,
                                                   local_party_id,
                                                   runtime_conf,
-                                                  redundant_param_check)
+                                                  redundant_param_check,
+                                                  parse_user_specified_only=False,
+                                                  previous_parameters=previous_parameters)
+
+        return parameters
+
+    def parse_user_specified_component_parameters(self, component_name, provider_detail, provider_name,
+                                                  provider_version, local_role, local_party_id, previous_parameters=None):
+        if self.mode == "predict":
+            runtime_conf = self.predict_runtime_conf
+        else:
+            runtime_conf = self.runtime_conf
+
+        parameters = self._init_component_setting(component_name,
+                                                  provider_detail,
+                                                  provider_name,
+                                                  provider_version,
+                                                  local_role,
+                                                  local_party_id,
+                                                  runtime_conf,
+                                                  redundant_param_check=False,
+                                                  parse_user_specified_only=True,
+                                                  previous_parameters=previous_parameters)
 
         return parameters
 
