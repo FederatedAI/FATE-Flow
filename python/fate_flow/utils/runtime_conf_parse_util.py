@@ -116,12 +116,11 @@ class RuntimeConfParserUtil(object):
         if conf_version == 2:
             # update common parameters
             common_parameters = (
-                runtime_conf.get("component_parameters", {}).get("common", {}).get(alias)
+                runtime_conf.get("component_parameters", {}).get("common", {}).get(alias, {})
             )
-            if common_parameters is not None:
-                param_class = param_class.update(
-                    common_parameters, not redundant_param_check
-                )
+            param_class = param_class.update(
+                common_parameters, not redundant_param_check
+            )
 
             # update role parameters
             for role_id, role_id_parameters in (
@@ -131,9 +130,8 @@ class RuntimeConfParserUtil(object):
                 .items()
             ):
                 if role_id == "all" or str(role_idx) in role_id.split("|"):
-                    parameters = role_id_parameters.get(alias, None)
-                    if parameters is not None:
-                        param_class.update(parameters, not redundant_param_check)
+                    parameters = role_id_parameters.get(alias, {})
+                    param_class.update(parameters, not redundant_param_check)
 
         elif conf_version == 1:
             # update common parameters
