@@ -121,9 +121,10 @@ class ComponentRegistry:
         # get component registry info
         version_list = ComponentVersionInfo.select()
         for version in version_list:
-            component_registry["providers"][version.f_provider_name] = {
-                "default": {"version": get_versions()[component_registry["default_settings"][version.f_provider_name]["default_version_key"]]}
-            }
+            if version.f_provider_name not in component_registry["providers"]:
+                component_registry["providers"][version.f_provider_name] = {
+                    "default": {"version": get_versions()[component_registry["default_settings"][version.f_provider_name]["default_version_key"]]}
+                }
             component_registry["providers"][version.f_provider_name][version.f_version] = {
                 "path": version.f_path, "f_python": version.f_python,
                 "class_path": version.f_class_path
