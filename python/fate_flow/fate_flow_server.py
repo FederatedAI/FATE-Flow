@@ -64,7 +64,6 @@ if __name__ == '__main__':
         sys.exit(0)
     # todo: add a general init steps?
     ConfigManager.load()
-    PrivilegeAuth.init()
     RuntimeConfig.init_env()
     RuntimeConfig.init_config(WORK_MODE=WORK_MODE, JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
@@ -73,6 +72,7 @@ if __name__ == '__main__':
     ComponentRegistry.load()
     ProviderManager.register_default_providers()
     ComponentRegistry.load()
+    PrivilegeAuth.init()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
     thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)
