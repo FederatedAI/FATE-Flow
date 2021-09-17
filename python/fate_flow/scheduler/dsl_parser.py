@@ -215,7 +215,7 @@ class BaseDSLParser(object):
                             self.component_downstream[idx_dependency].append(name)
                             self.component_upstream[idx].append(input_component)
 
-                            if keyword == "model":
+                            if keyword == "model" or keyword == "cache":
                                 self.train_input_model[name] = input_component
 
             if "data" in upstream_input:
@@ -294,6 +294,8 @@ class BaseDSLParser(object):
 
         parent_path = [component]
         cur_component = component
+        isometric_component = None
+
         while True:
             if self.train_input_model.get(cur_component, None) is None:
                 break
@@ -309,6 +311,7 @@ class BaseDSLParser(object):
                     cur_component = self.train_input_model.get(cur_component)
                     parent_path.append(cur_component)
                 else:
+                    isometric_component = input_component
                     break
 
         role_parameters = RuntimeConfParserUtil.get_component_parameters(provider,
@@ -322,7 +325,11 @@ class BaseDSLParser(object):
                                                                          parse_user_specified_only=parse_user_specified_only)
 
         if previous_parameters is not None:
-            pre_parameters = previous_parameters.get(cur_component, {})
+            if not isometric_component:
+                pre_parameters = previous_parameters.get(cur_component, {})
+            else:
+                pre_parameters = previous_parameters.get(isometric_component, {})
+
             if pre_parameters:
                 role_parameters = RuntimeConfParserUtil.merge_dict(pre_parameters, role_parameters)
 
