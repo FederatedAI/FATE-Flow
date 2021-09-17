@@ -19,12 +19,12 @@ import inspect
 import typing
 from pathlib import Path
 
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.components._base import ComponentMeta
 
 _flow_base = Path(__file__).resolve().parent.parent.parent
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 
 def _search_components(path):

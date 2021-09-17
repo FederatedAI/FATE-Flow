@@ -16,12 +16,12 @@
 import abc
 import typing
 
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.components.param_extract import ParamExtract
 from fate_flow.scheduling_apps.client.tracker_client import TrackerClient
 
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 
 class ComponentInputProtocol(metaclass=abc.ABCMeta):

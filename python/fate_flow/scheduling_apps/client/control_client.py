@@ -13,10 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.utils import api_utils
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 
 class ControllerClient(object):

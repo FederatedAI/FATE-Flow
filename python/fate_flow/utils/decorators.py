@@ -14,10 +14,10 @@
 #  limitations under the License.
 #
 import time
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from functools import wraps
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 
 def trys(times=20):

@@ -20,7 +20,7 @@ import traceback
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.file_utils import load_json_conf, dump_json_conf
-from fate_arch.common.log import getLogger, LoggerFactory
+from fate_flow.utils.log_utils import getLogger, LoggerFactory
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.db.config_manager import ConfigManager
 from fate_flow.db.runtime_config import RuntimeConfig

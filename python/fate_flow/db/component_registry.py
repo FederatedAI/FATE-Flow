@@ -21,6 +21,9 @@ from fate_flow.db.db_models import ComponentVersionInfo, ComponentRegistryInfo, 
 from fate_flow.entity import ComponentProvider
 from fate_flow.entity.types import ComponentProviderName
 from fate_flow.settings import FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH
+from fate_flow.utils.log_utils import getLogger
+
+LOGGER = getLogger()
 
 
 class ComponentRegistry:

@@ -22,7 +22,7 @@ from fate_arch import session, storage
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import file_utils, EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
-from fate_arch.common.log import schedule_logger, getLogger
+from fate_flow.utils.log_utils import schedule_logger, getLogger
 
 from fate_flow.entity import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus
@@ -230,7 +230,7 @@ class TaskExecutor(BaseTaskWorker):
         except Exception as e:
             traceback.print_exc()
             self.report_info["party_status"] = TaskStatus.FAILED
-            schedule_logger().exception(e)
+            LOGGER.exception(e)
         finally:
             try:
                 self.report_info["end_time"] = current_timestamp()
@@ -239,49 +239,11 @@ class TaskExecutor(BaseTaskWorker):
             except Exception as e:
                 self.report_info["party_status"] = TaskStatus.FAILED
                 traceback.print_exc()
-                schedule_logger().exception(e)
+                LOGGER.exception(e)
         msg = f"finish {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} with {self.report_info['party_status']}"
         LOGGER.info(msg)
         print(msg)
         return self.report_info
-
-    @classmethod
-    def get_run_task_args(cls, args):
-        if args:
-            job_id = args.get("job_id")
-            component_name = args.get("component_name")
-            task_id = args.get("task_id")
-            task_version = args.get("task_version")
-            role = args.get("role")
-            party_id = args.get("party_id")
-            config = args.get("config")
-            run_ip = args.get("run_ip")
-            job_server = args.get("job_server")
-        else:
-            parser = argparse.ArgumentParser()
-            parser.add_argument('-j', '--job_id', required=True, type=str, help="job id")
-            parser.add_argument('-n', '--component_name', required=True, type=str, help="component name")
-            parser.add_argument('-t', '--task_id', required=True, type=str, help="task id")
-            parser.add_argument('-v', '--task_version', required=True, type=int, help="task version")
-            parser.add_argument('-r', '--role', required=True, type=str, help="role")
-            parser.add_argument('-p', '--party_id', required=True, type=int, help="party id")
-            parser.add_argument('-c', '--config', required=True, type=str, help="task parameters")
-            parser.add_argument('--run_ip', help="run ip", type=str)
-            parser.add_argument('--job_server', help="job server", type=str)
-            args = parser.parse_args()
-            schedule_logger(args.job_id).info('enter task process')
-            schedule_logger(args.job_id).info(args)
-            # init function args
-            job_id = args.job_id
-            component_name = args.component_name
-            task_id = args.task_id
-            task_version = args.task_version
-            role = args.role
-            party_id = args.party_id
-            run_ip = args.run_ip
-            config = args.config
-            job_server = args.job_server
-        return job_id, component_name, task_id, task_version, role, party_id, run_ip, config, job_server
 
     @classmethod
     def log_output_data_table_tracker(cls, job_id, input_table_list, output_table_list):
@@ -302,7 +264,7 @@ class TaskExecutor(BaseTaskWorker):
                                                           })
                 parent_number +=1
         except Exception as e:
-            schedule_logger().exception(e)
+            LOGGER.exception(e)
 
     @classmethod
     def get_job_args_on_party(cls, dsl_parser, job_runtime_conf, role, party_id):

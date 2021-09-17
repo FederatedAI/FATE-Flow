@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common.log import getLogger
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity import ComponentProvider
 from fate_flow.manager.provider_manager import ProviderManager

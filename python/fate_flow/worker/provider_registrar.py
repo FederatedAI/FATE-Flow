@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 from fate_arch.common.base_utils import json_dumps
-from fate_arch.common.log import getLogger
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.entity import ComponentProvider
 from fate_flow.settings import stat_logger

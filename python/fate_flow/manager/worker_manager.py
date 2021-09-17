@@ -21,7 +21,7 @@ import psutil
 
 from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_arch.common.file_utils import load_json_conf
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.metastore.base_model import auto_date_timestamp_db_field
 from fate_flow.db.db_models import DB, Task, WorkerInfo
 from fate_flow.db.runtime_config import RuntimeConfig
