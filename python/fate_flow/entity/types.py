@@ -45,6 +45,10 @@ class FateDependenceName(CustomEnum):
     Python_Env = "python_env"
 
 
+class FateDependenceStorageEngine(CustomEnum):
+    HDFS = "HDFS"
+
+
 class PythonDependenceName(CustomEnum):
     Fate_Source_Code = "python"
     Python_Env = "miniconda"
@@ -109,3 +113,4 @@ class WorkerName(CustomEnum):
     TASK_EXECUTOR = "task_executor"
     TASK_INITIALIZER = "task_initializer"
     PROVIDER_REGISTRAR = "provider_registrar"
+    DEPENDENCE_UPLOAD = "dependence_upload"

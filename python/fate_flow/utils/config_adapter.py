@@ -83,6 +83,12 @@ class JobRuntimeConfigAdapter(object):
                 self.job_runtime_conf['job_parameters']['model_version'] = model_version
         return self.job_runtime_conf
 
+    def get_job_computing_engine(self):
+        if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
+            return self.job_runtime_conf['job_parameters']['common']['computing_engine']
+        else:
+            return self.job_runtime_conf['job_parameters']['computing_engine']
+
 
 
 

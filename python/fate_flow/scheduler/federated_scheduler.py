@@ -55,6 +55,16 @@ class FederatedScheduler(object):
         return status_code, response
 
     @classmethod
+    def dependence_for_job(cls, job, specific_dest=None):
+        schedule_logger(job_id=job.f_job_id).info(f"try to check job {job.f_job_id} dependence")
+        status_code, response = cls.job_command(job=job, command=f"dependence/check", specific_dest=specific_dest)
+        if status_code == FederatedSchedulingStatusCode.SUCCESS:
+            schedule_logger(job_id=job.f_job_id).info(f"check job {job.f_job_id} dependence successfully")
+        else:
+            schedule_logger(job_id=job.f_job_id).info(f"check job {job.f_job_id} dependence failed")
+        return status_code, response
+
+    @classmethod
     def start_job(cls, job, command_body=None):
         return cls.job_command(job=job, command="start", command_body=command_body)
 

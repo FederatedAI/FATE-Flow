@@ -36,21 +36,27 @@ from fate_flow.utils.log_utils import ready_log, start_log, successful_log, fail
 class WorkerManager:
     @classmethod
     def start_general_worker(cls, worker_name: WorkerName, job_id="", role="", party_id=0, provider: ComponentProvider = None,
-                             initialized_config: dict = None):
+                             initialized_config: dict = None, **kwargs):
         worker_id, config_dir, log_dir = cls.get_process_dirs(worker_name=worker_name,
                                                               job_id=job_id,
                                                               role=role,
                                                               party_id=party_id)
-        if worker_name is WorkerName.PROVIDER_REGISTRAR:
+        if worker_name in [WorkerName.PROVIDER_REGISTRAR, WorkerName.DEPENDENCE_UPLOAD]:
             if not provider:
                 raise ValueError("no provider argument")
             config = {
                 "provider": provider.to_dict()
             }
-
-            from fate_flow.worker.provider_registrar import ProviderRegistrar
-            module_file_path = sys.modules[ProviderRegistrar.__module__].__file__
-            specific_cmd = []
+            if worker_name == WorkerName.PROVIDER_REGISTRAR:
+                from fate_flow.worker.provider_registrar import ProviderRegistrar
+                module_file_path = sys.modules[ProviderRegistrar.__module__].__file__
+                specific_cmd = []
+            if worker_name == WorkerName.DEPENDENCE_UPLOAD:
+                from fate_flow.worker.dependence_upload import DependenceUpload
+                module_file_path = sys.modules[DependenceUpload.__module__].__file__
+                specific_cmd = [
+                    '--dependence_type', kwargs.get("dependence_type")
+                ]
             provider_info = provider.to_dict()
         elif worker_name is WorkerName.TASK_INITIALIZER:
             if not initialized_config:

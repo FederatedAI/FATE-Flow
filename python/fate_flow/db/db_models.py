@@ -501,14 +501,14 @@ class WorkerInfo(DataBaseModel):
         db_table = "t_worker"
 
 
-
 class DependenciesStorageMeta(DataBaseModel):
     f_storage_engine = CharField(max_length=30)
     f_type = CharField(max_length=20)
     f_version = CharField(max_length=10, index=True)
-    f_storage_path = CharField(max_length=256)
-    f_snapshot_time = BigIntegerField()
-    f_dependencies_conf = JSONField()
+    f_storage_path = CharField(max_length=256, null=True)
+    f_snapshot_time = BigIntegerField(null=True)
+    f_dependencies_conf = JSONField(null=True)
+    f_upload_status = BooleanField(default=False)
 
     class Meta:
         db_table = "t_dependencies_storage_meta"

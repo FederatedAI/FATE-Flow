@@ -1,204 +1,154 @@
-import os
-import shutil
-import zipfile
-
-from fate_arch.common import file_utils, EngineType
+from fate_arch.common import EngineType
 from fate_arch.common.log import schedule_logger
-from fate_flow.db.db_models import DependenciesStorageMeta, ComponentVersionInfo, DB
-from fate_flow.entity.component_provider import ComponentProvider
-from fate_flow.entity.types import FateDependenceName, ComponentProviderName
+from fate_arch.computing import ComputingEngine
+from fate_flow.db.dependence_registry import DependenceRegistry
+from fate_flow.entity import ComponentProvider
+from fate_flow.entity.types import FateDependenceName, ComponentProviderName, FateDependenceStorageEngine, WorkerName
+from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
-from fate_flow.settings import FATE_VERSION_DEPENDENCIES_PATH
+from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.utils import schedule_utils
+from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 
 
 class DependenceManager:
-    def __init__(self, provider_info, job_id, only_check=False, storage_engine="HDFS"):
-        self.dependence_config = None
-        self.job_id = job_id
-        self.storage_engine = storage_engine
-        self.provider = ComponentProvider(**provider_info)
-        self.check_dependence(only_check)
+    dependence_config = None
 
-    def check_dependence(self, only_check):
-        schedule_logger(self.job_id).info("start check dependence")
+    @classmethod
+    def init(cls, provider):
+        cls.set_version_dependence(provider)
+
+    @classmethod
+    def set_version_dependence(cls, provider, storage_engine=FateDependenceStorageEngine.HDFS.value):
         dependence_config = {}
-        for dependence_type in [FateDependenceName.Fate_Source_Code, FateDependenceName.Python_Env]:
-            dependencies_storage_info = self.get_dependencies_storage_meta(storage_engine=self.storage_engine,
-                                                                           version=self.provider.version,
-                                                                           dependence_type=dependence_type,
-                                                                           get_or_one=True
-                                                                           )
-            upload = False
-            schedule_logger(self.job_id).info(f"{dependence_type} dependencies storage info: {dependencies_storage_info}")
-            if dependencies_storage_info:
-                dependencies_storage_info = dependencies_storage_info.to_dict()
-                if dependence_type == FateDependenceName.Fate_Source_Code and self.provider.name == ComponentProviderName.FATE_ALGORITHM:
-                    if self.get_modify_time(self.provider.path) != dependencies_storage_info.get("f_snapshot_time"):
-                        upload = True
-            else:
-                upload =True
-            schedule_logger(self.job_id).info(f"upload {dependence_type} dependence status:{upload}")
-            if upload:
-                if only_check:
-                    raise Exception(f"no found {dependence_type} dependence")
-                schedule_logger(self.job_id).info(f"start upload {dependence_type} dependence, storage engine {self.storage_engine}")
-                dependencies_storage_info = self.upload_dependencies_to_hadoop(self.provider, dependence_type, self.storage_engine)
-                schedule_logger(self.job_id).info(f"upload {dependence_type} dependence success")
-                schedule_logger(self.job_id).info(f"dependence storage info: {dependencies_storage_info}")
+        for dependence_type in [FateDependenceName.Fate_Source_Code.value, FateDependenceName.Python_Env.value]:
+            dependencies_storage_info = DependenceRegistry.get_dependencies_storage_meta(storage_engine=storage_engine,
+                                                                                         version=provider.version,
+                                                                                         dependence_type=dependence_type,
+                                                                                         get_or_one=True
+                                                                                         )
             dependence_config[dependence_type] = dependencies_storage_info
-        schedule_logger(self.job_id).info(f"check dependence success, dependence config: {dependence_config}")
-        self.dependence_config = dependence_config
+        cls.dependence_config = dependence_config
 
-    def get_executor_env_pythonpath(self):
-        return self.dependence_config.get(FateDependenceName.Fate_Source_Code).get("f_dependencies_conf").get(
+    @classmethod
+    def check_upload(cls, job_id, provider_group, storage_engine=FateDependenceStorageEngine.HDFS.value):
+        schedule_logger(job_id).info("start Check if need to upload dependencies")
+        schedule_logger(job_id).info(f"{provider_group}")
+        upload_details = {}
+        check_tag = True
+        upload_total = 0
+        for version, provider_info in provider_group.items():
+            upload_details[version] = {}
+            provider = ComponentProvider(**provider_info)
+            for dependence_type in [FateDependenceName.Fate_Source_Code.value, FateDependenceName.Python_Env.value]:
+                dependencies_storage_info = DependenceRegistry.get_dependencies_storage_meta(
+                    storage_engine=storage_engine,
+                    version=provider.version,
+                    dependence_type=dependence_type,
+                    get_or_one=True
+                    )
+                need_upload = False
+                schedule_logger(job_id).info(
+                    f"{dependence_type} dependencies storage info: {dependencies_storage_info}")
+                if dependencies_storage_info:
+                    if dependencies_storage_info.f_upload_status:
+                        # version dependence uploading
+                        check_tag = False
+                        continue
+                    if not dependencies_storage_info.f_storage_path:
+                        need_upload = True
+                        upload_total += 1
+                        continue
+                    dependencies_storage_info = dependencies_storage_info.to_dict()
+                    if dependence_type == FateDependenceName.Fate_Source_Code.value and provider.name == ComponentProviderName.FATE_ALGORITHM.value:
+                        if DependenceRegistry.get_modify_time(provider.path) != dependencies_storage_info.get(
+                                "f_snapshot_time"):
+                            need_upload = True
+                            upload_total += 1
+                else:
+                    need_upload = True
+                    upload_total += 1
+                if need_upload:
+
+                    upload_details[version][dependence_type] = provider
+        if not (check_tag and upload_total == 0):
+            check_tag = False
+        schedule_logger(job_id).info(f"Check dependencies result: {check_tag}, {upload_details}")
+        return check_tag, upload_total > 0, upload_details
+
+    @classmethod
+    def check_job_dependence(cls, job):
+        engine_name = JobRuntimeConfigAdapter(job.f_runtime_conf).get_job_computing_engine()
+        schedule_logger(job.f_job_id).info(f"job engine name: {engine_name}")
+        if engine_name not in [ComputingEngine.SPARK]:
+            return True
+        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl, runtime_conf=job.f_runtime_conf,
+                                                       train_runtime_conf=job.f_train_runtime_conf)
+        provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser)
+        version_provider_info = {}
+        fate_flow_version_provider_info = {}
+        schedule_logger(job.f_job_id).info(f'group_info:{provider_group}')
+        for group_key, group_info in provider_group.items():
+            if group_info["provider"]["name"] == ComponentProviderName.FATE_FLOW_TOOLS.value and \
+                    group_info["provider"]["version"] not in fate_flow_version_provider_info:
+                fate_flow_version_provider_info[group_info["provider"]["version"]] = group_info["provider"]
+            if group_info["provider"]["name"] == ComponentProviderName.FATE_ALGORITHM.value and \
+                    group_info["provider"]["version"] not in version_provider_info:
+                version_provider_info[group_info["provider"]["version"]] = group_info["provider"]
+            schedule_logger(job.f_job_id).info(f'version_provider_info:{version_provider_info}')
+            schedule_logger(job.f_job_id).info(f'fate_flow_version_provider_info:{fate_flow_version_provider_info}')
+        if not version_provider_info:
+            version_provider_info = fate_flow_version_provider_info
+        check_tag, upload_tag, upload_details = cls.check_upload(job.f_job_id, version_provider_info)
+        if upload_tag:
+            cls.upload_job_dependence(job, upload_details)
+        return check_tag
+
+    @classmethod
+    def upload_job_dependence(cls, job, upload_details, storage_engine=FateDependenceStorageEngine.HDFS.value):
+        schedule_logger(job.f_job_id).info(f"start upload dependence: {upload_details}")
+        for version, type_provider in upload_details.items():
+            for dependence_type, provider in type_provider.items():
+                storage_meta = {
+                    "f_storage_engine": storage_engine,
+                    "f_type": dependence_type,
+                    "f_version": version,
+                    "f_upload_status": True
+                }
+                schedule_logger(job.f_job_id).info(f"update dependence storage meta:{storage_meta}")
+                DependenceRegistry.save_dependencies_storage_meta(storage_meta)
+                WorkerManager.start_general_worker(worker_name=WorkerName.DEPENDENCE_UPLOAD, job_id=job.f_job_id,
+                                                   role=job.f_role, party_id=job.f_party_id, provider=provider,
+                                                   dependence_type=dependence_type)
+
+    @classmethod
+    def get_task_dependence_info(cls):
+        return cls.get_executor_env_pythonpath(), cls.get_executor_python_env(), cls.get_driver_python_env(), \
+               cls.get_archives()
+
+    @classmethod
+    def get_executor_env_pythonpath(cls):
+        return cls.dependence_config.get(FateDependenceName.Fate_Source_Code.value).get("f_dependencies_conf").get(
             "executor_env_pythonpath")
 
-    def get_executor_python_env(self):
-        return self.dependence_config.get(FateDependenceName.Python_Env).get("f_dependencies_conf").get(
+    @classmethod
+    def get_executor_python_env(cls):
+        return cls.dependence_config.get(FateDependenceName.Python_Env.value).get("f_dependencies_conf").get(
             "executor_python")
 
-    def get_driver_python_env(self):
-        return self.dependence_config.get(FateDependenceName.Python_Env).get("f_dependencies_conf").get(
+    @classmethod
+    def get_driver_python_env(cls):
+        return cls.dependence_config.get(FateDependenceName.Python_Env.value).get("f_dependencies_conf").get(
             "driver_python")
 
-    def get_archives(self):
+    @classmethod
+    def get_archives(cls, storage_engine=FateDependenceStorageEngine.HDFS.value):
         archives = []
         name_node = ResourceManager.get_engine_registration_info(engine_type=EngineType.STORAGE,
-                                                                 engine_name=self.storage_engine
+                                                                 engine_name=storage_engine
                                                                  ).f_engine_config.get("name_node")
-        schedule_logger(self.job_id).info(f"name node: {name_node}")
-        for dependence_type in [FateDependenceName.Fate_Source_Code, FateDependenceName.Python_Env]:
+        for dependence_type in [FateDependenceName.Fate_Source_Code.value, FateDependenceName.Python_Env.value]:
             archives.append(
-                name_node + self.dependence_config.get(dependence_type).get("f_dependencies_conf").get("archives")
+                name_node + cls.dependence_config.get(dependence_type).get("f_dependencies_conf").get("archives")
             )
         return ','.join(archives)
-
-    @classmethod
-    def upload_dependencies_to_hadoop(cls, provider, dependence_type, storage_engine):
-        if dependence_type == FateDependenceName.Python_Env:
-            # todo: version python env
-            target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python_env.zip")
-            source_path = os.path.dirname(os.path.dirname(os.getenv("VIRTUAL_ENV")))
-            cls.rewrite_pyvenv_cfg(os.path.join(os.getenv("VIRTUAL_ENV"), "pyvenv.cfg"), "python_env")
-            env_dir_list = ["python", "miniconda3"]
-            cls.zip_dir(source_path, target_file, env_dir_list)
-
-            dependencies_conf = {"executor_python": f"./{dependence_type}/python/venv/bin/python",
-                                 "driver_python": f"{os.path.join(os.getenv('VIRTUAL_ENV'), 'bin', 'python')}"}
-        else:
-            fate_code_dependencies = {
-                "fate_flow": file_utils.get_python_base_directory("fate_flow"),
-                "fate_arch": file_utils.get_python_base_directory("fate_arch"),
-                "conf": file_utils.get_project_base_directory("conf")
-            }
-            fate_code_base_dir = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "fate_code", "python")
-            if not os.path.exists(fate_code_base_dir):
-                for key, path in fate_code_dependencies.items():
-                    cls.copy_dir(path, os.path.join(fate_code_base_dir, key))
-                    if key == "conf":
-                        cls.move_dir(os.path.join(fate_code_base_dir, key), os.path.dirname(fate_code_base_dir))
-            if provider.name == ComponentProviderName.FATE_ALGORITHM:
-                source_path = provider.path
-            else:
-                source_path = ComponentVersionInfo.get_or_none(
-                    ComponentVersionInfo.f_version == provider.version,
-                    ComponentVersionInfo.f_provider_name == ComponentProviderName.FATE_ALGORITHM
-                ).f_path
-            cls.copy_dir(source_path, os.path.join(fate_code_base_dir, "federatedml"))
-            target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python.zip")
-            cls.zip_dir(os.path.dirname(fate_code_base_dir), target_file)
-            dependencies_conf = {"executor_env_pythonpath": f"./{dependence_type}/python:$PYTHONPATH"}
-        snapshot_time = cls.get_modify_time(source_path)
-        storage_dir = f"/fate_dependence/{provider.version}"
-        os.system(f"hdfs dfs -mkdir -p  {storage_dir}")
-        status = os.system(f"hdfs dfs -put -f {target_file} {storage_dir}")
-        if status == 0:
-            storage_path = os.path.join(storage_dir, os.path.basename(target_file))
-            storage_meta = {
-                "f_storage_engine": storage_engine,
-                "f_type": dependence_type,
-                "f_version": provider.version,
-                "f_storage_path": storage_path,
-                "f_snapshot_time": snapshot_time,
-                "f_dependencies_conf": {"archives": "#".join([storage_path, dependence_type])}
-            }
-            storage_meta["f_dependencies_conf"].update(dependencies_conf)
-            cls.save_dependencies_storage_meta(storage_meta)
-        else:
-            raise Exception(f"hdfs dfs -put {target_file} {storage_dir} failed status: {status}")
-        return storage_meta
-
-    @classmethod
-    @DB.connection_context()
-    def get_dependencies_storage_meta(cls, storage_engine, version, dependence_type, get_or_one=False):
-        dependencies_storage_info = DependenciesStorageMeta.select().where(
-            DependenciesStorageMeta.f_storage_engine == storage_engine,
-            DependenciesStorageMeta.f_version == version,
-            DependenciesStorageMeta.f_type == dependence_type)
-        if get_or_one:
-            return dependencies_storage_info[0] if dependencies_storage_info else None
-        return dependencies_storage_info
-
-    @classmethod
-    @DB.connection_context()
-    def save_dependencies_storage_meta(cls, storage_meta):
-        entity_model, status = DependenciesStorageMeta.get_or_create(
-            f_storage_engine=storage_meta.get("f_storage_engine"),
-            f_type=storage_meta.get("f_type"),
-            f_version=storage_meta.get("f_version"),
-            defaults=storage_meta)
-        if status is False:
-            for key in storage_meta:
-                setattr(entity_model, key, storage_meta[key])
-            entity_model.save(force_insert=False)
-
-
-
-    @classmethod
-    def zip_dir(cls, input_dir_path, output_zip_full_name, dir_list=None):
-        with zipfile.ZipFile(output_zip_full_name, "w", zipfile.ZIP_DEFLATED) as zip_object:
-            if not dir_list:
-                cls.zip_write(zip_object, input_dir_path, input_dir_path)
-            else:
-                for dir_name in dir_list:
-                    dir_path = os.path.join(input_dir_path, dir_name)
-                    cls.zip_write(zip_object, dir_path, input_dir_path)
-
-    @classmethod
-    def zip_write(cls, zip_object, dir_path, input_dir_path):
-        for path, dirnames, filenames in os.walk(dir_path):
-            fpath = path.replace(input_dir_path, '')
-            for filename in filenames:
-                zip_object.write(os.path.join(path, filename), os.path.join(fpath, filename))
-
-
-    @staticmethod
-    def copy_dir(source_path, target_path):
-        if os.path.exists(target_path):
-            shutil.rmtree(target_path)
-        shutil.copytree(source_path, target_path)
-
-    @staticmethod
-    def move_dir(source_path, target_path):
-        shutil.move(source_path, target_path)
-
-    @classmethod
-    def get_modify_time(cls, path):
-        return int(os.path.getmtime(path)*1000)
-
-    @classmethod
-    def rewrite_pyvenv_cfg(cls, file, dir_name):
-        import re
-        bak_file = file + '.bak'
-        shutil.copyfile(file, bak_file)
-        with open(file, "w") as fw:
-            with open(bak_file, 'r') as fr:
-                lines = fr.readlines()
-                match_str = None
-                for line in lines:
-                    change_line = re.findall(".*=(.*)miniconda.*", line)
-                    if change_line:
-                        if not match_str:
-                            match_str = change_line[0]
-                        line = re.sub(match_str, f" ./{dir_name}/", line)
-                    fw.write(line)

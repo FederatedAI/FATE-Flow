@@ -18,6 +18,7 @@ from flask import request
 from fate_flow.entity import RetCode
 from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
+from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.authentication_utils import request_authority_certification
 from fate_flow.operation.job_saver import JobSaver
@@ -34,6 +35,15 @@ def create_job(job_id, role, party_id):
     except RuntimeError as e:
         return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=str(e), data={"job_id": job_id})
 
+
+@manager.route('/<job_id>/<role>/<party_id>/dependence/check', methods=['POST'])
+def check_dependence(job_id, role, party_id):
+    job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
+    status = DependenceManager.check_job_dependence(job)
+    if status:
+        return get_json_result(retcode=0, retmsg='success')
+    else:
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"check for job {job_id} dependence failed")
 
 @manager.route('/<job_id>/<role>/<party_id>/resource/apply', methods=['POST'])
 def apply_resource(job_id, role, party_id):
