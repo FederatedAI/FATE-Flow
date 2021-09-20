@@ -24,8 +24,7 @@ from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.utils import job_utils, process_utils
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.db.service_registry import ServiceRegistry
-from fate_flow.settings import WORK_MODE
-from fate_arch.common import WorkMode
+from fate_flow.settings import DEPENDENT_DISTRIBUTION
 from fate_arch.common.log import schedule_logger
 
 
@@ -61,19 +60,20 @@ class SparkEngine(EngineABC):
                 executable.append(f"{ck}={cv}")
         extra_env = {}
         extra_env["SPARK_HOME"] = spark_home
-        dependence = DependenceManager()
-        dependence.init(provider=ComponentProvider(**task.f_provider_info))
-        executor_env_pythonpath, executor_python_env, driver_python_env, archives = dependence.get_task_dependence_info()
-        schedule_logger(task.f_job_id).info(f"executor_env_python {executor_python_env}，"
-                                            f"driver_env_python {driver_python_env}， archives {archives}")
-        executable.append(f'--archives')
-        executable.append(archives)
-        executable.append(f'--conf')
-        executable.append(f'spark.pyspark.python={executor_python_env}')
-        executable.append(f'--conf')
-        executable.append(f'spark.executorEnv.PYTHONPATH={executor_env_pythonpath}')
-        executable.append(f'--conf')
-        executable.append(f'spark.pyspark.driver.python={driver_python_env}')
+        if DEPENDENT_DISTRIBUTION:
+            dependence = DependenceManager()
+            dependence.init(provider=ComponentProvider(**task.f_provider_info))
+            executor_env_pythonpath, executor_python_env, driver_python_env, archives = dependence.get_task_dependence_info()
+            schedule_logger(task.f_job_id).info(f"executor_env_python {executor_python_env}，"
+                                                f"driver_env_python {driver_python_env}， archives {archives}")
+            executable.append(f'--archives')
+            executable.append(archives)
+            executable.append(f'--conf')
+            executable.append(f'spark.pyspark.python={executor_python_env}')
+            executable.append(f'--conf')
+            executable.append(f'spark.executorEnv.PYTHONPATH={executor_env_pythonpath}')
+            executable.append(f'--conf')
+            executable.append(f'spark.pyspark.driver.python={driver_python_env}')
         return WorkerManager.start_task_worker(worker_name=WorkerName.TASK_EXECUTOR, task=task,
                                                task_parameters=run_parameters, executable=executable,
                                                extra_env=extra_env)

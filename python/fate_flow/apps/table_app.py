@@ -47,8 +47,8 @@ def table_bind():
                                    retmsg='The data table already exists.'
                                           'If you still want to continue uploading, please add the parameter -drop.'
                                           '1 means to add again after deleting the table')
-    id_column = request_data.get("id_column")
-    feature_column = request_data.get("feature_column")
+    id_column = request_data.get("id_column") or request_data.get("id_name")
+    feature_column = request_data.get("feature_column") or request_data.get("feature_name")
     schema = None
     if id_column and feature_column:
         schema = {'header': feature_column, 'sid': id_column}

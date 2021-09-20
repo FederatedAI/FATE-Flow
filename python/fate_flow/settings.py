@@ -41,6 +41,7 @@ MAX_TIMESTAMP_INTERVAL = 60
 
 WORK_MODE = get_base_config("work_mode", 0)
 USE_REGISTRY = get_base_config("use_registry")
+DEPENDENT_DISTRIBUTION = get_base_config("dependent_distribution", True)
 
 HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")
