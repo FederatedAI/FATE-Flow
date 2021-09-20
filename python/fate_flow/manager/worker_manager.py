@@ -114,27 +114,31 @@ class WorkerManager:
             logger = stat_logger
             msg = f"{worker_name} worker {worker_id} subprocess {p.pid}"
         logger.info(ready_log(msg=msg, role=role, party_id=party_id))
-        try:
-            p.wait(timeout=120)
-            if p.returncode == 0:
-                logger.info(successful_log(msg=msg, role=role, party_id=party_id))
-            else:
-                logger.info(failed_log(msg=msg, role=role, party_id=party_id))
-            if p.returncode == 0:
-                return p.returncode, load_json_conf(result_path)
-            else:
-                raise Exception(
-                    process_utils.get_subprocess_std(log_dir=log_dir, process_name=worker_name.value, process_id=worker_id))
-        except subprocess.TimeoutExpired as e:
-            err = failed_log(msg=f"{msg} run timeout", role=role, party_id=party_id)
-            logger.exception(err)
-            raise Exception(err)
-        finally:
+        if not kwargs.get("asynchronous", False):
             try:
-                p.kill()
-                p.poll()
-            except Exception as e:
-                logger.exception(e)
+                p.wait(timeout=120)
+                if p.returncode == 0:
+                    logger.info(successful_log(msg=msg, role=role, party_id=party_id))
+                else:
+                    logger.info(failed_log(msg=msg, role=role, party_id=party_id))
+                if p.returncode == 0:
+                    return p.returncode, load_json_conf(result_path)
+                else:
+                    raise Exception(
+                        process_utils.get_subprocess_std(log_dir=log_dir, process_name=worker_name.value, process_id=worker_id))
+            except subprocess.TimeoutExpired as e:
+                err = failed_log(msg=f"{msg} run timeout", role=role, party_id=party_id)
+                logger.exception(err)
+                raise Exception(err)
+            finally:
+                try:
+                    p.kill()
+                    p.poll()
+                except Exception as e:
+                    logger.exception(e)
+        else:
+            # todo: save worker info
+            pass
 
     @classmethod
     def start_task_worker(cls, worker_name, task: Task, task_parameters: RunParameters = None,

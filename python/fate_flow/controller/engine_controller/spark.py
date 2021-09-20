@@ -40,8 +40,8 @@ class SparkEngine(EngineABC):
                 raise RuntimeError("can not import pyspark")
             except Exception as e:
                 raise RuntimeError("can not import pyspark")
-        else:
-            raise ValueError(f"spark home must be configured in conf/service_conf.yaml when run on cluster mode")
+        # else:
+        #     raise ValueError(f"spark home must be configured in conf/service_conf.yaml when run on cluster mode")
 
         # additional configs
         spark_submit_config = run_parameters.spark_run

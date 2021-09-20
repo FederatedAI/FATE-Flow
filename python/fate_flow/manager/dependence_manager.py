@@ -24,10 +24,10 @@ class DependenceManager:
         for dependence_type in [FateDependenceName.Fate_Source_Code.value, FateDependenceName.Python_Env.value]:
             dependencies_storage_info = DependenceRegistry.get_dependencies_storage_meta(storage_engine=storage_engine,
                                                                                          version=provider.version,
-                                                                                         dependence_type=dependence_type,
+                                                                                         type=dependence_type,
                                                                                          get_or_one=True
                                                                                          )
-            dependence_config[dependence_type] = dependencies_storage_info
+            dependence_config[dependence_type] = dependencies_storage_info.to_dict()
         cls.dependence_config = dependence_config
 
     @classmethod
@@ -41,23 +41,19 @@ class DependenceManager:
             upload_details[version] = {}
             provider = ComponentProvider(**provider_info)
             for dependence_type in [FateDependenceName.Fate_Source_Code.value, FateDependenceName.Python_Env.value]:
+                schedule_logger(job_id).info(f"{dependence_type}")
                 dependencies_storage_info = DependenceRegistry.get_dependencies_storage_meta(
                     storage_engine=storage_engine,
                     version=provider.version,
-                    dependence_type=dependence_type,
+                    type=dependence_type,
                     get_or_one=True
                     )
                 need_upload = False
-                schedule_logger(job_id).info(
-                    f"{dependence_type} dependencies storage info: {dependencies_storage_info}")
                 if dependencies_storage_info:
+                    schedule_logger(job_id).info(f"upload status: {dependencies_storage_info.f_upload_status}")
                     if dependencies_storage_info.f_upload_status:
                         # version dependence uploading
                         check_tag = False
-                        continue
-                    if not dependencies_storage_info.f_storage_path:
-                        need_upload = True
-                        upload_total += 1
                         continue
                     dependencies_storage_info = dependencies_storage_info.to_dict()
                     if dependence_type == FateDependenceName.Fate_Source_Code.value and provider.name == ComponentProviderName.FATE_ALGORITHM.value:
@@ -69,9 +65,8 @@ class DependenceManager:
                     need_upload = True
                     upload_total += 1
                 if need_upload:
-
                     upload_details[version][dependence_type] = provider
-        if not (check_tag and upload_total == 0):
+        if upload_total > 0:
             check_tag = False
         schedule_logger(job_id).info(f"Check dependencies result: {check_tag}, {upload_details}")
         return check_tag, upload_total > 0, upload_details
@@ -116,10 +111,10 @@ class DependenceManager:
                     "f_upload_status": True
                 }
                 schedule_logger(job.f_job_id).info(f"update dependence storage meta:{storage_meta}")
-                DependenceRegistry.save_dependencies_storage_meta(storage_meta)
+                DependenceRegistry.save_dependencies_storage_meta(storage_meta, status_check=True)
                 WorkerManager.start_general_worker(worker_name=WorkerName.DEPENDENCE_UPLOAD, job_id=job.f_job_id,
                                                    role=job.f_role, party_id=job.f_party_id, provider=provider,
-                                                   dependence_type=dependence_type)
+                                                   dependence_type=dependence_type, asynchronous=True)
 
     @classmethod
     def get_task_dependence_info(cls):

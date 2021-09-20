@@ -31,13 +31,17 @@ class DependenceRegistry:
 
     @classmethod
     @DB.connection_context()
-    def save_dependencies_storage_meta(cls, storage_meta):
+    def save_dependencies_storage_meta(cls, storage_meta, status_check=False):
         entity_model, status = DependenciesStorageMeta.get_or_create(
             f_storage_engine=storage_meta.get("f_storage_engine"),
             f_type=storage_meta.get("f_type"),
             f_version=storage_meta.get("f_version"),
             defaults=storage_meta)
         if status is False:
+            if status_check:
+                if "f_upload_status" in storage_meta.keys() and storage_meta["f_upload_status"] \
+                        != entity_model.f_upload_status:
+                    return
             for key in storage_meta:
                 setattr(entity_model, key, storage_meta[key])
             entity_model.save(force_insert=False)
