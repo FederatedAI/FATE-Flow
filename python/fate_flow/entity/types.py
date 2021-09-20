@@ -40,6 +40,20 @@ class ComponentProviderName(CustomEnum):
     FATE_FLOW_TOOLS = "fate_flow_tools"
 
 
+class FateDependenceName(CustomEnum):
+    Fate_Source_Code = "fate_code"
+    Python_Env = "python_env"
+
+
+class FateDependenceStorageEngine(CustomEnum):
+    HDFS = "HDFS"
+
+
+class PythonDependenceName(CustomEnum):
+    Fate_Source_Code = "python"
+    Python_Env = "miniconda"
+
+
 class ModelStorage(CustomEnum):
     REDIS = "redis"
     MYSQL = "mysql"
@@ -99,3 +113,4 @@ class WorkerName(CustomEnum):
     TASK_EXECUTOR = "task_executor"
     TASK_INITIALIZER = "task_initializer"
     PROVIDER_REGISTRAR = "provider_registrar"
+    DEPENDENCE_UPLOAD = "dependence_upload"

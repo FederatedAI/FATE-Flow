@@ -77,14 +77,14 @@ class ComponentRegistry:
             for provider_name, register_info in cls.REGISTRY["providers"].items():
                 for version, version_register_info in register_info.items():
                     if version != "default":
-                        version_nfo = {
+                        version_info = {
                             "f_path": version_register_info.get("path"),
                             "f_python": version_register_info.get("python", ""),
                             "f_class_path": version_register_info.get("class_path"),
                             "f_version": version,
                             "f_provider_name": provider_name
                         }
-                        cls.safe_save(ComponentVersionInfo, version_nfo, f_version=version, f_provider_name=provider_name)
+                        cls.safe_save(ComponentVersionInfo, version_info, f_version=version, f_provider_name=provider_name)
                         for component_name, module_info in version_register_info.get("components").items():
                             component_registry_info = {
                                 "f_version": version,
@@ -121,9 +121,10 @@ class ComponentRegistry:
         # get component registry info
         version_list = ComponentVersionInfo.select()
         for version in version_list:
-            component_registry["providers"][version.f_provider_name] = {
-                "default": {"version": get_versions()[component_registry["default_settings"][version.f_provider_name]["default_version_key"]]}
-            }
+            if version.f_provider_name not in component_registry["providers"]:
+                component_registry["providers"][version.f_provider_name] = {
+                    "default": {"version": get_versions()[component_registry["default_settings"][version.f_provider_name]["default_version_key"]]}
+                }
             component_registry["providers"][version.f_provider_name][version.f_version] = {
                 "path": version.f_path, "f_python": version.f_python,
                 "class_path": version.f_class_path

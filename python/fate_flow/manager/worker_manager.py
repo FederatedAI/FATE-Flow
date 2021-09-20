@@ -36,21 +36,28 @@ from fate_flow.utils.log_utils import ready_log, start_log, successful_log, fail
 class WorkerManager:
     @classmethod
     def start_general_worker(cls, worker_name: WorkerName, job_id="", role="", party_id=0, provider: ComponentProvider = None,
-                             initialized_config: dict = None):
+                             initialized_config: dict = None, **kwargs):
+        participate = locals()
         worker_id, config_dir, log_dir = cls.get_process_dirs(worker_name=worker_name,
                                                               job_id=job_id,
                                                               role=role,
                                                               party_id=party_id)
-        if worker_name is WorkerName.PROVIDER_REGISTRAR:
+        if worker_name in [WorkerName.PROVIDER_REGISTRAR, WorkerName.DEPENDENCE_UPLOAD]:
             if not provider:
                 raise ValueError("no provider argument")
             config = {
                 "provider": provider.to_dict()
             }
-
-            from fate_flow.worker.provider_registrar import ProviderRegistrar
-            module_file_path = sys.modules[ProviderRegistrar.__module__].__file__
-            specific_cmd = []
+            if worker_name == WorkerName.PROVIDER_REGISTRAR:
+                from fate_flow.worker.provider_registrar import ProviderRegistrar
+                module_file_path = sys.modules[ProviderRegistrar.__module__].__file__
+                specific_cmd = []
+            if worker_name == WorkerName.DEPENDENCE_UPLOAD:
+                from fate_flow.worker.dependence_upload import DependenceUpload
+                module_file_path = sys.modules[DependenceUpload.__module__].__file__
+                specific_cmd = [
+                    '--dependence_type', kwargs.get("dependence_type")
+                ]
             provider_info = provider.to_dict()
         elif worker_name is WorkerName.TASK_INITIALIZER:
             if not initialized_config:
@@ -101,6 +108,7 @@ class WorkerManager:
         p = process_utils.run_subprocess(job_id=job_id, config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=cls.get_env(job_id, provider_info), log_dir=log_dir,
                                          cwd_dir=config_dir, process_name=worker_name.value, process_id=worker_id)
+        participate["pid"] = p.pid
         if job_id and role and party_id:
             logger = schedule_logger(job_id)
             msg = f"{worker_name} worker {worker_id} subprocess {p.pid}"
@@ -108,27 +116,38 @@ class WorkerManager:
             logger = stat_logger
             msg = f"{worker_name} worker {worker_id} subprocess {p.pid}"
         logger.info(ready_log(msg=msg, role=role, party_id=party_id))
-        try:
-            p.wait(timeout=120)
-            if p.returncode == 0:
-                logger.info(successful_log(msg=msg, role=role, party_id=party_id))
-            else:
-                logger.info(failed_log(msg=msg, role=role, party_id=party_id))
-            if p.returncode == 0:
-                return p.returncode, load_json_conf(result_path)
-            else:
-                raise Exception(
-                    process_utils.get_subprocess_std(log_dir=log_dir, process_name=worker_name.value, process_id=worker_id))
-        except subprocess.TimeoutExpired as e:
-            err = failed_log(msg=f"{msg} run timeout", role=role, party_id=party_id)
-            logger.exception(err)
-            raise Exception(err)
-        finally:
+
+        # asynchronous
+        if worker_name in [WorkerName.DEPENDENCE_UPLOAD]:
+            if kwargs.get("callback") and kwargs.get("callback_param"):
+                callback_param = {}
+                participate.update(participate.get("kwargs", {}))
+                for k, v in participate.items():
+                    if k in kwargs.get("callback_param"):
+                        callback_param[k] = v
+                kwargs.get("callback")(**callback_param)
+        else:
             try:
-                p.kill()
-                p.poll()
-            except Exception as e:
-                logger.exception(e)
+                p.wait(timeout=120)
+                if p.returncode == 0:
+                    logger.info(successful_log(msg=msg, role=role, party_id=party_id))
+                else:
+                    logger.info(failed_log(msg=msg, role=role, party_id=party_id))
+                if p.returncode == 0:
+                    return p.returncode, load_json_conf(result_path)
+                else:
+                    raise Exception(
+                        process_utils.get_subprocess_std(log_dir=log_dir, process_name=worker_name.value, process_id=worker_id))
+            except subprocess.TimeoutExpired as e:
+                err = failed_log(msg=f"{msg} run timeout", role=role, party_id=party_id)
+                logger.exception(err)
+                raise Exception(err)
+            finally:
+                try:
+                    p.kill()
+                    p.poll()
+                except Exception as e:
+                    logger.exception(e)
 
     @classmethod
     def start_task_worker(cls, worker_name, task: Task, task_parameters: RunParameters = None,

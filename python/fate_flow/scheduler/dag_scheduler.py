@@ -246,35 +246,39 @@ class DAGScheduler(Cron):
                 FederatedScheduler.sync_job_status(job=job)
                 schedule_logger(job_id).info(f"job have cancel signal")
                 return
-            apply_status_code, federated_response = FederatedScheduler.resource_for_job(job=job, operation_type=ResourceOperation.APPLY)
-            if apply_status_code == FederatedSchedulingStatusCode.SUCCESS:
-                cls.start_job(job_id=job_id, initiator_role=initiator_role, initiator_party_id=initiator_party_id)
-            else:
-                # rollback resource
-                rollback_party = {}
-                failed_party = {}
-                for dest_role in federated_response.keys():
-                    for dest_party_id in federated_response[dest_role].keys():
-                        retcode = federated_response[dest_role][dest_party_id]["retcode"]
-                        if retcode == 0:
-                            rollback_party[dest_role] = rollback_party.get(dest_role, [])
-                            rollback_party[dest_role].append(dest_party_id)
-                        else:
-                            failed_party[dest_role] = failed_party.get(dest_role, [])
-                            failed_party[dest_role].append(dest_party_id)
-                schedule_logger(job_id).info("job apply resource failed on {}, rollback {}".format(
-                    ",".join([",".join([f"{_r}:{_p}" for _p in _ps]) for _r, _ps in failed_party.items()]),
-                    ",".join([",".join([f"{_r}:{_p}" for _p in _ps]) for _r, _ps in rollback_party.items()]),
-                ))
-                if rollback_party:
-                    return_status_code, federated_response = FederatedScheduler.resource_for_job(job=job, operation_type=ResourceOperation.RETURN, specific_dest=rollback_party)
-                    if return_status_code != FederatedSchedulingStatusCode.SUCCESS:
-                        schedule_logger(job_id).info(f"job return resource failed:\n{federated_response}")
+            schedule_logger(job_id).info(f"job dependence check")
+            dependence_status_code, federated_dependence_response = FederatedScheduler.dependence_for_job(job=job)
+            schedule_logger(job_id).info(f"dependence check: {dependence_status_code}, {federated_dependence_response}")
+            if dependence_status_code == FederatedSchedulingStatusCode.SUCCESS:
+                apply_status_code, federated_response = FederatedScheduler.resource_for_job(job=job, operation_type=ResourceOperation.APPLY)
+                if apply_status_code == FederatedSchedulingStatusCode.SUCCESS:
+                    cls.start_job(job_id=job_id, initiator_role=initiator_role, initiator_party_id=initiator_party_id)
                 else:
-                    schedule_logger(job_id).info(f"job no party should be rollback resource")
-                if apply_status_code == FederatedSchedulingStatusCode.ERROR:
-                    cls.stop_job(job_id=job_id, role=initiator_role, party_id=initiator_party_id, stop_status=JobStatus.FAILED)
-                    schedule_logger(job_id).info(f"apply resource error, stop job")
+                    # rollback resource
+                    rollback_party = {}
+                    failed_party = {}
+                    for dest_role in federated_response.keys():
+                        for dest_party_id in federated_response[dest_role].keys():
+                            retcode = federated_response[dest_role][dest_party_id]["retcode"]
+                            if retcode == 0:
+                                rollback_party[dest_role] = rollback_party.get(dest_role, [])
+                                rollback_party[dest_role].append(dest_party_id)
+                            else:
+                                failed_party[dest_role] = failed_party.get(dest_role, [])
+                                failed_party[dest_role].append(dest_party_id)
+                    schedule_logger(job_id).info("job apply resource failed on {}, rollback {}".format(
+                        ",".join([",".join([f"{_r}:{_p}" for _p in _ps]) for _r, _ps in failed_party.items()]),
+                        ",".join([",".join([f"{_r}:{_p}" for _p in _ps]) for _r, _ps in rollback_party.items()]),
+                    ))
+                    if rollback_party:
+                        return_status_code, federated_response = FederatedScheduler.resource_for_job(job=job, operation_type=ResourceOperation.RETURN, specific_dest=rollback_party)
+                        if return_status_code != FederatedSchedulingStatusCode.SUCCESS:
+                            schedule_logger(job_id).info(f"job return resource failed:\n{federated_response}")
+                    else:
+                        schedule_logger(job_id).info(f"job no party should be rollback resource")
+                    if apply_status_code == FederatedSchedulingStatusCode.ERROR:
+                        cls.stop_job(job_id=job_id, role=initiator_role, party_id=initiator_party_id, stop_status=JobStatus.FAILED)
+                        schedule_logger(job_id).info(f"apply resource error, stop job")
         except Exception as e:
             raise e
         finally:

@@ -64,6 +64,9 @@ class WorkerArgs(BaseEntity):
         self.http_port = kwargs.get("http_port")
         self.grpc_port = kwargs.get("grpc_port")
 
+        # Dependence Upload
+        self.dependence_type = kwargs.get("dependence_type")
+
     def load_dict_attr(self, kwargs: dict, attr_name: str):
         return load_json_conf(kwargs[attr_name]) if kwargs.get(attr_name) else {}
 
