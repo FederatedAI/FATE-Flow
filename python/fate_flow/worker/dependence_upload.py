@@ -111,7 +111,8 @@ class DependenceUpload(BaseWorker):
                 "f_storage_path": storage_path,
                 "f_snapshot_time": snapshot_time,
                 "f_dependencies_conf": {"archives": "#".join([storage_path, dependence_type])},
-                "f_upload_status": False
+                "f_upload_status": False,
+                "f_pid": 0
             }
             storage_meta["f_dependencies_conf"].update(dependencies_conf)
             DependenceRegistry.save_dependencies_storage_meta(storage_meta)

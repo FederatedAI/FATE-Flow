@@ -50,15 +50,17 @@ class DependenceManager:
                     )
                 need_upload = False
                 if dependencies_storage_info:
-                    schedule_logger(job_id).info(f"upload status: {dependencies_storage_info.f_upload_status}")
                     if dependencies_storage_info.f_upload_status:
                         # version dependence uploading
                         check_tag = False
                         continue
-                    dependencies_storage_info = dependencies_storage_info.to_dict()
-                    if dependence_type == FateDependenceName.Fate_Source_Code.value and provider.name == ComponentProviderName.FATE_ALGORITHM.value:
-                        if DependenceRegistry.get_modify_time(provider.path) != dependencies_storage_info.get(
-                                "f_snapshot_time"):
+                    elif not dependencies_storage_info.f_storage_path:
+                        need_upload = True
+                        upload_total += 1
+
+                    elif dependence_type == FateDependenceName.Fate_Source_Code.value and provider.name == ComponentProviderName.FATE_ALGORITHM.value:
+                        if DependenceRegistry.get_modify_time(provider.path) !=\
+                                dependencies_storage_info.f_snapshot_time:
                             need_upload = True
                             upload_total += 1
                 else:
@@ -114,7 +116,31 @@ class DependenceManager:
                 DependenceRegistry.save_dependencies_storage_meta(storage_meta, status_check=True)
                 WorkerManager.start_general_worker(worker_name=WorkerName.DEPENDENCE_UPLOAD, job_id=job.f_job_id,
                                                    role=job.f_role, party_id=job.f_party_id, provider=provider,
-                                                   dependence_type=dependence_type, asynchronous=True)
+                                                   dependence_type=dependence_type, callback=cls.record_upload_process,
+                                                   callback_param=["dependence_type", "pid", "provider"])
+
+    @classmethod
+    def record_upload_process(cls, provider, dependence_type, pid, storage_engine=FateDependenceStorageEngine.HDFS.value):
+        storage_meta = {
+            "f_storage_engine": storage_engine,
+            "f_type": dependence_type,
+            "f_version": provider.version,
+            "f_pid": pid,
+            "f_upload_status": True
+        }
+        DependenceRegistry.save_dependencies_storage_meta(storage_meta)
+
+    @classmethod
+    def kill_upload_process(cls, version, storage_engine, dependence_type):
+        storage_meta = {
+            "f_storage_engine": storage_engine,
+            "f_type": dependence_type,
+            "f_version": version,
+            "f_upload_status": False,
+            "f_pid": 0
+        }
+        DependenceRegistry.save_dependencies_storage_meta(storage_meta)
+
 
     @classmethod
     def get_task_dependence_info(cls):

@@ -509,6 +509,7 @@ class DependenciesStorageMeta(DataBaseModel):
     f_snapshot_time = BigIntegerField(null=True)
     f_dependencies_conf = JSONField(null=True)
     f_upload_status = BooleanField(default=False)
+    f_pid = IntegerField(null=True)
 
     class Meta:
         db_table = "t_dependencies_storage_meta"

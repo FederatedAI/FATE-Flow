@@ -37,6 +37,7 @@ class WorkerManager:
     @classmethod
     def start_general_worker(cls, worker_name: WorkerName, job_id="", role="", party_id=0, provider: ComponentProvider = None,
                              initialized_config: dict = None, **kwargs):
+        participate = locals()
         worker_id, config_dir, log_dir = cls.get_process_dirs(worker_name=worker_name,
                                                               job_id=job_id,
                                                               role=role,
@@ -107,6 +108,7 @@ class WorkerManager:
         p = process_utils.run_subprocess(job_id=job_id, config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=cls.get_env(job_id, provider_info), log_dir=log_dir,
                                          cwd_dir=config_dir, process_name=worker_name.value, process_id=worker_id)
+        participate["pid"] = p.pid
         if job_id and role and party_id:
             logger = schedule_logger(job_id)
             msg = f"{worker_name} worker {worker_id} subprocess {p.pid}"
@@ -114,7 +116,17 @@ class WorkerManager:
             logger = stat_logger
             msg = f"{worker_name} worker {worker_id} subprocess {p.pid}"
         logger.info(ready_log(msg=msg, role=role, party_id=party_id))
-        if not kwargs.get("asynchronous", False):
+
+        # asynchronous
+        if worker_name in [WorkerName.DEPENDENCE_UPLOAD]:
+            if kwargs.get("callback") and kwargs.get("callback_param"):
+                callback_param = {}
+                participate.update(participate.get("kwargs", {}))
+                for k, v in participate.items():
+                    if k in kwargs.get("callback_param"):
+                        callback_param[k] = v
+                kwargs.get("callback")(**callback_param)
+        else:
             try:
                 p.wait(timeout=120)
                 if p.returncode == 0:
@@ -136,9 +148,6 @@ class WorkerManager:
                     p.poll()
                 except Exception as e:
                     logger.exception(e)
-        else:
-            # todo: save worker info
-            pass
 
     @classmethod
     def start_task_worker(cls, worker_name, task: Task, task_parameters: RunParameters = None,
