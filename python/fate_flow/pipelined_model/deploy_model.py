@@ -49,7 +49,8 @@ def deploy(config_data):
 
         # copy proto content from parent model and generate a child model
         deploy_model = PipelinedModel(model_id=party_model_id, model_version=child_model_version)
-        shutil.copytree(src=model.model_path, dst=deploy_model.model_path)
+        shutil.copytree(src=model.model_path, dst=deploy_model.model_path,
+                        ignore=lambda src, names: {'checkpoint'} if src == model.model_path else {})
         pipeline_model = deploy_model.read_pipeline_model()
 
         # modify two pipeline files (model version/ train_runtime_conf)
