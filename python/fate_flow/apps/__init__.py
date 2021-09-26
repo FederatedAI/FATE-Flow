@@ -19,7 +19,6 @@ from pathlib import Path
 from time import time
 from base64 import b64encode
 from hmac import HMAC
-from datetime import datetime, timezone
 from importlib.util import spec_from_file_location, module_from_spec
 
 from flask import Flask, Blueprint, request
@@ -75,17 +74,17 @@ def authentication():
     if not (HTTP_APP_KEY and HTTP_SECRET_KEY):
         return
 
-    required_headers = {
+    for i in [
         'TIMESTAMP',
-        'NONCE'
+        'NONCE',
         'APP_KEY',
         'SIGNATURE',
-    }
-    if required_headers - set(request.headers):
-        return error_response(401)
+    ]:
+        if not request.headers.get(i):
+            return error_response(401)
 
     try:
-        timestamp = datetime.fromtimestamp(int(request.headers['TIMESTAMP']) / 1000, tz=timezone.utc)
+        timestamp = int(request.headers['TIMESTAMP']) / 1000
     except Exception:
         return error_response(400, 'Invalid TIMESTAMP')
 
@@ -103,7 +102,7 @@ def authentication():
         request.headers['TIMESTAMP'].encode('ascii'),
         request.headers['NONCE'].encode('ascii'),
         request.headers['APP_KEY'].encode('ascii'),
-        request.full_path.encode('ascii'),
+        request.full_path.rstrip('?').encode('ascii'),
         request.data,
     ]), 'sha1').digest()).decode('ascii')
     if signature != request.headers['SIGNATURE']:
