@@ -195,7 +195,7 @@ def do_migrate_model():
 @manager.route('/load/do', methods=['POST'])
 def do_load_model():
     request_data = request.json
-    request_data['servings'] = RuntimeConfig.service_db.get_servings('servings')
+    request_data['servings'] = RuntimeConfig.service_db.get_urls('servings')
     if not check_if_deployed(role=request_data['local']['role'],
                              party_id=request_data['local']['party_id'],
                              model_id=request_data['job_parameters']['model_id'],
