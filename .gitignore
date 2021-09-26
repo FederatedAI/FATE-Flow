@@ -19,6 +19,7 @@ venv
 .vscode/*
 /eggroll/
 /fateboard/
+/temp/
 /worker/
 /provider_registrar/
 /model_local_cache/

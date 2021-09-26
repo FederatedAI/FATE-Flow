@@ -43,6 +43,7 @@ class WorkerArgs(BaseEntity):
         self.log_dir = kwargs.get("log_dir")
         self.parent_log_dir = kwargs.get("parent_log_dir")
 
+        self.worker_id = kwargs.get("worker_id")
         self.run_ip = kwargs.get("run_ip")
         self.job_server = kwargs.get("job_server")
 
