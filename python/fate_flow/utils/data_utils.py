@@ -18,7 +18,7 @@ from fate_flow.entity.types import InputSearchType
 from fate_arch import storage
 
 
-def get_header_schema(header_line, id_delimiter, extend_sid=True):
+def get_header_schema(header_line, id_delimiter, extend_sid=False):
     header_source_item = header_line.split(id_delimiter)
     if extend_sid:
         header = id_delimiter.join(header_source_item).strip()

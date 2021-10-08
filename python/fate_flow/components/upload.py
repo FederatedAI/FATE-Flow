@@ -169,7 +169,7 @@ class Upload(ComponentBase):
                 "namespace": namespace,
                 "storage_type": EggRollStoreType.ROLLPAIR_LMDB,
             }
-        elif storage_engine in {StorageEngine.MYSQL}:
+        elif storage_engine in {StorageEngine.MYSQL, StorageEngine.HIVE}:
             if not address_dict.get("db") or not address_dict.get("name"):
                 upload_address = {"db": namespace, "name": name}
         elif storage_engine in {StorageEngine.PATH}:

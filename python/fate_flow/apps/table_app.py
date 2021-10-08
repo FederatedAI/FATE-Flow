@@ -16,6 +16,7 @@
 from fate_arch import storage
 from fate_arch.session import Session
 from fate_flow.entity import RunParameters
+from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.worker.task_executor import TaskExecutor
@@ -61,6 +62,12 @@ def table_bind():
     response = get_json_result(data={"table_name": name, "namespace": namespace})
     if not table.check_address():
         response = get_json_result(retcode=100, retmsg=f'engine {engine} address {address_dict} check failed')
+    else:
+        DataTableTracker.create_table_tracker(
+            table_name=name,
+            table_namespace=namespace,
+            entity_info={"have_parent": False},
+        )
     sess.destroy_all_sessions()
     return response
 

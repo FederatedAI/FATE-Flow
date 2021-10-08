@@ -347,7 +347,8 @@ class Reader(ComponentBase):
         LOGGER.info(f"schema: {src_table_meta.get_schema()}")
         schema = src_table_meta.get_schema()
         if not src_table_meta.get_in_serialized():
-            header_line = src_computing_table.take()
+            header_line = src_table_meta.get_id_delimiter().join(src_computing_table.take(filter=True)[0])
+            LOGGER.info(f'src computing table take line:{header_line}')
             schema = data_utils.get_header_schema(
                 header_line=header_line, id_delimiter=src_table_meta.get_id_delimiter()
             )
