@@ -83,7 +83,7 @@ def get_component_model(job_id, component_name, task_version, task_id, role, par
     model_version = request_data.get("model_version")
     tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
                       role=role, party_id=party_id, model_id=model_id, model_version=model_version)
-    data = tracker.get_output_model(model_alias=request_data.get("search_model_alias"), parse=False)
+    data = tracker.read_output_model(model_alias=request_data.get("search_model_alias"), parse=False)
     return get_json_result(data=data)
 
 

@@ -17,7 +17,6 @@ import operator
 import copy
 import typing
 
-from google.protobuf import json_format
 from fate_arch.abc import CTableABC
 from fate_arch.common import EngineType, Party
 from fate_arch.computing import ComputingEngine
@@ -208,16 +207,19 @@ class Tracker(object):
                                                       model_buffers=model_buffers,
                                                       tracker_client=tracker_client)
 
+    def get_output_model(self, model_alias, parse=True, output_json=False):
+        return self.read_output_model(model_alias=model_alias,
+                                      parse=parse,
+                                      output_json=output_json)
+
     def write_output_model(self, component_model):
         self.pipelined_model.write_component_model(component_model)
 
-    # TODO: use different functions instead of passing arguments
-    def get_output_model(self, model_alias, parse=True, output_json=False):
-        model_buffers = self.pipelined_model.read_component_model(component_name=self.component_name,
-                                                                  model_alias=model_alias,
-                                                                  parse=parse,
-                                                                  output_json=output_json)
-        return model_buffers
+    def read_output_model(self, model_alias, parse=True, output_json=False):
+        return self.pipelined_model.read_component_model(component_name=self.component_name,
+                                                         model_alias=model_alias,
+                                                         parse=parse,
+                                                         output_json=output_json)
 
     def collect_model(self):
         model_buffers = self.pipelined_model.collect_models()

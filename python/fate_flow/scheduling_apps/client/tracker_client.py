@@ -173,7 +173,13 @@ class TrackerClient(object):
             data_table_meta.schema = deserialize_b64(data_table_meta.schema)
             return data_table_meta
 
-    def save_component_output_model(self, component_model):
+    def save_component_output_model(self, model_buffers: dict, model_alias: str):
+        if not model_buffers:
+            return
+        component_model = self.job_tracker.pipelined_model.create_component_model(component_name=self.component_name,
+                                                                                  component_module_name=self.module_name,
+                                                                                  model_alias=model_alias,
+                                                                                  model_buffers=model_buffers)
         json_body = {"model_id": self.model_id, "model_version": self.model_version, "component_model": component_model}
         response = api_utils.local_api(job_id=self.job_id,
                                        method='POST',
@@ -186,7 +192,7 @@ class TrackerClient(object):
                                            self.party_id),
                                        json_body=json_body)
         if response['retcode'] != RetCode.SUCCESS:
-            raise Exception(f"create table meta failed:{response['retmsg']}")
+            raise Exception(f"save component output model failed:{response['retmsg']}")
 
     def read_component_output_model(self, search_model_alias, tracker):
         json_body = {"search_model_alias": search_model_alias, "model_id": self.model_id, "model_version": self.model_version}
@@ -204,8 +210,6 @@ class TrackerClient(object):
             raise Exception(f"create table meta failed:{response['retmsg']}")
         else:
             model_buffers = {}
-            import pprint
-            pprint.pprint(response['data'])
             for model_name, v in response['data'].items():
                 model_buffers[model_name] = (v[0], base64.b64decode(v[1].encode()))
             return model_buffers

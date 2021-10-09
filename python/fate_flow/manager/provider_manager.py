@@ -85,20 +85,30 @@ class ProviderManager:
         return cls.get_provider_object(providers[component_name]["provider"])
 
     @classmethod
-    def get_component_parameters(cls, dsl_parser, component_name, role, party_id, provider: ComponentProvider = None):
+    def get_component_parameters(cls, dsl_parser, component_name, role, party_id, provider: ComponentProvider = None, previous_components_parameters: dict = None):
         if not provider:
             provider = cls.get_component_provider(dsl_parser=dsl_parser,
                                                   component_name=component_name)
-        component_parameters_on_party = dsl_parser.parse_component_parameters(component_name,
-                                                                              ComponentRegistry.REGISTRY,
-                                                                              provider.name,
-                                                                              provider.version,
-                                                                              local_role=role,
-                                                                              local_party_id=int(party_id))
-        return component_parameters_on_party
+        parameters = dsl_parser.parse_component_parameters(component_name,
+                                                           ComponentRegistry.REGISTRY,
+                                                           provider.name,
+                                                           provider.version,
+                                                           local_role=role,
+                                                           local_party_id=int(party_id))
+        """
+        user_specified_parameters = dsl_parser.parse_user_specified_component_parameters(component_name,
+                                                                                         ComponentRegistry.REGISTRY,
+                                                                                         provider.name,
+                                                                                         provider.version,
+                                                                                         local_role=role,
+                                                                                         local_party_id=int(party_id),
+                                                                                         previous_parameters=previous_components_parameters)
+        """
+        user_specified_parameters = None
+        return parameters, user_specified_parameters
 
     @classmethod
     def get_component_run_info(cls, dsl_parser, component_name, role, party_id):
         provider = cls.get_component_provider(dsl_parser, component_name)
-        parameters = cls.get_component_parameters(dsl_parser, component_name, role, party_id, provider)
+        parameters, user_specified_parameters = cls.get_component_parameters(dsl_parser, component_name, role, party_id, provider)
         return provider, parameters

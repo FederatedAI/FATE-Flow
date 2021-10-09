@@ -202,9 +202,8 @@ class TaskExecutor(BaseTaskWorker):
             self.log_output_data_table_tracker(args.job_id, input_table_list, output_table_list)
 
             # There is only one model output at the current dsl version.
-            tracker.save_output_model(cpn_output.model,
-                                      task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
-                                      tracker_client=tracker_client)
+            tracker_client.save_component_output_model(cpn_output.model,
+                                                       task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default')
             if cpn_output.cache is not None:
                 for i, cache in enumerate(cpn_output.cache):
                     if cache is None:

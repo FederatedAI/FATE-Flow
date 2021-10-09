@@ -71,36 +71,6 @@ class PipelinedModel(Locker):
             with open(self.define_meta_path, "x", encoding="utf-8") as fw:
                 yaml.dump({"describe": "This is the model definition meta"}, fw, Dumper=yaml.RoundTripDumper)
 
-    def save_component_model(self, component_name, component_module_name, model_alias, model_buffers: typing.Dict[str, typing.Tuple[str, bytes, dict]], tracker_client=None):
-        model_proto_index = {}
-        component_model = {"buffer": {}}
-        component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
-        if not tracker_client:
-            os.makedirs(component_model_storage_path, exist_ok=True)
-        for model_name, (proto_index, buffer_object_serialized_string, buffer_object_json_format) in model_buffers.items():
-            storage_path = os.path.join(component_model_storage_path, model_name)
-            if not tracker_client:
-                with self.lock, open(storage_path, "wb") as fw:
-                    fw.write(buffer_object_serialized_string)
-                with self.lock, open(f"{storage_path}.json", "w") as fw:
-                    fw.write(base_utils.json_dumps(buffer_object_json_format))
-            else:
-                component_model["buffer"][storage_path.replace(file_utils.get_project_base_directory(), "")] = (base64.b64encode(buffer_object_serialized_string).decode(), buffer_object_json_format)
-            model_proto_index[model_name] = proto_index  # index of model name and proto buffer class name
-            stat_logger.info("Save {} {} {} buffer".format(component_name, model_alias, model_name))
-        if not tracker_client:
-            self.update_component_meta(component_name=component_name,
-                                       component_module_name=component_module_name,
-                                       model_alias=model_alias,
-                                       model_proto_index=model_proto_index)
-            stat_logger.info("Save {} {} successfully".format(component_name, model_alias))
-        else:
-            component_model["component_name"] = component_name
-            component_model["component_module_name"] = component_module_name
-            component_model["model_alias"] = model_alias
-            component_model["model_proto_index"] = model_proto_index
-            tracker_client.save_component_output_model(component_model)
-
     def save_pipeline_model(self, pipeline_buffer_object):
         model_buffers = {self.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString(), json_format.MessageToDict(pipeline_buffer_object, including_default_value_fields=True))}
         self.save_component_model(component_name=job_utils.job_pipeline_component_name(),
@@ -108,14 +78,36 @@ class PipelinedModel(Locker):
                                   model_alias=self.pipeline_model_alias,
                                   model_buffers=model_buffers)
 
+    def save_component_model(self, component_name, component_module_name, model_alias, model_buffers: typing.Dict[str, typing.Tuple[str, bytes, dict]], tracker_client=None):
+        component_model = self.create_component_model(component_name=component_name,
+                                                      component_module_name=component_module_name,
+                                                      model_alias=model_alias,
+                                                      model_buffers=model_buffers)
+        self.write_component_model(component_model)
+
+    def create_component_model(self, component_name, component_module_name, model_alias, model_buffers: typing.Dict[str, typing.Tuple[str, bytes, dict]]):
+        model_proto_index = {}
+        component_model = {"buffer": {}}
+        component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
+        for model_name, (proto_index, object_serialized, object_json) in model_buffers.items():
+            storage_path = os.path.join(component_model_storage_path, model_name)
+            component_model["buffer"][storage_path.replace(file_utils.get_project_base_directory(), "")] = (base64.b64encode(object_serialized).decode(), object_json)
+            model_proto_index[model_name] = proto_index  # index of model name and proto buffer class name
+            stat_logger.info("Save {} {} {} buffer".format(component_name, model_alias, model_name))
+        component_model["component_name"] = component_name
+        component_model["component_module_name"] = component_module_name
+        component_model["model_alias"] = model_alias
+        component_model["model_proto_index"] = model_proto_index
+        return component_model
+
     def write_component_model(self, component_model):
-        for storage_path, (buffer_object_serialized_string, buffer_object_json_format) in component_model.get("buffer").items():
-            storage_path = file_utils.get_project_base_directory()+storage_path
+        for storage_path, (object_serialized_encoded, object_json) in component_model.get("buffer").items():
+            storage_path = file_utils.get_project_base_directory() + storage_path
             os.makedirs(os.path.dirname(storage_path), exist_ok=True)
             with self.lock, open(storage_path, "wb") as fw:
-                fw.write(base64.b64decode(buffer_object_serialized_string.encode()))
+                fw.write(base64.b64decode(object_serialized_encoded.encode()))
             with self.lock, open(f"{storage_path}.json", "w", encoding="utf8") as fw:
-                fw.write(base_utils.json_dumps(buffer_object_json_format))
+                fw.write(base_utils.json_dumps(object_json))
         self.update_component_meta(component_name=component_model["component_name"],
                                    component_module_name=component_model["component_module_name"],
                                    model_alias=component_model["model_alias"],
