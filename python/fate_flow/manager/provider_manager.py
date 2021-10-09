@@ -105,7 +105,7 @@ class ProviderManager:
         return parameters, user_specified_parameters
 
     @classmethod
-    def get_component_run_info(cls, dsl_parser, component_name, role, party_id):
+    def get_component_run_info(cls, dsl_parser, component_name, role, party_id, previous_components_parameters: dict = None):
         provider = cls.get_component_provider(dsl_parser, component_name)
-        parameters, user_specified_parameters = cls.get_component_parameters(dsl_parser, component_name, role, party_id, provider)
+        parameters, user_specified_parameters = cls.get_component_parameters(dsl_parser, component_name, role, party_id, provider, previous_components_parameters)
         return provider, parameters, user_specified_parameters

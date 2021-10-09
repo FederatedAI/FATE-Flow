@@ -184,7 +184,7 @@ class TrackerClient(object):
         json_body = {"model_id": self.model_id, "model_version": self.model_version, "component_model": component_model}
         response = api_utils.local_api(job_id=self.job_id,
                                        method='POST',
-                                       endpoint='/tracker/{}/{}/{}/{}/{}/{}/component_model/save'.format(
+                                       endpoint='/tracker/{}/{}/{}/{}/{}/{}/model/save'.format(
                                            self.job_id,
                                            self.component_name,
                                            self.task_id,
@@ -199,7 +199,27 @@ class TrackerClient(object):
         json_body = {"search_model_alias": search_model_alias, "model_id": self.model_id, "model_version": self.model_version}
         response = api_utils.local_api(job_id=self.job_id,
                                        method='POST',
-                                       endpoint='/tracker/{}/{}/{}/{}/{}/{}/component_model/get'.format(
+                                       endpoint='/tracker/{}/{}/{}/{}/{}/{}/model/get'.format(
+                                           self.job_id,
+                                           self.component_name,
+                                           self.task_id,
+                                           self.task_version,
+                                           self.role,
+                                           self.party_id),
+                                       json_body=json_body)
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"get output model failed:{response['retmsg']}")
+        else:
+            model_buffers = {}
+            for model_name, v in response['data'].items():
+                model_buffers[model_name] = (v[0], base64.b64decode(v[1].encode()))
+            return model_buffers
+
+    def get_model_run_parameters(self):
+        json_body = {"model_id": self.model_id, "model_version": self.model_version}
+        response = api_utils.local_api(job_id=self.job_id,
+                                       method='POST',
+                                       endpoint='/tracker/{}/{}/{}/{}/{}/{}/model/run_parameters/get'.format(
                                            self.job_id,
                                            self.component_name,
                                            self.task_id,
@@ -210,10 +230,7 @@ class TrackerClient(object):
         if response['retcode'] != RetCode.SUCCESS:
             raise Exception(f"create table meta failed:{response['retmsg']}")
         else:
-            model_buffers = {}
-            for model_name, v in response['data'].items():
-                model_buffers[model_name] = (v[0], base64.b64decode(v[1].encode()))
-            return model_buffers
+            return response["data"]
 
     def log_output_data_info(self, data_name: str, table_namespace: str, table_name: str):
         LOGGER.info("Request save job {} task {} {} on {} {} data {} info".format(self.job_id,

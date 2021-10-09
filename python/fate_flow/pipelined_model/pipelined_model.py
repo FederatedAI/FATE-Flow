@@ -194,6 +194,16 @@ class PipelinedModel(Locker):
                     model_buffers[model_name] = [buffer_name, base64.b64encode(buffer_object_serialized_string).decode()]
         return model_buffers[self.pipeline_model_name]
 
+    def read_model_run_parameters(self):
+        if not os.path.exists(self.run_parameters_path):
+            return {}
+        components_run_parameters = {}
+        for component_name in os.listdir(self.run_parameters_path):
+            p = self.component_run_parameters_path(component_name)
+            with open(p, encoding="utf8") as fr:
+                components_run_parameters[component_name] = base_utils.json_loads(fr.read())
+        return components_run_parameters
+
     @local_cache_required
     def collect_models(self, in_bytes=False, b64encode=True):
         model_buffers = {}

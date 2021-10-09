@@ -85,27 +85,6 @@ class TaskExecutor(BaseTaskWorker):
             task_input_dsl = component.get_input()
             task_output_dsl = component.get_output()
 
-            LOGGER.info(f"task input dsl {task_input_dsl}")
-            task_run_args, input_table_list = self.get_task_run_args(job_id=args.job_id, role=args.role, party_id=args.party_id,
-                                                                     task_id=args.task_id,
-                                                                     task_version=args.task_version,
-                                                                     job_args=job_args_on_party,
-                                                                     job_parameters=job_parameters,
-                                                                     task_parameters=task_parameters,
-                                                                     input_dsl=task_input_dsl,
-                                                                     )
-            if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
-                task_run_args["job_parameters"] = job_parameters
-            LOGGER.info(f"task input args {task_run_args}")
-
-            component_provider, component_parameters_on_party, user_specified_parameters = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
-                                                                                                                                  component_name=args.component_name,
-                                                                                                                                  role=args.role,
-                                                                                                                                  party_id=args.party_id)
-            RuntimeConfig.set_component_provider(component_provider)
-            LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
-            flow_feeded_parameters = {"output_data_name": task_output_dsl.get("data")}
-
             kwargs = {
                 'job_id': args.job_id,
                 'role': args.role,
@@ -124,6 +103,17 @@ class TaskExecutor(BaseTaskWorker):
 
             self.report_info["party_status"] = TaskStatus.RUNNING
             self.report_task_info_to_driver()
+
+            previous_components_parameters = tracker_client.get_model_run_parameters()
+            LOGGER.info(f"previous components parameters: {previous_components_parameters}")
+            component_provider, component_parameters_on_party, user_specified_parameters = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
+                                                                                                                                  component_name=args.component_name,
+                                                                                                                                  role=args.role,
+                                                                                                                                  party_id=args.party_id,
+                                                                                                                                  previous_components_parameters=previous_components_parameters)
+            RuntimeConfig.set_component_provider(component_provider)
+            LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
+            flow_feeded_parameters = {"output_data_name": task_output_dsl.get("data")}
 
             # init environment, process is shared globally
             RuntimeConfig.init_config(WORK_MODE=job_parameters.work_mode,
@@ -149,6 +139,19 @@ class TaskExecutor(BaseTaskWorker):
                                      runtime_conf=component_parameters_on_party,
                                      service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
             sess.as_default()
+
+            LOGGER.info(f"task input dsl {task_input_dsl}")
+            task_run_args, input_table_list = self.get_task_run_args(job_id=args.job_id, role=args.role, party_id=args.party_id,
+                                                                     task_id=args.task_id,
+                                                                     task_version=args.task_version,
+                                                                     job_args=job_args_on_party,
+                                                                     job_parameters=job_parameters,
+                                                                     task_parameters=task_parameters,
+                                                                     input_dsl=task_input_dsl,
+                                                                     )
+            if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
+                task_run_args["job_parameters"] = job_parameters
+            LOGGER.info(f"task input args {task_run_args}")
 
             need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
             provider_interface = provider_utils.get_provider_interface(provider=component_provider)
