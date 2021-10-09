@@ -809,8 +809,8 @@ class BaseDSLParser(object):
             yield data_key, data_value
 
     @staticmethod
-    def generate_predict_conf_template(train_dsl, train_conf, model_id, model_version):
-        return RuntimeConfParserUtil.generate_predict_conf_template(train_dsl,
+    def generate_predict_conf_template(predict_dsl, train_conf, model_id, model_version):
+        return RuntimeConfParserUtil.generate_predict_conf_template(predict_dsl,
                                                                     train_conf,
                                                                     model_id,
                                                                     model_version,
