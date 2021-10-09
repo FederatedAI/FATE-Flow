@@ -41,11 +41,11 @@ class TaskInitializer(BaseWorker):
             task_info = {}
             task_info.update(common_task_info)
 
-            parameters = ProviderManager.get_component_parameters(dsl_parser=dsl_parser,
-                                                                  component_name=component_name,
-                                                                  role=self.args.role,
-                                                                  party_id=self.args.party_id,
-                                                                  provider=provider)
+            parameters, user_specified_parameters = ProviderManager.get_component_parameters(dsl_parser=dsl_parser,
+                                                                                             component_name=component_name,
+                                                                                             role=self.args.role,
+                                                                                             party_id=self.args.party_id,
+                                                                                             provider=provider)
             if parameters:
                 task_info = {}
                 task_info.update(common_task_info)
