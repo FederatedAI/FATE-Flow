@@ -95,7 +95,6 @@ class ProviderManager:
                                                            provider.version,
                                                            local_role=role,
                                                            local_party_id=int(party_id))
-        """
         user_specified_parameters = dsl_parser.parse_user_specified_component_parameters(component_name,
                                                                                          ComponentRegistry.REGISTRY,
                                                                                          provider.name,
@@ -103,12 +102,10 @@ class ProviderManager:
                                                                                          local_role=role,
                                                                                          local_party_id=int(party_id),
                                                                                          previous_parameters=previous_components_parameters)
-        """
-        user_specified_parameters = None
         return parameters, user_specified_parameters
 
     @classmethod
     def get_component_run_info(cls, dsl_parser, component_name, role, party_id):
         provider = cls.get_component_provider(dsl_parser, component_name)
         parameters, user_specified_parameters = cls.get_component_parameters(dsl_parser, component_name, role, party_id, provider)
-        return provider, parameters
+        return provider, parameters, user_specified_parameters

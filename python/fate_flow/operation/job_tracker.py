@@ -199,13 +199,12 @@ class Tracker(object):
     def init_pipeline_model(self):
         self.pipelined_model.create_pipelined_model()
 
-    def save_output_model(self, model_buffers: dict, model_alias: str, tracker_client=None):
+    def save_output_model(self, model_buffers: dict, model_alias: str):
         if model_buffers:
             self.pipelined_model.save_component_model(component_name=self.component_name,
                                                       component_module_name=self.module_name,
                                                       model_alias=model_alias,
-                                                      model_buffers=model_buffers,
-                                                      tracker_client=tracker_client)
+                                                      model_buffers=model_buffers)
 
     def get_output_model(self, model_alias, parse=True, output_json=False):
         return self.read_output_model(model_alias=model_alias,
