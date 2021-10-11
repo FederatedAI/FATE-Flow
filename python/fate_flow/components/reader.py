@@ -259,8 +259,9 @@ class Reader(ComponentBase):
             output_table_engine = StorageEngine.EGGROLL
         elif computing_engine == ComputingEngine.SPARK:
             if input_table_meta.get_engine() == StorageEngine.HIVE:
-                # todo
-                pass
+                output_table_address = input_table_meta.get_address()
+                output_table_address.name = output_name
+                output_table_engine = input_table_meta.get_engine()
             else:
                 address_dict["path"] = data_utils.default_output_fs_path(
                     name=output_name,
