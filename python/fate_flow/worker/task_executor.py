@@ -14,7 +14,6 @@
 #  limitations under the License.
 #
 import os
-import argparse
 import importlib
 import traceback
 
@@ -22,7 +21,7 @@ from fate_arch import session, storage
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import file_utils, EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
-from fate_flow.utils.log_utils import schedule_logger, getLogger
+from fate_flow.utils.log_utils import getLogger
 
 from fate_flow.entity import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus
