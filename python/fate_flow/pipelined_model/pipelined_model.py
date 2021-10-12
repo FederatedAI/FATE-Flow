@@ -138,12 +138,16 @@ class PipelinedModel(Locker):
                 with open(f"{storage_path}.json", encoding="utf8") as f:
                     buffer_object_json_format = base_utils.json_loads(f.read())
             except FileNotFoundError:
+                buffer_object_json_format = ""
+                # todo: should be running in worker
+                """
                 buffer_object_json_format = json_format.MessageToDict(
                     parse_proto_object(buffer_name, buffer_object_serialized_string),
                     including_default_value_fields=True
                 )
                 with self.lock, open(f"{storage_path}.json", "w", encoding="utf8") as f:
                     f.write(base_utils.json_dumps(buffer_object_json_format))
+                """
 
             model_buffers[model_name] = (
                 buffer_name,

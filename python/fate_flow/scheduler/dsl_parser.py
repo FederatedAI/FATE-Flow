@@ -894,7 +894,7 @@ class DSLParserV1(BaseDSLParser):
                         else:
                             new_dataset.append(data)
 
-                    new_cpn_detail["input"]["data"] = new_dataset
+                    new_cpn_detail["input"]["data"][data_key] = new_dataset
 
             dsl_v2["components"][cpn] = new_cpn_detail
 
