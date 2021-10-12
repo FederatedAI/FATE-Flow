@@ -99,7 +99,6 @@ class Reader(ComponentBase):
         )
         sess = Session(session_id=session_id, computing=self.job_parameters.computing_engine)
         sess.init_computing(computing_session_id=session_id)
-        sess.as_default()
         input_table_session = sess.storage(storage_engine=input_table_meta.get_engine())
         input_table = input_table_session.get_table(
             name=input_table_meta.get_name(), namespace=input_table_meta.get_namespace()
@@ -337,7 +336,7 @@ class Reader(ComponentBase):
 
     def to_save(self, src_table, dest_table):
         src_table_meta = src_table.meta
-        src_computing_table = session.get_latest_opened().computing.load(
+        src_computing_table = session.get_computing_session().load(
             src_table_meta.get_address(),
             schema=src_table_meta.get_schema(),
             partitions=src_table_meta.get_partitions(),
