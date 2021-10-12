@@ -17,14 +17,13 @@ import operator
 import copy
 import typing
 
-from google.protobuf import json_format
 from fate_arch.abc import CTableABC
 from fate_arch.common import EngineType, Party
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
 from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64, json_loads
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingOutputDataInfo,
                                     ComponentSummary, MachineLearningModelInfo as MLModel)
 from fate_flow.entity import Metric, MetricMeta
@@ -200,24 +199,26 @@ class Tracker(object):
     def init_pipeline_model(self):
         self.pipelined_model.create_pipelined_model()
 
-    def save_output_model(self, model_buffers: dict, model_alias: str, tracker_client=None):
+    def save_output_model(self, model_buffers: dict, model_alias: str):
         if model_buffers:
             self.pipelined_model.save_component_model(component_name=self.component_name,
                                                       component_module_name=self.module_name,
                                                       model_alias=model_alias,
-                                                      model_buffers=model_buffers,
-                                                      tracker_client=tracker_client)
+                                                      model_buffers=model_buffers)
+
+    def get_output_model(self, model_alias, parse=True, output_json=False):
+        return self.read_output_model(model_alias=model_alias,
+                                      parse=parse,
+                                      output_json=output_json)
 
     def write_output_model(self, component_model):
         self.pipelined_model.write_component_model(component_model)
 
-    # TODO: use different functions instead of passing arguments
-    def get_output_model(self, model_alias, parse=True, output_json=False):
-        model_buffers = self.pipelined_model.read_component_model(component_name=self.component_name,
-                                                                  model_alias=model_alias,
-                                                                  parse=parse,
-                                                                  output_json=output_json)
-        return model_buffers
+    def read_output_model(self, model_alias, parse=True, output_json=False):
+        return self.pipelined_model.read_component_model(component_name=self.component_name,
+                                                         model_alias=model_alias,
+                                                         parse=parse,
+                                                         output_json=output_json)
 
     def collect_model(self):
         model_buffers = self.pipelined_model.collect_models()

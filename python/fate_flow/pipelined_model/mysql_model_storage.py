@@ -20,11 +20,11 @@ from playhouse.pool import PooledMySQLDatabase
 
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.pipelined_model.model_storage_base import ModelStorageBase
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64
 from fate_arch.metastore.base_model import LongTextField
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 DB = PooledMySQLDatabase(None)
 
 SLICE_MAX_SIZE = 1024*1024*8

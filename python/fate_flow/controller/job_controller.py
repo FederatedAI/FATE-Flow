@@ -20,7 +20,7 @@ from fate_arch.computing import ComputingEngine
 from fate_arch.common import EngineType
 from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_flow.utils.authentication_utils import data_authentication_check
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.run_status import JobStatus, EndStatus
 from fate_flow.entity import RunParameters

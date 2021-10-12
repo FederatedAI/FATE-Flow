@@ -16,7 +16,7 @@
 import argparse
 import uuid
 
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_arch import session, storage
 from fate_arch.session import Session
 from fate_arch.storage import StorageEngine, EggRollStoreType

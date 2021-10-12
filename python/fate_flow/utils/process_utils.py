@@ -17,7 +17,7 @@ import errno
 import os
 import subprocess
 import psutil
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import Task
 from fate_flow.entity.types import KillProcessRetCode
 from fate_flow.settings import SUBPROCESS_STD_LOG_NAME

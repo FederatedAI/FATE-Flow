@@ -34,7 +34,7 @@ from fate_flow.operation.job_tracker import Tracker
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_clean import JobClean
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.controller.job_controller import JobController
 
 

@@ -21,7 +21,7 @@ import typing
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, Job, Task, DataBaseModel
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
-from fate_arch.common.log import schedule_logger, sql_logger
+from fate_flow.utils.log_utils import schedule_logger, sql_logger
 from fate_flow.utils import schedule_utils
 import peewee
 

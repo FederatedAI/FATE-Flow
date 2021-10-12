@@ -21,7 +21,7 @@ from flask import jsonify, Response
 from werkzeug.http import HTTP_STATUS_CODES
 
 from fate_arch.common.base_utils import json_loads, json_dumps
-from fate_arch.common.log import audit_logger, schedule_logger
+from fate_flow.utils.log_utils import audit_logger, schedule_logger
 from fate_arch.common import FederatedMode, CoordinationProxyService, CoordinationCommunicationProtocol
 from fate_flow.settings import CHECK_NODES_IDENTITY,\
     FATE_MANAGER_GET_NODE_INFO_ENDPOINT, HEADERS, API_VERSION, stat_logger, HOST, HTTP_PORT, PROXY, PROXY_PROTOCOL

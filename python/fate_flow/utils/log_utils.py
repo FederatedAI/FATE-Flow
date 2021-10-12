@@ -15,6 +15,7 @@
 #
 import typing
 
+from fate_arch.common.log import LoggerFactory, getLogger
 from fate_flow.db.db_models import Job, Task
 
 
@@ -51,3 +52,43 @@ def base_msg(job: Job = None, task: Task = None, role: str = None, party_id: typ
         return "", f" on {role} {party_id}{detail_msg}"
     else:
         return "", f"{detail_msg}"
+
+
+def schedule_logger(job_id=None, delete=False):
+    if not job_id:
+        return getLogger("fate_flow_schedule")
+    else:
+        if delete:
+            with LoggerFactory.lock:
+                try:
+                    for key in LoggerFactory.schedule_logger_dict.keys():
+                        if job_id in key:
+                            del LoggerFactory.schedule_logger_dict[key]
+                except:
+                    pass
+            return True
+        key = job_id + 'schedule'
+        if key in LoggerFactory.schedule_logger_dict:
+            return LoggerFactory.schedule_logger_dict[key]
+        return LoggerFactory.get_job_logger(job_id, "schedule")
+
+
+def audit_logger(job_id='', log_type='audit'):
+    key = job_id + log_type
+    if key in LoggerFactory.schedule_logger_dict.keys():
+        return LoggerFactory.schedule_logger_dict[key]
+    return LoggerFactory.get_job_logger(job_id=job_id, log_type=log_type)
+
+
+def sql_logger(job_id='', log_type='sql'):
+    key = job_id + log_type
+    if key in LoggerFactory.schedule_logger_dict.keys():
+        return LoggerFactory.schedule_logger_dict[key]
+    return LoggerFactory.get_job_logger(job_id=job_id, log_type=log_type)
+
+
+def detect_logger(job_id='', log_type='detect'):
+    key = job_id + log_type
+    if key in LoggerFactory.schedule_logger_dict.keys():
+        return LoggerFactory.schedule_logger_dict[key]
+    return LoggerFactory.get_job_logger(job_id=job_id, log_type=log_type)

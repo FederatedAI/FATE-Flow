@@ -19,7 +19,7 @@ import shutil
 import zipfile
 
 from fate_arch.common import file_utils
-from fate_arch.common.log import getLogger
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.db.db_models import ComponentVersionInfo
 from fate_flow.db.dependence_registry import DependenceRegistry
 from fate_flow.entity import ComponentProvider

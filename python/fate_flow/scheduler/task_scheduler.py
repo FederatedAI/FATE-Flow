@@ -22,7 +22,7 @@ from fate_flow.entity import RunParameters
 from fate_flow.utils import job_utils
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.operation.job_saver import JobSaver
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.controller.job_controller import JobController
 from fate_flow.db.db_models import Job, Task

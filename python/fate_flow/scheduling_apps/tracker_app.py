@@ -63,6 +63,8 @@ def get_table_meta(job_id, component_name, task_version, task_id, role, party_id
     return get_json_result(data=table_meta_dict)
 
 
+@manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/model/save',
+               methods=['POST'])
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/component_model/save',
                methods=['POST'])
 def save_component_model(job_id, component_name, task_version, task_id, role, party_id):
@@ -75,6 +77,8 @@ def save_component_model(job_id, component_name, task_version, task_id, role, pa
     return get_json_result()
 
 
+@manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/model/get',
+               methods=['POST'])
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/component_model/get',
                methods=['POST'])
 def get_component_model(job_id, component_name, task_version, task_id, role, party_id):
@@ -83,7 +87,19 @@ def get_component_model(job_id, component_name, task_version, task_id, role, par
     model_version = request_data.get("model_version")
     tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
                       role=role, party_id=party_id, model_id=model_id, model_version=model_version)
-    data = tracker.get_output_model(model_alias=request_data.get("search_model_alias"), parse=False)
+    data = tracker.read_output_model(model_alias=request_data.get("search_model_alias"), parse=False)
+    return get_json_result(data=data)
+
+
+@manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/model/run_parameters/get',
+               methods=['POST'])
+def get_component_model_run_parameters(job_id, component_name, task_version, task_id, role, party_id):
+    request_data = request.json
+    model_id = request_data.get("model_id")
+    model_version = request_data.get("model_version")
+    tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
+                      role=role, party_id=party_id, model_id=model_id, model_version=model_version)
+    data = tracker.pipelined_model.read_model_run_parameters()
     return get_json_result(data=data)
 
 

@@ -38,7 +38,7 @@ from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.db.db_services import service_db
 from fate_flow.utils.xthread import ThreadPoolExecutor
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.common.versions import get_versions
 from fate_flow.db.config_manager import ConfigManager
 from fate_flow.db.component_registry import ComponentRegistry
