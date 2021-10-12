@@ -25,7 +25,7 @@ from fate_flow.utils import job_utils, process_utils
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.settings import DEPENDENT_DISTRIBUTION
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 
 
 class SparkEngine(EngineABC):
