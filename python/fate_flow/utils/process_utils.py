@@ -151,20 +151,24 @@ def is_task_executor_process(task: Task, process: psutil.Process):
     """
     try:
         cmdline = process.cmdline()
-        schedule_logger(task.f_job_id).info(cmdline)
     except Exception as e:
         # Not sure whether the process is a task executor process, operations processing is required
         schedule_logger(task.f_job_id).warning(e)
         return False
+    else:
+        schedule_logger(task.f_job_id).info(cmdline)
+
+    if task.f_worker_id and task.f_worker_id in cmdline:
+        return True
+
     if len(cmdline) != len(task.f_cmd):
         return False
+
     for i, v in enumerate(task.f_cmd):
-        if cmdline[i] == str(v):
-            continue
-        else:
+        if cmdline[i] != str(v):
             return False
-    else:
-        return True
+
+    return True
 
 
 def kill_task_executor_process(task: Task, only_child=False):

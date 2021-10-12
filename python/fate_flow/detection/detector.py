@@ -17,12 +17,13 @@ import time
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.controller.engine_adapt import build_engine
-from fate_flow.db.db_models import DB, Job
+from fate_flow.db.db_models import DB, Job, DependenciesStorageMeta
 from fate_arch.session import Session
 from fate_flow.utils.log_utils import detect_logger
+from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
-from fate_flow.utils import cron, job_utils
+from fate_flow.utils import cron, job_utils, process_utils
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.manager.resource_manager import ResourceManager
@@ -35,6 +36,7 @@ class Detector(cron.Cron):
         self.detect_running_job()
         self.detect_resource_record()
         self.detect_expired_session()
+        self.detect_dependence_upload_record()
 
     @classmethod
     def detect_running_task(cls):
@@ -122,6 +124,27 @@ class Detector(cron.Cron):
             detect_logger().exception(e)
         finally:
             detect_logger().info('finish detect resource recycle')
+
+    @classmethod
+    @DB.connection_context()
+    def detect_dependence_upload_record(cls):
+        detect_logger().info('start detect dependence upload process')
+        try:
+            upload_process_list = DependenciesStorageMeta.select().where(DependenciesStorageMeta.f_upload_status==True)
+            for dependence in upload_process_list:
+                if int(dependence.f_pid):
+                    is_alive = process_utils.check_process(pid=int(dependence.f_pid))
+                    if not is_alive:
+                        try:
+                            DependenceManager.kill_upload_process(version=dependence.f_version,
+                                                                  storage_engine=dependence.f_storage_engine,
+                                                                  dependence_type=dependence.f_type)
+                        except Exception as e:
+                            detect_logger().exception(e)
+        except Exception as e:
+            detect_logger().exception(e)
+        finally:
+            detect_logger().info('finish detect dependence upload process')
 
     @classmethod
     def detect_expired_session(cls):

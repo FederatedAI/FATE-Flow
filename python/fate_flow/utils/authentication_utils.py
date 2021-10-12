@@ -239,11 +239,13 @@ class PrivilegeAuth(object):
             PrivilegeAuth.command_whitelist = PRIVILEGE_COMMAND_WHITELIST
 
             # init ALL_PERMISSION
-            component_path = os.path.join(file_utils.get_python_base_directory(),
-                                          'federatedml', 'conf', 'setting_conf')
-            search_command()
-            stat_logger.info('search components from {}'.format(component_path))
-            search_component(component_path)
+            cls.search()
+
+
+    @classmethod
+    def search(cls):
+        search_command()
+        search_component()
 
 
 def modify_permission(permission_info, delete=False):
@@ -290,10 +292,14 @@ def search_command():
     PrivilegeAuth.ALL_PERMISSION['privilege_command'].extend(command_list)
 
 
-def search_component(path):
-    component_list = [file_name.split('.')[0].lower() for file_name in os.listdir(path) if 'json' in file_name]
+def search_component():
+    from fate_flow.db.db_models import ComponentInfo
+    component_list = []
+    for component in ComponentInfo.select():
+        component_list.append(component.f_component_name.lower())
     component_list = list(set(component_list) - {'upload', 'download'})
     PrivilegeAuth.ALL_PERMISSION['privilege_component'].extend(component_list)
+    stat_logger.info('search component list {}'.format(component_list))
 
 
 def authentication_check(src_role, src_party_id, dsl, runtime_conf, role, party_id):

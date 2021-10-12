@@ -1,16 +1,32 @@
+#
+#  Copyright 2021 The FATE Authors. All Rights Reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
 import abc
 import atexit
+from functools import wraps
 from urllib import parse
 
 from kazoo.client import KazooClient
+from kazoo.exceptions import NoNodeError, NodeExistsError, ZookeeperError
 from kazoo.security import make_digest_acl
-from kazoo.exceptions import ZookeeperError, NodeExistsError, NoNodeError
 
-from fate_flow.settings import FATE_FLOW_MODEL_TRANSFER_ENDPOINT, \
-    FATE_SERVICES_REGISTRY, stat_logger, HOST, HTTP_PORT, ZOOKEEPER, USE_REGISTRY
 from fate_flow.db.service_registry import ServiceRegistry
-from fate_flow.utils.model_utils import models_group_by_party_model_id_and_model_version
 from fate_flow.errors.error_services import *
+from fate_flow.settings import (FATE_FLOW_MODEL_TRANSFER_ENDPOINT, FATE_SERVICES_REGISTRY,
+                                HOST, HTTP_PORT, USE_REGISTRY, ZOOKEEPER, stat_logger)
+from fate_flow.utils.model_utils import models_group_by_party_model_id_and_model_version
 
 
 def check_service_supported(method):
@@ -22,6 +38,7 @@ def check_service_supported(method):
     :return: The inner wrapper function.
     :rtype: Callable
     """
+    @wraps(method)
     def magic(self, service_name, *args, **kwargs):
         if service_name not in self.supported_services:
             raise ServiceNotSupported(None, service_name)

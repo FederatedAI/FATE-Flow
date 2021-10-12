@@ -13,23 +13,26 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
 import base64
 import hashlib
+import os
 import shutil
-from copy import deepcopy
-from google.protobuf import json_format
 import typing
+from copy import deepcopy
+from functools import wraps
+
+from google.protobuf import json_format
 from ruamel import yaml
 
-from fate_arch.common import file_utils, base_utils
+from fate_arch.common import base_utils, file_utils
+from fate_flow.model import Locker, parse_proto_object, serialize_buffer_object
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
-from fate_flow.model import serialize_buffer_object, parse_proto_object, Locker
-from fate_flow.settings import stat_logger, TEMP_DIRECTORY
+from fate_flow.settings import TEMP_DIRECTORY, stat_logger
 from fate_flow.utils import job_utils
 
 
 def local_cache_required(method):
+    @wraps(method)
     def magic(self, *args, **kwargs):
         if not self.exists():
             raise FileNotFoundError(f'Can not found {self.model_id} {self.model_version} model local cache')

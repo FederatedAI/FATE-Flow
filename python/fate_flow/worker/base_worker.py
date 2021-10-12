@@ -43,6 +43,7 @@ class WorkerArgs(BaseEntity):
         self.log_dir = kwargs.get("log_dir")
         self.parent_log_dir = kwargs.get("parent_log_dir")
 
+        self.worker_id = kwargs.get("worker_id")
         self.run_ip = kwargs.get("run_ip")
         self.job_server = kwargs.get("job_server")
 
@@ -63,6 +64,9 @@ class WorkerArgs(BaseEntity):
         # TaskReceiver
         self.http_port = kwargs.get("http_port")
         self.grpc_port = kwargs.get("grpc_port")
+
+        # Dependence Upload
+        self.dependence_type = kwargs.get("dependence_type")
 
     def load_dict_attr(self, kwargs: dict, attr_name: str):
         return load_json_conf(kwargs[attr_name]) if kwargs.get(attr_name) else {}
