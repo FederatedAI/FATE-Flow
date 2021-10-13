@@ -115,8 +115,8 @@ class MysqlModelStorage(ModelStorageBase):
             raise Exception("Restore model {} {} from mysql failed".format(model_id, model_version))
 
     def get_connection(self, config: dict):
-        db_name = config["name"]
-        config.pop("name")
+        db_name = config['name']
+        del config['name'], config['storage']
         DB.init(db_name, **config)
 
     def close_connection(self):
