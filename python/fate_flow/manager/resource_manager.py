@@ -86,11 +86,12 @@ class ResourceManager(object):
     @classmethod
     def check_resource_apply(cls, job_parameters: RunParameters, role, party_id, engines_info):
         computing_engine, cores, memory = cls.calculate_job_resource(job_parameters=job_parameters, role=role, party_id=party_id)
-        max_cores_per_job = math.floor(engines_info[EngineType.COMPUTING].f_cores * JobDefaultConfig.max_cores_percent_per_job)
+        max_cores_per_job = math.floor(engines_info[EngineType.COMPUTING].f_cores * JobDefaultConfig.max_cores_percent_per_job) \
+            if engines_info.get(EngineType.COMPUTING) else 0
+
         if cores > max_cores_per_job:
             return False, cores, max_cores_per_job
-        else:
-            return True, cores, max_cores_per_job
+        return True, cores, max_cores_per_job
 
     @classmethod
     def apply_for_job_resource(cls, job_id, role, party_id):
@@ -194,7 +195,7 @@ class ResourceManager(object):
     def adapt_engine_parameters(cls, role, job_parameters: RunParameters, create_initiator_baseline=False):
         computing_engine_info = ResourceManager.get_engine_registration_info(engine_type=EngineType.COMPUTING,
                                                                              engine_name=job_parameters.computing_engine)
-        if create_initiator_baseline:
+        if not job_parameters.adaptation_parameters or create_initiator_baseline:
             job_parameters.adaptation_parameters = {
                 "task_nodes": 0,
                 "task_cores_per_node": 0,
@@ -241,17 +242,19 @@ class ResourceManager(object):
                                                           role=role,
                                                           party_id=party_id)
             job_parameters = RunParameters(**job_parameters)
-        if job_parameters.computing_engine in IGNORE_RESOURCE_COMPUTING_ENGINE:
-            cores = 0
-            memory = 0
-        elif role in IGNORE_RESOURCE_ROLES and job_parameters.computing_engine in SUPPORT_IGNORE_RESOURCE_ENGINES:
-            cores = 0
-            memory = 0
-        else:
-            cores = job_parameters.adaptation_parameters["task_cores_per_node"] * job_parameters.adaptation_parameters[
-                "task_nodes"] * job_parameters.task_parallelism
-            memory = job_parameters.adaptation_parameters["task_memory_per_node"] * job_parameters.adaptation_parameters[
-                "task_nodes"] * job_parameters.task_parallelism
+
+        cores = 0
+        memory = 0
+
+        if not (job_parameters.computing_engine in IGNORE_RESOURCE_COMPUTING_ENGINE or
+                role in IGNORE_RESOURCE_ROLES and job_parameters.computing_engine in SUPPORT_IGNORE_RESOURCE_ENGINES):
+            cores = (int(job_parameters.adaptation_parameters["task_cores_per_node"] or 0) *
+                     int(job_parameters.adaptation_parameters["task_nodes"] or 0) *
+                     int(job_parameters.task_parallelism or 0))
+            memory = (int(job_parameters.adaptation_parameters["task_memory_per_node"] or 0) *
+                      int(job_parameters.adaptation_parameters["task_nodes"] or 0) *
+                      int(job_parameters.task_parallelism or 0))
+
         return job_parameters.computing_engine, cores, memory
 
     @classmethod

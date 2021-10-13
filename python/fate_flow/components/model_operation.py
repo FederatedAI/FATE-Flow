@@ -55,8 +55,8 @@ class ModelStoreParam(BaseParam):
 class ModelStore(ComponentBase):
     def _run(self, input_cpn: ComponentInputProtocol):
         parameters = input_cpn.parameters
-        model_storage = parameters.store_address.storage
-        model_storage.store(
+        model_storage = ModelStorageClassMap[parameters['store_address']['storage']]
+        model_storage().store(
             model_id=parameters["model_id"],
             model_version=parameters["model_version"],
             store_address=parameters["store_address"],
@@ -87,8 +87,8 @@ class ModelRestoreParam(BaseParam):
 class ModelRestore(ComponentBase):
     def _run(self, input_cpn: ComponentInputProtocol):
         parameters = input_cpn.parameters
-        model_storage = parameters.store_address.storage
-        model_storage.restore(
+        model_storage = ModelStorageClassMap[parameters['store_address']['storage']]
+        model_storage().restore(
             model_id=parameters["model_id"],
             model_version=parameters["model_version"],
             store_address=parameters["store_address"],

@@ -145,7 +145,7 @@ class RuntimeConfParserUtil(object):
             if key not in not_builtin_vars:
                 parameter_v2[key] = values[party_idx]
             else:
-                parameter_v2[key] = RuntimeConfParserUtil.convert_parameters_v1_to_v2(role_idx, values, not_builtin_vars)
+                parameter_v2[key] = RuntimeConfParserUtil.convert_parameters_v1_to_v2(party_idx, values, not_builtin_vars)
 
         return parameter_v2
 
@@ -174,7 +174,7 @@ class RuntimeConfParserUtil(object):
             )
             param_class = provider.get(module, provider_components).get_param_obj(component)
             extract_not_builtin = getattr(param_class, "extract_not_builtin", None)
-            not_builtin_vars = extract_not_builtin()
+            not_builtin_vars = extract_not_builtin() if extract_not_builtin is not None else {}
 
             for role, role_params in role_parameters.items():
                 params = role_params.get(component, {})

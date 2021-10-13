@@ -34,6 +34,13 @@ def get_job_dsl_parser_by_job_id(job_id):
 
 def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None):
     parser_version = str(runtime_conf.get('dsl_version', '1'))
+
+    if parser_version == '1':
+        dsl, runtime_conf = convert_dsl_and_conf_v1_to_v2(dsl, runtime_conf)
+        if pipeline_dsl and train_runtime_conf:
+            pipeline_dsl, train_runtime_conf = convert_dsl_and_conf_v1_to_v2(dsl, runtime_conf)
+        parser_version = '2'
+
     dsl_parser = get_dsl_parser_by_version(parser_version)
     job_type = JobRuntimeConfigAdapter(runtime_conf).get_job_type()
     dsl_parser.run(dsl=dsl,
@@ -90,3 +97,25 @@ def fill_inference_dsl(dsl_parser: typing.Union[DSLParserV1, DSLParserV2], origi
         return dsl_parser.get_predict_dsl(component_parameters=components_parameters)
     else:
         raise Exception(f"not support dsl parser {type(dsl_parser)}")
+
+
+def convert_dsl_and_conf_v1_to_v2(dsl, runtime_conf):
+    dsl_parser_v1 = DSLParserV1()
+    dsl = dsl_parser_v1.convert_dsl_v1_to_v2(dsl)
+    components = dsl_parser_v1.get_components_light_weight(dsl)
+
+    from fate_flow.db.component_registry import ComponentRegistry
+    job_providers = dsl_parser_v1.get_job_providers(dsl=dsl, provider_detail=ComponentRegistry.REGISTRY)
+    cpn_role_parameters = dict()
+
+    for cpn in components:
+        cpn_name = cpn.get_name()
+        role_params = dsl_parser_v1.parse_component_role_parameters(
+            component=cpn_name, dsl=dsl, runtime_conf=runtime_conf,
+            provider_detail=ComponentRegistry.REGISTRY,
+            provider_name=job_providers[cpn_name]["provider"]["name"],
+            provider_version=job_providers[cpn_name]["provider"]["version"])
+        cpn_role_parameters[cpn_name] = role_params
+    runtime_conf = dsl_parser_v1.convert_conf_v1_to_v2(runtime_conf, cpn_role_parameters)
+
+    return dsl, runtime_conf

@@ -52,13 +52,14 @@ class JobController(object):
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=dsl,
                                                        runtime_conf=runtime_conf,
                                                        train_runtime_conf=train_runtime_conf)
-        job_parameters = dsl_parser.get_job_parameters().get(role, {}).get(party_id, {})
+        job_parameters = dsl_parser.get_job_parameters(runtime_conf)
         schedule_logger(job_id).info('job parameters:{}'.format(job_parameters))
-        dest_user = dsl_parser.get_job_parameters().get(role, {}).get(party_id, {}).get("user", '')
+        dest_user = job_parameters.get(role, {}).get(party_id, {}).get('user', '')
         user = {}
-        src_party_id = int(job_info.get('src_party_id')) if job_info.get('src_party_id') else 0
-        src_user = dsl_parser.get_job_parameters().get(job_info.get('src_role'), {}).get(src_party_id, {}).get("user", '')
-        for _role, party_id_item in dsl_parser.get_job_parameters().items():
+        src_party_id = int(job_info['src_party_id']) if job_info.get('src_party_id') else 0
+        src_role = job_info.get('src_role', '')
+        src_user = job_parameters.get(src_role, {}).get(src_party_id, {}).get('user', '') if src_role else ''
+        for _role, party_id_item in job_parameters.items():
             user[_role] = {}
             for _party_id, _parameters in party_id_item.items():
                 user[_role][_party_id] = _parameters.get("user", "")
@@ -73,7 +74,7 @@ class JobController(object):
                     dataset_list.append({"namespace": v.split('.')[0], "table_name": v.split('.')[1]})
             data_authentication_check(src_role=job_info.get('src_role'), src_party_id=job_info.get('src_party_id'),
                                       src_user=src_user, dest_user=dest_user, dataset_list=dataset_list)
-        job_parameters = RunParameters(**job_parameters)
+        job_parameters = RunParameters(**job_parameters.get(role, {}).get(party_id, {}))
 
         # save new job into db
         if role == job_info["initiator_role"] and party_id == job_info["initiator_party_id"]:
