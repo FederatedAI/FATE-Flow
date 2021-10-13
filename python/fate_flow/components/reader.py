@@ -329,7 +329,7 @@ class Reader(ComponentBase):
         LOGGER.info(
             f"destination table name: {dest_table.name} namespace: {dest_table.namespace} engine: {dest_table.engine}"
         )
-        if src_table.engine == dest_table.engine:
+        if src_table.engine == dest_table.engine and src_table.meta.get_in_serialized():
             self.to_save(src_table, dest_table)
         else:
             self.copy_table(src_table, dest_table)
@@ -345,12 +345,6 @@ class Reader(ComponentBase):
         )
         LOGGER.info(f"schema: {src_table_meta.get_schema()}")
         schema = src_table_meta.get_schema()
-        if not src_table_meta.get_in_serialized():
-            header_line = src_table_meta.get_id_delimiter().join(src_computing_table.take(filter=True)[0])
-            LOGGER.info(f'src computing table take line:{header_line}')
-            schema = data_utils.get_header_schema(
-                header_line=header_line, id_delimiter=src_table_meta.get_id_delimiter()
-            )
         self.tracker.job_tracker.save_output_data(
             src_computing_table,
             output_storage_engine=dest_table.engine,

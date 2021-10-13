@@ -23,6 +23,7 @@ from fate_arch.common.log import detect_logger
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
+from fate_flow.settings import SESSION_VALID_PERIOD
 from fate_flow.utils import cron, job_utils, process_utils
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.operation.job_saver import JobSaver
@@ -148,7 +149,7 @@ class Detector(cron.Cron):
 
     @classmethod
     def detect_expired_session(cls):
-        ttl = 5 * 60 * 60 * 1000
+        ttl = SESSION_VALID_PERIOD
         detect_logger().info(f'start detect expired session by ttl {ttl/1000} s')
         try:
             session_records = Session.query_sessions(create_time=[None, current_timestamp() - ttl])

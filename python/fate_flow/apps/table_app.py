@@ -68,7 +68,6 @@ def table_bind():
             table_namespace=namespace,
             entity_info={"have_parent": False},
         )
-    sess.destroy_all_sessions()
     return response
 
 
@@ -84,7 +83,6 @@ def table_delete():
     if table:
         table.destroy()
         data = {'table_name': table_name, 'namespace': namespace}
-    sess.destroy_all_sessions()
     if data:
         return get_json_result(data=data)
     return get_json_result(retcode=101, retmsg='no find table')
