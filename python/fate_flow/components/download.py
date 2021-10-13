@@ -73,8 +73,9 @@ class Download(ComponentBase):
                     self.tracker.party_id,
                 )
             )
-            storage_session = session.new_storage(name=name, namespace=namespace)
-            data_table = storage_session.get_table()
+            data_table = session.get_table(name=name, namespace=namespace)
+            if not data_table:
+                raise Exception(f"no found table {name} {namespace}")
             count = data_table.count()
             LOGGER.info("===== begin to export data =====")
             lines = 0

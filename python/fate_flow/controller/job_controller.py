@@ -113,14 +113,12 @@ class JobController(object):
 
     @classmethod
     def get_job_engines(cls, job_parameters: RunParameters):
-        kwargs = {}
+        options = {}
         for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
-            kwargs[k] = getattr(job_parameters, f"{k}_engine", None)
-        engines = engine_utils.engines_compatibility(
+            options[k] = getattr(job_parameters, f"{k}_engine", None)
+        engines = engine_utils.get_engines(
             work_mode=job_parameters.work_mode,
-            backend=job_parameters.backend,
-            federated_mode=job_parameters.federated_mode,
-            **kwargs
+            options=options
         )
         for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
             setattr(job_parameters, f"{k}_engine", engines[k])

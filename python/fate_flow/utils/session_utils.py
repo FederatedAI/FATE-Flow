@@ -33,9 +33,7 @@ class SessionStop(object):
         fate_job_id = session_id.split('_')[0]
         command = args.command
         with session.Session(session_id=session_id,
-                             computing=args.computing,
-                             federation=args.federation,
-                             logger=schedule_logger(fate_job_id)) as sess:
+                             options={"logger": schedule_logger(fate_job_id)}) as sess:
             sess.destroy_all_sessions()
 
 

@@ -262,8 +262,9 @@ def component_output_data_download():
         output_data_file_path = "{}/{}.csv".format(output_tmp_dir, output_name)
         os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
         with open(output_data_file_path, 'w') as fw:
-            with Session().new_storage(name=output_table_meta.get_name(), namespace=output_table_meta.get_namespace()) as storage_session:
-                output_table = storage_session.get_table()
+            sess = Session()
+            output_table = sess.get_table(name=output_table_meta.get_name(), namespace=output_table_meta.get_namespace())
+            if output_table:
                 for k, v in output_table.collect():
                     data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
                     fw.write('{}\n'.format(','.join(map(lambda x: str(x), data_line))))

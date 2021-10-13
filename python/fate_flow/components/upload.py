@@ -142,18 +142,12 @@ class Upload(ComponentBase):
         sess = Session(session_id=self.session_id)
         self.session = sess
         if self.parameters.get("destroy", False):
-            storage_session = sess.storage(namespace=namespace, name=name)
-            if storage_session:
-                table = storage_session.get_table()
-                if table:
-                    LOGGER.info(
-                        f"destroy table name: {name} namespace: {namespace} engine: {table.get_engine()}"
-                    )
-                    table.destroy()
-                else:
-                    LOGGER.info(
-                        f"can not found table name: {name} namespace: {namespace}, pass destroy"
-                    )
+            table = sess.get_table(namespace=namespace, name=name)
+            if table:
+                LOGGER.info(
+                    f"destroy table name: {name} namespace: {namespace} engine: {table.engine}"
+                )
+                table.destroy()
             else:
                 LOGGER.info(
                     f"can not found table name: {name} namespace: {namespace}, pass destroy"
@@ -365,17 +359,17 @@ class Upload(ComponentBase):
         self.union_table(table_list)
 
     def union_table(self, table_list):
-        combined_table = self.get_computing_table(self.table.get_name(), self.table.get_namespace())
+        combined_table = self.get_computing_table(self.table.name, self.table.namespace)
         for table_info in table_list:
             table = self.get_computing_table(table_info.get("name"), table_info.get("namespace"))
             combined_table = combined_table.union(table)
             LOGGER.info(combined_table.count())
         session.Session.persistent(computing_table=combined_table,
-                                   table_namespace=self.table.get_namespace(),
-                                   table_name=self.table.get_name(),
+                                   namespace=self.table.namespace,
+                                   name=self.table.name,
                                    schema={},
-                                   engine=self.table.get_engine(),
-                                   engine_address=self.table.get_address().__dict__,
+                                   engine=self.table.engine,
+                                   engine_address=self.table.address.__dict__,
                                    token=None)
 
     def get_computing_table(self, name, namespace, schema=None):

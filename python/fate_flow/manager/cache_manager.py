@@ -32,8 +32,8 @@ class CacheManager:
         cache = DataCache(name=cache_name, meta=cache_meta)
         for name, table in cache_data.items():
             table_meta = session.Session.persistent(computing_table=table,
-                                                    table_namespace=output_namespace,
-                                                    table_name=f"{output_name}_{name}",
+                                                    namespace=output_namespace,
+                                                    name=f"{output_name}_{name}",
                                                     schema=None,
                                                     engine=output_storage_engine,
                                                     engine_address=output_storage_address,

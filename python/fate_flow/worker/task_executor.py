@@ -121,9 +121,7 @@ class TaskExecutor(BaseTaskWorker):
             else:
                 session_options = {}
 
-            sess = session.Session(session_id=args.session_id,
-                                   computing=job_parameters.computing_engine,
-                                   federation=job_parameters.federation_engine)
+            sess = session.Session(session_id=args.session_id)
             sess.init_computing(computing_session_id=args.session_id, options=session_options)
             component_parameters_on_party["job_parameters"] = job_parameters.to_dict()
             roles = job_configuration.runtime_conf["role"]

@@ -101,8 +101,8 @@ def delete_tables_by_table_infos(output_data_table_infos):
         namespace = output_data_table_info.f_table_namespace
         table_info = {'table_name': table_name, 'namespace': namespace}
         if table_name and namespace and table_info not in data:
-            with Session().new_storage(name=table_name, namespace=namespace) as storage_session:
-                table = storage_session.get_table()
+            table = Session().get_table(table_name, namespace)
+            if table:
                 try:
                     table.destroy()
                     data.append(table_info)

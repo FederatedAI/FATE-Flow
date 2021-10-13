@@ -97,11 +97,10 @@ class Reader(ComponentBase):
             self.tracker.role,
             self.tracker.party_id,
         )
-        sess = Session(session_id=session_id, computing=self.job_parameters.computing_engine)
+        sess = Session(session_id=session_id)
         sess.init_computing(computing_session_id=session_id)
         sess.as_default()
-        input_table_session = sess.storage(storage_engine=input_table_meta.get_engine())
-        input_table = input_table_session.get_table(
+        input_table = sess.get_table(
             name=input_table_meta.get_name(), namespace=input_table_meta.get_namespace()
         )
         # update real count to meta info
@@ -126,7 +125,7 @@ class Reader(ComponentBase):
         self.save_table(src_table=input_table, dest_table=output_table)
         # update real count to meta info
         output_table_meta = StorageTableMeta(
-            name=output_table.get_name(), namespace=output_table.get_namespace()
+            name=output_table.name, namespace=output_table.namespace
         )
         # todo: may be set output data, and executor support pass persistent
         self.tracker.log_output_data_info(
@@ -287,10 +286,10 @@ class Reader(ComponentBase):
 
         session = SparkSession.builder.enableHiveSupport().getOrCreate()
         src_data = session.sql(
-            f"select * from {src_table.get_address().database}.{src_table.get_address().name}"
+            f"select * from {src_table.address.database}.{src_table.address.name}"
         )
         LOGGER.info(
-            f"database:{src_table.get_address().database}, name:{src_table.get_address().name}"
+            f"database:{src_table.address.database}, name:{src_table.address.name}"
         )
         LOGGER.info(f"src data: {src_data}")
         # src_data = src_table.collect(is_spark=1)
@@ -308,7 +307,7 @@ class Reader(ComponentBase):
         dest_data.columns = ["key", "value"]
         LOGGER.info(f"dest_data: {dest_data}")
         LOGGER.info(
-            f"database:{dest_table.get_address().database}, name:{dest_table.get_address().name}"
+            f"database:{dest_table.address.database}, name:{dest_table.address.name}"
         )
         dest_table.put_all(dest_data)
         schema = {
@@ -326,12 +325,12 @@ class Reader(ComponentBase):
     def save_table(self, src_table: StorageTableABC, dest_table: StorageTableABC):
         LOGGER.info(f"start copying table")
         LOGGER.info(
-            f"source table name: {src_table.get_name()} namespace: {src_table.get_namespace()} engine: {src_table.get_engine()}"
+            f"source table name: {src_table.name} namespace: {src_table.namespace} engine: {src_table.engine}"
         )
         LOGGER.info(
-            f"destination table name: {dest_table.get_name()} namespace: {dest_table.get_namespace()} engine: {dest_table.get_engine()}"
+            f"destination table name: {dest_table.name} namespace: {dest_table.namespace} engine: {dest_table.engine}"
         )
-        if src_table.get_engine() == dest_table.get_engine():
+        if src_table.engine == dest_table.engine:
             self.to_save(src_table, dest_table)
         else:
             self.copy_table(src_table, dest_table)
@@ -355,16 +354,16 @@ class Reader(ComponentBase):
             )
         self.tracker.job_tracker.save_output_data(
             src_computing_table,
-            output_storage_engine=dest_table.get_engine(),
-            output_storage_address=dest_table.get_address().__dict__,
-            output_table_namespace=dest_table.get_namespace(),
-            output_table_name=dest_table.get_name(),
+            output_storage_engine=dest_table.engine,
+            output_storage_address=dest_table.address.__dict__,
+            output_table_namespace=dest_table.namespace,
+            output_table_name=dest_table.name,
             schema=schema,
             need_read=False
         )
         dest_table.meta.update_metas(schema=schema, part_of_data=src_table_meta.get_part_of_data())
         LOGGER.info(
-            f"save {dest_table.get_namespace()} {dest_table.get_name()} success"
+            f"save {dest_table.namespace} {dest_table.name} success"
         )
 
     def copy_table(self, src_table: StorageTableABC, dest_table: StorageTableABC):
