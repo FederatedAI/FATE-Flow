@@ -125,9 +125,7 @@ class TaskExecutor(BaseTaskWorker):
             else:
                 session_options = {}
 
-            sess = session.Session(session_id=args.session_id,
-                                   computing=job_parameters.computing_engine,
-                                   federation=job_parameters.federation_engine)
+            sess = session.Session(session_id=args.session_id)
             sess.init_computing(computing_session_id=args.session_id, options=session_options)
             component_parameters_on_party["job_parameters"] = job_parameters.to_dict()
             roles = job_configuration.runtime_conf["role"]
@@ -137,8 +135,8 @@ class TaskExecutor(BaseTaskWorker):
                 sess.init_federation(federation_session_id=args.federation_session_id,
                                      runtime_conf=component_parameters_on_party,
                                      service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
-            sess.as_default()
-
+            LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
+            LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
             LOGGER.info(f"task input dsl {task_input_dsl}")
             task_run_args, input_table_list = self.get_task_run_args(job_id=args.job_id, role=args.role, party_id=args.party_id,
                                                                      task_id=args.task_id,
@@ -321,7 +319,7 @@ class TaskExecutor(BaseTaskWorker):
                             computing_table = None
                         elif storage_table_meta:
                             LOGGER.info(f"load computing table use {task_parameters.computing_partitions}")
-                            computing_table = session.get_latest_opened().computing.load(
+                            computing_table = session.get_computing_session().load(
                                 storage_table_meta.get_address(),
                                 schema=storage_table_meta.get_schema(),
                                 partitions=task_parameters.computing_partitions)

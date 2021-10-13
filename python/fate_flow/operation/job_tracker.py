@@ -145,8 +145,8 @@ class Tracker(object):
                         break
 
             session.Session.persistent(computing_table=computing_table,
-                                       table_namespace=output_table_namespace,
-                                       table_name=output_table_name,
+                                       namespace=output_table_namespace,
+                                       name=output_table_name,
                                        schema=schema,
                                        part_of_data=part_of_data,
                                        engine=output_storage_engine,
@@ -428,7 +428,7 @@ class Tracker(object):
                                                                              self.role,
                                                                              self.party_id))
         try:
-            sess = session.Session(computing=self.job_parameters.computing_engine, federation=self.job_parameters.federation_engine)
+            sess = session.Session()
             # clean up temporary tables
             computing_temp_namespace = job_utils.generate_session_id(task_id=self.task_id,
                                                                      task_version=self.task_version,
