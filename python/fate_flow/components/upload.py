@@ -374,7 +374,7 @@ class Upload(ComponentBase):
 
     def get_computing_table(self, name, namespace, schema=None):
         storage_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
-        computing_table = session.get_latest_opened().computing.load(
+        computing_table = session.get_computing_session().load(
             storage_table_meta.get_address(),
             schema=schema if schema else storage_table_meta.get_schema(),
             partitions=self.parameters.get("partitions"))

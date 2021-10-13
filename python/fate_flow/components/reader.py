@@ -98,8 +98,7 @@ class Reader(ComponentBase):
             self.tracker.party_id,
         )
         sess = Session(session_id=session_id)
-        sess.init_computing(computing_session_id=session_id)
-        sess.as_default()
+
         input_table = sess.get_table(
             name=input_table_meta.get_name(), namespace=input_table_meta.get_namespace()
         )
@@ -337,7 +336,7 @@ class Reader(ComponentBase):
 
     def to_save(self, src_table, dest_table):
         src_table_meta = src_table.meta
-        src_computing_table = session.get_latest_opened().computing.load(
+        src_computing_table = session.get_computing_session().load(
             src_table_meta.get_address(),
             schema=src_table_meta.get_schema(),
             partitions=src_table_meta.get_partitions(),

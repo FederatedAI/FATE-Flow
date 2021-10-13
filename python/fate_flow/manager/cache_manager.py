@@ -47,7 +47,7 @@ class CacheManager:
         cache_data = {}
         for name, table in cache.data.items():
             storage_table_meta = storage.StorageTableMeta(name=table.name, namespace=table.namespace)
-            computing_table = session.get_latest_opened().computing.load(
+            computing_table = session.get_computing_session().load(
                 storage_table_meta.get_address(),
                 schema=storage_table_meta.get_schema(),
                 partitions=table.partitions)
