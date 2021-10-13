@@ -17,18 +17,17 @@ import operator
 import copy
 import typing
 
-from google.protobuf import json_format
 from fate_arch.abc import CTableABC
 from fate_arch.common import EngineType, Party
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
 from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64, json_loads
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import (DB, Job, TrackingOutputDataInfo,
                                     ComponentSummary, MachineLearningModelInfo as MLModel)
-from fate_flow.entity.metric import Metric, MetricMeta
-from fate_flow.entity.types import OutputCache
+from fate_flow.entity import Metric, MetricMeta
+from fate_flow.entity import DataCache
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.pipelined_model import pipelined_model
@@ -36,8 +35,7 @@ from fate_flow.manager.cache_manager import CacheManager
 from fate_flow.manager.metric_manager import MetricManager
 from fate_arch import storage, session
 from fate_flow.utils import model_utils, job_utils, data_utils
-from fate_flow.entity.run_parameters import RunParameters
-from fate_flow.component_env_utils import feature_utils
+from fate_flow.entity import RunParameters
 
 
 class Tracker(object):
@@ -122,7 +120,7 @@ class Tracker(object):
         return view_data
 
     def save_output_data(self, computing_table, output_storage_engine, output_storage_address: dict,
-                         output_table_namespace=None, output_table_name=None, schema=None, token=None):
+                         output_table_namespace=None, output_table_name=None, schema=None, token=None, need_read=True):
         if computing_table:
             if not output_table_namespace or not output_table_name:
                 output_table_namespace, output_table_name = data_utils.default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="data")
@@ -136,17 +134,15 @@ class Tracker(object):
                 output_storage_address.update({"path": data_utils.default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=output_storage_address.get("path_prefix"))})
 
             part_of_limit = JobDefaultConfig.output_data_summary_count_limit
-            part_of_data = {
-                "data_line": [],
-                "is_str": False,
-                "extend_header": []
-            }
-            for k, v in computing_table.collect():
-                data_line, part_of_data["is_str"], part_of_data["extend_header"] = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
-                part_of_data["data_line"].append(data_line)
-                part_of_limit -= 1
-                if part_of_limit == 0:
-                    break
+            part_of_data = []
+            if need_read:
+                match_id_name = computing_table.schema.get("match_id_name")
+                schedule_logger(self.job_id).info(f'match id name:{match_id_name}')
+                for k, v in computing_table.collect():
+                    part_of_data.append((k, v))
+                    part_of_limit -= 1
+                    if part_of_limit == 0:
+                        break
 
             session.Session.persistent(computing_table=computing_table,
                                        table_namespace=output_table_namespace,
@@ -203,32 +199,36 @@ class Tracker(object):
     def init_pipeline_model(self):
         self.pipelined_model.create_pipelined_model()
 
-    def save_output_model(self, model_buffers: dict, model_alias: str, tracker_client=None):
+    def save_output_model(self, model_buffers: dict, model_alias: str):
         if model_buffers:
             self.pipelined_model.save_component_model(component_name=self.component_name,
                                                       component_module_name=self.module_name,
                                                       model_alias=model_alias,
-                                                      model_buffers=model_buffers,
-                                                      tracker_client=tracker_client)
+                                                      model_buffers=model_buffers)
+
+    def get_output_model(self, model_alias, parse=True, output_json=False):
+        return self.read_output_model(model_alias=model_alias,
+                                      parse=parse,
+                                      output_json=output_json)
 
     def write_output_model(self, component_model):
         self.pipelined_model.write_component_model(component_model)
 
-    def get_output_model(self, model_alias, parse=True, output_json=False):
-        model_buffers = self.pipelined_model.read_component_model(component_name=self.component_name,
-                                                                  model_alias=model_alias,
-                                                                  parse=parse,
-                                                                  output_json=output_json)
-        return model_buffers
+    def read_output_model(self, model_alias, parse=True, output_json=False):
+        return self.pipelined_model.read_component_model(component_name=self.component_name,
+                                                         model_alias=model_alias,
+                                                         parse=parse,
+                                                         output_json=output_json)
 
     def collect_model(self):
         model_buffers = self.pipelined_model.collect_models()
         return model_buffers
 
     def save_pipeline_model(self, pipeline_buffer_object):
-        self.save_output_model({
-            self.pipelined_model.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString(), json_format.MessageToDict(pipeline_buffer_object, including_default_value_fields=True))
-        }, self.pipelined_model.pipeline_model_alias)
+        self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
+
+    def get_pipeline_model(self):
+        return self.pipelined_model.read_pipeline_model()
 
     def get_component_define(self):
         return self.pipelined_model.get_component_define(component_name=self.component_name)
@@ -239,7 +239,7 @@ class Tracker(object):
         cache_key = self.tracking_output_cache(cache=cache, cache_name=cache_name)
         return cache_key
 
-    def tracking_output_cache(self, cache: OutputCache, cache_name: str) -> str:
+    def tracking_output_cache(self, cache: DataCache, cache_name: str) -> str:
         cache_key = CacheManager.record(cache=cache,
                                         job_id=self.job_id,
                                         role=self.role,
@@ -258,7 +258,7 @@ class Tracker(object):
         else:
             return None, None
 
-    def query_output_cache(self, cache_key=None, cache_name=None) -> typing.List[OutputCache]:
+    def query_output_cache(self, cache_key=None, cache_name=None) -> typing.List[DataCache]:
         caches = CacheManager.query(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name, cache_name=cache_name, cache_key=cache_key)
         group = {}
         # only the latest version of the task output is retrieved
@@ -476,7 +476,7 @@ class Tracker(object):
                     sess._federation_session.cleanup(parties)
                     schedule_logger(self.job_id).info('pulsar topic clean up success')
             except Exception as e:
-                schedule_logger(self.job_id).exception("cleanup error", e)
+                schedule_logger(self.job_id).exception("cleanup error")
             finally:
                 sess.destroy_all_sessions()
             return True
@@ -493,7 +493,7 @@ class Tracker(object):
                                          MLModel.f_party_id == self.party_id)
             if not record:
                 job = Job.get_or_none(Job.f_job_id == self.job_id)
-                pipeline = self.pipelined_model.read_pipelined_model(component_name=job_utils.job_pipeline_component_name())[self.pipelined_model.pipeline_model_name]
+                pipeline = self.pipelined_model.read_pipeline_model()
                 if job:
                     job_data = job.to_dict()
                     model_info = {

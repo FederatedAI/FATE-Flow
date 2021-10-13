@@ -128,10 +128,6 @@ class AutoRerunStatus(BaseStatus):
     FAILED = StatusSet.FAILED
 
 
-class PassException(Exception):
-    pass
-
-
 class SchedulingStatusCode(object):
     SUCCESS = 0
     NO_RESOURCE = 1

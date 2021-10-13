@@ -92,7 +92,7 @@ def migration(config_data: dict):
         # migrate_model.create_pipelined_model()
         shutil.copytree(src=model.model_path, dst=migrate_model.model_path)
 
-        pipeline = migrate_model.read_component_model('pipeline', 'pipeline')['Pipeline']
+        pipeline = migrate_model.read_pipeline_model()
 
         # Utilize Pipeline_model collect model data. And modify related inner information of model
         train_runtime_conf = json_loads(pipeline.train_runtime_conf)
@@ -125,6 +125,7 @@ def migration(config_data: dict):
             if key == 'pipeline':
                 continue
             for v in value.keys():
+                # todo: fix bug
                 buffer_obj = migrate_model.read_component_model(key, v)
                 module_name = define_yaml['component_define'].get(key, {}).get('module_name')
                 modified_buffer = model_migration(model_contents=buffer_obj,

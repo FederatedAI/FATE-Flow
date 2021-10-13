@@ -16,7 +16,7 @@
 import typing
 
 from fate_flow.db.db_models import DB, Job
-from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
+from fate_flow.scheduler.dsl_parser import DSLParserV1, DSLParserV2
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 
 
@@ -65,12 +65,12 @@ def federated_order_reset(dest_parties, scheduler_partys_info):
 
 def get_parser_version_mapping():
     return {
-        "1": DSLParser(),
+        "1": DSLParserV1(),
         "2": DSLParserV2()
     }
 
 
-def get_dsl_parser_by_version(version: str = "1"):
+def get_dsl_parser_by_version(version: typing.Union[str, int] = 2):
     mapping = get_parser_version_mapping()
     if isinstance(version, int):
         version = str(version)
@@ -79,13 +79,14 @@ def get_dsl_parser_by_version(version: str = "1"):
     return mapping[version]
 
 
-def get_predict_dsl(dsl_parser: typing.Union[DSLParser, DSLParserV2], dsl, components_parameters: dict = None):
+def fill_inference_dsl(dsl_parser: typing.Union[DSLParserV1, DSLParserV2], origin_inference_dsl, components_parameters: dict = None):
+    # must fill dsl for fate serving
     if isinstance(dsl_parser, DSLParserV2):
         components_module_name = {}
         for component, param in components_parameters.items():
             components_module_name[component] = param["CodePath"]
-        return dsl_parser.get_predict_dsl(predict_dsl=dsl, module_object_dict=components_module_name)
-    elif isinstance(dsl_parser, DSLParser):
+        return dsl_parser.get_predict_dsl(predict_dsl=origin_inference_dsl, module_object_dict=components_module_name)
+    elif isinstance(dsl_parser, DSLParserV1):
         return dsl_parser.get_predict_dsl(component_parameters=components_parameters)
     else:
         raise Exception(f"not support dsl parser {type(dsl_parser)}")

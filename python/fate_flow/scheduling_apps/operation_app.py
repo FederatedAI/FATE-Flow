@@ -16,7 +16,7 @@
 from flask import request
 
 from fate_flow.utils import job_utils
-from fate_flow.utils.api_utils import get_json_result
+from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_arch.common import file_utils
 
 
@@ -26,7 +26,9 @@ def get_config():
     job_configuration = job_utils.get_job_configuration(job_id=request_data.get("job_id"),
                                                         role=request_data.get("role"),
                                                         party_id=request_data.get("party_id"))
-    return get_json_result(retcode=0, retmsg='success', data=job_configuration.to_dict())
+    if job_configuration:
+        return get_json_result(retcode=0, retmsg='success', data=job_configuration.to_dict())
+    return error_response(404, 'Job not found.')
 
 
 @manager.route('/json_conf/load', methods=['POST'])

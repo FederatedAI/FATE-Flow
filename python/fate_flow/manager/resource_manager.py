@@ -16,14 +16,15 @@
 import math
 import typing
 
-from fate_arch.common import EngineType, Backend
+from fate_arch.common import EngineType
 from fate_arch.common import base_utils
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.computing import ComputingEngine
+from fate_arch.storage import StorageEngine
 from fate_arch.common import engine_utils
 from fate_flow.db.db_models import DB, EngineRegistry, Job
 from fate_flow.entity.types import ResourceOperation
-from fate_flow.entity.run_parameters import RunParameters
+from fate_flow.entity import RunParameters
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, SUPPORT_IGNORE_RESOURCE_ENGINES, IGNORE_RESOURCE_COMPUTING_ENGINE
 from fate_flow.utils import job_utils
@@ -113,9 +114,12 @@ class ResourceManager(object):
     @classmethod
     def return_resource(cls, job_id):
         jobs = JobSaver.query_job(job_id=job_id)
+        if not jobs:
+            raise Exception(f'no found job {job_id}')
         return_resource_job_list = []
         for job in jobs:
-            job_info = {"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id, "resource_in_use": job.f_resource_in_use}
+            job_info = {"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id,
+                        "resource_in_use": job.f_resource_in_use, "resource_return_status": False}
             if job.f_resource_in_use:
                 return_status = cls.return_job_resource(job.f_job_id, job.f_role, job.f_party_id)
                 job_info["resource_return_status"] = return_status
@@ -124,7 +128,7 @@ class ResourceManager(object):
 
     @classmethod
     @DB.connection_context()
-    def resource_for_job(cls, job_id, role, party_id, operation_type):
+    def resource_for_job(cls, job_id, role, party_id, operation_type: ResourceOperation):
         operate_status = False
         engine_name, cores, memory = cls.calculate_job_resource(job_id=job_id, role=role, party_id=party_id)
         try:
@@ -140,13 +144,13 @@ class ResourceManager(object):
                     Job.f_role == role,
                     Job.f_party_id == party_id,
                 ]
-                if operation_type == ResourceOperation.APPLY:
+                if operation_type is ResourceOperation.APPLY:
                     updates[Job.f_remaining_cores] = cores
                     updates[Job.f_remaining_memory] = memory
                     updates[Job.f_resource_in_use] = True
                     updates[Job.f_apply_resource_time] = base_utils.current_timestamp()
                     filters.append(Job.f_resource_in_use == False)
-                elif operation_type == ResourceOperation.RETURN:
+                elif operation_type is ResourceOperation.RETURN:
                     updates[Job.f_resource_in_use] = False
                     updates[Job.f_return_resource_time] = base_utils.current_timestamp()
                     filters.append(Job.f_resource_in_use == True)
@@ -307,15 +311,15 @@ class ResourceManager(object):
         return operate_status
 
     @classmethod
-    def update_resource_sql(cls, resource_model: typing.Union[EngineRegistry, Job], cores, memory, operation_type):
-        if operation_type == ResourceOperation.APPLY:
+    def update_resource_sql(cls, resource_model: typing.Union[EngineRegistry, Job], cores, memory, operation_type: ResourceOperation):
+        if operation_type is ResourceOperation.APPLY:
             filters = [
                 resource_model.f_remaining_cores >= cores,
                 resource_model.f_remaining_memory >= memory
             ]
             updates = {resource_model.f_remaining_cores: resource_model.f_remaining_cores - cores,
                        resource_model.f_remaining_memory: resource_model.f_remaining_memory - memory}
-        elif operation_type == ResourceOperation.RETURN:
+        elif operation_type is ResourceOperation.RETURN:
             filters = []
             updates = {resource_model.f_remaining_cores: resource_model.f_remaining_cores + cores,
                        resource_model.f_remaining_memory: resource_model.f_remaining_memory + memory}

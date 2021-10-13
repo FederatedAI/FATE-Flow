@@ -19,22 +19,21 @@ import inspect
 import typing
 from pathlib import Path
 
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.components._base import ComponentMeta
 
 _flow_base = Path(__file__).resolve().parent.parent.parent
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 
 def _search_components(path):
     try:
-        module_name = (
+        module_name = '.'.join(
             path.absolute()
             .relative_to(_flow_base)
             .with_suffix("")
-            .__str__()
-            .replace("/", ".")
+            .parts
         )
         module = importlib.import_module(module_name)
     except ImportError as e:

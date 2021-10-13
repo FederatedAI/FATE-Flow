@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.components._base import (
     BaseParam,
     ComponentBase,
@@ -21,8 +21,9 @@ from fate_flow.components._base import (
     ComponentInputProtocol,
 )
 from fate_flow.operation.job_tracker import Tracker
+from fate_flow.entity import MetricMeta
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 cache_loader_cpn_meta = ComponentMeta("CacheLoader")
 
@@ -63,11 +64,16 @@ class CacheLoader(ComponentBase):
         LOGGER.info(f"query cache by cache key: {self.cache_key} cache name: {self.cache_name}")
         # todo: use tracker client but not tracker
         caches = tracker.query_output_cache(cache_key=self.cache_key, cache_name=self.cache_name)
-        if caches:
-            LOGGER.info(f"query get {len(caches)} caches")
-            for cache in caches:
-                tracker.job_id = self.tracker.job_id
-                tracker.component_name = self.tracker.component_name
-                tracker.tracking_output_cache(cache, cache_name=self.cache_name)
-        else:
+        if not caches:
             raise Exception("can not found this cache")
+        elif len(caches) > 1:
+            raise Exception(f"found {len(caches)} caches, only support one, please check parameters")
+        else:
+            cache = caches[0]
+            self.cache_output = cache
+            tracker.job_id = self.tracker.job_id
+            tracker.component_name = self.tracker.component_name
+            metric_meta = cache.to_dict()
+            metric_meta.pop("data")
+            metric_meta["component_name"] = self.component_name
+            self.tracker.set_metric_meta(metric_namespace="cache_loader", metric_name=cache.name, metric_meta=MetricMeta(name="cache", metric_type="cache_info", extra_metas=metric_meta))

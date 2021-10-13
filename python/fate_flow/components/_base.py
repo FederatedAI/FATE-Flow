@@ -16,14 +16,16 @@
 import abc
 import typing
 
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.components.param_extract import ParamExtract
 from fate_flow.scheduling_apps.client.tracker_client import TrackerClient
 
-LOGGER = log.getLogger()
+
+LOGGER = getLogger()
 
 
 class ComponentInputProtocol(metaclass=abc.ABCMeta):
+
     @property
     @abc.abstractmethod
     def parameters(self) -> dict:
@@ -71,7 +73,7 @@ class ComponentInputProtocol(metaclass=abc.ABCMeta):
 
 
 class ComponentOutput:
-    def __init__(self, data, models, cache: typing.List[tuple]) -> None:
+    def __init__(self, data, models, cache: typing.List[tuple], serialize: bool = True) -> None:
         self._data = data
         if not isinstance(self._data, list):
             self._data = [data]
@@ -84,13 +86,19 @@ class ComponentOutput:
         if not isinstance(self._cache, list):
             self._cache = [cache]
 
+        self.serialize = serialize
+
     @property
     def data(self):
         return self._data
 
     @property
     def model(self):
-        serialized_models: typing.Dict[str, typing.Tuple[str, str]] = {}
+        if not self.serialize:
+            return self._models
+
+        serialized_models: typing.Dict[str, typing.Tuple[str, bytes]] = {}
+
         for model_name, buffer_object in self._models.items():
             serialized_string = buffer_object.SerializeToString()
             if not serialized_string:
@@ -110,33 +118,37 @@ class ComponentOutput:
 
 
 class ComponentBase(metaclass=abc.ABCMeta):
+
     def __init__(self):
         self.task_version_id = ""
         self.tracker: TrackerClient = None
         self.checkpoint_manager = None
         self.model_output = None
         self.data_output = None
+        self.cache_output = None
+        self.serialize = True
 
     @abc.abstractmethod
     def _run(self, cpn_input: ComponentInputProtocol):
         """to be implemented"""
         ...
 
-    def _warm_start(self, cpn_input: ComponentInputProtocol):
-        raise NotImplementedError(f"warn start for {type(self)} not implemented")
+    def _retry(self, cpn_input: ComponentInputProtocol):
+        ...
+        # raise NotImplementedError(f"_retry for {type(self)} not implemented")
 
     def run(self, cpn_input: ComponentInputProtocol, retry: bool = True):
         self.task_version_id = cpn_input.task_version_id
         self.tracker = cpn_input.tracker
         self.checkpoint_manager = cpn_input.checkpoint_manager
 
-        method = (self._warm_start if retry and
+        method = (self._retry if retry and
                   self.checkpoint_manager is not None and
                   self.checkpoint_manager.latest_checkpoint is not None
                   else self._run)
         method(cpn_input)
 
-        return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=None)
+        return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=self.save_cache(), serialize=self.serialize)
 
     def save_data(self):
         return self.data_output
@@ -144,8 +156,11 @@ class ComponentBase(metaclass=abc.ABCMeta):
     def export_model(self):
         return self.model_output
 
+    def save_cache(self):
+        return self.cache_output
 
-class _RunnerDocorator:
+
+class _RunnerDecorator:
     def __init__(self, meta) -> None:
         self._roles = set()
         self._meta = meta
@@ -192,7 +207,7 @@ class ComponentMeta:
 
     @property
     def bind_runner(self):
-        return _RunnerDocorator(self)
+        return _RunnerDecorator(self)
 
     @property
     def bind_param(self):

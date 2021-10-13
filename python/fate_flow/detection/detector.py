@@ -13,15 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import time
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.controller.engine_adapt import build_engine
-from fate_flow.db.db_models import DB, Job
+from fate_flow.db.db_models import DB, Job, DependenciesStorageMeta
 from fate_arch.session import Session
-from fate_arch.common.log import detect_logger
+from fate_flow.utils.log_utils import detect_logger
+from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
-from fate_flow.utils import cron, job_utils
+from fate_flow.utils import cron, job_utils, process_utils
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.manager.resource_manager import ResourceManager
@@ -34,6 +36,7 @@ class Detector(cron.Cron):
         self.detect_running_job()
         self.detect_resource_record()
         self.detect_expired_session()
+        self.detect_dependence_upload_record()
 
     @classmethod
     def detect_running_task(cls):
@@ -49,15 +52,18 @@ class Detector(cron.Cron):
                 try:
                     process_exist = build_engine(task.f_engine_conf.get("computing_engine")).is_alive(task)
                     if not process_exist:
-                        detect_logger(job_id=task.f_job_id).info(
-                                'the {} task {} {} on {} {} process {} does not exist'.format(
-                                    task.f_party_status,
-                                    task.f_task_id,
-                                    task.f_task_version,
-                                    task.f_role,
-                                    task.f_party_id,
-                                    task.f_run_pid))
-                        stop_job_ids.add(task.f_job_id)
+                        msg = f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id}"
+                        detect_logger(job_id=task.f_job_id).info(f"{msg} with {task.f_party_status} process {task.f_run_pid} does not exist")
+                        time.sleep(3)
+                        _tasks = JobSaver.query_task(task_id=task.f_task_id, task_version=task.f_task_version, role=task.f_role, party_id=task.f_party_id)
+                        if _tasks:
+                            if _tasks[0].f_party_status == TaskStatus.RUNNING:
+                                stop_job_ids.add(task.f_job_id)
+                                detect_logger(task.f_job_id).info(f"{msg} party status has been checked twice, try to stop job")
+                            else:
+                                detect_logger(task.f_job_id).info(f"{msg} party status has changed to {_tasks[0].f_party_status}, may be stopped by task_controller.stop_task, pass stop job again")
+                        else:
+                            detect_logger(task.f_job_id).warning(f"{msg} can not found on db")
                 except Exception as e:
                     detect_logger(job_id=task.f_job_id).exception(e)
             if stop_job_ids:
@@ -67,7 +73,7 @@ class Detector(cron.Cron):
                 jobs = JobSaver.query_job(job_id=job_id)
                 if jobs:
                     stop_jobs.add(jobs[0])
-            cls.request_stop_jobs(jobs=stop_jobs, stop_msg="task executor process abort", stop_status=JobStatus.CANCELED)
+            cls.request_stop_jobs(jobs=stop_jobs, stop_msg="task executor process abort", stop_status=JobStatus.FAILED)
         except Exception as e:
             detect_logger().exception(e)
         finally:
@@ -118,6 +124,27 @@ class Detector(cron.Cron):
             detect_logger().exception(e)
         finally:
             detect_logger().info('finish detect resource recycle')
+
+    @classmethod
+    @DB.connection_context()
+    def detect_dependence_upload_record(cls):
+        detect_logger().info('start detect dependence upload process')
+        try:
+            upload_process_list = DependenciesStorageMeta.select().where(DependenciesStorageMeta.f_upload_status==True)
+            for dependence in upload_process_list:
+                if int(dependence.f_pid):
+                    is_alive = process_utils.check_process(pid=int(dependence.f_pid))
+                    if not is_alive:
+                        try:
+                            DependenceManager.kill_upload_process(version=dependence.f_version,
+                                                                  storage_engine=dependence.f_storage_engine,
+                                                                  dependence_type=dependence.f_type)
+                        except Exception as e:
+                            detect_logger().exception(e)
+        except Exception as e:
+            detect_logger().exception(e)
+        finally:
+            detect_logger().info('finish detect dependence upload process')
 
     @classmethod
     def detect_expired_session(cls):

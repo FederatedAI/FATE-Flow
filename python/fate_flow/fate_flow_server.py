@@ -29,7 +29,7 @@ from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
 from fate_flow.apps import app
 from fate_flow.db.db_models import init_database_tables as init_flow_db
 from fate_arch.metastore.db_models import init_database_tables as init_arch_db
-from fate_flow.scheduler.detector import Detector
+from fate_flow.detection.detector import Detector
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.types import ProcessRole
@@ -38,7 +38,7 @@ from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.db.db_services import service_db
 from fate_flow.utils.xthread import ThreadPoolExecutor
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.common.versions import get_versions
 from fate_flow.db.config_manager import ConfigManager
 from fate_flow.db.component_registry import ComponentRegistry
@@ -64,7 +64,6 @@ if __name__ == '__main__':
         sys.exit(0)
     # todo: add a general init steps?
     ConfigManager.load()
-    PrivilegeAuth.init()
     RuntimeConfig.init_env()
     RuntimeConfig.init_config(WORK_MODE=WORK_MODE, JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
@@ -73,6 +72,7 @@ if __name__ == '__main__':
     ComponentRegistry.load()
     ProviderManager.register_default_providers()
     ComponentRegistry.load()
+    PrivilegeAuth.init()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
     thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)

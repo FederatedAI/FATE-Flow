@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.components._base import (
     BaseParam,
     ComponentBase,
@@ -23,11 +23,11 @@ from fate_flow.components._base import (
 from fate_flow.entity.types import ModelStorage
 from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 ModelStorageClassMap = {
-    ModelStorage.REDIS: redis_model_storage.RedisModelStorage,
-    ModelStorage.MYSQL: mysql_model_storage.MysqlModelStorage,
+    ModelStorage.REDIS.value: redis_model_storage.RedisModelStorage,
+    ModelStorage.MYSQL.value: mysql_model_storage.MysqlModelStorage,
 }
 
 model_store_cpn_meta = ComponentMeta("ModelStore")

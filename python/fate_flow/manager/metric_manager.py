@@ -15,10 +15,10 @@
 #
 
 from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db import db_utils
 from fate_flow.db.db_models import (DB, TrackingMetric)
-from fate_flow.entity.metric import Metric
+from fate_flow.entity import Metric
 from fate_flow.utils import job_utils
 
 
@@ -109,17 +109,24 @@ class MetricManager:
 
     @DB.connection_context()
     def get_metric_list(self, job_level: bool = False):
-        metrics = dict()
+        metrics = {}
+
         tracking_metric_model = self.get_model_class()
-        tracking_metrics = tracking_metric_model.select(tracking_metric_model.f_metric_namespace,
-                                                        tracking_metric_model.f_metric_name).where(
-            tracking_metric_model.f_job_id == self.job_id,
-            tracking_metric_model.f_component_name == (self.component_name if not job_level else 'dag'),
-            tracking_metric_model.f_role == self.role,
-            tracking_metric_model.f_party_id == self.party_id).distinct()
-        for tracking_metric in tracking_metrics:
-            metrics[tracking_metric.f_metric_namespace] = metrics.get(tracking_metric.f_metric_namespace, [])
-            metrics[tracking_metric.f_metric_namespace].append(tracking_metric.f_metric_name)
+        if tracking_metric_model.table_exists():
+            tracking_metrics = tracking_metric_model.select(
+                tracking_metric_model.f_metric_namespace,
+                tracking_metric_model.f_metric_name
+            ).where(
+                tracking_metric_model.f_job_id == self.job_id,
+                tracking_metric_model.f_component_name == (self.component_name if not job_level else 'dag'),
+                tracking_metric_model.f_role == self.role,
+                tracking_metric_model.f_party_id == self.party_id
+            ).distinct()
+
+            for tracking_metric in tracking_metrics:
+                metrics[tracking_metric.f_metric_namespace] = metrics.get(tracking_metric.f_metric_namespace, [])
+                metrics[tracking_metric.f_metric_namespace].append(tracking_metric.f_metric_name)
+
         return metrics
 
     def get_model_class(self):

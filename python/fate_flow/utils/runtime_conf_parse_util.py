@@ -18,7 +18,7 @@ import copy
 from fate_arch.abc import Components
 from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, RoleParameterNotListError
 from fate_flow.component_env_utils import provider_utils
-from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity import ComponentProvider
 from fate_flow.db.component_registry import ComponentRegistry
 
 
@@ -77,6 +77,7 @@ class RuntimeConfParserUtil(object):
         conf_version,
         local_role,
         local_party_id,
+        parse_user_specified_only
     ):
         provider_components = ComponentRegistry.get_provider_components(
             provider.provider_name, provider.provider_version
@@ -112,81 +113,94 @@ class RuntimeConfParserUtil(object):
         param_class = provider.get(module, provider_components).get_param_obj(alias)
         role_idx = role_on_module[local_role].index(local_party_id)
 
-        # conf_version == 2
-        if conf_version == 2:
-            # update common parameters
-            common_parameters = (
-                runtime_conf.get("component_parameters", {}).get("common", {}).get(alias)
-            )
-            if common_parameters is not None:
+        user_specified_parameters = dict()
+
+        common_parameters = (
+            runtime_conf.get("component_parameters", {}).get("common", {}).get(alias)
+        )
+        if common_parameters is not None:
+            if parse_user_specified_only:
+                user_specified_parameters.update(common_parameters)
+            else:
                 param_class = param_class.update(
                     common_parameters, not redundant_param_check
                 )
 
-            # update role parameters
-            for role_id, role_id_parameters in (
+        # update role parameters
+        for role_id, role_id_parameters in (
                 runtime_conf.get("component_parameters", {})
-                .get("role", {})
-                .get(local_role, {})
-                .items()
-            ):
-                if role_id == "all" or str(role_idx) in role_id.split("|"):
-                    parameters = role_id_parameters.get(alias, None)
-                    if parameters is not None:
+                        .get("role", {})
+                        .get(local_role, {})
+                        .items()
+        ):
+            if role_id == "all" or str(role_idx) in role_id.split("|"):
+                parameters = role_id_parameters.get(alias, None)
+                if parameters is not None:
+                    if parse_user_specified_only:
+                        user_specified_parameters.update(parameters)
+                    else:
                         param_class.update(parameters, not redundant_param_check)
 
-        elif conf_version == 1:
-            # update common parameters
-            common_parameters = runtime_conf.get("algorithm_parameters", {}).get(alias)
-            if common_parameters is not None:
-                param_class = param_class.update(
-                    common_parameters, not redundant_param_check
-                )
-
-            # update role parameters
-            parameters = (
-                runtime_conf.get("role_parameters", {}).get(local_role, {}).get(alias, {})
-            )
-
-            if parameters:
-                # convert v1 to v2
-                extract_not_builtin = getattr(param_class, "extract_not_buildin", None)
-                if extract_not_builtin is None:
-                    raise NotImplementedError(
-                        f"param class of `{type(param_class)}` not support v1 style conf"
-                    )
-                not_builtin_vars = extract_not_builtin()
-                role_num = len(role_on_module[local_role])
-
-                # recursive function to convert v1 style to v2 style
-                def _convert_v1_to_v2(_conf_v1):
-                    _conf_v2 = {}
-                    for key, values in _conf_v1.items():
-                        # stop here, values support to be a list
-                        if key not in not_builtin_vars:
-                            if not isinstance(values, list):
-                                raise RoleParameterNotListError(
-                                    role=local_role, parameter=key
-                                )
-                            if len(values) != role_num:
-                                raise RoleParameterNotConsistencyError(
-                                    role=local_role, parameter=key
-                                )
-                            _conf_v2[key] = values[role_idx]
-                        else:
-                            _conf_v2[key] = _convert_v1_to_v2(values)
-                    return _conf_v2
-
-                parameters = _convert_v1_to_v2(parameters)
-                param_class = param_class.update(parameters, not redundant_param_check)
-
+        if not parse_user_specified_only:
+            param_class.check()
+            conf["ComponentParam"] = param_class.as_dict()
         else:
-            raise NotImplementedError(f"conf version = `{conf_version}` is not supported")
-
-        param_class.check()
-        conf["ComponentParam"] = param_class.as_dict()
+            conf["ComponentParam"] = user_specified_parameters
 
         return conf
+
+    @staticmethod
+    def convert_parameters_v1_to_v2(party_idx, parameter_v1, not_builtin_vars):
+        parameter_v2 = {}
+        for key, values in parameter_v1.items():
+            # stop here, values support to be a list
+            if key not in not_builtin_vars:
+                parameter_v2[key] = values[party_idx]
+            else:
+                parameter_v2[key] = RuntimeConfParserUtil.convert_parameters_v1_to_v2(role_idx, values, not_builtin_vars)
+
+        return parameter_v2
+
+    @staticmethod
+    def get_v1_role_parameters(provider, component, runtime_conf, dsl):
+        component_role_parameters = dict()
+        if "role_parameters" not in runtime_conf:
+            return component_role_parameters
+
+        role_parameters = runtime_conf["role_parameters"]
+        module = dsl["components"][component]["module"]
+        if module == "Reader":
+            data_key = dsl["components"][component]["output"]["data"][0]
+
+            for role, role_params in role_parameters.items():
+                if not role_params.get("args", {}).get("data", {}).get(data_key):
+                    continue
+
+                component_role_parameters[role] = dict()
+                dataset = role_params["args"]["data"][data_key]
+                for idx, table in enumerate(dataset):
+                    component_role_parameters[role][str(idx)] = {component: {"table": table}}
+        else:
+            provider_components = ComponentRegistry.get_provider_components(
+                provider.provider_name, provider.provider_version
+            )
+            param_class = provider.get(module, provider_components).get_param_obj(component)
+            extract_not_builtin = getattr(param_class, "extract_not_builtin", None)
+            not_builtin_vars = extract_not_builtin()
+
+            for role, role_params in role_parameters.items():
+                params = role_params.get(component, {})
+                if not params:
+                    continue
+
+                component_role_parameters[role] = dict()
+                party_num = len(runtime_conf["role"][role])
+
+                for party_idx in range(party_num):
+                    party_param = RuntimeConfParserUtil.convert_parameters_v1_to_v2(party_idx, params, not_builtin_vars)
+                    component_role_parameters[role][str(party_idx)] = {component: party_param}
+
+        return component_role_parameters
 
     @staticmethod
     def get_job_providers(dsl, provider_detail):
@@ -203,7 +217,7 @@ class RuntimeConfParserUtil(object):
                     name, version = provider.split("@", -1)
                     if name not in provider_detail["components"][module]["support_provider"]:
                         raise ValueError(f"Provider: {name} does not support, please register")
-                    if version not in provider_detail["provider"][name]:
+                    if version not in provider_detail["providers"][name]:
                         raise ValueError(f"Provider: {name} version: {version} does not support, please register")
                 else:
                     name = provider_msg[0]
@@ -211,7 +225,6 @@ class RuntimeConfParserUtil(object):
                                                                            module=module,
                                                                            provider_detail=provider_detail,
                                                                            name=name)
-
 
             else:
                 name, version = RuntimeConfParserUtil.get_component_provider(alias=component,
@@ -253,7 +266,10 @@ class RuntimeConfParserUtil(object):
                                        detect=True, provider_cache=None, job_parameters=None):
         if provider_name and provider_version:
             provider_path = provider_detail["providers"][provider_name][provider_version]["path"]
-            provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name, version=provider_version, path=provider_path, class_path=ComponentRegistry.get_default_class_path()))
+            provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name,
+                                                                               version=provider_version,
+                                                                               path=provider_path,
+                                                                               class_path=ComponentRegistry.get_default_class_path()))
             if provider_cache is not None:
                 if provider_name not in provider_cache:
                     provider_cache[provider_name] = {}
@@ -274,6 +290,75 @@ class RuntimeConfParserUtil(object):
         return RuntimeConfParserUtil.instantiate_component_provider(provider_detail,
                                                                     provider_name=provider_name,
                                                                     provider_version=provider_version)
+
+    """"
+    @staticmethod
+    def change_conf_v1_to_v2(dsl, conf_v1, readers, provider_detail):
+        conf_v2 = dict()
+        for attr, val in conf_v1.items():
+            if attr not in ["job_parameters", "role_parameters", "algorithm_parameters"]:
+                conf_v2[attr] = val
+
+        job_params = conf_v1.get("job_parameters", {})
+        if job_params:
+            conf_v2["job_parameters"] = dict(common=job_params)
+
+        algorithm_params = conf_v1.get("algorithm_parameters", {})
+        if algorithm_params:
+            conf_v2["component_parameters"] = dict(common=algorithm_params)
+
+        role_parameters = conf_v1.get("role_parameters", {})
+        if role_parameters:
+            # update readers
+            reader_params = dict()
+            if "component_parameters" not in conf_v2:
+                conf_v2["component_parameters"] = dict()
+            for role, role_params in role_parameters.items():
+                if not role_params.get("args"):
+                    continue
+                reader_params[role] = dict()
+                for data_key, dataset in role_params["args"]["data"].items():
+                    reader_cpn = readers[data_key]
+                    for idx, table_conf in enumerate(data_key):
+                        reader_params[role][str(idx)] = {reader_cpn: {"table": table_conf}}
+
+            if reader_params:
+                conf_v2["component_parameters"]["role"] = reader_params
+
+            # update component parameters
+            other_params = {}
+            for role, role_params in role_parameters.items():
+                for cpn in role_params:
+                    if cpn == "args":
+                        continue
+
+                    module = dsl["components"]
+                    provider_name, provider_version = RuntimeConfParserUtil.get_component_provider(cpn, module, provider_detail)
+                    provider = RuntimeConfParserUtil.instantiate_component_provider(provider_detail,
+                                                                                    provider_name=provider_name,
+                                                                                    provider_version=provider_version)
+
+                    for idx in range(len(role_params[role])):
+                        role_party_id = conf_v1[role][idx]
+                        party_params = RuntimeConfParserUtil.get_component_parameters(provider,
+                                                                                      conf_v1,
+                                                                                      module,
+                                                                                      cpn,
+                                                                                      redundant_param_check=False,
+                                                                                      conf_version=1,
+                                                                                      local_role=role,
+                                                                                      local_party_id=role_party_id,
+                                                                                      parse_user_specified_only=True)
+
+                        if role not in other_params:
+                            other_params[role] = dict()
+                        other_params[role][str(idx)] = party_params["componentParam"]
+
+            if other_params:
+                conf_v2["component_parameters"]["role"].update(other_params)
+
+        return conf_v2
+        """
 
 
 class RuntimeConfParserV1(object):

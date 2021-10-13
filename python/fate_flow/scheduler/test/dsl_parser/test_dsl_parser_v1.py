@@ -19,12 +19,6 @@ import pprint
 import sys
 from fate_flow.scheduler import dsl_parser
 
-"""
-def run(self, pipeline_dsl=None, pipeline_runtime_conf=None, dsl=None, runtime_conf=None,
-        provider_detail=None, mode="train", local_role=None,
-        local_party_id=None, deploy_detail=None, *args, **kwargs):
-"""
-
 dsl_path_v1 = sys.argv[1]
 conf_path_v1 = sys.argv[2]
 provider_path = sys.argv[3]
@@ -40,51 +34,39 @@ with open(provider_path, "r") as fin:
     provider_detail = json.loads(fin.read())
 
 
-dsl_parser_v1 = dsl_parser.DSLParser()
-dsl_parser_v1.run(dsl=dsl_v1,
-                  runtime_conf=conf_v1,
-                  mode="train")
+dsl_parser_v1 = dsl_parser.DSLParserV1()
+dsl_v2 = dsl_parser_v1.convert_dsl_v1_to_v2(dsl_v1)
 
-pprint.pprint(dsl_parser_v1.get_job_parameters())
-print ("\n\n\n")
-pprint.pprint(dsl_parser_v1.get_job_providers(provider_detail=provider_detail,
-                                              local_role="guest",
-                                              local_party_id=10000))
-print ("\n\n\n")
-pprint.pprint(dsl_parser_v1.get_dependency())
-print ("\n\n\n")
+pprint.pprint(dsl_v2)
 
-job_providers = dsl_parser_v1.get_job_providers(provider_detail=provider_detail,
-                                                local_role="guest",
-                                                local_party_id=10000)
-component_parameters = dict()
-deploy_detail = dict()
-for component in job_providers.keys():
-    provider_info = job_providers[component]["provider"]
-    provider_name = provider_info["name"]
-    provider_version = provider_info["version"]
+components = dsl_parser_v1.get_components_light_weight(dsl_v2)
+for cpn in components:
+    print (cpn.get_name())
+    print (cpn.get_module())
 
-    parameter = dsl_parser_v1.parse_component_parameters(component,
-                                                         provider_detail,
-                                                         provider_name,
-                                                         provider_version,
-                                                         local_role="guest",
-                                                         local_party_id=10000)
+pprint.pprint(dsl_parser_v1.get_job_parameters(conf_v1))
 
-    component_parameters[component] = parameter
-    deploy_detail[component] = dsl_parser_v1.get_component_need_deploy_info(component, provider_detail, job_providers)
-    # pprint.pprint(parameter)
+job_providers = dsl_parser_v1.get_job_providers(dsl=dsl_v2, provider_detail=provider_detail)
+pprint.pprint(job_providers)
+print("\n\n\n")
 
+cpn_role_parameters = dict()
+for cpn in components:
+    cpn_name = cpn.get_name()
+    role_params = dsl_parser_v1.parse_component_role_parameters(component=cpn_name,
+                                                                dsl=dsl_v2,
+                                                                runtime_conf=conf_v1,
+                                                                provider_detail=provider_detail,
+                                                                provider_name=job_providers[cpn_name]["provider"]["name"],
+                                                                provider_version=job_providers[cpn_name]["provider"]["version"])
 
-pprint.pprint(deploy_detail)
-pprint.pprint(dsl_parser_v1.get_dependency_with_parameters(component_parameters))
+    print (cpn_name)
+    pprint.pprint(role_params)
+    print ("\n")
+
+    cpn_role_parameters[cpn_name] = role_params
+
 print ("\n\n\n")
 
-print (dsl_parser_v1.get_dsl_hierarchical_structure())
-print (dsl_parser_v1.get_dsl_hierarchical_structure()[0]["dataio_0"].get_component_provider())
-
-predict_dsl = dsl_parser_v1.generate_predict_dsl(deploy_detail)
-pprint.pprint(predict_dsl)
-print ("\n\n\n")
-pprint.pprint(dsl_parser_v1.get_predict_dsl(component_parameters=component_parameters))
-
+conf_v2 = dsl_parser_v1.convert_conf_v1_to_v2(conf_v1, cpn_role_parameters)
+pprint.pprint(conf_v2)

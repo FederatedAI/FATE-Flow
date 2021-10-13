@@ -17,7 +17,7 @@ import importlib
 import pathlib
 
 from fate_arch.common import file_utils
-from fate_flow.entity.component_provider import ComponentProvider
+from fate_flow.entity import ComponentProvider
 
 
 def get_provider_interface(provider: ComponentProvider):
@@ -38,4 +38,4 @@ def get_component_class(provider: ComponentProvider, class_name):
 
 
 def get_component_class_path(provider: ComponentProvider, class_name):
-    return f"{provider.path.split('/')[-1]}.{provider.class_path.get(class_name)}".split(".")
+    return f"{pathlib.Path(provider.path).name}.{provider.class_path.get(class_name)}".split(".")

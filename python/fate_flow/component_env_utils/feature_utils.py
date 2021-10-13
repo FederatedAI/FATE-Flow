@@ -15,18 +15,19 @@
 #
 import numpy
 
-from component_plugins.fate.python.federatedml.feature.sparse_vector import SparseVector
 
-
-def get_component_output_data_line(src_key, src_value):
-    from federatedml.feature.instance import Instance
+def get_component_output_data_line(src_key, src_value, match_id_name=None):
     data_line = [src_key]
     is_str = False
     extend_header = []
-    if isinstance(src_value, Instance):
+    if hasattr(src_value, "is_instance"):
         for inst in ["inst_id", "label", "weight"]:
             if getattr(src_value, inst) is not None:
                 data_line.append(getattr(src_value, inst))
+                # if inst == "inst_id":
+                #     extend_header.append(match_id_name)
+                # else:
+                #     extend_header.append(inst)
                 extend_header.append(inst)
         data_line.extend(dataset_to_list(src_value.features))
     elif isinstance(src_value, str):
@@ -42,7 +43,7 @@ def dataset_to_list(src):
         return src.tolist()
     elif isinstance(src, list):
         return src
-    elif isinstance(src, SparseVector):
+    elif hasattr(src, "is_sparse_vector"):
         vector = [0] * src.get_shape()
         for idx, v in src.get_all_data():
             vector[idx] = v

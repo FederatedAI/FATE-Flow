@@ -46,12 +46,15 @@ def get_checkpoint():
         try:
             request.json['step_index'] = int(request.json['step_index'])
         except Exception:
-            return error_response(400, 'invalid step_index')
+            return error_response(400, "Invalid 'step_index'")
 
         checkpoint = checkpoint_manager.get_checkpoint_by_index(request.json['step_index'])
     elif 'step_name' in request.json:
         checkpoint = checkpoint_manager.get_checkpoint_by_name(request.json['step_name'])
     else:
-        return error_response(400, 'step_index or step_name is required')
+        return error_response(400, "'step_index' or 'step_name' is required")
 
-    return get_json_result(data=checkpoint.to_dict(True) if checkpoint is not None else {})
+    if checkpoint is None:
+        return error_response(404, "The checkpoint was not found.")
+
+    return get_json_result(data=checkpoint.to_dict(True))

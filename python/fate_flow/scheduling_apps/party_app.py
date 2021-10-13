@@ -15,9 +15,10 @@
 #
 from flask import request
 
-from fate_flow.entity.retcode import RetCode
+from fate_flow.entity import RetCode
 from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
+from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.authentication_utils import request_authority_certification
 from fate_flow.operation.job_saver import JobSaver
@@ -33,6 +34,18 @@ def create_job(job_id, role, party_id):
         return get_json_result(retcode=0, retmsg='success', data=result)
     except RuntimeError as e:
         return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=str(e), data={"job_id": job_id})
+
+
+@manager.route('/<job_id>/<role>/<party_id>/dependence/check', methods=['POST'])
+def check_dependence(job_id, role, party_id):
+    job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
+    status = DependenceManager.check_job_dependence(job)
+    if status:
+        return get_json_result(retcode=0, retmsg='success')
+    else:
+        return get_json_result(retcode=RetCode.OPERATING_ERROR,
+                               retmsg=f"check for job {job_id} dependence failed, "
+                                      f"dependencies are being installed automatically, it may take a few minutes")
 
 
 @manager.route('/<job_id>/<role>/<party_id>/resource/apply', methods=['POST'])
@@ -147,7 +160,7 @@ def report_task(job_id, component_name, task_id, task_version, role, party_id):
     TaskController.update_task(task_info=task_info)
     if task_info.get("party_status"):
         if not TaskController.update_task_status(task_info=task_info):
-            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update task status failed")
+            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update job status does not take effect")
     return get_json_result(retcode=0, retmsg='success')
 
 
@@ -189,7 +202,7 @@ def task_status(job_id, component_name, task_id, task_version, role, party_id, s
     if TaskController.update_task_status(task_info=task_info):
         return get_json_result(retcode=0, retmsg='success')
     else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update task status failed")
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="update job status does not take effect")
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/stop/<stop_status>', methods=['POST'])

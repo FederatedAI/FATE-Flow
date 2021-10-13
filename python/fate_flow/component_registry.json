@@ -4,6 +4,8 @@
   "providers": {
   },
   "default_settings": {
+    "fate_flow_tools":{"default_version_key": "FATEFlow"},
+    "fate_algorithm": {"default_version_key": "FATE"},
     "class_path": {
       "interface": "components.components.Components",
       "feature_instance": "feature.instance.Instance",

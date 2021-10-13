@@ -37,43 +37,23 @@ class ServiceRegistry(ReloadConfigBase):
         if not isinstance(conf, dict):
             raise ValueError('invalid config file')
 
-        local_conf = {}
         local_path = path.with_name(f'local.{SERVICE_CONF}')
         if local_path.exists():
             local_conf = file_utils.load_yaml_conf(local_path)
             if not isinstance(local_conf, dict):
                 raise ValueError('invalid local config file')
+            conf.update(local_conf)
 
         cls.LINKIS_SPARK_CONFIG = conf.get('fate_on_spark', {}).get('linkis_spark')
 
         for k, v in conf.items():
             if k in FATE_FLOW_SERVER_START_CONFIG_ITEMS:
                 stat_logger.info(f"{k} is fate flow server start config, pass load")
-                pass
             else:
                 if not isinstance(v, dict):
                     raise ValueError(f'{k} is not a dict, external services config must be a dict')
                 setattr(cls, k.upper(), v)
 
-        """
-        for k, v in local_conf.items():
-            if k == FATE_FLOW_SERVICE_NAME:
-                if isinstance(v, dict):
-                    for key, val in v.items():
-                        key = key.upper()
-                        if hasattr(cls, key):
-                            setattr(cls, key, val)
-            else:
-                k = k.upper()
-                if hasattr(cls, k) and type(getattr(cls, k)) == type(v):
-                    setattr(cls, k, v)
-        """
-        return cls.get_all()
-
     @classmethod
     def register(cls, service_name, service_config):
         setattr(cls, service_name, service_config)
-
-    @classmethod
-    def write(cls):
-        pass

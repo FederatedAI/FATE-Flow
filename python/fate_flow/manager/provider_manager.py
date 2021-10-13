@@ -13,17 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
-import subprocess
-import sys
-
 from fate_arch.common import file_utils
 from fate_arch.common.versions import get_versions
-from fate_flow.entity.component_provider import ComponentProvider
-from fate_flow.worker.provider_registrar import ProviderRegistrar
-from fate_flow.settings import stat_logger
-from fate_flow.utils import process_utils, job_utils, base_utils
+from fate_flow.entity import ComponentProvider
 from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.entity.types import WorkerName
 
 
 class ProviderManager:
@@ -40,7 +35,7 @@ class ProviderManager:
     def register_fate_flow_component_provider(cls):
         path = file_utils.get_python_base_directory("fate_flow")
         provider = ComponentProvider(name="fate_flow_tools", version=get_versions()["FATEFlow"], path=path, class_path=ComponentRegistry.get_default_class_path())
-        return cls.start_registrar_process(provider)
+        return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
 
     @classmethod
     def register_default_fate_algorithm_component_provider(cls):
@@ -50,46 +45,7 @@ class ProviderManager:
                 "federatedml"]
         path = file_utils.get_python_base_directory(*path)
         provider = ComponentProvider(name="fate_algorithm", version=get_versions()["FATE"], path=path, class_path=ComponentRegistry.get_default_class_path())
-        return cls.start_registrar_process(provider)
-
-    @classmethod
-    def start_registrar_process(cls, provider: ComponentProvider):
-        stat_logger.info('try to start component registry initializer subprocess')
-        worker_type = "provider_registrar"
-        worker_id = base_utils.new_unique_id()
-        message = f'{worker_type} {worker_id} subprocess'
-
-        config_dir = job_utils.get_worker_directory(worker_type, worker_id)
-        log_dir = job_utils.get_worker_log_directory(worker_type, worker_id)
-        os.makedirs(config_dir, exist_ok=True)
-        config_path = os.path.join(config_dir, f"config.json")
-        config_data = {
-            "provider": provider.to_dict()
-        }
-        file_utils.dump_json_conf(config_data, config_path)
-
-        process_cmd = [
-            sys.executable,
-            sys.modules[ProviderRegistrar.__module__].__file__,
-            '-c', config_path,
-        ]
-
-        p = process_utils.run_subprocess(job_id=None, config_dir=config_dir, process_cmd=process_cmd, extra_env=provider.env,
-                                         log_dir=log_dir, cwd_dir=config_dir)
-        stat_logger.info(f'{message} pid {p.pid} start')
-        try:
-            p.wait(timeout=5)
-            return p.returncode, process_utils.get_subprocess_std(log_dir)
-        except subprocess.TimeoutExpired as e:
-            err = f"{message} pid {p.pid} run timeout"
-            stat_logger.exception(err, e)
-            raise Exception(err)
-        finally:
-            try:
-                p.kill()
-                p.poll()
-            except Exception as e:
-                stat_logger.exception(e)
+        return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
 
     @classmethod
     def get_provider_object(cls, provider_info, check_registration=True):
@@ -105,8 +61,6 @@ class ProviderManager:
     @classmethod
     def get_job_provider_group(cls, dsl_parser, components: list = None, check_registration=True):
         providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY)
-        # providers format: {'upload_0': {'module': 'Upload', 'provider': {'name': 'fate_flow_tools', 'version': '1.7.0'}}}
-
         group = {}
         if components is not None:
             _providers_info = {}
@@ -131,20 +85,27 @@ class ProviderManager:
         return cls.get_provider_object(providers[component_name]["provider"])
 
     @classmethod
-    def get_component_parameters(cls, dsl_parser, component_name, role, party_id, provider: ComponentProvider = None):
+    def get_component_parameters(cls, dsl_parser, component_name, role, party_id, provider: ComponentProvider = None, previous_components_parameters: dict = None):
         if not provider:
             provider = cls.get_component_provider(dsl_parser=dsl_parser,
                                                   component_name=component_name)
-        component_parameters_on_party = dsl_parser.parse_component_parameters(component_name,
-                                                                              ComponentRegistry.REGISTRY,
-                                                                              provider.name,
-                                                                              provider.version,
-                                                                              local_role=role,
-                                                                              local_party_id=party_id)
-        return component_parameters_on_party
+        parameters = dsl_parser.parse_component_parameters(component_name,
+                                                           ComponentRegistry.REGISTRY,
+                                                           provider.name,
+                                                           provider.version,
+                                                           local_role=role,
+                                                           local_party_id=int(party_id))
+        user_specified_parameters = dsl_parser.parse_user_specified_component_parameters(component_name,
+                                                                                         ComponentRegistry.REGISTRY,
+                                                                                         provider.name,
+                                                                                         provider.version,
+                                                                                         local_role=role,
+                                                                                         local_party_id=int(party_id),
+                                                                                         previous_parameters=previous_components_parameters)
+        return parameters, user_specified_parameters
 
     @classmethod
-    def get_component_run_info(cls, dsl_parser, component_name, role, party_id):
+    def get_component_run_info(cls, dsl_parser, component_name, role, party_id, previous_components_parameters: dict = None):
         provider = cls.get_component_provider(dsl_parser, component_name)
-        parameters = cls.get_component_parameters(dsl_parser, component_name, role, party_id, provider)
-        return provider, parameters
+        parameters, user_specified_parameters = cls.get_component_parameters(dsl_parser, component_name, role, party_id, provider, previous_components_parameters)
+        return provider, parameters, user_specified_parameters

@@ -28,20 +28,19 @@ from fate_flow.settings import stat_logger, TEMP_DIRECTORY
 from fate_flow.utils import job_utils, detect_utils, schedule_utils, log_utils
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode, JobStatus
 from fate_flow.utils.api_utils import get_json_result, error_response
-from fate_flow.entity.retcode import RetCode
-from fate_flow.entity.job import JobConfigurationBase
+from fate_flow.entity import RetCode
+from fate_flow.entity import JobConfigurationBase
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_clean import JobClean
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.controller.job_controller import JobController
 
 
 @manager.route('/submit', methods=['POST'])
 def submit_job():
     work_mode = JobRuntimeConfigAdapter(request.json.get('job_runtime_conf', {})).get_job_work_mode()
-    detect_utils.check_config({'work_mode': work_mode}, required_arguments=[('work_mode', (WorkMode.CLUSTER, WorkMode.STANDALONE))])
     submit_result = DAGScheduler.submit(JobConfigurationBase(**request.json))
     return get_json_result(retcode=0, retmsg='success',
                            job_id=submit_result.get("job_id"),
@@ -60,11 +59,9 @@ def stop_job():
         schedule_logger(job_id).info(f"request stop job {jobs[0]} to {stop_status}")
         status_code, response = FederatedScheduler.request_stop_job(job=jobs[0], stop_status=stop_status, command_body=jobs[0].to_dict())
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            return get_json_result(retcode=RetCode.SUCCESS, retmsg=f"stop job on this party {kill_status};\n"
-                                                                   f"stop job on all party success")
+            return get_json_result(retcode=RetCode.SUCCESS, retmsg=f"stop job on this party {kill_status}; stop job on all party success")
         else:
-            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg="stop job on this party {};\n"
-                                                                           "stop job failed:\n{}".format(kill_status, json_dumps(response, indent=4)))
+            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"stop job on this party {kill_status}", data=response)
     else:
         schedule_logger(job_id).info(f"can not found job {job_id} to stop")
         return get_json_result(retcode=RetCode.DATA_ERROR, retmsg="can not found job")

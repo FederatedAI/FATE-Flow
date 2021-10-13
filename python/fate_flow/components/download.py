@@ -15,7 +15,7 @@
 #
 import os
 
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_arch.session import Session
 from fate_arch.storage import DEFAULT_ID_DELIMITER
 from fate_flow.components._base import (
@@ -24,11 +24,11 @@ from fate_flow.components._base import (
     ComponentMeta,
     ComponentInputProtocol,
 )
-from fate_flow.entity.metric import Metric, MetricMeta
+from fate_flow.entity import Metric, MetricMeta
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.utils import job_utils
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 download_cpn_meta = ComponentMeta("Download")
 

@@ -9,6 +9,7 @@ __pycache__
 .project
 *.prefs
 _build
+venv
 
 # excluded paths
 /data/
@@ -18,3 +19,10 @@ _build
 .vscode/*
 /eggroll/
 /fateboard/
+/temp/
+/worker/
+/provider_registrar/
+/model_local_cache/
+*.db
+*.whl
+component_registry_realtime.json

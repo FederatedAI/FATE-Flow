@@ -41,7 +41,7 @@ from fate_flow.utils.model_utils import gen_party_model_id, check_if_deployed
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.types import ModelOperation, TagOperation
-from fate_flow.entity.job import JobConfigurationBase
+from fate_flow.entity import JobConfigurationBase
 from fate_arch.common import file_utils, WorkMode, FederatedMode
 
 
@@ -195,7 +195,7 @@ def do_migrate_model():
 @manager.route('/load/do', methods=['POST'])
 def do_load_model():
     request_data = request.json
-    request_data['servings'] = RuntimeConfig.service_db.get_servings('servings')
+    request_data['servings'] = RuntimeConfig.service_db.get_urls('servings')
     if not check_if_deployed(role=request_data['local']['role'],
                              party_id=request_data['local']['party_id'],
                              model_id=request_data['job_parameters']['model_id'],
@@ -299,11 +299,12 @@ def download_model(model_id, model_version):
 def operate_model(model_operation):
     request_config = request.json or request.form.to_dict()
     job_id = job_utils.generate_job_id()
-    if model_operation not in [ModelOperation.STORE, ModelOperation.RESTORE, ModelOperation.EXPORT, ModelOperation.IMPORT]:
+    if not ModelOperation.valid(model_operation):
         raise Exception('Can not support this operating now: {}'.format(model_operation))
+    model_operation = ModelOperation(model_operation)
     request_config["model_id"] = gen_party_model_id(model_id=request_config["model_id"], role=request_config["role"], party_id=request_config["party_id"])
     if model_operation in [ModelOperation.EXPORT, ModelOperation.IMPORT]:
-        if model_operation == ModelOperation.IMPORT:
+        if model_operation is ModelOperation.IMPORT:
             try:
                 file = request.files.get('file')
                 file_path = os.path.join(TEMP_DIRECTORY, file.filename)
@@ -320,7 +321,7 @@ def operate_model(model_operation):
                 model = pipelined_model.PipelinedModel(model_id=request_config["model_id"], model_version=request_config["model_version"])
                 model.unpack_model(file_path)
 
-                pipeline = model.read_component_model('pipeline', 'pipeline')['Pipeline']
+                pipeline = model.read_pipeline_model()
                 train_runtime_conf = json_loads(pipeline.train_runtime_conf)
                 permitted_party_id = []
                 for key, value in train_runtime_conf.get('role', {}).items():
@@ -442,13 +443,13 @@ def tag_model(operation):
 @DB.connection_context()
 def operate_tag(tag_operation):
     request_data = request.json
-    if tag_operation not in [TagOperation.CREATE, TagOperation.RETRIEVE, TagOperation.UPDATE,
-                             TagOperation.DESTROY, TagOperation.LIST]:
+    if not TagOperation.valid(tag_operation):
         raise Exception('The {} operation is not currently supported.'.format(tag_operation))
 
     tag_name = request_data.get('tag_name')
     tag_desc = request_data.get('tag_desc')
-    if tag_operation == TagOperation.CREATE:
+    tag_operation = TagOperation(tag_operation)
+    if tag_operation is TagOperation.CREATE:
         try:
             if not tag_name:
                 return get_json_result(100, "'{}' tag created failed. Please input a valid tag name.".format(tag_name))
@@ -459,7 +460,7 @@ def operate_tag(tag_operation):
         else:
             return get_json_result("'{}' tag has been created successfully.".format(tag_name))
 
-    elif tag_operation == TagOperation.LIST:
+    elif tag_operation is TagOperation.LIST:
         tags = Tag.select()
         limit = request_data.get('limit')
         res = {"tags": []}
@@ -474,13 +475,13 @@ def operate_tag(tag_operation):
         return get_json_result(data=res)
 
     else:
-        if not (tag_operation == TagOperation.RETRIEVE and not request_data.get('with_model')):
+        if not (tag_operation is TagOperation.RETRIEVE and not request_data.get('with_model')):
             try:
                 tag = Tag.get(Tag.f_name == tag_name)
             except peewee.DoesNotExist:
                 raise Exception("Can not found '{}' tag.".format(tag_name))
 
-        if tag_operation == TagOperation.RETRIEVE:
+        if tag_operation is TagOperation.RETRIEVE:
             if request_data.get('with_model', False):
                 res = {'models': []}
                 models = (MLModel.select().join(ModelTag, on=ModelTag.f_m_id == MLModel.f_model_version).where(ModelTag.f_t_id == tag.f_id))
@@ -503,7 +504,7 @@ def operate_tag(tag_operation):
                     res['tags'].append({'name': tag.f_name, 'description': tag.f_desc})
                 return get_json_result(data=res)
 
-        elif tag_operation == TagOperation.UPDATE:
+        elif tag_operation is TagOperation.UPDATE:
             new_tag_name = request_data.get('new_tag_name', None)
             new_tag_desc = request_data.get('new_tag_desc', None)
             if (tag.f_name == new_tag_name) and (tag.f_desc == new_tag_desc):
@@ -539,11 +540,11 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
         component_parameters["model_id"] = [config_data["model_id"]]
         component_parameters["model_version"] = [config_data["model_version"]]
         component_parameters["store_address"] = [ServiceRegistry.MODEL_STORE_ADDRESS]
-        if model_operation == ModelOperation.STORE:
+        if model_operation is ModelOperation.STORE:
             component_parameters["force_update"] = [config_data.get("force_update", False)]
         job_runtime_conf["role_parameters"][initiator_role] = {component_name: component_parameters}
         job_dsl["components"][component_name] = {
-            "module": "Model{}".format(model_operation.capitalize())
+            "module": "Model{}".format(model_operation.value.capitalize())
         }
     else:
         raise Exception("Can not support this model operation: {}".format(model_operation))
@@ -620,7 +621,7 @@ def deploy():
         init_party_id = key.split('/')[-2].split('#')[1]
         model_init_role = (value['f_initiator_role'] if value.get('f_initiator_role')
                            else value.get('f_train_runtime_conf', {}).get('initiator', {}).get('role', ''))
-        model_init_party_id = (value['f_initiator_role_party_id'] if value.get('f_initiator_role_party_id')
+        model_init_party_id = (value['f_initiator_party_id'] if value.get('f_initiator_party_id')
                                else value.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id', ''))
 
         if init_role == model_init_role and init_party_id == str(model_init_party_id):
@@ -714,7 +715,7 @@ def get_predict_conf():
     if model_fp_list:
         fp = model_fp_list[0]
         pipeline_model = PipelinedModel(model_id=fp.split('/')[-2], model_version=fp.split('/')[-1])
-        pipeline = pipeline_model.read_component_model('pipeline', 'pipeline')['Pipeline']
+        pipeline = pipeline_model.read_pipeline_model()
         predict_dsl = json_loads(pipeline.inference_dsl)
 
         train_runtime_conf = json_loads(pipeline.train_runtime_conf)
