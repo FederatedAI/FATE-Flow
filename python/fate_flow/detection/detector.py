@@ -161,8 +161,9 @@ class Detector(cron.Cron):
                 manager_session_id_list.append(manager_session_id)
                 detect_logger().info(f'start destroy session {manager_session_id}')
                 try:
-                    with Session(session_id=manager_session_id, options={"logger": detect_logger()}) as sess:
-                        sess.destroy_all_sessions()
+                    # with Session(session_id=manager_session_id, options={"logger": detect_logger()}) as sess:
+                    #     sess.destroy_all_sessions()
+                    pass
                 except Exception as e:
                     detect_logger().error(f'stop session {manager_session_id} error', e)
                 finally:
