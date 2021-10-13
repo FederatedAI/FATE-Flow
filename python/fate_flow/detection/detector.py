@@ -19,7 +19,7 @@ from fate_arch.common.base_utils import current_timestamp
 from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.db.db_models import DB, Job, DependenciesStorageMeta
 from fate_arch.session import Session
-from fate_arch.common.log import detect_logger
+from fate_flow.utils.log_utils import detect_logger
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
@@ -125,7 +125,7 @@ class Detector(cron.Cron):
             detect_logger().exception(e)
         finally:
             detect_logger().info('finish detect resource recycle')
-            
+
     @classmethod
     @DB.connection_context()
     def detect_dependence_upload_record(cls):

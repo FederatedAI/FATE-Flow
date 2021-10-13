@@ -195,7 +195,7 @@ def do_migrate_model():
 @manager.route('/load/do', methods=['POST'])
 def do_load_model():
     request_data = request.json
-    request_data['servings'] = RuntimeConfig.service_db.get_servings('servings')
+    request_data['servings'] = RuntimeConfig.service_db.get_urls('servings')
     if not check_if_deployed(role=request_data['local']['role'],
                              party_id=request_data['local']['party_id'],
                              model_id=request_data['job_parameters']['model_id'],
@@ -544,7 +544,7 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
             component_parameters["force_update"] = [config_data.get("force_update", False)]
         job_runtime_conf["role_parameters"][initiator_role] = {component_name: component_parameters}
         job_dsl["components"][component_name] = {
-            "module": "Model{}".format(model_operation.capitalize())
+            "module": "Model{}".format(model_operation.value.capitalize())
         }
     else:
         raise Exception("Can not support this model operation: {}".format(model_operation))

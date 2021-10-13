@@ -13,22 +13,21 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import sys
 import logging
-from pathlib import Path
-from time import time
+import sys
 from base64 import b64encode
 from hmac import HMAC
-from datetime import datetime, timezone
-from importlib.util import spec_from_file_location, module_from_spec
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
+from time import time
+from urllib.parse import quote, urlencode
 
-from flask import Flask, Blueprint, request
+from flask import Blueprint, Flask, request
 
 from fate_arch.common.base_utils import CustomJSONEncoder
-
+from fate_flow.settings import (API_VERSION, HTTP_APP_KEY, HTTP_SECRET_KEY, MAX_TIMESTAMP_INTERVAL, access_logger,
+                                stat_logger)
 from fate_flow.utils.api_utils import error_response, server_error_response
-from fate_flow.settings import (API_VERSION, HTTP_APP_KEY, HTTP_SECRET_KEY, MAX_TIMESTAMP_INTERVAL,
-                                stat_logger, access_logger)
 
 
 __all__ = ['app']
@@ -72,20 +71,23 @@ stat_logger.info('imported pages: %s', ' '.join(str(path) for path in pages_path
 
 @app.before_request
 def authentication():
+    if request.json and request.form:
+        return error_response(400)
+
     if not (HTTP_APP_KEY and HTTP_SECRET_KEY):
         return
 
-    required_headers = {
+    for i in [
         'TIMESTAMP',
-        'NONCE'
+        'NONCE',
         'APP_KEY',
         'SIGNATURE',
-    }
-    if required_headers - set(request.headers):
-        return error_response(401)
+    ]:
+        if not request.headers.get(i):
+            return error_response(401)
 
     try:
-        timestamp = datetime.fromtimestamp(int(request.headers['TIMESTAMP']) / 1000, tz=timezone.utc)
+        timestamp = int(request.headers['TIMESTAMP']) / 1000
     except Exception:
         return error_response(400, 'Invalid TIMESTAMP')
 
@@ -103,8 +105,12 @@ def authentication():
         request.headers['TIMESTAMP'].encode('ascii'),
         request.headers['NONCE'].encode('ascii'),
         request.headers['APP_KEY'].encode('ascii'),
-        request.full_path.encode('ascii'),
-        request.data,
+        request.full_path.rstrip('?').encode('ascii'),
+        request.data if request.json else b'',
+        # quote_via: `urllib.parse.quote` replaces spaces with `%20`
+        # safe: unreserved characters from rfc3986
+        urlencode(sorted(request.form.items()), quote_via=quote, safe='-._~').encode('ascii')
+        if request.form else b'',
     ]), 'sha1').digest()).decode('ascii')
     if signature != request.headers['SIGNATURE']:
         return error_response(403)

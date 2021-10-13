@@ -21,7 +21,7 @@ import psutil
 
 from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_arch.common.file_utils import load_json_conf
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.metastore.base_model import auto_date_timestamp_db_field
 from fate_flow.db.db_models import DB, Task, WorkerInfo
 from fate_flow.db.runtime_config import RuntimeConfig
@@ -79,31 +79,25 @@ class WorkerManager:
         config_path, result_path = cls.get_config(worker_name=worker_name, worker_id=worker_id, config_dir=config_dir,
                                                   config=config, log_dir=log_dir)
 
+        process_cmd = [
+            sys.executable,
+            module_file_path,
+            "--config", config_path,
+            '--result', result_path,
+            "--log_dir", log_dir,
+            "--parent_log_dir", os.path.dirname(log_dir),
+            "--worker_id", worker_id,
+            "--run_ip", RuntimeConfig.JOB_SERVER_HOST,
+            "--job_server", f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
+        ]
+
         if job_id:
-            process_cmd = [
-                sys.executable,
-                module_file_path,
+            process_cmd.extend([
                 "--job_id", job_id,
                 "--role", role,
                 "--party_id", party_id,
-                "--config", config_path,
-                '--result', result_path,
-                "--log_dir", log_dir,
-                "--parent_log_dir", os.path.dirname(log_dir),
-                '--run_ip', RuntimeConfig.JOB_SERVER_HOST,
-                '--job_server', f'{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}',
-            ]
-        else:
-            process_cmd = [
-                sys.executable,
-                module_file_path,
-                "--config", config_path,
-                '--result', result_path,
-                "--log_dir", log_dir,
-                "--parent_log_dir", os.path.dirname(log_dir),
-                '--run_ip', RuntimeConfig.JOB_SERVER_HOST,
-                '--job_server', f'{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}',
-            ]
+            ])
+
         process_cmd.extend(specific_cmd)
         p = process_utils.run_subprocess(job_id=job_id, config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=cls.get_env(job_id, provider_info), log_dir=log_dir,
@@ -194,6 +188,7 @@ class WorkerManager:
             '--result', result_path,
             "--log_dir", log_dir,
             "--parent_log_dir", os.path.dirname(log_dir),
+            "--worker_id", worker_id,
             "--run_ip", RuntimeConfig.JOB_SERVER_HOST,
             "--job_server", f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
             "--session_id", session_id,

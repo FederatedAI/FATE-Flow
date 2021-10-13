@@ -17,7 +17,7 @@ from copy import deepcopy
 
 import requests
 
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.controller.engine_controller.engine import EngineABC
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.types import KillProcessRetCode

@@ -24,11 +24,8 @@ from fate_flow.db.component_registry import ComponentRegistry
 
 class RuntimeConfParserUtil(object):
     @classmethod
-    def get_input_parameters(cls, submit_dict, components=None, conf_version=1):
-        if conf_version == 1:
-            return RuntimeConfParserV1.get_input_parameters(submit_dict)
-        else:
-            return RuntimeConfParserV2.get_input_parameters(submit_dict, components=components)
+    def get_input_parameters(cls, submit_dict, components=None):
+        return RuntimeConfParserV2.get_input_parameters(submit_dict, components=components)
 
     @classmethod
     def get_job_parameters(cls, submit_dict, conf_version=1):
@@ -57,11 +54,8 @@ class RuntimeConfParserUtil(object):
         return merge_ret
 
     @staticmethod
-    def generate_predict_conf_template(predict_dsl, train_conf, model_id, model_version, conf_version=1):
-        if conf_version == 1:
-            return RuntimeConfParserV1.generate_predict_conf_template(predict_dsl, train_conf, model_id, model_version)
-        else:
-            return RuntimeConfParserV2.generate_predict_conf_template(predict_dsl, train_conf, model_id, model_version)
+    def generate_predict_conf_template(predict_dsl, train_conf, model_id, model_version):
+        return RuntimeConfParserV2.generate_predict_conf_template(predict_dsl, train_conf, model_id, model_version)
 
     @staticmethod
     def get_module_name(module, role, provider: Components):
@@ -74,9 +68,9 @@ class RuntimeConfParserUtil(object):
         module,
         alias,
         redundant_param_check,
-        conf_version,
         local_role,
         local_party_id,
+        parse_user_specified_only
     ):
         provider_components = ComponentRegistry.get_provider_components(
             provider.provider_name, provider.provider_version
@@ -112,79 +106,89 @@ class RuntimeConfParserUtil(object):
         param_class = provider.get(module, provider_components).get_param_obj(alias)
         role_idx = role_on_module[local_role].index(local_party_id)
 
-        # conf_version == 2
-        if conf_version == 2:
-            # update common parameters
-            common_parameters = (
-                runtime_conf.get("component_parameters", {}).get("common", {}).get(alias, {})
-            )
-            param_class = param_class.update(
-                common_parameters, not redundant_param_check
-            )
+        user_specified_parameters = dict()
 
-            # update role parameters
-            for role_id, role_id_parameters in (
+        common_parameters = (
+            runtime_conf.get("component_parameters", {}).get("common", {}).get(alias, {})
+        )
+        param_class = param_class.update(
+            common_parameters, not redundant_param_check
+        )
+
+        # update role parameters
+        for role_id, role_id_parameters in (
                 runtime_conf.get("component_parameters", {})
-                .get("role", {})
-                .get(local_role, {})
-                .items()
-            ):
-                if role_id == "all" or str(role_idx) in role_id.split("|"):
-                    parameters = role_id_parameters.get(alias, {})
+                        .get("role", {})
+                        .get(local_role, {})
+                        .items()
+        ):
+            if role_id == "all" or str(role_idx) in role_id.split("|"):
+                parameters = role_id_parameters.get(alias, {})
+                if parse_user_specified_only:
+                    user_specified_parameters.update(parameters)
+                else:
                     param_class.update(parameters, not redundant_param_check)
 
-        elif conf_version == 1:
-            # update common parameters
-            common_parameters = runtime_conf.get("algorithm_parameters", {}).get(alias)
-            if common_parameters is not None:
-                param_class = param_class.update(
-                    common_parameters, not redundant_param_check
-                )
-
-            # update role parameters
-            parameters = (
-                runtime_conf.get("role_parameters", {}).get(local_role, {}).get(alias, {})
-            )
-
-            if parameters:
-                # convert v1 to v2
-                extract_not_builtin = getattr(param_class, "extract_not_builtin", None)
-                if extract_not_builtin is None:
-                    raise NotImplementedError(
-                        f"param class of `{type(param_class)}` not support v1 style conf"
-                    )
-                not_builtin_vars = extract_not_builtin()
-                role_num = len(role_on_module[local_role])
-
-                # recursive function to convert v1 style to v2 style
-                def _convert_v1_to_v2(_conf_v1):
-                    _conf_v2 = {}
-                    for key, values in _conf_v1.items():
-                        # stop here, values support to be a list
-                        if key not in not_builtin_vars:
-                            if not isinstance(values, list):
-                                raise RoleParameterNotListError(
-                                    role=local_role, parameter=key
-                                )
-                            if len(values) != role_num:
-                                raise RoleParameterNotConsistencyError(
-                                    role=local_role, parameter=key
-                                )
-                            _conf_v2[key] = values[role_idx]
-                        else:
-                            _conf_v2[key] = _convert_v1_to_v2(values)
-                    return _conf_v2
-
-                parameters = _convert_v1_to_v2(parameters)
-                param_class = param_class.update(parameters, not redundant_param_check)
-
+        if not parse_user_specified_only:
+            conf["ComponentParam"] = param_class.as_dict()
+            param_class.check()
         else:
-            raise NotImplementedError(f"conf version = `{conf_version}` is not supported")
-
-        conf["ComponentParam"] = param_class.as_dict()
-        param_class.check()
+            conf["ComponentParam"] = user_specified_parameters
 
         return conf
+
+    @staticmethod
+    def convert_parameters_v1_to_v2(party_idx, parameter_v1, not_builtin_vars):
+        parameter_v2 = {}
+        for key, values in parameter_v1.items():
+            # stop here, values support to be a list
+            if key not in not_builtin_vars:
+                parameter_v2[key] = values[party_idx]
+            else:
+                parameter_v2[key] = RuntimeConfParserUtil.convert_parameters_v1_to_v2(role_idx, values, not_builtin_vars)
+
+        return parameter_v2
+
+    @staticmethod
+    def get_v1_role_parameters(provider, component, runtime_conf, dsl):
+        component_role_parameters = dict()
+        if "role_parameters" not in runtime_conf:
+            return component_role_parameters
+
+        role_parameters = runtime_conf["role_parameters"]
+        module = dsl["components"][component]["module"]
+        if module == "Reader":
+            data_key = dsl["components"][component]["output"]["data"][0]
+
+            for role, role_params in role_parameters.items():
+                if not role_params.get("args", {}).get("data", {}).get(data_key):
+                    continue
+
+                component_role_parameters[role] = dict()
+                dataset = role_params["args"]["data"][data_key]
+                for idx, table in enumerate(dataset):
+                    component_role_parameters[role][str(idx)] = {component: {"table": table}}
+        else:
+            provider_components = ComponentRegistry.get_provider_components(
+                provider.provider_name, provider.provider_version
+            )
+            param_class = provider.get(module, provider_components).get_param_obj(component)
+            extract_not_builtin = getattr(param_class, "extract_not_builtin", None)
+            not_builtin_vars = extract_not_builtin()
+
+            for role, role_params in role_parameters.items():
+                params = role_params.get(component, {})
+                if not params:
+                    continue
+
+                component_role_parameters[role] = dict()
+                party_num = len(runtime_conf["role"][role])
+
+                for party_idx in range(party_num):
+                    party_param = RuntimeConfParserUtil.convert_parameters_v1_to_v2(party_idx, params, not_builtin_vars)
+                    component_role_parameters[role][str(party_idx)] = {component: party_param}
+
+        return component_role_parameters
 
     @staticmethod
     def get_job_providers(dsl, provider_detail):
@@ -209,7 +213,6 @@ class RuntimeConfParserUtil(object):
                                                                            module=module,
                                                                            provider_detail=provider_detail,
                                                                            name=name)
-
 
             else:
                 name, version = RuntimeConfParserUtil.get_component_provider(alias=component,
@@ -251,7 +254,10 @@ class RuntimeConfParserUtil(object):
                                        detect=True, provider_cache=None, job_parameters=None):
         if provider_name and provider_version:
             provider_path = provider_detail["providers"][provider_name][provider_version]["path"]
-            provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name, version=provider_version, path=provider_path, class_path=ComponentRegistry.get_default_class_path()))
+            provider = provider_utils.get_provider_interface(ComponentProvider(name=provider_name,
+                                                                               version=provider_version,
+                                                                               path=provider_path,
+                                                                               class_path=ComponentRegistry.get_default_class_path()))
             if provider_cache is not None:
                 if provider_name not in provider_cache:
                     provider_cache[provider_name] = {}
@@ -273,47 +279,73 @@ class RuntimeConfParserUtil(object):
                                                                     provider_name=provider_name,
                                                                     provider_version=provider_version)
 
+    @classmethod
+    def merge_predict_runtime_conf(cls, train_conf, predict_conf):
+        runtime_conf = copy.deepcopy(train_conf)
+        train_role = train_conf.get("role")
+        predict_role = predict_conf.get("role")
+        if len(train_conf) < len(predict_role):
+            raise ValueError(f"Predict roles is {predict_role}, train roles is {train_conf}, "
+                             "predict roles should be subset of train role")
+
+        for role in train_role:
+            if role not in predict_role:
+                del runtime_conf["role"][role]
+
+                if runtime_conf.get("job_parameters", {}).get("role", {}).get(role):
+                    del runtime_conf["job_parameters"]["role"][role]
+
+                if runtime_conf.get("component_parameters", {}).get("role", {}).get(role):
+                    del runtime_conf["component_parameters"]["role"][role]
+
+                continue
+
+            train_party_ids = train_role[role]
+            predict_party_ids = predict_role[role]
+
+            diff = False
+            for idx, party_id in enumerate(predict_party_ids):
+                if party_id not in train_party_ids:
+                    raise ValueError(f"Predict role: {role} party_id: {party_id} not occurs in training")
+                if train_party_ids[idx] != party_id:
+                    diff = True
+
+            if not diff and len(train_party_ids) == len(predict_party_ids):
+                continue
+
+            for p_type in ["job_parameters", "component_parameters"]:
+                if not runtime_conf.get(p_type, {}).get("role", {}).get(role):
+                    continue
+
+                conf = runtime_conf[p_type]["role"][role]
+                party_keys = conf.keys()
+                new_conf = {}
+                for party_key in party_keys:
+                    party_list = party_key.split("|", -1)
+                    new_party_list = []
+                    for party in party_list:
+                        party_id = train_party_ids[int(party)]
+                        if party_id in predict_party_ids:
+                            new_idx = predict_party_ids.index(party_id)
+                            new_party_list.append(str(new_idx))
+
+                    if not new_party_list:
+                        continue
+
+                    new_party_key = new_party_list[0] if len(new_party_list) == 1 else "|".join(new_party_list)
+
+                    if new_party_key not in new_conf:
+                        new_conf[new_party_key] = {}
+                    new_conf[new_party_key].update(conf[party_key])
+
+                runtime_conf[p_type]["role"][role] = new_conf
+
+        runtime_conf = cls.merge_dict(runtime_conf, predict_conf)
+
+        return runtime_conf
+
 
 class RuntimeConfParserV1(object):
-    @classmethod
-    def get_input_parameters(cls, submit_dict):
-        if "role_parameters" not in submit_dict:
-            return dict()
-
-        roles = submit_dict["role_parameters"].keys()
-        if not roles:
-            return dict()
-
-        args_input = dict()
-        args_data_key = set()
-        module = "args"
-
-        for role in roles:
-            if not submit_dict["role_parameters"][role].get(module):
-                continue
-            party_id_list = submit_dict["role"][role]
-
-            args_parameters = submit_dict["role_parameters"][role].get(module)
-            args_input[role] = list()
-
-            if "data" in args_parameters:
-                dataset = args_parameters.get("data")
-                for data_key in dataset:
-                    datalist = dataset[data_key]
-
-                    if len(datalist) != len(party_id_list):
-                        raise RoleParameterNotConsistencyError(role=role, parameter=data_key)
-
-                    args_data_key.add(data_key)
-
-                    for idx, value in enumerate(datalist):
-                        if len(args_input[role]) <= idx:
-                            args_input[role].append({module: {"data": dict()}})
-
-                        args_input[role][idx][module]["data"][data_key] = value
-
-        return args_input, args_data_key
-
     @staticmethod
     def get_job_parameters(submit_dict):
         ret = {}
@@ -323,45 +355,6 @@ class RuntimeConfParserV1(object):
             ret[role] = {party_id: copy.deepcopy(job_parameters) for party_id in party_id_list}
 
         return ret
-
-    @staticmethod
-    def generate_predict_conf_template(predict_dsl, train_conf, model_id, model_version):
-        if not train_conf.get("role") or not train_conf.get("initiator"):
-            raise ValueError("role and initiator should be contain in job's trainconf")
-
-        predict_conf = dict()
-        predict_conf["initiator"] = train_conf.get("initiator")
-        predict_conf["role"] = train_conf.get("role")
-
-        predict_conf["job_parameters"] = train_conf.get("job_parameters", {})
-        predict_conf["job_parameters"]["job_type"] = "predict"
-        predict_conf["job_parameters"]["model_id"] = model_id
-        predict_conf["job_parameters"]["model_version"] = model_version
-
-        predict_conf["role_parameters"] = {}
-
-        for role in predict_conf["role"]:
-            if role not in ["guest", "host"]:
-                continue
-
-            args_input = set()
-            for _, module_info in predict_dsl.get("components", {}).items():
-                data_set = module_info.get("input", {}).get("data", {})
-                for data_key in data_set:
-                    for data in data_set[data_key]:
-                        if data.split(".", -1)[0] == "args":
-                            args_input.add(data.split(".", -1)[1])
-
-            predict_conf["role_parameters"][role] = {"args": {"data": {}}}
-            fill_template = {}
-            for data_key in args_input:
-                fill_template[data_key] = [{"name": "name_to_be_filled_" + str(i),
-                                            "namespace": "namespace_to_be_filled_" + str(i)}
-                                           for i in range(len(predict_conf["role"].get(role)))]
-
-            predict_conf["role_parameters"][role] = {"args": {"data": fill_template}}
-
-        return predict_conf
 
 
 class RuntimeConfParserV2(object):

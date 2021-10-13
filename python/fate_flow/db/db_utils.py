@@ -14,11 +14,11 @@
 #  limitations under the License.
 #
 
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.db.db_models import DB
 from fate_flow.db.runtime_config import RuntimeConfig
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 
 @DB.connection_context()

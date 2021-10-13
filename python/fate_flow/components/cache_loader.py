@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common import log
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.components._base import (
     BaseParam,
     ComponentBase,
@@ -23,7 +23,7 @@ from fate_flow.components._base import (
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.entity import MetricMeta
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 cache_loader_cpn_meta = ComponentMeta("CacheLoader")
 

@@ -15,7 +15,7 @@
 #
 import os
 from fate_arch.common import FederatedCommunicationType, FederatedMode
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.db.db_models import Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler

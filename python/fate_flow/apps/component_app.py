@@ -18,14 +18,13 @@ from flask import request
 from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.detect_utils import check_config
-from fate_flow.scheduler.dsl_parser import DSLParser, DSLParserV2
-from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.detect_utils import validate_request
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.entity import ComponentProvider
 from fate_flow.entity import RetCode
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import WorkerName
+from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 
 @manager.route('/registry/get', methods=['POST'])
@@ -79,12 +78,11 @@ def validate_component_param():
     config_keys = ['role']
 
     dsl_version = int(request.json.get('dsl_version', 0))
+    parser_class = get_dsl_parser_by_version(dsl_version)
     if dsl_version == 1:
         config_keys += ['role_parameters', 'algorithm_parameters']
-        parser_class = DSLParser
     elif dsl_version == 2:
         config_keys += ['component_parameters']
-        parser_class = DSLParserV2
     else:
         return error_response(400, 'unsupported dsl_version')
 

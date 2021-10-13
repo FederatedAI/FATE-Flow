@@ -55,7 +55,15 @@ PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol")
 
 DATABASE = get_base_config("database", {})
 ZOOKEEPER = get_base_config("zookeeper", {})
-FATE_FLOW_SERVER_START_CONFIG_ITEMS = {"work_mode", "use_registry", "use_deserialize_safe_module", FATE_FLOW_SERVICE_NAME, "database", "zookeeper"}
+FATE_FLOW_SERVER_START_CONFIG_ITEMS = {
+    "work_mode",
+    "use_registry",
+    "use_deserialize_safe_module",
+    "dependent_distribution",
+    FATE_FLOW_SERVICE_NAME,
+    "database",
+    "zookeeper",
+}
 
 # Registry
 FATE_SERVICES_REGISTRY = {

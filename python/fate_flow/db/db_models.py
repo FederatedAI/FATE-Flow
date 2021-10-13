@@ -22,7 +22,8 @@ from peewee import (CharField, IntegerField, BigIntegerField,
                     TextField, CompositeKey, BigAutoField, BooleanField)
 from playhouse.pool import PooledMySQLDatabase
 
-from fate_arch.common import log, file_utils
+from fate_arch.common import file_utils
+from fate_flow.utils.log_utils import getLogger
 from fate_arch.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField, SerializedField, \
     SerializedType, ListField
 from fate_arch.common import WorkMode
@@ -31,7 +32,7 @@ from fate_flow.settings import WORK_MODE, DATABASE, stat_logger
 from fate_flow.utils.object_utils import from_dict_hook
 
 
-LOGGER = log.getLogger()
+LOGGER = getLogger()
 
 
 class JsonSerializedField(SerializedField):

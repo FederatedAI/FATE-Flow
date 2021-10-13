@@ -14,7 +14,6 @@
 #  limitations under the License.
 #
 import os
-import argparse
 import importlib
 import traceback
 
@@ -22,7 +21,7 @@ from fate_arch import session, storage
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import file_utils, EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
-from fate_arch.common.log import schedule_logger, getLogger
+from fate_flow.utils.log_utils import getLogger
 
 from fate_flow.entity import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus
@@ -52,6 +51,7 @@ class TaskExecutor(BaseTaskWorker):
         args = self.args
         start_time = current_timestamp()
         try:
+            LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
             self.report_info.update({
                 "job_id": args.job_id,
                 "component_name": args.component_name,
@@ -80,16 +80,9 @@ class TaskExecutor(BaseTaskWorker):
 
             job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser, job_configuration.runtime_conf_on_party, args.role, args.party_id)
             component = dsl_parser.get_component_info(component_name=args.component_name)
-            component_provider, component_parameters_on_party = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
-                                                                                                       component_name=args.component_name,
-                                                                                                       role=args.role,
-                                                                                                       party_id=args.party_id)
-            RuntimeConfig.set_component_provider(component_provider)
             module_name = component.get_module()
             task_input_dsl = component.get_input()
             task_output_dsl = component.get_output()
-            # component_parameters_on_party['output_data_name'] = task_output_dsl.get('data')
-            flow_feeded_parameters={'output_data_name' : task_output_dsl.get('data')}
 
             kwargs = {
                 'job_id': args.job_id,
@@ -109,6 +102,17 @@ class TaskExecutor(BaseTaskWorker):
 
             self.report_info["party_status"] = TaskStatus.RUNNING
             self.report_task_info_to_driver()
+
+            previous_components_parameters = tracker_client.get_model_run_parameters()
+            LOGGER.info(f"previous components parameters: {previous_components_parameters}")
+            component_provider, component_parameters_on_party, user_specified_parameters = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
+                                                                                                                                  component_name=args.component_name,
+                                                                                                                                  role=args.role,
+                                                                                                                                  party_id=args.party_id,
+                                                                                                                                  previous_components_parameters=previous_components_parameters)
+            RuntimeConfig.set_component_provider(component_provider)
+            LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
+            flow_feeded_parameters = {"output_data_name": task_output_dsl.get("data")}
 
             # init environment, process is shared globally
             RuntimeConfig.init_config(WORK_MODE=job_parameters.work_mode,
@@ -135,25 +139,18 @@ class TaskExecutor(BaseTaskWorker):
             LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
             LOGGER.info(f"task input dsl {task_input_dsl}")
             task_run_args, input_table_list = self.get_task_run_args(job_id=args.job_id, role=args.role, party_id=args.party_id,
-                                                                    task_id=args.task_id,
-                                                                    task_version=args.task_version,
-                                                                    job_args=job_args_on_party,
-                                                                    job_parameters=job_parameters,
-                                                                    task_parameters=task_parameters,
-                                                                    input_dsl=task_input_dsl,
-                                                                    )
+                                                                     task_id=args.task_id,
+                                                                     task_version=args.task_version,
+                                                                     job_args=job_args_on_party,
+                                                                     job_parameters=job_parameters,
+                                                                     task_parameters=task_parameters,
+                                                                     input_dsl=task_input_dsl,
+                                                                     )
             if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
                 task_run_args["job_parameters"] = job_parameters
-
             LOGGER.info(f"task input args {task_run_args}")
 
             need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
-            """
-            if not need_run:
-                LOGGER.info("need run component parameters is {}".format(component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)))
-                raise PassException()
-            """
-
             provider_interface = provider_utils.get_provider_interface(provider=component_provider)
             run_object = provider_interface.get(module_name, ComponentRegistry.get_provider_components(provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(self.args.role)
 
@@ -199,9 +196,9 @@ class TaskExecutor(BaseTaskWorker):
             self.log_output_data_table_tracker(args.job_id, input_table_list, output_table_list)
 
             # There is only one model output at the current dsl version.
-            tracker.save_output_model(cpn_output.model,
-                                      task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
-                                      tracker_client=tracker_client)
+            tracker_client.save_component_output_model(model_buffers=cpn_output.model,
+                                                       model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
+                                                       user_specified_run_parameters=user_specified_parameters)
             if cpn_output.cache is not None:
                 for i, cache in enumerate(cpn_output.cache):
                     if cache is None:
@@ -227,7 +224,7 @@ class TaskExecutor(BaseTaskWorker):
         except Exception as e:
             traceback.print_exc()
             self.report_info["party_status"] = TaskStatus.FAILED
-            schedule_logger().exception(e)
+            LOGGER.exception(e)
         finally:
             try:
                 self.report_info["end_time"] = current_timestamp()
@@ -236,49 +233,11 @@ class TaskExecutor(BaseTaskWorker):
             except Exception as e:
                 self.report_info["party_status"] = TaskStatus.FAILED
                 traceback.print_exc()
-                schedule_logger().exception(e)
+                LOGGER.exception(e)
         msg = f"finish {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} with {self.report_info['party_status']}"
         LOGGER.info(msg)
         print(msg)
         return self.report_info
-
-    @classmethod
-    def get_run_task_args(cls, args):
-        if args:
-            job_id = args.get("job_id")
-            component_name = args.get("component_name")
-            task_id = args.get("task_id")
-            task_version = args.get("task_version")
-            role = args.get("role")
-            party_id = args.get("party_id")
-            config = args.get("config")
-            run_ip = args.get("run_ip")
-            job_server = args.get("job_server")
-        else:
-            parser = argparse.ArgumentParser()
-            parser.add_argument('-j', '--job_id', required=True, type=str, help="job id")
-            parser.add_argument('-n', '--component_name', required=True, type=str, help="component name")
-            parser.add_argument('-t', '--task_id', required=True, type=str, help="task id")
-            parser.add_argument('-v', '--task_version', required=True, type=int, help="task version")
-            parser.add_argument('-r', '--role', required=True, type=str, help="role")
-            parser.add_argument('-p', '--party_id', required=True, type=int, help="party id")
-            parser.add_argument('-c', '--config', required=True, type=str, help="task parameters")
-            parser.add_argument('--run_ip', help="run ip", type=str)
-            parser.add_argument('--job_server', help="job server", type=str)
-            args = parser.parse_args()
-            schedule_logger(args.job_id).info('enter task process')
-            schedule_logger(args.job_id).info(args)
-            # init function args
-            job_id = args.job_id
-            component_name = args.component_name
-            task_id = args.task_id
-            task_version = args.task_version
-            role = args.role
-            party_id = args.party_id
-            run_ip = args.run_ip
-            config = args.config
-            job_server = args.job_server
-        return job_id, component_name, task_id, task_version, role, party_id, run_ip, config, job_server
 
     @classmethod
     def log_output_data_table_tracker(cls, job_id, input_table_list, output_table_list):
@@ -299,7 +258,7 @@ class TaskExecutor(BaseTaskWorker):
                                                           })
                 parent_number +=1
         except Exception as e:
-            schedule_logger().exception(e)
+            LOGGER.exception(e)
 
     @classmethod
     def get_job_args_on_party(cls, dsl_parser, job_runtime_conf, role, party_id):
@@ -391,12 +350,8 @@ class TaskExecutor(BaseTaskWorker):
                         search_component_name, search_model_alias = dsl_model_key_items[1], dsl_model_key_items[2]
                     else:
                         raise Exception('get input {} failed'.format(input_type))
-                    tracker_client = TrackerClient(job_id=job_id, role=role, party_id=party_id, component_name=search_component_name
-                                                   , model_id=job_parameters.model_id, model_version=job_parameters.model_version)
-                    tracker = Tracker(job_id=job_id, role=role, party_id=party_id, component_name=search_component_name,
-                                      model_id=job_parameters.model_id,
-                                      model_version=job_parameters.model_version)
-                    models = tracker_client.read_component_output_model(search_model_alias, tracker)
+                    tracker_client = TrackerClient(job_id=job_id, role=role, party_id=party_id, component_name=search_component_name, model_id=job_parameters.model_id, model_version=job_parameters.model_version)
+                    models = tracker_client.read_component_output_model(search_model_alias)
                     this_type_args[search_component_name] = models
             else:
                 raise Exception(f"not support {input_type} input type")

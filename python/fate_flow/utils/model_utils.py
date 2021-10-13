@@ -20,7 +20,7 @@ from collections import OrderedDict
 
 import peewee
 
-from fate_arch.common.log import sql_logger
+from fate_flow.utils.log_utils import sql_logger
 from fate_arch.common.base_utils import json_loads, current_timestamp
 from fate_arch.common.file_utils import get_project_base_directory
 

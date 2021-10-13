@@ -273,7 +273,7 @@ class CheckpointManager:
             raise TypeError('Checkpoint not found.')
 
         new_directory = self.get_directory(new_model_version)
-        new_directory.mkdir(0o755)
+        new_directory.mkdir(0o755, True)
 
         checkpoint.copy(new_directory)
 

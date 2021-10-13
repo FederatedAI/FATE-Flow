@@ -1,5 +1,5 @@
 from fate_arch.common import EngineType
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.computing import ComputingEngine
 from fate_flow.db.dependence_registry import DependenceRegistry
 from fate_flow.entity import ComponentProvider

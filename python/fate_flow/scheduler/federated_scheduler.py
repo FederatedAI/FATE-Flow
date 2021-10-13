@@ -17,7 +17,7 @@
 from fate_arch.common import base_utils
 from fate_flow.utils.api_utils import federated_api
 from fate_flow.utils.log_utils import start_log, failed_log, successful_log
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.entity import RetCode
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.entity.types import ResourceOperation

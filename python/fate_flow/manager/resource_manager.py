@@ -18,7 +18,7 @@ import typing
 
 from fate_arch.common import EngineType
 from fate_arch.common import base_utils
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.computing import ComputingEngine
 from fate_arch.storage import StorageEngine
 from fate_arch.common import engine_utils

@@ -20,7 +20,7 @@ import traceback
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.file_utils import load_json_conf, dump_json_conf
-from fate_arch.common.log import getLogger, LoggerFactory
+from fate_flow.utils.log_utils import getLogger, LoggerFactory
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.db.config_manager import ConfigManager
 from fate_flow.db.runtime_config import RuntimeConfig
@@ -43,6 +43,7 @@ class WorkerArgs(BaseEntity):
         self.log_dir = kwargs.get("log_dir")
         self.parent_log_dir = kwargs.get("parent_log_dir")
 
+        self.worker_id = kwargs.get("worker_id")
         self.run_ip = kwargs.get("run_ip")
         self.job_server = kwargs.get("job_server")
 

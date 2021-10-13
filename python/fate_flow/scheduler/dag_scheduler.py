@@ -15,7 +15,7 @@
 #
 import typing
 from fate_arch.common.base_utils import json_loads, json_dumps, current_timestamp
-from fate_arch.common.log import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.common import WorkMode
 from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
