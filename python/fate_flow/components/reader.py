@@ -97,7 +97,7 @@ class Reader(ComponentBase):
             self.tracker.role,
             self.tracker.party_id,
         )
-        sess = Session(session_id=session_id)
+        sess = Session.get_global()
 
         input_table = sess.get_table(
             name=input_table_meta.get_name(), namespace=input_table_meta.get_namespace()
