@@ -15,6 +15,8 @@
 #
 import sys
 import datetime
+from copy import deepcopy
+
 from peewee import Model, CharField, BigIntegerField, TextField, CompositeKey, IntegerField
 from playhouse.pool import PooledMySQLDatabase
 
@@ -24,6 +26,7 @@ from fate_flow.utils.log_utils import getLogger
 from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64
 from fate_arch.metastore.base_model import LongTextField
 
+
 LOGGER = getLogger()
 DB = PooledMySQLDatabase(None)
 
@@ -31,8 +34,6 @@ SLICE_MAX_SIZE = 1024*1024*8
 
 
 class MysqlModelStorage(ModelStorageBase):
-    def __init__(self):
-        super(MysqlModelStorage, self).__init__()
 
     def store(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False):
         """
@@ -44,10 +45,11 @@ class MysqlModelStorage(ModelStorageBase):
         :return:
         """
         try:
-            self.get_connection(config=store_address)
+            self.get_connection(store_address)
             DB.create_tables([MachineLearningModel])
-            model = PipelinedModel(model_id=model_id, model_version=model_version)
-            LOGGER.info("start store model {} {}".format(model_id, model_version))
+            model = PipelinedModel(model_id, model_version)
+
+            LOGGER.info(f"Starting store model {model_id} {model_version}.")
             with DB.connection_context():
                 with open(model.packaging_model(), "rb") as fr:
                     slice_index = 0
@@ -64,18 +66,18 @@ class MysqlModelStorage(ModelStorageBase):
                             if force_update:
                                 model_in_table.save(only=[MachineLearningModel.f_content, MachineLearningModel.f_size,
                                                           MachineLearningModel.f_update_time, MachineLearningModel.f_slice_index])
-                                LOGGER.info("update model {} {} slice index {} content".format(model_id, model_version, slice_index))
+                                LOGGER.info(f"Update model {model_id} {model_version} slice index {slice_index} content.")
                             else:
                                 model_in_table.save(force_insert=True)
+                                LOGGER.info(f"Insert model {model_id} {model_version} slice index {slice_index} content.")
                             slice_index += 1
-                            LOGGER.info("insert model {} {} slice index {} content".format(model_id, model_version, slice_index))
                         else:
                             break
-                    LOGGER.info("Store model {} {} to mysql successfully".format(model_id,  model_version))
+                    LOGGER.info(f"Store model {model_id} {model_version} to mysql successfully")
             self.close_connection()
         except Exception as e:
             LOGGER.exception(e)
-            raise Exception("Store model {} {} to mysql failed".format(model_id, model_version))
+            raise Exception(f"Store model {model_id} {model_version} to mysql failed")
 
     def restore(self, model_id: str, model_version: str, store_address: dict):
         """
@@ -86,15 +88,15 @@ class MysqlModelStorage(ModelStorageBase):
         :return:
         """
         try:
-            self.get_connection(config=store_address)
-            model = PipelinedModel(model_id=model_id, model_version=model_version)
+            self.get_connection(store_address)
+            model = PipelinedModel(model_id, model_version)
             with DB.connection_context():
                 models_in_tables = MachineLearningModel.select().where(MachineLearningModel.f_model_id == model_id,
                                                                        MachineLearningModel.f_model_version == model_version).\
                     order_by(MachineLearningModel.f_slice_index)
                 if not models_in_tables:
-                    raise Exception("Restore model {} {} from mysql failed: {}".format(
-                        model_id, model_version, "can not found model in table"))
+                    raise Exception(f"Restore model {model_id} {model_version} from mysql failed: "
+                                    f"can not found model in table.")
                 f_content = ''
                 for models_in_table in models_in_tables:
                     if not f_content:
@@ -103,31 +105,31 @@ class MysqlModelStorage(ModelStorageBase):
                         f_content += models_in_table.f_content
                 model_archive_data = deserialize_b64(f_content)
                 if not model_archive_data:
-                    raise Exception("Restore model {} {} from mysql failed: {}".format(
-                        model_id, model_version, "can not get model archive data"))
+                    raise Exception(f"Restore model {model_id} {model_version} from mysql failed: "
+                                    f"can not get model archive data.")
                 with open(model.archive_model_file_path, "wb") as fw:
                     fw.write(model_archive_data)
                 model.unpack_model(model.archive_model_file_path)
-                LOGGER.info("Restore model to {} from mysql successfully".format(model.archive_model_file_path))
+                LOGGER.info(f"Restore model to {model.archive_model_file_path} from mysql successfully")
             self.close_connection()
         except Exception as e:
             LOGGER.exception(e)
-            raise Exception("Restore model {} {} from mysql failed".format(model_id, model_version))
+            raise Exception(f"Restore model {model_id} {model_version} from mysql failed")
 
-    def get_connection(self, config: dict):
-        db_name = config['name']
-        del config['name'], config['storage']
-        DB.init(db_name, **config)
+    @staticmethod
+    def get_connection(store_address: dict):
+        store_address = deepcopy(store_address)
+        db_name = store_address.pop('name')
+        del store_address['storage']
+        DB.init(db_name, **store_address)
 
-    def close_connection(self):
+    @staticmethod
+    def close_connection():
         try:
             if DB:
                 DB.close()
         except Exception as e:
             LOGGER.exception(e)
-
-    def store_key(self, model_id: str, model_version: str):
-        return ":".join(["FATEFlow", "PipelinedModel", model_id, model_version])
 
 
 class DataBaseModel(Model):

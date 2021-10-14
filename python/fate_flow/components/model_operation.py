@@ -21,13 +21,14 @@ from fate_flow.components._base import (
     ComponentInputProtocol,
 )
 from fate_flow.entity.types import ModelStorage
-from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage
+from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage, tencent_cos_model_storage
 
 LOGGER = getLogger()
 
 ModelStorageClassMap = {
     ModelStorage.REDIS.value: redis_model_storage.RedisModelStorage,
     ModelStorage.MYSQL.value: mysql_model_storage.MysqlModelStorage,
+    ModelStorage.TENCENT_COS.value: tencent_cos_model_storage.TencentCOSModelStorage,
 }
 
 

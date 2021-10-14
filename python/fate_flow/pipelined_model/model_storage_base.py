@@ -17,6 +17,11 @@ import abc
 
 
 class ModelStorageBase(metaclass=abc.ABCMeta):
+    key_separator = "/"
+
+    def store_key(self, model_id: str, model_version: str):
+        return self.key_separator.join(["FATEFlow", "PipelinedModel", model_id, model_version])
+
     @abc.abstractmethod
     def store(self, model_id: str, model_version: str, store_address: dict):
         """
