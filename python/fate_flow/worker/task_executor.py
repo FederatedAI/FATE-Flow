@@ -123,6 +123,8 @@ class TaskExecutor(BaseTaskWorker):
 
             if RuntimeConfig.COMPUTING_ENGINE == ComputingEngine.EGGROLL:
                 session_options = task_parameters.eggroll_run.copy()
+                session_options["python.path"] = os.getenv("PYTHONPATH")
+                session_options["python.venv"] = os.getenv("VIRTUAL_ENV")
             else:
                 session_options = {}
 
