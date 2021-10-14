@@ -35,22 +35,21 @@ class UploadFile(object):
         parser.add_argument('--partitions', required=True, type=int, help="partitions")
         args = parser.parse_args()
         session_id = args.session_id
-        sess = Session(session_id=session_id)
-        storage_session = sess.storage(
-            storage_engine=args.storage
-        )
-        if args.storage in {StorageEngine.EGGROLL, StorageEngine.STANDALONE}:
-            upload_address = {
-                "name": args.name,
-                "namespace": args.namespace,
-                "storage_type": EggRollStoreType.ROLLPAIR_LMDB,
-            }
-        address = storage.StorageTableMeta.create_address(
-            storage_engine=args.storage, address_dict=upload_address
-        )
-        table = storage_session.create_table(address=address, name=args.name, namespace=args.namespace, partitions=args.partitions)
-        cls.upload(args.file, False, table=table)
-        # sess.destroy_all_sessions()
+        with Session(session_id=session_id) as sess:
+            storage_session = sess.storage(
+                storage_engine=args.storage
+            )
+            if args.storage in {StorageEngine.EGGROLL, StorageEngine.STANDALONE}:
+                upload_address = {
+                    "name": args.name,
+                    "namespace": args.namespace,
+                    "storage_type": EggRollStoreType.ROLLPAIR_LMDB,
+                }
+            address = storage.StorageTableMeta.create_address(
+                storage_engine=args.storage, address_dict=upload_address
+            )
+            table = storage_session.create_table(address=address, name=args.name, namespace=args.namespace, partitions=args.partitions)
+            cls.upload(args.file, False, table=table)
 
     @classmethod
     def upload(cls, input_file, head, job_id=None, input_feature_count=None, table=None, without_block=True):

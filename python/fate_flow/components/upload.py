@@ -139,7 +139,7 @@ class Upload(ComponentBase):
             self.tracker.role,
             self.tracker.party_id,
         )
-        sess = Session(session_id=self.session_id)
+        sess = Session.get_global()
         self.session = sess
         if self.parameters.get("destroy", False):
             table = sess.get_table(namespace=namespace, name=name)

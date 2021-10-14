@@ -127,6 +127,7 @@ class TaskExecutor(BaseTaskWorker):
                 session_options = {}
 
             sess = session.Session(session_id=args.session_id)
+            sess.as_global()
             sess.init_computing(computing_session_id=args.session_id, options=session_options)
             component_parameters_on_party["job_parameters"] = job_parameters.to_dict()
             roles = job_configuration.runtime_conf["role"]
