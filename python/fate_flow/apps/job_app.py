@@ -42,9 +42,9 @@ from fate_flow.controller.job_controller import JobController
 def submit_job():
     work_mode = JobRuntimeConfigAdapter(request.json.get('job_runtime_conf', {})).get_job_work_mode()
     submit_result = DAGScheduler.submit(JobConfigurationBase(**request.json))
-    return get_json_result(retcode=0, retmsg='success',
-                           job_id=submit_result.get("job_id"),
-                           data=submit_result)
+    return get_json_result(retcode=submit_result["code"], retmsg=submit_result["message"],
+                           job_id=submit_result["job_id"],
+                           data=submit_result if submit_result["code"] == RetCode.SUCCESS else None)
 
 
 @manager.route('/stop', methods=['POST'])
