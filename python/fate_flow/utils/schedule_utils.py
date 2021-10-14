@@ -38,7 +38,7 @@ def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_run
     if parser_version == '1':
         dsl, runtime_conf = convert_dsl_and_conf_v1_to_v2(dsl, runtime_conf)
         if pipeline_dsl and train_runtime_conf:
-            pipeline_dsl, train_runtime_conf = convert_dsl_and_conf_v1_to_v2(dsl, runtime_conf)
+            pipeline_dsl, train_runtime_conf = convert_dsl_and_conf_v1_to_v2(pipeline_dsl, train_runtime_conf)
         parser_version = '2'
 
     dsl_parser = get_dsl_parser_by_version(parser_version)
