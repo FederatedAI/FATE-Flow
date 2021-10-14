@@ -70,9 +70,7 @@ fate_on_spark:
   hive:
     host: 127.0.0.1
     port: 10000
-    auth:
-    configuration:
-    kerberos_service_name:
+    auth_mechanism:
     username:
     password:
   linkis_hive:

@@ -23,6 +23,7 @@ from fate_flow.utils.log_utils import detect_logger
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
+from fate_flow.settings import SESSION_VALID_PERIOD
 from fate_flow.utils import cron, job_utils, process_utils
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.operation.job_saver import JobSaver
@@ -148,27 +149,24 @@ class Detector(cron.Cron):
 
     @classmethod
     def detect_expired_session(cls):
-        ttl = 5 * 60 * 60 * 1000
+        ttl = SESSION_VALID_PERIOD
         detect_logger().info(f'start detect expired session by ttl {ttl/1000} s')
         try:
             session_records = Session.query_sessions(create_time=[None, current_timestamp() - ttl])
+            manager_session_id_list = []
             for session_record in session_records:
-                msg = f"{session_record.f_engine_type} engine session {session_record.f_engine_session_id}"
-                engine_session_id = session_record.f_engine_session_id
-                detect_logger().info(f'start stop {msg}')
+                manager_session_id = session_record.f_manager_session_id
+                if manager_session_id not in manager_session_id:
+                    continue
+                manager_session_id_list.append(manager_session_id)
+                detect_logger().info(f'start destroy session {manager_session_id}')
                 try:
-                    if session_record.f_engine_type == EngineType.COMPUTING:
-                        with Session(computing=session_record.f_engine_name, logger=detect_logger()) as sess:
-                            sess.add_computing(computing_session_id=engine_session_id)
-                            sess.destroy_computing()
-                    elif session_record.f_engine_type == EngineType.STORAGE:
-                        with Session(storage=session_record.f_engine_name, logger=detect_logger()) as sess:
-                            sess.add_storage(storage_session_id=session_record.f_engine_session_id, storage_engine=session_record.f_engine_name)
-                            sess.destroy_storage()
+                    sess = Session(session_id=manager_session_id, options={"logger": detect_logger()})
+                    sess.destroy_all_sessions()
                 except Exception as e:
-                    detect_logger().error(f'stop {msg} error', e)
+                    detect_logger().error(f'stop session {manager_session_id} error', e)
                 finally:
-                    detect_logger().info(f'stop {msg} successfully')
+                    detect_logger().info(f'stop session {manager_session_id} successfully')
         except Exception as e:
             detect_logger().error('detect expired session error', e)
         finally:

@@ -96,19 +96,20 @@ class DataTableTracker(object):
 def delete_tables_by_table_infos(output_data_table_infos):
     data = []
     status = False
-    for output_data_table_info in output_data_table_infos:
-        table_name = output_data_table_info.f_table_name
-        namespace = output_data_table_info.f_table_namespace
-        table_info = {'table_name': table_name, 'namespace': namespace}
-        if table_name and namespace and table_info not in data:
-            with Session().new_storage(name=table_name, namespace=namespace) as storage_session:
-                table = storage_session.get_table()
-                try:
-                    table.destroy()
-                    data.append(table_info)
-                    status = True
-                except:
-                    pass
+    with Session() as sess:
+        for output_data_table_info in output_data_table_infos:
+            table_name = output_data_table_info.f_table_name
+            namespace = output_data_table_info.f_table_namespace
+            table_info = {'table_name': table_name, 'namespace': namespace}
+            if table_name and namespace and table_info not in data:
+                table = sess.get_table(table_name, namespace)
+                if table:
+                    try:
+                        table.destroy()
+                        data.append(table_info)
+                        status = True
+                    except:
+                        pass
     return status, data
 
 

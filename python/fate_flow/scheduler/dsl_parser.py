@@ -1,5 +1,5 @@
-#!/usr/bin/env python    
-# -*- coding: utf-8 -*- 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #
 #  Copyright 2019 The FATE Authors. All Rights Reserved.
@@ -175,7 +175,7 @@ class BaseDSLParser(object):
         self.component_upstream = [[] for i in range(len(self.components))]
 
         components_details = self.dsl.get("components")
-        components_output = self._find_outputs()
+        components_output = self._find_outputs(self.dsl)
 
         for name in self.component_name_index.keys():
             idx = self.component_name_index.get(name)
@@ -318,7 +318,6 @@ class BaseDSLParser(object):
                                                                          module,
                                                                          cur_component,
                                                                          redundant_param_check=redundant_param_check,
-                                                                         conf_version=self.version,
                                                                          local_role=local_role,
                                                                          local_party_id=local_party_id,
                                                                          parse_user_specified_only=parse_user_specified_only)
@@ -400,12 +399,13 @@ class BaseDSLParser(object):
 
         return topo_components
 
-    def _find_outputs(self):
+    @staticmethod
+    def _find_outputs(dsl):
         outputs = {}
 
-        components_details = self.dsl.get("components")
+        components_details = dsl.get("components")
 
-        for name in self.component_name_index.keys():
+        for name in components_details.keys():
             if "output" not in components_details.get(name):
                 continue
 
@@ -721,7 +721,7 @@ class BaseDSLParser(object):
                                 final_data_set = []
                                 for input_data in data_set:
                                     cpn_alias = input_data.split(".")[0]
-                                    if cpn_alias == "args" or cpn_alias in self.predict_dsl["components"]:
+                                    if cpn_alias in self.predict_dsl["components"]:
                                         final_data_set.append(input_data)
 
                                 if final_data_set:
@@ -787,7 +787,7 @@ class BaseDSLParser(object):
 
         return False
 
-    def get_job_parameters(self, *args):
+    def get_job_parameters(self, *args, **kwargs):
         return self.job_parameters
 
     def get_job_providers(self, provider_detail=None, dsl=None):
@@ -813,8 +813,7 @@ class BaseDSLParser(object):
         return RuntimeConfParserUtil.generate_predict_conf_template(predict_dsl,
                                                                     train_conf,
                                                                     model_id,
-                                                                    model_version,
-                                                                    conf_version=2)
+                                                                    model_version)
 
     @staticmethod
     def get_predict_dsl(predict_dsl=None, module_object_dict=None):
@@ -845,6 +844,67 @@ class BaseDSLParser(object):
                                                                 provider=provider)
 
         return module_obj_name
+
+    @staticmethod
+    def validate_component_param(component, module, runtime_conf,
+                                 provider_name, provider_version, provider_detail,
+                                 local_role, local_party_id):
+        provider = RuntimeConfParserUtil.instantiate_component_provider(provider_detail,
+                                                                        provider_name=provider_name,
+                                                                        provider_version=provider_version)
+
+        try:
+            RuntimeConfParserUtil.get_component_parameters(provider,
+                                                           runtime_conf,
+                                                           module,
+                                                           component,
+                                                           redundant_param_check=True,
+                                                           local_role=local_role,
+                                                           local_party_id=local_party_id,
+                                                           parse_user_specified_only=False)
+            return 0
+        except Exception as e:
+            raise ValueError(f"{e}")
+
+    @classmethod
+    def check_input_existence(cls, dsl):
+        component_details = dsl.get("components", {})
+        component_outputs = cls._find_outputs(dsl)
+
+        input_key = ["data", "model", "isometric_model", "cache"]
+        non_existence = dict()
+        for cpn, cpn_detail in component_details.items():
+            for k in input_key:
+                input_deps = cpn_detail.get("input", {}).get(k, {})
+                if not input_deps:
+                    continue
+
+                input_splits = None
+                if k == "data":
+                    for data_k, dep_list in input_deps.items():
+                        for dep in dep_list:
+                            input_splits = dep.split(".", -1)
+
+                else:
+                    for dep in input_deps:
+                        input_splits = dep.split(".", -1)
+                        if input_splits[0] == "pipeline":
+                            input_splits = input_splits[1:]
+
+                up_cpn, up_link = input_splits
+                if not component_outputs.get(up_cpn, {}).get(up_link, {}):
+                    if k not in non_existence:
+                        non_existence[k] = list()
+                    non_existence[k].append(f"{cpn}'s {up_cpn}.{up_link}")
+
+        if non_existence:
+            ret_msg = "non exist input:"
+            for k, v in non_existence.items():
+                ret_msg += f"\n    {k}: " + ",".join(v)
+
+            return ret_msg
+        else:
+            return ""
 
 
 class DSLParserV1(BaseDSLParser):
@@ -987,14 +1047,14 @@ class DSLParserV2(BaseDSLParser):
                                                                            conf_version=2)
 
         else:
-            predict_runtime_conf = RuntimeConfParserUtil.merge_dict(pipeline_runtime_conf, runtime_conf)
+            predict_runtime_conf = RuntimeConfParserUtil.merge_predict_runtime_conf(pipeline_runtime_conf,
+                                                                                    runtime_conf)
             self.predict_runtime_conf = predict_runtime_conf
             self.job_parameters = RuntimeConfParserUtil.get_job_parameters(predict_runtime_conf,
                                                                            conf_version=2)
 
         self.args_input = RuntimeConfParserUtil.get_input_parameters(runtime_conf,
-                                                                     components=self._get_reader_components(),
-                                                                     conf_version=2)
+                                                                     components=self._get_reader_components())
 
         self.prepare_graph_dependency_info()
 

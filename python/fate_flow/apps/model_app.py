@@ -535,7 +535,7 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
     }
 
     if model_operation in [ModelOperation.STORE, ModelOperation.RESTORE]:
-        component_name = "{}_0".format(model_operation)
+        component_name = f"{str(model_operation).replace('.', '_').lower()}_0"
         component_parameters = dict()
         component_parameters["model_id"] = [config_data["model_id"]]
         component_parameters["model_version"] = [config_data["model_version"]]

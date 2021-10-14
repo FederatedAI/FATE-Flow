@@ -145,8 +145,8 @@ class Tracker(object):
                         break
 
             session.Session.persistent(computing_table=computing_table,
-                                       table_namespace=output_table_namespace,
-                                       table_name=output_table_name,
+                                       namespace=output_table_namespace,
+                                       name=output_table_name,
                                        schema=schema,
                                        part_of_data=part_of_data,
                                        engine=output_storage_engine,
@@ -428,58 +428,58 @@ class Tracker(object):
                                                                              self.role,
                                                                              self.party_id))
         try:
-            sess = session.Session(computing=self.job_parameters.computing_engine, federation=self.job_parameters.federation_engine)
-            # clean up temporary tables
-            computing_temp_namespace = job_utils.generate_session_id(task_id=self.task_id,
-                                                                     task_version=self.task_version,
-                                                                     role=self.role,
-                                                                     party_id=self.party_id)
-            if self.job_parameters.computing_engine == ComputingEngine.EGGROLL:
-                session_options = {"eggroll.session.processors.per.node": 1}
-            else:
-                session_options = {}
-            try:
-                if self.job_parameters.computing_engine != ComputingEngine.LINKIS_SPARK:
-                    sess.init_computing(computing_session_id=f"{computing_temp_namespace}_clean", options=session_options)
-                    sess.computing.cleanup(namespace=computing_temp_namespace, name="*")
-                    schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(computing_temp_namespace,
-                                                                                                         self.role,
-                                                                                                         self.party_id))
-                    # clean up the last tables of the federation
-                    federation_temp_namespace = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                    sess.computing.cleanup(namespace=federation_temp_namespace, name="*")
-                    schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(federation_temp_namespace,
-                                                                                                         self.role,
-                                                                                                         self.party_id))
-                if self.job_parameters.federation_engine == FederationEngine.RABBITMQ and self.role != "local":
-                    schedule_logger(self.job_id).info('rabbitmq start clean up')
-                    parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]
-                    federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                    component_parameters_on_party = copy.deepcopy(runtime_conf)
-                    component_parameters_on_party["local"] = {"role": self.role, "party_id": self.party_id}
-                    sess.init_federation(federation_session_id=federation_session_id,
-                                         runtime_conf=component_parameters_on_party,
-                                         service_conf=self.job_parameters.engines_address.get(EngineType.FEDERATION, {}))
-                    sess._federation_session.cleanup(parties)
-                    schedule_logger(self.job_id).info('rabbitmq clean up success')
+            with session.Session() as sess:
+                # clean up temporary tables
+                computing_temp_namespace = job_utils.generate_session_id(task_id=self.task_id,
+                                                                         task_version=self.task_version,
+                                                                         role=self.role,
+                                                                         party_id=self.party_id)
+                if self.job_parameters.computing_engine == ComputingEngine.EGGROLL:
+                    session_options = {"eggroll.session.processors.per.node": 1}
+                else:
+                    session_options = {}
+                try:
+                    if self.job_parameters.computing_engine != ComputingEngine.LINKIS_SPARK:
+                        sess.init_computing(computing_session_id=f"{computing_temp_namespace}_clean", options=session_options)
+                        sess.computing.cleanup(namespace=computing_temp_namespace, name="*")
+                        schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(computing_temp_namespace,
+                                                                                                             self.role,
+                                                                                                             self.party_id))
+                        # clean up the last tables of the federation
+                        federation_temp_namespace = job_utils.generate_task_version_id(self.task_id, self.task_version)
+                        sess.computing.cleanup(namespace=federation_temp_namespace, name="*")
+                        schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(federation_temp_namespace,
+                                                                                                             self.role,
+                                                                                                             self.party_id))
+                    if self.job_parameters.federation_engine == FederationEngine.RABBITMQ and self.role != "local":
+                        schedule_logger(self.job_id).info('rabbitmq start clean up')
+                        parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]
+                        federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
+                        component_parameters_on_party = copy.deepcopy(runtime_conf)
+                        component_parameters_on_party["local"] = {"role": self.role, "party_id": self.party_id}
+                        sess.init_federation(federation_session_id=federation_session_id,
+                                             runtime_conf=component_parameters_on_party,
+                                             service_conf=self.job_parameters.engines_address.get(EngineType.FEDERATION, {}))
+                        sess._federation_session.cleanup(parties)
+                        schedule_logger(self.job_id).info('rabbitmq clean up success')
 
-                #TODO optimize the clean process
-                if self.job_parameters.federation_engine == FederationEngine.PULSAR and self.role != "local":
-                    schedule_logger(self.job_id).info('start to clean up pulsar topics')
-                    parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]
-                    federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                    component_parameters_on_party = copy.deepcopy(runtime_conf)
-                    component_parameters_on_party["local"] = {"role": self.role, "party_id": self.party_id}
-                    sess.init_federation(federation_session_id=federation_session_id,
-                                         runtime_conf=component_parameters_on_party,
-                                         service_conf=self.job_parameters.engines_address.get(EngineType.FEDERATION, {}))
-                    sess._federation_session.cleanup(parties)
-                    schedule_logger(self.job_id).info('pulsar topic clean up success')
-            except Exception as e:
-                schedule_logger(self.job_id).exception("cleanup error")
-            finally:
-                sess.destroy_all_sessions()
-            return True
+                    #TODO optimize the clean process
+                    if self.job_parameters.federation_engine == FederationEngine.PULSAR and self.role != "local":
+                        schedule_logger(self.job_id).info('start to clean up pulsar topics')
+                        parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]
+                        federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
+                        component_parameters_on_party = copy.deepcopy(runtime_conf)
+                        component_parameters_on_party["local"] = {"role": self.role, "party_id": self.party_id}
+                        sess.init_federation(federation_session_id=federation_session_id,
+                                             runtime_conf=component_parameters_on_party,
+                                             service_conf=self.job_parameters.engines_address.get(EngineType.FEDERATION, {}))
+                        sess._federation_session.cleanup(parties)
+                        schedule_logger(self.job_id).info('pulsar topic clean up success')
+                except Exception as e:
+                    schedule_logger(self.job_id).exception("cleanup error")
+                finally:
+                    sess.destroy_all_sessions()
+                return True
         except Exception as e:
             schedule_logger(self.job_id).exception(e)
             return False
