@@ -23,7 +23,9 @@ from fate_flow.components._base import (
 from fate_flow.entity.types import ModelStorage
 from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage, tencent_cos_model_storage
 
+
 LOGGER = getLogger()
+
 
 ModelStorageClassMap = {
     ModelStorage.REDIS.value: redis_model_storage.RedisModelStorage,
@@ -67,12 +69,8 @@ class ModelStore(ComponentBase):
     def _run(self, input_cpn: ComponentInputProtocol):
         parameters = input_cpn.parameters
         model_storage = get_model_storage(parameters)
-        model_storage.store(
-            model_id=parameters["model_id"],
-            model_version=parameters["model_version"],
-            store_address=parameters["store_address"],
-            force_update=parameters.get("force_update", False),
-        )
+        model_storage.store(parameters["model_id"], parameters["model_version"],
+                            parameters["store_address"], parameters.get("force_update", False))
 
 
 model_restore_cpn_meta = ComponentMeta("ModelRestore")
@@ -99,8 +97,4 @@ class ModelRestore(ComponentBase):
     def _run(self, input_cpn: ComponentInputProtocol):
         parameters = input_cpn.parameters
         model_storage = get_model_storage(parameters)
-        model_storage.restore(
-            model_id=parameters["model_id"],
-            model_version=parameters["model_version"],
-            store_address=parameters["store_address"],
-        )
+        model_storage.restore(parameters["model_id"], parameters["model_version"], parameters["store_address"])
