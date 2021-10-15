@@ -110,9 +110,9 @@ fateboard:
 model_store_address:
   # use mysql as the model store engine
   storage: mysql
-  name: fate_model
+  database: fate_model
   user: fate
-  passwd: fate
+  password: fate
   host: 127.0.0.1
   port: 3306
   # other optional configs send to the engine
@@ -124,7 +124,7 @@ model_store_address:
 #  port: 6379
 #  db: 0
 #  password:
-  # expire time, in seconds. defaults None (no expire time)
+  # the expiry time of keys, in seconds. defaults None (no expiry time)
 #  ex:
   # use tencent cos as model store engine
 #  storage: tencent_cos

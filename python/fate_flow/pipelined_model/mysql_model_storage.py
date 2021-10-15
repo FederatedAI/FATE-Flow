@@ -119,7 +119,7 @@ class MysqlModelStorage(ModelStorageBase):
     @staticmethod
     def get_connection(store_address: dict):
         store_address = deepcopy(store_address)
-        db_name = store_address.pop('name')
+        db_name = store_address.pop('database')
         del store_address['storage']
         DB.init(db_name, **store_address)
 
