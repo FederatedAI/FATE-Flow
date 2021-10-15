@@ -149,6 +149,8 @@ class DAGScheduler(Cron):
                 "logs_directory": logs_directory,
                 "board_url": job_utils.get_board_url(job_id, job_initiator["role"], job_initiator["party_id"])
             }
+            if JobRuntimeConfigAdapter(submit_job_conf.runtime_conf).check_backend():
+                result["message"] = "[WARN]backend parameter is removed,it does not take effect!"
             submit_result.update(result)
             submit_result.update(path_dict)
         except Exception as e:

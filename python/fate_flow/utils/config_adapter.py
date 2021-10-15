@@ -61,6 +61,13 @@ class JobRuntimeConfigAdapter(object):
             work_mode = self.job_runtime_conf['job_parameters'].get('work_mode')
         return work_mode
 
+    def check_backend(self):
+        if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
+            backend = self.job_runtime_conf['job_parameters'].get('common', {}).get('backend')
+        else:
+            backend = self.job_runtime_conf['job_parameters'].get('backend')
+        return backend is not None
+
     def get_job_type(self):
         if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
             job_type = self.job_runtime_conf['job_parameters'].get('common', {}).get('job_type')
