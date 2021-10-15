@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os.path
 import sys
 
 from fate_arch.common import file_utils
@@ -22,6 +23,7 @@ from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import WorkerName
+from fate_flow.settings import stat_logger
 
 
 class ProviderManager:
@@ -30,20 +32,23 @@ class ProviderManager:
         code, std = cls.register_fate_flow_provider()
         if code != 0:
             raise Exception(f"register fate flow tools component failed")
-        code, std = cls.register_default_fate_algorithm_provider()
-        if code != 0:
-            raise Exception(f"register default fate algorithm component failed")
-        sys.path.append(cls.get_default_fate_algorithm_provider_env()["PYTHONPATH"])
+        try:
+            code, std = cls.register_default_fate_algorithm_provider()
+            if code != 0:
+                raise Exception(f"register default fate algorithm component failed")
+        except Exception as e:
+            stat_logger.exception(e)
 
     @classmethod
     def register_fate_flow_provider(cls):
         provider = cls.get_fate_flow_provider()
-        return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
+        return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider, run_in_subprocess=False)
 
     @classmethod
     def register_default_fate_algorithm_provider(cls):
         provider = cls.get_default_fate_algorithm_provider()
-        return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
+        sys.path.append(provider.env["PYTHONPATH"])
+        return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider, run_in_subprocess=False)
 
     @classmethod
     def get_fate_flow_provider(cls):
@@ -60,6 +65,8 @@ class ProviderManager:
     def get_default_fate_algorithm_provider(cls):
         path = JobDefaultConfig.default_component_provider_path.split("/")
         path = file_utils.get_python_base_directory(*path)
+        if not os.path.exists(path):
+            raise Exception(f"default fate algorithm provider not exists: {path}")
         provider = ComponentProvider(name="fate_algorithm", version=get_versions()["FATE"], path=path, class_path=ComponentRegistry.get_default_class_path())
         return provider
 
