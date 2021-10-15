@@ -107,17 +107,23 @@ fate_on_spark:
 fateboard:
   host: 127.0.0.1
   port: 8080
+
+# on API `/model/load` and `/model/load/do`
+# automatic upload models to the model store if it exists locally but does not exist in the model storage
+# or download models from the model store if it does not exist locally but exists in the model storage
+# this config will not affect API `/model/store` or `/model/restore`
+enable_model_store: false
 model_store_address:
   # use mysql as the model store engine
-  storage: mysql
-  database: fate_model
-  user: fate
-  password: fate
-  host: 127.0.0.1
-  port: 3306
+#  storage: mysql
+#  database: fate_model
+#  user: fate
+#  password: fate
+#  host: 127.0.0.1
+#  port: 3306
   # other optional configs send to the engine
-  max_connections: 10
-  stale_timeout: 10
+#  max_connections: 10
+#  stale_timeout: 10
   # use redis as the model store engine
 #  storage: redis
 #  host: 127.0.0.1
@@ -127,11 +133,11 @@ model_store_address:
   # the expiry time of keys, in seconds. defaults None (no expiry time)
 #  ex:
   # use tencent cos as model store engine
-#  storage: tencent_cos
-#  Region:
-#  SecretId:
-#  SecretKey:
-#  Bucket:
+  storage: tencent_cos
+  Region:
+  SecretId:
+  SecretKey:
+  Bucket:
 
 servings:
   hosts:

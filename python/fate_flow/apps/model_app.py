@@ -26,7 +26,9 @@ from flask import Response, request, send_file
 
 from fate_arch.common import FederatedMode, WorkMode
 from fate_arch.common.base_utils import json_dumps, json_loads
+from fate_arch.common.conf_utils import get_base_config
 from fate_arch.common.file_utils import get_project_base_directory
+
 from fate_flow.db.db_models import (DB, ModelTag, Tag,
                                     MachineLearningModelInfo as MLModel,
                                     ModelOperationLog as OperLog)
@@ -224,15 +226,21 @@ def do_load_model():
     try:
         src_model_path = os.path.join(get_project_base_directory(), 'model_local_cache',
                                       party_model_id, model_version)
-        if not os.path.isdir(src_model_path):
-            stat_logger.info(f'{src_model_path} not exists. Restore it from model storage.')
+        if get_base_config('enable_model_store', False):
             component_parameters = {
                 'model_id': party_model_id,
                 'model_version': model_version,
                 'store_address': ServiceRegistry.MODEL_STORE_ADDRESS,
             }
             model_storage = get_model_storage(component_parameters)
-            model_storage.restore(**component_parameters)
+
+            if os.path.isdir(src_model_path):
+                if not model_storage.exists():
+                    stat_logger.info(f'Uploading {src_model_path} to model storage.')
+                    model_storage.store(**component_parameters)
+            else:
+                stat_logger.info(f'Downloading {src_model_path} from model storage.')
+                model_storage.restore(**component_parameters)
 
         dst_model_path = os.path.join(get_project_base_directory(), 'loaded_model_backup',
                                       party_model_id, model_version)
