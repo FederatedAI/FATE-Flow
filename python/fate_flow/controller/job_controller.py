@@ -278,7 +278,8 @@ class JobController(object):
                                                                    job_id=job_id,
                                                                    role=role,
                                                                    party_id=party_id,
-                                                                   initialized_config=initialized_config)
+                                                                   initialized_config=initialized_config,
+                                                                   run_in_subprocess=False if initialized_config["if_default_provider"] else True)
                 initialized_result.update(_result)
             else:
                 cls.initialize_task_holder_for_scheduling(role=role,

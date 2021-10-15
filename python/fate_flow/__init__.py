@@ -32,8 +32,6 @@ def set_env():
     )
     os.environ.setdefault("FATE_DEPLOY_BASE", project_base)
     os.environ.setdefault("PROCESS_ROLE", ProcessRole.DRIVER.value)
-    for env in {"VIRTUAL_ENV", "PYTHONPATH", "SPARK_HOME", "FATE_DEPLOY_BASE", "PROCESS_ROLE"}:
-        print(f"{env}: {os.getenv(env)}")
 
 
 set_env()
