@@ -19,6 +19,9 @@ from .reload_config_base import ReloadConfigBase
 
 
 class JobDefaultConfig(ReloadConfigBase):
+    # component provider
+    default_component_provider_path = None
+
     # Resource
     total_cores_overweight_percent = None
     total_memory_overweight_percent = None

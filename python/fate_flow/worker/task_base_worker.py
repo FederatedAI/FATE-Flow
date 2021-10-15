@@ -94,7 +94,7 @@ class ComponentInput:
 
 
 class BaseTaskWorker(BaseWorker):
-    def _run(self, **kwargs):
+    def _run(self):
         self.report_info.update({
             "job_id": self.args.job_id,
             "component_name": self.args.component_name,
@@ -105,9 +105,9 @@ class BaseTaskWorker(BaseWorker):
             "run_ip": self.args.run_ip,
             "run_pid": self.run_pid
         })
-        self._run_(**kwargs)
+        self._run_()
 
-    def _run_(self, **kwargs):
+    def _run_(self):
         pass
 
     def _handle_exception(self):

@@ -46,7 +46,7 @@ LOGGER = getLogger()
 
 
 class TaskExecutor(BaseTaskWorker):
-    def _run_(self, **kwargs):
+    def _run_(self):
         # todo: All function calls where errors should be thrown
         args = self.args
         start_time = current_timestamp()

@@ -20,7 +20,7 @@ import traceback
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.file_utils import load_json_conf, dump_json_conf
-from fate_flow.utils.log_utils import getLogger, LoggerFactory
+from fate_flow.utils.log_utils import getLogger, LoggerFactory, exception_to_trace_string
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.db.config_manager import ConfigManager
 from fate_flow.db.runtime_config import RuntimeConfig
@@ -79,7 +79,9 @@ class BaseWorker:
         self.report_info = {}
 
     def run(self, **kwargs):
-        result = None
+        result = {}
+        code = 0
+        message = ""
         start_time = current_timestamp()
         self.run_pid = os.getpid()
         try:
@@ -87,17 +89,16 @@ class BaseWorker:
             LoggerFactory.set_directory(directory=self.args.log_dir, parent_log_dir=self.args.parent_log_dir,
                                         append_to_parent_log=True, force=True)
             LOGGER.info(f"enter {self.__class__.__name__} worker process, pid: {self.run_pid}")
-            for env in {"VIRTUAL_ENV", "PYTHONPATH", "SPARK_HOME", "FATE_DEPLOY_BASE", "FATE_JOB_ID"}:
+            for env in {"VIRTUAL_ENV", "PYTHONPATH", "SPARK_HOME", "FATE_DEPLOY_BASE", "PROCESS_ROLE", "FATE_JOB_ID"}:
                 LOGGER.info(f"{env}: {os.getenv(env)}")
             if self.args.job_server:
                 RuntimeConfig.init_config(JOB_SERVER_HOST=self.args.job_server.split(':')[0],
                                           HTTP_PORT=self.args.job_server.split(':')[1])
-            RuntimeConfig.set_process_role(ProcessRole.WORKER)
+            RuntimeConfig.set_process_role(ProcessRole(os.getenv("PROCESS_ROLE")))
             # todo: get conf from server
             ConfigManager.load()
             ComponentRegistry.load()
-            result = self._run(**kwargs)
-            sys.exit(0)
+            result = self._run()
         except Exception as e:
             LOGGER.exception(e)
             traceback.print_exc()
@@ -105,16 +106,19 @@ class BaseWorker:
                 self._handle_exception()
             except Exception as e:
                 LOGGER.exception(e)
-            sys.exit(1)
+            code = 1
+            message = exception_to_trace_string(e)
         finally:
-            if not result:
-                result = {}
             if self.args and self.args.result:
                 dump_json_conf(result, self.args.result)
             end_time = current_timestamp()
-            LOGGER.info(f"worker {self.__class__.__name__}, pid: {self.run_pid}, elapsed: {end_time - start_time} ms")
+            LOGGER.info(f"worker {self.__class__.__name__}, process role: {RuntimeConfig.PROCESS_ROLE}, pid: {self.run_pid}, elapsed: {end_time - start_time} ms")
+            if RuntimeConfig.PROCESS_ROLE == ProcessRole.WORKER:
+                sys.exit(code)
+            else:
+                return code, message, result
 
-    def _run(self, **kwargs):
+    def _run(self):
         raise NotImplementedError
 
     def _handle_exception(self):

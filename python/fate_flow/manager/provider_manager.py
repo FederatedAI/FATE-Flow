@@ -13,10 +13,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import sys
+
 from fate_arch.common import file_utils
 from fate_arch.common.versions import get_versions
 from fate_flow.entity import ComponentProvider
 from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import WorkerName
 
@@ -24,28 +27,36 @@ from fate_flow.entity.types import WorkerName
 class ProviderManager:
     @classmethod
     def register_default_providers(cls):
-        code, std = cls.register_fate_flow_component_provider()
+        code, std = cls.register_fate_flow_provider()
         if code != 0:
             raise Exception(f"register fate flow tools component failed")
-        code, std = cls.register_default_fate_algorithm_component_provider()
+        code, std = cls.register_default_fate_algorithm_provider()
         if code != 0:
             raise Exception(f"register default fate algorithm component failed")
+        sys.path.append(cls.get_default_fate_algorithm_provider_env()["PYTHONPATH"])
 
     @classmethod
-    def register_fate_flow_component_provider(cls):
+    def register_fate_flow_provider(cls):
         path = file_utils.get_python_base_directory("fate_flow")
         provider = ComponentProvider(name="fate_flow_tools", version=get_versions()["FATEFlow"], path=path, class_path=ComponentRegistry.get_default_class_path())
         return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
 
     @classmethod
-    def register_default_fate_algorithm_component_provider(cls):
-        path = ["component_plugins",
-                "fate",
-                "python",
-                "federatedml"]
+    def register_default_fate_algorithm_provider(cls):
+        provider = cls.get_default_fate_algorithm_provider()
+        return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
+
+    @classmethod
+    def get_default_fate_algorithm_provider_env(cls):
+        provider = cls.get_default_fate_algorithm_provider()
+        return provider.env
+
+    @classmethod
+    def get_default_fate_algorithm_provider(cls):
+        path = JobDefaultConfig.default_component_provider_path.split("/")
         path = file_utils.get_python_base_directory(*path)
         provider = ComponentProvider(name="fate_algorithm", version=get_versions()["FATE"], path=path, class_path=ComponentRegistry.get_default_class_path())
-        return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
+        return provider
 
     @classmethod
     def get_provider_object(cls, provider_info, check_registration=True):

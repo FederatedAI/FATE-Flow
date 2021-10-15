@@ -15,6 +15,7 @@
 #
 import sys
 import os
+from fate_flow.entity.types import ProcessRole
 
 if sys.version_info < (3, 7):
     from backports.datetime_fromisoformat import MonkeyPatch
@@ -30,6 +31,9 @@ def set_env():
         )
     )
     os.environ.setdefault("FATE_DEPLOY_BASE", project_base)
+    os.environ.setdefault("PROCESS_ROLE", ProcessRole.DRIVER.value)
+    for env in {"VIRTUAL_ENV", "PYTHONPATH", "SPARK_HOME", "FATE_DEPLOY_BASE", "PROCESS_ROLE"}:
+        print(f"{env}: {os.getenv(env)}")
 
 
 set_env()

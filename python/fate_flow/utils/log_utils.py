@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import typing
+import traceback
 
 from fate_arch.common.log import LoggerFactory, getLogger
 from fate_flow.db.db_models import Job, Task
@@ -52,6 +53,10 @@ def base_msg(job: Job = None, task: Task = None, role: str = None, party_id: typ
         return "", f" on {role} {party_id}{detail_msg}"
     else:
         return "", f"{detail_msg}"
+
+
+def exception_to_trace_string(ex):
+    return "".join(traceback.TracebackException.from_exception(ex).format())
 
 
 def schedule_logger(job_id=None, delete=False):
