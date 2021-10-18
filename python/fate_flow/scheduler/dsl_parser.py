@@ -828,7 +828,7 @@ class BaseDSLParser(object):
             if module_object:
                 role_predict_dsl["components"][component]["CodePath"] = module_object
 
-            return role_predict_dsl
+        return role_predict_dsl
 
     @staticmethod
     def get_module_object_name(module, local_role, provider_detail,
