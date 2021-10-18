@@ -32,12 +32,9 @@ class ProviderManager:
         code, std = cls.register_fate_flow_provider()
         if code != 0:
             raise Exception(f"register fate flow tools component failed")
-        try:
-            code, std = cls.register_default_fate_algorithm_provider()
-            if code != 0:
-                raise Exception(f"register default fate algorithm component failed")
-        except Exception as e:
-            stat_logger.exception(e)
+        code, std = cls.register_default_fate_algorithm_provider()
+        if code != 0:
+            raise Exception(f"register default fate algorithm component failed")
 
     @classmethod
     def register_fate_flow_provider(cls):
