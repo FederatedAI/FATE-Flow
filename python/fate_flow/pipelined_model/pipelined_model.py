@@ -231,7 +231,7 @@ class PipelinedModel(Locker):
         return model_buffers
 
     def exists(self):
-        return os.path.exists(self.model_path)
+        return os.path.isdir(self.model_path) and set(os.listdir(self.model_path)) - {'.lock'}
 
     def save_protobuf(self, buffer_object, filepath):
         serialized_string = serialize_buffer_object(buffer_object)

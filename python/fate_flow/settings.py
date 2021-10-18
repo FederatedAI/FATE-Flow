@@ -39,6 +39,8 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 GRPC_SERVER_MAX_WORKERS = None
 MAX_TIMESTAMP_INTERVAL = 60
 
+SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
+
 WORK_MODE = get_base_config("work_mode", 0)
 USE_REGISTRY = get_base_config("use_registry")
 DEPENDENT_DISTRIBUTION = get_base_config("dependent_distribution", True)

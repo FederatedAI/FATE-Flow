@@ -70,9 +70,7 @@ fate_on_spark:
   hive:
     host: 127.0.0.1
     port: 10000
-    auth:
-    configuration:
-    kerberos_service_name:
+    auth_mechanism:
     username:
     password:
   linkis_hive:
@@ -110,14 +108,31 @@ fateboard:
   host: 127.0.0.1
   port: 8080
 model_store_address:
+  # use mysql as the model store engine
   storage: mysql
-  name: model
-  host: 127.0.0.1
-  port: 3306
+  name: fate_model
   user: fate
   passwd: fate
+  host: 127.0.0.1
+  port: 3306
+  # other optional configs send to the engine
   max_connections: 10
   stale_timeout: 10
+  # use redis as the model store engine
+#  storage: redis
+#  host: 127.0.0.1
+#  port: 6379
+#  db: 0
+#  password:
+  # expire time, in seconds. defaults None (no expire time)
+#  ex:
+  # use tencent cos as model store engine
+#  storage: tencent_cos
+#  Region:
+#  SecretId:
+#  SecretKey:
+#  Bucket:
+
 servings:
   hosts:
     - 127.0.0.1:8000

@@ -41,107 +41,119 @@ class DAGScheduler(Cron):
     def submit(cls, submit_job_conf: JobConfigurationBase, job_id: str = None):
         if not job_id:
             job_id = job_utils.generate_job_id()
-        schedule_logger(job_id).info(f"submit job, body {submit_job_conf.to_dict()}")
-        dsl = submit_job_conf.dsl
-        runtime_conf = submit_job_conf.runtime_conf
-        job_utils.check_job_runtime_conf(runtime_conf)
-        authentication_utils.check_constraint(runtime_conf, dsl)
-
-        job_initiator = runtime_conf["initiator"]
-        conf_adapter = JobRuntimeConfigAdapter(runtime_conf)
-        common_job_parameters = conf_adapter.get_common_parameters()
-
-        if common_job_parameters.job_type != "predict":
-            # generate job model info
-            common_job_parameters.model_id = model_utils.gen_model_id(runtime_conf["role"])
-            common_job_parameters.model_version = job_id
-            train_runtime_conf = {}
-        else:
-            # check predict job parameters
-            detect_utils.check_config(common_job_parameters.to_dict(), ["model_id", "model_version"])
-            # get inference dsl from pipeline model as job dsl
-            tracker = Tracker(job_id=job_id, role=job_initiator["role"], party_id=job_initiator["party_id"],
-                              model_id=common_job_parameters.model_id, model_version=common_job_parameters.model_version)
-            pipeline_model = tracker.get_pipeline_model()
-            train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
-            if not model_utils.check_if_deployed(role=job_initiator["role"],
-                                                 party_id=job_initiator["party_id"],
-                                                 model_id=common_job_parameters.model_id,
-                                                 model_version=common_job_parameters.model_version):
-                raise Exception(f"Model {common_job_parameters.model_id} {common_job_parameters.model_version} has not been deployed yet.")
-            dsl = json_loads(pipeline_model.inference_dsl)
-
-        job = Job()
-        job.f_job_id = job_id
-        job.f_dsl = dsl
-        job.f_train_runtime_conf = train_runtime_conf
-        job.f_roles = runtime_conf["role"]
-        job.f_work_mode = common_job_parameters.work_mode
-        job.f_initiator_role = job_initiator["role"]
-        job.f_initiator_party_id = job_initiator["party_id"]
-        job.f_role = job_initiator["role"]
-        job.f_party_id = job_initiator["party_id"]
-
-        path_dict = job_utils.save_job_conf(job_id=job_id,
-                                            role=job.f_initiator_role,
-                                            party_id=job.f_initiator_party_id,
-                                            dsl=dsl,
-                                            runtime_conf=runtime_conf,
-                                            runtime_conf_on_party={},
-                                            train_runtime_conf=train_runtime_conf,
-                                            pipeline_dsl=None)
-
-        if job.f_initiator_party_id not in runtime_conf["role"][job.f_initiator_role]:
-            msg = f"initiator party id {job.f_initiator_party_id} not in roles {runtime_conf['role']}"
-            schedule_logger(job_id).info(msg)
-            raise Exception(msg)
-
-        # create common parameters on initiator
-        JobController.create_common_job_parameters(job_id=job.f_job_id, initiator_role=job.f_initiator_role, common_job_parameters=common_job_parameters)
-        job.f_runtime_conf = conf_adapter.update_common_parameters(common_parameters=common_job_parameters)
-        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
-                                                       runtime_conf=job.f_runtime_conf,
-                                                       train_runtime_conf=job.f_train_runtime_conf)
-
-        # initiator runtime conf as template
-        job.f_runtime_conf_on_party = job.f_runtime_conf.copy()
-        job.f_runtime_conf_on_party["job_parameters"] = common_job_parameters.to_dict()
-
-        status_code, response = FederatedScheduler.create_job(job=job)
-        if status_code != FederatedSchedulingStatusCode.SUCCESS:
-            job.f_status = JobStatus.FAILED
-            job.f_tag = "submit_failed"
-            FederatedScheduler.sync_job_status(job=job)
-            raise Exception("create job failed", response)
-        else:
-            need_run_components = {}
-            for role in response:
-                need_run_components[role] = {}
-                for party, res in response[role].items():
-                    need_run_components[role][party] = [name for name, value in response[role][party]["data"]["components"].items() if value["need_run"] is True]
-            if common_job_parameters.work_mode == WorkMode.CLUSTER:
-                # create the task holder in db to record information of all participants in the initiator for scheduling
-                for role, party_ids in job.f_roles.items():
-                    for party_id in party_ids:
-                        if role == job.f_initiator_role and party_id == job.f_initiator_party_id:
-                            continue
-                        if not need_run_components[role][party_id]:
-                            continue
-                        JobController.initialize_tasks(job_id, role, party_id, False, job.f_initiator_role, job.f_initiator_party_id, common_job_parameters, dsl_parser, components=need_run_components[role][party_id])
-            job.f_status = JobStatus.WAITING
-            status_code, response = FederatedScheduler.sync_job_status(job=job)
-            if status_code != FederatedSchedulingStatusCode.SUCCESS:
-                raise Exception("set job to waiting status failed")
-
-        schedule_logger(job_id).info(f"submit job successfully, job id is {job.f_job_id}, model id is {common_job_parameters.model_id}")
-        logs_directory = job_utils.get_job_log_directory(job_id)
         submit_result = {
-            "job_id": job_id,
-            "model_info": {"model_id": common_job_parameters.model_id, "model_version": common_job_parameters.model_version},
-            "logs_directory": logs_directory,
-            "board_url": job_utils.get_board_url(job_id, job_initiator["role"], job_initiator["party_id"])
+            "job_id": job_id
         }
-        submit_result.update(path_dict)
+        schedule_logger(job_id).info(f"submit job, body {submit_job_conf.to_dict()}")
+        try:
+            dsl = submit_job_conf.dsl
+            runtime_conf = submit_job_conf.runtime_conf
+            job_utils.check_job_runtime_conf(runtime_conf)
+            authentication_utils.check_constraint(runtime_conf, dsl)
+
+            job_initiator = runtime_conf["initiator"]
+            conf_adapter = JobRuntimeConfigAdapter(runtime_conf)
+            common_job_parameters = conf_adapter.get_common_parameters()
+
+            if common_job_parameters.job_type != "predict":
+                # generate job model info
+                conf_version = schedule_utils.get_conf_version(runtime_conf)
+                if conf_version != 2:
+                    raise Exception("only the v2 version runtime conf is supported")
+                common_job_parameters.model_id = model_utils.gen_model_id(runtime_conf["role"])
+                common_job_parameters.model_version = job_id
+                train_runtime_conf = {}
+            else:
+                # check predict job parameters
+                detect_utils.check_config(common_job_parameters.to_dict(), ["model_id", "model_version"])
+                # get inference dsl from pipeline model as job dsl
+                tracker = Tracker(job_id=job_id, role=job_initiator["role"], party_id=job_initiator["party_id"],
+                                  model_id=common_job_parameters.model_id, model_version=common_job_parameters.model_version)
+                pipeline_model = tracker.get_pipeline_model()
+                train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
+                if not model_utils.check_if_deployed(role=job_initiator["role"],
+                                                     party_id=job_initiator["party_id"],
+                                                     model_id=common_job_parameters.model_id,
+                                                     model_version=common_job_parameters.model_version):
+                    raise Exception(f"Model {common_job_parameters.model_id} {common_job_parameters.model_version} has not been deployed yet.")
+                dsl = json_loads(pipeline_model.inference_dsl)
+
+            job = Job()
+            job.f_job_id = job_id
+            job.f_dsl = dsl
+            job.f_train_runtime_conf = train_runtime_conf
+            job.f_roles = runtime_conf["role"]
+            job.f_work_mode = common_job_parameters.work_mode
+            job.f_initiator_role = job_initiator["role"]
+            job.f_initiator_party_id = job_initiator["party_id"]
+            job.f_role = job_initiator["role"]
+            job.f_party_id = job_initiator["party_id"]
+
+            path_dict = job_utils.save_job_conf(job_id=job_id,
+                                                role=job.f_initiator_role,
+                                                party_id=job.f_initiator_party_id,
+                                                dsl=dsl,
+                                                runtime_conf=runtime_conf,
+                                                runtime_conf_on_party={},
+                                                train_runtime_conf=train_runtime_conf,
+                                                pipeline_dsl=None)
+
+            if job.f_initiator_party_id not in runtime_conf["role"][job.f_initiator_role]:
+                msg = f"initiator party id {job.f_initiator_party_id} not in roles {runtime_conf['role']}"
+                schedule_logger(job_id).info(msg)
+                raise Exception(msg)
+
+            # create common parameters on initiator
+            JobController.create_common_job_parameters(job_id=job.f_job_id, initiator_role=job.f_initiator_role, common_job_parameters=common_job_parameters)
+            job.f_runtime_conf = conf_adapter.update_common_parameters(common_parameters=common_job_parameters)
+            dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
+                                                           runtime_conf=job.f_runtime_conf,
+                                                           train_runtime_conf=job.f_train_runtime_conf)
+
+            # initiator runtime conf as template
+            job.f_runtime_conf_on_party = job.f_runtime_conf.copy()
+            job.f_runtime_conf_on_party["job_parameters"] = common_job_parameters.to_dict()
+
+            status_code, response = FederatedScheduler.create_job(job=job)
+            if status_code != FederatedSchedulingStatusCode.SUCCESS:
+                job.f_status = JobStatus.FAILED
+                job.f_tag = "submit_failed"
+                FederatedScheduler.sync_job_status(job=job)
+                raise Exception("create job failed", response)
+            else:
+                need_run_components = {}
+                for role in response:
+                    need_run_components[role] = {}
+                    for party, res in response[role].items():
+                        need_run_components[role][party] = [name for name, value in response[role][party]["data"]["components"].items() if value["need_run"] is True]
+                if common_job_parameters.work_mode == WorkMode.CLUSTER:
+                    # create the task holder in db to record information of all participants in the initiator for scheduling
+                    for role, party_ids in job.f_roles.items():
+                        for party_id in party_ids:
+                            if role == job.f_initiator_role and party_id == job.f_initiator_party_id:
+                                continue
+                            if not need_run_components[role][party_id]:
+                                continue
+                            JobController.initialize_tasks(job_id, role, party_id, False, job.f_initiator_role, job.f_initiator_party_id, common_job_parameters, dsl_parser, components=need_run_components[role][party_id])
+                job.f_status = JobStatus.WAITING
+                status_code, response = FederatedScheduler.sync_job_status(job=job)
+                if status_code != FederatedSchedulingStatusCode.SUCCESS:
+                    raise Exception("set job to waiting status failed")
+
+            schedule_logger(job_id).info(f"submit job successfully, job id is {job.f_job_id}, model id is {common_job_parameters.model_id}")
+            logs_directory = job_utils.get_job_log_directory(job_id)
+            result = {
+                "code": RetCode.SUCCESS,
+                "message": "success",
+                "model_info": {"model_id": common_job_parameters.model_id, "model_version": common_job_parameters.model_version},
+                "logs_directory": logs_directory,
+                "board_url": job_utils.get_board_url(job_id, job_initiator["role"], job_initiator["party_id"])
+            }
+            submit_result.update(result)
+            submit_result.update(path_dict)
+        except Exception as e:
+            submit_result["code"] = RetCode.OPERATING_ERROR
+            submit_result["message"] = str(e)
         return submit_result
 
     @classmethod

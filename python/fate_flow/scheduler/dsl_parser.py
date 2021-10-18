@@ -1,5 +1,5 @@
-#!/usr/bin/env python    
-# -*- coding: utf-8 -*- 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #
 #  Copyright 2019 The FATE Authors. All Rights Reserved.
@@ -787,7 +787,7 @@ class BaseDSLParser(object):
 
         return False
 
-    def get_job_parameters(self, *args):
+    def get_job_parameters(self, *args, **kwargs):
         return self.job_parameters
 
     def get_job_providers(self, provider_detail=None, dsl=None):

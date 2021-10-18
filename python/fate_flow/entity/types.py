@@ -57,6 +57,7 @@ class PythonDependenceName(CustomEnum):
 class ModelStorage(CustomEnum):
     REDIS = "redis"
     MYSQL = "mysql"
+    TENCENT_COS = "tencent_cos"
 
 
 class ModelOperation(CustomEnum):

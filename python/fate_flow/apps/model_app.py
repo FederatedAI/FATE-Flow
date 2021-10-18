@@ -528,26 +528,37 @@ def operate_tag(tag_operation):
 
 
 def gen_model_operation_job_config(config_data: dict, model_operation: ModelOperation):
-    job_runtime_conf = job_utils.runtime_conf_basic(if_local=True)
-    initiator_role = "local"
+    if model_operation not in {ModelOperation.STORE, ModelOperation.RESTORE}:
+        raise Exception("Can not support this model operation: {}".format(model_operation))
+
+    component_name = f"{str(model_operation).replace('.', '_').lower()}_0"
+
     job_dsl = {
-        "components": {}
+        "components": {
+            component_name: {
+                "module": "Model{}".format(model_operation.value.capitalize()),
+            },
+        },
     }
 
-    if model_operation in [ModelOperation.STORE, ModelOperation.RESTORE]:
-        component_name = "{}_0".format(model_operation)
-        component_parameters = dict()
-        component_parameters["model_id"] = [config_data["model_id"]]
-        component_parameters["model_version"] = [config_data["model_version"]]
-        component_parameters["store_address"] = [ServiceRegistry.MODEL_STORE_ADDRESS]
-        if model_operation is ModelOperation.STORE:
-            component_parameters["force_update"] = [config_data.get("force_update", False)]
-        job_runtime_conf["role_parameters"][initiator_role] = {component_name: component_parameters}
-        job_dsl["components"][component_name] = {
-            "module": "Model{}".format(model_operation.value.capitalize())
-        }
-    else:
-        raise Exception("Can not support this model operation: {}".format(model_operation))
+    job_runtime_conf = job_utils.runtime_conf_basic(if_local=True)
+
+    component_parameters = {
+        "model_id": config_data["model_id"],
+        "model_version": config_data["model_version"],
+        "store_address": ServiceRegistry.MODEL_STORE_ADDRESS,
+    }
+    if model_operation == ModelOperation.STORE:
+        component_parameters["force_update"] = config_data.get("force_update", False)
+
+    job_runtime_conf["component_parameters"]["role"] = {
+        "local": {
+            "0": {
+                component_name: component_parameters,
+            },
+        },
+    }
+
     return job_dsl, job_runtime_conf
 
 
