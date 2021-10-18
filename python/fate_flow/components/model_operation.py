@@ -21,14 +21,25 @@ from fate_flow.components._base import (
     ComponentInputProtocol,
 )
 from fate_flow.entity.types import ModelStorage
-from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage
+from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage, tencent_cos_model_storage
 
 LOGGER = getLogger()
 
 ModelStorageClassMap = {
     ModelStorage.REDIS.value: redis_model_storage.RedisModelStorage,
     ModelStorage.MYSQL.value: mysql_model_storage.MysqlModelStorage,
+    ModelStorage.TENCENT_COS.value: tencent_cos_model_storage.TencentCOSModelStorage,
 }
+
+
+def get_model_storage(parameters):
+    model_storage = parameters.get("store_address", {}).get("storage")
+    if not model_storage:
+        raise TypeError(f"'store_address' is empty.")
+    if model_storage not in ModelStorageClassMap:
+        raise ValueError(f"Model storage '{model_storage}' is not supported.")
+    return ModelStorageClassMap[model_storage]()
+
 
 model_store_cpn_meta = ComponentMeta("ModelStore")
 
@@ -55,8 +66,8 @@ class ModelStoreParam(BaseParam):
 class ModelStore(ComponentBase):
     def _run(self, input_cpn: ComponentInputProtocol):
         parameters = input_cpn.parameters
-        model_storage = ModelStorageClassMap[parameters['store_address']['storage']]
-        model_storage().store(
+        model_storage = get_model_storage(parameters)
+        model_storage.store(
             model_id=parameters["model_id"],
             model_version=parameters["model_version"],
             store_address=parameters["store_address"],
@@ -87,8 +98,8 @@ class ModelRestoreParam(BaseParam):
 class ModelRestore(ComponentBase):
     def _run(self, input_cpn: ComponentInputProtocol):
         parameters = input_cpn.parameters
-        model_storage = ModelStorageClassMap[parameters['store_address']['storage']]
-        model_storage().restore(
+        model_storage = get_model_storage(parameters)
+        model_storage.restore(
             model_id=parameters["model_id"],
             model_version=parameters["model_version"],
             store_address=parameters["store_address"],

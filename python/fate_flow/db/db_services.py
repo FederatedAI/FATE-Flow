@@ -41,7 +41,7 @@ def check_service_supported(method):
     @wraps(method)
     def magic(self, service_name, *args, **kwargs):
         if service_name not in self.supported_services:
-            raise ServiceNotSupported(None, service_name)
+            raise ServiceNotSupported(service_name=service_name)
         return method(self, service_name, *args, **kwargs)
     return magic
 
@@ -149,6 +149,8 @@ class ServicesDB(abc.ABC):
     def get_urls(self, service_name):
         """Query service urls from database. The urls may belong to other nodes.
         Currently, only `fateflow` (model download) urls and `servings` (FATE-Serving) urls are supported.
+        `fateflow` is a url containing scheme, host, port and path,
+        while `servings` only contains host and port.
 
         :param str service_name: The service name.
         :return: The service urls.
@@ -207,7 +209,7 @@ class ZooKeeperDB(ServicesDB):
             self.client = KazooClient(**client_kwargs)
             self.client.start()
         except ZookeeperError as e:
-            raise ZooKeeperBackendError(None, repr(e))
+            raise ZooKeeperBackendError(error_message=repr(e))
 
         atexit.register(self.client.stop)
 
@@ -217,7 +219,7 @@ class ZooKeeperDB(ServicesDB):
         except NodeExistsError:
             pass
         except ZookeeperError as e:
-            raise ZooKeeperBackendError(None, repr(e))
+            raise ZooKeeperBackendError(error_message=repr(e))
 
     def _delete(self, service_name, service_url):
         try:
@@ -225,7 +227,7 @@ class ZooKeeperDB(ServicesDB):
         except NoNodeError:
             pass
         except ZookeeperError as e:
-            raise ZooKeeperBackendError(None, repr(e))
+            raise ZooKeeperBackendError(error_message=repr(e))
 
     def _get_znode_path(self, service_name, service_url):
         """Get the znode path by service_name.
@@ -237,7 +239,7 @@ class ZooKeeperDB(ServicesDB):
 
         :example:
 
-        >>> self._get_znode_path('fateflow','http://127.0.0.1:9380/v1/model/transfer/arbiter-10000_guest-9999_host-10000_model/202105060929263278441')
+        >>> self._get_znode_path('fateflow', 'http://127.0.0.1:9380/v1/model/transfer/arbiter-10000_guest-9999_host-10000_model/202105060929263278441')
         '/FATE-SERVICES/flow/online/transfer/providers/http%3A%2F%2F127.0.0.1%3A9380%2Fv1%2Fmodel%2Ftransfer%2Farbiter-10000_guest-9999_host-10000_model%2F202105060929263278441'
         """
         return '/'.join([self.znodes[service_name], parse.quote(service_url, safe='')])
@@ -246,10 +248,14 @@ class ZooKeeperDB(ServicesDB):
         try:
             urls = self.client.get_children(self.znodes[service_name])
         except ZookeeperError as e:
-            raise ZooKeeperBackendError(None, repr(e))
+            raise ZooKeeperBackendError(error_message=repr(e))
 
-        # remove prefix and unescape the url
-        return [parse.unquote(url.rsplit('/', 1)[-1]) for url in urls]
+        urls = [parse.unquote(url) for url in urls]
+        if service_name == 'servings':
+            # The url format of `servings` is `grpc://{host}:{port}/{path}?{query}`.
+            # We only need `{host}:{port}`.
+            urls = [parse.urlparse(url).netloc or url for url in urls]
+        return urls
 
 
 class FallbackDB(ServicesDB):
@@ -274,8 +280,8 @@ class FallbackDB(ServicesDB):
         if isinstance(urls, dict):
             urls = urls.get('hosts', [])
         if not isinstance(urls, list):
-            return urls
-        return [f'http://{url}' for url in urls]
+            urls = [urls]
+        return urls
 
 
 def service_db():
@@ -285,12 +291,10 @@ def service_db():
     :return ZooKeeperDB if `use_registry` is `True`, else FallbackDB.
             FallbackDB is a compatible class and it actually does nothing.
     """
-    use_registry = USE_REGISTRY
-    if not use_registry:
+    if not USE_REGISTRY:
         return FallbackDB()
-    if isinstance(use_registry, str):
-        use_registry = use_registry.lower()
-        if use_registry == 'zookeeper':
+    if isinstance(USE_REGISTRY, str):
+        if USE_REGISTRY.lower() == 'zookeeper':
             return ZooKeeperDB()
     # backward compatibility
     return ZooKeeperDB()

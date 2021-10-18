@@ -15,22 +15,21 @@
 #
 from copy import deepcopy
 
-import redis
+from qcloud_cos import CosConfig, CosS3Client
+from qcloud_cos.cos_exception import CosServiceError
 
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.pipelined_model.model_storage_base import ModelStorageBase
 from fate_flow.utils.log_utils import getLogger
 
-
 LOGGER = getLogger()
 
 
-class RedisModelStorage(ModelStorageBase):
-    key_separator = ":"
+class TencentCOSModelStorage(ModelStorageBase):
 
     def store(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False):
         """
-        Store the model from local cache to redis
+        Store the model from local cache to cos
         :param model_id:
         :param model_version:
         :param store_address:
@@ -38,55 +37,66 @@ class RedisModelStorage(ModelStorageBase):
         :return:
         """
         try:
-            red = self.get_connection(store_address)
+            cos = self.get_connection(store_address)
             model = PipelinedModel(model_id, model_version)
             file_path = model.packaging_model()
-            store_key = self.store_key(model_id, model_version)
+            store_key = self.store_key(model_id, model_version) + '.zip'
 
-            with open(file_path, "rb") as fr:
-                res = red.set(store_key, fr.read(), nx=not force_update, ex=store_address.get("ex", None))
-            if res is not True:
-                if not force_update:
-                    raise FileExistsError(f"The key {store_key} already exists.")
-                raise TypeError(f"Execute command failed.")
+            if not force_update:
+                try:
+                    cos.head_object(
+                        Bucket=store_address["Bucket"],
+                        Key=store_key,
+                    )
+                except CosServiceError as e:
+                    if e.get_error_code() != 'NoSuchResource':
+                        raise e
+                else:
+                    raise FileExistsError(f"The object {store_key} already exists.")
+
+            response = cos.upload_file(
+                Bucket=store_address["Bucket"],
+                LocalFilePath=file_path,
+                Key=store_key,
+                EnableMD5=True,
+            )
         except Exception as e:
             LOGGER.exception(e)
-            raise Exception(f"Store model {model_id} {model_version} to redis failed.")
+            raise Exception(f"Store model {model_id} {model_version} to Tencent COS failed.")
         else:
-            LOGGER.info(f"Store model {model_id} {model_version} to redis successfully."
-                        f"Archive path: {file_path} Key: {store_key}")
+            LOGGER.info(f"Store model {model_id} {model_version} to Tencent COS successfully. "
+                        f"Archive path: {file_path} Key: {store_key} ETag: {response['ETag']}")
 
     def restore(self, model_id: str, model_version: str, store_address: dict):
         """
-        Restore model from redis to local cache
+        Restore model from cos to local cache
         :param model_id:
         :param model_version:
         :param store_address:
         :return:
         """
         try:
-            red = self.get_connection(store_address)
+            cos = self.get_connection(store_address)
             model = PipelinedModel(model_id, model_version)
             file_path = model.archive_model_file_path
-            store_key = self.store_key(model_id, model_version)
+            store_key = self.store_key(model_id, model_version) + '.zip'
 
-            archive_data = red.get(name=store_key)
-            if not archive_data:
-                raise TypeError(f"The key {store_key} does not exists or is empty.")
-
-            with open(file_path, "wb") as fw:
-                fw.write(archive_data)
+            cos.download_file(
+                Bucket=store_address["Bucket"],
+                Key=store_key,
+                DestFilePath=file_path,
+                EnableCRC=True,
+            )
             model.unpack_model(file_path)
         except Exception as e:
             LOGGER.exception(e)
-            raise Exception(f"Restore model {model_id} {model_version} from redis failed")
+            raise Exception(f"Restore model {model_id} {model_version} from Tencent COS failed")
         else:
-            LOGGER.info(f"Restore model {model_id} {model_version} from redis successfully"
+            LOGGER.info(f"Restore model {model_id} {model_version} from Tencent COS successfully. "
                         f"Archive path: {file_path} Key: {store_key}")
 
     @staticmethod
     def get_connection(store_address: dict):
         store_address = deepcopy(store_address)
-        del store_address['storage']
-        store_address.pop('ex', None)
-        return redis.Redis(**store_address)
+        del store_address['storage'], store_address['Bucket']
+        return CosS3Client(CosConfig(**store_address))

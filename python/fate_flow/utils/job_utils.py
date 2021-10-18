@@ -18,7 +18,7 @@ import os
 import sys
 import threading
 import typing
-from fate_arch.common import file_utils
+from fate_arch.common import file_utils, FederatedMode
 from fate_arch.common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import DB, Job, Task
@@ -128,10 +128,17 @@ def check_job_runtime_conf(runtime_conf: typing.Dict):
 
 def runtime_conf_basic(if_local=False):
     job_runtime_conf = {
+        "dsl_version": 2,
         "initiator": {},
-        "job_parameters": {"work_mode": WORK_MODE},
+        "job_parameters": {
+            "common": {
+                "backend": 0,
+                "federated_mode": FederatedMode.SINGLE,
+                "work_mode": WORK_MODE,
+            },
+        },
         "role": {},
-        "role_parameters": {}
+        "component_parameters": {}
     }
     if if_local:
         job_runtime_conf["initiator"]["role"] = "local"
