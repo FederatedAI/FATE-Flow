@@ -939,6 +939,7 @@ class DSLParserV1(BaseDSLParser):
 
         # change dsl v1 to dsl v2
         readers = {}
+        ret_msg = []
         for cpn, cpn_detail in dsl["components"].items():
             new_cpn_detail = copy.deepcopy(cpn_detail)
             if cpn_detail.get("input", {}).get("data", {}):
@@ -949,6 +950,8 @@ class DSLParserV1(BaseDSLParser):
                         if up_cpn == "args":
                             if up_out_alias not in readers:
                                 readers[up_out_alias] = "_".join(["reader", str(len(readers))])
+                                ret_msg.append(f"{data} is changed to {readers[up_out_alias]}.{up_out_alias}, please "
+                                               f"set input data of {readers[up_out_alias]}")
                             up_link = ".".join([readers[up_out_alias], up_out_alias])
                             new_dataset.append(up_link)
                         else:
@@ -963,7 +966,7 @@ class DSLParserV1(BaseDSLParser):
                                  output={"data": [output_alias]})
             dsl_v2["components"].update({cpn: reader_detail})
 
-        return dsl_v2
+        return dsl_v2, ", ".join(ret_msg)
 
     @staticmethod
     def convert_conf_v1_to_v2(conf_v1, role_parameters):
