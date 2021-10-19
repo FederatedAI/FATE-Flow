@@ -963,7 +963,8 @@ class DSLParserV1(BaseDSLParser):
 
         for output_alias, cpn in readers.items():
             reader_detail = dict(module="Reader",
-                                 output={"data": [output_alias]})
+                                 output={"data": [output_alias]},
+                                 CodePath="Reader")
             dsl_v2["components"].update({cpn: reader_detail})
 
         return dsl_v2, ", ".join(ret_msg)
