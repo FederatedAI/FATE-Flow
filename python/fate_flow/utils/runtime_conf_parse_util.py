@@ -16,7 +16,6 @@
 
 import copy
 from fate_arch.abc import Components
-from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, RoleParameterNotListError
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.entity import ComponentProvider
 from fate_flow.db.component_registry import ComponentRegistry
@@ -130,7 +129,12 @@ class RuntimeConfParserUtil(object):
                     param_class.update(parameters, not redundant_param_check)
 
         if not parse_user_specified_only:
-            conf["ComponentParam"] = param_class.as_dict()
+            public_param = param_class.as_dict()
+            for k, v in param_class.as_dict():
+                if k.startswith("_"):
+                    del public_param[k]
+
+            conf["ComponentParam"] = public_param
             param_class.check()
         else:
             conf["ComponentParam"] = user_specified_parameters
