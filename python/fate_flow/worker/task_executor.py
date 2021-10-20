@@ -63,7 +63,7 @@ class TaskExecutor(BaseTaskWorker):
                 "run_pid": self.run_pid
             })
             operation_client = OperationClient()
-            job_configuration = JobConfiguration(**operation_client.get_job_conf(args.job_id, args.role, args.party_id))
+            job_configuration = JobConfiguration(**operation_client.get_job_conf(args.job_id, args.role, args.party_id, args.component_name, args.task_id, args.task_version))
             task_parameters_conf = args.config
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
                                                            runtime_conf=job_configuration.runtime_conf,

@@ -100,7 +100,7 @@ def get_job_log_directory(job_id, *args):
     return os.path.join(file_utils.get_project_base_directory(), 'logs', job_id, *args)
 
 
-def get_task_directory(job_id, role, party_id, component_name, task_id, task_version):
+def get_task_directory(job_id, role, party_id, component_name, task_id, task_version, **kwargs):
     return get_job_directory(job_id, role, party_id, component_name, task_id, task_version)
 
 
@@ -220,6 +220,20 @@ def get_job_configuration(job_id, role, party_id) -> JobConfiguration:
     if jobs:
         job = jobs[0]
         return JobConfiguration(**job.to_human_model_dict())
+
+
+def get_task_using_job_conf(task_info: dict):
+    task_dir = get_task_directory(**task_info)
+    return read_job_conf(task_info["job_id"], task_info["role"], task_info["party_id"], task_dir)
+
+
+def read_job_conf(job_id, role, party_id, specified_dir=None):
+    path_dict = get_job_conf_path(job_id=job_id, role=role, party_id=party_id, specified_dir=specified_dir)
+    conf_dict = {}
+    for key, path in path_dict.items():
+        config = file_utils.load_json_conf(path)
+        conf_dict[key.rstrip("_path")] = config
+    return JobConfiguration(**conf_dict)
 
 
 def get_job_conf_path(job_id, role, party_id, specified_dir=None):
