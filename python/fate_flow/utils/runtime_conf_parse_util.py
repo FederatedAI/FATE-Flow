@@ -147,7 +147,8 @@ class RuntimeConfParserUtil(object):
             public_param = param_class.as_dict()
             for k, v in param_class.as_dict().items():
                 if k.startswith("_"):
-                    del public_param[k]
+                    pass
+                    #del public_param[k]
 
             conf["ComponentParam"] = public_param
             param_class.check()

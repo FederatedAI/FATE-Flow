@@ -105,7 +105,8 @@ class TaskExecutor(BaseTaskWorker):
             self.report_task_info_to_driver()
 
             previous_components_parameters = tracker_client.get_model_run_parameters()
-            LOGGER.info(f"previous components parameters: {previous_components_parameters}")
+            LOGGER.info(f"previous_components_parameters:\n{json_dumps(previous_components_parameters, indent=4)}")
+
             component_provider, component_parameters_on_party, user_specified_parameters = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
                                                                                                                                   component_name=args.component_name,
                                                                                                                                   role=args.role,

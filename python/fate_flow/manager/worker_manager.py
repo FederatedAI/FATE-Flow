@@ -65,22 +65,24 @@ class WorkerManager:
             if not initialized_config:
                 raise ValueError("no initialized_config argument")
             config = initialized_config
-            job_conf = job_utils.get_job_conf_path(job_id, role, party_id)
+            job_conf = job_utils.save_using_job_conf(job_id=job_id,
+                                                     role=role,
+                                                     party_id=party_id,
+                                                     config_dir=config_dir)
 
             from fate_flow.worker.task_initializer import TaskInitializer
             module = TaskInitializer
             module_file_path = sys.modules[TaskInitializer.__module__].__file__
             specific_cmd = [
-                '--dsl', job_conf["job_dsl_path"],
-                '--runtime_conf', job_conf["job_runtime_conf_path"],
+                '--dsl', job_conf["dsl_path"],
+                '--runtime_conf', job_conf["runtime_conf_path"],
                 '--train_runtime_conf', job_conf["train_runtime_conf_path"],
                 '--pipeline_dsl', job_conf["pipeline_dsl_path"],
             ]
             provider_info = initialized_config["provider"]
         else:
             raise Exception(f"not support {worker_name} worker")
-        config_path, result_path = cls.get_config(worker_name=worker_name, worker_id=worker_id, config_dir=config_dir,
-                                                  config=config, log_dir=log_dir)
+        config_path, result_path = cls.get_config(config_dir=config_dir, config=config, log_dir=log_dir)
 
         process_cmd = [
             sys.executable,
@@ -179,8 +181,7 @@ class WorkerManager:
 
         config = task_parameters.to_dict()
         config["src_user"] = kwargs.get("src_user")
-        config_path, result_path = cls.get_config(worker_name=worker_name, worker_id=worker_id, config_dir=config_dir,
-                                                  config=config, log_dir=log_dir)
+        config_path, result_path = cls.get_config(config_dir=config_dir, config=config, log_dir=log_dir)
 
         if executable:
             process_cmd = executable
@@ -224,11 +225,11 @@ class WorkerManager:
         party_id = str(party_id)
         if task:
             config_dir = job_utils.get_job_directory(job_id, role, party_id, task.f_component_name, task.f_task_id,
-                                                     str(task.f_task_version))
+                                                     str(task.f_task_version), worker_name.value, worker_id)
             log_dir = job_utils.get_job_log_directory(job_id, role, party_id, task.f_component_name)
         elif job_id and role and party_id:
-            config_dir = job_utils.get_job_directory(job_id, role, party_id)
-            log_dir = job_utils.get_job_log_directory(job_id, role, party_id)
+            config_dir = job_utils.get_job_directory(job_id, role, party_id, worker_name.value, worker_id)
+            log_dir = job_utils.get_job_log_directory(job_id, role, party_id, worker_name.value, worker_id)
         else:
             config_dir = job_utils.get_general_worker_directory(worker_name.value, worker_id)
             log_dir = job_utils.get_general_worker_log_directory(worker_name.value, worker_id)
@@ -236,11 +237,11 @@ class WorkerManager:
         return worker_id, config_dir, log_dir
 
     @classmethod
-    def get_config(cls, worker_name: WorkerName, worker_id, config_dir, config, log_dir):
-        config_path = os.path.join(config_dir, f"{worker_name.value}_{worker_id}_config.json")
+    def get_config(cls, config_dir, config, log_dir):
+        config_path = os.path.join(config_dir, "config.json")
         with open(config_path, 'w') as fw:
             fw.write(json_dumps(config))
-        result_path = os.path.join(log_dir, f"{worker_name.value}_{worker_id}_result.json")
+        result_path = os.path.join(log_dir, "result.json")
         return config_path, result_path
 
     @classmethod
@@ -262,13 +263,13 @@ class WorkerManager:
     @DB.connection_context()
     def save_worker_info(cls, task: Task, worker_name: WorkerName, worker_id, **kwargs):
         worker = WorkerInfo()
-        worker.f_create_time = current_timestamp()
-        worker.f_worker_name = worker_name.value
-        worker.f_worker_id = worker_id
         ignore_attr = auto_date_timestamp_db_field()
         for attr, value in task.to_dict().items():
             if hasattr(worker, attr) and attr not in ignore_attr and value is not None:
                 setattr(worker, attr, value)
+        worker.f_create_time = current_timestamp()
+        worker.f_worker_name = worker_name.value
+        worker.f_worker_id = worker_id
         for k, v in kwargs.items():
             attr = f"f_{k}"
             if hasattr(worker, attr) and v is not None:

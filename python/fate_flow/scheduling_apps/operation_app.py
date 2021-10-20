@@ -23,6 +23,7 @@ from fate_arch.common import file_utils
 @manager.route('/job_config/get', methods=['POST'])
 def get_config():
     request_data = request.json
+    # todo: should be get task using job conf
     job_configuration = job_utils.get_job_configuration(job_id=request_data.get("job_id"),
                                                         role=request_data.get("role"),
                                                         party_id=request_data.get("party_id"))

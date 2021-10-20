@@ -30,11 +30,11 @@ class JobSaver(object):
     STATUS_FIELDS = ["status", "party_status"]
 
     @classmethod
-    def create_job(cls, job_info):
+    def create_job(cls, job_info) -> Job:
         return cls.create_job_family_entity(Job, job_info)
 
     @classmethod
-    def create_task(cls, task_info):
+    def create_task(cls, task_info) -> Task:
         return cls.create_job_family_entity(Task, task_info)
 
     @classmethod

@@ -100,6 +100,10 @@ def get_job_log_directory(job_id, *args):
     return os.path.join(file_utils.get_project_base_directory(), 'logs', job_id, *args)
 
 
+def get_task_directory(job_id, role, party_id, component_name, task_id, task_version):
+    return get_job_directory(job_id, role, party_id, component_name, task_id, task_version)
+
+
 def get_general_worker_directory(worker_name, worker_id, *args):
     return os.path.join(file_utils.get_project_base_directory(), worker_name, worker_id, *args)
 
@@ -158,11 +162,45 @@ def new_runtime_conf(job_dir, method, module, role, party_id):
 
 def save_job_conf(job_id, role, party_id, dsl, runtime_conf, runtime_conf_on_party, train_runtime_conf, pipeline_dsl=None):
     path_dict = get_job_conf_path(job_id=job_id, role=role, party_id=party_id)
-    os.makedirs(os.path.dirname(path_dict.get('job_dsl_path')), exist_ok=True)
-    os.makedirs(os.path.dirname(path_dict.get('job_runtime_conf_on_party_path')), exist_ok=True)
-    for data, conf_path in [(dsl, path_dict['job_dsl_path']),
-                            (runtime_conf, path_dict['job_runtime_conf_path']),
-                            (runtime_conf_on_party, path_dict['job_runtime_conf_on_party_path']),
+    dump_job_conf(path_dict=path_dict,
+                  dsl=dsl,
+                  runtime_conf=runtime_conf,
+                  runtime_conf_on_party=runtime_conf_on_party,
+                  train_runtime_conf=train_runtime_conf,
+                  pipeline_dsl=pipeline_dsl)
+    return path_dict
+
+
+def save_task_using_job_conf(task: Task):
+    task_dir = get_task_directory(job_id=task.f_job_id,
+                                  role=task.f_role,
+                                  party_id=task.f_party_id,
+                                  component_name=task.f_component_name,
+                                  task_id=task.f_task_id,
+                                  task_version=str(task.f_task_version))
+    return save_using_job_conf(task.f_job_id, task.f_role, task.f_party_id, config_dir=task_dir)
+
+
+def save_using_job_conf(job_id, role, party_id, config_dir):
+    path_dict = get_job_conf_path(job_id=job_id, role=role, party_id=party_id, specified_dir=config_dir)
+    job_configuration = get_job_configuration(job_id=job_id,
+                                              role=role,
+                                              party_id=party_id)
+    dump_job_conf(path_dict=path_dict,
+                  dsl=job_configuration.dsl,
+                  runtime_conf=job_configuration.runtime_conf,
+                  runtime_conf_on_party=job_configuration.runtime_conf_on_party,
+                  train_runtime_conf=job_configuration.train_runtime_conf,
+                  pipeline_dsl=None)
+    return path_dict
+
+
+def dump_job_conf(path_dict, dsl, runtime_conf, runtime_conf_on_party, train_runtime_conf, pipeline_dsl=None):
+    os.makedirs(os.path.dirname(path_dict.get('dsl_path')), exist_ok=True)
+    os.makedirs(os.path.dirname(path_dict.get('runtime_conf_on_party_path')), exist_ok=True)
+    for data, conf_path in [(dsl, path_dict['dsl_path']),
+                            (runtime_conf, path_dict['runtime_conf_path']),
+                            (runtime_conf_on_party, path_dict['runtime_conf_on_party_path']),
                             (train_runtime_conf, path_dict['train_runtime_conf_path']),
                             (pipeline_dsl, path_dict['pipeline_dsl_path'])]:
         with open(conf_path, 'w+') as f:
@@ -174,28 +212,6 @@ def save_job_conf(job_id, role, party_id, dsl, runtime_conf, runtime_conf_on_par
     return path_dict
 
 
-def get_job_conf_path(job_id, role, party_id):
-    job_dir = get_job_directory(job_id)
-    job_dsl_path = os.path.join(job_dir, 'job_dsl.json')
-    job_runtime_conf_path = os.path.join(job_dir, 'job_runtime_conf.json')
-    job_runtime_conf_on_party_path = os.path.join(job_dir, role, str(party_id), 'job_runtime_on_party_conf.json')
-    train_runtime_conf_path = os.path.join(job_dir, 'train_runtime_conf.json')
-    pipeline_dsl_path = os.path.join(job_dir, 'pipeline_dsl.json')
-    return {'job_dsl_path': job_dsl_path,
-            'job_runtime_conf_path': job_runtime_conf_path,
-            'job_runtime_conf_on_party_path': job_runtime_conf_on_party_path,
-            'train_runtime_conf_path': train_runtime_conf_path,
-            'pipeline_dsl_path': pipeline_dsl_path}
-
-
-def get_job_conf(job_id, role, party_id):
-    conf_dict = {}
-    for key, path in get_job_conf_path(job_id, role, party_id).items():
-        config = file_utils.load_json_conf(path)
-        conf_dict[key] = config
-    return conf_dict
-
-
 @DB.connection_context()
 def get_job_configuration(job_id, role, party_id) -> JobConfiguration:
     jobs = Job.select(Job.f_dsl, Job.f_runtime_conf, Job.f_train_runtime_conf, Job.f_runtime_conf_on_party).where(Job.f_job_id == job_id,
@@ -204,6 +220,23 @@ def get_job_configuration(job_id, role, party_id) -> JobConfiguration:
     if jobs:
         job = jobs[0]
         return JobConfiguration(**job.to_human_model_dict())
+
+
+def get_job_conf_path(job_id, role, party_id, specified_dir=None):
+    conf_dir = get_job_directory(job_id) if not specified_dir else specified_dir
+    job_dsl_path = os.path.join(conf_dir, 'job_dsl.json')
+    job_runtime_conf_path = os.path.join(conf_dir, 'job_runtime_conf.json')
+    if not specified_dir:
+        job_runtime_conf_on_party_path = os.path.join(conf_dir, role, str(party_id), 'job_runtime_on_party_conf.json')
+    else:
+        job_runtime_conf_on_party_path = os.path.join(conf_dir, 'job_runtime_on_party_conf.json')
+    train_runtime_conf_path = os.path.join(conf_dir, 'train_runtime_conf.json')
+    pipeline_dsl_path = os.path.join(conf_dir, 'pipeline_dsl.json')
+    return {'dsl_path': job_dsl_path,
+            'runtime_conf_path': job_runtime_conf_path,
+            'runtime_conf_on_party_path': job_runtime_conf_on_party_path,
+            'train_runtime_conf_path': train_runtime_conf_path,
+            'pipeline_dsl_path': pipeline_dsl_path}
 
 
 @DB.connection_context()

@@ -13,8 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import sys
-import os
 from fate_arch.common import engine_utils
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import EngineType
@@ -95,6 +93,7 @@ class JobController(object):
                                            job_parameters=job_parameters)
         # update job parameters on party
         job_info["runtime_conf_on_party"]["job_parameters"] = job_parameters.to_dict()
+        JobSaver.create_job(job_info=job_info)
         job_utils.save_job_conf(job_id=job_id,
                                 role=role,
                                 party_id=party_id,
@@ -109,7 +108,6 @@ class JobController(object):
         roles = job_info['roles']
         cls.initialize_job_tracker(job_id=job_id, role=role, party_id=party_id,
                                    job_parameters=job_parameters, roles=roles, is_initiator=is_initiator, dsl_parser=dsl_parser)
-        JobSaver.create_job(job_info=job_info)
         return {"components": initialized_result}
 
     @classmethod
@@ -252,7 +250,12 @@ class JobController(object):
         JobSaver.update_job(job_info)
 
     @classmethod
-    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id, job_parameters: RunParameters, dsl_parser, components: list = None, task_version=None, auto_retries=None):
+    def initialize_task(cls, task_info: dict):
+        initialized_result = cls.initialize_tasks(components=[task_info["component_name"]], **task_info)
+        return initialized_result
+
+    @classmethod
+    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id, job_parameters: RunParameters = None, dsl_parser=None, components: list = None, **kwargs):
         common_task_info = {}
         common_task_info["job_id"] = job_id
         common_task_info["initiator_role"] = initiator_role
@@ -260,12 +263,13 @@ class JobController(object):
         common_task_info["role"] = role
         common_task_info["party_id"] = party_id
         common_task_info["run_on_this_party"] = run_on_this_party
-        common_task_info["federated_mode"] = job_parameters.federated_mode
-        common_task_info["federated_status_collect_type"] = job_parameters.federated_status_collect_type
-        common_task_info["auto_retries"] = auto_retries if auto_retries is not None else job_parameters.auto_retries
-        common_task_info["auto_retry_delay"] = job_parameters.auto_retry_delay
-        if task_version:
-            common_task_info["task_version"] = task_version
+        common_task_info["federated_mode"] = kwargs.get("federated_mode", job_parameters.federated_mode if job_parameters else None)
+        common_task_info["federated_status_collect_type"] = kwargs.get("federated_status_collect_type", job_parameters.federated_status_collect_type if job_parameters else None)
+        common_task_info["auto_retries"] = kwargs.get("auto_retries", job_parameters.auto_retries if job_parameters else None)
+        common_task_info["auto_retry_delay"] = kwargs.get("auto_retry_delay", job_parameters.auto_retry_delay if job_parameters else None)
+        common_task_info["task_version"] = kwargs.get("task_version")
+        if dsl_parser is None:
+            dsl_parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id)
         provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser,
                                                                 components=components)
         initialized_result = {}
