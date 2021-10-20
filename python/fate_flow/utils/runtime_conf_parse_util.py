@@ -144,13 +144,7 @@ class RuntimeConfParserUtil(object):
                     param_class.update(parameters, not redundant_param_check)
 
         if not parse_user_specified_only:
-            public_param = param_class.as_dict()
-            for k, v in param_class.as_dict().items():
-                if k.startswith("_"):
-                    pass
-                    #del public_param[k]
-
-            conf["ComponentParam"] = public_param
+            conf["ComponentParam"] = param_class.as_dict()
             param_class.check()
         else:
             conf["ComponentParam"] = user_specified_parameters
