@@ -125,8 +125,8 @@ class MysqlModelStorage(ModelStorageBase):
             if not models_in_tables:
                 raise ValueError(f"Cannot found model in table.")
 
-            f_content = ''.join(models_in_table.f_content for models_in_table in models_in_tables)
-            model_archive_data = deserialize_b64(f_content)
+            model_archive_data = b''.join(deserialize_b64(models_in_table.f_content)
+                                          for models_in_table in models_in_tables)
             if not model_archive_data:
                 raise ValueError(f"Cannot get model archive data.")
 

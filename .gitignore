@@ -26,3 +26,4 @@ venv
 *.db
 *.whl
 component_registry_realtime.json
+/conf/local.*.yaml
