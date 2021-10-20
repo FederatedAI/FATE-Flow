@@ -84,16 +84,18 @@ class MysqlModelStorage(ModelStorageBase):
                     model_in_table.f_size = sys.getsizeof(model_in_table.f_content)
                     model_in_table.f_slice_index = slice_index
 
+                    rows = 0
                     if force_update:
-                        model_in_table.save(only=[
+                        rows = model_in_table.save(only=[
                             MachineLearningModel.f_content, MachineLearningModel.f_size,
                             MachineLearningModel.f_update_time, MachineLearningModel.f_slice_index,
                         ])
-                    else:
-                        model_in_table.save(force_insert=True)
-                    LOGGER.info(f"{'Update' if force_update else 'Insert'} model {model_id} {model_version} "
-                                f"slice index {slice_index} content.")
+                    if not rows:
+                        rows = model_in_table.save(force_insert=True)
+                    if not rows:
+                        raise Exception(f"Save slice index {slice_index} failed")
 
+                    LOGGER.info(f"Saved slice index {slice_index} of model {model_id} {model_version}.")
                     slice_index += 1
         except Exception as e:
             LOGGER.exception(e)
@@ -116,16 +118,17 @@ class MysqlModelStorage(ModelStorageBase):
 
         try:
             with DB.connection_context():
-                models_in_tables = MachineLearningModel.select().where(MachineLearningModel.f_model_id == model_id,
-                                                                       MachineLearningModel.f_model_version == model_version).\
-                    order_by(MachineLearningModel.f_slice_index)
+                models_in_tables = MachineLearningModel.select().where(
+                    MachineLearningModel.f_model_id == model_id,
+                    MachineLearningModel.f_model_version == model_version,
+                ).order_by(MachineLearningModel.f_slice_index)
             if not models_in_tables:
-                raise ValueError(f"Can not found model in table.")
+                raise ValueError(f"Cannot found model in table.")
 
             f_content = ''.join(models_in_table.f_content for models_in_table in models_in_tables)
             model_archive_data = deserialize_b64(f_content)
             if not model_archive_data:
-                raise ValueError(f"Can not get model archive data.")
+                raise ValueError(f"Cannot get model archive data.")
 
             with open(model.archive_model_file_path, "wb") as fw:
                 fw.write(model_archive_data)
@@ -166,7 +169,8 @@ class DataBaseModel(Model):
             self.f_update_date = datetime.datetime.now()
         if hasattr(self, "f_update_time"):
             self.f_update_time = current_timestamp()
-        super(DataBaseModel, self).save(*args, **kwargs)
+
+        return super(DataBaseModel, self).save(*args, **kwargs)
 
 
 class MachineLearningModel(DataBaseModel):
