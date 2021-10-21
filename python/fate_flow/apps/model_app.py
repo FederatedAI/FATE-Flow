@@ -198,8 +198,8 @@ def do_load_model():
     request_data['servings'] = RuntimeConfig.service_db.get_urls('servings')
 
     role = request_data['local']['role']
-    party_id = request_data['local']['party_id'],
-    model_id = request_data['job_parameters']['model_id'],
+    party_id = request_data['local']['party_id']
+    model_id = request_data['job_parameters']['model_id']
     model_version = request_data['job_parameters']['model_version']
     party_model_id = model_utils.gen_party_model_id(model_id, role, party_id)
 
@@ -235,7 +235,7 @@ def do_load_model():
             model_storage = get_model_storage(component_parameters)
 
             if os.path.isdir(src_model_path):
-                if not model_storage.exists():
+                if not model_storage.exists(**component_parameters):
                     stat_logger.info(f'Uploading {src_model_path} to model storage.')
                     model_storage.store(**component_parameters)
             else:

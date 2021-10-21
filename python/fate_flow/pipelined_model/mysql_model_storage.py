@@ -40,10 +40,10 @@ class MysqlModelStorage(ModelStorageBase):
 
         try:
             with DB.connection_context():
-                counts = MachineLearningModel.count().where(
+                counts = MachineLearningModel.select().where(
                     MachineLearningModel.f_model_id == model_id,
                     MachineLearningModel.f_model_version == model_version,
-                )
+                ).count()
             return counts > 0
         except Exception as e:
             raise e
