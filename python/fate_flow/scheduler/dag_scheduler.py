@@ -15,7 +15,7 @@
 #
 import typing
 from fate_arch.common.base_utils import json_loads, json_dumps, current_timestamp
-from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
 from fate_arch.common import WorkMode
 from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -161,7 +161,8 @@ class DAGScheduler(Cron):
             submit_result.update(path_dict)
         except Exception as e:
             submit_result["code"] = RetCode.OPERATING_ERROR
-            submit_result["message"] = str(e)
+            submit_result["message"] = exception_to_trace_string(e)
+            schedule_logger(job_id).exception(e)
         return submit_result
 
     @classmethod

@@ -48,7 +48,7 @@ class TaskController(object):
         if task_info.get("task_version") is None:
             task_info["task_version"] = 0
         task = JobSaver.create_task(task_info=task_info)
-        if task:
+        if task and run_on_this_party:
             job_utils.save_task_using_job_conf(task)
 
     @classmethod
