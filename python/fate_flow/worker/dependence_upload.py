@@ -51,7 +51,7 @@ def upload_except_exit(func):
 
 
 class DependenceUpload(BaseWorker):
-    def _run(self, **kwargs):
+    def _run(self):
         provider = ComponentProvider(**self.args.config.get("provider"))
         dependence_type = self.args.dependence_type
         self.upload_dependencies_to_hadoop(provider=provider, dependence_type=dependence_type)

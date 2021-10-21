@@ -28,6 +28,13 @@ LOGGER = getLogger()
 class RedisModelStorage(ModelStorageBase):
     key_separator = ":"
 
+    def exists(self, model_id: str, model_version: str, store_address: dict):
+        store_key = self.store_key(model_id, model_version)
+        red = self.get_connection(store_address)
+
+        counts = red.exists(store_key)
+        return counts > 0
+
     def store(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False):
         """
         Store the model from local cache to redis
@@ -37,13 +44,17 @@ class RedisModelStorage(ModelStorageBase):
         :param force_update:
         :return:
         """
-        try:
-            red = self.get_connection(store_address)
-            model = PipelinedModel(model_id, model_version)
-            file_path = model.packaging_model()
-            store_key = self.store_key(model_id, model_version)
+        store_key = self.store_key(model_id, model_version)
+        if not force_update and self.exists(model_id, model_version, store_address):
+            raise FileExistsError(f"The key {store_key} already exists.")
 
-            with open(file_path, "rb") as fr:
+        model = PipelinedModel(model_id, model_version)
+        red = self.get_connection(store_address)
+
+        try:
+            model.packaging_model()
+
+            with open(model.archive_model_file_path, "rb") as fr:
                 res = red.set(store_key, fr.read(), nx=not force_update, ex=store_address.get("ex", None))
             if res is not True:
                 if not force_update:
@@ -54,7 +65,7 @@ class RedisModelStorage(ModelStorageBase):
             raise Exception(f"Store model {model_id} {model_version} to redis failed.")
         else:
             LOGGER.info(f"Store model {model_id} {model_version} to redis successfully."
-                        f"Archive path: {file_path} Key: {store_key}")
+                        f"Archive path: {model.archive_model_file_path} Key: {store_key}")
 
     def restore(self, model_id: str, model_version: str, store_address: dict):
         """
@@ -64,25 +75,24 @@ class RedisModelStorage(ModelStorageBase):
         :param store_address:
         :return:
         """
-        try:
-            red = self.get_connection(store_address)
-            model = PipelinedModel(model_id, model_version)
-            file_path = model.archive_model_file_path
-            store_key = self.store_key(model_id, model_version)
+        store_key = self.store_key(model_id, model_version)
+        model = PipelinedModel(model_id, model_version)
+        red = self.get_connection(store_address)
 
+        try:
             archive_data = red.get(name=store_key)
             if not archive_data:
                 raise TypeError(f"The key {store_key} does not exists or is empty.")
 
-            with open(file_path, "wb") as fw:
+            with open(model.archive_model_file_path, "wb") as fw:
                 fw.write(archive_data)
-            model.unpack_model(file_path)
+            model.unpack_model(model.archive_model_file_path)
         except Exception as e:
             LOGGER.exception(e)
-            raise Exception(f"Restore model {model_id} {model_version} from redis failed")
+            raise Exception(f"Restore model {model_id} {model_version} from redis failed.")
         else:
-            LOGGER.info(f"Restore model {model_id} {model_version} from redis successfully"
-                        f"Archive path: {file_path} Key: {store_key}")
+            LOGGER.info(f"Restore model {model_id} {model_version} from redis successfully. "
+                        f"Archive path: {model.archive_model_file_path} Key: {store_key}")
 
     @staticmethod
     def get_connection(store_address: dict):

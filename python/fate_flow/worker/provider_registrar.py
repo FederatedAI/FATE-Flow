@@ -24,7 +24,7 @@ LOGGER = getLogger()
 
 
 class ProviderRegistrar(BaseWorker):
-    def _run(self, **kwargs):
+    def _run(self):
         provider = ComponentProvider(**self.args.config.get("provider"))
         support_components = ComponentRegistry.register_provider(provider)
         ComponentRegistry.register_components(provider, support_components)

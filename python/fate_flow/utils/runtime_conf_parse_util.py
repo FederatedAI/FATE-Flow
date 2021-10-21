@@ -16,7 +16,6 @@
 
 import copy
 from fate_arch.abc import Components
-from fate_flow.utils.dsl_exception import RoleParameterNotConsistencyError, RoleParameterNotListError
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.entity import ComponentProvider
 from fate_flow.db.component_registry import ComponentRegistry
@@ -70,7 +69,8 @@ class RuntimeConfParserUtil(object):
         redundant_param_check,
         local_role,
         local_party_id,
-        parse_user_specified_only
+        parse_user_specified_only,
+        pre_parameters=None
     ):
         provider_components = ComponentRegistry.get_provider_components(
             provider.provider_name, provider.provider_version
@@ -108,12 +108,26 @@ class RuntimeConfParserUtil(object):
 
         user_specified_parameters = dict()
 
+        if pre_parameters:
+            if parse_user_specified_only:
+                user_specified_parameters.update(
+                    pre_parameters.get("ComponentParam", {})
+                )
+            else:
+                param_class = param_class.update(
+                    pre_parameters.get("ComponentParam", {})
+                )
+
         common_parameters = (
             runtime_conf.get("component_parameters", {}).get("common", {}).get(alias, {})
         )
-        param_class = param_class.update(
-            common_parameters, not redundant_param_check
-        )
+
+        if parse_user_specified_only:
+            user_specified_parameters.update(common_parameters)
+        else:
+            param_class = param_class.update(
+                common_parameters, not redundant_param_check
+            )
 
         # update role parameters
         for role_id, role_id_parameters in (

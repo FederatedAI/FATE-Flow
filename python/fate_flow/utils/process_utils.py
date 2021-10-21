@@ -19,7 +19,7 @@ import subprocess
 import psutil
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import Task
-from fate_flow.entity.types import KillProcessRetCode
+from fate_flow.entity.types import KillProcessRetCode, ProcessRole
 from fate_flow.settings import SUBPROCESS_STD_LOG_NAME
 from fate_flow.settings import stat_logger
 
@@ -44,9 +44,9 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
         startupinfo.wShowWindow = subprocess.SW_HIDE
     else:
         startupinfo = None
-    subprocess_env = None
+    subprocess_env = os.environ.copy()
+    subprocess_env["PROCESS_ROLE"] = ProcessRole.WORKER.value
     if added_env:
-        subprocess_env = os.environ.copy()
         for name, value in added_env.items():
             if name.endswith("PATH"):
                 subprocess_env[name] = subprocess_env.get(name, "") + f":{value}"

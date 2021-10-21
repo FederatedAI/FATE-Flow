@@ -38,16 +38,18 @@ class TaskController(object):
     @classmethod
     def create_task(cls, role, party_id, run_on_this_party, task_info):
         task_info["role"] = role
-        task_info["party_id"] = party_id
+        task_info["party_id"] = str(party_id)
         task_info["status"] = TaskStatus.WAITING
         task_info["party_status"] = TaskStatus.WAITING
         task_info["create_time"] = base_utils.current_timestamp()
         task_info["run_on_this_party"] = run_on_this_party
-        if "task_id" not in task_info:
+        if task_info.get("task_id") is None:
             task_info["task_id"] = job_utils.generate_task_id(job_id=task_info["job_id"], component_name=task_info["component_name"])
-        if "task_version" not in task_info:
+        if task_info.get("task_version") is None:
             task_info["task_version"] = 0
-        JobSaver.create_task(task_info=task_info)
+        task = JobSaver.create_task(task_info=task_info)
+        if task and run_on_this_party:
+            job_utils.save_task_using_job_conf(task)
 
     @classmethod
     def start_task(cls, job_id, component_name, task_id, task_version, role, party_id, **kwargs):
@@ -82,7 +84,7 @@ class TaskController(object):
             run_parameters_dict["src_user"] = kwargs.get("src_user")
             run_parameters = RunParameters(**run_parameters_dict)
 
-            config_dir = job_utils.get_job_directory(job_id, role, party_id, component_name, task_id, task_version)
+            config_dir = job_utils.get_task_directory(job_id, role, party_id, component_name, task_id, task_version)
             os.makedirs(config_dir, exist_ok=True)
 
             run_parameters_path = os.path.join(config_dir, 'task_parameters.json')

@@ -15,7 +15,7 @@
 #
 import typing
 from fate_arch.common.base_utils import json_loads, json_dumps, current_timestamp
-from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
 from fate_arch.common import WorkMode
 from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -134,7 +134,15 @@ class DAGScheduler(Cron):
                                 continue
                             if not need_run_components[role][party_id]:
                                 continue
-                            JobController.initialize_tasks(job_id, role, party_id, False, job.f_initiator_role, job.f_initiator_party_id, common_job_parameters, dsl_parser, components=need_run_components[role][party_id])
+                            JobController.initialize_tasks(job_id=job_id,
+                                                           role=role,
+                                                           party_id=party_id,
+                                                           run_on_this_party=False,
+                                                           initiator_role=job.f_initiator_role,
+                                                           initiator_party_id=job.f_initiator_party_id,
+                                                           job_parameters=common_job_parameters,
+                                                           dsl_parser=dsl_parser,
+                                                           components=need_run_components[role][party_id])
                 job.f_status = JobStatus.WAITING
                 status_code, response = FederatedScheduler.sync_job_status(job=job)
                 if status_code != FederatedSchedulingStatusCode.SUCCESS:
@@ -155,7 +163,8 @@ class DAGScheduler(Cron):
             submit_result.update(path_dict)
         except Exception as e:
             submit_result["code"] = RetCode.OPERATING_ERROR
-            submit_result["message"] = str(e)
+            submit_result["message"] = exception_to_trace_string(e)
+            schedule_logger(job_id).exception(e)
         return submit_result
 
     @classmethod
@@ -164,8 +173,7 @@ class DAGScheduler(Cron):
                                                                                                                         initiator_role=job.f_initiator_role,
                                                                                                                         initiator_party_id=job.f_initiator_party_id,
                                                                                                                         input_job_parameters=job_parameters,
-                                                                                                                        input_component_parameters=component_parameters
-                                                                                                                        )
+                                                                                                                        input_component_parameters=component_parameters)
         schedule_logger(job.f_job_id).info(f"components {updated_components} parameters has been updated")
         updated_parameters = {
             "job_parameters": updated_job_parameters,

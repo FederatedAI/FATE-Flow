@@ -46,7 +46,7 @@ LOGGER = getLogger()
 
 
 class TaskExecutor(BaseTaskWorker):
-    def _run_(self, **kwargs):
+    def _run_(self):
         # todo: All function calls where errors should be thrown
         args = self.args
         start_time = current_timestamp()
@@ -63,7 +63,7 @@ class TaskExecutor(BaseTaskWorker):
                 "run_pid": self.run_pid
             })
             operation_client = OperationClient()
-            job_configuration = JobConfiguration(**operation_client.get_job_conf(args.job_id, args.role, args.party_id))
+            job_configuration = JobConfiguration(**operation_client.get_job_conf(args.job_id, args.role, args.party_id, args.component_name, args.task_id, args.task_version))
             task_parameters_conf = args.config
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
                                                            runtime_conf=job_configuration.runtime_conf,
@@ -105,7 +105,8 @@ class TaskExecutor(BaseTaskWorker):
             self.report_task_info_to_driver()
 
             previous_components_parameters = tracker_client.get_model_run_parameters()
-            LOGGER.info(f"previous components parameters: {previous_components_parameters}")
+            LOGGER.info(f"previous_components_parameters:\n{json_dumps(previous_components_parameters, indent=4)}")
+
             component_provider, component_parameters_on_party, user_specified_parameters = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
                                                                                                                                   component_name=args.component_name,
                                                                                                                                   role=args.role,

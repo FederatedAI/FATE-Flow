@@ -45,7 +45,7 @@ class ModelLoader(ComponentBase):
 
     def get_model_alias(self):
         job_configuration = OperationClient().get_job_conf(
-            self.model_version, self.tracker.role, self.tracker.party_id)
+            self.model_version, self.tracker.role, self.tracker.party_id, self.tracker.component_name, self.tracker.task_id, self.tracker.task_version)
         if not job_configuration:
             raise ValueError('The job was not found.')
         job_configuration = JobConfiguration(**job_configuration)

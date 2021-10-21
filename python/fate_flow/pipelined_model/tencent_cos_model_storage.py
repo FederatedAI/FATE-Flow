@@ -27,6 +27,22 @@ LOGGER = getLogger()
 
 class TencentCOSModelStorage(ModelStorageBase):
 
+    def exists(self, model_id: str, model_version: str, store_address: dict):
+        store_key = self.store_key(model_id, model_version) + '.zip'
+        cos = self.get_connection(store_address)
+
+        try:
+            cos.head_object(
+                Bucket=store_address["Bucket"],
+                Key=store_key,
+            )
+        except CosServiceError as e:
+            if e.get_error_code() != 'NoSuchResource':
+                raise e
+            return False
+        else:
+            return True
+
     def store(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False):
         """
         Store the model from local cache to cos
@@ -36,27 +52,19 @@ class TencentCOSModelStorage(ModelStorageBase):
         :param force_update:
         :return:
         """
-        try:
-            cos = self.get_connection(store_address)
-            model = PipelinedModel(model_id, model_version)
-            file_path = model.packaging_model()
-            store_key = self.store_key(model_id, model_version) + '.zip'
+        store_key = self.store_key(model_id, model_version) + '.zip'
+        if not force_update and self.exists(model_id, model_version, store_address):
+            raise FileExistsError(f"The object {store_key} already exists.")
 
-            if not force_update:
-                try:
-                    cos.head_object(
-                        Bucket=store_address["Bucket"],
-                        Key=store_key,
-                    )
-                except CosServiceError as e:
-                    if e.get_error_code() != 'NoSuchResource':
-                        raise e
-                else:
-                    raise FileExistsError(f"The object {store_key} already exists.")
+        model = PipelinedModel(model_id, model_version)
+        cos = self.get_connection(store_address)
+
+        try:
+            model.packaging_model()
 
             response = cos.upload_file(
                 Bucket=store_address["Bucket"],
-                LocalFilePath=file_path,
+                LocalFilePath=model.archive_model_file_path,
                 Key=store_key,
                 EnableMD5=True,
             )
@@ -65,7 +73,7 @@ class TencentCOSModelStorage(ModelStorageBase):
             raise Exception(f"Store model {model_id} {model_version} to Tencent COS failed.")
         else:
             LOGGER.info(f"Store model {model_id} {model_version} to Tencent COS successfully. "
-                        f"Archive path: {file_path} Key: {store_key} ETag: {response['ETag']}")
+                        f"Archive path: {model.archive_model_file_path} Key: {store_key} ETag: {response['ETag']}")
 
     def restore(self, model_id: str, model_version: str, store_address: dict):
         """
@@ -75,25 +83,25 @@ class TencentCOSModelStorage(ModelStorageBase):
         :param store_address:
         :return:
         """
-        try:
-            cos = self.get_connection(store_address)
-            model = PipelinedModel(model_id, model_version)
-            file_path = model.archive_model_file_path
-            store_key = self.store_key(model_id, model_version) + '.zip'
+        store_key = self.store_key(model_id, model_version) + '.zip'
+        model = PipelinedModel(model_id, model_version)
+        cos = self.get_connection(store_address)
 
+        try:
             cos.download_file(
                 Bucket=store_address["Bucket"],
                 Key=store_key,
-                DestFilePath=file_path,
+                DestFilePath=model.archive_model_file_path,
                 EnableCRC=True,
             )
-            model.unpack_model(file_path)
+
+            model.unpack_model(model.archive_model_file_path)
         except Exception as e:
             LOGGER.exception(e)
-            raise Exception(f"Restore model {model_id} {model_version} from Tencent COS failed")
+            raise Exception(f"Restore model {model_id} {model_version} from Tencent COS failed.")
         else:
             LOGGER.info(f"Restore model {model_id} {model_version} from Tencent COS successfully. "
-                        f"Archive path: {file_path} Key: {store_key}")
+                        f"Archive path: {model.archive_model_file_path} Key: {store_key}")
 
     @staticmethod
     def get_connection(store_address: dict):

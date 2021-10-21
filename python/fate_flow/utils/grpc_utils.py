@@ -13,18 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import requests
-
-from fate_flow.utils.log_utils import audit_logger
-from fate_flow.utils.proto_compatibility import basic_meta_pb2
-from fate_flow.utils.proto_compatibility import proxy_pb2, proxy_pb2_grpc
 import grpc
 
-from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.settings import FATE_FLOW_SERVICE_NAME, HEADERS, HOST, GRPC_PORT
-from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.utils.node_check_utils import nodes_check
 from fate_arch.common.base_utils import json_dumps, json_loads
+
+from fate_flow.db.job_default_config import JobDefaultConfig
+from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HEADERS, HOST
+from fate_flow.utils.log_utils import audit_logger
+from fate_flow.utils.node_check_utils import nodes_check
+from fate_flow.utils.proto_compatibility import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
+from fate_flow.utils.requests_utils import request
 
 
 def get_command_federation_channel(host, port):
@@ -91,14 +90,12 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
             return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)
         param = bytes.decode(bytes(json_dumps(param_dict), 'utf-8'))
 
-        action = getattr(requests, method.lower(), None)
         audit_logger(job_id).info('rpc receive: {}'.format(packet))
-        if action:
-            audit_logger(job_id).info("rpc receive: {} {}".format(get_url(_suffix), param))
-            resp = action(url=get_url(_suffix), data=param, headers=HEADERS)
-        else:
-            pass
+        audit_logger(job_id).info("rpc receive: {} {}".format(get_url(_suffix), param))
+
+        resp = request(method=method, url=get_url(_suffix), data=param, headers=HEADERS)
         resp_json = resp.json()
+
         return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)
 
 

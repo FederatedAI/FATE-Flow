@@ -107,6 +107,10 @@ def query_model_info_from_file(model_id=None, model_version=None, role=None, par
             pipeline_model = PipelinedModel(model_id=fp.split(os.path.sep)[-2], model_version=fp.split(os.path.sep)[-1])
             model_info = gather_model_info_data(pipeline_model, query_filters=query_filters)
             if model_info:
+                _role = fp.split('/')[-2].split('#')[0]
+                _party_id = fp.split('/')[-2].split('#')[1]
+                model_info["f_role"] = _role
+                model_info["f_party_id"] = _party_id
                 if isinstance(res, dict):
                     res[fp] = model_info
                 else:
@@ -115,8 +119,8 @@ def query_model_info_from_file(model_id=None, model_version=None, role=None, par
                 if kwargs.get('save'):
                     try:
                         insert_info = gather_model_info_data(pipeline_model).copy()
-                        insert_info['role'] = fp.split('/')[-2].split('#')[0]
-                        insert_info['party_id'] = fp.split('/')[-2].split('#')[1]
+                        insert_info['role'] = _role
+                        insert_info['party_id'] = _party_id
                         insert_info['job_id'] = insert_info.get('f_model_version')
                         insert_info['size'] = pipeline_model.calculate_model_file_size()
                         if compare_version(insert_info['f_fate_version'], '1.5.1') == 'lt':
