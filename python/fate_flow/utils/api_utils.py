@@ -14,23 +14,24 @@
 #  limitations under the License.
 #
 import json
+import time
 
 import requests
-import time
-from flask import jsonify, Response
+from flask import Response, jsonify
 from werkzeug.http import HTTP_STATUS_CODES
 
-from fate_arch.common.base_utils import json_loads, json_dumps
-from fate_flow.utils.log_utils import audit_logger, schedule_logger
-from fate_arch.common import FederatedMode, CoordinationProxyService, CoordinationCommunicationProtocol
-from fate_flow.settings import CHECK_NODES_IDENTITY,\
-    FATE_MANAGER_GET_NODE_INFO_ENDPOINT, HEADERS, API_VERSION, stat_logger, HOST, HTTP_PORT, PROXY, PROXY_PROTOCOL
+from fate_arch.common import CoordinationCommunicationProtocol, CoordinationProxyService, FederatedMode
+from fate_arch.common.base_utils import json_loads
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.db.service_registry import ServiceRegistry
-from fate_flow.utils.grpc_utils import wrap_grpc_packet, get_command_federation_channel, gen_routing_metadata, \
-    forward_grpc_packet
 from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.entity import RetCode
+from fate_flow.settings import API_VERSION, CHECK_NODES_IDENTITY, FATE_MANAGER_GET_NODE_INFO_ENDPOINT, HEADERS, HOST, \
+    HTTP_PORT, PROXY, PROXY_PROTOCOL, stat_logger
+from fate_flow.utils.grpc_utils import forward_grpc_packet, gen_routing_metadata, get_command_federation_channel, \
+    wrap_grpc_packet
+from fate_flow.utils.log_utils import audit_logger, schedule_logger
+from fate_flow.utils.requests_utils import request
 
 
 def get_json_result(retcode=RetCode.SUCCESS, retmsg='success', data=None, job_id=None, meta=None):
@@ -119,20 +120,22 @@ def federated_coordination_on_http(job_id, method, host, port, endpoint, src_par
     exception = None
     json_body['src_role'] = src_role
     json_body['src_party_id'] = src_party_id
+
     for t in range(try_times):
         try:
             url = "http://{}:{}{}".format(host, port, endpoint)
             audit_logger(job_id).info('remote http api request: {}'.format(url))
-            action = getattr(requests, method.lower(), None)
+
             headers = HEADERS.copy()
             headers["dest-party-id"] = str(dest_party_id)
             headers["src-party-id"] = str(src_party_id)
             headers["src-role"] = str(src_role)
-            http_response = action(url=url, data=json_dumps(json_body), headers=headers)
-            audit_logger(job_id).info(http_response.text)
-            response = http_response.json()
-            audit_logger(job_id).info('remote http api response: {} {}'.format(endpoint, response))
-            return response
+
+            response = request(method=method, url=url, json=json_body, headers=headers)
+            audit_logger(job_id).info(response.text)
+            audit_logger(job_id).info('remote http api response: {} {}'.format(endpoint, response.json()))
+
+            return response.json()
         except Exception as e:
             exception = e
             schedule_logger(job_id).warning(f"remote http request {endpoint} error, sleep and try again")
@@ -194,12 +197,12 @@ def proxy_api(role, _job_id, request_config):
 
 
 def forward_api(role, request_config):
+    method = request_config.get('header', {}).get('method', 'post')
     endpoint = request_config.get('header', {}).get('endpoint')
     url = "http://{}:{}{}".format(HOST, HTTP_PORT, endpoint)
-    method = request_config.get('header', {}).get('method', 'post')
     audit_logger().info('api request: {}'.format(url))
-    action = getattr(requests, method.lower(), None)
-    http_response = action(url=url, json=request_config.get('body'), headers=HEADERS)
+
+    http_response = request(method=method, url=url, json=request_config.get('body'), headers=HEADERS)
     response = http_response.json()
     audit_logger().info(response)
     return response
