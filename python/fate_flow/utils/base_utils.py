@@ -14,8 +14,13 @@
 #  limitations under the License.
 #
 import uuid
+from fate_arch.common.base_utils import json_dumps
 
 
 def new_unique_id():
     #todo: may be using snowflake?
     return uuid.uuid1().hex
+
+
+def jprint(src: dict):
+    print(json_dumps(src, indent=4))

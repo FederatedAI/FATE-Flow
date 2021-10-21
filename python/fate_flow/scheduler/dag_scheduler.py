@@ -170,8 +170,7 @@ class DAGScheduler(Cron):
                                                                                                                         initiator_role=job.f_initiator_role,
                                                                                                                         initiator_party_id=job.f_initiator_party_id,
                                                                                                                         input_job_parameters=job_parameters,
-                                                                                                                        input_component_parameters=component_parameters
-                                                                                                                        )
+                                                                                                                        input_component_parameters=component_parameters)
         schedule_logger(job.f_job_id).info(f"components {updated_components} parameters has been updated")
         updated_parameters = {
             "job_parameters": updated_job_parameters,

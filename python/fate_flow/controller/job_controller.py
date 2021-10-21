@@ -190,6 +190,7 @@ class JobController(object):
 
     @classmethod
     def gen_updated_parameters(cls, job_id, initiator_role, initiator_party_id, input_job_parameters, input_component_parameters):
+        # todo: check can not update job parameters
         job_configuration = job_utils.get_job_configuration(job_id=job_id,
                                                             role=initiator_role,
                                                             party_id=initiator_party_id)
@@ -205,23 +206,20 @@ class JobController(object):
             # not support role
         updated_components = set()
         if input_component_parameters:
-            if input_component_parameters.get("common"):
-                if "common" not in updated_component_parameters:
-                    updated_component_parameters["common"] = {}
-                for name, parameters in input_component_parameters["common"].items():
-                    updated_component_parameters["common"][name] = parameters
-                    updated_components.add(name)
-            if input_component_parameters.get("role"):
-                if "role" not in updated_component_parameters:
-                    updated_component_parameters["role"] = {}
-                for _role, role_parties in input_component_parameters["role"].items():
-                    updated_component_parameters["role"][_role] = updated_component_parameters["role"].get(_role, {})
-                    for party_index, components in role_parties.items():
-                        updated_component_parameters["role"][_role][party_index] = updated_component_parameters["role"][_role].get(party_index, {})
-                        for name, parameters in components.items():
-                            updated_component_parameters["role"][_role][party_index][name] = parameters
-                            updated_components.add(name)
+            cls.merge_update(input_component_parameters, updated_component_parameters)
         return updated_job_parameters, updated_component_parameters, list(updated_components)
+
+    @classmethod
+    def merge_update(cls, inputs: dict, results: dict):
+        if not isinstance(inputs, dict) or not isinstance(results, dict):
+            raise ValueError(f"must both dict, but {type(inputs)} inputs and {type(results)} results")
+        for k, v in inputs.items():
+            if k not in results:
+                results[k] = v
+            elif isinstance(v, dict):
+                cls.merge_update(v, results[k])
+            else:
+                results[k] = v
 
     @classmethod
     def update_parameter(cls, job_id, role, party_id, updated_parameters: dict):
