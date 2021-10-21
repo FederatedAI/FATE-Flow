@@ -9,7 +9,7 @@ class ServicesError(FateFlowError):
 
 
 class ServiceNotSupported(ServicesError):
-    message = 'The service {} is not supported'
+    message = 'The service {service_name} is not supported'
 
 
 class ZooKeeperNotConfigured(ServicesError):
@@ -21,4 +21,4 @@ class MissingZooKeeperUsernameOrPassword(FateFlowError):
 
 
 class ZooKeeperBackendError(ServicesError):
-    message = 'ZooKeeper backend error: {}'
+    message = 'ZooKeeper backend error: {error_message}'
