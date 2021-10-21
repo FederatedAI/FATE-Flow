@@ -20,7 +20,6 @@ import tarfile
 
 from flask import request, send_file
 
-from fate_arch.common import WorkMode
 from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -40,7 +39,6 @@ from fate_flow.controller.job_controller import JobController
 
 @manager.route('/submit', methods=['POST'])
 def submit_job():
-    work_mode = JobRuntimeConfigAdapter(request.json.get('job_runtime_conf', {})).get_job_work_mode()
     submit_result = DAGScheduler.submit(JobConfigurationBase(**request.json))
     return get_json_result(retcode=submit_result["code"], retmsg=submit_result["message"],
                            job_id=submit_result["job_id"],

@@ -21,6 +21,7 @@ import uuid
 
 from fate_arch import storage, session
 from fate_arch.common import EngineType, file_utils, log, path_utils
+from fate_arch.common.data_utils import default_input_fs_path
 from fate_arch.session import Session
 from fate_arch.storage import DEFAULT_ID_DELIMITER, EggRollStoreType, StorageEngine
 from fate_flow.components._base import (
@@ -170,10 +171,18 @@ class Upload(ComponentBase):
             upload_address = {"path": self.parameters["file"]}
         elif storage_engine in {StorageEngine.HDFS}:
             upload_address = {
-                "path": data_utils.default_input_fs_path(
+                "path": default_input_fs_path(
                     name=name,
                     namespace=namespace,
                     prefix=address_dict.get("path_prefix"),
+                )
+            }
+        elif storage_engine in {StorageEngine.LOCALFS}:
+            upload_address = {
+                "path": default_input_fs_path(
+                    name=name,
+                    namespace=namespace,
+                    storage_engine=storage_engine
                 )
             }
         else:
