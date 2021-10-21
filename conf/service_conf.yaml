@@ -34,8 +34,8 @@ database:
   stale_timeout: 30
 zookeeper:
   hosts:
-    - 127.0.0.1:2281
-  use_acl: true
+    - 127.0.0.1:2181
+  use_acl: false
   user: fate
   password: fate
 # engine services
