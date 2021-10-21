@@ -250,7 +250,9 @@ class JobController(object):
         JobSaver.update_job(job_info)
 
     @classmethod
-    def initialize_task(cls, task_info: dict):
+    def initialize_task(cls, role, party_id, task_info: dict):
+        task_info["role"] = role
+        task_info["party_id"] = party_id
         initialized_result = cls.initialize_tasks(components=[task_info["component_name"]], **task_info)
         return initialized_result
 
