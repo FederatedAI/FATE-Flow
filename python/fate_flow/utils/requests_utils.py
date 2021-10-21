@@ -26,6 +26,7 @@ from fate_flow.settings import HTTP_APP_KEY, HTTP_SECRET_KEY
 
 def request(**kwargs):
     sess = requests.Session()
+    stream = kwargs.pop('stream', sess.stream)
     prepped = requests.Request(**kwargs).prepare()
 
     if HTTP_APP_KEY and HTTP_SECRET_KEY:
@@ -48,4 +49,4 @@ def request(**kwargs):
             'SIGNATURE': signature,
         })
 
-    return sess.send(prepped)
+    return sess.send(prepped, stream=stream)
