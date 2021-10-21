@@ -99,8 +99,8 @@ class DependenceUpload(BaseWorker):
         LOGGER.info(f'start upload')
         snapshot_time = DependenceRegistry.get_modify_time(source_path)
         storage_dir = f"/fate_dependence/{provider.version}"
-        os.system(f"hdfs dfs -mkdir -p  {storage_dir}")
-        status = os.system(f"hdfs dfs -put -f {target_file} {storage_dir}")
+        os.system(f" {os.getenv('HADOOP_HOME')}/bin/hdfs dfs -mkdir -p  {storage_dir}")
+        status = os.system(f"{os.getenv('HADOOP_HOME')}/bin/hdfs dfs -put -f {target_file} {storage_dir}")
         LOGGER.info(f'upload end, status is {status}')
         if status == 0:
             storage_path = os.path.join(storage_dir, os.path.basename(target_file))
@@ -117,7 +117,7 @@ class DependenceUpload(BaseWorker):
             storage_meta["f_dependencies_conf"].update(dependencies_conf)
             DependenceRegistry.save_dependencies_storage_meta(storage_meta)
         else:
-            raise Exception(f"hdfs dfs -put {target_file} {storage_dir} failed status: {status}")
+            raise Exception(f"{os.getenv('HADOOP_HOME')}/bin/hdfs dfs -put {target_file} {storage_dir} failed status: {status}")
         return storage_meta
 
     @classmethod

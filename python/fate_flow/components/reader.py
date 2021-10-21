@@ -21,6 +21,7 @@ import numpy as np
 from fate_arch import session
 from fate_arch.abc import AddressABC, StorageTableABC, StorageTableMetaABC
 from fate_arch.common import EngineType, log
+from fate_arch.common.data_utils import default_output_fs_path, default_output_info
 from fate_arch.computing import ComputingEngine
 from fate_arch.session import Session
 from fate_arch.storage import StorageEngine, StorageTableMeta
@@ -74,7 +75,7 @@ class Reader(ComponentBase):
         (
             output_table_namespace,
             output_table_name,
-        ) = data_utils.default_output_info(
+        ) = default_output_info(
             task_id=self.tracker.task_id, 
             task_version=self.tracker.task_version,
             output_type="data",
@@ -260,11 +261,20 @@ class Reader(ComponentBase):
                 output_table_address = input_table_meta.get_address()
                 output_table_address.name = output_name
                 output_table_engine = input_table_meta.get_engine()
+            elif input_table_meta.get_engine() == StorageEngine.LOCALFS:
+                output_table_address = input_table_meta.get_address()
+                output_table_address.path = default_output_fs_path(
+                    name=output_name,
+                    namespace=output_namespace,
+                    storage_engine=StorageEngine.LOCALFS
+                )
+                output_table_engine = input_table_meta.get_engine()
             else:
-                address_dict["path"] = data_utils.default_output_fs_path(
+                address_dict["path"] = default_output_fs_path(
                     name=output_name,
                     namespace=output_namespace,
                     prefix=address_dict.get("path_prefix"),
+                    storage_engine=StorageEngine.HDFS
                 )
                 output_table_address = StorageTableMeta.create_address(
                     storage_engine=StorageEngine.HDFS, address_dict=address_dict

@@ -1,7 +1,7 @@
 work_mode: 1
 use_registry: false
 use_deserialize_safe_module: false
-dependent_distribution: true
+dependent_distribution: false
 fateflow:
   # you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported
   host: 127.0.0.1

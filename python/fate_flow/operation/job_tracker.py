@@ -19,6 +19,7 @@ import typing
 
 from fate_arch.abc import CTableABC
 from fate_arch.common import EngineType, Party
+from fate_arch.common.data_utils import default_output_fs_path, default_output_info
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
@@ -123,7 +124,7 @@ class Tracker(object):
                          output_table_namespace=None, output_table_name=None, schema=None, token=None, need_read=True):
         if computing_table:
             if not output_table_namespace or not output_table_name:
-                output_table_namespace, output_table_name = data_utils.default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="data")
+                output_table_namespace, output_table_name = default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="data")
             schedule_logger(self.job_id).info(
                 'persisting the component output temporary table to {} {}'.format(output_table_namespace,
                                                                                   output_table_name))
@@ -131,8 +132,9 @@ class Tracker(object):
             schedule_logger(self.job_id).info('output data table partitions is {}'.format(computing_table.partitions))
 
             if output_storage_engine == StorageEngine.HDFS:
-                output_storage_address.update({"path": data_utils.default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=output_storage_address.get("path_prefix"))})
-
+                output_storage_address.update({"path": default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=output_storage_address.get("path_prefix"))})
+            if output_storage_engine == StorageEngine.LOCALFS:
+                output_storage_address.update({"path": default_output_fs_path(name=output_table_name, namespace=output_table_namespace, storage_engine=StorageEngine.LOCALFS)})
             part_of_limit = JobDefaultConfig.output_data_summary_count_limit
             part_of_data = []
             if need_read:
@@ -234,7 +236,7 @@ class Tracker(object):
         return self.pipelined_model.get_component_define(component_name=self.component_name)
 
     def save_output_cache(self, cache_data: typing.Dict[str, CTableABC], cache_meta: dict, cache_name, output_storage_engine, output_storage_address: dict, token=None):
-        output_namespace, output_name = data_utils.default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="cache")
+        output_namespace, output_name = default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="cache")
         cache = CacheManager.persistent(cache_name, cache_data, cache_meta, output_namespace, output_name, output_storage_engine, output_storage_address, token=token)
         cache_key = self.tracking_output_cache(cache=cache, cache_name=cache_name)
         return cache_key
