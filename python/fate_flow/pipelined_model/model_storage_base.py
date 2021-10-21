@@ -23,6 +23,10 @@ class ModelStorageBase(metaclass=abc.ABCMeta):
         return self.key_separator.join(["FATEFlow", "PipelinedModel", model_id, model_version])
 
     @abc.abstractmethod
+    def exists(self, model_id: str, model_version: str, store_address: dict):
+        pass
+
+    @abc.abstractmethod
     def store(self, model_id: str, model_version: str, store_address: dict):
         """
         Store the model from local cache to a reliable system
@@ -31,7 +35,7 @@ class ModelStorageBase(metaclass=abc.ABCMeta):
         :param store_address:
         :return:
         """
-        raise Exception("Subclasses must implement this function")
+        pass
 
     @abc.abstractmethod
     def restore(self, model_id: str, model_version: str, store_address: dict):
@@ -42,4 +46,4 @@ class ModelStorageBase(metaclass=abc.ABCMeta):
         :param store_address:
         :return:
         """
-        raise Exception("Subclasses must implement this function")
+        pass
