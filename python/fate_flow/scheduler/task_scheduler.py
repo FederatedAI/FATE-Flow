@@ -156,7 +156,17 @@ class TaskScheduler(object):
             for _party_id in response[_role]:
                 if _role == job.f_initiator_role and _party_id == job.f_initiator_party_id:
                     continue
-                JobController.initialize_tasks(job.f_job_id, _role, _party_id, False, job.f_initiator_role, job.f_initiator_party_id, RunParameters(**job.f_runtime_conf_on_party["job_parameters"]), dsl_parser, components=[task.f_component_name], task_version=task.f_task_version, auto_retries=task.f_auto_retries)
+                JobController.initialize_tasks(job_id=job.f_job_id,
+                                               role=_role,
+                                               party_id=_party_id,
+                                               run_on_this_party=False,
+                                               initiator_role=job.f_initiator_role,
+                                               initiator_party_id=job.f_initiator_party_id,
+                                               job_parameters=RunParameters(**job.f_runtime_conf_on_party["job_parameters"]),
+                                               dsl_parser=dsl_parser,
+                                               components=[task.f_component_name],
+                                               task_version=task.f_task_version,
+                                               auto_retries=task.f_auto_retries)
         schedule_logger(job_id=job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
 
     @classmethod
@@ -200,7 +210,7 @@ class TaskScheduler(object):
         else:
             tasks_party_status = [task.f_party_status for task in tasks_on_all_party if 'idmapping' not in task.f_role]
         status = cls.calculate_multi_party_task_status(tasks_party_status)
-        schedule_logger(job_id=job_id).info("job {} task {} {} status is {}, calculate by task party status list: {}".format(job_id, task_id, task_version, status, tasks_party_status))
+        schedule_logger(job_id=job_id).info("task {} {} status is {}, calculate by task party status list: {}".format(task_id, task_version, status, tasks_party_status))
         return status
 
     @classmethod

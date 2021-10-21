@@ -25,7 +25,7 @@ LOGGER = getLogger()
 
 
 class TaskInitializer(BaseWorker):
-    def _run(self, **kwargs):
+    def _run(self):
         result = {}
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=self.args.dsl,
                                                        runtime_conf=self.args.runtime_conf,

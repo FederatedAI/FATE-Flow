@@ -35,6 +35,7 @@ def deploy(config_data):
     local_party_id = config_data.get('local').get('party_id')
     child_model_version = config_data.get('child_model_version')
     components_checkpoint = config_data.get('components_checkpoint', {})
+    warning_msg = ""
 
     try:
         party_model_id = gen_party_model_id(model_id=model_id, role=local_role, party_id=local_party_id)
@@ -72,7 +73,7 @@ def deploy(config_data):
                 cpn_list = list(train_dsl.get('components', {}).keys())
             if int(dsl_version) == 1:
                 # convert v1 dsl to v2 dsl
-                inference_dsl = parser.convert_dsl_v1_to_v2(parent_predict_dsl)
+                inference_dsl, warning_msg = parser.convert_dsl_v1_to_v2(parent_predict_dsl)
             else:
                 parser = get_dsl_parser_by_version(dsl_version)
                 inference_dsl = parser.deploy_component(cpn_list, train_dsl)
@@ -147,4 +148,7 @@ def deploy(config_data):
         stat_logger.exception(e)
         return 100, f"deploy model of role {local_role} {local_party_id} failed, details: {str(e)}"
     else:
-        return 0, f"deploy model of role {local_role} {local_party_id} success"
+        msg = f"deploy model of role {local_role} {local_party_id} success"
+        if warning_msg:
+            msg = msg + f", warning: {warning_msg}"
+        return 0, msg

@@ -313,6 +313,13 @@ class BaseDSLParser(object):
                     isometric_component = input_component
                     break
 
+        pre_parameters = {}
+        if previous_parameters is not None:
+            if not isometric_component:
+                pre_parameters = previous_parameters.get(cur_component, {})
+            else:
+                pre_parameters = previous_parameters.get(isometric_component, {})
+
         role_parameters = RuntimeConfParserUtil.get_component_parameters(provider,
                                                                          runtime_conf,
                                                                          module,
@@ -320,8 +327,10 @@ class BaseDSLParser(object):
                                                                          redundant_param_check=redundant_param_check,
                                                                          local_role=local_role,
                                                                          local_party_id=local_party_id,
-                                                                         parse_user_specified_only=parse_user_specified_only)
+                                                                         parse_user_specified_only=parse_user_specified_only,
+                                                                         pre_parameters=pre_parameters)
 
+        """
         if previous_parameters is not None:
             if not isometric_component:
                 pre_parameters = previous_parameters.get(cur_component, {})
@@ -330,6 +339,7 @@ class BaseDSLParser(object):
 
             if pre_parameters:
                 role_parameters = RuntimeConfParserUtil.merge_dict(pre_parameters, role_parameters)
+        """
 
         for component in parent_path:
             idx = self.component_name_index.get(component)
@@ -939,6 +949,7 @@ class DSLParserV1(BaseDSLParser):
 
         # change dsl v1 to dsl v2
         readers = {}
+        ret_msg = []
         for cpn, cpn_detail in dsl["components"].items():
             new_cpn_detail = copy.deepcopy(cpn_detail)
             if cpn_detail.get("input", {}).get("data", {}):
@@ -949,6 +960,8 @@ class DSLParserV1(BaseDSLParser):
                         if up_cpn == "args":
                             if up_out_alias not in readers:
                                 readers[up_out_alias] = "_".join(["reader", str(len(readers))])
+                                ret_msg.append(f"{data} is changed to {readers[up_out_alias]}.{up_out_alias}, please "
+                                               f"set input data of {readers[up_out_alias]}")
                             up_link = ".".join([readers[up_out_alias], up_out_alias])
                             new_dataset.append(up_link)
                         else:
@@ -960,10 +973,11 @@ class DSLParserV1(BaseDSLParser):
 
         for output_alias, cpn in readers.items():
             reader_detail = dict(module="Reader",
-                                 output={"data": [output_alias]})
+                                 output={"data": [output_alias]},
+                                 CodePath="Reader")
             dsl_v2["components"].update({cpn: reader_detail})
 
-        return dsl_v2
+        return dsl_v2, ", ".join(ret_msg)
 
     @staticmethod
     def convert_conf_v1_to_v2(conf_v1, role_parameters):

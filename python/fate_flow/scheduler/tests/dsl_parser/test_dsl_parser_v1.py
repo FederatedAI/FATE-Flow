@@ -35,10 +35,11 @@ with open(provider_path, "r") as fin:
 
 
 dsl_parser_v1 = dsl_parser.DSLParserV1()
-dsl_v2 = dsl_parser_v1.convert_dsl_v1_to_v2(dsl_v1)
+dsl_v2, warning_msg = dsl_parser_v1.convert_dsl_v1_to_v2(dsl_v1)
 
 pprint.pprint(dsl_v2)
-
+print (warning_msg)
+exit(0)
 components = dsl_parser_v1.get_components_light_weight(dsl_v2)
 for cpn in components:
     print (cpn.get_name())

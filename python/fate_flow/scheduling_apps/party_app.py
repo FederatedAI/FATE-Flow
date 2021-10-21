@@ -135,7 +135,7 @@ def clean(job_id, role, party_id):
 # Control API for task
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/create', methods=['POST'])
 def create_task(job_id, component_name, task_id, task_version, role, party_id):
-    TaskController.create_task(role, party_id, True, request.json)
+    JobController.initialize_task(role, party_id, request.json)
     return get_json_result(retcode=0, retmsg='success')
 
 

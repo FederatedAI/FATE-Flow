@@ -52,3 +52,6 @@ class ComponentProvider(BaseEntity):
     @property
     def env(self):
         return self._env
+
+    def __eq__(self, other):
+        return self.name == other.name and self.version == other.version

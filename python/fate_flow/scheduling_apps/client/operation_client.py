@@ -21,12 +21,12 @@ LOGGER = getLogger()
 
 class OperationClient(object):
     @classmethod
-    def get_job_conf(cls, job_id, role, party_id):
+    def get_job_conf(cls, job_id, role, party_id, component_name, task_id, task_version):
         response = api_utils.local_api(
             job_id=job_id,
             method='POST',
             endpoint='/operation/job_config/get',
-            json_body={"job_id": job_id, "role": role, "party_id": party_id})
+            json_body={"job_id": job_id, "role": role, "party_id": party_id, "component_name": component_name, "task_id": task_id, "task_version": task_version})
         return response.get("data")
 
 
