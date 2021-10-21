@@ -28,7 +28,7 @@ from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from fate_flow import set_env
 from fate_arch.common import file_utils
 from fate_flow.settings import API_VERSION, HOST, HTTP_PORT
-from fate_flow.utils import detect_utils
+from fate_flow.utils import detect_utils, requests_utils
 
 JOB_OPERATE_FUNC = ["submit_job", "stop_job", "query_job", "data_view_query", "clean_job", "clean_queue"]
 JOB_FUNC = ["job_config", "job_log"]
@@ -64,20 +64,20 @@ def call_fun(func, config_data, dsl_path, config_path):
                     dsl_data = json.load(f)
             post_data = {'job_dsl': dsl_data,
                          'job_runtime_conf': config_data}
-            response = requests.post("/".join([server_url, "job", func.rstrip('_job')]), json=post_data)
+            response = requests_utils.request(method="post", url="/".join([server_url, "job", func.rstrip('_job')]), json=post_data)
             try:
                 if response.json()['retcode'] == 999:
                     start_cluster_standalone_job_server()
-                    response = requests.post("/".join([server_url, "job", func.rstrip('_job')]), json=post_data)
+                    response = requests_utils.request(method="post", url="/".join([server_url, "job", func.rstrip('_job')]), json=post_data)
             except:
                 pass
         elif func == 'data_view_query' or func == 'clean_queue':
-            response = requests.post("/".join([server_url, "job", func.replace('_', '/')]), json=config_data)
+            response = requests_utils.request(method="post", url="/".join([server_url, "job", func.replace('_', '/')]), json=config_data)
         else:
             if func != 'query_job':
                 detect_utils.check_config(config=config_data, required_arguments=['job_id'])
             post_data = config_data
-            response = requests.post("/".join([server_url, "job", func.rstrip('_job')]), json=post_data)
+            response = requests_utils.request(method="post", url="/".join([server_url, "job", func.rstrip('_job')]), json=post_data)
             if func == 'query_job':
                 response = response.json()
                 if response['retcode'] == 0:
@@ -87,7 +87,7 @@ def call_fun(func, config_data, dsl_path, config_path):
     elif func in JOB_FUNC:
         if func == 'job_config':
             detect_utils.check_config(config=config_data, required_arguments=['job_id', 'role', 'party_id', 'output_path'])
-            response = requests.post("/".join([server_url, func.replace('_', '/')]), json=config_data)
+            response = requests_utils.request(method="post", url="/".join([server_url, func.replace('_', '/')]), json=config_data)
             response_data = response.json()
             if response_data['retcode'] == 0:
                 job_id = response_data['data']['job_id']
@@ -108,8 +108,8 @@ def call_fun(func, config_data, dsl_path, config_path):
             job_id = config_data['job_id']
             tar_file_name = 'job_{}_log.tar.gz'.format(job_id)
             extract_dir = os.path.join(config_data['output_path'], 'job_{}_log'.format(job_id))
-            with closing(requests.get("/".join([server_url, func.replace('_', '/')]), json=config_data,
-                                      stream=True)) as response:
+            with closing(requests_utils.request(method="get", url="/".join([server_url, func.replace('_', '/')]), json=config_data,
+                                                stream=True)) as response:
                 if response.status_code == 200:
                     download_from_request(http_response=response, tar_file_name=tar_file_name, extract_dir=extract_dir)
                     response = {'retcode': 0,
@@ -118,7 +118,7 @@ def call_fun(func, config_data, dsl_path, config_path):
                 else:
                     response = response.json()
     elif func in TASK_OPERATE_FUNC:
-        response = requests.post("/".join([server_url, "job", "task", func.rstrip('_task')]), json=config_data)
+        response = requests_utils.request(method="post", url="/".join([server_url, "job", "task", func.rstrip('_task')]), json=config_data)
     elif func in TRACKING_FUNC:
         if func != 'component_metric_delete':
             detect_utils.check_config(config=config_data,
@@ -130,9 +130,8 @@ def call_fun(func, config_data, dsl_path, config_path):
                                                                         config_data['role'],
                                                                         config_data['party_id'])
             extract_dir = os.path.join(config_data['output_path'], tar_file_name.replace('.tar.gz', ''))
-            with closing(requests.get("/".join([server_url, "tracking", func.replace('_', '/'), 'download']),
-                                      json=config_data,
-                                      stream=True)) as response:
+            with closing(requests_utils.request(method="get", url="/".join([server_url, "tracking", func.replace('_', '/'), 'download']),
+                                                json=config_data, stream=True)) as response:
                 if response.status_code == 200:
                     try:
                         download_from_request(http_response=response, tar_file_name=tar_file_name, extract_dir=extract_dir)
@@ -146,7 +145,7 @@ def call_fun(func, config_data, dsl_path, config_path):
                     response = response.json()
 
         else:
-            response = requests.post("/".join([server_url, "tracking", func.replace('_', '/')]), json=config_data)
+            response = requests_utils.request(method="post", url="/".join([server_url, "tracking", func.replace('_', '/')]), json=config_data)
     elif func in DATA_FUNC:
         if func == 'upload' and config_data.get('use_local_data', 1) != 0:
             file_name = config_data.get('file')
@@ -168,26 +167,25 @@ def call_fun(func, config_data, dsl_path, config_path):
                                 if tag[0] == 2:
                                     sys.stdout.write('\n')
                     data = MultipartEncoderMonitor(data, read_callback)
-                    response = requests.post("/".join([server_url, "data", func.replace('_', '/')]), data=data,
-                                             params=json.dumps(config_data),
-                                             headers={'Content-Type': data.content_type})
+                    response = requests_utils.request(method="post", url="/".join([server_url, "data", func.replace('_', '/')]), data=data,
+                                                      params=json.dumps(config_data), headers={'Content-Type': data.content_type})
             else:
                 raise Exception('The file is obtained from the fate flow client machine, but it does not exist, '
                                 'please check the path: {}'.format(file_name))
         else:
-            response = requests.post("/".join([server_url, "data", func.replace('_', '/')]), json=config_data)
+            response = requests_utils.request(method="post", url="/".join([server_url, "data", func.replace('_', '/')]), json=config_data)
         try:
             if response.json()['retcode'] == 999:
                 start_cluster_standalone_job_server()
-                response = requests.post("/".join([server_url, "data", func]), json=config_data)
+                response = requests_utils.request(method="post", url="/".join([server_url, "data", func]), json=config_data)
         except:
             pass
     elif func in TABLE_FUNC:
         if func == "table_info":
             detect_utils.check_config(config=config_data, required_arguments=['namespace', 'table_name'])
-            response = requests.post("/".join([server_url, "table", func]), json=config_data)
+            response = requests_utils.request(method="post", url="/".join([server_url, "table", func]), json=config_data)
         else:
-            response = requests.post("/".join([server_url, func.replace('_', '/')]), json=config_data)
+            response = requests_utils.request(method="post", url="/".join([server_url, func.replace('_', '/')]), json=config_data)
     elif func in MODEL_FUNC:
         if func == "import":
             file_path = config_data["file"]
@@ -198,9 +196,9 @@ def call_fun(func, config_data, dsl_path, config_path):
             else:
                 raise Exception('The file is obtained from the fate flow client machine, but it does not exist, '
                                 'please check the path: {}'.format(file_path))
-            response = requests.post("/".join([server_url, "model", func]), data=config_data, files=files)
+            response = requests_utils.request(method="post", url="/".join([server_url, "model", func]), data=config_data, files=files)
         elif func == "export":
-            with closing(requests.get("/".join([server_url, "model", func]), json=config_data, stream=True)) as response:
+            with closing(requests_utils.request(method="get", url="/".join([server_url, "model", func]), json=config_data, stream=True)) as response:
                 if response.status_code == 200:
                     archive_file_name = re.findall("filename=(.+)", response.headers["Content-Disposition"])[0]
                     os.makedirs(config_data["output_path"], exist_ok=True)
@@ -215,10 +213,10 @@ def call_fun(func, config_data, dsl_path, config_path):
                 else:
                     response = response.json()
         else:
-            response = requests.post("/".join([server_url, "model", func]), json=config_data)
+            response = requests_utils.request(method="post", url="/".join([server_url, "model", func]), json=config_data)
     elif func in PERMISSION_FUNC:
         detect_utils.check_config(config=config_data, required_arguments=['src_party_id', 'src_role'])
-        response = requests.post("/".join([server_url, "permission", func.replace('_', '/')]), json=config_data)
+        response = requests_utils.request(method="post", url="/".join([server_url, "permission", func.replace('_', '/')]), json=config_data)
     return response.json() if isinstance(response, requests.models.Response) else response
 
 

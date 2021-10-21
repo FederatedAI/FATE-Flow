@@ -35,6 +35,21 @@ SLICE_MAX_SIZE = 1024*1024*8
 
 class MysqlModelStorage(ModelStorageBase):
 
+    def exists(self, model_id: str, model_version: str, store_address: dict):
+        self.get_connection(store_address)
+
+        try:
+            with DB.connection_context():
+                counts = MachineLearningModel.select().where(
+                    MachineLearningModel.f_model_id == model_id,
+                    MachineLearningModel.f_model_version == model_version,
+                ).count()
+            return counts > 0
+        except Exception as e:
+            raise e
+        finally:
+            self.close_connection()
+
     def store(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False):
         """
         Store the model from local cache to mysql
@@ -44,40 +59,51 @@ class MysqlModelStorage(ModelStorageBase):
         :param force_update:
         :return:
         """
+        if not force_update and self.exists(model_id, model_version, store_address):
+            raise FileExistsError(f"The model {model_id} {model_version} already exists in the database.")
+
+        model = PipelinedModel(model_id, model_version)
+        self.get_connection(store_address)
+
         try:
-            self.get_connection(store_address)
             DB.create_tables([MachineLearningModel])
-            model = PipelinedModel(model_id, model_version)
 
             LOGGER.info(f"Starting store model {model_id} {model_version}.")
-            with DB.connection_context():
-                with open(model.packaging_model(), "rb") as fr:
-                    slice_index = 0
-                    while True:
-                        content = fr.read(SLICE_MAX_SIZE)
-                        if content:
-                            model_in_table = MachineLearningModel()
-                            model_in_table.f_create_time = current_timestamp()
-                            model_in_table.f_model_id = model_id
-                            model_in_table.f_model_version = model_version
-                            model_in_table.f_content = serialize_b64(content, to_str=True)
-                            model_in_table.f_size = sys.getsizeof(model_in_table.f_content)
-                            model_in_table.f_slice_index = slice_index
-                            if force_update:
-                                model_in_table.save(only=[MachineLearningModel.f_content, MachineLearningModel.f_size,
-                                                          MachineLearningModel.f_update_time, MachineLearningModel.f_slice_index])
-                                LOGGER.info(f"Update model {model_id} {model_version} slice index {slice_index} content.")
-                            else:
-                                model_in_table.save(force_insert=True)
-                                LOGGER.info(f"Insert model {model_id} {model_version} slice index {slice_index} content.")
-                            slice_index += 1
-                        else:
-                            break
-                    LOGGER.info(f"Store model {model_id} {model_version} to mysql successfully")
-            self.close_connection()
+            with open(model.packaging_model(), "rb") as fr, DB.connection_context():
+                slice_index = 0
+                while True:
+                    content = fr.read(SLICE_MAX_SIZE)
+                    if not content:
+                        break
+
+                    model_in_table = MachineLearningModel()
+                    model_in_table.f_create_time = current_timestamp()
+                    model_in_table.f_model_id = model_id
+                    model_in_table.f_model_version = model_version
+                    model_in_table.f_content = serialize_b64(content, to_str=True)
+                    model_in_table.f_size = sys.getsizeof(model_in_table.f_content)
+                    model_in_table.f_slice_index = slice_index
+
+                    rows = 0
+                    if force_update:
+                        rows = model_in_table.save(only=[
+                            MachineLearningModel.f_content, MachineLearningModel.f_size,
+                            MachineLearningModel.f_update_time, MachineLearningModel.f_slice_index,
+                        ])
+                    if not rows:
+                        rows = model_in_table.save(force_insert=True)
+                    if not rows:
+                        raise Exception(f"Save slice index {slice_index} failed")
+
+                    LOGGER.info(f"Saved slice index {slice_index} of model {model_id} {model_version}.")
+                    slice_index += 1
         except Exception as e:
             LOGGER.exception(e)
-            raise Exception(f"Store model {model_id} {model_version} to mysql failed")
+            raise Exception(f"Store model {model_id} {model_version} to mysql failed.")
+        else:
+            LOGGER.info(f"Store model {model_id} {model_version} to mysql successfully.")
+        finally:
+            self.close_connection()
 
     def restore(self, model_id: str, model_version: str, store_address: dict):
         """
@@ -87,49 +113,48 @@ class MysqlModelStorage(ModelStorageBase):
         :param store_address:
         :return:
         """
+        model = PipelinedModel(model_id, model_version)
+        self.get_connection(store_address)
+
         try:
-            self.get_connection(store_address)
-            model = PipelinedModel(model_id, model_version)
             with DB.connection_context():
-                models_in_tables = MachineLearningModel.select().where(MachineLearningModel.f_model_id == model_id,
-                                                                       MachineLearningModel.f_model_version == model_version).\
-                    order_by(MachineLearningModel.f_slice_index)
-                if not models_in_tables:
-                    raise Exception(f"Restore model {model_id} {model_version} from mysql failed: "
-                                    f"can not found model in table.")
-                f_content = ''
-                for models_in_table in models_in_tables:
-                    if not f_content:
-                        f_content = models_in_table.f_content
-                    else:
-                        f_content += models_in_table.f_content
-                model_archive_data = deserialize_b64(f_content)
-                if not model_archive_data:
-                    raise Exception(f"Restore model {model_id} {model_version} from mysql failed: "
-                                    f"can not get model archive data.")
-                with open(model.archive_model_file_path, "wb") as fw:
-                    fw.write(model_archive_data)
-                model.unpack_model(model.archive_model_file_path)
-                LOGGER.info(f"Restore model to {model.archive_model_file_path} from mysql successfully")
-            self.close_connection()
+                models_in_tables = MachineLearningModel.select().where(
+                    MachineLearningModel.f_model_id == model_id,
+                    MachineLearningModel.f_model_version == model_version,
+                ).order_by(MachineLearningModel.f_slice_index)
+            if not models_in_tables:
+                raise ValueError(f"Cannot found model in table.")
+
+            model_archive_data = b''.join(deserialize_b64(models_in_table.f_content)
+                                          for models_in_table in models_in_tables)
+            if not model_archive_data:
+                raise ValueError(f"Cannot get model archive data.")
+
+            with open(model.archive_model_file_path, "wb") as fw:
+                fw.write(model_archive_data)
+            model.unpack_model(model.archive_model_file_path)
         except Exception as e:
             LOGGER.exception(e)
-            raise Exception(f"Restore model {model_id} {model_version} from mysql failed")
+            raise Exception(f"Restore model {model_id} {model_version} from mysql failed.")
+        else:
+            LOGGER.info(f"Restore model to {model.archive_model_file_path} from mysql successfully.")
+        finally:
+            self.close_connection()
 
     @staticmethod
     def get_connection(store_address: dict):
         store_address = deepcopy(store_address)
-        db_name = store_address.pop('name')
+        db_name = store_address.pop('database')
         del store_address['storage']
         DB.init(db_name, **store_address)
 
     @staticmethod
     def close_connection():
-        try:
-            if DB:
+        if DB:
+            try:
                 DB.close()
-        except Exception as e:
-            LOGGER.exception(e)
+            except Exception as e:
+                LOGGER.exception(e)
 
 
 class DataBaseModel(Model):
@@ -144,7 +169,8 @@ class DataBaseModel(Model):
             self.f_update_date = datetime.datetime.now()
         if hasattr(self, "f_update_time"):
             self.f_update_time = current_timestamp()
-        super(DataBaseModel, self).save(*args, **kwargs)
+
+        return super(DataBaseModel, self).save(*args, **kwargs)
 
 
 class MachineLearningModel(DataBaseModel):

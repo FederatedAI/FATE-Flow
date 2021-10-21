@@ -23,6 +23,8 @@ venv
 /worker/
 /provider_registrar/
 /model_local_cache/
+/loaded_model_backup/
 *.db
 *.whl
 component_registry_realtime.json
+/conf/local.*.yaml

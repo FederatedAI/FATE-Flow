@@ -63,6 +63,7 @@ FATE_FLOW_SERVER_START_CONFIG_ITEMS = {
     FATE_FLOW_SERVICE_NAME,
     "database",
     "zookeeper",
+    "enable_model_store",
 }
 
 # Registry
