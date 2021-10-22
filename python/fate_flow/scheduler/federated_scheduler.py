@@ -38,11 +38,11 @@ class FederatedScheduler(object):
     # Job
     @classmethod
     def create_job(cls, job: Job):
-        return cls.job_command(job=job, command="create", command_body=job.to_human_model_dict(), parallel=True)
+        return cls.job_command(job=job, command="create", command_body=job.to_human_model_dict(), parallel=False)
 
     @classmethod
     def update_parameter(cls, job: Job, updated_parameters):
-        return cls.job_command(job=job, command="parameter/update", command_body=updated_parameters, parallel=True)
+        return cls.job_command(job=job, command="parameter/update", command_body=updated_parameters, parallel=False)
 
     @classmethod
     def resource_for_job(cls, job, operation_type: ResourceOperation, specific_dest=None):
