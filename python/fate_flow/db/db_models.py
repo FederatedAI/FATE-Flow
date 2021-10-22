@@ -458,7 +458,7 @@ class ComponentRegistryInfo(DataBaseModel):
         primary_key = CompositeKey('f_provider_name', 'f_version', 'f_component_name')
 
 
-class ComponentVersionInfo(DataBaseModel):
+class ComponentProviderInfo(DataBaseModel):
     f_provider_name = CharField(max_length=20, index=True)
     f_version = CharField(max_length=10, index=True)
     f_class_path = JSONField()
@@ -466,12 +466,13 @@ class ComponentVersionInfo(DataBaseModel):
     f_python = CharField(max_length=128, null=False)
 
     class Meta:
-        db_table = "t_component_version_info"
+        db_table = "t_component_provider_info"
         primary_key = CompositeKey('f_provider_name', 'f_version')
 
 
 class ComponentInfo(DataBaseModel):
     f_component_name = CharField(max_length=30, primary_key=True)
+    f_component_alias = JSONField()
     f_default_provider = CharField(max_length=20)
     f_support_provider = ListField(null=True)
 

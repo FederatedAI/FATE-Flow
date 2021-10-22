@@ -17,7 +17,7 @@ from fate_arch.common import file_utils
 from fate_arch.common.versions import get_versions
 
 from fate_flow.component_env_utils import provider_utils
-from fate_flow.db.db_models import ComponentVersionInfo, ComponentRegistryInfo, ComponentInfo, DB
+from fate_flow.db.db_models import ComponentProviderInfo, ComponentRegistryInfo, ComponentInfo, DB
 from fate_flow.entity import ComponentProvider
 from fate_flow.entity.types import ComponentProviderName
 from fate_flow.settings import FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH
@@ -43,6 +43,15 @@ class ComponentRegistry:
     def register_provider(cls, provider: ComponentProvider):
         provider_interface = provider_utils.get_provider_interface(provider)
         support_components = provider_interface.get_names()
+        components = {}
+        for component_alias, info in support_components.items():
+            component_name = component_alias.lower()
+            if component_name not in components:
+                components[component_name] = info
+            elif components[component_name].get("module") != info.get("module"):
+                raise ValueError(f"component {component_name} have different module info")
+            components[component_name]["alias"] = components[component_name].get("alias", set())
+            components[component_name]["alias"].add(component_alias)
         register_info = {
             "default": {
                 "version": provider.version
@@ -52,21 +61,25 @@ class ComponentRegistry:
         register_info[provider.version] = {
                 "path": provider.path,
                 "class_path": provider.class_path,
-                "components": support_components
+                "components": components
         }
         cls.REGISTRY["providers"][provider.name] = register_info
-        return support_components
+        return components
 
     @classmethod
-    def register_components(cls, provider: ComponentProvider, components):
-        for _cpn in components.keys():
-            cls.REGISTRY["components"][_cpn] = cls.REGISTRY["components"].get(_cpn,
-                                                                              {
-                                                                                  "default_provider": provider.name, "support_provider": []
-                                                                              })
-            if provider.name not in cls.REGISTRY["components"][_cpn]["support_provider"]:
+    def register_components(cls, provider: ComponentProvider, components: dict):
+        for component_name, info in components.items():
+            if component_name not in cls.REGISTRY["components"]:
+                cls.REGISTRY["components"][component_name] = {
+                    "default_provider": provider.name,
+                    "support_provider": [],
+                    "alias": info["alias"]
+                }
+            if provider.name not in cls.REGISTRY["components"][component_name]["support_provider"]:
                 # do not use set because the json format is not supported
-                cls.REGISTRY["components"][_cpn]["support_provider"].append(provider.name)
+                cls.REGISTRY["components"][component_name]["support_provider"].append(provider.name)
+                for component_alias in info["alias"]:
+                    cls.REGISTRY["components"][component_alias] = cls.REGISTRY["components"][component_name]
 
     @classmethod
     def dump(cls):
@@ -77,8 +90,8 @@ class ComponentRegistry:
     def save_to_db(cls):
         # save component registry info
         with DB.lock("component_register"):
-            for provider_name, register_info in cls.REGISTRY["providers"].items():
-                for version, version_register_info in register_info.items():
+            for provider_name, provider_group_info in cls.REGISTRY["providers"].items():
+                for version, version_register_info in provider_group_info.items():
                     if version != "default":
                         version_info = {
                             "f_path": version_register_info.get("path"),
@@ -87,25 +100,25 @@ class ComponentRegistry:
                             "f_version": version,
                             "f_provider_name": provider_name
                         }
-                        cls.safe_save(ComponentVersionInfo, version_info, f_version=version, f_provider_name=provider_name)
-                        for component_name, module_info in version_register_info.get("components").items():
+                        cls.safe_save(ComponentProviderInfo, version_info, f_version=version, f_provider_name=provider_name)
+                        for component_name, component_info in version_register_info.get("components").items():
                             component_registry_info = {
                                 "f_version": version,
                                 "f_provider_name": provider_name,
                                 "f_component_name": component_name,
-                                "f_module": module_info.get("module")
+                                "f_module": component_info.get("module")
                             }
                             cls.safe_save(ComponentRegistryInfo, component_registry_info, f_version=version,
                                           f_provider_name=provider_name, f_component_name=component_name)
 
-            for component_name, provider_info in cls.REGISTRY["components"].items():
+            for component_name, info in cls.REGISTRY["components"].items():
                 component_info = {
                     "f_component_name": component_name,
-                    "f_default_provider": provider_info.get("default_provider"),
-                    "f_support_provider": provider_info.get("support_provider")
+                    "f_default_provider": info.get("default_provider"),
+                    "f_support_provider": info.get("support_provider"),
+                    "f_component_alias": info.get("alias"),
                 }
                 cls.safe_save(ComponentInfo, component_info, f_component_name=component_name)
-
 
     @classmethod
     def safe_save(cls, model, defaults, **kwargs):
@@ -117,34 +130,40 @@ class ComponentRegistry:
                 setattr(entity_model, key, defaults[key])
             entity_model.save(force_insert=False)
 
-
     @classmethod
     @DB.connection_context()
     def get_from_db(cls, component_registry):
         # get component registry info
-        version_list = ComponentVersionInfo.select()
-        for version in version_list:
-            if version.f_provider_name not in component_registry["providers"]:
-                component_registry["providers"][version.f_provider_name] = {
-                    "default": {"version": get_versions()[component_registry["default_settings"][version.f_provider_name]["default_version_key"]]}
+        component_list = ComponentInfo.select()
+        for component in component_list:
+            component_registry["components"][component.f_component_name] = {
+                "default_provider": component.f_default_provider,
+                "support_provider": component.f_support_provider,
+                "alias": component.f_component_alias
+            }
+            for component_alias in component.f_component_alias:
+                component_registry["components"][component_alias] = component_registry["components"][component.f_component_name]
+
+        provider_list = ComponentProviderInfo.select()
+        for provider_info in provider_list:
+            if provider_info.f_provider_name not in component_registry["providers"]:
+                component_registry["providers"][provider_info.f_provider_name] = {
+                    "default": {"version": get_versions()[component_registry["default_settings"][provider_info.f_provider_name]["default_version_key"]]}
                 }
-            component_registry["providers"][version.f_provider_name][version.f_version] = {
-                "path": version.f_path, "f_python": version.f_python,
-                "class_path": version.f_class_path
+            component_registry["providers"][provider_info.f_provider_name][provider_info.f_version] = {
+                "path": provider_info.f_path, "f_python": provider_info.f_python,
+                "class_path": provider_info.f_class_path
             }
             modules_list = ComponentRegistryInfo.select().where(
-                ComponentRegistryInfo.f_provider_name==version.f_provider_name,
-                ComponentRegistryInfo.f_version==version.f_version
+                ComponentRegistryInfo.f_provider_name == provider_info.f_provider_name,
+                ComponentRegistryInfo.f_version == provider_info.f_version
             )
             modules = {}
             for module in modules_list:
                 modules[module.f_component_name] = {"module": module.f_module}
-            component_registry["providers"][version.f_provider_name][version.f_version]["components"] = modules
-        component_list = ComponentInfo.select()
-        for component in component_list:
-            component_registry["components"][component.f_component_name] = {
-                "default_provider": component.f_default_provider, "support_provider": component.f_support_provider
-            }
+                for component_alias in component_registry["components"][module.f_component_name]["alias"]:
+                    modules[component_alias] = modules[module.f_component_name]
+            component_registry["providers"][provider_info.f_provider_name][provider_info.f_version]["components"] = modules
         return component_registry
 
     @classmethod
