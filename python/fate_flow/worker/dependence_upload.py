@@ -20,7 +20,7 @@ import zipfile
 
 from fate_arch.common import file_utils
 from fate_flow.utils.log_utils import getLogger
-from fate_flow.db.db_models import ComponentVersionInfo
+from fate_flow.db.db_models import ComponentProviderInfo
 from fate_flow.db.dependence_registry import DependenceRegistry
 from fate_flow.entity import ComponentProvider
 from fate_flow.entity.types import FateDependenceName, ComponentProviderName, FateDependenceStorageEngine
@@ -86,9 +86,9 @@ class DependenceUpload(BaseWorker):
             if provider.name == ComponentProviderName.FATE_ALGORITHM.value:
                 source_path = provider.path
             else:
-                source_path = ComponentVersionInfo.get_or_none(
-                    ComponentVersionInfo.f_version == provider.version,
-                    ComponentVersionInfo.f_provider_name == ComponentProviderName.FATE_ALGORITHM.value
+                source_path = ComponentProviderInfo.get_or_none(
+                    ComponentProviderInfo.f_version == provider.version,
+                    ComponentProviderInfo.f_provider_name == ComponentProviderName.FATE_ALGORITHM.value
                 ).f_path
             cls.copy_dir(source_path, os.path.join(fate_code_base_dir, "federatedml"))
             target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python.zip")
