@@ -10,7 +10,9 @@
       "interface": "components.components.Components",
       "feature_instance": "feature.instance.Instance",
       "feature_vector": "feature.sparse_vector.SparseVector",
-      "model": "protobuf.generated"
+      "model": "protobuf.generated",
+      "model_migrate": "protobuf.model_migrate.model_migrate",
+      "homo_model_converter": "protobuf.homo_model_converter"
     }
   }
 }

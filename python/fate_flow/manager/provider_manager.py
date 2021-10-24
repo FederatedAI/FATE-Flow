@@ -29,12 +29,13 @@ from fate_flow.settings import stat_logger
 class ProviderManager:
     @classmethod
     def register_default_providers(cls):
-        code, std = cls.register_fate_flow_provider()
+        code, result = cls.register_fate_flow_provider()
         if code != 0:
             raise Exception(f"register fate flow tools component failed")
-        code, std = cls.register_default_fate_algorithm_provider()
+        code, result, provider = cls.register_default_fate_algorithm_provider()
         if code != 0:
             raise Exception(f"register default fate algorithm component failed")
+        return provider
 
     @classmethod
     def register_fate_flow_provider(cls):
@@ -45,7 +46,8 @@ class ProviderManager:
     def register_default_fate_algorithm_provider(cls):
         provider = cls.get_default_fate_algorithm_provider()
         sys.path.append(provider.env["PYTHONPATH"])
-        return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider, run_in_subprocess=False)
+        code, result = WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider, run_in_subprocess=False)
+        return code, result, provider
 
     @classmethod
     def get_fate_flow_provider(cls):
