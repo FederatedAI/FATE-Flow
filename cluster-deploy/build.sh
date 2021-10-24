@@ -18,7 +18,7 @@
 
 set -e
 source_dir=$(cd `dirname $0`; cd ../;pwd)
-support_modules=(bin conf python examples fateboard eggroll proxy)
+support_modules=(bin conf python examples fateboard eggroll)
 packaging_modules=()
 echo ${source_dir}
 if [[ -n ${1} ]]; then
@@ -28,63 +28,65 @@ else
 fi
 
 cd ${source_dir}
+echo "[INFO] source dir: ${source_dir}"
+git submodule foreach --recursive git pull
 version=`grep "FATE=" fate.env | awk -F '=' '{print $2}'`
 package_dir_name="FATE_install_"${version}
 package_dir=${source_dir}/cluster-deploy/${package_dir_name}
-echo "[INFO] Build info"
+echo "[INFO] build info"
 echo "[INFO] version: "${version}
 echo "[INFO] version tag: "${version_tag}
-echo "[INFO] Package output dir is "${package_dir}
+echo "[INFO] package output dir is "${package_dir}
 rm -rf ${package_dir} ${package_dir}_${version_tag}".tar.gz"
 mkdir -p ${package_dir}
 
 function packaging_bin() {
-    echo "[INFO] Package bin start"
+    echo "[INFO] package bin start"
     cp -r bin ${package_dir}/
-    echo "[INFO] Package bin done"
+    echo "[INFO] package bin done"
 }
 
 function packaging_conf() {
-    echo "[INFO] Package conf start"
+    echo "[INFO] package conf start"
     cp fate.env RELEASE.md python/requirements.txt ${package_dir}/
     cp -r conf ${package_dir}/
-    echo "[INFO] Package bin done"
+    echo "[INFO] package bin done"
 }
 
 function packaging_python(){
-    echo "[INFO] Package python start"
+    echo "[INFO] package python start"
     cp -r python ${package_dir}/
-    echo "[INFO] Package python done"
+    echo "[INFO] package python done"
 }
 
 function packaging_examples(){
-    echo "[INFO] Package example start"
+    echo "[INFO] package example start"
     cp -r examples ${package_dir}/
-    echo "[INFO] Package example done"
+    echo "[INFO] package example done"
 }
 
 packaging_fateboard(){
-    echo "[INFO] Package fateboard start"
+    echo "[INFO] package fateboard start"
     cd ${source_dir}
     fateboard_git_url=`grep -A 3 '"fateboard"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
     fateboard_git_branch=`grep -A 3 '"fateboard"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
-    echo "[INFO] Git clone fateboard submodule source code from ${fateboard_git_url} branch ${fateboard_git_branch}"
+    echo "[INFO] git clone fateboard submodule source code from ${fateboard_git_url} branch ${fateboard_git_branch}"
     if [[ -e "fateboard" ]];then
         while [[ true ]];do
             read -p "The fateboard directory already exists, delete and re-download? [y/n] " input
             case ${input} in
             [yY]*)
-                    echo "[INFO] Delete the original fateboard"
+                    echo "[INFO] delete the original fateboard"
                     rm -rf fateboard
                     git clone ${fateboard_git_url} -b ${fateboard_git_branch} --depth=1 fateboard
                     break
                     ;;
             [nN]*)
-                    echo "[INFO] Use the original fateboard"
+                    echo "[INFO] use the original fateboard"
                     break
                     ;;
             *)
-                    echo "Just enter y or n, please."
+                    echo "just enter y or n, please."
                     ;;
             esac
         done
@@ -103,31 +105,31 @@ packaging_fateboard(){
     cd ${package_dir}/fateboard
     touch ./ssh/ssh.properties
     ln -s fateboard-${fateboard_version}.jar fateboard.jar
-    echo "[INFO] Package fateboard done"
+    echo "[INFO] package fateboard done"
 }
 
 packaging_eggroll(){
-    echo "[INFO] Package eggroll start"
+    echo "[INFO] package eggroll start"
     cd ${source_dir}
     eggroll_git_url=`grep -A 3 '"eggroll"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
     eggroll_git_branch=`grep -A 3 '"eggroll"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
-    echo "[INFO] Git clone eggroll submodule source code from ${eggroll_git_url} branch ${eggroll_git_branch}"
+    echo "[INFO] git clone eggroll submodule source code from ${eggroll_git_url} branch ${eggroll_git_branch}"
     if [[ -e "eggroll" ]];then
         while [[ true ]];do
-            read -p "The eggroll directory already exists, delete and re-download? [y/n] " input
+            read -p "the eggroll directory already exists, delete and re-download? [y/n] " input
             case ${input} in
             [yY]*)
-                    echo "[INFO] Delete the original eggroll"
+                    echo "[INFO] delete the original eggroll"
                     rm -rf eggroll
                     git clone ${eggroll_git_url} -b ${eggroll_git_branch} --depth=1 eggroll
                     break
                     ;;
             [nN]*)
-                    echo "[INFO] Use the original eggroll"
+                    echo "[INFO] use the original eggroll"
                     break
                     ;;
             *)
-                    echo "Just enter y or n, please."
+                    echo "just enter y or n, please."
                     ;;
             esac
         done
@@ -142,24 +144,24 @@ packaging_eggroll(){
     cd ${package_dir}/eggroll/
     tar xzf eggroll.tar.gz
     rm -rf eggroll.tar.gz
-    echo "[INFO] Package eggroll done"
+    echo "[INFO] package eggroll done"
 }
 
 function packaging_proxy(){
-    echo "[INFO] Package proxy start"
+    echo "[INFO] package proxy start"
     cd ${source_dir}
     cd c/proxy
     mkdir -p ${package_dir}/proxy/nginx
     cp -r conf lua ${package_dir}/proxy/nginx
-    echo "[INFO] Package proxy done"
+    echo "[INFO] package proxy done"
 }
 
 compress(){
-    echo "[INFO] Compress start"
+    echo "[INFO] compress start"
     cd ${package_dir}
     touch ./packages_md5.txt
     os_kernel=`uname -s`
-    for module in ${packaging_modules[@]};
+    for module in "${packaging_modules[@]}";
     do
         tar czf ${module}.tar.gz ./${module}
         case "${os_kernel}" in
@@ -173,8 +175,8 @@ compress(){
         echo "${module}:${md5_value}" >> ./packages_md5.txt
         rm -rf ./${module}
     done
-    echo "[INFO] Compress done"
-    echo "[INFO] A total of `ls ${package_dir} | wc -l | awk '{print $1}'` packages:"
+    echo "[INFO] compress done"
+    echo "[INFO] a total of `ls ${package_dir} | wc -l | awk '{print $1}'` packages:"
     ls -lrt ${package_dir}
     cd ${source_dir}/cluster-deploy/
     tar czf ${package_dir_name}_${version_tag}".tar.gz" ${package_dir_name}
@@ -182,13 +184,13 @@ compress(){
 
 
 build() {
-    echo "[INFO] Packaging start------------------------------------------------------------------------"
-    for module in ${packaging_modules[@]};
+    echo "[INFO] packaging start------------------------------------------------------------------------"
+    for module in "${packaging_modules[@]}";
     do
         packaging_${module}
         echo
     done
-    echo "[INFO] Packaging end ------------------------------------------------------------------------"
+    echo "[INFO] packaging end ------------------------------------------------------------------------"
     compress
 }
 
