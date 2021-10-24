@@ -29,6 +29,8 @@ from fate_flow.model import Locker, parse_proto_object, serialize_buffer_object
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger
 from fate_flow.utils import job_utils
+from fate_flow.component_env_utils import provider_utils
+from fate_flow.db.runtime_config import RuntimeConfig
 
 
 def local_cache_required(method):
@@ -229,6 +231,9 @@ class PipelinedModel(Locker):
                             serialized_string = base64.b64encode(serialized_string).decode()
                         model_buffers["{}.{}:{}".format(component_name, model_alias, model_name)] = serialized_string
         return model_buffers
+
+    def get_model_migrate_tool(self):
+        return provider_utils.get_provider_class_object(RuntimeConfig.COMPONENT_PROVIDER, "model_migrate", True)
 
     def exists(self):
         return os.path.isdir(self.model_path) and set(os.listdir(self.model_path)) - {'.lock'}
