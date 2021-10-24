@@ -68,7 +68,7 @@ class TaskController(object):
                                                party_id=party_id, component_name=component_name)
 
         schedule_logger(job_id).info(
-            'try to start job {} task {} {} on {} {} executor subprocess'.format(job_id, task_id, task_version, role, party_id))
+            f"try to start task {task_id} {task_version} on {role} {party_id} executor subprocess")
         task_executor_process_start_status = False
         task_info = {
             "job_id": job_id,
@@ -91,7 +91,7 @@ class TaskController(object):
             with open(run_parameters_path, 'w') as fw:
                 fw.write(json_dumps(run_parameters_dict))
 
-            schedule_logger(job_id=job_id).info(f"use computing engine {run_parameters.computing_engine}")
+            schedule_logger(job_id).info(f"use computing engine {run_parameters.computing_engine}")
             task_info["engine_conf"] = {"computing_engine": run_parameters.computing_engine}
             backend_engine = build_engine(run_parameters.computing_engine)
             run_info = backend_engine.run(task=task,
@@ -118,7 +118,7 @@ class TaskController(object):
             except Exception as e:
                 schedule_logger(job_id).exception(e)
             schedule_logger(job_id).info(
-                'job {} task {} {} on {} {} executor subprocess start {}'.format(job_id, task_id, task_version, role, party_id, "success" if task_executor_process_start_status else "failed"))
+                "task {} {} on {} {} executor subprocess start {}".format(task_id, task_version, role, party_id, "success" if task_executor_process_start_status else "failed"))
 
     @classmethod
     def update_task(cls, task_info):
@@ -132,7 +132,7 @@ class TaskController(object):
             update_status = JobSaver.update_task(task_info=task_info)
             cls.report_task_to_initiator(task_info=task_info)
         except Exception as e:
-            schedule_logger(job_id=task_info["job_id"]).exception(e)
+            schedule_logger(task_info["job_id"]).exception(e)
         finally:
             return update_status
 
@@ -204,12 +204,12 @@ class TaskController(object):
             kill_status = True
         finally:
             schedule_logger(task.f_job_id).info(
-                'job {} task {} {} on {} {} process {} kill {}'.format(task.f_job_id, task.f_task_id,
-                                                                       task.f_task_version,
-                                                                       task.f_role,
-                                                                       task.f_party_id,
-                                                                       task.f_run_pid,
-                                                                       'success' if kill_status else 'failed'))
+                'task {} {} on {} {} process {} kill {}'.format(task.f_task_id,
+                                                                task.f_task_version,
+                                                                task.f_role,
+                                                                task.f_party_id,
+                                                                task.f_run_pid,
+                                                                'success' if kill_status else 'failed'))
             return kill_status
 
     @classmethod

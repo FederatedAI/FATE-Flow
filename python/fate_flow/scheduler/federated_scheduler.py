@@ -46,22 +46,22 @@ class FederatedScheduler(object):
 
     @classmethod
     def resource_for_job(cls, job, operation_type: ResourceOperation, specific_dest=None):
-        schedule_logger(job_id=job.f_job_id).info(f"try to {operation_type} job {job.f_job_id} resource")
+        schedule_logger(job.f_job_id).info(f"try to {operation_type} job resource")
         status_code, response = cls.job_command(job=job, command=f"resource/{operation_type.value}", specific_dest=specific_dest)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).info(f"{operation_type} job {job.f_job_id} resource successfully")
+            schedule_logger(job.f_job_id).info(f"{operation_type} job resource successfully")
         else:
-            schedule_logger(job_id=job.f_job_id).info(f"{operation_type} job {job.f_job_id} resource failed")
+            schedule_logger(job.f_job_id).info(f"{operation_type} job resource failed")
         return status_code, response
 
     @classmethod
     def dependence_for_job(cls, job, specific_dest=None):
-        schedule_logger(job_id=job.f_job_id).info(f"try to check job {job.f_job_id} dependence")
+        schedule_logger(job.f_job_id).info(f"try to check job dependence")
         status_code, response = cls.job_command(job=job, command=f"dependence/check", specific_dest=specific_dest)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).info(f"check job {job.f_job_id} dependence successfully")
+            schedule_logger(job.f_job_id).info(f"check job dependence successfully")
         else:
-            schedule_logger(job_id=job.f_job_id).info(f"check job {job.f_job_id} dependence failed")
+            schedule_logger(job.f_job_id).info(f"check job dependence failed")
         return status_code, response
 
     @classmethod
@@ -75,43 +75,43 @@ class FederatedScheduler(object):
     @classmethod
     def sync_job(cls, job, update_fields):
         sync_info = job.to_human_model_dict(only_primary_with=update_fields)
-        schedule_logger(job_id=job.f_job_id).info("sync job {} info to all party".format(job.f_job_id))
+        schedule_logger(job.f_job_id).info("sync job info to all party")
         status_code, response = cls.job_command(job=job, command="update", command_body=sync_info)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).info("sync job {} info to all party successfully".format(job.f_job_id))
+            schedule_logger(job.f_job_id).info("sync job info to all party successfully")
         else:
-            schedule_logger(job_id=job.f_job_id).info("sync job {} info to all party failed: \n{}".format(job.f_job_id, response))
+            schedule_logger(job.f_job_id).info(f"sync job info to all party failed: \n{response}")
         return status_code, response
 
     @classmethod
     def sync_job_status(cls, job):
-        schedule_logger(job_id=job.f_job_id).info("job {} is {}, sync to all party".format(job.f_job_id, job.f_status))
+        schedule_logger(job.f_job_id).info(f"job is {job.f_status}, sync to all party")
         status_code, response = cls.job_command(job=job, command=f"status/{job.f_status}")
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).info("sync job {} status {} to all party success".format(job.f_job_id, job.f_status))
+            schedule_logger(job.f_job_id).info(f"sync job status {job.f_status} to all party success")
         else:
-            schedule_logger(job_id=job.f_job_id).info("sync job {} status {} to all party failed: \n{}".format(job.f_job_id, job.f_status, response))
+            schedule_logger(job.f_job_id).info(f"sync job status {job.f_status} to all party failed: \n{response}")
         return status_code, response
 
     @classmethod
     def save_pipelined_model(cls, job):
-        schedule_logger(job_id=job.f_job_id).info("try to save job {} pipelined model".format(job.f_job_id))
+        schedule_logger(job.f_job_id).info("try to save job pipelined model")
         status_code, response = cls.job_command(job=job, command="model")
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).info("save job {} pipelined model success".format(job.f_job_id))
+            schedule_logger(job.f_job_id).info("save job pipelined model success")
         else:
-            schedule_logger(job_id=job.f_job_id).info("save job {} pipelined model failed:\n{}".format(job.f_job_id, response))
+            schedule_logger(job.f_job_id).info(f"save job pipelined model failed:\n{response}")
         return status_code, response
 
     @classmethod
     def stop_job(cls, job, stop_status):
-        schedule_logger(job_id=job.f_job_id).info("try to stop job {}".format(job.f_job_id))
+        schedule_logger(job.f_job_id).info("try to stop job")
         job.f_status = stop_status
         status_code, response = cls.job_command(job=job, command="stop/{}".format(stop_status))
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).info("stop job {} success".format(job.f_job_id))
+            schedule_logger(job.f_job_id).info("stop job success")
         else:
-            schedule_logger(job_id=job.f_job_id).info("stop job {} failed:\n{}".format(job.f_job_id, response))
+            schedule_logger(job.f_job_id).info(f"stop job failed:\n{response}")
         return status_code, response
 
     @classmethod
@@ -124,12 +124,12 @@ class FederatedScheduler(object):
 
     @classmethod
     def clean_job(cls, job):
-        schedule_logger(job_id=job.f_job_id).info("try to clean job {}".format(job.f_job_id))
+        schedule_logger(job.f_job_id).info("try to clean job")
         status_code, response = cls.job_command(job=job, command="clean", command_body=job.f_runtime_conf_on_party["role"].copy())
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).info("clean job {} success".format(job.f_job_id))
+            schedule_logger(job.f_job_id).info("clean job success")
         else:
-            schedule_logger(job_id=job.f_job_id).info("clean job {} failed:\n{}".format(job.f_job_id, response))
+            schedule_logger(job.f_job_id).info(f"clean job failed:\n{response}")
         return status_code, response
 
     @classmethod
@@ -176,43 +176,43 @@ class FederatedScheduler(object):
     @classmethod
     def sync_task(cls, job, task, update_fields):
         sync_info = task.to_human_model_dict(only_primary_with=update_fields)
-        schedule_logger(job_id=task.f_job_id).info("sync job {} task {} {} info to all party".format(task.f_job_id, task.f_task_id, task.f_task_version))
+        schedule_logger(task.f_job_id).info("sync task {} {} info to all party".format(task.f_task_id, task.f_task_version))
         status_code, response = cls.task_command(job=job, task=task, command="update", command_body=sync_info)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=task.f_job_id).info("sync job {} task {} {} info to all party successfully".format(task.f_job_id, task.f_task_id, task.f_task_version))
+            schedule_logger(task.f_job_id).info("sync task {} {} info to all party successfully".format(task.f_task_id, task.f_task_version))
         else:
-            schedule_logger(job_id=task.f_job_id).info("sync job {} task {} {} info to all party failed: \n{}".format(task.f_job_id, task.f_task_id, task.f_task_version, response))
+            schedule_logger(task.f_job_id).info("sync task {} {} info to all party failed: \n{}".format(task.f_task_id, task.f_task_version, response))
         return status_code, response
 
     @classmethod
     def sync_task_status(cls, job, task):
-        schedule_logger(job_id=task.f_job_id).info("job {} task {} {} is {}, sync to all party".format(task.f_job_id, task.f_task_id, task.f_task_version, task.f_status))
+        schedule_logger(task.f_job_id).info("task {} {} is {}, sync to all party".format(task.f_task_id, task.f_task_version, task.f_status))
         status_code, response = cls.task_command(job=job, task=task, command=f"status/{task.f_status}")
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=task.f_job_id).info("sync job {} task {} {} status {} to all party success".format(task.f_job_id, task.f_task_id, task.f_task_version, task.f_status))
+            schedule_logger(task.f_job_id).info("sync task {} {} status {} to all party success".format(task.f_task_id, task.f_task_version, task.f_status))
         else:
-            schedule_logger(job_id=task.f_job_id).info("sync job {} task {} {} status {} to all party failed: \n{}".format(task.f_job_id, task.f_task_id, task.f_task_version, task.f_status, response))
+            schedule_logger(task.f_job_id).info("sync task {} {} status {} to all party failed: \n{}".format(task.f_task_id, task.f_task_version, task.f_status, response))
         return status_code, response
 
     @classmethod
     def stop_task(cls, job, task, stop_status):
-        schedule_logger(job_id=task.f_job_id).info("try to stop job {} task {} {}".format(task.f_job_id, task.f_task_id, task.f_task_version))
+        schedule_logger(task.f_job_id).info("try to stop task {} {}".format(task.f_task_id, task.f_task_version))
         task.f_status = stop_status
         status_code, response = cls.task_command(job=job, task=task, command="stop/{}".format(stop_status))
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).info("stop job {} task {} {} success".format(task.f_job_id, task.f_task_id, task.f_task_version))
+            schedule_logger(job.f_job_id).info("stop task {} {} success".format(task.f_task_id, task.f_task_version))
         else:
-            schedule_logger(job_id=job.f_job_id).info("stop job {} task {} {} failed:\n{}".format(task.f_job_id, task.f_task_id, task.f_task_version, response))
+            schedule_logger(job.f_job_id).info("stop task {} {} failed:\n{}".format(task.f_task_id, task.f_task_version, response))
         return status_code, response
 
     @classmethod
     def clean_task(cls, job, task, content_type):
-        schedule_logger(job_id=task.f_job_id).info("try to clean task {} {} {}".format(task.f_task_id, task.f_task_version, content_type))
+        schedule_logger(task.f_job_id).info("try to clean task {} {} {}".format(task.f_task_id, task.f_task_version, content_type))
         status_code, response = cls.task_command(job=job, task=task, command="clean/{}".format(content_type))
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).info("clean task {} {} {} successfully".format(task.f_task_id, task.f_task_version, content_type))
+            schedule_logger(job.f_job_id).info("clean task {} {} {} successfully".format(task.f_task_id, task.f_task_version, content_type))
         else:
-            schedule_logger(job_id=job.f_job_id).info("clean task {} {} {} failed:\n{}".format(task.f_task_id, task.f_task_version, content_type, response))
+            schedule_logger(job.f_job_id).info("clean task {} {} {} failed:\n{}".format(task.f_task_id, task.f_task_version, content_type, response))
         return status_code, response
 
     @classmethod
@@ -228,8 +228,8 @@ class FederatedScheduler(object):
             endpoint = f"/party/{task.f_job_id}/{task.f_component_name}/{task.f_task_id}/{task.f_task_version}/{dest_role}/{dest_party_id}/{command}"
             if need_user:
                 command_body["user_id"] = job.f_user.get(dest_role, {}).get(str(dest_party_id), "")
-                schedule_logger(job_id=job.f_job_id).info(f'user:{job.f_user}, dest_role:{dest_role}, dest_party_id:{dest_party_id}')
-                schedule_logger(job_id=job.f_job_id).info(f'command_body: {command_body}')
+                schedule_logger(job.f_job_id).info(f'user:{job.f_user}, dest_role:{dest_role}, dest_party_id:{dest_party_id}')
+                schedule_logger(job.f_job_id).info(f'command_body: {command_body}')
             args = (job.f_job_id, job.f_role, job.f_party_id, dest_role, dest_party_id, endpoint, command_body, job_parameters["federated_mode"], federated_response)
             if parallel:
                 t = threading.Thread(target=cls.federated_command, args=args)
@@ -299,11 +299,11 @@ class FederatedScheduler(object):
                                          json_body=task.to_human_model_dict(only_primary_with=cls.REPORT_TO_INITIATOR_FIELDS),
                                          federated_mode=task.f_federated_mode)
             except Exception as e:
-                schedule_logger(job_id=task.f_job_id).error(f"report task to initiator error: {e}")
+                schedule_logger(task.f_job_id).error(f"report task to initiator error: {e}")
                 return False
             if response["retcode"] != RetCode.SUCCESS:
                 retmsg = response["retmsg"]
-                schedule_logger(job_id=task.f_job_id).error(f"report task to initiator error: {retmsg}")
+                schedule_logger(task.f_job_id).error(f"report task to initiator error: {retmsg}")
                 return False
             else:
                 return True

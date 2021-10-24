@@ -31,7 +31,7 @@ from fate_flow.db.db_models import Job, Task
 class TaskScheduler(object):
     @classmethod
     def schedule(cls, job, dsl_parser, canceled=False):
-        schedule_logger(job_id=job.f_job_id).info("scheduling job {} tasks".format(job.f_job_id))
+        schedule_logger(job.f_job_id).info("scheduling job tasks")
         initiator_tasks_group = JobSaver.get_tasks_asc(job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id)
         waiting_tasks = []
         auto_rerun_tasks = []
@@ -57,9 +57,9 @@ class TaskScheduler(object):
                 if not canceled and AutoRerunStatus.contains(initiator_task.f_status):
                     if initiator_task.f_auto_retries > 0:
                         auto_rerun_tasks.append(initiator_task)
-                        schedule_logger(job_id=job.f_job_id).info(f"job {job.f_job_id} task {initiator_task.f_task_id} {initiator_task.f_status} will be retried")
+                        schedule_logger(job.f_job_id).info(f"task {initiator_task.f_task_id} {initiator_task.f_status} will be retried")
                     else:
-                        schedule_logger(job_id=job.f_job_id).info(f"job {job.f_job_id} task {initiator_task.f_task_id} {initiator_task.f_status} has no retry count")
+                        schedule_logger(job.f_job_id).info(f"task {initiator_task.f_task_id} {initiator_task.f_status} has no retry count")
 
         scheduling_status_code = SchedulingStatusCode.NO_NEXT
         if not canceled:
@@ -80,7 +80,7 @@ class TaskScheduler(object):
                     status_code = cls.start_task(job=job, task=waiting_task)
                     if status_code == SchedulingStatusCode.NO_RESOURCE:
                         # wait for the next round of scheduling
-                        schedule_logger(job_id=job.f_job_id).info(f"job {waiting_task.f_job_id} task {waiting_task.f_task_id} can not apply resource, wait for the next round of scheduling")
+                        schedule_logger(job.f_job_id).info(f"task {waiting_task.f_task_id} can not apply resource, wait for the next round of scheduling")
                         break
                     elif status_code == SchedulingStatusCode.FAILED:
                         scheduling_status_code = SchedulingStatusCode.FAILED
@@ -88,13 +88,13 @@ class TaskScheduler(object):
                         FederatedScheduler.sync_task_status(job, waiting_task)
                         break
         else:
-            schedule_logger(job_id=job.f_job_id).info("have cancel signal, pass start job {} tasks".format(job.f_job_id))
-        schedule_logger(job_id=job.f_job_id).info("finish scheduling job {} tasks".format(job.f_job_id))
+            schedule_logger(job.f_job_id).info("have cancel signal, pass start job tasks")
+        schedule_logger(job.f_job_id).info("finish scheduling job tasks")
         return scheduling_status_code, auto_rerun_tasks, initiator_tasks_group.values()
 
     @classmethod
     def start_task(cls, job, task):
-        schedule_logger(job_id=task.f_job_id).info("try to start job {} task {} {} on {} {}".format(task.f_job_id, task.f_task_id, task.f_task_version, task.f_role, task.f_party_id))
+        schedule_logger(task.f_job_id).info("try to start task {} {} on {} {}".format(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id))
         apply_status = ResourceManager.apply_for_task_resource(task_info=task.to_human_model_dict(only_primary_with=["status"]))
         if not apply_status:
             return SchedulingStatusCode.NO_RESOURCE
@@ -102,12 +102,12 @@ class TaskScheduler(object):
         update_status = JobSaver.update_task_status(task_info=task.to_human_model_dict(only_primary_with=["status"]))
         if not update_status:
             # Another scheduler scheduling the task
-            schedule_logger(job_id=task.f_job_id).info("job {} task {} {} start on another scheduler".format(task.f_job_id, task.f_task_id, task.f_task_version))
+            schedule_logger(task.f_job_id).info("task {} {} start on another scheduler".format(task.f_task_id, task.f_task_version))
             # Rollback
             task.f_status = TaskStatus.WAITING
             ResourceManager.return_task_resource(task_info=task.to_human_model_dict(only_primary_with=["status"]))
             return SchedulingStatusCode.PASS
-        schedule_logger(job_id=task.f_job_id).info("start job {} task {} {} on {} {}".format(task.f_job_id, task.f_task_id, task.f_task_version, task.f_role, task.f_party_id))
+        schedule_logger(task.f_job_id).info("start task {} {} on {} {}".format(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id))
         FederatedScheduler.sync_task_status(job=job, task=task)
         status_code, response = FederatedScheduler.start_task(job=job, task=task)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
@@ -124,9 +124,9 @@ class TaskScheduler(object):
             auto = False
             schedule_logger(job_id).info(f"task {task.f_task_id} {task.f_task_version} with {task.f_status} was forced to rerun")
         elif task.f_status in {TaskStatus.SUCCESS}:
-            schedule_logger(job_id=job_id).info(f"task {task.f_task_id} {task.f_task_version} is {task.f_status} and not force reruen, pass rerun")
+            schedule_logger(job_id).info(f"task {task.f_task_id} {task.f_task_version} is {task.f_status} and not force reruen, pass rerun")
         elif auto and task.f_auto_retries < 1:
-            schedule_logger(job_id=job_id).info(f"task {task.f_task_id} has no retry count, pass rerun")
+            schedule_logger(job_id).info(f"task {task.f_task_id} has no retry count, pass rerun")
         else:
             can_rerun = True
         if can_rerun:
@@ -167,7 +167,7 @@ class TaskScheduler(object):
                                                components=[task.f_component_name],
                                                task_version=task.f_task_version,
                                                auto_retries=task.f_auto_retries)
-        schedule_logger(job_id=job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
+        schedule_logger(job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
 
     @classmethod
     def collect_task_of_all_party(cls, job, initiator_task, set_status=None):
@@ -177,7 +177,7 @@ class TaskScheduler(object):
             return
         status, federated_response = FederatedScheduler.collect_task(job=job, task=initiator_task)
         if status != FederatedSchedulingStatusCode.SUCCESS:
-            schedule_logger(job_id=job.f_job_id).warning(f"collect task {initiator_task.f_task_id} {initiator_task.f_task_version} on {initiator_task.f_role} {initiator_task.f_party_id} failed")
+            schedule_logger(job.f_job_id).warning(f"collect task {initiator_task.f_task_id} {initiator_task.f_task_version} on {initiator_task.f_role} {initiator_task.f_party_id} failed")
         for _role in federated_response.keys():
             for _party_id, party_response in federated_response[_role].items():
                 if party_response["retcode"] == RetCode.SUCCESS:
