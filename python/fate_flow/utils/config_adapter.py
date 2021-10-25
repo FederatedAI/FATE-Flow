@@ -22,12 +22,14 @@ from fate_flow.entity import RunParameters
 class JobRuntimeConfigAdapter(object):
     def __init__(self, job_runtime_conf):
         self.job_runtime_conf = job_runtime_conf
+        if not self.job_runtime_conf.get("job_parameters"):
+            self.job_runtime_conf["job_parameters"] = {}
+        if "common" not in self.job_runtime_conf["job_parameters"]:
+            self.job_runtime_conf["job_parameters"]["common"] = {}
 
     def get_common_parameters(self):
         if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
-            if "common" not in self.job_runtime_conf["job_parameters"]:
-                raise RuntimeError("the configuration format for v2 version must be job_parameters:common")
-            job_parameters = RunParameters(**self.job_runtime_conf['job_parameters']['common'])
+            job_parameters = RunParameters(**self.job_runtime_conf.get("job_parameters", {}).get("common", {}))
             self.job_runtime_conf['job_parameters']['common'] = job_parameters.to_dict()
         else:
             if "processors_per_node" in self.job_runtime_conf['job_parameters']:
@@ -39,8 +41,6 @@ class JobRuntimeConfigAdapter(object):
 
     def update_common_parameters(self, common_parameters: RunParameters):
         if int(self.job_runtime_conf.get("dsl_version", 1)) == 2:
-            if "common" not in self.job_runtime_conf["job_parameters"]:
-                raise RuntimeError("the configuration format for v2 version must be job_parameters:common")
             self.job_runtime_conf["job_parameters"]["common"] = common_parameters.to_dict()
         else:
             self.job_runtime_conf["job_parameters"] = common_parameters.to_dict()
@@ -54,12 +54,6 @@ class JobRuntimeConfigAdapter(object):
                 self.job_runtime_conf['job_parameters'] = job_parameters.to_dict()
         return self.job_runtime_conf['job_parameters']
 
-    # def get_job_work_mode(self):
-    #     if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
-    #         work_mode = self.job_runtime_conf['job_parameters'].get('common', {}).get('work_mode')
-    #     else:
-    #         work_mode = self.job_runtime_conf['job_parameters'].get('work_mode')
-    #     return work_mode
 
     def check_removed_parameter(self):
         check_list = []
