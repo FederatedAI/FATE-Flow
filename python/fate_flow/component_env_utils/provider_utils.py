@@ -16,26 +16,29 @@
 import importlib
 import pathlib
 
-from fate_arch.common import file_utils
 from fate_flow.entity import ComponentProvider
 
 
 def get_provider_interface(provider: ComponentProvider):
-    obj = get_component_class(provider, "interface")
+    obj = get_provider_class_object(provider, "interface")
     setattr(obj, "provider_name", provider.name)
     setattr(obj, "provider_version", provider.version)
     return obj
 
 
-def get_component_model(provider: ComponentProvider):
-    class_path = get_component_class_path(provider, "model")
-    return pathlib.Path(file_utils.get_python_base_directory(*class_path)), class_path
+def get_provider_model_paths(provider: ComponentProvider):
+    model_import_path = get_provider_class_import_path(provider, "model")
+    model_module_dir = pathlib.Path(provider.path).joinpath(*model_import_path[1:])
+    return model_module_dir, model_import_path
 
 
-def get_component_class(provider: ComponentProvider, class_name):
-    class_path = get_component_class_path(provider, class_name)
-    return getattr(importlib.import_module(".".join(class_path[:-1])), class_path[-1])
+def get_provider_class_object(provider: ComponentProvider, class_name, module=False):
+    class_path = get_provider_class_import_path(provider, class_name)
+    if module:
+        return importlib.import_module(".".join(class_path))
+    else:
+        return getattr(importlib.import_module(".".join(class_path[:-1])), class_path[-1])
 
 
-def get_component_class_path(provider: ComponentProvider, class_name):
+def get_provider_class_import_path(provider: ComponentProvider, class_name):
     return f"{pathlib.Path(provider.path).name}.{provider.class_path.get(class_name)}".split(".")

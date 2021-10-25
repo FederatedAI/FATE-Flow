@@ -70,7 +70,7 @@ class DependenceManager:
                     upload_details[version][dependence_type] = provider
         if upload_total > 0:
             check_tag = False
-        schedule_logger(job_id).info(f"Check dependencies result: {check_tag}, {upload_details}")
+        schedule_logger(job_id).info(f"check dependencies result: {check_tag}, {upload_details}")
         return check_tag, upload_total > 0, upload_details
 
     @classmethod

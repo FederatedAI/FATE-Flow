@@ -339,7 +339,7 @@ def check_job_is_timeout(job: Job):
     now_time = current_timestamp()
     running_time = (now_time - job.f_create_time)/1000
     if running_time > timeout:
-        schedule_logger(job_id=job.f_job_id).info('job {}  run time {}s timeout'.format(job.f_job_id, running_time))
+        schedule_logger(job.f_job_id).info(f'run time {running_time}s timeout')
         return True
     else:
         return False
@@ -372,17 +372,15 @@ def start_session_stop(task):
 def get_timeout(job_id, timeout, runtime_conf, dsl):
     try:
         if timeout > 0:
-            schedule_logger(job_id).info('setting job {} timeout {}'.format(job_id, timeout))
+            schedule_logger(job_id).info(f'setting job timeout {timeout}')
             return timeout
         else:
             default_timeout = job_default_timeout(runtime_conf, dsl)
-            schedule_logger(job_id).info('setting job {} timeout {} not a positive number, using the default timeout {}'.format(
-                job_id, timeout, default_timeout))
+            schedule_logger(job_id).info(f'setting job timeout {timeout} not a positive number, using the default timeout {default_timeout}')
             return default_timeout
     except:
         default_timeout = job_default_timeout(runtime_conf, dsl)
-        schedule_logger(job_id).info('setting job {} timeout {} is incorrect, using the default timeout {}'.format(
-            job_id, timeout, default_timeout))
+        schedule_logger(job_id).info(f'setting job timeout {timeout} is incorrect, using the default timeout {default_timeout}')
         return default_timeout
 
 

@@ -54,14 +54,14 @@ def stop_job():
         schedule_logger(job_id).info(f"stop job on this party")
         kill_status, kill_details = JobController.stop_jobs(job_id=job_id, stop_status=stop_status)
         schedule_logger(job_id).info(f"stop job on this party status {kill_status}")
-        schedule_logger(job_id).info(f"request stop job {jobs[0]} to {stop_status}")
+        schedule_logger(job_id).info(f"request stop job to {stop_status}")
         status_code, response = FederatedScheduler.request_stop_job(job=jobs[0], stop_status=stop_status, command_body=jobs[0].to_dict())
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
             return get_json_result(retcode=RetCode.SUCCESS, retmsg=f"stop job on this party {kill_status}; stop job on all party success")
         else:
             return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"stop job on this party {kill_status}", data=response)
     else:
-        schedule_logger(job_id).info(f"can not found job {job_id} to stop")
+        schedule_logger(job_id).info(f"can not found job to stop")
         return get_json_result(retcode=RetCode.DATA_ERROR, retmsg="can not found job")
 
 

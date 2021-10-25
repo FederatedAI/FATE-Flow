@@ -36,17 +36,18 @@ def serialize_buffer_object(buffer_object):
 
 
 def get_proto_buffer_class(buffer_name):
-    package_path, package_module = provider_utils.get_component_model(provider=RuntimeConfig.COMPONENT_PROVIDER)
-    e = ModuleNotFoundError(f'No module named {buffer_name}')
-    for f in package_path.glob('*.py'):
+    module_path, base_import_path = provider_utils.get_provider_model_paths(RuntimeConfig.COMPONENT_PROVIDER)
+    exception = ModuleNotFoundError(f'no module named {buffer_name}')
+    for f in module_path.glob('*.py'):
         try:
-            proto_module = importlib.import_module('.'.join([package_module, f.stem]))
+            proto_module = importlib.import_module('.'.join([*base_import_path, f.stem]))
             for name, obj in inspect.getmembers(proto_module):
                 if inspect.isclass(obj) and name == buffer_name:
                     return obj
         except Exception as e:
+            exception = e
             stat_logger.warning(e)
-    raise e
+    raise exception
 
 
 def parse_proto_object(buffer_name, serialized_string, buffer_class=None):

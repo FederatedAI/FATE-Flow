@@ -86,15 +86,16 @@ class BaseWorker:
         self.run_pid = os.getpid()
         try:
             self.args = self.get_args(**kwargs)
-            LoggerFactory.set_directory(directory=self.args.log_dir, parent_log_dir=self.args.parent_log_dir,
-                                        append_to_parent_log=True, force=True)
+            RuntimeConfig.set_process_role(ProcessRole(os.getenv("PROCESS_ROLE")))
+            if RuntimeConfig.PROCESS_ROLE == ProcessRole.WORKER:
+                LoggerFactory.set_directory(directory=self.args.log_dir, parent_log_dir=self.args.parent_log_dir,
+                                            append_to_parent_log=True, force=True)
             LOGGER.info(f"enter {self.__class__.__name__} worker process, pid: {self.run_pid}")
             for env in {"VIRTUAL_ENV", "PYTHONPATH", "SPARK_HOME", "FATE_DEPLOY_BASE", "PROCESS_ROLE", "FATE_JOB_ID"}:
                 LOGGER.info(f"{env}: {os.getenv(env)}")
             if self.args.job_server:
                 RuntimeConfig.init_config(JOB_SERVER_HOST=self.args.job_server.split(':')[0],
                                           HTTP_PORT=self.args.job_server.split(':')[1])
-            RuntimeConfig.set_process_role(ProcessRole(os.getenv("PROCESS_ROLE")))
             # todo: get conf from server
             ConfigManager.load()
             ComponentRegistry.load()

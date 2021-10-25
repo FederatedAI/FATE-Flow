@@ -25,7 +25,6 @@ from fate_flow.settings import stat_logger
 from fate_flow.utils import model_utils
 from fate_flow.pipelined_model import pipelined_model
 from fate_flow.pipelined_model.homo_model_deployer.model_deploy import model_deploy
-#from flow_components.fate_federated_algorithm.v1_7_0.federatedml.protobuf.homo_model_convert.homo_model_convert import model_convert, save_converted_model, load_converted_model, get_default_target_framework
 
 
 def generate_publish_model_info(config_data):
@@ -129,22 +128,24 @@ def convert_homo_model(request_data):
 
     framework_name = request_data.get("framework_name")
     detail = []
+    # todo: use subprocess?
+    convert_tool = model.get_homo_model_convert_tool()
     for key, value in define_index.get("model_proto", {}).items():
         if key == 'pipeline':
             continue
         for model_alias in value.keys():
             buffer_obj = model.read_component_model(key, model_alias)
             module_name = define_index.get("component_define", {}).get(key, {}).get('module_name')
-            converted_framework, converted_model = model_convert(model_contents=buffer_obj,
-                                                                 module_name=module_name,
-                                                                 framework_name=framework_name)
+            converted_framework, converted_model = convert_tool.model_convert(model_contents=buffer_obj,
+                                                                              module_name=module_name,
+                                                                              framework_name=framework_name)
             if converted_model:
                 converted_model_dir = os.path.join(model.variables_data_path, key, model_alias, "converted_model")
                 os.makedirs(converted_model_dir, exist_ok=True)
 
-                saved_path = save_converted_model(converted_model,
-                                                  converted_framework,
-                                                  converted_model_dir)
+                saved_path = convert_tool.save_converted_model(converted_model,
+                                                               converted_framework,
+                                                               converted_model_dir)
                 detail.append({
                     "component_name": key,
                     "model_alias": model_alias,
@@ -191,13 +192,15 @@ def deploy_homo_model(request_data):
         return 100, '''Component {} in Model {} {} isn't converted'''.\
             format(component_name, party_model_id, model_version), None
 
+    # todo: use subprocess?
+    convert_tool = model.get_homo_model_convert_tool()
     if not framework_name:
         module_name = train_dsl['components'][component_name].get('module')
         buffer_obj = model.read_component_model(component_name, model_alias)
-        framework_name = get_default_target_framework(model_contents=buffer_obj, module_name=module_name)
+        framework_name = convert_tool.get_default_target_framework(model_contents=buffer_obj, module_name=module_name)
 
-    model_object = load_converted_model(base_dir=converted_model_dir,
-                                        framework_name=framework_name)
+    model_object = convert_tool.load_converted_model(base_dir=converted_model_dir,
+                                                     framework_name=framework_name)
     deployed_service = model_deploy(party_model_id,
                                     model_version,
                                     model_object,

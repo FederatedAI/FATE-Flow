@@ -24,7 +24,6 @@ from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_arch.common.file_utils import get_project_base_directory
 from fate_flow.settings import stat_logger
 from fate_flow.utils import model_utils
-#from flow_components.fate_federated_algorithm.v1_7_0.federatedml.protobuf.model_migrate.model_migrate import model_migration
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 
 
@@ -121,21 +120,22 @@ def migration(config_data: dict):
         with open(os.path.join(migrate_model.model_path, 'define', 'define_meta.yaml'), 'r') as fin:
             define_yaml = yaml.safe_load(fin)
 
+        # todo: use subprocess?
+        migrate_tool = migrate_model.get_model_migrate_tool()
         for key, value in define_yaml['model_proto'].items():
             if key == 'pipeline':
                 continue
             for v in value.keys():
-                # todo: fix bug
                 buffer_obj = migrate_model.read_component_model(key, v)
                 module_name = define_yaml['component_define'].get(key, {}).get('module_name')
-                modified_buffer = model_migration(model_contents=buffer_obj,
-                                                  module_name=module_name,
-                                                  old_guest_list=config_data['role']['guest'],
-                                                  new_guest_list=config_data['migrate_role']['guest'],
-                                                  old_host_list=config_data['role']['host'],
-                                                  new_host_list=config_data['migrate_role']['host'],
-                                                  old_arbiter_list=config_data.get('role', {}).get('arbiter', None),
-                                                  new_arbiter_list=config_data.get('migrate_role', {}).get('arbiter', None))
+                modified_buffer = migrate_tool.model_migration(model_contents=buffer_obj,
+                                                               module_name=module_name,
+                                                               old_guest_list=config_data['role']['guest'],
+                                                               new_guest_list=config_data['migrate_role']['guest'],
+                                                               old_host_list=config_data['role']['host'],
+                                                               new_host_list=config_data['migrate_role']['host'],
+                                                               old_arbiter_list=config_data.get('role', {}).get('arbiter', None),
+                                                               new_arbiter_list=config_data.get('migrate_role', {}).get('arbiter', None))
                 migrate_model.save_component_model(component_name=key, component_module_name=module_name,
                                                    model_alias=v, model_buffers=modified_buffer)
 

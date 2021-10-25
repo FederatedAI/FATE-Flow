@@ -44,10 +44,10 @@ class JobSaver(object):
 
     @classmethod
     def update_job_status(cls, job_info):
-        schedule_logger(job_id=job_info["job_id"]).info("try to update job {} status to {}".format(job_info["job_id"], job_info.get("status")))
+        schedule_logger(job_info["job_id"]).info("try to update job status to {}".format(job_info.get("status")))
         update_status = cls.update_status(Job, job_info)
         if update_status:
-            schedule_logger(job_id=job_info["job_id"]).info("update job {} status successfully".format(job_info["job_id"]))
+            schedule_logger(job_info["job_id"]).info("update job status successfully")
             if EndStatus.contains(job_info.get("status")):
                 new_job_info = {}
                 for k in ["job_id", "role", "party_id"]:
@@ -55,41 +55,41 @@ class JobSaver(object):
                 new_job_info["tag"] = "job_end"
                 cls.update_entity_table(Job, new_job_info)
         else:
-            schedule_logger(job_id=job_info["job_id"]).info("update job {} status does not take effect".format(job_info["job_id"]))
+            schedule_logger(job_info["job_id"]).info("update job status does not take effect")
         return update_status
 
     @classmethod
     def update_job(cls, job_info):
-        schedule_logger(job_id=job_info["job_id"]).info("try to update job {}".format(job_info["job_id"]))
+        schedule_logger(job_info["job_id"]).info("try to update job")
         if "status" in job_info:
             # Avoid unintentional usage that updates the status
             del job_info["status"]
-            schedule_logger(job_id=job_info["job_id"]).warning("try to update job {}, pop job status".format(job_info["job_id"]))
+            schedule_logger(job_info["job_id"]).warning("try to update job, pop job status")
         update_status = cls.update_entity_table(Job, job_info)
         if update_status:
-            schedule_logger(job_id=job_info.get("job_id")).info(f"job {job_info['job_id']} update successfully: {job_info}")
+            schedule_logger(job_info.get("job_id")).info(f"job update successfully: {job_info}")
         else:
-            schedule_logger(job_id=job_info.get("job_id")).warning(f"job {job_info['job_id']} update does not take effect: {job_info}")
+            schedule_logger(job_info.get("job_id")).warning(f"job update does not take effect: {job_info}")
         return update_status
 
     @classmethod
     def update_task_status(cls, task_info):
-        schedule_logger(job_id=task_info["job_id"]).info("try to update job {} task {} {} status".format(task_info["job_id"], task_info["task_id"], task_info["task_version"]))
+        schedule_logger(task_info["job_id"]).info("try to update task {} {} status".format(task_info["task_id"], task_info["task_version"]))
         update_status = cls.update_status(Task, task_info)
         if update_status:
-            schedule_logger(job_id=task_info["job_id"]).info("update job {} task {} {} status successfully: {}".format(task_info["job_id"], task_info["task_id"], task_info["task_version"], task_info))
+            schedule_logger(task_info["job_id"]).info("update task {} {} status successfully: {}".format(task_info["task_id"], task_info["task_version"], task_info))
         else:
-            schedule_logger(job_id=task_info["job_id"]).info("update job {} task {} {} status update does not take effect: {}".format(task_info["job_id"], task_info["task_id"], task_info["task_version"], task_info))
+            schedule_logger(task_info["job_id"]).info("update task {} {} status update does not take effect: {}".format(task_info["task_id"], task_info["task_version"], task_info))
         return update_status
 
     @classmethod
     def update_task(cls, task_info):
-        schedule_logger(job_id=task_info["job_id"]).info("try to update job {} task {} {}".format(task_info["job_id"], task_info["task_id"], task_info["task_version"]))
+        schedule_logger(task_info["job_id"]).info("try to update task {} {}".format(task_info["task_id"], task_info["task_version"]))
         update_status = cls.update_entity_table(Task, task_info)
         if update_status:
-            schedule_logger(job_id=task_info["job_id"]).info("job {} task {} {} update successfully".format(task_info["job_id"], task_info["task_id"], task_info["task_version"]))
+            schedule_logger(task_info["job_id"]).info("task {} {} update successfully".format(task_info["task_id"], task_info["task_version"]))
         else:
-            schedule_logger(job_id=task_info["job_id"]).warning("job {} task {} {} update does not take effect".format(task_info["job_id"], task_info["task_id"], task_info["task_version"]))
+            schedule_logger(task_info["job_id"]).warning("task {} {} update does not take effect".format(task_info["task_id"], task_info["task_version"]))
         return update_status
 
     @classmethod

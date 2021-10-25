@@ -144,7 +144,7 @@ class JobController(object):
                 if hasattr(JobDefaultConfig, key):
                     setattr(job_parameters, key, getattr(JobDefaultConfig, key))
                 else:
-                    schedule_logger(job_id=job_id).warning(f"can not found {key} job parameter default value from job_default_settings")
+                    schedule_logger(job_id).warning(f"can not found {key} job parameter default value from job_default_settings")
 
     @classmethod
     def adapt_job_parameters(cls, role, job_parameters: RunParameters, create_initiator_baseline=False):
@@ -379,8 +379,8 @@ class JobController(object):
 
     @classmethod
     def start_job(cls, job_id, role, party_id, extra_info=None):
-        schedule_logger(job_id=job_id).info(
-            f"try to start job {job_id} on {role} {party_id}")
+        schedule_logger(job_id).info(
+            f"try to start job on {role} {party_id}")
         job_info = {
             "job_id": job_id,
             "role": role,
@@ -389,12 +389,12 @@ class JobController(object):
             "start_time": current_timestamp()
         }
         if extra_info:
-            schedule_logger(job_id=job_id).info(f"extra info: {extra_info}")
+            schedule_logger(job_id).info(f"extra info: {extra_info}")
             job_info.update(extra_info)
         cls.update_job_status(job_info=job_info)
         cls.update_job(job_info=job_info)
-        schedule_logger(job_id=job_id).info(
-            f"start job {job_id} on {role} {party_id} successfully")
+        schedule_logger(job_id).info(
+            f"start job on {role} {party_id} successfully")
 
     @classmethod
     def update_job(cls, job_info):
@@ -449,8 +449,7 @@ class JobController(object):
 
     @classmethod
     def save_pipelined_model(cls, job_id, role, party_id):
-        schedule_logger(job_id).info(
-            'job {} on {} {} start to save pipeline'.format(job_id, role, party_id))
+        schedule_logger(job_id).info(f"start to save pipeline model on {role} {party_id}")
         job_configuration = job_utils.get_job_configuration(job_id=job_id, role=role,
                                                             party_id=party_id)
         runtime_conf_on_party = job_configuration.runtime_conf_on_party
@@ -497,13 +496,10 @@ class JobController(object):
         tracker.save_pipeline_model(pipeline_buffer_object=pipeline)
         if role != 'local':
             tracker.save_machine_learning_model_info()
-        schedule_logger(job_id).info(
-            'job {} on {} {} save pipeline successfully'.format(job_id, role, party_id))
+        schedule_logger(job_id).info(f"save pipeline on {role} {party_id} successfully")
 
     @classmethod
     def clean_job(cls, job_id, role, party_id, roles):
-        schedule_logger(job_id).info(
-            'Job {} on {} {} start to clean'.format(job_id, role, party_id))
+        schedule_logger(job_id).info(f"start to clean job on {role} {party_id}")
         # todo
-        schedule_logger(job_id).info(
-            'job {} on {} {} clean done'.format(job_id, role, party_id))
+        schedule_logger(job_id).info(f"job on {role} {party_id} clean done")
