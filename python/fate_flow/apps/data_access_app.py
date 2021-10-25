@@ -66,9 +66,7 @@ def download_upload(access_module):
     # compatibility
     if "table_name" in job_config:
         job_config["name"] = job_config["table_name"]
-    if "backend" not in job_config:
-        job_config["backend"] = 0
-    for _ in ["backend", "head", "partition", "drop"]:
+    for _ in ["head", "partition", "drop"]:
         if _ in job_config:
             job_config[_] = int(job_config[_])
     if access_module == "upload":
@@ -141,7 +139,7 @@ def gen_data_access_job_config(config_data, access_module):
     initiator_party_id = config_data.get('party_id', 0)
     job_runtime_conf["initiator"]["role"] = initiator_role
     job_runtime_conf["initiator"]["party_id"] = initiator_party_id
-    job_parameters_fields = {"backend", "task_cores", "eggroll_run", "spark_run", "computing_engine", "storage_engine", "federation_engine"}
+    job_parameters_fields = {"task_cores", "eggroll_run", "spark_run", "computing_engine", "storage_engine", "federation_engine"}
     for _ in job_parameters_fields:
         if _ in config_data:
             job_runtime_conf["job_parameters"]["common"][_] = config_data[_]
