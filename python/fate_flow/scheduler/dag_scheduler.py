@@ -14,9 +14,11 @@
 #  limitations under the License.
 #
 import typing
+from copy import deepcopy
+
 from fate_arch.common.base_utils import json_loads, json_dumps, current_timestamp
 from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
-from fate_arch.common import WorkMode
+from fate_arch.common import FederatedMode
 from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.scheduler.task_scheduler import TaskScheduler
@@ -47,7 +49,7 @@ class DAGScheduler(Cron):
         schedule_logger(job_id).info(f"submit job, body {submit_job_conf.to_dict()}")
         try:
             dsl = submit_job_conf.dsl
-            runtime_conf = submit_job_conf.runtime_conf
+            runtime_conf = deepcopy(submit_job_conf.runtime_conf)
             job_utils.check_job_runtime_conf(runtime_conf)
             authentication_utils.check_constraint(runtime_conf, dsl)
 
@@ -83,7 +85,6 @@ class DAGScheduler(Cron):
             job.f_dsl = dsl
             job.f_train_runtime_conf = train_runtime_conf
             job.f_roles = runtime_conf["role"]
-            job.f_work_mode = common_job_parameters.work_mode
             job.f_initiator_role = job_initiator["role"]
             job.f_initiator_party_id = job_initiator["party_id"]
             job.f_role = job_initiator["role"]
@@ -126,7 +127,7 @@ class DAGScheduler(Cron):
                     need_run_components[role] = {}
                     for party, res in response[role].items():
                         need_run_components[role][party] = [name for name, value in response[role][party]["data"]["components"].items() if value["need_run"] is True]
-                if common_job_parameters.work_mode == WorkMode.CLUSTER:
+                if common_job_parameters.federated_mode == FederatedMode.MULTIPLE:
                     # create the task holder in db to record information of all participants in the initiator for scheduling
                     for role, party_ids in job.f_roles.items():
                         for party_id in party_ids:
@@ -157,8 +158,9 @@ class DAGScheduler(Cron):
                 "logs_directory": logs_directory,
                 "board_url": job_utils.get_board_url(job_id, job_initiator["role"], job_initiator["party_id"])
             }
-            if JobRuntimeConfigAdapter(submit_job_conf.runtime_conf).check_backend():
-                result["message"] = "[WARN]backend parameter is removed,it does not take effect!"
+            warn_paramete = JobRuntimeConfigAdapter(submit_job_conf.runtime_conf).check_removed_parameter()
+            if warn_paramete:
+                result["message"] = f"[WARN]{warn_paramete} is removed,it does not take effect!"
             submit_result.update(result)
             submit_result.update(path_dict)
         except Exception as e:

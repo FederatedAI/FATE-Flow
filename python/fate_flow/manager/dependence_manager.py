@@ -1,4 +1,4 @@
-from fate_arch.common import EngineType
+from fate_arch.common import EngineType, engine_utils
 from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.computing import ComputingEngine
 from fate_flow.db.dependence_registry import DependenceRegistry
@@ -9,7 +9,6 @@ from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.settings import DEPENDENT_DISTRIBUTION
 from fate_flow.utils import schedule_utils
-from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 
 
 class DependenceManager:
@@ -78,7 +77,7 @@ class DependenceManager:
     def check_job_dependence(cls, job):
         if not DEPENDENT_DISTRIBUTION:
             return True
-        engine_name = JobRuntimeConfigAdapter(job.f_runtime_conf).get_job_computing_engine()
+        engine_name = engine_utils.get_engines().get(EngineType.COMPUTING)
         schedule_logger(job.f_job_id).info(f"job engine name: {engine_name}")
         if engine_name not in [ComputingEngine.SPARK]:
             return True

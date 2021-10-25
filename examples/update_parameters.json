@@ -2,8 +2,6 @@
   "job_id": "202108061249162334560",
   "job_parameters": {
     "common": {
-      "work_mode": 0,
-      "backend": 0,
       "task_parallelism": 1,
       "task_cores": 4,
       "auto_retries": 1,

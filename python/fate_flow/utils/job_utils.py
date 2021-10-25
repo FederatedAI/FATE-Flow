@@ -25,7 +25,6 @@ from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.entity import JobConfiguration
 from fate_flow.entity.run_status import JobStatus, TaskStatus
 from fate_flow.entity import RunParameters
-from fate_flow.settings import WORK_MODE
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.db.service_registry import ServiceRegistry
@@ -136,9 +135,7 @@ def runtime_conf_basic(if_local=False):
         "initiator": {},
         "job_parameters": {
             "common": {
-                "backend": 0,
-                "federated_mode": FederatedMode.SINGLE,
-                "work_mode": WORK_MODE,
+                "federated_mode": FederatedMode.SINGLE
             },
         },
         "role": {},

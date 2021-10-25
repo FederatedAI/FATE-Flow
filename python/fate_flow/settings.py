@@ -15,7 +15,7 @@
 #
 import os
 from fate_arch.computing import ComputingEngine
-from fate_arch.common import file_utils, log
+from fate_arch.common import file_utils, log, engine_utils
 from fate_arch.common.conf_utils import get_base_config
 
 
@@ -41,9 +41,8 @@ MAX_TIMESTAMP_INTERVAL = 60
 
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
 
-WORK_MODE = get_base_config("work_mode", 0)
 USE_REGISTRY = get_base_config("use_registry")
-DEPENDENT_DISTRIBUTION = get_base_config("dependent_distribution", True)
+DEPENDENT_DISTRIBUTION = get_base_config("dependent_distribution", False)
 
 HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")
@@ -52,11 +51,11 @@ HTTP_APP_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_app_key")
 HTTP_SECRET_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_secret_key")
 PROXY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol")
+IS_STANDALONE = engine_utils.is_standalone()
 
 DATABASE = get_base_config("database", {})
 ZOOKEEPER = get_base_config("zookeeper", {})
 FATE_FLOW_SERVER_START_CONFIG_ITEMS = {
-    "work_mode",
     "use_registry",
     "use_deserialize_safe_module",
     "dependent_distribution",

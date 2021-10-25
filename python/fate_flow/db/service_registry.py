@@ -13,8 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import socket
 from pathlib import Path
-from fate_arch.common import file_utils
+from fate_arch.common import file_utils, conf_utils
 from fate_arch.common.conf_utils import SERVICE_CONF
 from fate_flow.settings import FATE_FLOW_SERVER_START_CONFIG_ITEMS, stat_logger
 from .reload_config_base import ReloadConfigBase
@@ -57,3 +58,48 @@ class ServiceRegistry(ReloadConfigBase):
     @classmethod
     def register(cls, service_name, service_config):
         setattr(cls, service_name, service_config)
+
+
+    @classmethod
+    def save(cls, service_config):
+        update_server = {}
+        for service_name, service_info in service_config.items():
+            cls.parameter_verification(service_name, service_info)
+            manager_conf = conf_utils.get_base_config(service_name, {})
+            if not manager_conf:
+                manager_conf = service_info
+            else:
+                manager_conf.update(service_info)
+            conf_utils.update_config(service_name, manager_conf)
+            update_server[service_name] = manager_conf
+            setattr(cls, service_name, service_config)
+        return update_server
+
+    @classmethod
+    def parameter_verification(cls,service_name, service_info):
+        registry_service_info = {
+            "fatemanager": ["host", "port", "federatedId"],
+            "studio": ["host", "port"]
+        }
+        if service_name not in registry_service_info.keys():
+            return
+        if set(service_info.keys()) != set(registry_service_info.get(service_name)):
+            raise Exception(f'the registration service {service_name} configuration item is'
+                            f' {registry_service_info.get(service_name)}')
+        if "host" in service_info and "port" in service_info:
+            cls.connection_test(service_info.get("host"), service_info.get("port"))
+
+
+    @classmethod
+    def connection_test(cls, ip, port):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = s.connect_ex((ip, port))
+        if result != 0:
+            raise ConnectionRefusedError(f"connection refused: host {ip}, port {port}")
+
+    @classmethod
+    def query(cls, service_name, default=None):
+        service_info = getattr(cls, service_name, default)
+        if not service_info:
+            service_info = conf_utils.get_base_config(service_name, default)
+        return service_info

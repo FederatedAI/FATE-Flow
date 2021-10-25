@@ -15,9 +15,9 @@
 #
 import socket
 
-from fate_arch.common import WorkMode, CoordinationProxyService
+from fate_arch.common import CoordinationProxyService
 from fate_flow.utils.api_utils import error_response, get_json_result
-from fate_flow.settings import WORK_MODE, PROXY
+from fate_flow.settings import PROXY, IS_STANDALONE
 from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.db.db_models import DB
 
@@ -36,7 +36,7 @@ def get_fateboard_info():
 
 @manager.route('/mysql', methods=['POST'])
 def get_mysql_info():
-    if WORK_MODE != WorkMode.CLUSTER:
+    if IS_STANDALONE:
         return error_response(404, 'mysql only available on cluster mode')
 
     try:
@@ -51,7 +51,7 @@ def get_mysql_info():
 # TODO: send greetings message using grpc protocol
 @manager.route('/eggroll', methods=['POST'])
 def get_eggroll_info():
-    if WORK_MODE != WorkMode.CLUSTER:
+    if IS_STANDALONE:
         return error_response(404, 'eggroll only available on cluster mode')
 
     if PROXY != CoordinationProxyService.ROLLSITE:

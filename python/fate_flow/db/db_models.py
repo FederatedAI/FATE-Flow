@@ -26,9 +26,8 @@ from fate_arch.common import file_utils
 from fate_flow.utils.log_utils import getLogger
 from fate_arch.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField, SerializedField, \
     SerializedType, ListField
-from fate_arch.common import WorkMode
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.settings import WORK_MODE, DATABASE, stat_logger
+from fate_flow.settings import DATABASE, stat_logger, IS_STANDALONE
 from fate_flow.utils.object_utils import from_dict_hook
 
 
@@ -57,17 +56,14 @@ class BaseDataBase(object):
     def __init__(self):
         database_config = DATABASE.copy()
         db_name = database_config.pop("name")
-        if WORK_MODE == WorkMode.STANDALONE:
+        if IS_STANDALONE:
             from playhouse.apsw_ext import APSWDatabase
             self.database_connection = APSWDatabase(file_utils.get_project_base_directory("fate_sqlite.db"))
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
             stat_logger.info('init sqlite database on standalone mode successfully')
-        elif WORK_MODE == WorkMode.CLUSTER:
+        else:
             self.database_connection = PooledMySQLDatabase(db_name, **database_config)
             stat_logger.info('init mysql database on cluster mode successfully')
-            RuntimeConfig.init_config(USE_LOCAL_DATABASE=False)
-        else:
-            raise Exception('can not init database')
 
 
 class DatabaseLock():
@@ -155,7 +151,6 @@ class Job(DataBaseModel):
     f_runtime_conf_on_party = JSONField()
     f_train_runtime_conf = JSONField(null=True)
     f_roles = JSONField()
-    f_work_mode = IntegerField(null=True)
     f_initiator_role = CharField(max_length=50, index=True)
     f_initiator_party_id = CharField(max_length=50, index=True)
     f_status = CharField(max_length=50, index=True)
@@ -319,7 +314,6 @@ class MachineLearningModelInfo(DataBaseModel):
     f_initiator_role = CharField(max_length=50, index=True)
     f_initiator_party_id = CharField(max_length=50, index=True, default=-1)
     f_runtime_conf = JSONField(default={})
-    f_work_mode = IntegerField(null=True)
     f_train_dsl = JSONField(default={})
     f_train_runtime_conf = JSONField(default={})
     f_imported = IntegerField(default=0)

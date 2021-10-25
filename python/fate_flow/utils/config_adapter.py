@@ -54,12 +54,21 @@ class JobRuntimeConfigAdapter(object):
                 self.job_runtime_conf['job_parameters'] = job_parameters.to_dict()
         return self.job_runtime_conf['job_parameters']
 
-    def get_job_work_mode(self):
-        if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
-            work_mode = self.job_runtime_conf['job_parameters'].get('common', {}).get('work_mode')
-        else:
-            work_mode = self.job_runtime_conf['job_parameters'].get('work_mode')
-        return work_mode
+    # def get_job_work_mode(self):
+    #     if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
+    #         work_mode = self.job_runtime_conf['job_parameters'].get('common', {}).get('work_mode')
+    #     else:
+    #         work_mode = self.job_runtime_conf['job_parameters'].get('work_mode')
+    #     return work_mode
+
+    def check_removed_parameter(self):
+        check_list = []
+        if self.check_backend():
+            check_list.append("backend")
+        if self.check_work_mode():
+            check_list.append("work_mode")
+        return ','.join(check_list)
+
 
     def check_backend(self):
         if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
@@ -67,6 +76,13 @@ class JobRuntimeConfigAdapter(object):
         else:
             backend = self.job_runtime_conf['job_parameters'].get('backend')
         return backend is not None
+
+    def check_work_mode(self):
+        if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
+            work_mode = self.job_runtime_conf['job_parameters'].get('common', {}).get('work_mode')
+        else:
+            work_mode = self.job_runtime_conf['job_parameters'].get('work_mode')
+        return work_mode is not None
 
     def get_job_type(self):
         if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
@@ -90,11 +106,6 @@ class JobRuntimeConfigAdapter(object):
                 self.job_runtime_conf['job_parameters']['model_version'] = model_version
         return self.job_runtime_conf
 
-    def get_job_computing_engine(self):
-        if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
-            return self.job_runtime_conf['job_parameters']['common']['computing_engine']
-        else:
-            return self.job_runtime_conf['job_parameters']['computing_engine']
 
 
 

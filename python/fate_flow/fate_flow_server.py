@@ -33,7 +33,7 @@ from fate_flow.detection.detector import Detector
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.types import ProcessRole
-from fate_flow.settings import HOST, HTTP_PORT, GRPC_PORT, WORK_MODE, _ONE_DAY_IN_SECONDS, stat_logger, GRPC_SERVER_MAX_WORKERS, detect_logger, access_logger
+from fate_flow.settings import HOST, HTTP_PORT, GRPC_PORT, _ONE_DAY_IN_SECONDS, stat_logger, GRPC_SERVER_MAX_WORKERS, detect_logger, access_logger
 from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.db.db_services import service_db
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # todo: add a general init steps?
     ConfigManager.load()
     RuntimeConfig.init_env()
-    RuntimeConfig.init_config(WORK_MODE=WORK_MODE, JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
+    RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
     RuntimeConfig.service_db = service_db()
     RuntimeConfig.service_db.register_models()
