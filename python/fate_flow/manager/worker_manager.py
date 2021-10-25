@@ -241,7 +241,7 @@ class WorkerManager:
         config_path = os.path.join(config_dir, "config.json")
         with open(config_path, 'w') as fw:
             fw.write(json_dumps(config))
-        result_path = os.path.join(log_dir, "result.json")
+        result_path = os.path.join(config_dir, "result.json")
         return config_path, result_path
 
     @classmethod

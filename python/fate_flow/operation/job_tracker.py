@@ -76,8 +76,8 @@ class Tracker(object):
 
     def save_metric_data(self, metric_namespace: str, metric_name: str, metrics: typing.List[Metric], job_level=False):
         schedule_logger(self.job_id).info(
-            'save job {} component {} on {} {} {} {} metric data'.format(self.job_id, self.component_name, self.role,
-                                                                         self.party_id, metric_namespace, metric_name))
+            'save component {} on {} {} {} {} metric data'.format(self.component_name, self.role,
+                                                                  self.party_id, metric_namespace, metric_name))
         kv = []
         for metric in metrics:
             kv.append((metric.key, metric.value))
@@ -99,8 +99,8 @@ class Tracker(object):
     def save_metric_meta(self, metric_namespace: str, metric_name: str, metric_meta: MetricMeta,
                          job_level: bool = False):
         schedule_logger(self.job_id).info(
-            'save job {} component {} on {} {} {} {} metric meta'.format(self.job_id, self.component_name, self.role,
-                                                                         self.party_id, metric_namespace, metric_name))
+            'save component {} on {} {} {} {} metric meta'.format(self.component_name, self.role,
+                                                                  self.party_id, metric_namespace, metric_name))
         self.metric_manager.insert_metrics_into_db(metric_namespace, metric_name, 0, metric_meta.to_dict().items(), job_level)
 
     @DB.connection_context()
@@ -189,7 +189,7 @@ class Tracker(object):
         output_tables_meta = {}
         if output_data_infos:
             for output_data_info in output_data_infos:
-                schedule_logger(self.job_id).info("Get task {} {} output table {} {}".format(output_data_info.f_task_id, output_data_info.f_task_version, output_data_info.f_table_namespace, output_data_info.f_table_name))
+                schedule_logger(self.job_id).info("get task {} {} output table {} {}".format(output_data_info.f_task_id, output_data_info.f_task_version, output_data_info.f_table_namespace, output_data_info.f_table_name))
                 if not tracker_client:
                     data_table_meta = storage.StorageTableMeta(name=output_data_info.f_table_name, namespace=output_data_info.f_table_namespace)
                 else:

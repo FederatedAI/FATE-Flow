@@ -177,9 +177,9 @@ class ResourceManager(object):
                         f"update engine {engine_name} record for job {job_id} resource {operation_type} on {role} {party_id} failed")
             operate_status = True
         except Exception as e:
-            schedule_logger(job_id=job_id).warning(e)
-            schedule_logger(job_id=job_id).warning(
-                f"{operation_type} job {job_id} resource(cores {cores} memory {memory}) on {role} {party_id} failed")
+            schedule_logger(job_id).warning(e)
+            schedule_logger(job_id).warning(
+                f"{operation_type} job resource(cores {cores} memory {memory}) on {role} {party_id} failed")
             operate_status = False
         finally:
             remaining_cores, remaining_memory = cls.get_remaining_resource(EngineRegistry,
@@ -187,8 +187,8 @@ class ResourceManager(object):
                                                                                EngineRegistry.f_engine_type == EngineType.COMPUTING,
                                                                                EngineRegistry.f_engine_name == engine_name])
             operate_msg = "successfully" if operate_status else "failed"
-            schedule_logger(job_id=job_id).info(
-                f"{operation_type} job {job_id} resource(cores {cores} memory {memory}) on {role} {party_id} {operate_msg}, remaining cores: {remaining_cores} remaining memory: {remaining_memory}")
+            schedule_logger(job_id).info(
+                f"{operation_type} job resource(cores {cores} memory {memory}) on {role} {party_id} {operate_msg}, remaining cores: {remaining_cores} remaining memory: {remaining_memory}")
             return operate_status
 
     @classmethod
@@ -288,7 +288,7 @@ class ResourceManager(object):
     @classmethod
     def resource_for_task(cls, task_info, operation_type):
         cores_per_task, memory_per_task = cls.calculate_task_resource(task_info=task_info)
-        schedule_logger(job_id=task_info["job_id"]).info(f"cores_per_task:{cores_per_task}, memory_per_task:{memory_per_task}")
+        schedule_logger(task_info["job_id"]).info(f"cores_per_task:{cores_per_task}, memory_per_task:{memory_per_task}")
         if cores_per_task or memory_per_task:
             filters, updates = cls.update_resource_sql(resource_model=Job,
                                                        cores=cores_per_task,
@@ -304,11 +304,11 @@ class ResourceManager(object):
         else:
             operate_status = True
         if operate_status:
-            schedule_logger(job_id=task_info["job_id"]).info(
+            schedule_logger(task_info["job_id"]).info(
                 "task {} {} {} resource successfully".format(task_info["task_id"],
                                                              task_info["task_version"], operation_type))
         else:
-            schedule_logger(job_id=task_info["job_id"]).warning(
+            schedule_logger(task_info["job_id"]).warning(
                 "task {} {} {} resource failed".format(task_info["task_id"],
                                                        task_info["task_version"], operation_type))
         return operate_status

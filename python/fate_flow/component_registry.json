@@ -12,7 +12,7 @@
       "feature_vector": "feature.sparse_vector.SparseVector",
       "model": "protobuf.generated",
       "model_migrate": "protobuf.model_migrate.model_migrate",
-      "homo_model_converter": "protobuf.homo_model_converter"
+      "homo_model_convert": "protobuf.homo_model_convert.homo_model_convert"
     }
   }
 }

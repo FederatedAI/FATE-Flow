@@ -235,6 +235,9 @@ class PipelinedModel(Locker):
     def get_model_migrate_tool(self):
         return provider_utils.get_provider_class_object(RuntimeConfig.COMPONENT_PROVIDER, "model_migrate", True)
 
+    def get_homo_model_convert_tool(self):
+        return provider_utils.get_provider_class_object(RuntimeConfig.COMPONENT_PROVIDER, "homo_model_convert", True)
+
     def exists(self):
         return os.path.isdir(self.model_path) and set(os.listdir(self.model_path)) - {'.lock'}
 

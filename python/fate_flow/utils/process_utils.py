@@ -174,20 +174,20 @@ def is_task_executor_process(task: Task, process: psutil.Process):
 def kill_task_executor_process(task: Task, only_child=False):
     try:
         if not task.f_run_pid:
-            schedule_logger(task.f_job_id).info("job {} task {} {} {} with {} party status no process pid".format(
-                task.f_job_id, task.f_task_id, task.f_role, task.f_party_id, task.f_party_status))
+            schedule_logger(task.f_job_id).info("task {} {} {} with {} party status no process pid".format(
+                task.f_task_id, task.f_role, task.f_party_id, task.f_party_status))
             return KillProcessRetCode.NOT_FOUND
         pid = int(task.f_run_pid)
-        schedule_logger(task.f_job_id).info("try to stop job {} task {} {} {} with {} party status process pid:{}".format(
-            task.f_job_id, task.f_task_id, task.f_role, task.f_party_id, task.f_party_status, pid))
+        schedule_logger(task.f_job_id).info("try to stop task {} {} {} with {} party status process pid:{}".format(
+            task.f_task_id, task.f_role, task.f_party_id, task.f_party_status, pid))
         if not check_process(pid):
-            schedule_logger(task.f_job_id).info("can not found job {} task {} {} {} with {} party status process pid:{}".format(
-                task.f_job_id, task.f_task_id, task.f_role, task.f_party_id, task.f_party_status, pid))
+            schedule_logger(task.f_job_id).info("can not found task {} {} {} with {} party status process pid:{}".format(
+                task.f_task_id, task.f_role, task.f_party_id, task.f_party_status, pid))
             return KillProcessRetCode.NOT_FOUND
         p = psutil.Process(pid)
         if not is_task_executor_process(task=task, process=p):
-            schedule_logger(task.f_job_id).warning("this pid {} is not job {} task {} {} {} executor".format(
-                pid, task.f_job_id, task.f_task_id, task.f_role, task.f_party_id))
+            schedule_logger(task.f_job_id).warning("this pid {} is not task {} {} {} executor".format(
+                pid, task.f_task_id, task.f_role, task.f_party_id))
             return KillProcessRetCode.ERROR_PID
         for child in p.children(recursive=True):
             if check_process(pid=child.pid, task=task):
@@ -195,8 +195,8 @@ def kill_task_executor_process(task: Task, only_child=False):
         if not only_child:
             if check_process(pid, task=task):
                 p.kill()
-        schedule_logger(task.f_job_id).info("successfully stop job {} task {} {} {} process pid:{}".format(
-            task.f_job_id, task.f_task_id, task.f_role, task.f_party_id, pid))
+        schedule_logger(task.f_job_id).info("successfully stop task {} {} {} process pid:{}".format(
+            task.f_task_id, task.f_role, task.f_party_id, pid))
         return KillProcessRetCode.KILLED
     except Exception as e:
         raise e
