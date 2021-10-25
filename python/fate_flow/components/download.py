@@ -41,13 +41,11 @@ class DownloadParam(BaseParam):
         delimiter=DEFAULT_ID_DELIMITER,
         namespace="",
         name="",
-        work_mode=0,
     ):
         self.output_path = output_path
         self.delimiter = delimiter
         self.namespace = namespace
         self.name = name
-        self.work_mode = work_mode
 
     def check(self):
         return True
