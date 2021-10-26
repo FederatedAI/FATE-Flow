@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import functools
+import json
 from base64 import b64encode
 from hmac import HMAC
 from time import time
@@ -21,7 +23,11 @@ from uuid import uuid1
 
 import requests
 
+from fate_arch.common.base_utils import CustomJSONEncoder
 from fate_flow.settings import HTTP_APP_KEY, HTTP_SECRET_KEY
+
+
+requests.models.complexjson.dumps = functools.partial(json.dumps, cls=CustomJSONEncoder)
 
 
 def request(**kwargs):
