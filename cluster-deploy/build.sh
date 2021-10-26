@@ -92,8 +92,8 @@ packaging_fateboard(){
 pull_fate(){
     echo "[INFO] pull fate code start"
     cd ${source_dir}
-    fate_git_url=`grep -A 3 '"fateboard"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
-    fate_git_branch=`grep -A 3 '"fateboard"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
+    fate_git_url=`grep -A 3 '"fate"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
+    fate_git_branch=`grep -A 3 '"fate"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
     echo "[INFO] git clone fate submodule source code from ${fate_git_url} branch ${fate_git_branch}"
     cd python/component_plugins/
     if [[ -d "fate" ]];then
