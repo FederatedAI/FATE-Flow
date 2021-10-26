@@ -12,7 +12,7 @@
         "user": "fate",
         "passwd":"fate",
         "database": "experiment",
-        "name": "breast_hetero_host",
+        "name": "breast_hetero_guest",
         "auth_mechanism": "PLAIN"
     }
 }
