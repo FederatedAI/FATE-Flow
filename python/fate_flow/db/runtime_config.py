@@ -35,6 +35,8 @@ class RuntimeConfig(ReloadConfigBase):
     ENV = dict()
     COMPONENT_PROVIDER: ComponentProvider = None
 
+    SERVICE_DB = None
+
     @classmethod
     def init_config(cls, **kwargs):
         for k, v in kwargs.items():
@@ -60,3 +62,7 @@ class RuntimeConfig(ReloadConfigBase):
     @classmethod
     def set_component_provider(cls, component_provider: ComponentProvider):
         cls.COMPONENT_PROVIDER = component_provider
+
+    @classmethod
+    def set_service_db(cls, service_db):
+        cls.SERVICE_DB = service_db
