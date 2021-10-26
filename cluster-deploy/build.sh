@@ -68,6 +68,9 @@ function packaging_examples(){
 packaging_fateboard(){
     echo "[INFO] package fateboard start"
     cd ${source_dir}
+    if [[ ! -d "fateboard" ]];then
+      code_fateboard
+    fi
     cd ./fateboard
     fateboard_version=$(grep -E -m 1 -o "<version>(.*)</version>" ./pom.xml | tr -d '[\\-a-z<>//]' | awk -F "version" '{print $2}')
     echo "[INFO] fateboard version "${fateboard_version}
@@ -117,6 +120,9 @@ code_fateboard(){
 packaging_eggroll(){
     echo "[INFO] package eggroll start"
     cd ${source_dir}
+    if [[ ! -d "eggroll" ]];then
+      code_eggroll
+    fi
     cd ./eggroll
     cd ./deploy
     sh ./auto-packaging.sh
