@@ -68,6 +68,24 @@ function packaging_examples(){
 packaging_fateboard(){
     echo "[INFO] package fateboard start"
     cd ${source_dir}
+    cd ./fateboard
+    fateboard_version=$(grep -E -m 1 -o "<version>(.*)</version>" ./pom.xml | tr -d '[\\-a-z<>//]' | awk -F "version" '{print $2}')
+    echo "[INFO] fateboard version "${fateboard_version}
+    mvn clean package -DskipTests
+    mkdir -p ${package_dir}/fateboard/conf
+    mkdir -p ${package_dir}/fateboard/ssh
+    cp ./target/fateboard-${fateboard_version}.jar ${package_dir}/fateboard/
+    cp ./bin/service.sh ${package_dir}/fateboard/
+    cp ./src/main/resources/application.properties ${package_dir}/fateboard/conf/
+    cd ${package_dir}/fateboard
+    touch ./ssh/ssh.properties
+    ln -s fateboard-${fateboard_version}.jar fateboard.jar
+    echo "[INFO] package fateboard done"
+}
+
+code_fateboard(){
+    echo "[INFO] get fateboard code start"
+    cd ${source_dir}
     fateboard_git_url=`grep -A 3 '"fateboard"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
     fateboard_git_branch=`grep -A 3 '"fateboard"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
     echo "[INFO] git clone fateboard submodule source code from ${fateboard_git_url} branch ${fateboard_git_branch}"
@@ -93,23 +111,25 @@ packaging_fateboard(){
     else
         git clone ${fateboard_git_url} -b ${fateboard_git_branch} --depth=1 fateboard
     fi
-    cd ./fateboard
-    fateboard_version=$(grep -E -m 1 -o "<version>(.*)</version>" ./pom.xml | tr -d '[\\-a-z<>//]' | awk -F "version" '{print $2}')
-    echo "[INFO] fateboard version "${fateboard_version}
-    mvn clean package -DskipTests
-    mkdir -p ${package_dir}/fateboard/conf
-    mkdir -p ${package_dir}/fateboard/ssh
-    cp ./target/fateboard-${fateboard_version}.jar ${package_dir}/fateboard/
-    cp ./bin/service.sh ${package_dir}/fateboard/
-    cp ./src/main/resources/application.properties ${package_dir}/fateboard/conf/
-    cd ${package_dir}/fateboard
-    touch ./ssh/ssh.properties
-    ln -s fateboard-${fateboard_version}.jar fateboard.jar
-    echo "[INFO] package fateboard done"
+    echo "[INFO] get fateboard code done"
 }
 
 packaging_eggroll(){
     echo "[INFO] package eggroll start"
+    cd ${source_dir}
+    cd ./eggroll
+    cd ./deploy
+    sh ./auto-packaging.sh
+    mkdir -p ${package_dir}/eggroll
+    mv ${source_dir}/eggroll/eggroll.tar.gz ${package_dir}/eggroll/
+    cd ${package_dir}/eggroll/
+    tar xzf eggroll.tar.gz
+    rm -rf eggroll.tar.gz
+    echo "[INFO] package eggroll done"
+}
+
+code_eggroll(){
+    echo "[INFO] get eggroll code start"
     cd ${source_dir}
     eggroll_git_url=`grep -A 3 '"eggroll"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
     eggroll_git_branch=`grep -A 3 '"eggroll"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
@@ -136,15 +156,7 @@ packaging_eggroll(){
     else
         git clone ${eggroll_git_url} -b ${eggroll_git_branch} --depth=1 eggroll
     fi
-    cd ./eggroll
-    cd ./deploy
-    sh ./auto-packaging.sh
-    mkdir -p ${package_dir}/eggroll
-    mv ${source_dir}/eggroll/eggroll.tar.gz ${package_dir}/eggroll/
-    cd ${package_dir}/eggroll/
-    tar xzf eggroll.tar.gz
-    rm -rf eggroll.tar.gz
-    echo "[INFO] package eggroll done"
+    echo "[INFO] get eggroll code done"
 }
 
 function packaging_proxy(){
