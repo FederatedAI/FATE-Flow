@@ -118,14 +118,17 @@ class JobController(object):
             job_parameters.federated_mode = engines["federated_mode"]
 
     @classmethod
-    def set_engines(cls, job_parameters: RunParameters):
+    def set_engines(cls, job_parameters: RunParameters, engine_type=None):
         engines = engine_utils.get_engines()
-        for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
+        if not engine_type:
+            engine_type = {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}
+        for k in engine_type:
             setattr(job_parameters, f"{k}_engine", engines[k])
 
     @classmethod
     def create_common_job_parameters(cls, job_id, initiator_role, common_job_parameters: RunParameters):
         JobController.set_federated_mode(job_parameters=common_job_parameters)
+        JobController.set_engines(job_parameters=common_job_parameters, engine_type={EngineType.COMPUTING})
         JobController.fill_default_job_parameters(job_id=job_id, job_parameters=common_job_parameters)
         JobController.adapt_job_parameters(role=initiator_role, job_parameters=common_job_parameters, create_initiator_baseline=True)
 

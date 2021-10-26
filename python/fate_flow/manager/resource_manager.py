@@ -20,7 +20,6 @@ from fate_arch.common import EngineType
 from fate_arch.common import base_utils
 from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.computing import ComputingEngine
-from fate_arch.storage import StorageEngine
 from fate_arch.common import engine_utils
 from fate_flow.db.db_models import DB, EngineRegistry, Job
 from fate_flow.entity.types import ResourceOperation
@@ -193,9 +192,8 @@ class ResourceManager(object):
 
     @classmethod
     def adapt_engine_parameters(cls, role, job_parameters: RunParameters, create_initiator_baseline=False):
-        engine_name = engine_utils.get_engines().get(EngineType.COMPUTING)
         computing_engine_info = ResourceManager.get_engine_registration_info(engine_type=EngineType.COMPUTING,
-                                                                             engine_name=engine_name)
+                                                                             engine_name=job_parameters.computing_engine)
         if not job_parameters.adaptation_parameters or create_initiator_baseline:
             job_parameters.adaptation_parameters = {
                 "task_nodes": 0,
@@ -216,7 +214,7 @@ class ResourceManager(object):
             job_parameters.adaptation_parameters["if_initiator_baseline"] = False
         adaptation_parameters = job_parameters.adaptation_parameters
 
-        if engine_name in {ComputingEngine.STANDALONE, ComputingEngine.EGGROLL}:
+        if job_parameters.computing_engine in {ComputingEngine.STANDALONE, ComputingEngine.EGGROLL}:
             adaptation_parameters["task_nodes"] = computing_engine_info.f_nodes
             if int(job_parameters.eggroll_run.get("eggroll.session.processors.per.node", 0)) > 0:
                 adaptation_parameters["task_cores_per_node"] = int(job_parameters.eggroll_run["eggroll.session.processors.per.node"])
@@ -225,7 +223,7 @@ class ResourceManager(object):
             if not create_initiator_baseline:
                 # set the adaptation parameters to the actual engine operation parameters
                 job_parameters.eggroll_run["eggroll.session.processors.per.node"] = adaptation_parameters["task_cores_per_node"]
-        elif engine_name == ComputingEngine.SPARK or engine_name == ComputingEngine.LINKIS_SPARK:
+        elif job_parameters.computing_engine == ComputingEngine.SPARK or job_parameters.computing_engine == ComputingEngine.LINKIS_SPARK:
             adaptation_parameters["task_nodes"] = int(job_parameters.spark_run.get("num-executors", computing_engine_info.f_nodes))
             if int(job_parameters.spark_run.get("executor-cores", 0)) > 0:
                 adaptation_parameters["task_cores_per_node"] = int(job_parameters.spark_run["executor-cores"])
