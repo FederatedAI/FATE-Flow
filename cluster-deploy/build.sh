@@ -55,6 +55,9 @@ function packaging_conf() {
 
 function packaging_python(){
     echo "[INFO] package python start"
+    if [[ ! -d "python/component_plugins/fate" ]];then
+      pull_fate
+    fi
     cp -r python ${package_dir}/
     echo "[INFO] package python done"
 }
@@ -69,7 +72,7 @@ packaging_fateboard(){
     echo "[INFO] package fateboard start"
     cd ${source_dir}
     if [[ ! -d "fateboard" ]];then
-      code_fateboard
+      pull_fateboard
     fi
     cd ./fateboard
     fateboard_version=$(grep -E -m 1 -o "<version>(.*)</version>" ./pom.xml | tr -d '[\\-a-z<>//]' | awk -F "version" '{print $2}')
@@ -86,13 +89,46 @@ packaging_fateboard(){
     echo "[INFO] package fateboard done"
 }
 
-code_fateboard(){
+pull_fate(){
+    echo "[INFO] pull fate code start"
+    cd ${source_dir}
+    fate_git_url=`grep -A 3 '"fateboard"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
+    fate_git_branch=`grep -A 3 '"fateboard"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
+    echo "[INFO] git clone fate submodule source code from ${fate_git_url} branch ${fate_git_branch}"
+    cd python/component_plugins/
+    if [[ -d "fate" ]];then
+        while [[ true ]];do
+            read -p "The fate directory already exists, delete and re-download? [y/n] " input
+            case ${input} in
+            [yY]*)
+                    echo "[INFO] delete the original fate"
+                    rm -rf fateboard
+                    git clone ${fate_git_url} -b ${fate_git_branch} --depth=1 fate
+                    break
+                    ;;
+            [nN]*)
+                    echo "[INFO] use the original fate"
+                    break
+                    ;;
+            *)
+                    echo "just enter y or n, please."
+                    ;;
+            esac
+        done
+    else
+        git clone ${fate_git_url} -b ${fate_git_branch} --depth=1 fate
+    fi
+    echo "[INFO] pull fate code done"
+    cd ${source_dir}
+}
+
+pull_fateboard(){
     echo "[INFO] get fateboard code start"
     cd ${source_dir}
     fateboard_git_url=`grep -A 3 '"fateboard"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
     fateboard_git_branch=`grep -A 3 '"fateboard"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
     echo "[INFO] git clone fateboard submodule source code from ${fateboard_git_url} branch ${fateboard_git_branch}"
-    if [[ -e "fateboard" ]];then
+    if [[ -d "fateboard" ]];then
         while [[ true ]];do
             read -p "The fateboard directory already exists, delete and re-download? [y/n] " input
             case ${input} in
@@ -121,7 +157,7 @@ packaging_eggroll(){
     echo "[INFO] package eggroll start"
     cd ${source_dir}
     if [[ ! -d "eggroll" ]];then
-      code_eggroll
+      pull_eggroll
     fi
     cd ./eggroll
     cd ./deploy
@@ -134,13 +170,13 @@ packaging_eggroll(){
     echo "[INFO] package eggroll done"
 }
 
-code_eggroll(){
+pull_eggroll(){
     echo "[INFO] get eggroll code start"
     cd ${source_dir}
     eggroll_git_url=`grep -A 3 '"eggroll"' .gitmodules | grep 'url' | awk -F '= ' '{print $2}'`
     eggroll_git_branch=`grep -A 3 '"eggroll"' .gitmodules | grep 'branch' | awk -F '= ' '{print $2}'`
     echo "[INFO] git clone eggroll submodule source code from ${eggroll_git_url} branch ${eggroll_git_branch}"
-    if [[ -e "eggroll" ]];then
+    if [[ -d "eggroll" ]];then
         while [[ true ]];do
             read -p "the eggroll directory already exists, delete and re-download? [y/n] " input
             case ${input} in
