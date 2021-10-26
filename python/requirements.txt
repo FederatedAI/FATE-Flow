@@ -1,4 +1,4 @@
-apsw==3.9.2.post1
+apsw<3.10
 beautifultable==1.0.0
 cachetools==3.0.0
 cloudpickle==0.6.1
