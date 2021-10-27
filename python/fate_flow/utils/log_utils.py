@@ -17,30 +17,29 @@ import typing
 import traceback
 
 from fate_arch.common.log import LoggerFactory, getLogger
-from fate_flow.db.db_models import Job, Task
 
 
-def ready_log(msg, job: Job = None, task: Task = None, role=None, party_id=None, detail=None):
+def ready_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
     prefix, suffix = base_msg(job, task, role, party_id, detail)
     return f"{prefix}{msg} ready{suffix}"
 
 
-def start_log(msg, job: Job = None, task: Task = None, role=None, party_id=None, detail=None):
+def start_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
     prefix, suffix = base_msg(job, task, role, party_id, detail)
     return f"{prefix}start to {msg}{suffix}"
 
 
-def successful_log(msg, job: Job = None, task: Task = None, role=None, party_id=None, detail=None):
+def successful_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
     prefix, suffix = base_msg(job, task, role, party_id, detail)
     return f"{prefix}{msg} successfully{suffix}"
 
 
-def failed_log(msg, job: Job = None, task: Task = None, role=None, party_id=None, detail=None):
+def failed_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
     prefix, suffix = base_msg(job, task, role, party_id, detail)
     return f"{prefix}failed to {msg}{suffix}"
 
 
-def base_msg(job: Job = None, task: Task = None, role: str = None, party_id: typing.Union[str, int] = None, detail=None):
+def base_msg(job=None, task=None, role: str = None, party_id: typing.Union[str, int] = None, detail=None):
     if detail:
         detail_msg = f" detail: \n{detail}"
     else:

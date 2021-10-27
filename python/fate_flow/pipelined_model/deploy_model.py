@@ -123,7 +123,6 @@ def deploy(config_data):
         model_info['size'] = deploy_model.calculate_model_file_size()
         model_info['role'] = local_role
         model_info['party_id'] = local_party_id
-        model_info['work_mode'] = adapter.get_job_work_mode()
         model_info['parent'] = False if model_info.get('f_inference_dsl') else True
         if compare_version(model_info['f_fate_version'], '1.5.0') == 'eq':
             model_info['roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})

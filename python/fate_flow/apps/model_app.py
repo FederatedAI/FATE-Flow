@@ -24,7 +24,7 @@ from datetime import date, datetime
 import peewee
 from flask import Response, request, send_file
 
-from fate_arch.common import FederatedMode, WorkMode
+from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.conf_utils import get_base_config
 from fate_arch.common.file_utils import get_project_base_directory
@@ -38,7 +38,7 @@ from fate_flow.entity import JobConfigurationBase
 from fate_flow.entity.types import ModelOperation, TagOperation
 from fate_flow.pipelined_model import deploy_model, migrate_model, pipelined_model, publish_model
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
-from fate_flow.settings import TEMP_DIRECTORY, stat_logger
+from fate_flow.settings import TEMP_DIRECTORY, stat_logger, IS_STANDALONE
 from fate_flow.utils import detect_utils, job_utils, model_utils, schedule_utils
 from fate_flow.utils.api_utils import error_response, federated_api, get_json_result
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
@@ -78,9 +78,9 @@ def load_model():
     load_status_msg = 'success'
     load_status_info['detail'] = {}
     if "federated_mode" not in request_config['job_parameters']:
-        if request_config["job_parameters"]["work_mode"] == WorkMode.STANDALONE:
+        if IS_STANDALONE:
             request_config['job_parameters']["federated_mode"] = FederatedMode.SINGLE
-        elif request_config["job_parameters"]["work_mode"] == WorkMode.CLUSTER:
+        else:
             request_config['job_parameters']["federated_mode"] = FederatedMode.MULTIPLE
     for role_name, role_partys in request_config.get("role").items():
         if role_name == 'arbiter':
@@ -369,7 +369,6 @@ def operate_model(model_operation):
                             model_info['roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
                             model_info['initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
                             model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get( 'initiator', {}).get('party_id')
-                            model_info['work_mode'] = adapter.get_job_work_mode()
                             model_info['parent'] = False if model_info.get('f_inference_dsl') else True
                         model_utils.save_model_info(model_info)
                     else:
@@ -675,9 +674,6 @@ def deploy():
 
         deploy_status_info[role_name] = deploy_status_info.get(role_name, {})
         deploy_status_info['detail'][role_name] = {}
-        adapter = JobRuntimeConfigAdapter(value.get("f_train_runtime_conf", {}))
-        work_mode = adapter.get_job_work_mode()
-
         for _party_id in role_partys:
             request_data['local'] = {'role': role_name, 'party_id': _party_id}
             try:
@@ -688,7 +684,7 @@ def deploy():
                                          dest_party_id=_party_id,
                                          src_role=initiator_role,
                                          json_body=request_data,
-                                         federated_mode=FederatedMode.MULTIPLE if work_mode else FederatedMode.SINGLE)
+                                         federated_mode=FederatedMode.MULTIPLE if not IS_STANDALONE else FederatedMode.SINGLE)
                 deploy_status_info[role_name][_party_id] = response['retcode']
                 detail = {_party_id: {}}
                 detail[_party_id]['retcode'] = response['retcode']

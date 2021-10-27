@@ -73,6 +73,7 @@ class JobController(object):
             data_authentication_check(src_role=job_info.get('src_role'), src_party_id=job_info.get('src_party_id'),
                                       src_user=src_user, dest_user=dest_user, dataset_list=dataset_list)
         job_parameters = RunParameters(**job_parameters.get(role, {}).get(party_id, {}))
+        JobController.set_engines(job_parameters=job_parameters)
 
         # save new job into db
         if role == job_info["initiator_role"] and party_id == job_info["initiator_party_id"]:
@@ -111,21 +112,23 @@ class JobController(object):
         return {"components": initialized_result}
 
     @classmethod
-    def get_job_engines(cls, job_parameters: RunParameters):
-        options = {}
-        for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
-            options[k] = getattr(job_parameters, f"{k}_engine", None)
-        engines = engine_utils.get_engines(
-            work_mode=job_parameters.work_mode,
-            options=options
-        )
-        for k in {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}:
+    def set_federated_mode(cls, job_parameters: RunParameters):
+        if not job_parameters.federated_mode:
+            engines = engine_utils.get_engines()
+            job_parameters.federated_mode = engines["federated_mode"]
+
+    @classmethod
+    def set_engines(cls, job_parameters: RunParameters, engine_type=None):
+        engines = engine_utils.get_engines()
+        if not engine_type:
+            engine_type = {EngineType.COMPUTING, EngineType.FEDERATION, EngineType.STORAGE}
+        for k in engine_type:
             setattr(job_parameters, f"{k}_engine", engines[k])
-        job_parameters.federated_mode = engines["federated_mode"]
 
     @classmethod
     def create_common_job_parameters(cls, job_id, initiator_role, common_job_parameters: RunParameters):
-        JobController.get_job_engines(job_parameters=common_job_parameters)
+        JobController.set_federated_mode(job_parameters=common_job_parameters)
+        JobController.set_engines(job_parameters=common_job_parameters, engine_type={EngineType.COMPUTING})
         JobController.fill_default_job_parameters(job_id=job_id, job_parameters=common_job_parameters)
         JobController.adapt_job_parameters(role=initiator_role, job_parameters=common_job_parameters, create_initiator_baseline=True)
 
@@ -485,8 +488,6 @@ class JobController(object):
         pipeline.parent = True
         pipeline.loaded_times = 0
         pipeline.roles = json_dumps(roles, byte=True)
-        if job_parameters.get("work_mode") is not None:
-            pipeline.work_mode = job_parameters.get("work_mode")
         pipeline.initiator_role = initiator_role
         pipeline.initiator_party_id = initiator_party_id
         pipeline.runtime_conf_on_party = json_dumps(

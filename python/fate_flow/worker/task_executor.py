@@ -117,8 +117,7 @@ class TaskExecutor(BaseTaskWorker):
             flow_feeded_parameters = {"output_data_name": task_output_dsl.get("data")}
 
             # init environment, process is shared globally
-            RuntimeConfig.init_config(WORK_MODE=job_parameters.work_mode,
-                                      COMPUTING_ENGINE=job_parameters.computing_engine,
+            RuntimeConfig.init_config(COMPUTING_ENGINE=job_parameters.computing_engine,
                                       FEDERATION_ENGINE=job_parameters.federation_engine,
                                       FEDERATED_MODE=job_parameters.federated_mode)
 
@@ -191,7 +190,6 @@ class TaskExecutor(BaseTaskWorker):
                 persistent_table_namespace, persistent_table_name = tracker.save_output_data(
                     computing_table=data,
                     output_storage_engine=job_parameters.storage_engine,
-                    output_storage_address=job_parameters.engines_address.get(EngineType.STORAGE, {}),
                     token={"username": user_name})
                 if persistent_table_namespace and persistent_table_name:
                     tracker.log_output_data_info(data_name=data_name,

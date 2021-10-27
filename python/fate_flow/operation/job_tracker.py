@@ -120,7 +120,7 @@ class Tracker(object):
             view_data[k] = v
         return view_data
 
-    def save_output_data(self, computing_table, output_storage_engine, output_storage_address: dict,
+    def save_output_data(self, computing_table, output_storage_engine, output_storage_address=None,
                          output_table_namespace=None, output_table_name=None, schema=None, token=None, need_read=True):
         if computing_table:
             if not output_table_namespace or not output_table_name:
@@ -130,11 +130,6 @@ class Tracker(object):
                                                                                   output_table_name))
 
             schedule_logger(self.job_id).info('output data table partitions is {}'.format(computing_table.partitions))
-
-            if output_storage_engine == StorageEngine.HDFS:
-                output_storage_address.update({"path": default_output_fs_path(name=output_table_name, namespace=output_table_namespace, prefix=output_storage_address.get("path_prefix"))})
-            if output_storage_engine == StorageEngine.LOCALFS:
-                output_storage_address.update({"path": default_output_fs_path(name=output_table_name, namespace=output_table_namespace, storage_engine=StorageEngine.LOCALFS)})
             part_of_limit = JobDefaultConfig.output_data_summary_count_limit
             part_of_data = []
             if need_read:
