@@ -194,7 +194,7 @@ def save_model_info(model_info):
     except Exception as e:
         raise Exception("Create {} failed:\n{}".format(MLModel, e))
 
-    RuntimeConfig.service_db.register_model(gen_party_model_id(
+    RuntimeConfig.SERVICE_DB.register_model(gen_party_model_id(
         role=model.f_role, party_id=model.f_party_id, model_id=model.f_model_id
     ), model.f_model_version)
 
@@ -242,14 +242,14 @@ def check_if_deployed(role, party_id, model_id, model_version):
     pipeline_model = PipelinedModel(model_id=party_model_id, model_version=model_version)
     if not pipeline_model.exists():
         raise Exception(f"Model {party_model_id} {model_version} not exists in model local cache.")
-    else:
-        pipeline = pipeline_model.read_pipeline_model()
-        if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
-            train_runtime_conf = json_loads(pipeline.train_runtime_conf)
-            if str(train_runtime_conf.get('dsl_version', '1')) != '1':
-                if pipeline.parent:
-                    return False
-        return True
+
+    pipeline = pipeline_model.read_pipeline_model()
+    if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
+        train_runtime_conf = json_loads(pipeline.train_runtime_conf)
+        if str(train_runtime_conf.get('dsl_version', '1')) != '1':
+            if pipeline.parent:
+                return False
+    return True
 
 
 @DB.connection_context()
