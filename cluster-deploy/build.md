@@ -13,23 +13,24 @@
 
 ## 3. Build
 ```bash
-git clone https://github.com/FederatedAI/FATE.git -b v1.5.0 --depth=1
-cd FATE/cluster-deploy
+git clone https://github.com/FederatedAI/FATE-Flow.git -b $branch --recurse-submodules --depth=1
+cd FATE-Flow/cluster-deploy
 bash build.sh release all
 ```
+Please set the **branch**.
 The **depth** parameter represents the code that only gets the latest commit, which can speed up the clone.
 The **release** is the version tag, which you can modify.
 The **all** means that modules needs to be deployed, all means all, supports all, python, fateboard, eggroll
 
 ## 4. Output
 ```bash
-ls -l FATE_install_1.5.0-release.tar.gz
+ls -l FATE_install_$version-release.tar.gz
 ```
 
 ## 5. Check packages
 ```bash
-tar xzf FATE_install_1.5.0-release.tar.gz
-ls -lrt FATE_install_1.5.0
+tar xzf FATE_install_$version-release.tar.gz
+ls -lrt FATE_install_$version
 ```
 You can see the following package:
 - bin.tar.gz
@@ -55,3 +56,5 @@ You can see the following package:
 | python.tar.gz | include federatedml and fate flow|
 | RELEASE.md | release document|
 | requirements.txt | necessary dependency for python environment|
+
+## 6. Make python requirements package
