@@ -133,6 +133,8 @@ def deploy(config_data):
         for component_name, component in inference_dsl.get('components', {}).items():
             step_index = components_checkpoint.get(component_name, {}).get('step_index')
             step_name = components_checkpoint.get(component_name, {}).get('step_name')
+            if step_index is not None:
+                step_index = int(step_index)
 
             checkpoint_manager = CheckpointManager(
                 role=local_role, party_id=local_party_id,
