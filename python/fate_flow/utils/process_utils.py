@@ -52,6 +52,8 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
                 subprocess_env[name] = subprocess_env.get(name, "") + f":{value}"
             else:
                 subprocess_env[name] = value
+    if "CLASSPATH" in subprocess_env:
+        del subprocess_env["CLASSPATH"]
     p = subprocess.Popen(process_cmd,
                          stdout=std,
                          stderr=std,
