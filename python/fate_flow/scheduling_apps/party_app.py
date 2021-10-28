@@ -99,7 +99,8 @@ def update_parameters(job_id, role, party_id):
 
 @manager.route('/<job_id>/<role>/<party_id>/status/<status>', methods=['POST'])
 def job_status(job_id, role, party_id, status):
-    job_info = {}
+    job_info = request.json
+    # some value of job_info is initiator, should be updated
     job_info.update({
         "job_id": job_id,
         "role": role,
