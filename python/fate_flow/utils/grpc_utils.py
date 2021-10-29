@@ -88,12 +88,12 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
                 "retmsg": str(e)
             }
             return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)
-        param = bytes.decode(bytes(json_dumps(param_dict), 'utf-8'))
+        # param = bytes.decode(bytes(json_dumps(param_dict), 'utf-8'))
 
         audit_logger(job_id).info('rpc receive: {}'.format(packet))
         audit_logger(job_id).info("rpc receive: {} {}".format(get_url(_suffix), param))
 
-        resp = request(method=method, url=get_url(_suffix), data=param, headers=HEADERS)
+        resp = request(method=method, url=get_url(_suffix), json=param_dict, headers=HEADERS)
         resp_json = resp.json()
 
         return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)
