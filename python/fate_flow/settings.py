@@ -42,7 +42,10 @@ MAX_TIMESTAMP_INTERVAL = 60
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
 
 USE_REGISTRY = get_base_config("use_registry")
+
+# distribution
 DEPENDENT_DISTRIBUTION = get_base_config("dependent_distribution", False)
+FATE_FLOW_UPDATE_CHECK = False
 
 HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")

@@ -503,6 +503,7 @@ class DependenciesStorageMeta(DataBaseModel):
     f_version = CharField(max_length=10, index=True)
     f_storage_path = CharField(max_length=256, null=True)
     f_snapshot_time = BigIntegerField(null=True)
+    f_fate_flow_snapshot_time = BigIntegerField(null=True)
     f_dependencies_conf = JSONField(null=True)
     f_upload_status = BooleanField(default=False)
     f_pid = IntegerField(null=True)

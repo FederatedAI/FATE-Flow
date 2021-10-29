@@ -77,6 +77,7 @@ class DependenceUpload(BaseWorker):
                 "fate_arch": file_utils.get_python_base_directory("fate_arch"),
                 "conf": file_utils.get_project_base_directory("conf")
             }
+            fate_flow_snapshot_time = DependenceRegistry.get_modify_time(fate_code_dependencies["fate_flow"])
             fate_code_base_dir = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "fate_code", "python")
             if not os.path.exists(fate_code_base_dir):
                 for key, path in fate_code_dependencies.items():
@@ -110,6 +111,7 @@ class DependenceUpload(BaseWorker):
                 "f_version": provider.version,
                 "f_storage_path": storage_path,
                 "f_snapshot_time": snapshot_time,
+                "f_fate_flow_snapshot_time": fate_flow_snapshot_time if dependence_type == FateDependenceName.Fate_Source_Code.value else None,
                 "f_dependencies_conf": {"archives": "#".join([storage_path, dependence_type])},
                 "f_upload_status": False,
                 "f_pid": 0

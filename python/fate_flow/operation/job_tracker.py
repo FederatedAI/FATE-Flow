@@ -129,7 +129,6 @@ class Tracker(object):
                 'persisting the component output temporary table to {} {}'.format(output_table_namespace,
                                                                                   output_table_name))
 
-            schedule_logger(self.job_id).info('output data table partitions is {}'.format(computing_table.partitions))
             part_of_limit = JobDefaultConfig.output_data_summary_count_limit
             part_of_data = []
             if need_read:
