@@ -92,12 +92,6 @@ class Reader(ComponentBase):
             computing_engine=self.job_parameters.computing_engine,
             output_storage_address=output_storage_address,
         )
-        session_id = job_utils.generate_session_id(
-            self.tracker.task_id,
-            self.tracker.task_version,
-            self.tracker.role,
-            self.tracker.party_id,
-        )
         sess = Session.get_global()
 
         input_table = sess.get_table(

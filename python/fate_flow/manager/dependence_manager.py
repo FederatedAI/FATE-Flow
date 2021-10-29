@@ -7,7 +7,7 @@ from fate_flow.entity.types import FateDependenceName, ComponentProviderName, Fa
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
-from fate_flow.settings import DEPENDENT_DISTRIBUTION
+from fate_flow.settings import DEPENDENT_DISTRIBUTION, FATE_FLOW_UPDATE_CHECK
 from fate_flow.utils import schedule_utils
 
 
@@ -58,11 +58,17 @@ class DependenceManager:
                         need_upload = True
                         upload_total += 1
 
-                    elif dependence_type == FateDependenceName.Fate_Source_Code.value and provider.name == ComponentProviderName.FATE_ALGORITHM.value:
-                        if DependenceRegistry.get_modify_time(provider.path) !=\
-                                dependencies_storage_info.f_snapshot_time:
-                            need_upload = True
-                            upload_total += 1
+                    elif dependence_type == FateDependenceName.Fate_Source_Code.value:
+                        if provider.name == ComponentProviderName.FATE_ALGORITHM.value:
+                            if DependenceRegistry.get_modify_time(provider.path) !=\
+                                    dependencies_storage_info.f_snapshot_time:
+                                need_upload = True
+                                upload_total += 1
+                        elif provider.name == ComponentProviderName.FATE_FLOW_TOOLS.value and FATE_FLOW_UPDATE_CHECK:
+                            if DependenceRegistry.get_modify_time(provider.path) !=\
+                                    dependencies_storage_info.f_fate_flow_snapshot_time:
+                                need_upload = True
+                                upload_total += 1
                 else:
                     need_upload = True
                     upload_total += 1
