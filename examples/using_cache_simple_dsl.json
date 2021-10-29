@@ -20,7 +20,7 @@
                 "model": ["dataio"]
             },
 			"need_deploy": true
-         },
+        },
         "cache_loader_0": {
             "module": "CacheLoader",
             "output": {

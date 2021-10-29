@@ -195,13 +195,30 @@ def do_migrate_model():
 @manager.route('/load/do', methods=['POST'])
 def do_load_model():
     request_data = request.json
-    request_data['servings'] = RuntimeConfig.service_db.get_urls('servings')
+    request_data['servings'] = RuntimeConfig.SERVICE_DB.get_urls('servings')
 
     role = request_data['local']['role']
     party_id = request_data['local']['party_id']
     model_id = request_data['job_parameters']['model_id']
     model_version = request_data['job_parameters']['model_version']
     party_model_id = model_utils.gen_party_model_id(model_id, role, party_id)
+
+    if get_base_config('enable_model_store', False):
+        pipeline_model = pipelined_model.PipelinedModel(party_model_id, model_version)
+
+        component_parameters = {
+            'model_id': party_model_id,
+            'model_version': model_version,
+            'store_address': ServiceRegistry.MODEL_STORE_ADDRESS,
+        }
+        model_storage = get_model_storage(component_parameters)
+
+        if pipeline_model.exists() and not model_storage.exists(**component_parameters):
+            stat_logger.info(f'Uploading {pipeline_model.model_path} to model storage.')
+            model_storage.store(**component_parameters)
+        elif not pipeline_model.exists() and model_storage.exists(**component_parameters):
+            stat_logger.info(f'Downloading {pipeline_model.model_path} from model storage.')
+            model_storage.restore(**component_parameters)
 
     if not model_utils.check_if_deployed(role, party_id, model_id, model_version):
         return get_json_result(retcode=100,
@@ -212,42 +229,15 @@ def do_load_model():
     try:
         if not retcode:
             with DB.connection_context():
-                model = MLModel.get_or_none(MLModel.f_role == request_data.get("local").get("role"),
-                                            MLModel.f_party_id == request_data.get("local").get("party_id"),
-                                            MLModel.f_model_id == request_data.get("job_parameters").get("model_id"),
-                                            MLModel.f_model_version == request_data.get("job_parameters").get("model_version"))
+                model = MLModel.get_or_none(MLModel.f_role == request_data["local"]["role"],
+                                            MLModel.f_party_id == request_data["local"]["party_id"],
+                                            MLModel.f_model_id == request_data["job_parameters"]["model_id"],
+                                            MLModel.f_model_version == request_data["job_parameters"]["model_version"])
                 if model:
-                    count = model.f_loaded_times
-                    model.f_loaded_times = count + 1
+                    model.f_loaded_times += 1
                     model.save()
     except Exception as modify_err:
         stat_logger.exception(modify_err)
-
-    try:
-        src_model_path = os.path.join(get_project_base_directory(), 'model_local_cache',
-                                      party_model_id, model_version)
-        if get_base_config('enable_model_store', False):
-            component_parameters = {
-                'model_id': party_model_id,
-                'model_version': model_version,
-                'store_address': ServiceRegistry.MODEL_STORE_ADDRESS,
-            }
-            model_storage = get_model_storage(component_parameters)
-
-            if os.path.isdir(src_model_path):
-                if not model_storage.exists(**component_parameters):
-                    stat_logger.info(f'Uploading {src_model_path} to model storage.')
-                    model_storage.store(**component_parameters)
-            else:
-                stat_logger.info(f'Downloading {src_model_path} from model storage.')
-                model_storage.restore(**component_parameters)
-
-        dst_model_path = os.path.join(get_project_base_directory(), 'loaded_model_backup',
-                                      party_model_id, model_version)
-        if not os.path.isdir(dst_model_path):
-            shutil.copytree(src_model_path, dst_model_path)
-    except Exception as copy_err:
-        stat_logger.exception(copy_err)
 
     operation_record(request_data, "load", "success" if not retcode else "failed")
     return get_json_result(retcode=retcode, retmsg=retmsg)
@@ -282,7 +272,7 @@ def bind_model_service():
                                           "Please check if the model version is valid.".format(request_config.get('job_id')))
     if not request_config.get('servings'):
         # get my party all servings
-        request_config['servings'] = RuntimeConfig.service_db.get_urls('servings')
+        request_config['servings'] = RuntimeConfig.SERVICE_DB.get_urls('servings')
     service_id = request_config.get('service_id')
     if not service_id:
         return get_json_result(retcode=101, retmsg='no service id')

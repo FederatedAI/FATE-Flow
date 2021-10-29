@@ -50,9 +50,12 @@ class JobSaver(object):
             schedule_logger(job_info["job_id"]).info("update job status successfully")
             if EndStatus.contains(job_info.get("status")):
                 new_job_info = {}
-                for k in ["job_id", "role", "party_id"]:
-                    new_job_info[k] = job_info[k]
-                new_job_info["tag"] = "job_end"
+                # only update tag
+                for k in ["job_id", "role", "party_id", "tag"]:
+                    if k in job_info:
+                        new_job_info[k] = job_info[k]
+                if not new_job_info.get("tag"):
+                    new_job_info["tag"] = "job_end"
                 cls.update_entity_table(Job, new_job_info)
         else:
             schedule_logger(job_info["job_id"]).info("update job status does not take effect")
@@ -168,7 +171,7 @@ class JobSaver(object):
         for _ in cls.STATUS_FIELDS:
             # not allow update status fields by this function
             update_info.pop(_, None)
-        if update_info.get("tag") == "job_end" and hasattr(entity_model, "f_tag"):
+        if update_info.get("tag") in {"job_end", "submit_failed"} and hasattr(entity_model, "f_tag"):
             if obj.f_start_time:
                 update_info["end_time"] = current_timestamp()
                 update_info['elapsed'] = update_info['end_time'] - obj.f_start_time

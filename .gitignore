@@ -21,7 +21,6 @@ venv
 /worker/
 /provider_registrar/
 /model_local_cache/
-/loaded_model_backup/
 *.db
 *.whl
 /conf/local.*.yaml

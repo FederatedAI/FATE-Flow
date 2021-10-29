@@ -104,7 +104,7 @@ def deploy(config_data):
         #  save inference dsl into child model file
         parser = get_dsl_parser_by_version(2)
         parser.verify_dsl(inference_dsl, "predict")
-        inference_dsl = JobSaver.fill_job_inference_dsl(job_id=model_id, role=local_role, party_id=local_party_id, dsl_parser=parser, origin_inference_dsl=inference_dsl)
+        inference_dsl = JobSaver.fill_job_inference_dsl(job_id=model_version, role=local_role, party_id=local_party_id, dsl_parser=parser, origin_inference_dsl=inference_dsl)
         pipeline_model.inference_dsl = json_dumps(inference_dsl, byte=True)
 
         if compare_version(pipeline_model.fate_version, '1.5.0') == 'gt':
@@ -133,6 +133,8 @@ def deploy(config_data):
         for component_name, component in inference_dsl.get('components', {}).items():
             step_index = components_checkpoint.get(component_name, {}).get('step_index')
             step_name = components_checkpoint.get(component_name, {}).get('step_name')
+            if step_index is not None:
+                step_index = int(step_index)
 
             checkpoint_manager = CheckpointManager(
                 role=local_role, party_id=local_party_id,

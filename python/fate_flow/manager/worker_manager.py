@@ -136,8 +136,8 @@ class WorkerManager:
                     if p.returncode == 0:
                         return p.returncode, load_json_conf(result_path)
                     else:
-                        raise Exception(
-                            process_utils.get_subprocess_std(log_dir=log_dir, process_name=worker_name.value, process_id=worker_id))
+                        std_path = process_utils.get_std_path(log_dir=log_dir, process_name=worker_name.value, process_id=worker_id)
+                        raise Exception(f"run error, please check logs: {std_path}, {log_dir}/INFO.log")
                 except subprocess.TimeoutExpired as e:
                     err = failed_log(msg=f"{msg} run timeout", role=role, party_id=party_id)
                     logger.exception(err)

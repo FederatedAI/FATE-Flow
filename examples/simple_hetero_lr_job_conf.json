@@ -23,7 +23,10 @@
             "guest": {
                 "0": {
                     "reader_0": {
-                        "table": {"name": "breast_hetero_guest", "namespace": "experiment"}
+                        "table": {
+                            "name": "breast_hetero_guest",
+                            "namespace": "experiment"
+                        }
                     },
                     "dataio_0":{
                         "with_label": true,

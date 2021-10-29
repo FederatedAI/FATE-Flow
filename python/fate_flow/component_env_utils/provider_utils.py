@@ -17,6 +17,9 @@ import importlib
 import pathlib
 
 from fate_flow.entity import ComponentProvider
+from fate_flow.utils.log_utils import getLogger
+
+LOGGER = getLogger()
 
 
 def get_provider_interface(provider: ComponentProvider):
