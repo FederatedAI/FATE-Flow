@@ -29,7 +29,7 @@ fi
 
 cd ${source_dir}
 echo "[INFO] source dir: ${source_dir}"
-git submodule foreach --recursive git pull
+#git submodule foreach --recursive git pull
 version=`grep "FATE=" fate.env | awk -F '=' '{print $2}'`
 package_dir_name="FATE_install_"${version}
 package_dir=${source_dir}/cluster-deploy/${package_dir_name}
