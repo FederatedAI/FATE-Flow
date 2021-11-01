@@ -29,7 +29,7 @@ from fate_flow.utils.detect_utils import validate_request
 
 @manager.route('/add', methods=['post'])
 @manager.route('/bind', methods=['post'])
-@validate_request("engine", "address", "namespace", "name", "id_delimiter", head=(0, 1))
+@validate_request("engine", "address", "namespace", "name")
 def table_bind():
     request_data = request.json
     address_dict = request_data.get('address')
@@ -37,7 +37,8 @@ def table_bind():
     name = request_data.get('name')
     namespace = request_data.get('namespace')
     address = storage.StorageTableMeta.create_address(storage_engine=engine, address_dict=address_dict)
-    in_serialized = request_data.get("in_serialized", 1 if engine in {storage.StorageEngine.STANDALONE, storage.StorageEngine.EGGROLL, storage.StorageEngine.MYSQL} else 0)
+    in_serialized = request_data.get("in_serialized", 1 if engine in {storage.StorageEngine.STANDALONE, storage.StorageEngine.EGGROLL,
+                                                                      storage.StorageEngine.MYSQL, storage.StorageEngine.PATH} else 0)
     destroy = (int(request_data.get("drop", 0)) == 1)
     data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
     if data_table_meta:

@@ -79,11 +79,12 @@ class DependenceUpload(BaseWorker):
             }
             fate_flow_snapshot_time = DependenceRegistry.get_modify_time(fate_code_dependencies["fate_flow"])
             fate_code_base_dir = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "fate_code", "python")
-            if not os.path.exists(fate_code_base_dir):
-                for key, path in fate_code_dependencies.items():
-                    cls.copy_dir(path, os.path.join(fate_code_base_dir, key))
-                    if key == "conf":
-                        cls.move_dir(os.path.join(fate_code_base_dir, key), os.path.dirname(fate_code_base_dir))
+            if os.path.exists(os.path.dirname(fate_code_base_dir)):
+                shutil.rmtree(os.path.dirname(fate_code_base_dir))
+            for key, path in fate_code_dependencies.items():
+                cls.copy_dir(path, os.path.join(fate_code_base_dir, key))
+                if key == "conf":
+                    cls.move_dir(os.path.join(fate_code_base_dir, key), os.path.dirname(fate_code_base_dir))
             if provider.name == ComponentProviderName.FATE_ALGORITHM.value:
                 source_path = provider.path
             else:
