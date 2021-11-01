@@ -139,11 +139,6 @@ class Checkpoint(Locker):
         if self.mkdir:
             self.directory.mkdir(0o755)
 
-    def copy(self, new_directory: Path):
-        new_directory = new_directory / f'{self.step_index}#{self.step_name}'
-        with self.lock:
-            copytree(self.directory, new_directory)
-
     def to_dict(self, include_models: bool = False):
         if not include_models:
             return self.read_database()
@@ -172,7 +167,8 @@ class CheckpointManager:
         self.job_parameters = job_parameters
         self.mkdir = mkdir
 
-        self.directory = self.get_directory()
+        self.directory = (Path(get_project_base_directory()) / 'model_local_cache' /
+                          self.party_model_id / model_version / 'checkpoint' / self.component_name)
         if self.mkdir:
             self.directory.mkdir(0o755, True, True)
 
@@ -182,13 +178,6 @@ class CheckpointManager:
         elif max_to_keep is not None:
             raise TypeError('max_to_keep must be an integer')
         self.checkpoints = deque(maxlen=max_to_keep)
-
-    def get_directory(self, model_version: str = None):
-        if model_version is None:
-            model_version = self.model_version
-
-        return (Path(get_project_base_directory()) / 'model_local_cache' /
-                self.party_model_id / model_version / 'checkpoint' / self.component_name)
 
     def load_checkpoints_from_disk(self):
         checkpoints = []
@@ -261,21 +250,30 @@ class CheckpointManager:
         if self.mkdir:
             self.directory.mkdir(0o755)
 
-    def copy(self, new_model_version: str, step_index: int = None, step_name: str = None):
+    def deploy(self, new_model_version: str, step_index: int = None, step_name: str = None):
         if step_index is not None:
             checkpoint = self.get_checkpoint_by_index(step_index)
         elif step_name is not None:
             checkpoint = self.get_checkpoint_by_name(step_name)
         else:
-            checkpoint = self.latest_checkpoint
+            raise KeyError('step_index or step_name is required.')
 
         if checkpoint is None:
             raise TypeError('Checkpoint not found.')
+        # check files hash
+        checkpoint.read()
 
-        new_directory = self.get_directory(new_model_version)
-        new_directory.mkdir(0o755, True)
+        directory = Path(get_project_base_directory()) / 'model_local_cache' / self.party_model_id / new_model_version
+        target = directory / 'variables' / 'data' / self.component_name / 'model'
+        locker = Locker(directory)
 
-        checkpoint.copy(new_directory)
+        with locker.lock:
+            rmtree(target)
+            copytree(checkpoint.directory, target,
+                     ignore=lambda src, names: {i for i in names if i.startswith('.')})
+
+            for f in target.glob('*.pb'):
+                f.replace(f.with_suffix(''))
 
     def to_dict(self, include_models: bool = False):
         return [checkpoint.to_dict(include_models) for checkpoint in self.checkpoints]
