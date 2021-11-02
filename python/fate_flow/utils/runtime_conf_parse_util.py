@@ -217,7 +217,7 @@ class RuntimeConfParserUtil(object):
             if len(global_provider_msg) == 1:
                 global_provider_name = global_provider_msg[0]
             else:
-                global_provider_name, global_provider_msg = global_provider_msg
+                global_provider_name, global_provider_version = global_provider_msg
 
         for component in dsl["components"]:
             module = dsl["components"][component]["module"]

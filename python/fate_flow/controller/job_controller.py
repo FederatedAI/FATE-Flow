@@ -95,6 +95,16 @@ class JobController(object):
         # update job parameters on party
         job_info["runtime_conf_on_party"]["job_parameters"] = job_parameters.to_dict()
         JobSaver.create_job(job_info=job_info)
+        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
+                                                                  initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
+        for provider_key, group_info in provider_group.items():
+            for cpn in group_info["components"]:
+                dsl["components"][cpn]["provider"] = provider_key
+
+        roles = job_info['roles']
+        cls.initialize_job_tracker(job_id=job_id, role=role, party_id=party_id,
+                                   job_parameters=job_parameters, roles=roles, is_initiator=is_initiator, dsl_parser=dsl_parser)
+
         job_utils.save_job_conf(job_id=job_id,
                                 role=role,
                                 party_id=party_id,
@@ -103,12 +113,6 @@ class JobController(object):
                                 runtime_conf_on_party=job_info["runtime_conf_on_party"],
                                 train_runtime_conf=train_runtime_conf,
                                 pipeline_dsl=None)
-
-        initialized_result = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
-                                                  initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
-        roles = job_info['roles']
-        cls.initialize_job_tracker(job_id=job_id, role=role, party_id=party_id,
-                                   job_parameters=job_parameters, roles=roles, is_initiator=is_initiator, dsl_parser=dsl_parser)
         return {"components": initialized_result}
 
     @classmethod
@@ -254,7 +258,7 @@ class JobController(object):
     def initialize_task(cls, role, party_id, task_info: dict):
         task_info["role"] = role
         task_info["party_id"] = party_id
-        initialized_result = cls.initialize_tasks(components=[task_info["component_name"]], **task_info)
+        initialized_result, provider_group = cls.initialize_tasks(components=[task_info["component_name"]], **task_info)
         return initialized_result
 
     @classmethod
@@ -294,7 +298,7 @@ class JobController(object):
                                                           components=initialized_config["components"],
                                                           common_task_info=common_task_info,
                                                           provider_info=initialized_config["provider"])
-        return initialized_result
+        return initialized_result, provider_group
 
     @classmethod
     def initialize_task_holder_for_scheduling(cls, role, party_id, components, common_task_info, provider_info):

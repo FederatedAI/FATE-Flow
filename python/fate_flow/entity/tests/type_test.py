@@ -30,14 +30,14 @@ class TestType(unittest.TestCase):
         self.assertEqual(b.data["t1"].namespace, "test")
 
     def test2(self):
-        self.assertTrue(ComponentProviderName.valid("fate_flow_tools"))
-        self.assertFalse(ComponentProviderName.valid("fate_flow"))
-        self.assertTrue(ComponentProviderName("fate_flow_tools") in ComponentProviderName)
-        self.assertTrue(ComponentProviderName["FATE_FLOW_TOOLS"] in ComponentProviderName)
-        self.assertTrue(ComponentProviderName("fate_flow_tools") == ComponentProviderName.FATE_FLOW_TOOLS)
-        self.assertTrue(ComponentProviderName("fate_flow_tools") is ComponentProviderName.FATE_FLOW_TOOLS)
+        self.assertTrue(ComponentProviderName.valid("fate_flow"))
+        self.assertFalse(ComponentProviderName.valid("fate_flow_xx"))
+        self.assertTrue(ComponentProviderName("fate_flow") in ComponentProviderName)
+        self.assertTrue(ComponentProviderName["FATE_FLOW"] in ComponentProviderName)
+        self.assertTrue(ComponentProviderName("fate_flow") == ComponentProviderName.FATE_FLOW)
+        self.assertTrue(ComponentProviderName("fate_flow") is ComponentProviderName.FATE_FLOW)
         print(ComponentProviderName.values())
-        print(ComponentProviderName.FATE_FLOW_TOOLS)
+        print(ComponentProviderName.FATE_FLOW)
 
         self.assertTrue(0 == KillProcessRetCode.KILLED)
         self.assertTrue(KillProcessRetCode.valid(0))
