@@ -47,6 +47,18 @@ class TaskController(object):
             task_info["task_id"] = job_utils.generate_task_id(job_id=task_info["job_id"], component_name=task_info["component_name"])
         if task_info.get("task_version") is None:
             task_info["task_version"] = 0
+
+        # TODO: fix this
+        count = Task.select().where(
+            Task.f_job_id == task_info['job_id'],
+            Task.f_task_id == task_info['task_id'],
+            Task.f_task_version == task_info['task_version'],
+            Task.f_role == task_info['role'],
+            Task.f_party_id == task_info['party_id'],
+        ).count()
+        if count:
+            return False
+
         task = JobSaver.create_task(task_info=task_info)
         if task and run_on_this_party:
             job_utils.save_task_using_job_conf(task)
