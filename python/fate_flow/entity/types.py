@@ -35,9 +35,9 @@ class CustomEnum(Enum):
 
 
 class ComponentProviderName(CustomEnum):
-    FATE_ALGORITHM = "fate_algorithm"
-    AVATAR_ALGORITHM = "avatar_algorithm"
-    FATE_FLOW_TOOLS = "fate_flow_tools"
+    FATE = "fate"
+    FATE_FLOW = "fate_flow"
+    FATE_SQL = "fate_sql"
 
 
 class FateDependenceName(CustomEnum):

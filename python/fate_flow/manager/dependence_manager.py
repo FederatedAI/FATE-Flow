@@ -59,12 +59,12 @@ class DependenceManager:
                         upload_total += 1
 
                     elif dependence_type == FateDependenceName.Fate_Source_Code.value:
-                        if provider.name == ComponentProviderName.FATE_ALGORITHM.value:
+                        if provider.name == ComponentProviderName.FATE.value:
                             if DependenceRegistry.get_modify_time(provider.path) !=\
                                     dependencies_storage_info.f_snapshot_time:
                                 need_upload = True
                                 upload_total += 1
-                        elif provider.name == ComponentProviderName.FATE_FLOW_TOOLS.value and FATE_FLOW_UPDATE_CHECK:
+                        elif provider.name == ComponentProviderName.FATE_FLOW.value and FATE_FLOW_UPDATE_CHECK:
                             if DependenceRegistry.get_modify_time(provider.path) !=\
                                     dependencies_storage_info.f_fate_flow_snapshot_time:
                                 need_upload = True
@@ -94,10 +94,10 @@ class DependenceManager:
         fate_flow_version_provider_info = {}
         schedule_logger(job.f_job_id).info(f'group_info:{provider_group}')
         for group_key, group_info in provider_group.items():
-            if group_info["provider"]["name"] == ComponentProviderName.FATE_FLOW_TOOLS.value and \
+            if group_info["provider"]["name"] == ComponentProviderName.FATE_FLOW.value and \
                     group_info["provider"]["version"] not in fate_flow_version_provider_info:
                 fate_flow_version_provider_info[group_info["provider"]["version"]] = group_info["provider"]
-            if group_info["provider"]["name"] == ComponentProviderName.FATE_ALGORITHM.value and \
+            if group_info["provider"]["name"] == ComponentProviderName.FATE.value and \
                     group_info["provider"]["version"] not in version_provider_info:
                 version_provider_info[group_info["provider"]["version"]] = group_info["provider"]
             schedule_logger(job.f_job_id).info(f'version_provider_info:{version_provider_info}')

@@ -648,6 +648,9 @@ class BaseDSLParser(object):
             if provider and component in self.predict_dsl["components"]:
                 self.predict_dsl["components"][component]["provider"] = provider
 
+        if "provider" in dsl:
+            self.predict_dsl["provider"] = dsl["provider"]
+
     def _auto_deduction(self, deploy_cpns=None, version=1, erase_top_data_input=False):
         self.predict_dsl = {"components": {}}
         self.predict_components = []

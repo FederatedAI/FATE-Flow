@@ -13,27 +13,27 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_arch.common import engine_utils
-from fate_arch.computing import ComputingEngine
 from fate_arch.common import EngineType
+from fate_arch.common import engine_utils
 from fate_arch.common.base_utils import json_dumps, current_timestamp
-from fate_flow.utils.authentication_utils import data_authentication_check
-from fate_flow.utils.log_utils import schedule_logger
+from fate_arch.computing import ComputingEngine
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.entity.run_status import JobStatus, EndStatus
+from fate_flow.db.job_default_config import JobDefaultConfig
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RunParameters
+from fate_flow.entity.run_status import JobStatus, EndStatus
 from fate_flow.entity.types import InputSearchType, WorkerName
+from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
+from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.protobuf.python import pipeline_pb2
-from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.settings import USE_AUTHENTICATION, USE_DATA_AUTHENTICATION
-from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.utils import job_utils, schedule_utils, data_utils
 from fate_flow.utils.authentication_utils import authentication_check
-from fate_flow.manager.provider_manager import ProviderManager
-from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.utils.authentication_utils import data_authentication_check
+from fate_flow.utils.log_utils import schedule_logger
 
 
 class JobController(object):
@@ -73,7 +73,6 @@ class JobController(object):
             data_authentication_check(src_role=job_info.get('src_role'), src_party_id=job_info.get('src_party_id'),
                                       src_user=src_user, dest_user=dest_user, dataset_list=dataset_list)
         job_parameters = RunParameters(**job_parameters.get(role, {}).get(party_id, {}))
-        JobController.set_engines(job_parameters=job_parameters)
 
         # save new job into db
         if role == job_info["initiator_role"] and party_id == job_info["initiator_party_id"]:
@@ -89,12 +88,20 @@ class JobController(object):
         job_info["party_id"] = party_id
         job_info["is_initiator"] = is_initiator
         job_info["progress"] = 0
-        cls.fill_party_specific_parameters(role=role,
-                                           party_id=party_id,
-                                           job_parameters=job_parameters)
+        cls.create_job_parameters_on_party(role=role, party_id=party_id, job_parameters=job_parameters)
         # update job parameters on party
         job_info["runtime_conf_on_party"]["job_parameters"] = job_parameters.to_dict()
         JobSaver.create_job(job_info=job_info)
+        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
+                                                                  initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
+        for provider_key, group_info in provider_group.items():
+            for cpn in group_info["components"]:
+                dsl["components"][cpn]["provider"] = provider_key
+
+        roles = job_info['roles']
+        cls.initialize_job_tracker(job_id=job_id, role=role, party_id=party_id,
+                                   job_parameters=job_parameters, roles=roles, is_initiator=is_initiator, dsl_parser=dsl_parser)
+
         job_utils.save_job_conf(job_id=job_id,
                                 role=role,
                                 party_id=party_id,
@@ -103,12 +110,6 @@ class JobController(object):
                                 runtime_conf_on_party=job_info["runtime_conf_on_party"],
                                 train_runtime_conf=train_runtime_conf,
                                 pipeline_dsl=None)
-
-        initialized_result = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
-                                                  initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
-        roles = job_info['roles']
-        cls.initialize_job_tracker(job_id=job_id, role=role, party_id=party_id,
-                                   job_parameters=job_parameters, roles=roles, is_initiator=is_initiator, dsl_parser=dsl_parser)
         return {"components": initialized_result}
 
     @classmethod
@@ -131,6 +132,13 @@ class JobController(object):
         JobController.set_engines(job_parameters=common_job_parameters, engine_type={EngineType.COMPUTING})
         JobController.fill_default_job_parameters(job_id=job_id, job_parameters=common_job_parameters)
         JobController.adapt_job_parameters(role=initiator_role, job_parameters=common_job_parameters, create_initiator_baseline=True)
+
+    @classmethod
+    def create_job_parameters_on_party(cls, role, party_id, job_parameters: RunParameters):
+        JobController.set_engines(job_parameters=job_parameters)
+        cls.fill_party_specific_parameters(role=role,
+                                           party_id=party_id,
+                                           job_parameters=job_parameters)
 
     @classmethod
     def fill_party_specific_parameters(cls, role, party_id, job_parameters: RunParameters):
@@ -234,7 +242,7 @@ class JobController(object):
         if job_parameters:
             job_configuration.runtime_conf["job_parameters"] = job_parameters
             job_parameters = RunParameters(**job_parameters["common"])
-            cls.fill_party_specific_parameters(role=role,
+            cls.create_job_parameters_on_party(role=role,
                                                party_id=party_id,
                                                job_parameters=job_parameters)
             job_configuration.runtime_conf_on_party["job_parameters"] = job_parameters.to_dict()
@@ -254,7 +262,7 @@ class JobController(object):
     def initialize_task(cls, role, party_id, task_info: dict):
         task_info["role"] = role
         task_info["party_id"] = party_id
-        initialized_result = cls.initialize_tasks(components=[task_info["component_name"]], **task_info)
+        initialized_result, provider_group = cls.initialize_tasks(components=[task_info["component_name"]], **task_info)
         return initialized_result
 
     @classmethod
@@ -294,7 +302,7 @@ class JobController(object):
                                                           components=initialized_config["components"],
                                                           common_task_info=common_task_info,
                                                           provider_info=initialized_config["provider"])
-        return initialized_result
+        return initialized_result, provider_group
 
     @classmethod
     def initialize_task_holder_for_scheduling(cls, role, party_id, components, common_task_info, provider_info):

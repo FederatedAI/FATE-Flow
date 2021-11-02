@@ -36,6 +36,7 @@ from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils import model_utils
 from fate_flow.utils.cron import Cron
 from fate_flow.db.job_default_config import JobDefaultConfig
+from fate_flow.manager.provider_manager import ProviderManager
 
 
 class DAGScheduler(Cron):
@@ -52,7 +53,7 @@ class DAGScheduler(Cron):
             runtime_conf = deepcopy(submit_job_conf.runtime_conf)
             job_utils.check_job_runtime_conf(runtime_conf)
             authentication_utils.check_constraint(runtime_conf, dsl)
-
+            dsl = ProviderManager.fill_fate_flow_provider(dsl)
             job_initiator = runtime_conf["initiator"]
             conf_adapter = JobRuntimeConfigAdapter(runtime_conf)
             common_job_parameters = conf_adapter.get_common_parameters()
@@ -158,9 +159,9 @@ class DAGScheduler(Cron):
                 "logs_directory": logs_directory,
                 "board_url": job_utils.get_board_url(job_id, job_initiator["role"], job_initiator["party_id"])
             }
-            warn_paramete = JobRuntimeConfigAdapter(submit_job_conf.runtime_conf).check_removed_parameter()
-            if warn_paramete:
-                result["message"] = f"[WARN]{warn_paramete} is removed,it does not take effect!"
+            warn_parameter = JobRuntimeConfigAdapter(submit_job_conf.runtime_conf).check_removed_parameter()
+            if warn_parameter:
+                result["message"] = f"[WARN]{warn_parameter} is removed,it does not take effect!"
             submit_result.update(result)
             submit_result.update(path_dict)
         except Exception as e:

@@ -1,4 +1,5 @@
 {
+    "provider": "fate@1.7.0",
     "components" : {
         "reader_0": {
             "module": "Reader",
@@ -8,7 +9,7 @@
         },
         "dataio_0": {
             "module": "DataIO",
-            "provider": "fate_algorithm@1.7.0",
+            "provider": "fate@1.7.0",
             "input": {
                 "data": {
                     "data": [
