@@ -19,7 +19,7 @@ from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.utils.api_utils import get_json_result
 
 
-@manager.route('/register', methods=['POST'])
+@manager.route('/registry', methods=['POST'])
 def register_service():
     update_server = ServiceRegistry.save(request.json)
     return get_json_result(data={"update_server": update_server})
