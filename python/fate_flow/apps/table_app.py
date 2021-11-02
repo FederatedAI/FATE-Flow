@@ -161,8 +161,7 @@ def get_component_input_table(dsl_parser, job, component_name):
     component = dsl_parser.get_component_info(component_name=component_name)
     module_name = get_component_module(component_name, job.f_dsl)
     if 'reader' in module_name.lower():
-        component_parameters = component.get_role_parameters()
-        return component_parameters[job.f_role][0]['ReaderParam']
+        return job.f_runtime_conf.get("component_parameters", {}).get("role", {}).get(job.f_role, {}).get(str(job.f_roles.get(job.f_role).index(int(job.f_party_id)))).get(component_name)
     task_input_dsl = component.get_input()
     job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser=dsl_parser,
                                                            job_runtime_conf=job.f_runtime_conf, role=job.f_role,

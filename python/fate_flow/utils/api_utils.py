@@ -199,11 +199,16 @@ def proxy_api(role, _job_id, request_config):
 def forward_api(role, request_config):
     method = request_config.get('header', {}).get('method', 'post')
     endpoint = request_config.get('header', {}).get('endpoint')
-    url = "http://{}:{}{}".format(HOST, HTTP_PORT, endpoint)
+    ip = getattr(ServiceRegistry, role.upper()).get("host")
+    port = getattr(ServiceRegistry, role.upper()).get("port")
+    url = "http://{}:{}{}".format(ip, port, endpoint)
     audit_logger().info('api request: {}'.format(url))
 
     http_response = request(method=method, url=url, json=request_config.get('body'), headers=HEADERS)
-    response = http_response.json()
+    if http_response.status_code == 200:
+        response = http_response.json()
+    else:
+        response =  {"retcode": http_response.status_code, "retmsg": http_response.text}
     audit_logger().info(response)
     return response
 
