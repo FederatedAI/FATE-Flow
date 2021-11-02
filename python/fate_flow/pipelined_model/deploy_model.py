@@ -135,6 +135,9 @@ def deploy(config_data):
             step_name = components_checkpoint.get(component_name, {}).get('step_name')
             if step_index is not None:
                 step_index = int(step_index)
+                step_name = None
+            elif step_name is None:
+                continue
 
             checkpoint_manager = CheckpointManager(
                 role=local_role, party_id=local_party_id,
@@ -144,7 +147,7 @@ def deploy(config_data):
             )
             checkpoint_manager.load_checkpoints_from_disk()
             if checkpoint_manager.latest_checkpoint is not None:
-                checkpoint_manager.copy(child_model_version, step_index, step_name)
+                checkpoint_manager.deploy(child_model_version, step_index, step_name)
     except Exception as e:
         stat_logger.exception(e)
         return 100, f"deploy model of role {local_role} {local_party_id} failed, details: {str(e)}"

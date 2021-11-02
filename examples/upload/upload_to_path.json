@@ -1,9 +1,0 @@
-{
-    "file": "xxx",
-    "id_delimiter": ",",
-    "head": 1,
-    "partition": 10,
-    "namespace": "xxx",
-    "table_name": "xxx",
-    "storage_engine": "PATH"
-}
