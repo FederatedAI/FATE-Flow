@@ -72,7 +72,7 @@ class ServiceRegistry(ReloadConfigBase):
                 manager_conf.update(service_info)
             conf_utils.update_config(service_name, manager_conf)
             update_server[service_name] = manager_conf
-            setattr(cls, service_name, service_config)
+            setattr(cls, service_name, manager_conf)
         return update_server
 
     @classmethod
