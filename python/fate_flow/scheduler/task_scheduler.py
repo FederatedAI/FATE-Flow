@@ -148,6 +148,7 @@ class TaskScheduler(object):
             task.f_auto_retries = task.f_auto_retries - 1
         task.f_run_pid = None
         task.f_run_ip = None
+        # todo: FederatedScheduler.create_task and JobController.initialize_tasks will create task twice
         status_code, response = FederatedScheduler.create_task(job=job, task=task)
         if status_code != FederatedSchedulingStatusCode.SUCCESS:
             raise Exception(f"create {task.f_task_id} new version failed")
