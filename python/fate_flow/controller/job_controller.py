@@ -377,7 +377,7 @@ class JobController(object):
                                     if search_type is InputSearchType.TABLE_INFO:
                                         dataset[_role][_party_id][key] = '{}.{}'.format(_data_location['namespace'], _data_location['name'])
                                     elif search_type is InputSearchType.JOB_COMPONENT_OUTPUT:
-                                        dataset[_role][_party_id][key] = '{}.{}.{}'.format(_data_location['job_id'], _data_location['component_name'], _data_location['data'])
+                                        dataset[_role][_party_id][key] = '{}.{}.{}'.format(_data_location['job_id'], _data_location['component_name'], _data_location['data_name'])
                                     else:
                                         dataset[_role][_party_id][key] = "unknown"
         return dataset
