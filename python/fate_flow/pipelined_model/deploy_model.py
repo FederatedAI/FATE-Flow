@@ -130,7 +130,7 @@ def deploy(config_data):
             model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
         save_model_info(model_info)
 
-        for component_name, component in inference_dsl.get('components', {}).items():
+        for component_name, component in train_dsl.get('components', {}).items():
             step_index = components_checkpoint.get(component_name, {}).get('step_index')
             step_name = components_checkpoint.get(component_name, {}).get('step_name')
             if step_index is not None:
@@ -147,7 +147,13 @@ def deploy(config_data):
             )
             checkpoint_manager.load_checkpoints_from_disk()
             if checkpoint_manager.latest_checkpoint is not None:
-                checkpoint_manager.deploy(child_model_version, step_index, step_name)
+                checkpoint_manager.deploy(
+                    child_model_version,
+                    component['output']['model'][0]
+                    if component.get('output', {}).get('model') else 'default',
+                    step_index,
+                    step_name,
+                )
     except Exception as e:
         stat_logger.exception(e)
         return 100, f"deploy model of role {local_role} {local_party_id} failed, details: {str(e)}"
