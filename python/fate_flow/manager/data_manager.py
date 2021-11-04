@@ -78,7 +78,7 @@ class DataTableTracker(object):
                     parent_table_info.append({"parent_table_name": tracker.f_parent_table_name,
                                               "parent_table_namespace": tracker.f_parent_table_namespace,
                                               "source_table_name": tracker.f_source_table_name,
-                                              "source_table_namespace": tracker.f_table_namespace,
+                                              "source_table_namespace": tracker.f_source_table_namespace
                                               })
         return parent_table_info
 
