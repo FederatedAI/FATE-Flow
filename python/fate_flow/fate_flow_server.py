@@ -33,7 +33,8 @@ from fate_flow.detection.detector import Detector
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.types import ProcessRole
-from fate_flow.settings import HOST, HTTP_PORT, GRPC_PORT, _ONE_DAY_IN_SECONDS, stat_logger, GRPC_SERVER_MAX_WORKERS, detect_logger, access_logger
+from fate_flow.settings import (HOST, HTTP_PORT, GRPC_PORT, _ONE_DAY_IN_SECONDS, GRPC_SERVER_MAX_WORKERS,
+                                stat_logger, detect_logger, access_logger, database_logger)
 from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.db.db_services import service_db
@@ -76,6 +77,13 @@ if __name__ == '__main__':
     PrivilegeAuth.init()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
+
+    peewee_logger = logging.getLogger('peewee')
+    peewee_logger.propagate = False
+    # fate_arch.common.log.ROpenHandler
+    peewee_logger.addHandler(database_logger.handlers[0])
+    peewee_logger.setLevel(database_logger.level)
+
     thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)
     stat_logger.info(f"start grpc server thread pool by {thread_pool_executor._max_workers} max workers")
     server = grpc.server(thread_pool=thread_pool_executor,
@@ -86,6 +94,7 @@ if __name__ == '__main__':
     server.add_insecure_port("{}:{}".format(HOST, GRPC_PORT))
     server.start()
     stat_logger.info("FATE Flow grpc server start successfully")
+
     # start http server
     try:
         stat_logger.info("FATE Flow http server start...")
