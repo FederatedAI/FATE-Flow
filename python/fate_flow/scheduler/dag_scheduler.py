@@ -53,7 +53,6 @@ class DAGScheduler(Cron):
             runtime_conf = deepcopy(submit_job_conf.runtime_conf)
             job_utils.check_job_runtime_conf(runtime_conf)
             authentication_utils.check_constraint(runtime_conf, dsl)
-            dsl = ProviderManager.fill_fate_flow_provider(dsl)
             job_initiator = runtime_conf["initiator"]
             conf_adapter = JobRuntimeConfigAdapter(runtime_conf)
             common_job_parameters = conf_adapter.get_common_parameters()
@@ -80,6 +79,7 @@ class DAGScheduler(Cron):
                                                      model_version=common_job_parameters.model_version):
                     raise Exception(f"Model {common_job_parameters.model_id} {common_job_parameters.model_version} has not been deployed yet.")
                 dsl = json_loads(pipeline_model.inference_dsl)
+            dsl = ProviderManager.fill_fate_flow_provider(dsl)
 
             job = Job()
             job.f_job_id = job_id
