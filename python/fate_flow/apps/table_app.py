@@ -132,6 +132,22 @@ def table_api(table_func):
         return get_json_result()
 
 
+@manager.route('/tracking/source', methods=['post'])
+@validate_request("table_name", "namespace")
+def table_tracking():
+    request_info = request.json
+    data = DataTableTracker.get_parent_table(request_info.get("table_name"), request_info.get("namespace"))
+    return get_json_result(data)
+
+
+@manager.route('/tracking/job', methods=['post'])
+@validate_request("table_name", "namespace")
+def table_tracking_job():
+    request_info = request.json
+    data = DataTableTracker.track_job(request_info.get("table_name"), request_info.get("namespace"), display=True)
+    return get_json_result(data)
+
+
 def get_job_all_table(job):
     dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                    runtime_conf=job.f_runtime_conf,
