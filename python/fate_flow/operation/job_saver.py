@@ -110,7 +110,7 @@ class JobSaver(object):
                 raise Exception("Create {} failed".format(entity_model))
             return obj
         except peewee.IntegrityError as e:
-            if e.args[0] == 1062:
+            if e.args[0] == 1062 or (isinstance(e.args[0], str) and "UNIQUE constraint failed" in e.args[0]):
                 sql_logger(job_id=entity_info.get("job_id", "fate_flow")).warning(e)
             else:
                 raise Exception("Create {} failed:\n{}".format(entity_model, e))

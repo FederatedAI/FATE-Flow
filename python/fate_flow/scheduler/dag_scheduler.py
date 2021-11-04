@@ -36,6 +36,7 @@ from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils import model_utils
 from fate_flow.utils.cron import Cron
 from fate_flow.db.job_default_config import JobDefaultConfig
+from fate_flow.manager.provider_manager import ProviderManager
 
 
 class DAGScheduler(Cron):
@@ -52,7 +53,6 @@ class DAGScheduler(Cron):
             runtime_conf = deepcopy(submit_job_conf.runtime_conf)
             job_utils.check_job_runtime_conf(runtime_conf)
             authentication_utils.check_constraint(runtime_conf, dsl)
-
             job_initiator = runtime_conf["initiator"]
             conf_adapter = JobRuntimeConfigAdapter(runtime_conf)
             common_job_parameters = conf_adapter.get_common_parameters()
@@ -79,6 +79,7 @@ class DAGScheduler(Cron):
                                                      model_version=common_job_parameters.model_version):
                     raise Exception(f"Model {common_job_parameters.model_id} {common_job_parameters.model_version} has not been deployed yet.")
                 dsl = json_loads(pipeline_model.inference_dsl)
+            dsl = ProviderManager.fill_fate_flow_provider(dsl)
 
             job = Job()
             job.f_job_id = job_id
@@ -158,9 +159,9 @@ class DAGScheduler(Cron):
                 "logs_directory": logs_directory,
                 "board_url": job_utils.get_board_url(job_id, job_initiator["role"], job_initiator["party_id"])
             }
-            warn_paramete = JobRuntimeConfigAdapter(submit_job_conf.runtime_conf).check_removed_parameter()
-            if warn_paramete:
-                result["message"] = f"[WARN]{warn_paramete} is removed,it does not take effect!"
+            warn_parameter = JobRuntimeConfigAdapter(submit_job_conf.runtime_conf).check_removed_parameter()
+            if warn_parameter:
+                result["message"] = f"[WARN]{warn_parameter} is removed,it does not take effect!"
             submit_result.update(result)
             submit_result.update(path_dict)
         except Exception as e:
@@ -393,50 +394,57 @@ class DAGScheduler(Cron):
         schedule_logger(job.f_job_id).info("finish scheduling running job")
 
     @classmethod
-    def set_job_rerun(cls, job_id, initiator_role, initiator_party_id, auto, force=False, tasks: typing.List[Task] = None, component_name: typing.Union[str, list] = None):
+    def set_job_rerun(cls, job_id, initiator_role, initiator_party_id, auto, force=False,
+                      tasks: typing.List[Task] = None, component_name: typing.Union[str, list] = None):
         schedule_logger(job_id).info(f"try to rerun job on initiator {initiator_role} {initiator_party_id}")
+
         jobs = JobSaver.query_job(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
-        if jobs:
-            job = jobs[0]
-        else:
+        if not jobs:
             raise RuntimeError(f"can not found job on initiator {initiator_role} {initiator_party_id}")
+        job = jobs[0]
+
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                        runtime_conf=job.f_runtime_conf_on_party,
                                                        train_runtime_conf=job.f_train_runtime_conf)
+
         if tasks:
             schedule_logger(job_id).info(f"require {[task.f_component_name for task in tasks]} to rerun")
         else:
-            if component_name != job_utils.job_pipeline_component_name():
-                if isinstance(component_name, str):
-                    _require_reruns = {component_name}
-                else:
-                    _require_reruns = set(component_name)
+            task_query = {
+                'job_id': job_id,
+                'role': initiator_role,
+                'party_id': initiator_party_id,
+            }
+
+            if not component_name or component_name == job_utils.job_pipeline_component_name():
+                # rerun all tasks
+                schedule_logger(job_id).info("require all component of pipeline to rerun")
+            else:
+                _require_reruns = {component_name} if isinstance(component_name, str) else set(component_name)
                 _should_reruns = _require_reruns.copy()
                 for _cpn in _require_reruns:
                     _components = dsl_parser.get_downstream_dependent_components(_cpn)
                     for _c in _components:
                         _should_reruns.add(_c.get_name())
-                schedule_logger(job_id).info(f"require {_require_reruns} to rerun, and then found {_should_reruns} need be to rerun")
-                tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id, component_name=_should_reruns)
-            else:
-                # rerun all tasks
-                schedule_logger(job_id).info(f"require all component of pipeline to rerun")
-                tasks = JobSaver.query_task(job_id=job_id, role=initiator_role, party_id=initiator_party_id)
-        job_can_rerun = False
-        for task in tasks:
-            job_can_rerun = TaskScheduler.prepare_rerun_task(job=job, task=task, dsl_parser=dsl_parser, auto=auto, force=force) or job_can_rerun
-        if job_can_rerun:
-            schedule_logger(job_id).info(f"job set rerun signal")
-            status = cls.rerun_signal(job_id=job_id, set_or_reset=True)
-            if status:
-                schedule_logger(job_id).info(f"job set rerun signal successfully")
-            else:
-                schedule_logger(job_id).info(f"job set rerun signal failed")
-            return True
-        else:
+
+                schedule_logger(job_id).info(f"require {_require_reruns} to rerun, "
+                                             f"and then found {_should_reruns} need be to rerun")
+                task_query['component_name'] = _should_reruns
+
+            tasks = JobSaver.query_task(**task_query)
+
+        job_can_rerun = any(TaskScheduler.prepare_rerun_task(
+            job=job, task=task, dsl_parser=dsl_parser, auto=auto, force=force,
+        ) for task in tasks)
+        if not job_can_rerun:
             FederatedScheduler.sync_job_status(job=job)
-            schedule_logger(job_id).info(f"job no task to rerun")
+            schedule_logger(job_id).info("job no task to rerun")
             return False
+
+        schedule_logger(job_id).info("job set rerun signal")
+        status = cls.rerun_signal(job_id=job_id, set_or_reset=True)
+        schedule_logger(job_id).info(f"job set rerun signal {'successfully' if status else 'failed'}")
+        return True
 
     @classmethod
     def update_job_on_initiator(cls, initiator_job: Job, update_fields: list):

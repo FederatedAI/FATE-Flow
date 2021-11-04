@@ -13,3 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.utils.base_utils import jprint
+
+__all__ = ["jprint"]

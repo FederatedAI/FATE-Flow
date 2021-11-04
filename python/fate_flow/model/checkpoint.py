@@ -250,7 +250,7 @@ class CheckpointManager:
         if self.mkdir:
             self.directory.mkdir(0o755)
 
-    def deploy(self, new_model_version: str, step_index: int = None, step_name: str = None):
+    def deploy(self, new_model_version: str, model_alias: str, step_index: int = None, step_name: str = None):
         if step_index is not None:
             checkpoint = self.get_checkpoint_by_index(step_index)
         elif step_name is not None:
@@ -264,11 +264,11 @@ class CheckpointManager:
         checkpoint.read()
 
         directory = Path(get_project_base_directory()) / 'model_local_cache' / self.party_model_id / new_model_version
-        target = directory / 'variables' / 'data' / self.component_name / 'model'
+        target = directory / 'variables' / 'data' / self.component_name / model_alias
         locker = Locker(directory)
 
         with locker.lock:
-            rmtree(target)
+            rmtree(target, True)
             copytree(checkpoint.directory, target,
                      ignore=lambda src, names: {i for i in names if i.startswith('.')})
 

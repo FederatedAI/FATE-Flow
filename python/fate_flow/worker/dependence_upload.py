@@ -85,12 +85,12 @@ class DependenceUpload(BaseWorker):
                 cls.copy_dir(path, os.path.join(fate_code_base_dir, key))
                 if key == "conf":
                     cls.move_dir(os.path.join(fate_code_base_dir, key), os.path.dirname(fate_code_base_dir))
-            if provider.name == ComponentProviderName.FATE_ALGORITHM.value:
+            if provider.name == ComponentProviderName.FATE.value:
                 source_path = provider.path
             else:
                 source_path = ComponentProviderInfo.get_or_none(
                     ComponentProviderInfo.f_version == provider.version,
-                    ComponentProviderInfo.f_provider_name == ComponentProviderName.FATE_ALGORITHM.value
+                    ComponentProviderInfo.f_provider_name == ComponentProviderName.FATE.value
                 ).f_path
             cls.copy_dir(source_path, os.path.join(fate_code_base_dir, "federatedml"))
             target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python.zip")

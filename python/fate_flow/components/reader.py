@@ -185,7 +185,7 @@ class Reader(ComponentBase):
             output_data_infos = Tracker.query_output_data_infos(
                 job_id=parameters["job_id"],
                 component_name=parameters["component_name"],
-                data_name=parameters["data"],
+                data_name=parameters["data_name"],
                 role=role,
                 party_id=party_id,
             )

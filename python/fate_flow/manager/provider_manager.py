@@ -15,6 +15,7 @@
 #
 import os.path
 import sys
+from copy import deepcopy
 
 from fate_arch.common import file_utils
 from fate_arch.common.versions import get_versions
@@ -32,7 +33,7 @@ class ProviderManager:
         code, result = cls.register_fate_flow_provider()
         if code != 0:
             raise Exception(f"register fate flow tools component failed")
-        code, result, provider = cls.register_default_fate_algorithm_provider()
+        code, result, provider = cls.register_default_fate_provider()
         if code != 0:
             raise Exception(f"register default fate algorithm component failed")
         return provider
@@ -43,8 +44,8 @@ class ProviderManager:
         return WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider, run_in_subprocess=False)
 
     @classmethod
-    def register_default_fate_algorithm_provider(cls):
-        provider = cls.get_default_fate_algorithm_provider()
+    def register_default_fate_provider(cls):
+        provider = cls.get_default_fate_provider()
         sys.path.append(provider.env["PYTHONPATH"])
         code, result = WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider, run_in_subprocess=False)
         return code, result, provider
@@ -52,29 +53,45 @@ class ProviderManager:
     @classmethod
     def get_fate_flow_provider(cls):
         path = file_utils.get_python_base_directory("fate_flow")
-        provider = ComponentProvider(name="fate_flow_tools", version=get_versions()["FATEFlow"], path=path, class_path=ComponentRegistry.get_default_class_path())
+        provider = ComponentProvider(name="fate_flow", version=get_versions()["FATEFlow"], path=path, class_path=ComponentRegistry.get_default_class_path())
         return provider
 
     @classmethod
-    def get_default_fate_algorithm_provider_env(cls):
-        provider = cls.get_default_fate_algorithm_provider()
+    def get_default_fate_provider_env(cls):
+        provider = cls.get_default_fate_provider()
         return provider.env
 
     @classmethod
-    def get_default_fate_algorithm_provider(cls):
+    def get_default_fate_provider(cls):
         path = JobDefaultConfig.default_component_provider_path.split("/")
         path = file_utils.get_python_base_directory(*path)
         if not os.path.exists(path):
-            raise Exception(f"default fate algorithm provider not exists: {path}")
-        provider = ComponentProvider(name="fate_algorithm", version=get_versions()["FATE"], path=path, class_path=ComponentRegistry.get_default_class_path())
+            raise Exception(f"default fate provider not exists: {path}")
+        provider = ComponentProvider(name="fate", version=get_versions()["FATE"], path=path, class_path=ComponentRegistry.get_default_class_path())
         return provider
 
     @classmethod
     def if_default_provider(cls, provider: ComponentProvider):
-        if provider == cls.get_fate_flow_provider() or provider == cls.get_default_fate_algorithm_provider():
+        if provider == cls.get_fate_flow_provider() or provider == cls.get_default_fate_provider():
             return True
         else:
             return False
+
+    @classmethod
+    def fill_fate_flow_provider(cls, dsl):
+        dest_dsl = deepcopy(dsl)
+        fate_flow_provider = cls.get_fate_flow_provider()
+        support_components = ComponentRegistry.get_provider_components(fate_flow_provider.name, fate_flow_provider.version)
+        provider_key = f"{fate_flow_provider.name}@{fate_flow_provider.version}"
+        for cpn, config in dsl["components"].items():
+            if config["module"] in support_components:
+                dest_dsl["components"][cpn]["provider"] = provider_key
+        return dest_dsl
+
+    @classmethod
+    def get_fate_flow_component_module(cls):
+        fate_flow_provider = cls.get_fate_flow_provider()
+        return ComponentRegistry.get_provider_components(fate_flow_provider.name, fate_flow_provider.version)
 
     @classmethod
     def get_provider_object(cls, provider_info, check_registration=True):
@@ -98,7 +115,7 @@ class ProviderManager:
             providers_info = _providers_info
         for component_name, provider_info in providers_info.items():
             provider = cls.get_provider_object(provider_info["provider"], check_registration=check_registration)
-            group_key = ":".join([provider.name, provider.version])
+            group_key = "@".join([provider.name, provider.version])
             if group_key not in group:
                 group[group_key] = {
                     "provider": provider.to_dict(),

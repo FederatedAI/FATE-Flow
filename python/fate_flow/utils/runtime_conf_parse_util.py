@@ -207,28 +207,48 @@ class RuntimeConfParserUtil(object):
     @staticmethod
     def get_job_providers(dsl, provider_detail):
         provider_info = {}
+        global_provider_name = None
+        global_provider_version = None
+        if "provider" in dsl:
+            global_provider_msg = dsl["provider"].split("@", -1)
+            if global_provider_msg[0] == "@" or len(global_provider_msg) > 2:
+                raise ValueError("Provider format should be provider_name@provider_version or provider_name, "
+                                 "@provider_version is not supported")
+            if len(global_provider_msg) == 1:
+                global_provider_name = global_provider_msg[0]
+            else:
+                global_provider_name, global_provider_version = global_provider_msg
+
         for component in dsl["components"]:
             module = dsl["components"][component]["module"]
             provider = dsl["components"][component].get("provider")
+            name, version = None, None
             if provider:
                 provider_msg = provider.split("@", -1)
-                if provider[0] == "@":
+                if provider[0] == "@" or len(provider_msg) > 2:
                     raise ValueError("Provider format should be provider_name@provider_version or provider_name, "
                                      "@provider_version is not supported")
                 if len(provider_msg) == 2:
                     name, version = provider.split("@", -1)
-                    if name not in provider_detail["components"][module]["support_provider"]:
-                        raise ValueError(f"Provider: {name} does not support, please register")
-                    if version not in provider_detail["providers"][name]:
-                        raise ValueError(f"Provider: {name} version: {version} does not support, please register")
                 else:
                     name = provider_msg[0]
-                    version = RuntimeConfParserUtil.get_component_provider(alias=component,
-                                                                           module=module,
-                                                                           provider_detail=provider_detail,
-                                                                           name=name)
 
-            else:
+            if not name:
+                if global_provider_name:
+                    name = global_provider_name
+                    version = global_provider_version
+
+            if name and name not in provider_detail["components"][module]["support_provider"]:
+                raise ValueError(f"Provider: {name} does not support in {module}, please register")
+            if version and version not in provider_detail["providers"][name]:
+                raise ValueError(f"Provider: {name} version: {version} does not support in {module}, please register")
+
+            if name and not version:
+                version = RuntimeConfParserUtil.get_component_provider(alias=component,
+                                                                       module=module,
+                                                                       provider_detail=provider_detail,
+                                                                       name=name)
+            elif not name and not version:
                 name, version = RuntimeConfParserUtil.get_component_provider(alias=component,
                                                                              module=module,
                                                                              provider_detail=provider_detail)

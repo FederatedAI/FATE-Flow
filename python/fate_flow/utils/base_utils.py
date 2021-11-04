@@ -22,5 +22,5 @@ def new_unique_id():
     return uuid.uuid1().hex
 
 
-def jprint(src: dict):
-    print(json_dumps(src, indent=4))
+def jprint(src: dict, indent: int = 4):
+    print(json_dumps(src, indent=indent))
