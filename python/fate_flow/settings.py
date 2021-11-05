@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import os
+
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import file_utils, log, engine_utils
 from fate_arch.common.conf_utils import get_base_config
@@ -112,15 +113,14 @@ FATE_MANAGER_NODE_CHECK_ENDPOINT = "/fate-manager/api/site/checksite"
 FATE_BOARD_DASHBOARD_ENDPOINT = "/index.html#/dashboard?job_id={}&role={}&party_id={}"
 
 # Logger
-log.LoggerFactory.LEVEL = 10
+log.LoggerFactory.set_directory(os.path.join(file_utils.get_project_base_directory(), "logs", "fate_flow"))
 # {CRITICAL: 50, FATAL:50, ERROR:40, WARNING:30, WARN:30, INFO:20, DEBUG:10, NOTSET:0}
-log.LoggerFactory.set_directory(os.path.join(
-    file_utils.get_project_base_directory(), "logs", "fate_flow"))
+log.LoggerFactory.LEVEL = 10
+
 stat_logger = log.getLogger("fate_flow_stat")
 detect_logger = log.getLogger("fate_flow_detect")
 access_logger = log.getLogger("fate_flow_access")
-data_manager_logger = log.getLogger("fate_flow_data_manager")
-peewee_logger = log.getLogger("peewee")
+database_logger = log.getLogger("fate_flow_database")
 
 # Switch
 # upload
