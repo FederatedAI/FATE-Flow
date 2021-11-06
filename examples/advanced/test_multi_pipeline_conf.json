@@ -17,7 +17,6 @@
     },
     "job_parameters": {
         "common": {
-            "work_mode": 0,
             "task_parallelism": 2,
             "computing_partitions": 8,
             "task_cores": 2

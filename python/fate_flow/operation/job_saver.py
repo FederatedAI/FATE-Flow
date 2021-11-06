@@ -58,7 +58,7 @@ class JobSaver(object):
                     new_job_info["tag"] = "job_end"
                 cls.update_entity_table(Job, new_job_info)
         else:
-            schedule_logger(job_info["job_id"]).info("update job status does not take effect")
+            schedule_logger(job_info["job_id"]).warning("update job status does not take effect")
         return update_status
 
     @classmethod
@@ -82,7 +82,7 @@ class JobSaver(object):
         if update_status:
             schedule_logger(task_info["job_id"]).info("update task {} {} status successfully: {}".format(task_info["task_id"], task_info["task_version"], task_info))
         else:
-            schedule_logger(task_info["job_id"]).info("update task {} {} status update does not take effect: {}".format(task_info["task_id"], task_info["task_version"], task_info))
+            schedule_logger(task_info["job_id"]).warning("update task {} {} status update does not take effect: {}".format(task_info["task_id"], task_info["task_version"], task_info))
         return update_status
 
     @classmethod

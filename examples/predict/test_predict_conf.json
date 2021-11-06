@@ -11,31 +11,14 @@
     },
     "job_parameters": {
         "common": {
-            "work_mode": 0,
-            "task_parallelism": 2,
-            "computing_partitions": 8,
-            "task_cores": 4,
-            "auto_retries": 1
+            "job_type": "predict",
+            "model_id": "arbiter-10000#guest-9999#host-10000#model",
+            "model_version": "202109011220444359410"
         }
     },
-    "component_parameters": {
+    "component_parameters":{
         "common": {
-            "intersection_0": {
-                "intersect_method": "raw",
-                "sync_intersect_ids": true,
-                "only_output_key": false
-            },
-            "hetero_lr_0": {
-                "penalty": "L2",
-                "optimizer": "rmsprop",
-                "alpha": 0.01,
-                "max_iter": 3,
-                "batch_size": 320,
-                "learning_rate": 0.15,
-                "init_param": {
-                    "init_method": "random_uniform"
-                }
-            }
+
         },
         "role": {
             "guest": {
@@ -59,12 +42,10 @@
                     "dataio_0":{
                         "with_label": false,
                         "output_format": "dense"
-                    },
-                    "evaluation_0": {
-                        "need_run": false
                     }
                 }
             }
         }
+
     }
 }
