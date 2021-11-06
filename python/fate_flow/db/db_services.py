@@ -66,7 +66,7 @@ def get_model_download_url(party_model_id, model_version):
     """
     return '{endpoint}/{model_id}/{model_version}'.format(
         endpoint=get_model_download_endpoint(),
-        model_id=party_model_id.replace('#', '_'),
+        model_id=party_model_id.replace('#', '~'),
         model_version=model_version,
     )
 
