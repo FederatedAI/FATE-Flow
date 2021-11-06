@@ -1,10 +1,5 @@
 #  -*-coding:utf8 -*-
-import json
 import requests
-import time
-import uuid
-import datetime
-import time
 
 ids = ["18576635456", "13512345432"]
 
@@ -17,14 +12,14 @@ for i in range(2):
             "applyId": "209090900991",
         },
         "body": {
-              "featureData": {
-                  "phone_num": ids[i],
-              },
-              "sendToRemoteFeatureData": {
-                  "device_type": "imei",
-                  "phone_num": ids[i],
-                  "encrypt_type": "raw"
-              }
+            "featureData": {
+                "phone_num": ids[i],
+            },
+            "sendToRemoteFeatureData": {
+                "device_type": "imei",
+                "phone_num": ids[i],
+                "encrypt_type": "raw"
+            }
         }
     }
     headers = {"Content-Type": "application/json"}
@@ -34,4 +29,4 @@ for i in range(2):
     print()
     print("响应信息:\n", response.text)
     print()
-    #time.sleep(0.1)
+    # time.sleep(0.1)
