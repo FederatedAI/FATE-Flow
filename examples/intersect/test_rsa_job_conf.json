@@ -3,9 +3,6 @@
         "role": "host",
         "party_id": 10001
     },
-    "job_parameters": {
-        "work_mode": 0
-    },
     "role": {
         "host": [10001]
     },
