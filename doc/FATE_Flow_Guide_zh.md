@@ -2,9 +2,9 @@
 [TOC]
 
 ## 1. 版本历史
-| 版本状态      |  创建人|  完成日期 | 备注  |
-| :-------- | :--------| --------:| :-- |
-|1.0	|jarviszeng|2021-11-01	|初始|
+| 版本状态 | 创建人     |   完成日期 | 备注 |
+| :------- | :--------- | ---------: | :--- |
+| 1.0      | jarviszeng | 2021-11-01 | 初始 |
 
 
 ## 2. 统一名称描述
@@ -29,24 +29,24 @@ flow job submit -d ./examples/simple/simple_dsl.json -c ./examples/simple/simple
 
 **请求参数** 
 
-| 参数名            | 必选 | 类型   | 说明              |
-| :--------------- | :-- | :----- | -----------------|
-| -d, --dsl-path   | 是   | string | job dsl的路径    |
-| -c, --conf-path  | 是  | string | job conf的路径    |
+| 参数名          | 必选 | 类型   | 说明           |
+| :-------------- | :--- | :----- | -------------- |
+| -d, --dsl-path  | 是   | string | job dsl的路径  |
+| -c, --conf-path | 是   | string | job conf的路径 |
 
 
 **返回参数** 
 
-| 参数名 | 类型   | 说明                     |
-| :----- | :----- | ------------------------ |
-| retcode| int | 返回码 |
-| retmsg | string | 返回信息 |
-| jobId | string | 作业ID |
-| data| dict | 返回数据 |
-| data.dsl_path| string| 依据提交的dsl内容，由系统生成的实际运行dsl配置的存放路径|
-| data.runtime_conf_on_party_path| string| 依据提交的conf内容，由系统生成的在每个party实际运行conf配置的存放路径|
-| data.board_url| string| fateboard查看地址|
-| data.model_info| dict| 模型标识信息|
+| 参数名                          | 类型   | 说明                                                                  |
+| :------------------------------ | :----- | --------------------------------------------------------------------- |
+| retcode                         | int    | 返回码                                                                |
+| retmsg                          | string | 返回信息                                                              |
+| jobId                           | string | 作业ID                                                                |
+| data                            | dict   | 返回数据                                                              |
+| data.dsl_path                   | string | 依据提交的dsl内容，由系统生成的实际运行dsl配置的存放路径              |
+| data.runtime_conf_on_party_path | string | 依据提交的conf内容，由系统生成的在每个party实际运行conf配置的存放路径 |
+| data.board_url                  | string | fateboard查看地址                                                     |
+| data.model_info                 | dict   | 模型标识信息                                                          |
 
 **样例** 
 ```json
@@ -343,24 +343,24 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 
 ##### 支持的系统参数
 
-| 配置项                              | 默认值            | 支持值                            | 说明                                                               |
-| -------------------------------- | -------------- | ------------------------------ | ---------------------------------------------------------------- |
-| job_type                        | train          | train, predict                 | 任务类型                                                             |
-| task_cores                      | 4              | 正整数                            | 作业申请的总cpu核数                                                      |
-| task_parallelism                | 1              | 正整数                            | task并行度                                                          |
-| computing_partitions            | task所分配到的cpu核数 | 正整数                            | 计算时数据表的分区数                                                       |
-| eggroll_run                     | 无              | processors_per_node等         | eggroll计算引擎相关配置参数，一般无须配置，由task_cores自动计算得到，若配置则task_cores参数不生效 |
-| spark_run                       | 无              | num-executors, executor-cores等 | spark计算引擎相关配置参数，一般无须配置，由task_cores自动计算得到，若配置则task_cores参数不生效   |
-| rabbitmq_run                    | 无              | queue, exchange等               | rabbitmq创建queue、exchange的相关配置参数，一般无须配置，采取系统默认值                   |
-| pulsar_run                      | 无              | producer, consumer等            | pulsar创建producer和consumer时候的相关配置，一般无需配置。                         |
-| federated_status_collect_type | PUSH           | PUSH, PULL                     | 多方运行状态收集模式，PUSH表示每个参与方主动上报到发起方，PULL表示发起方定期向各个参与方拉取               |
-| timeout                          | 259200 (3天)    | 正整数                            | 任务超时时间,单位秒                                                       |
-| audo_retries                     | 3                 | 正整数                            | 每个任务失败自动重试最大次数                                                       |
-| model_id                        | \-             | \-                             | 模型id，预测任务需要填入                                                    |
-| model_version                   | \-             | \-                             | 模型version，预测任务需要填入                                               |
+| 配置项                        | 默认值                | 支持值                          | 说明                                                                                              |
+| ----------------------------- | --------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------- |
+| job_type                      | train                 | train, predict                  | 任务类型                                                                                          |
+| task_cores                    | 4                     | 正整数                          | 作业申请的总cpu核数                                                                               |
+| task_parallelism              | 1                     | 正整数                          | task并行度                                                                                        |
+| computing_partitions          | task所分配到的cpu核数 | 正整数                          | 计算时数据表的分区数                                                                              |
+| eggroll_run                   | 无                    | processors_per_node等           | eggroll计算引擎相关配置参数，一般无须配置，由task_cores自动计算得到，若配置则task_cores参数不生效 |
+| spark_run                     | 无                    | num-executors, executor-cores等 | spark计算引擎相关配置参数，一般无须配置，由task_cores自动计算得到，若配置则task_cores参数不生效   |
+| rabbitmq_run                  | 无                    | queue, exchange等               | rabbitmq创建queue、exchange的相关配置参数，一般无须配置，采取系统默认值                           |
+| pulsar_run                    | 无                    | producer, consumer等            | pulsar创建producer和consumer时候的相关配置，一般无需配置。                                        |
+| federated_status_collect_type | PUSH                  | PUSH, PULL                      | 多方运行状态收集模式，PUSH表示每个参与方主动上报到发起方，PULL表示发起方定期向各个参与方拉取      |
+| timeout                       | 259200 (3天)          | 正整数                          | 任务超时时间,单位秒                                                                               |
+| audo_retries                  | 3                     | 正整数                          | 每个任务失败自动重试最大次数                                                                      |
+| model_id                      | \-                    | \-                              | 模型id，预测任务需要填入                                                                          |
+| model_version                 | \-                    | \-                              | 模型version，预测任务需要填入                                                                     |
 
-1.  计算引擎和存储引擎之间具有一定的支持依赖关系
-2.  开发者可自行实现适配的引擎，并在runtime config配置引擎
+1. 计算引擎和存储引擎之间具有一定的支持依赖关系
+2. 开发者可自行实现适配的引擎，并在runtime config配置引擎
 
 ##### 参考配置
 
@@ -431,49 +431,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
   }
 }
 ```
-
-#### 3.3.4 资源管理详细说明
-##### 总资源配置
-- 资源来自于基础引擎，当前版本未实现自动获取基础引擎的资源大小，因此你通过配置文件的方式配置`$PROJECT_BASE/conf/service_conf.yaml`指定，fateflow
-    server启动时从配置文件扫描所有基础引擎信息并注册到数据库表`t_engine_registry`
-- fate_on_eggroll：total_cores=cores_per_node*nodes
-- fate_on_spark：total_cores=cores_per_node*nodes
-- fate_on_standalone：total_cores=cores_per_node*nodes
-- 不同基础引擎间的资源计算互相隔离
-- 以上配置修改后均需要重启fateflow server使之生效或者使用`flow server reload`命令
-
-##### 运行资源计算
-
-计算每个task实际提交到计算引擎的task_run_cores，但并不代表资源调度时的申请量
-
-- job conf使用task_cores配置：
-    - task_run_cores(guest, host)：max(task_cores / total_nodes, 1) * total_nodes
-    - task_run_cores(arbiter)：max(1 / total_nodes, 1) * total_nodes
-    - fateflow会将参数自动转换为对应引擎的实际配置参数，如eggroll的eggroll.session.processors.per.node，spark的executor-cores和num-executors
-- job conf使用eggroll_run配置：
-    - task_run_cores(guest, host, arbiter)：eggroll.session.processors.per.node * total_nodes
-- job conf使用spark_run配置：
-    - task_run_cores(guest, host, arbiter)：executor-cores * num-executors
-
-##### 资源调度
-
-- 作业申请资源的计算
-    - 对于计算引擎为eggroll、standalone
-        - apply_cores(guest, host)：task_run_cores * task_parallelism
-        - apply_cores(arbiter)：0，因为实际上仅消耗极少量资源且eggroll暂仅支持配置所有node节点cores一致，因此为了避免nodes太多导致arbiter资源扣减资源太多影响作业排队，所以资源调度计算时设为**0**
-        - 此处注意，在eggroll集群上，arbiter依然会在每个node被分配了task_run_cores/nodes个cores
-    - 对于计算引擎为spark
-    	- 对于spark，支持executor-cores * num-executors，不与集群nodes数强相关，尤其spark本身有资源调度器，如果此处资源调度计算与实际提交不一致，可能会导致spark作业一直等待
-        - apply_cores(guest, host, arbiter)：task_run_cores * task_parallelism
-		
-- 作业调度策略
-    - 按提交时间先后入队
-    - 目前仅支持FIFO策略，也即每次调度器仅会扫描第一个作业，若第一个作业申请资源成功则start且出队，若申请资源失败则等待下一轮调度
-	
-- 资源申请规则
-	- 调度器依据上述调度策略选出作业，分发联邦多方资源申请指令到所有参与方
-    - 若所有参与方均申请资源成功(total_cores - apply_cores) > 0，则该作业申请资源成功
-    - 若非所有参与方均申请资源成功，则发送资源回滚指令到已申请成功的参与方，该作业申请资源失败
+更多资源相关高级配置请参考[资源管理](#4-资源管理)
 
 #### 3.3.5 组件运行参数
 
@@ -783,21 +741,21 @@ flow job rerun
 
 **请求参数** 
 
-| 参数名            | 必选 | 类型   | 说明              |
-| :--------------- | :-- | :----- | -----------------|
-| -j, --job-id | 是   | string | job id 路径    |
-| -cpn, --component-name | 否  | string | 指定从哪个组件重跑，没被指定的组件若与指定组件没有上游依赖关系则不会执行;若不指定该参数则整个作业重跑    |
-| --force | 否  | bool | 作业即使成功也重跑;若不指定该参数，作业如果成功，则跳过重跑    |
+| 参数名                 | 必选 | 类型   | 说明                                                                                                  |
+| :--------------------- | :--- | :----- | ----------------------------------------------------------------------------------------------------- |
+| -j, --job-id           | 是   | string | job id 路径                                                                                           |
+| -cpn, --component-name | 否   | string | 指定从哪个组件重跑，没被指定的组件若与指定组件没有上游依赖关系则不会执行;若不指定该参数则整个作业重跑 |
+| --force                | 否   | bool   | 作业即使成功也重跑;若不指定该参数，作业如果成功，则跳过重跑                                           |
 
 
 **返回参数** 
 
-| 参数名 | 类型   | 说明                     |
-| :----- | :----- | ------------------------ |
-| retcode| int | 返回码 |
-| retmsg | string | 返回信息 |
-| jobId | string | 作业ID |
-| data| dict | 返回数据 |
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| jobId   | string | 作业ID   |
+| data    | dict   | 返回数据 |
 
 **样例** 
 ```bash
@@ -821,20 +779,20 @@ flow job parameter-update
 
 **请求参数** 
 
-| 参数名            | 必选 | 类型   | 说明              |
-| :--------------- | :-- | :----- | -----------------|
-| -j, --job-id | 是   | string | job id 路径    |
-| -c, --conf-path  | 是  | string | 需要更新的job conf的内容，不需要更新的参数不需要填写    |
+| 参数名          | 必选 | 类型   | 说明                                                 |
+| :-------------- | :--- | :----- | ---------------------------------------------------- |
+| -j, --job-id    | 是   | string | job id 路径                                          |
+| -c, --conf-path | 是   | string | 需要更新的job conf的内容，不需要更新的参数不需要填写 |
 
 
 **返回参数** 
 
-| 参数名 | 类型   | 说明                     |
-| :----- | :----- | ------------------------ |
-| retcode| int | 返回码 |
-| retmsg | string | 返回信息 |
-| jobId | string | 作业ID |
-| data| dict | 返回更新后的job conf |
+| 参数名  | 类型   | 说明                 |
+| :------ | :----- | -------------------- |
+| retcode | int    | 返回码               |
+| retmsg  | string | 返回信息             |
+| jobId   | string | 作业ID               |
+| data    | dict   | 返回更新后的job conf |
 
 **样例** 
 
@@ -864,54 +822,106 @@ flow job parameter-update -j 202111061957421943730 -c examples/other/update_para
 flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force 
 ```
 
+### 3.8 作业调度策略
+
+- 按提交时间先后入队
+- 目前仅支持FIFO策略，也即每次调度器仅会扫描第一个作业，若第一个作业申请资源成功则start且出队，若申请资源失败则等待下一轮调度
+
 ## 4. 资源管理
 
-### 4.1 基本原理
+资源指基础引擎资源，主要指计算引擎的CPU资源和内存资源，传输引擎的CPU资源和网络资源，目前仅支持计算引擎CPU资源的管理
 
-- 资源指基础引擎资源，主要指计算引擎的CPU资源和内存资源，传输引擎的CPU资源和网络资源，目前仅支持计算引擎CPU资源的管理
-- 
+### 4.1 总资源配置
 
-### 4.2 总资源配置
+- 当前版本未实现自动获取基础引擎的资源大小，因此你通过配置文件`$PROJECT_BASE/conf/service_conf.yaml`进行配置，也即当前引擎分配给FATE集群的资源大小
+- `FATE Flow Server`启动时从配置文件获取所有基础引擎信息并注册到数据库表`t_engine_registry`
+- `FATE Flow Server`已经启动，修改资源配置，可重启`FATE Flow Server`，也可使用命令：`flow server reload`，重新加载配置
+- `total_cores` = `nodes` * `cores_per_node`
 
-- 资源来自于基础引擎，当前版本未实现自动获取基础引擎的资源大小，因此你通过配置文件的方式配置`$PROJECT_BASE/conf/service_conf.yaml`指定，fateflow
-    server启动时从配置文件扫描所有基础引擎信息并注册到数据库表`t_engine_registry`
-- fate_on_eggroll：total_cores=cores_per_node*nodes
-- fate_on_spark：total_cores=cores_per_node*nodes
-- fate_on_standalone：total_cores=cores_per_node*nodes
-- 不同基础引擎间的资源计算互相隔离
-- 以上配置修改后均需要重启fateflow server使之生效或者使用`flow server reload`命令
+**样例**
 
-### 4.3 作业使用资源配置
-计算每个task实际提交到计算引擎的task_run_cores，但并不代表资源调度时的申请量
+fate_on_standalone：是为执行在`FATE Flow Server`同台机器的单机引擎，一般用于快速实验，`nodes`一般设置为1，`cores_per_node`一般为机器CPU核数，也可适量超配
 
-- job conf使用task_cores配置：
-    - task_run_cores(guest, host)：max(task_cores / total_nodes, 1) * total_nodes
-    - task_run_cores(arbiter)：max(1 / total_nodes, 1) * total_nodes
-    - fateflow会将参数自动转换为对应引擎的实际配置参数，如eggroll的eggroll.session.processors.per.node，spark的executor-cores和num-executors
-- job conf使用eggroll_run配置：
-    - task_run_cores(guest, host, arbiter)：eggroll.session.processors.per.node * total_nodes
-- job conf使用spark_run配置：
-    - task_run_cores(guest, host, arbiter)：executor-cores * num-executors
+```json
+fate_on_standalone:
+  standalone:
+    cores_per_node: 20
+    nodes: 1
+```
+
+fate_on_eggroll：依据`EggRoll`集群实际部署情况进行配置，`nodes`表示`node manager`的机器数量，`cores_per_node`表示平均每台`node manager`机器CPU核数
+
+```json
+fate_on_eggroll:
+  clustermanager:
+    cores_per_node: 16
+    nodes: 1
+  rollsite:
+    host: 127.0.0.1
+    port: 9370
+```
+
+fate_on_spark：依据在`Spark`集群中配置给`FATE`集群的资源进行配置，`nodes`表示`Spark`节点数量，`cores_per_node`表示平均每个节点分配给`FATE`集群的CPU核数
+
+```json
+fate_on_spark:
+  spark:
+    # default use SPARK_HOME environment variable
+    home:
+    cores_per_node: 20
+    nodes: 2
+```
+
+注意：请务必确保在`Spark`集群分配了对应数量的资源于`FATE`集群，若`Spark`集群分配资源少于此处`FATE`所配置的资源，那么会出现可以提交`FATE`作业，但是`FATE Flow`将任务提交至`Spark`集群时，由于`Spark`集群资源不足，任务实际不执行
+
+### 4.2 作业申请资源配置
+
+我们一般使用`task_cores`和`task_parallelism`进行配置作业申请资源，如：
+
+```json
+"job_parameters": {
+  "common": {
+    "job_type": "train",
+    "task_cores": 6,
+    "task_parallelism": 2,
+    "computing_partitions": 8,
+    "timeout": 36000
+  }
+}
+```
+
+作业申请的总资源为`task_cores` * `task_parallelism`，创建作业时，`FATE Flow`分发作业到各`party`时会依据上述配置、运行角色、本方使用引擎(通过`$PROJECT_BASE/conf/service_conf.yaml#default_engines`)，适配计算出实际参数，如下
+
+#### 资源申请实际参数适配计算过程
+
+- 计算`request_task_cores`:
+  - guest、host：
+    - `request_task_cores` = `task_cores`
+  - arbiter，考虑实际运行耗费极少资源：
+    - `request_task_cores` = 1
+
+- 进一步计算`task_cores_per_node`：
+  - `task_cores_per_node"` = max(1, `request_task_cores` / `task_nodes`)
+
+  - 若在上述`job_parameters`使用了`eggroll_run`或`spark_run`配置资源时，则`task_cores`配置无效；计算`task_cores_per_node`：
+    - `task_cores_per_node"` = eggroll_run[“eggroll.session.processors.per.node”]
+    - `task_cores_per_node"` = spark_run["executor-cores"]
+
+- 转换为适配引擎的参数(该参数会在运行任务时，提交到计算引擎识别)：
+  - fate_on_standalone/fate_on_eggroll:
+    - eggroll_run["eggroll.session.processors.per.node"] = `task_cores_per_node`
+  - fate_on_spark:
+    - spark_run["num-executors"] = `task_nodes`
+    - spark_run["executor-cores"] = `task_cores_per_node`
+
+- 最终计算结果可以查看job的`job_runtime_conf_on_party.json`，一般在`$FATE_PROJECT_BASE/jobs/$job_id/$role/$party_id/job_runtime_on_party_conf.json`
 
 ### 4.4 资源调度策略
 
-- 作业申请资源的计算
-    - 对于计算引擎为eggroll、standalone
-        - apply_cores(guest, host)：task_run_cores * task_parallelism
-        - apply_cores(arbiter)：0，因为实际上仅消耗极少量资源且eggroll暂仅支持配置所有node节点cores一致，因此为了避免nodes太多导致arbiter资源扣减资源太多影响作业排队，所以资源调度计算时设为**0**
-        - 此处注意，在eggroll集群上，arbiter依然会在每个node被分配了task_run_cores/nodes个cores
-    - 对于计算引擎为spark
-    	- 对于spark，支持executor-cores * num-executors，不与集群nodes数强相关，尤其spark本身有资源调度器，如果此处资源调度计算与实际提交不一致，可能会导致spark作业一直等待
-        - apply_cores(guest, host, arbiter)：task_run_cores * task_parallelism
-		
-- 作业调度策略
-    - 按提交时间先后入队
-    - 目前仅支持FIFO策略，也即每次调度器仅会扫描第一个作业，若第一个作业申请资源成功则start且出队，若申请资源失败则等待下一轮调度
-	
-- 资源申请规则
-	- 调度器依据上述调度策略选出作业，分发联邦多方资源申请指令到所有参与方
-    - 若所有参与方均申请资源成功(total_cores - apply_cores) > 0，则该作业申请资源成功
-    - 若非所有参与方均申请资源成功，则发送资源回滚指令到已申请成功的参与方，该作业申请资源失败
+- `total_cores`见上述[总资源配置](#41-总资源配置)
+- `apply_cores`见上述[作业申请资源配置](#42-作业申请资源配置)，`apply_cores` = `task_nodes` * `task_cores_per_node` * `task_parallelism`
+- 若所有参与方均申请资源成功(total_cores - apply_cores) > 0，则该作业申请资源成功
+- 若非所有参与方均申请资源成功，则发送资源回滚指令到已申请成功的参与方，该作业申请资源失败
 
 ### 4.4 相关命令
 #### 资源注册
