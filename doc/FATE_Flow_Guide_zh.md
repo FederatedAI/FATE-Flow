@@ -950,12 +950,12 @@ flow tracking metrics
 
 **请求参数** 
 
-| 参数名                 | 必选 | 类型   | 说明                             |
-| :--------------------- | :--- | :----- | ------------------------------|
-| -j, --job-id           | 是   | string | 作业id                         |
-| -r, --role             | 是   | string | 参与角色                        |
-| -p, --partyid          | 是   | string | 参与方id                        |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致      |
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
 
 **返回参数** 
 
@@ -1008,12 +1008,12 @@ flow tracking metric-all
 
 **请求参数** 
 
-| 参数名                 | 必选 | 类型   | 说明                             |
-| :--------------------- | :--- | :----- | ------------------------------|
-| -j, --job-id           | 是   | string | 作业id                         |
-| -r, --role             | 是   | string | 参与角色                        |
-| -p, --partyid          | 是   | string | 参与方id                        |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致      |
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
 
 **返回参数** 
 
@@ -1119,12 +1119,12 @@ flow tracking parameters
 
 **请求参数** 
 
-| 参数名                 | 必选 | 类型   | 说明                             |
-| :--------------------- | :--- | :----- | ------------------------------|
-| -j, --job-id           | 是   | string | 作业id                         |
-| -r, --role             | 是   | string | 参与角色                        |
-| -p, --partyid          | 是   | string | 参与方id                        |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致      |
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
 
 
 **返回参数** 
@@ -1251,13 +1251,13 @@ flow tracking output-data
 
 **请求参数** 
 
-| 参数名                 | 必选 | 类型   | 说明                             |
-| :--------------------- | :--- | :----- | ------------------------------|
-| -j, --job-id           | 是   | string | 作业id                         |
-| -r, --role             | 是   | string | 参与角色                        |
-| -p, --partyid          | 是   | string | 参与方id                        |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致      |
-| -o, --output-path      | 是   | string | 输出数据的存放路径                |
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
+| -o, --output-path      | 是   | string | 输出数据的存放路径            |
 
 **返回参数** 
 
@@ -1294,12 +1294,12 @@ flow tracking output-data-table
 
 **请求参数** 
 
-| 参数名                 | 必选 | 类型   | 说明                             |
-| :--------------------- | :--- | :----- | ------------------------------|
-| -j, --job-id           | 是   | string | 作业id                         |
-| -r, --role             | 是   | string | 参与角色                        |
-| -p, --partyid          | 是   | string | 参与方id                        |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致      |
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
 
 **返回参数** 
 
@@ -1344,12 +1344,12 @@ flow tracking output-model
 
 **请求参数** 
 
-| 参数名                 | 必选 | 类型   | 说明                             |
-| :--------------------- | :--- | :----- | ------------------------------|
-| -j, --job-id           | 是   | string | 作业id                         |
-| -r, --role             | 是   | string | 参与角色                        |
-| -p, --partyid          | 是   | string | 参与方id                        |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致      |
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
 
 **返回参数** 
 
@@ -1438,12 +1438,12 @@ flow tracking get-summary
 
 **请求参数** 
 
-| 参数名                 | 必选 | 类型   | 说明                             |
-| :--------------------- | :--- | :----- | ------------------------------|
-| -j, --job-id           | 是   | string | 作业id                         |
-| -r, --role             | 是   | string | 参与角色                        |
-| -p, --partyid          | 是   | string | 参与方id                        |
-| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致      |
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
 
 **返回参数** 
 
