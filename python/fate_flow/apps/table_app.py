@@ -137,7 +137,7 @@ def table_api(table_func):
 def table_tracking():
     request_info = request.json
     data = DataTableTracker.get_parent_table(request_info.get("table_name"), request_info.get("namespace"))
-    return get_json_result(data)
+    return get_json_result(data=data)
 
 
 @manager.route('/tracking/job', methods=['post'])
@@ -145,7 +145,7 @@ def table_tracking():
 def table_tracking_job():
     request_info = request.json
     data = DataTableTracker.track_job(request_info.get("table_name"), request_info.get("namespace"), display=True)
-    return get_json_result(data)
+    return get_json_result(data=data)
 
 
 def get_job_all_table(job):
