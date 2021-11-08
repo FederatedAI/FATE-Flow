@@ -6,7 +6,7 @@
   "party_id": 9999,
   "component_name": "homo_lr_0",
   "deployment_type": "kfserving",
-  "deployment_parameters" : {
+  "deployment_parameters": {
     "protocol_version": "v1",
     "namespace": "default",
     "config_file_content": "<content of kube_config file>",

@@ -191,7 +191,7 @@ class JobController(object):
             job_parameters=job_parameters, role=role, party_id=party_id, engines_info=engines_info)
         if not status:
             msg = ""
-            msg2 = "default value is fate_flow/settings.py#DEFAULT_TASK_CORES_PER_NODE, refer fate_flow/examples/simple_hetero_lr_job_conf.json"
+            msg2 = "default value is fate_flow/settings.py#DEFAULT_TASK_CORES_PER_NODE, refer fate_flow/examples/simple/simple_job_conf.json"
             if job_parameters.computing_engine in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
                 msg = "please use task_cores job parameters to set request task cores or you can customize it with eggroll_run job parameters"
             elif job_parameters.computing_engine in {ComputingEngine.SPARK}:
