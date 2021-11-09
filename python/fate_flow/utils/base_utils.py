@@ -17,13 +17,13 @@ import os
 import uuid
 from fate_arch.common.base_utils import json_dumps
 
-FATE_BASE = os.getenv("FATE_FLOW_BASE")
+FATE_FLOW_BASE = os.getenv("FATE_FLOW_BASE")
 
 
 def get_fate_flow_directory(*args):
-    global FATE_BASE
-    if FATE_BASE is None:
-        FATE_BASE = os.path.abspath(
+    global FATE_FLOW_BASE
+    if FATE_FLOW_BASE is None:
+        FATE_FLOW_BASE = os.path.abspath(
             os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
                 os.pardir,
@@ -32,8 +32,8 @@ def get_fate_flow_directory(*args):
             )
         )
     if args:
-        return os.path.join(FATE_BASE, *args)
-    return FATE_BASE
+        return os.path.join(FATE_FLOW_BASE, *args)
+    return FATE_FLOW_BASE
 
 
 def get_fate_flow_python_directory(*args):
