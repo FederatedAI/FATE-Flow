@@ -448,6 +448,7 @@ class DAGScheduler(Cron):
 
     @classmethod
     def update_job_on_initiator(cls, initiator_job: Job, update_fields: list):
+        schedule_logger(initiator_job.f_job_id).info(f"try to update job {update_fields} on initiator")
         jobs = JobSaver.query_job(job_id=initiator_job.f_job_id)
         if not jobs:
             raise Exception("Failed to update job status on initiator")
@@ -459,6 +460,7 @@ class DAGScheduler(Cron):
             job_info["party_id"] = job.f_party_id
             JobSaver.update_job_status(job_info=job_info)
             JobSaver.update_job(job_info=job_info)
+        schedule_logger(initiator_job.f_job_id).info(f"update job {update_fields} on initiator finished")
 
     @classmethod
     def calculate_job_status(cls, task_scheduling_status_code, tasks_status):
