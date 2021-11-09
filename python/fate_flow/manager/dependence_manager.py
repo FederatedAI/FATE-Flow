@@ -31,7 +31,7 @@ class DependenceManager:
         cls.dependence_config = dependence_config
 
     @classmethod
-    def check_upload(cls, job_id, provider_group, storage_engine=FateDependenceStorageEngine.HDFS.value):
+    def check_upload(cls, job_id, provider_group, fate_flow_version_provider_info, storage_engine=FateDependenceStorageEngine.HDFS.value):
         schedule_logger(job_id).info("start Check if need to upload dependencies")
         schedule_logger(job_id).info(f"{provider_group}")
         upload_details = {}
@@ -60,7 +60,12 @@ class DependenceManager:
 
                     elif dependence_type == FateDependenceName.Fate_Source_Code.value:
                         if provider.name == ComponentProviderName.FATE.value:
-                            if DependenceRegistry.get_modify_time(provider.path) !=\
+                            flow_provider = ComponentProvider(**list(fate_flow_version_provider_info.values())[0])
+                            if FATE_FLOW_UPDATE_CHECK and DependenceRegistry.get_modify_time(flow_provider.path) != \
+                                    dependencies_storage_info.f_fate_flow_snapshot_time:
+                                need_upload = True
+                                upload_total += 1
+                            elif DependenceRegistry.get_modify_time(provider.path) !=\
                                     dependencies_storage_info.f_snapshot_time:
                                 need_upload = True
                                 upload_total += 1
@@ -104,7 +109,8 @@ class DependenceManager:
             schedule_logger(job.f_job_id).info(f'fate_flow_version_provider_info:{fate_flow_version_provider_info}')
         if not version_provider_info:
             version_provider_info = fate_flow_version_provider_info
-        check_tag, upload_tag, upload_details = cls.check_upload(job.f_job_id, version_provider_info)
+        check_tag, upload_tag, upload_details = cls.check_upload(job.f_job_id, version_provider_info,
+                                                                 fate_flow_version_provider_info)
         if upload_tag:
             cls.upload_job_dependence(job, upload_details)
         return check_tag
