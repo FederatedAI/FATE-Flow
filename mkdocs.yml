@@ -1,6 +1,6 @@
-site_name: FATE
-repo_name: FederatedAI/FATE
-repo_url: https://github.com/FederatedAI/FATE
+site_name: FATE Flow
+repo_name: FederatedAI/FATE-Flow
+repo_url: https://github.com/FederatedAI/FATE-Flow
 edit_uri: edit/master/doc
 docs_dir: doc
 copyright: © Copyright 2020 WeBank Co., Ltd. | All Rights Reserved.

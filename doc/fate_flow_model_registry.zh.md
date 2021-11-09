@@ -1,17 +1,30 @@
-# Pipeline 模型和 Checkpoint 模型
+# FATE Flow 模型注册中心
+
+[TOC]
+
+## 1. 版本历史
+
+| 版本状态      |  创建人|  完成日期 | 备注  |
+| :-------- | :--------| --------:| :-- |
+|1.0	|yuesun|2021-11-04	|初始化|
+
+## 2. 概述
 
 每个组件运行完成后保存的模型称为 Pipeline 模型，在组件运行时定时保存的模型称为 Checkpoint 模型。Checkpoint 模型也可以用于组件运行意外中断后，重试时的“断点续传”。
 
 Checkpoint 模型的支持自 1.7.0 加入，默认是不保存的，如需启用，则要向 DSL 中加入 callback `ModelCheckpoint`。
 
-## 本地文件与存储引擎
+### 本地磁盘存储
 
-Pipeline 模型存储于 `model_local_cache/<party_model_id>/<model_version>/variables/data/<component_name>/<model_alias>`，
-Checkpoint 模型存储于 `model_local_cache/<party_model_id>/<model_version>/checkpoint/<component_name>/<step_index>#<step_name>`。
+- Pipeline 模型存储于 `model_local_cache/<party_model_id>/<model_version>/variables/data/<component_name>/<model_alias>`，
+- Checkpoint 模型存储于 `model_local_cache/<party_model_id>/<model_version>/checkpoint/<component_name>/<step_index>#<step_name>`。
 
-存储引擎支持腾讯云对象存储、MySQL 和 Redis，具体配置方法请参考 `conf/service_conf.yaml` 中的 `enable_model_store` 和 `model_store_address`。
+### 远端存储引擎
 
-## Model 相关接口
+- 本地磁盘并不可靠，因此模型有丢失的风险，`FATE-Flow`支持导出模型到指定存储引擎、从指定存储引擎导入以及自动发布模型时推送模型到引擎存储
+- 存储引擎支持腾讯云对象存储、MySQL 和 Redis
+
+## 3. Model
 
 ### `load`
 
@@ -201,7 +214,7 @@ flow model homo-convert -c examples/model/homo_convert_model.json
 flow model homo-deploy -c examples/model/homo_deploy_model.json
 ```
 
-## Checkpoint 相关接口
+## 4. Checkpoint
 
 ### `list`
 
@@ -236,3 +249,7 @@ flow checkpoint list --model-id <model_id> --model-version <model_version> --rol
 ```bash
 flow checkpoint get --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name> --step-index <step_index>
 ```
+
+## 4. 远端存储
+
+具体配置方法请参考 `conf/service_conf.yaml` 中的 `enable_model_store` 和 `model_store_address`
