@@ -22,13 +22,34 @@ from fate_arch.common import file_utils
 
 @manager.route('/job_config/get', methods=['POST'])
 def get_config():
-    job_configuration = job_utils.get_task_using_job_conf(request.json)
-    if job_configuration:
-        return get_json_result(retcode=0, retmsg='success', data=job_configuration.to_dict())
-    return error_response(404, 'Job not found.')
+    kwargs = {}
+    job_configuration = None
+
+    for i in ('job_id', 'role', 'party_id'):
+        if request.json.get(i) is None:
+            return error_response(400, f"'{i}' is required.")
+        kwargs[i] = str(request.json[i])
+
+    for i in ('component_name', 'task_id', 'task_version'):
+        if request.json.get(i) is None:
+            break
+        kwargs[i] = str(request.json[i])
+    else:
+        try:
+            job_configuration = job_utils.get_task_using_job_conf(**kwargs)
+        except Exception:
+            pass
+
+    if job_configuration is None:
+        job_configuration = job_utils.get_job_configuration(kwargs['job_id'], kwargs['role'], kwargs['party_id'])
+
+    if job_configuration is None:
+        return error_response(404, 'Job not found.')
+
+    return get_json_result(data=job_configuration.to_dict())
 
 
 @manager.route('/json_conf/load', methods=['POST'])
 def load_json_conf():
     job_conf = file_utils.load_json_conf(request.json.get("config_path"))
-    return get_json_result(retcode=0, retmsg='success', data=job_conf)
+    return get_json_result(data=job_conf)
