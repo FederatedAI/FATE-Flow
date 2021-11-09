@@ -27,7 +27,7 @@ from flask import Response, request, send_file
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.conf_utils import get_base_config
-from fate_arch.common.file_utils import get_project_base_directory
+from fate_flow.utils.base_utils import get_fate_flow_directory
 
 from fate_flow.db.db_models import (DB, ModelTag, Tag,
                                     MachineLearningModelInfo as MLModel,
@@ -730,7 +730,7 @@ def get_predict_dsl():
 @detect_utils.validate_request('model_id', 'model_version')
 def get_predict_conf():
     request_data = request.json
-    model_dir = os.path.join(get_project_base_directory(), 'model_local_cache')
+    model_dir = os.path.join(get_fate_flow_directory(), 'model_local_cache')
     model_fp_list = glob.glob(model_dir + f"/guest#*#{request_data['model_id']}/{request_data['model_version']}")
     if model_fp_list:
         fp = model_fp_list[0]

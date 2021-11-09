@@ -16,9 +16,7 @@
 import copy
 from flask import request
 
-from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
-from fate_flow.utils.api_utils import error_response, get_json_result
-from fate_flow.utils.detect_utils import check_config
+from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.detect_utils import validate_request
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.entity import ComponentProvider

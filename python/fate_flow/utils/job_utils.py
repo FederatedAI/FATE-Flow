@@ -30,6 +30,7 @@ from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.utils import detect_utils, process_utils
 from fate_flow.utils import session_utils
+from fate_flow.utils.base_utils import get_fate_flow_directory
 
 
 class JobIdGenerator(object):
@@ -92,11 +93,11 @@ def generate_task_input_data_namespace(task_id, task_version, role, party_id):
 
 
 def get_job_directory(job_id, *args):
-    return os.path.join(file_utils.get_project_base_directory(), 'jobs', job_id, *args)
+    return os.path.join(get_fate_flow_directory(), 'jobs', job_id, *args)
 
 
 def get_job_log_directory(job_id, *args):
-    return os.path.join(file_utils.get_project_base_directory(), 'logs', job_id, *args)
+    return os.path.join(get_fate_flow_directory(), 'logs', job_id, *args)
 
 
 def get_task_directory(job_id, role, party_id, component_name, task_id, task_version, **kwargs):
@@ -104,11 +105,11 @@ def get_task_directory(job_id, role, party_id, component_name, task_id, task_ver
 
 
 def get_general_worker_directory(worker_name, worker_id, *args):
-    return os.path.join(file_utils.get_project_base_directory(), worker_name, worker_id, *args)
+    return os.path.join(get_fate_flow_directory(), worker_name, worker_id, *args)
 
 
 def get_general_worker_log_directory(worker_name, worker_id, *args):
-    return os.path.join(file_utils.get_project_base_directory(), 'logs', worker_name, worker_id, *args)
+    return os.path.join(get_fate_flow_directory(), 'logs', worker_name, worker_id, *args)
 
 
 def check_config(config: typing.Dict, required_parameters: typing.List):

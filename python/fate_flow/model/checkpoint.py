@@ -24,11 +24,11 @@ from collections import deque, OrderedDict
 from ruamel import yaml
 
 from fate_arch.common.base_utils import json_dumps, json_loads
-from fate_arch.common.file_utils import get_project_base_directory
 
 from fate_flow.settings import stat_logger
 from fate_flow.entity import RunParameters
 from fate_flow.utils.model_utils import gen_party_model_id
+from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.model import Locker
 
 
@@ -167,7 +167,7 @@ class CheckpointManager:
         self.job_parameters = job_parameters
         self.mkdir = mkdir
 
-        self.directory = (Path(get_project_base_directory()) / 'model_local_cache' /
+        self.directory = (Path(get_fate_flow_directory()) / 'model_local_cache' /
                           self.party_model_id / model_version / 'checkpoint' / self.component_name)
         if self.mkdir:
             self.directory.mkdir(0o755, True, True)
@@ -263,7 +263,7 @@ class CheckpointManager:
         # check files hash
         checkpoint.read()
 
-        directory = Path(get_project_base_directory()) / 'model_local_cache' / self.party_model_id / new_model_version
+        directory = Path(get_fate_flow_directory()) / 'model_local_cache' / self.party_model_id / new_model_version
         target = directory / 'variables' / 'data' / self.component_name / model_alias
         locker = Locker(directory)
 

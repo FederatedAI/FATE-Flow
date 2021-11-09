@@ -25,6 +25,7 @@ from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import WorkerName
 from fate_flow.settings import stat_logger
+from fate_flow.utils.base_utils import get_fate_flow_python_directory
 
 
 class ProviderManager:
@@ -52,7 +53,7 @@ class ProviderManager:
 
     @classmethod
     def get_fate_flow_provider(cls):
-        path = file_utils.get_python_base_directory("fate_flow")
+        path = get_fate_flow_python_directory("fate_flow")
         provider = ComponentProvider(name="fate_flow", version=get_versions()["FATEFlow"], path=path, class_path=ComponentRegistry.get_default_class_path())
         return provider
 
@@ -64,7 +65,7 @@ class ProviderManager:
     @classmethod
     def get_default_fate_provider(cls):
         path = JobDefaultConfig.default_component_provider_path.split("/")
-        path = file_utils.get_python_base_directory(*path)
+        path = file_utils.get_fate_python_directory(*path)
         if not os.path.exists(path):
             raise Exception(f"default fate provider not exists: {path}")
         provider = ComponentProvider(name="fate", version=get_versions()["FATE"], path=path, class_path=ComponentRegistry.get_default_class_path())

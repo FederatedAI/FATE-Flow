@@ -111,7 +111,7 @@ class TestCheckpointManager(unittest.TestCase):
 
     def setUp(self):
         self.tmpdir = TemporaryDirectory()
-        with patch('fate_flow.components.checkpoint.get_project_base_directory', return_value=self.tmpdir.name):
+        with patch('fate_flow.model.checkpoint.get_project_base_directory', return_value=self.tmpdir.name):
             self.checkpoint_manager = checkpoint.CheckpointManager('job_id', 'role', 1000, 'model_id', 'model_version')
 
     def tearDown(self):

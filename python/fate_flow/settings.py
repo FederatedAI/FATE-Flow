@@ -16,20 +16,22 @@
 import os
 
 from fate_arch.computing import ComputingEngine
-from fate_arch.common import file_utils, log, engine_utils
+from fate_arch.common import engine_utils
 from fate_arch.common.conf_utils import get_base_config
+from fate_flow.utils.base_utils import get_fate_flow_directory, get_fate_flow_python_directory
+from fate_flow.utils.log_utils import LoggerFactory, getLogger
 
 
 # Server
 API_VERSION = "v1"
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
-TEMP_DIRECTORY = os.path.join(file_utils.get_project_base_directory(), "temp", "fate_flow")
-FATE_FLOW_DIRECTORY = os.path.join(file_utils.get_python_base_directory(), "fate_flow")
+TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
+FATE_FLOW_DIRECTORY = os.path.join(get_fate_flow_python_directory(), "fate_flow")
 FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_DIRECTORY, "job_default_config.yaml")
 FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH = os.path.join(FATE_FLOW_DIRECTORY, "component_registry.json")
 FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME = os.path.join(FATE_FLOW_DIRECTORY, "component_registry_realtime.json")
-FATE_VERSION_DEPENDENCIES_PATH = os.path.join(file_utils.get_project_base_directory(), "version_dependencies")
+FATE_VERSION_DEPENDENCIES_PATH = os.path.join(get_fate_flow_directory(), "version_dependencies")
 SUBPROCESS_STD_LOG_NAME = "std.log"
 HEADERS = {
     "Content-Type": "application/json",
@@ -114,14 +116,14 @@ FATE_MANAGER_NODE_CHECK_ENDPOINT = "/fate-manager/api/site/checksite"
 FATE_BOARD_DASHBOARD_ENDPOINT = "/index.html#/dashboard?job_id={}&role={}&party_id={}"
 
 # Logger
-log.LoggerFactory.set_directory(os.path.join(file_utils.get_project_base_directory(), "logs", "fate_flow"))
+LoggerFactory.set_directory(os.path.join(get_fate_flow_directory(), "logs", "fate_flow"))
 # {CRITICAL: 50, FATAL:50, ERROR:40, WARNING:30, WARN:30, INFO:20, DEBUG:10, NOTSET:0}
-log.LoggerFactory.LEVEL = 10
+LoggerFactory.LEVEL = 10
 
-stat_logger = log.getLogger("fate_flow_stat")
-detect_logger = log.getLogger("fate_flow_detect")
-access_logger = log.getLogger("fate_flow_access")
-database_logger = log.getLogger("fate_flow_database")
+stat_logger = getLogger("fate_flow_stat")
+detect_logger = getLogger("fate_flow_detect")
+access_logger = getLogger("fate_flow_access")
+database_logger = getLogger("fate_flow_database")
 
 # Switch
 # upload
