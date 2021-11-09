@@ -22,7 +22,7 @@ Checkpoint 模型的支持自 1.7.0 加入，默认是不保存的，如需启�
 ### 远端存储引擎
 
 - 本地磁盘并不可靠，因此模型有丢失的风险，`FATE-Flow`支持导出模型到指定存储引擎、从指定存储引擎导入以及自动发布模型时推送模型到引擎存储
-- 存储引擎支持腾讯云对象存储、MySQL 和 Redis
+- 存储引擎支持腾讯云对象存储、MySQL 和 Redis, 具体请参考[远端存储引擎配置](#4-远端存储配置)
 
 ## 3. Model
 
@@ -40,6 +40,36 @@ flow model load -c examples/model/publish_load_model.json
 flow model load -c examples/model/publish_load_model.json -j <job_id>
 ```
 
+```json
+{
+  "data": {
+    "detail": {
+      "guest": {
+        "9999": {
+          "retcode": 0,
+          "retmsg": "success"
+        }
+      },
+      "host": {
+        "10000": {
+          "retcode": 0,
+          "retmsg": "success"
+        }
+      }
+    },
+    "guest": {
+      "9999": 0
+    },
+    "host": {
+      "10000": 0
+    }
+  },
+  "jobId": "202111091122168817080",
+  "retcode": 0,
+  "retmsg": "success"
+}
+```
+
 ### `bind`
 
 向 Fate-Serving 绑定 `deploy` 生成的模型。
@@ -54,6 +84,13 @@ flow model bind -c examples/model/bind_model_service.json
 flow model bind -c examples/model/bind_model_service.json -j <job_id>
 ```
 
+```json
+{
+  "retcode": 0,
+  "retmsg": "service id is 123"
+}
+```
+
 ### `import`
 
 从本地或存储引擎中导入模型。
@@ -63,11 +100,33 @@ flow model bind -c examples/model/bind_model_service.json -j <job_id>
 | conf_path     | `-c`   | `--conf-path`     | 否       | 配置文件                         |
 | from_database |        | `--from-database` | 是       | 从 Flow 配置的存储引擎中导入模型 |
 
-  - *示例*：
-
 ```bash
 flow model import -c examples/model/import_model.json
 flow model import -c examples/model/restore_model.json --from-database
+```
+
+```json
+{
+  "data": {
+    "board_url": "http://127.0.0.1:8080/index.html#/dashboard?job_id=202111091125358161430&role=local&party_id=0",
+    "code": 0,
+    "dsl_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/job_dsl.json",
+    "job_id": "202111091125358161430",
+    "logs_directory": "/root/Codes/FATE-Flow/logs/202111091125358161430",
+    "message": "success",
+    "model_info": {
+      "model_id": "local-0#model",
+      "model_version": "202111091125358161430"
+    },
+    "pipeline_dsl_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/pipeline_dsl.json",
+    "runtime_conf_on_party_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/local/0/job_runtime_on_party_conf.json",
+    "runtime_conf_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/job_runtime_conf.json",
+    "train_runtime_conf_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/train_runtime_conf.json"
+  },
+  "jobId": "202111091125358161430",
+  "retcode": 0,
+  "retmsg": "success"
+}
 ```
 
 ### `export`
@@ -79,11 +138,33 @@ flow model import -c examples/model/restore_model.json --from-database
 | conf_path   | `-c`   | `--conf-path`   | 否       | 配置文件                           |
 | to_database |        | `--to-database` | 是       | 将模型导出到 Flow 配置的存储引擎中 |
 
-  - *示例*：
-
 ```bash
 flow model export -c examples/model/export_model.json
 flow model export -c examplse/model/store_model.json --to-database
+```
+
+```json
+{
+  "data": {
+    "board_url": "http://127.0.0.1:8080/index.html#/dashboard?job_id=202111091124582110490&role=local&party_id=0",
+    "code": 0,
+    "dsl_path": "/root/Codes/FATE-Flow/jobs/202111091124582110490/job_dsl.json",
+    "job_id": "202111091124582110490",
+    "logs_directory": "/root/Codes/FATE-Flow/logs/202111091124582110490",
+    "message": "success",
+    "model_info": {
+      "model_id": "local-0#model",
+      "model_version": "202111091124582110490"
+    },
+    "pipeline_dsl_path": "/root/Codes/FATE-Flow/jobs/202111091124582110490/pipeline_dsl.json",
+    "runtime_conf_on_party_path": "/root/Codes/FATE-Flow/jobs/202111091124582110490/local/0/job_runtime_on_party_conf.json",
+    "runtime_conf_path": "/root/Codes/FATE-Flow/jobs/202111091124582110490/job_runtime_conf.json",
+    "train_runtime_conf_path": "/root/Codes/FATE-Flow/jobs/202111091124582110490/train_runtime_conf.json"
+  },
+  "jobId": "202111091124582110490",
+  "retcode": 0,
+  "retmsg": "success"
+}
 ```
 
 ### `migrate`
@@ -94,10 +175,47 @@ flow model export -c examplse/model/store_model.json --to-database
 | --------- | ------ | ------------- | -------- | -------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
 
-  - *示例*：
-
 ```bash
 flow model migrate -c examples/model/migrate_model.json
+```
+
+```json
+{
+  "data": {
+    "arbiter": {
+      "10000": 0
+    },
+    "detail": {
+      "arbiter": {
+        "10000": {
+          "retcode": 0,
+          "retmsg": "Migrating model successfully. The configuration of model has been modified automatically. New model id is: arbiter-100#guest-99#host-100#model, model version is: 202111091127392613050. Model files can be found at '/root/Codes/FATE-Flow/temp/fate_flow/arbiter#100#arbiter-100#guest-99#host-100#model_202111091127392613050.zip'."
+        }
+      },
+      "guest": {
+        "9999": {
+          "retcode": 0,
+          "retmsg": "Migrating model successfully. The configuration of model has been modified automatically. New model id is: arbiter-100#guest-99#host-100#model, model version is: 202111091127392613050. Model files can be found at '/root/Codes/FATE-Flow/temp/fate_flow/guest#99#arbiter-100#guest-99#host-100#model_202111091127392613050.zip'."
+        }
+      },
+      "host": {
+        "10000": {
+          "retcode": 0,
+          "retmsg": "Migrating model successfully. The configuration of model has been modified automatically. New model id is: arbiter-100#guest-99#host-100#model, model version is: 202111091127392613050. Model files can be found at '/root/Codes/FATE-Flow/temp/fate_flow/host#100#arbiter-100#guest-99#host-100#model_202111091127392613050.zip'."
+        }
+      }
+    },
+    "guest": {
+      "9999": 0
+    },
+    "host": {
+      "10000": 0
+    }
+  },
+  "jobId": "202111091127392613050",
+  "retcode": 0,
+  "retmsg": "success"
+}
 ```
 
 ### `tag-list`
@@ -143,6 +261,46 @@ flow model tag-model -j <job_id> -t <tag_name> --remove
 
 ```bash
 flow model deploy --model-id <model_id> --model-version <model_version>
+```
+
+```json
+{
+  "retcode": 0,
+  "retmsg": "success",
+  "data": {
+    "model_id": "arbiter-9999#guest-10000#host-9999#model",
+    "model_version": "202111032227378766180",
+    "arbiter": {
+      "party_id": 9999
+    },
+    "guest": {
+      "party_id": 10000
+    },
+    "host": {
+      "party_id": 9999
+    },
+    "detail": {
+      "arbiter": {
+        "party_id": {
+          "retcode": 0,
+          "retmsg": "deploy model of role arbiter 9999 success"
+        }
+      },
+      "guest": {
+        "party_id": {
+          "retcode": 0,
+          "retmsg": "deploy model of role guest 10000 success"
+        }
+      },
+      "host": {
+        "party_id": {
+          "retcode": 0,
+          "retmsg": "deploy model of role host 9999 success"
+        }
+      }
+    }
+  }
+}
 ```
 
 ### `get-predict-dsl`
@@ -232,6 +390,30 @@ flow model homo-deploy -c examples/model/homo_deploy_model.json
 flow checkpoint list --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name>
 ```
 
+```json
+{
+  "retcode": 0,
+  "retmsg": "success",
+  "data": [
+    {
+      "create_time": "2021-11-07T02:34:54.683015",
+      "step_index": 0,
+      "step_name": "step_name",
+      "models": {
+        "HeteroLogisticRegressionMeta": {
+          "buffer_name": "LRModelMeta",
+          "sha1": "6871508f6e6228341b18031b3623f99a53a87147"
+        },
+        "HeteroLogisticRegressionParam": {
+          "buffer_name": "LRModelParam",
+          "sha1": "e3cb636fc93675684bff27117943f5bfa87f3029"
+        }
+      }
+    }
+  ]
+}
+```
+
 ### `get`
 
 获取 Checkpoint 模型信息。
@@ -250,6 +432,22 @@ flow checkpoint list --model-id <model_id> --model-version <model_version> --rol
 flow checkpoint get --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name> --step-index <step_index>
 ```
 
-## 4. 远端存储
+```json
+{
+  "retcode": 0,
+  "retmsg": "success",
+  "data": {
+    "create_time": "2021-11-07T02:34:54.683015",
+    "step_index": 0,
+    "step_name": "step_name",
+    "models": {
+      "HeteroLogisticRegressionMeta": "CgJMMhEtQxzr4jYaPxkAAAAAAADwPyIHcm1zcHJvcDD///////////8BOTMzMzMzM8M/QApKBGRpZmZYAQ==",
+      "HeteroLogisticRegressionParam": "Ig0KAng3EW1qASu+uuO/Ig0KAng0EcNi7a65ReG/Ig0KAng4EbJbl4gvVea/Ig0KAng2EcZwlVZTkOu/Ig0KAngwEVpG8dCbGvG/Ig0KAng5ESJNTx5MLve/Ig0KAngzEZ88H9P8qfO/Ig0KAng1EVfWP8JJv/K/Ig0KAngxEVS0xVXoTem/Ig0KAngyEaApgW32Q/K/KSiiE8AukPs/MgJ4MDICeDEyAngyMgJ4MzICeDQyAng1MgJ4NjICeDcyAng4MgJ4OUj///////////8B"
+    }
+  }
+}
+```
+
+## 4. 远端存储配置
 
 具体配置方法请参考 `conf/service_conf.yaml` 中的 `enable_model_store` 和 `model_store_address`
