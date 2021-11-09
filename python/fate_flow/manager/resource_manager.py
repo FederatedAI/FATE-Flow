@@ -25,7 +25,8 @@ from fate_flow.db.db_models import DB, EngineRegistry, Job
 from fate_flow.entity.types import ResourceOperation
 from fate_flow.entity import RunParameters
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, SUPPORT_IGNORE_RESOURCE_ENGINES, IGNORE_RESOURCE_COMPUTING_ENGINE
+from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, SUPPORT_IGNORE_RESOURCE_ENGINES, \
+    IGNORE_RESOURCE_COMPUTING_ENGINE, ENGINES
 from fate_flow.utils import job_utils
 from fate_flow.db.job_default_config import JobDefaultConfig
 
@@ -102,7 +103,9 @@ class ResourceManager(object):
                                     operation_type=ResourceOperation.RETURN)
 
     @classmethod
-    def query_resource(cls, resource_in_use=True, engine_name=ComputingEngine.EGGROLL):
+    def query_resource(cls, resource_in_use=True, engine_name=None):
+        if not engine_name:
+            engine_name = ENGINES.get(EngineType.COMPUTING)
         use_resource_jobs = JobSaver.query_job(resource_in_use=resource_in_use)
         used = []
         for job in use_resource_jobs:
