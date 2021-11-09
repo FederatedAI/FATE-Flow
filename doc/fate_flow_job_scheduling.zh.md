@@ -1,19 +1,19 @@
-# FATE Flow 使用手册
+# FATE Flow 作业调度
+
 [TOC]
 
 ## 1. 版本历史
+
 | 版本状态 | 创建人     |   完成日期 | 备注 |
 | :------- | :--------- | ---------: | :--- |
 | 1.0      | jarviszeng | 2021-11-01 | 初始 |
 
+## 2. 概述
 
-## 2. 统一名称描述
 - PROJECT_BASE：表示`FATE`部署目录
 - FATE_VERSION：表示`FATE`的版本号，如1.7.0
 
-## 3. 作业调度
-
-### 3.1 作业提交
+## 3. 作业提交
 
 **简要描述** 
 
@@ -23,6 +23,7 @@
 - job conf配置组件执行参数、系统运行参数
 
 **请求CLI** 
+
 ```bash
 flow job submit -d ./examples/simple/simple_dsl.json -c ./examples/simple/simple_job_conf.json
 ```
@@ -49,6 +50,7 @@ flow job submit -d ./examples/simple/simple_dsl.json -c ./examples/simple/simple
 | data.model_info                 | dict   | 模型标识信息                                                          |
 
 **样例** 
+
 ```json
 {
     "data": {
@@ -73,11 +75,11 @@ flow job submit -d ./examples/simple/simple_dsl.json -c ./examples/simple/simple
 }
 ```
 
-### 3.2 Job DSL配置说明
+## 4. Job DSL配置说明
 
 DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一个 json 对象 （dict）。
 
-#### 3.2.1 组件列表
+### 4.1 组件列表
 
 **含义** 在这个 dict 的第一级是 "components"，用来表示这个任务将会使用到的各个模块。
 **样例**
@@ -120,7 +122,7 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 }
 ```
 
-#### 3.2.2 模块
+### 4.2 模块
 
 **含义** 用来指定使用的组件，所有可选module名称参考：
 **样例**
@@ -132,11 +134,11 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 }
 ```
 
-#### 3.2.3 输入
+### 4.3 输入
 
 **含义** 上游输入，分为两种输入类型，分别是数据和模型。
 
-##### 数据输入
+#### 数据输入
 
 **含义** 上游数据输入，分为三种输入类型：
     
@@ -149,7 +151,7 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
     >     validation set
     > 4.  test_data: 用作预测数据，如提供，需同时提供model输入。
 
-##### 模型输入
+#### 模型输入
 
 **含义** 上游模型输入，分为两种输入类型：
     1.  model: 用于同种类型组件的模型输入。例如，hetero_binning_0 会对模型进行 fit，然后
@@ -197,11 +199,11 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
         }
         ```
 
-#### 3.2.4 输出
+### 4.4 输出
 
 **含义** 输出，与输入一样，分为数据和模型输出
 
-##### 数据输出
+#### 数据输出
 
 **含义** 数据输出，分为四种输出类型：
 
@@ -210,18 +212,20 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 3.  validate_data: 仅用于Data Split
 4.  test_data： 仅用于Data Split
 
-##### 模型输出
+#### 模型输出
 
 **含义** 模型输出，仅使用model
 
+### 4.5 组件Provider
 
-#### 3.2.5 组件Provider
 FATE-Flow 1.7.0版本开始，同一个FATE-Flow系统支持加载多种且多版本的组件提供方，也即provider，provider提供了若干个组件，提交作业时可以配置组件的来源provider
 
 **含义** 指定provider，支持全局指定以及单个组件指定；若不指定，默认provider：fate@$FATE_VERSION
 **格式** provider_name@$provider_version
 **进阶** 可以通过组件注册CLI注册新的provider：，目前支持的provider：fate、fate_sql
+
 **样例**
+
 ```json
 {
   "provider": "fate@1.7.0",
@@ -276,11 +280,11 @@ FATE-Flow 1.7.0版本开始，同一个FATE-Flow系统支持加载多种且多�
 }
 ```
 
-### 3.3 Job Conf配置说明
+## 5. Job Conf配置说明
 
 Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的参数。 内容包括如下：
 
-#### 3.3.1 DSL版本
+### 5.1 DSL版本
 
 **含义** 配置版本，默认不配置为1，建议配置为2
 **样例**
@@ -288,9 +292,9 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 "dsl_version": "2"
 ```
 
-#### 3.3.2 作业参与方
+### 5.2 作业参与方
 
-##### 发起方
+#### 发起方
 
 **含义** 任务发起方的role和party_id。
 **样例**
@@ -301,7 +305,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-##### 所有参与方
+#### 所有参与方
 
 **含义** 各参与方的信息。
 **说明** 在 role 字段中，每一个元素代表一种角色以及承担这个角色的 party_id。每个角色的 party_id
@@ -316,12 +320,12 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-#### 3.3.3 系统运行参数
+### 5.3 系统运行参数
 
 **含义**
     配置作业运行时的主要系统参数
 
-##### 参数应用范围策略设置
+#### 参数应用范围策略设置
 
 **应用于所有参与方，使用common范围标识符
 **仅应用于某参与方，使用role范围标识符，使用(role:)party_index定位被指定的参与方，直接指定的参数优先级高于common参数
@@ -341,7 +345,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 其中common下的参数应用于所有参与方，role-guest-0配置下的参数应用于guest角色0号下标的参与方
 注意，当前版本系统运行参数未对仅应用于某参与方做严格测试，建议使用优先选用common
 
-##### 支持的系统参数
+#### 支持的系统参数
 
 | 配置项                        | 默认值                | 支持值                          | 说明                                                                                              |
 | ----------------------------- | --------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -362,7 +366,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 1. 计算引擎和存储引擎之间具有一定的支持依赖关系
 2. 开发者可自行实现适配的引擎，并在runtime config配置引擎
 
-##### 参考配置
+#### 参考配置
 
 1.  无须关注计算引擎，采取系统默认cpu分配计算策略时的配置
 
@@ -433,9 +437,9 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 ```
 更多资源相关高级配置请参考[资源管理](#4-资源管理)
 
-#### 3.3.5 组件运行参数
+### 5.3 组件运行参数
 
-##### 参数应用范围策略设置
+#### 参数应用范围策略设置
 
 - 应用于所有参与方，使用common范围标识符
 - 仅应用于某参与方，使用role范围标识符，使用(role:)party_index定位被指定的参与方，直接指定的参数优先级高于common参数
@@ -455,7 +459,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 其中common配置下的参数应用于所有参与方，role-guest-0配置下的参数表示应用于guest角色0号下标的参与方
 注意，当前版本组件运行参数已支持两种应用范围策略
 
-##### 参考配置
+#### 参考配置
 
 - `intersection_0`与`hetero_lr_0`两个组件的运行参数，放在common范围下，应用于所有参与方
 - 对于`reader_0`与`data_transform_0`两个组件的运行参数，依据不同的参与方进行特定配置，这是因为通常不同参与方的输入参数并不一致，所有通常这两个组件一般按参与方设置
@@ -510,7 +514,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-### 3.4 多Host 配置
+## 6. 多Host 配置
 
 多Host任务应在role下列举所有host信息
 
@@ -570,9 +574,9 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-### 3.5 预测任务配置
+## 7. 预测任务配置
 
-#### 3.5.1 说明
+### 7.1 说明
 
 DSL V2不会自动为训练任务生成预测dsl。 用户需要首先使用[Flow Client](../../api/flow_client.md) 部署所需模型中模块。
 详细命令说明请参考[FATE-Flow document](../../api/flow_client.md#deploy)
@@ -583,7 +587,7 @@ flow model deploy --model-id $model_id --model-version $model_version --cpn-list
 
 可选地，用户可以在预测dsl中加入新模块，如`Evaluation`
 
-#### 3.5.2 样例
+### 7.2 样例
 
 训练 dsl：
 
@@ -732,7 +736,7 @@ flow model deploy --model-id $model_id --model-version $model_version --cpn-list
 }
 ```
 
-### 3.6 作业重跑
+## 8. 作业重跑
 
 **请求CLI** 
 ```bash
@@ -747,7 +751,6 @@ flow job rerun
 | -cpn, --component-name | 否   | string | 指定从哪个组件重跑，没被指定的组件若与指定组件没有上游依赖关系则不会执行;若不指定该参数则整个作业重跑 |
 | --force                | 否   | bool   | 作业即使成功也重跑;若不指定该参数，作业如果成功，则跳过重跑                                           |
 
-
 **返回参数** 
 
 | 参数名  | 类型   | 说明     |
@@ -758,6 +761,7 @@ flow job rerun
 | data    | dict   | 返回数据 |
 
 **样例** 
+
 ```bash
 flow job rerun -j 202111031100369723120
 ```
@@ -770,7 +774,7 @@ flow job rerun -j 202111031100369723120 -cpn hetero_lr_0
 flow job rerun -j 202111031100369723120 -cpn hetero_lr_0 --force 
 ```
 
-### 3.7 作业参数更新
+## 9. 作业参数更新
 
 **请求CLI** 
 ```bash
@@ -822,781 +826,35 @@ flow job parameter-update -j 202111061957421943730 -c examples/other/update_para
 flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force 
 ```
 
-### 3.8 作业调度策略
+## 10. 作业调度策略
 
 - 按提交时间先后入队
 - 目前仅支持FIFO策略，也即每次调度器仅会扫描第一个作业，若第一个作业申请资源成功则start且出队，若申请资源失败则等待下一轮调度
 
-## 4. 资源管理
+## 11. 依赖分发
 
-资源指基础引擎资源，主要指计算引擎的CPU资源和内存资源，传输引擎的CPU资源和网络资源，目前仅支持计算引擎CPU资源的管理
+**简要描述：** 
 
-### 4.1 总资源配置
+- 支持从client节点分发fate和python依赖;
+- work节点不用部署fate;
+- 当前版本只有fate on spark支持分发模式;
 
-- 当前版本未实现自动获取基础引擎的资源大小，因此你通过配置文件`$PROJECT_BASE/conf/service_conf.yaml`进行配置，也即当前引擎分配给FATE集群的资源大小
-- `FATE Flow Server`启动时从配置文件获取所有基础引擎信息并注册到数据库表`t_engine_registry`
-- `FATE Flow Server`已经启动，修改资源配置，可重启`FATE Flow Server`，也可使用命令：`flow server reload`，重新加载配置
-- `total_cores` = `nodes` * `cores_per_node`
+**相关参数配置**:
 
-**样例**
+conf/service_conf.yaml:
 
-fate_on_standalone：是为执行在`FATE Flow Server`同台机器的单机引擎，一般用于快速实验，`nodes`一般设置为1，`cores_per_node`一般为机器CPU核数，也可适量超配
-
-```json
-fate_on_standalone:
-  standalone:
-    cores_per_node: 20
-    nodes: 1
+```yaml
+dependent_distribution: true
 ```
 
-fate_on_eggroll：依据`EggRoll`集群实际部署情况进行配置，`nodes`表示`node manager`的机器数量，`cores_per_node`表示平均每台`node manager`机器CPU核数
+fate_flow/settings.py
 
-```json
-fate_on_eggroll:
-  clustermanager:
-    cores_per_node: 16
-    nodes: 1
-  rollsite:
-    host: 127.0.0.1
-    port: 9370
+```python
+FATE_FLOW_UPDATE_CHECK = False
 ```
 
-fate_on_spark：依据在`Spark`集群中配置给`FATE`集群的资源进行配置，`nodes`表示`Spark`节点数量，`cores_per_node`表示平均每个节点分配给`FATE`集群的CPU核数
+**说明：**
 
-```json
-fate_on_spark:
-  spark:
-    # default use SPARK_HOME environment variable
-    home:
-    cores_per_node: 20
-    nodes: 2
-```
+- dependent_distribution: 依赖分发开关;，默认关闭;关闭时需要在每个work节点部署fate, 另外还需要在spark的配置spark-env.sh中填配置PYSPARK_DRIVER_PYTHON和PYSPARK_PYTHON；
 
-注意：请务必确保在`Spark`集群分配了对应数量的资源于`FATE`集群，若`Spark`集群分配资源少于此处`FATE`所配置的资源，那么会出现可以提交`FATE`作业，但是`FATE Flow`将任务提交至`Spark`集群时，由于`Spark`集群资源不足，任务实际不执行
-
-### 4.2 作业申请资源配置
-
-我们一般使用`task_cores`和`task_parallelism`进行配置作业申请资源，如：
-
-```json
-"job_parameters": {
-  "common": {
-    "job_type": "train",
-    "task_cores": 6,
-    "task_parallelism": 2,
-    "computing_partitions": 8,
-    "timeout": 36000
-  }
-}
-```
-
-作业申请的总资源为`task_cores` * `task_parallelism`，创建作业时，`FATE Flow`分发作业到各`party`时会依据上述配置、运行角色、本方使用引擎(通过`$PROJECT_BASE/conf/service_conf.yaml#default_engines`)，适配计算出实际参数，如下
-
-#### 资源申请实际参数适配计算过程
-
-- 计算`request_task_cores`:
-  - guest、host：
-    - `request_task_cores` = `task_cores`
-  - arbiter，考虑实际运行耗费极少资源：
-    - `request_task_cores` = 1
-
-- 进一步计算`task_cores_per_node`：
-  - `task_cores_per_node"` = max(1, `request_task_cores` / `task_nodes`)
-
-  - 若在上述`job_parameters`使用了`eggroll_run`或`spark_run`配置资源时，则`task_cores`配置无效；计算`task_cores_per_node`：
-    - `task_cores_per_node"` = eggroll_run[“eggroll.session.processors.per.node”]
-    - `task_cores_per_node"` = spark_run["executor-cores"]
-
-- 转换为适配引擎的参数(该参数会在运行任务时，提交到计算引擎识别)：
-  - fate_on_standalone/fate_on_eggroll:
-    - eggroll_run["eggroll.session.processors.per.node"] = `task_cores_per_node`
-  - fate_on_spark:
-    - spark_run["num-executors"] = `task_nodes`
-    - spark_run["executor-cores"] = `task_cores_per_node`
-
-- 最终计算结果可以查看job的`job_runtime_conf_on_party.json`，一般在`$PROJECT_BASE/jobs/$job_id/$role/$party_id/job_runtime_on_party_conf.json`
-
-### 4.4 资源调度策略
-
-- `total_cores`见上述[总资源配置](#41-总资源配置)
-- `apply_cores`见上述[作业申请资源配置](#42-作业申请资源配置)，`apply_cores` = `task_nodes` * `task_cores_per_node` * `task_parallelism`
-- 若所有参与方均申请资源成功(total_cores - apply_cores) > 0，则该作业申请资源成功
-- 若非所有参与方均申请资源成功，则发送资源回滚指令到已申请成功的参与方，该作业申请资源失败
-
-### 4.4 相关命令
-#### 资源注册
-#### 资源余量
-#### 手动回收
-
-## 5. 实时追踪
-
-**CLI作用域** 
-
-```bash
-flow tracking
-```
-
-### 5.1 任务输出指标
-
-#### 指标列表
-
-获取某个组件任务产生的所有指标名称列表
-
-**请求CLI** 
-
-```bash
-flow tracking metrics
-```
-
-**请求参数** 
-
-| 参数名                 | 必选 | 类型   | 说明                          |
-| :--------------------- | :--- | :----- | ----------------------------- |
-| -j, --job-id           | 是   | string | 作业id                        |
-| -r, --role             | 是   | string | 参与角色                      |
-| -p, --partyid          | 是   | string | 参与方id                      |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-
-**样例** 
-
-```bash
-flow tracking metrics -j 202111081618357358520 -r guest -p 9999 -cpn evaluation_0
-```
-
-输出:
-
-```json
-{
-    "data": {
-        "train": [
-            "hetero_lr_0",
-            "hetero_lr_0_ks_fpr",
-            "hetero_lr_0_ks_tpr",
-            "hetero_lr_0_lift",
-            "hetero_lr_0_gain",
-            "hetero_lr_0_accuracy",
-            "hetero_lr_0_precision",
-            "hetero_lr_0_recall",
-            "hetero_lr_0_roc",
-            "hetero_lr_0_confusion_mat",
-            "hetero_lr_0_f1_score",
-            "hetero_lr_0_quantile_pr"
-        ]
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-#### 所有指标
-
-获取组件任务的所有输出指标
-
-**请求CLI** 
-
-```bash
-flow tracking metric-all
-```
-
-**请求参数** 
-
-| 参数名                 | 必选 | 类型   | 说明                          |
-| :--------------------- | :--- | :----- | ----------------------------- |
-| -j, --job-id           | 是   | string | 作业id                        |
-| -r, --role             | 是   | string | 参与角色                      |
-| -p, --partyid          | 是   | string | 参与方id                      |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
-
-**样例** 
-
-```bash
-flow tracking metric-all -j 202111081618357358520 -r guest -p 9999 -cpn evaluation_0
-```
-
-输出(篇幅有限，仅显示部分指标的数据且数组型数据中间省略了一些值):
-
-```json
-{
-    "data": {
-        "train": {
-            "hetero_lr_0": {
-                "data": [
-                    [
-                        "auc",
-                        0.293893
-                    ],
-                    [
-                        "ks",
-                        0.0
-                    ]
-                ],
-                "meta": {
-                    "metric_type": "EVALUATION_SUMMARY",
-                    "name": "hetero_lr_0"
-                }
-            },
-            "hetero_lr_0_accuracy": {
-                "data": [
-                    [
-                        0.0,
-                        0.372583
-                    ],
-                    [
-                        0.99,
-                        0.616872
-                    ]
-                ],
-                "meta": {
-                    "curve_name": "hetero_lr_0",
-                    "metric_type": "ACCURACY_EVALUATION",
-                    "name": "hetero_lr_0_accuracy",
-                    "thresholds": [
-                        0.999471,
-                        0.002577
-                    ]
-                }
-            },
-            "hetero_lr_0_confusion_mat": {
-                "data": [],
-                "meta": {
-                    "fn": [
-                        357,
-                        0
-                    ],
-                    "fp": [
-                        0,
-                        212
-                    ],
-                    "metric_type": "CONFUSION_MAT",
-                    "name": "hetero_lr_0_confusion_mat",
-                    "thresholds": [
-                        0.999471,
-                        0.0
-                    ],
-                    "tn": [
-                        212,
-                        0
-                    ],
-                    "tp": [
-                        0,
-                        357
-                    ]
-                }
-            }
-        }
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-### 5.2 任务运行参数
-
-提交作业后，系统依据job conf中的component_parameters结合系统默认组件参数，最终解析得到的实际组件任务运行参数
-
-**请求CLI** 
-
-```bash
-flow tracking parameters
-```
-
-**请求参数** 
-
-| 参数名                 | 必选 | 类型   | 说明                          |
-| :--------------------- | :--- | :----- | ----------------------------- |
-| -j, --job-id           | 是   | string | 作业id                        |
-| -r, --role             | 是   | string | 参与角色                      |
-| -p, --partyid          | 是   | string | 参与方id                      |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
-
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
-
-**样例** 
-
-```bash
-flow tracking parameters  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0
-```
-
-输出:
-
-```json
-{
-    "data": {
-        "ComponentParam": {
-            "_feeded_deprecated_params": [],
-            "_is_raw_conf": false,
-            "_name": "HeteroLR#hetero_lr_0",
-            "_user_feeded_params": [
-                "batch_size",
-                "penalty",
-                "max_iter",
-                "learning_rate",
-                "init_param",
-                "optimizer",
-                "init_param.init_method",
-                "alpha"
-            ],
-            "alpha": 0.01,
-            "batch_size": 320,
-            "callback_param": {
-                "callbacks": [],
-                "early_stopping_rounds": null,
-                "metrics": [],
-                "save_freq": 1,
-                "use_first_metric_only": false,
-                "validation_freqs": null
-            },
-            "cv_param": {
-                "history_value_type": "score",
-                "mode": "hetero",
-                "n_splits": 5,
-                "need_cv": false,
-                "output_fold_history": true,
-                "random_seed": 1,
-                "role": "guest",
-                "shuffle": true
-            },
-            "decay": 1,
-            "decay_sqrt": true,
-            "early_stop": "diff",
-            "early_stopping_rounds": null,
-            "encrypt_param": {
-                "key_length": 1024,
-                "method": "Paillier"
-            },
-            "encrypted_mode_calculator_param": {
-                "mode": "strict",
-                "re_encrypted_rate": 1
-            },
-            "floating_point_precision": 23,
-            "init_param": {
-                "fit_intercept": true,
-                "init_const": 1,
-                "init_method": "random_uniform",
-                "random_seed": null
-            },
-            "learning_rate": 0.15,
-            "max_iter": 3,
-            "metrics": [
-                "auc",
-                "ks"
-            ],
-            "multi_class": "ovr",
-            "optimizer": "rmsprop",
-            "penalty": "L2",
-            "predict_param": {
-                "threshold": 0.5
-            },
-            "sqn_param": {
-                "memory_M": 5,
-                "random_seed": null,
-                "sample_size": 5000,
-                "update_interval_L": 3
-            },
-            "stepwise_param": {
-                "direction": "both",
-                "max_step": 10,
-                "mode": "hetero",
-                "need_stepwise": false,
-                "nvmax": null,
-                "nvmin": 2,
-                "role": "guest",
-                "score_name": "AIC"
-            },
-            "tol": 0.0001,
-            "use_first_metric_only": false,
-            "validation_freqs": null
-        },
-        "module": "HeteroLR"
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-### 5.3 任务输出数据
-
-#### 下载输出数据
-
-**请求CLI** 
-
-```bash
-flow tracking output-data
-```
-
-**请求参数** 
-
-| 参数名                 | 必选 | 类型   | 说明                          |
-| :--------------------- | :--- | :----- | ----------------------------- |
-| -j, --job-id           | 是   | string | 作业id                        |
-| -r, --role             | 是   | string | 参与角色                      |
-| -p, --partyid          | 是   | string | 参与方id                      |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
-| -o, --output-path      | 是   | string | 输出数据的存放路径            |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
-
-**样例** 
-
-```bash
-flow tracking output-data  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0 -o ./
-```
-
-输出:
-
-```json
-{
-    "retcode": 0,
-    "directory": "$PROJECT_BASE/job_202111081618357358520_hetero_lr_0_guest_9999_output_data",
-    "retmsg": "Download successfully, please check $PROJECT_BASE/job_202111081618357358520_hetero_lr_0_guest_9999_output_data directory"
-}
-```
-
-#### 获取输出数据存放数据表名称
-
-**请求CLI** 
-
-```bash
-flow tracking output-data-table
-```
-
-**请求参数** 
-
-| 参数名                 | 必选 | 类型   | 说明                          |
-| :--------------------- | :--- | :----- | ----------------------------- |
-| -j, --job-id           | 是   | string | 作业id                        |
-| -r, --role             | 是   | string | 参与角色                      |
-| -p, --partyid          | 是   | string | 参与方id                      |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
-
-**样例** 
-
-```bash
-flow tracking output-data-table  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0
-```
-
-输出:
-
-```json
-{
-    "data": [
-        {
-            "data_name": "train",
-            "table_name": "9688fa00406c11ecbd0bacde48001122",
-            "table_namespace": "output_data_202111081618357358520_hetero_lr_0_0"
-        }
-    ],
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-### 5.4 任务输出模型
-
-获取某个组件任务的输出模型，更多详细关于模型的操作请见：todo
-
-**请求CLI** 
-
-```bash
-flow tracking output-model
-```
-
-**请求参数** 
-
-| 参数名                 | 必选 | 类型   | 说明                          |
-| :--------------------- | :--- | :----- | ----------------------------- |
-| -j, --job-id           | 是   | string | 作业id                        |
-| -r, --role             | 是   | string | 参与角色                      |
-| -p, --partyid          | 是   | string | 参与方id                      |
-| -cpn, --component-name | 否   | string | 组件名，与job dsl中的保持一致 |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
-
-**样例** 
-
-```bash
-flow tracking output-model  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0
-```
-
-输出:
-
-```json
-{
-    "data": {
-        "bestIteration": -1,
-        "encryptedWeight": {},
-        "header": [
-            "x0",
-            "x1",
-            "x2",
-            "x3",
-            "x4",
-            "x5",
-            "x6",
-            "x7",
-            "x8",
-            "x9"
-        ],
-        "intercept": 0.24451607054764884,
-        "isConverged": false,
-        "iters": 3,
-        "lossHistory": [],
-        "needOneVsRest": false,
-        "weight": {
-            "x0": 0.04639947589856569,
-            "x1": 0.19899685467216902,
-            "x2": -0.18133550931649306,
-            "x3": 0.44928868756862206,
-            "x4": 0.05285905125502288,
-            "x5": 0.319187932844076,
-            "x6": 0.42578983446194013,
-            "x7": -0.025765956309895477,
-            "x8": -0.3699194462271593,
-            "x9": -0.1212094750908295
-        }
-    },
-    "meta": {
-        "meta_data": {
-            "alpha": 0.01,
-            "batchSize": "320",
-            "earlyStop": "diff",
-            "fitIntercept": true,
-            "learningRate": 0.15,
-            "maxIter": "3",
-            "needOneVsRest": false,
-            "optimizer": "rmsprop",
-            "partyWeight": 0.0,
-            "penalty": "L2",
-            "reEncryptBatches": "0",
-            "revealStrategy": "",
-            "tol": 0.0001
-        },
-        "module_name": "HeteroLR"
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-### 5.5 任务输出摘要
-
-每个组件允许设置一些摘要信息，便于观察分析
-
-**请求CLI** 
-
-```bash
-flow tracking get-summary
-```
-
-**请求参数** 
-
-| 参数名                 | 必选 | 类型   | 说明                          |
-| :--------------------- | :--- | :----- | ----------------------------- |
-| -j, --job-id           | 是   | string | 作业id                        |
-| -r, --role             | 是   | string | 参与角色                      |
-| -p, --partyid          | 是   | string | 参与方id                      |
-| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
-
-**样例** 
-
-```bash
-flow tracking get-summary -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0
-```
-
-输出:
-
-```json
-{
-    "data": {
-        "best_iteration": -1,
-        "coef": {
-            "x0": 0.04639947589856569,
-            "x1": 0.19899685467216902,
-            "x2": -0.18133550931649306,
-            "x3": 0.44928868756862206,
-            "x4": 0.05285905125502288,
-            "x5": 0.319187932844076,
-            "x6": 0.42578983446194013,
-            "x7": -0.025765956309895477,
-            "x8": -0.3699194462271593,
-            "x9": -0.1212094750908295
-        },
-        "intercept": 0.24451607054764884,
-        "is_converged": false,
-        "one_vs_rest": false
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-## 6. 异常探测
-
-## 7. Flow Server
-
-### 7.1 查看版本信息
-
-**请求CLI** 
-
-```bash
-flow server
-```
-
-**请求参数** 
-
-无
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
-
-**样例** 
-
-```bash
-flow server versions
-```
-
-输出:
-
-```json
-{
-    "data": {
-        "API": "v1",
-        "CENTOS": "7.2",
-        "EGGROLL": "2.4.0",
-        "FATE": "1.7.0",
-        "FATEBoard": "1.7.0",
-        "FATEFlow": "1.7.0",
-        "JDK": "8",
-        "MAVEN": "3.6.3",
-        "PYTHON": "3.6.5",
-        "SPARK": "2.4.1",
-        "UBUNTU": "16.04"
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-### 7.2 重新加载配置文件
-
-- $PROJECT_BASE/conf/service_conf.yaml中# engine services后的所有配置
-- $PROJECT_BASE/python/fate_flow/job_default_config.yaml
-
-**请求CLI** 
-
-```bash
-flow server reload
-```
-
-**请求参数** 
-
-无
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
-
-**样例** 
-
-```bash
-flow server reload
-```
-
-输出:
-
-```json
-{
-    "data": {
-        "job_default_config": {
-            "auto_retries": 0,
-            "auto_retry_delay": 1,
-            "default_component_provider_path": "component_plugins/fate/python/federatedml",
-            "end_status_job_scheduling_time_limit": 300000,
-            "end_status_job_scheduling_updates": 1,
-            "federated_command_trys": 3,
-            "federated_status_collect_type": "PUSH",
-            "job_timeout": 259200,
-            "max_cores_percent_per_job": 1,
-            "output_data_summary_count_limit": 100,
-            "remote_request_timeout": 30000,
-            "task_cores": 4,
-            "task_memory": 0,
-            "task_parallelism": 1,
-            "total_cores_overweight_percent": 1,
-            "total_memory_overweight_percent": 1,
-            "upload_max_bytes": 4194304000
-        },
-        "service_registry": null
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
+- FATE_FLOW_UPDATE_CHECK: 依赖校验开关, 默认关闭;打开后每次提交任务都会自动校验fate代码是否发生改变;若发生改变则会重新上传fate代码依赖;
