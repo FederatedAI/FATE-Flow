@@ -25,6 +25,8 @@ from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
 # be sure to import environment variable before importing fate_arch
 from fate_flow import set_env
+from fate_arch.common import file_utils
+from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
 from fate_flow.apps import app
 from fate_flow.db.db_models import init_database_tables as init_flow_db
@@ -47,6 +49,7 @@ from fate_flow.manager.provider_manager import ProviderManager
 
 
 if __name__ == '__main__':
+    stat_logger.info(f"project base: {file_utils.get_project_base_directory()}, fate base: {file_utils.get_fate_directory()}, fate flow base: {get_fate_flow_directory()}")
     # init
     # signal.signal(signal.SIGTERM, job_utils.cleaning)
     # signal.signal(signal.SIGCHLD, process_utils.wait_child_process)

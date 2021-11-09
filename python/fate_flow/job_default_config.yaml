@@ -1,5 +1,5 @@
-# component provider
-default_component_provider_path: component_plugins/fate/python/federatedml
+# component provider, relative path to get_fate_python_directory
+default_component_provider_path: federatedml
 
 # resource
 total_cores_overweight_percent: 1  # 1 means no overweight
