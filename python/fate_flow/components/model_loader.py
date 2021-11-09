@@ -20,7 +20,7 @@ from fate_flow.entity import JobConfiguration
 from fate_flow.entity import MetricMeta
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.scheduling_apps.client.operation_client import OperationClient
+from fate_flow.utils.job_utils import get_job_configuration
 from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.utils.schedule_utils import get_job_dsl_parser
 
@@ -44,11 +44,9 @@ class ModelLoader(ComponentBase):
         self.step_name = None
 
     def get_model_alias(self):
-        job_configuration = OperationClient().get_job_conf(
-            self.model_version, self.tracker.role, self.tracker.party_id, self.tracker.component_name, self.tracker.task_id, self.tracker.task_version)
+        job_configuration = get_job_configuration(self.model_version, self.tracker.role, self.tracker.party_id)
         if not job_configuration:
             raise ValueError('The job was not found.')
-        job_configuration = JobConfiguration(**job_configuration)
 
         dsl_parser = get_job_dsl_parser(job_configuration.dsl, job_configuration.runtime_conf,
                                         train_runtime_conf=job_configuration.train_runtime_conf)
