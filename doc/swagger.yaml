@@ -4,7 +4,7 @@ info:
   title: Fate Flow
 
 paths:
-  '/v1/info/fateboard':
+  '/info/fateboard':
     post:
       summary: get fateboard host and port
       tags:
@@ -46,7 +46,7 @@ paths:
                     type: string
                     example: fateboard is not configured
 
-  '/v1/model/deploy':
+  '/model/deploy':
     post:
       summary: deploy a model for predict
       tags:
@@ -69,6 +69,10 @@ paths:
                   example: '202111032155391167400'
                 components_checkpoint:
                   type: object
+                  example:
+                    hetero_lr_0:
+                      step_index: 5
+                  description: specify a checkpoint model to replace the pipeline model
                   additionalProperties:
                     type: object
                     description: use step_index or step_name to specity a checkpoint
@@ -160,7 +164,7 @@ paths:
                                     type: string
                                     example: deploy model of role host 9999 success
 
-  '/v1/model/transfer/{model_id}/{model_version}':
+  '/model/transfer/{model_id}/{model_version}':
     post:
       summary: download a model by model_id and model_version (parameters in path)
       tags:
@@ -211,7 +215,7 @@ paths:
                     type: string
                     example: model not found
 
-  '/v1/component/validate':
+  '/component/validate':
     post:
       summary: validate component parameters
       tags:
@@ -332,3 +336,10 @@ tags:
   - name: information
   - name: model
   - name: component
+
+servers:
+  - description: Default Server URL
+    url: http://localhost:9380/v1
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/Jat/Fate-Flow/1.7.0
