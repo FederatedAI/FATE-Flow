@@ -433,9 +433,9 @@ class DAGScheduler(Cron):
 
             tasks = JobSaver.query_task(**task_query)
 
-        job_can_rerun = any(TaskScheduler.prepare_rerun_task(
+        job_can_rerun = any([TaskScheduler.prepare_rerun_task(
             job=job, task=task, dsl_parser=dsl_parser, auto=auto, force=force,
-        ) for task in tasks)
+        ) for task in tasks])
         if not job_can_rerun:
             FederatedScheduler.sync_job_status(job=job)
             schedule_logger(job_id).info("job no task to rerun")
