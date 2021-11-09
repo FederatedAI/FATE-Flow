@@ -49,6 +49,8 @@ class PipelinedModel(Locker):
         :param model_id: the model id stored at the local party.
         :param model_version: the model version.
         """
+        os.makedirs(TEMP_DIRECTORY, exist_ok=True)
+
         self.model_id = model_id
         self.model_version = model_version
         self.model_path = file_utils.get_project_base_directory("model_local_cache", model_id, model_version)
@@ -61,6 +63,7 @@ class PipelinedModel(Locker):
         self.default_archive_format = "zip"
         self.pipeline_model_name = "Pipeline"
         self.pipeline_model_alias = "pipeline"
+
         super().__init__(self.model_path)
 
     def create_pipelined_model(self):
