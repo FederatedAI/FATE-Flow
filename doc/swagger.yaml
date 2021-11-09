@@ -11,7 +11,7 @@ paths:
         - information
       responses:
         '200':
-          description: return fateboard host and port
+          description: fateboard host and port
           content:
             application/json:
               schema:
@@ -69,10 +69,10 @@ paths:
                   example: '202111032155391167400'
                 components_checkpoint:
                   type: object
+                  description: specify a checkpoint model to replace the pipeline model
                   example:
                     hetero_lr_0:
                       step_index: 5
-                  description: specify a checkpoint model to replace the pipeline model
                   additionalProperties:
                     type: object
                     description: use step_index or step_name to specity a checkpoint
@@ -166,7 +166,7 @@ paths:
 
   '/model/transfer/{model_id}/{model_version}':
     post:
-      summary: download a model by model_id and model_version (parameters in path)
+      summary: download a model by model_id and model_version
       tags:
         - model
       parameters:
@@ -186,7 +186,7 @@ paths:
             example: '202105060929263278441'
       responses:
         '200':
-          description: return model data
+          description: model data
           content:
             application/json:
               schema:
@@ -214,6 +214,170 @@ paths:
                   retmsg:
                     type: string
                     example: model not found
+
+  '/checkpoint/list':
+    post:
+      summary: list checkpoints
+      tags:
+        - checkpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - model_id
+                - model_version
+                - role
+                - party_id
+                - component_name
+              properties:
+                model_id:
+                  type: string
+                  example: 'arbiter-10000#guest-9999#host-10000#model'
+                model_version:
+                  type: string
+                  example: '202111032155391167400'
+                role:
+                  type: string
+                  example: guest
+                party_id:
+                  type: integer
+                  example: 9999
+                component_name:
+                  type: string
+                  example: hetero_lr_0
+      responses:
+        '200':
+          description: checkpoints list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        create_time:
+                          type: string
+                          example: '2021-11-07T02:34:54.683015'
+                        step_index:
+                          type: integer
+                          example: 0
+                        step_name:
+                          type: string
+                          example: step_name
+                        models:
+                          type: object
+                          example:
+                            HeteroLogisticRegressionMeta:
+                              buffer_name: LRModelMeta
+                              sha1: 6871508f6e6228341b18031b3623f99a53a87147
+                            HeteroLogisticRegressionParam:
+                              buffer_name: LRModelParam
+                              sha1: e3cb636fc93675684bff27117943f5bfa87f3029
+                          additionalProperties:
+                            type: object
+                            properties:
+                              buffer_name:
+                                type: string
+                                example: HeteroLogisticRegressionMeta
+                              sha1:
+                                type: string
+                                example: 6871508f6e6228341b18031b3623f99a53a87147
+
+  '/checkpoint/get':
+    post:
+      summary: get a checkpoint
+      tags:
+        - checkpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - model_id
+                - model_version
+                - role
+                - party_id
+                - component_name
+              properties:
+                model_id:
+                  type: string
+                  example: 'arbiter-10000#guest-9999#host-10000#model'
+                model_version:
+                  type: string
+                  example: '202111032155391167400'
+                role:
+                  type: string
+                  example: guest
+                party_id:
+                  type: integer
+                  example: 9999
+                component_name:
+                  type: string
+                  example: hetero_lr_0
+                step_index:
+                  type: integer
+                  example: 0
+      responses:
+        '200':
+          description: checkpoint data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      create_time:
+                        type: string
+                        example: '2021-11-07T02:34:54.683015'
+                      step_index:
+                        type: integer
+                        example: 0
+                      step_name:
+                        type: string
+                        example: step_name
+                      models:
+                        type: object
+                        example:
+                          HeteroLogisticRegressionMeta: 'CgJMMhEtQxzr4jYaPxkAAAAAAADwPyIHcm1zcHJvcDD///////////8BOTMzMzMzM8M/QApKBGRpZmZYAQ=='
+                          HeteroLogisticRegressionParam: 'Ig0KAng3EW1qASu+uuO/Ig0KAng0EcNi7a65ReG/Ig0KAng4EbJbl4gvVea/Ig0KAng2EcZwlVZTkOu/Ig0KAngwEVpG8dCbGvG/Ig0KAng5ESJNTx5MLve/Ig0KAngzEZ88H9P8qfO/Ig0KAng1EVfWP8JJv/K/Ig0KAngxEVS0xVXoTem/Ig0KAngyEaApgW32Q/K/KSiiE8AukPs/MgJ4MDICeDEyAngyMgJ4MzICeDQyAng1MgJ4NjICeDcyAng4MgJ4OUj///////////8B'
+                        additionalProperties:
+                          type: string
+                          description: base64 encoded model data
+        '404':
+          description: checkpoint not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 404
+                  retmsg:
+                    type: string
+                    example: The checkpoint was not found.
 
   '/component/validate':
     post:
@@ -335,6 +499,7 @@ paths:
 tags:
   - name: information
   - name: model
+  - name: checkpoint
   - name: component
 
 servers:
