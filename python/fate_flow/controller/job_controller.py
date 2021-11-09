@@ -29,7 +29,7 @@ from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.protobuf.python import pipeline_pb2
-from fate_flow.settings import USE_AUTHENTICATION, USE_DATA_AUTHENTICATION
+from fate_flow.settings import USE_AUTHENTICATION, USE_DATA_AUTHENTICATION, ENGINES
 from fate_flow.utils import job_utils, schedule_utils, data_utils
 from fate_flow.utils.authentication_utils import authentication_check
 from fate_flow.utils.authentication_utils import data_authentication_check
@@ -115,8 +115,7 @@ class JobController(object):
     @classmethod
     def set_federated_mode(cls, job_parameters: RunParameters):
         if not job_parameters.federated_mode:
-            engines = engine_utils.get_engines()
-            job_parameters.federated_mode = engines["federated_mode"]
+            job_parameters.federated_mode = ENGINES["federated_mode"]
 
     @classmethod
     def set_engines(cls, job_parameters: RunParameters, engine_type=None):

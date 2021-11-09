@@ -55,6 +55,7 @@ HTTP_APP_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_app_key")
 HTTP_SECRET_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_secret_key")
 PROXY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol")
+ENGINES = engine_utils.get_engines()
 IS_STANDALONE = engine_utils.is_standalone()
 
 DATABASE = get_base_config("database", {})
