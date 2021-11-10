@@ -358,7 +358,8 @@ def start_session_stop(task):
                             task.f_party_id, task.f_component_name, 'session_stop')
     os.makedirs(task_dir, exist_ok=True)
     process_cmd = [
-        'python3', sys.modules[session_utils.SessionStop.__module__].__file__,
+        sys.executable or 'python3',
+        sys.modules[session_utils.SessionStop.__module__].__file__,
         '--session', session_manager_id,
         '--computing', job_parameters.computing_engine,
         '--federation', job_parameters.federation_engine,

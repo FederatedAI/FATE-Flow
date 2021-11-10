@@ -350,7 +350,8 @@ class Upload(ComponentBase):
                                     self.tracker.component_name, 'upload')
             os.makedirs(task_dir, exist_ok=True)
             process_cmd = [
-                'python3', sys.modules[upload_utils.UploadFile.__module__].__file__,
+                sys.executable or 'python3',
+                sys.modules[upload_utils.UploadFile.__module__].__file__,
                 '--session_id', self.session_id,
                 '--storage', self.storage_engine,
                 '--file', block_file,
