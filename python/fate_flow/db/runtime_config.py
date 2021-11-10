@@ -20,6 +20,7 @@ from .reload_config_base import ReloadConfigBase
 
 
 class RuntimeConfig(ReloadConfigBase):
+    DEBUG = None
     WORK_MODE = None
     COMPUTING_ENGINE = None
     FEDERATION_ENGINE = None

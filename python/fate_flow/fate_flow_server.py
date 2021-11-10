@@ -62,11 +62,13 @@ if __name__ == '__main__':
     parser.add_argument('--version', default=False, help="fate flow version", action='store_true')
     parser.add_argument('--debug', default=False, help="debug mode", action='store_true')
     args = parser.parse_args()
-    debug_mode = args.debug
     if args.version:
         print(get_versions())
         sys.exit(0)
     # todo: add a general init steps?
+    RuntimeConfig.DEBUG = args.debug
+    if RuntimeConfig.DEBUG:
+        stat_logger.info("run on debug mode")
     ConfigManager.load()
     RuntimeConfig.init_env()
     RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
@@ -104,7 +106,7 @@ if __name__ == '__main__':
         werkzeug_logger = logging.getLogger("werkzeug")
         for h in access_logger.handlers:
             werkzeug_logger.addHandler(h)
-        run_simple(hostname=HOST, port=HTTP_PORT, application=app, threaded=True, use_reloader=debug_mode, use_debugger=debug_mode)
+        run_simple(hostname=HOST, port=HTTP_PORT, application=app, threaded=True, use_reloader=RuntimeConfig.DEBUG, use_debugger=RuntimeConfig.DEBUG)
     except OSError as e:
         traceback.print_exc()
         os.kill(os.getpid(), signal.SIGKILL)
