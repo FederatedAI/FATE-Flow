@@ -18,7 +18,7 @@ import os
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import engine_utils
 from fate_arch.common.conf_utils import get_base_config
-from fate_flow.utils.base_utils import get_fate_flow_directory, get_fate_flow_python_directory
+from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import LoggerFactory, getLogger
 
 
@@ -27,10 +27,10 @@ API_VERSION = "v1"
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
 TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
-FATE_FLOW_DIRECTORY = os.path.join(get_fate_flow_python_directory(), "fate_flow")
-FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_DIRECTORY, "job_default_config.yaml")
-FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH = os.path.join(FATE_FLOW_DIRECTORY, "component_registry.json")
-FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH_REALTIME = os.path.join(FATE_FLOW_DIRECTORY, "component_registry_realtime.json")
+FATE_FLOW_CONF_PATH = os.path.join(get_fate_flow_directory(), "conf")
+
+FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_CONF_PATH, "job_default_config.yaml")
+FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH = os.path.join(FATE_FLOW_CONF_PATH, "component_registry.json")
 FATE_VERSION_DEPENDENCIES_PATH = os.path.join(get_fate_flow_directory(), "version_dependencies")
 SUBPROCESS_STD_LOG_NAME = "std.log"
 HEADERS = {
