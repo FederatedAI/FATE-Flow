@@ -29,6 +29,7 @@ from fate_flow import set_env
 from fate_arch.common import file_utils
 from fate_flow.settings import API_VERSION, HOST, HTTP_PORT
 from fate_flow.utils import detect_utils, requests_utils
+from fate_flow.utils.base_utils import get_fate_flow_directory
 
 JOB_OPERATE_FUNC = ["submit_job", "stop_job", "query_job", "data_view_query", "clean_job", "clean_queue"]
 JOB_FUNC = ["job_config", "job_log"]
@@ -150,7 +151,7 @@ def call_fun(func, config_data, dsl_path, config_path):
         if func == 'upload' and config_data.get('use_local_data', 1) != 0:
             file_name = config_data.get('file')
             if not os.path.isabs(file_name):
-                file_name = os.path.join(file_utils.get_project_base_directory(), file_name)
+                file_name = os.path.join(get_fate_flow_directory(), file_name)
             if os.path.exists(file_name):
                 with open(file_name, 'rb') as fp:
                     data = MultipartEncoder(
@@ -190,7 +191,7 @@ def call_fun(func, config_data, dsl_path, config_path):
         if func == "import":
             file_path = config_data["file"]
             if not os.path.isabs(file_path):
-                file_path = os.path.join(file_utils.get_project_base_directory(), file_path)
+                file_path = os.path.join(get_fate_flow_directory(), file_path)
             if os.path.exists(file_path):
                 files = {'file': open(file_path, 'rb')}
             else:

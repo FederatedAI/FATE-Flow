@@ -27,37 +27,6 @@ from fate_flow.entity.types import WorkerName
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 
-@manager.route('/registry/get', methods=['POST'])
-def get_registry():
-    return get_json_result(data=ComponentRegistry.REGISTRY)
-
-@manager.route('/provider/register', methods=['POST'])
-@validate_request("name", "version", "path")
-def register():
-    info = request.json or request.form.to_dict()
-    provider = ComponentProvider(name=info["name"],
-                                 version=info["version"],
-                                 path=info["path"],
-                                 class_path=info.get("class_path", ComponentRegistry.get_default_class_path()))
-    code, std = WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
-    if code == 0:
-        ComponentRegistry.load()
-        if ComponentRegistry.get_providers().get(provider.name, {}).get(provider.version, None) is None:
-            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"not load into memory")
-        else:
-            return get_json_result()
-    else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"register failed:\n{std}")
-
-@manager.route('/provider/get', methods=['POST'])
-def get_providers():
-    return get_json_result(data=ComponentRegistry.get_providers())
-
-@manager.route('/provider/<provider_name>/get', methods=['POST'])
-def get_provider(provider_name):
-    return get_json_result(data=ComponentRegistry.get_providers().get(provider_name))
-
-
 @manager.route('/get', methods=['POST'])
 def get_components():
     return get_json_result(data=ComponentRegistry.get_components())

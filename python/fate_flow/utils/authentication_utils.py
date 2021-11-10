@@ -20,14 +20,14 @@ import time
 
 from flask import request
 
-from fate_arch.common import file_utils
+from fate_flow.utils.base_utils import get_fate_flow_python_directory
 from fate_flow.settings import USE_AUTHENTICATION, PRIVILEGE_COMMAND_WHITELIST, stat_logger, \
     AUTHENTICATION_DEFAULT_TIMEOUT, USE_DEFAULT_TIMEOUT
 
 
 class PrivilegeAuth(object):
     privilege_cache = {}
-    file_dir = os.path.join(file_utils.get_python_base_directory(), 'fate_flow')
+    file_dir = os.path.join(get_fate_flow_python_directory(), 'fate_flow')
     local_storage_file = os.path.join(file_dir, 'authorization_config.json')
     USE_LOCAL_STORAGE = True
     ALL_PERMISSION = {'privilege_role': ['guest', 'host', 'arbiter'],
@@ -228,7 +228,7 @@ class PrivilegeAuth(object):
         if USE_AUTHENTICATION:
             # init local storage
             stat_logger.info('init local authorization library')
-            file_dir = os.path.join(file_utils.get_python_base_directory(), 'fate_flow')
+            file_dir = os.path.join(get_fate_flow_python_directory(), 'fate_flow')
             os.makedirs(file_dir, exist_ok=True)
             PrivilegeAuth.local_storage_file = os.path.join(file_dir, 'authorization_config.json')
             if not os.path.exists(PrivilegeAuth.local_storage_file):

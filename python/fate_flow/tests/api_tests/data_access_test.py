@@ -5,20 +5,20 @@ import unittest
 import requests
 
 from fate_flow.entity.run_status import JobStatus
-from fate_arch.common.file_utils import get_project_base_directory
+from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.settings import API_VERSION, HOST, HTTP_PORT
 
 
 class TestDataAccess(unittest.TestCase):
     def setUp(self):
-        self.data_dir = os.path.join(get_project_base_directory(), "examples", "data")
+        self.data_dir = os.path.join(get_fate_flow_directory(), "examples", "data")
         self.upload_guest_config = {"file": os.path.join(self.data_dir, "breast_hetero_guest.csv"), "head": 1,
                                     "partition": 10, "namespace": "experiment",
                                     "table_name": "breast_hetero_guest", "use_local_data": 0, 'drop': 1, 'backend': 0, "id_delimiter": ',', }
         self.upload_host_config = {"file": os.path.join(self.data_dir, "breast_hetero_host.csv"), "head": 1,
                                    "partition": 10, "namespace": "experiment",
                                    "table_name": "breast_hetero_host", "use_local_data": 0, 'drop': 1, 'backend': 0, "id_delimiter": ',', }
-        self.download_config = {"output_path": os.path.join(get_project_base_directory(),
+        self.download_config = {"output_path": os.path.join(get_fate_flow_directory(),
                                                             "fate_flow/fate_flow_unittest_breast_b.csv"),
                                 "namespace": "experiment",
                                 "table_name": "breast_hetero_guest"}

@@ -6,7 +6,8 @@ import unittest
 import requests
 
 from fate_flow.entity.run_status import EndStatus, JobStatus
-from fate_arch.common.file_utils import load_json_conf, get_python_base_directory
+from fate_arch.common.file_utils import load_json_conf
+from fate_flow.utils.base_utils import get_fate_flow_python_directory
 from fate_flow.settings import API_VERSION, HOST, HTTP_PORT,IS_STANDALONE
 
 WORK_MODE = 1 if not IS_STANDALONE else 0
@@ -24,9 +25,9 @@ class TestTracking(unittest.TestCase):
         self.host_party_id = self.party_info['host'] if WORK_MODE else 10000
 
     def test_tracking(self):
-        with open(os.path.join(get_python_base_directory(), self.dsl_path), 'r') as f:
+        with open(os.path.join(get_fate_flow_python_directory(), self.dsl_path), 'r') as f:
             dsl_data = json.load(f)
-        with open(os.path.join(get_python_base_directory(), self.config_path), 'r') as f:
+        with open(os.path.join(get_fate_flow_python_directory(), self.config_path), 'r') as f:
             config_data = json.load(f)
             config_data[ "initiator"]["party_id"] = self.guest_party_id
             config_data["role"] = {

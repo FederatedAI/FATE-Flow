@@ -13,9 +13,31 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os
 import uuid
 from fate_arch.common.base_utils import json_dumps
 
+FATE_FLOW_BASE = os.getenv("FATE_FLOW_BASE")
+
+
+def get_fate_flow_directory(*args):
+    global FATE_FLOW_BASE
+    if FATE_FLOW_BASE is None:
+        FATE_FLOW_BASE = os.path.abspath(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                os.pardir,
+                os.pardir,
+                os.pardir,
+            )
+        )
+    if args:
+        return os.path.join(FATE_FLOW_BASE, *args)
+    return FATE_FLOW_BASE
+
+
+def get_fate_flow_python_directory(*args):
+    return get_fate_flow_directory("python", *args)
 
 def new_unique_id():
     #todo: may be using snowflake?

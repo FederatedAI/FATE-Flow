@@ -23,6 +23,7 @@ if sys.version_info < (3, 7):
 
 
 def set_env():
+    """
     project_base = os.path.abspath(
         os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
@@ -31,6 +32,7 @@ def set_env():
         )
     )
     os.environ.setdefault("FATE_DEPLOY_BASE", project_base)
+    """
     os.environ.setdefault("PROCESS_ROLE", ProcessRole.DRIVER.value)
 
 

@@ -35,6 +35,7 @@ from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.utils import data_utils, job_utils, process_utils, session_utils, upload_utils
+from fate_flow.utils.base_utils import get_fate_flow_directory
 
 LOGGER = log.getLogger()
 
@@ -106,7 +107,7 @@ class Upload(ComponentBase):
         job_id = self.task_version_id.split("_")[0]
         if not os.path.isabs(self.parameters.get("file", "")):
             self.parameters["file"] = os.path.join(
-                file_utils.get_project_base_directory(), self.parameters["file"]
+                get_fate_flow_directory(), self.parameters["file"]
             )
         if not os.path.exists(self.parameters["file"]):
             raise Exception(

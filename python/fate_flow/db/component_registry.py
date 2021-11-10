@@ -151,7 +151,8 @@ class ComponentRegistry:
                     "default": {"version": get_versions()[component_registry["default_settings"][provider_info.f_provider_name]["default_version_key"]]}
                 }
             component_registry["providers"][provider_info.f_provider_name][provider_info.f_version] = {
-                "path": provider_info.f_path, "f_python": provider_info.f_python,
+                "path": provider_info.f_path,
+                "python": provider_info.f_python,
                 "class_path": provider_info.f_class_path
             }
             modules_list = ComponentRegistryInfo.select().where(

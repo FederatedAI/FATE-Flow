@@ -29,6 +29,7 @@ from fate_flow.model import Locker, parse_proto_object, serialize_buffer_object
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger
 from fate_flow.utils import job_utils
+from fate_flow.utils.base_utils import get_fate_flow_directory, get_fate_flow_python_directory
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.db.runtime_config import RuntimeConfig
 
@@ -53,7 +54,7 @@ class PipelinedModel(Locker):
 
         self.model_id = model_id
         self.model_version = model_version
-        self.model_path = file_utils.get_project_base_directory("model_local_cache", model_id, model_version)
+        self.model_path = get_fate_flow_directory("model_local_cache", model_id, model_version)
         self.define_proto_path = os.path.join(self.model_path, "define", "proto")
         self.define_proto_generated_path = os.path.join(self.model_path, "define", "proto_generated_python")
         self.define_meta_path = os.path.join(self.model_path, "define", "define_meta.yaml")
@@ -75,8 +76,8 @@ class PipelinedModel(Locker):
         with self.lock:
             for path in [self.variables_index_path, self.variables_data_path]:
                 os.makedirs(path)
-            shutil.copytree(file_utils.get_python_base_directory("fate_flow", "protobuf", "proto"), self.define_proto_path)
-            shutil.copytree(file_utils.get_python_base_directory("fate_flow", "protobuf", "python"), self.define_proto_generated_path)
+            shutil.copytree(get_fate_flow_python_directory("fate_flow", "protobuf", "proto"), self.define_proto_path)
+            shutil.copytree(get_fate_flow_python_directory("fate_flow", "protobuf", "python"), self.define_proto_generated_path)
             with open(self.define_meta_path, "x", encoding="utf-8") as fw:
                 yaml.dump({"describe": "This is the model definition meta"}, fw, Dumper=yaml.RoundTripDumper)
 
@@ -100,7 +101,7 @@ class PipelinedModel(Locker):
         component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
         for model_name, (proto_index, object_serialized, object_json) in model_buffers.items():
             storage_path = os.path.join(component_model_storage_path, model_name)
-            component_model["buffer"][storage_path.replace(file_utils.get_project_base_directory(), "")] = (base64.b64encode(object_serialized).decode(), object_json)
+            component_model["buffer"][storage_path.replace(get_fate_flow_directory(), "")] = (base64.b64encode(object_serialized).decode(), object_json)
             model_proto_index[model_name] = proto_index  # index of model name and proto buffer class name
             stat_logger.info("save {} {} {} buffer".format(component_name, model_alias, model_name))
         component_model["component_name"] = component_name
@@ -112,7 +113,7 @@ class PipelinedModel(Locker):
 
     def write_component_model(self, component_model):
         for storage_path, (object_serialized_encoded, object_json) in component_model.get("buffer").items():
-            storage_path = file_utils.get_project_base_directory() + storage_path
+            storage_path = get_fate_flow_directory() + storage_path
             os.makedirs(os.path.dirname(storage_path), exist_ok=True)
             with self.lock, open(storage_path, "wb") as fw:
                 fw.write(base64.b64decode(object_serialized_encoded.encode()))

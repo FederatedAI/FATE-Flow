@@ -26,6 +26,7 @@ from fate_flow.entity import ComponentProvider
 from fate_flow.entity.types import FateDependenceName, ComponentProviderName, FateDependenceStorageEngine
 from fate_flow.settings import FATE_VERSION_DEPENDENCIES_PATH
 from fate_flow.worker.base_worker import BaseWorker
+from fate_flow.utils.base_utils import get_fate_flow_python_directory
 
 LOGGER = getLogger()
 
@@ -73,8 +74,8 @@ class DependenceUpload(BaseWorker):
                                  "driver_python": f"{os.path.join(os.getenv('VIRTUAL_ENV'), 'bin', 'python')}"}
         else:
             fate_code_dependencies = {
-                "fate_flow": file_utils.get_python_base_directory("fate_flow"),
-                "fate_arch": file_utils.get_python_base_directory("fate_arch"),
+                "fate_flow": get_fate_flow_python_directory("fate_flow"),
+                "fate_arch": file_utils.get_fate_python_directory("fate_arch"),
                 "conf": file_utils.get_project_base_directory("conf")
             }
             fate_flow_snapshot_time = DependenceRegistry.get_modify_time(fate_code_dependencies["fate_flow"])

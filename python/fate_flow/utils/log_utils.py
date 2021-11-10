@@ -13,10 +13,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os
 import typing
 import traceback
+import logging
 
 from fate_arch.common.log import LoggerFactory, getLogger
+from fate_flow.utils.base_utils import get_fate_flow_directory
 
 
 def ready_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
@@ -58,6 +61,36 @@ def exception_to_trace_string(ex):
     return "".join(traceback.TracebackException.from_exception(ex).format())
 
 
+def get_job_logger(job_id, log_type):
+    fate_flow_log_dir = get_fate_flow_directory('logs', 'fate_flow')
+    job_log_dir = get_fate_flow_directory('logs', job_id)
+    if not job_id:
+        log_dirs = [fate_flow_log_dir]
+    else:
+        if log_type == 'audit':
+            log_dirs = [job_log_dir, fate_flow_log_dir]
+        else:
+            log_dirs = [job_log_dir]
+    if LoggerFactory.log_share:
+        oldmask = os.umask(000)
+        os.makedirs(job_log_dir, exist_ok=True)
+        os.makedirs(fate_flow_log_dir, exist_ok=True)
+        os.umask(oldmask)
+    else:
+        os.makedirs(job_log_dir, exist_ok=True)
+        os.makedirs(fate_flow_log_dir, exist_ok=True)
+    logger = LoggerFactory.new_logger(f"{job_id}_{log_type}")
+    for job_log_dir in log_dirs:
+        handler = LoggerFactory.get_handler(class_name=None, level=LoggerFactory.LEVEL,
+                                            log_dir=job_log_dir, log_type=log_type, job_id=job_id)
+        error_handler = LoggerFactory.get_handler(class_name=None, level=logging.ERROR, log_dir=job_log_dir, log_type=log_type, job_id=job_id)
+        logger.addHandler(handler)
+        logger.addHandler(error_handler)
+    with LoggerFactory.lock:
+        LoggerFactory.schedule_logger_dict[job_id + log_type] = logger
+    return logger
+
+
 def schedule_logger(job_id=None, delete=False):
     if not job_id:
         return getLogger("fate_flow_schedule")
@@ -74,25 +107,25 @@ def schedule_logger(job_id=None, delete=False):
         key = job_id + 'schedule'
         if key in LoggerFactory.schedule_logger_dict:
             return LoggerFactory.schedule_logger_dict[key]
-        return LoggerFactory.get_job_logger(job_id, "schedule")
+        return get_job_logger(job_id, "schedule")
 
 
 def audit_logger(job_id='', log_type='audit'):
     key = job_id + log_type
     if key in LoggerFactory.schedule_logger_dict.keys():
         return LoggerFactory.schedule_logger_dict[key]
-    return LoggerFactory.get_job_logger(job_id=job_id, log_type=log_type)
+    return get_job_logger(job_id=job_id, log_type=log_type)
 
 
 def sql_logger(job_id='', log_type='sql'):
     key = job_id + log_type
     if key in LoggerFactory.schedule_logger_dict.keys():
         return LoggerFactory.schedule_logger_dict[key]
-    return LoggerFactory.get_job_logger(job_id=job_id, log_type=log_type)
+    return get_job_logger(job_id=job_id, log_type=log_type)
 
 
 def detect_logger(job_id='', log_type='detect'):
     key = job_id + log_type
     if key in LoggerFactory.schedule_logger_dict.keys():
         return LoggerFactory.schedule_logger_dict[key]
-    return LoggerFactory.get_job_logger(job_id=job_id, log_type=log_type)
+    return get_job_logger(job_id=job_id, log_type=log_type)

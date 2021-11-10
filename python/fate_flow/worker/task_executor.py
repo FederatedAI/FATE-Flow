@@ -40,6 +40,7 @@ from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.worker.task_base_worker import BaseTaskWorker, ComponentInput
+from fate_flow.utils.base_utils import get_fate_flow_python_directory
 
 
 LOGGER = getLogger()
@@ -365,11 +366,11 @@ class TaskExecutor(BaseTaskWorker):
     @classmethod
     def monkey_patch(cls):
         package_name = "monkey_patch"
-        package_path = os.path.join(file_utils.get_python_base_directory(), "fate_flow", package_name)
+        package_path = os.path.join(get_fate_flow_python_directory(), "fate_flow", package_name)
         if not os.path.exists(package_path):
             return
         for f in os.listdir(package_path):
-            f_path = os.path.join(file_utils.get_python_base_directory(), "fate_flow", package_name, f)
+            f_path = os.path.join(get_fate_flow_python_directory(), "fate_flow", package_name, f)
             if not os.path.isdir(f_path) or "__pycache__" in f_path:
                 continue
             patch_module = importlib.import_module("fate_flow." + package_name + '.' + f + '.monkey_patch')

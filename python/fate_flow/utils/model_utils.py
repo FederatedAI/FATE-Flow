@@ -20,14 +20,14 @@ from collections import OrderedDict
 
 import peewee
 
-from fate_flow.utils.log_utils import sql_logger
 from fate_arch.common.base_utils import json_loads, current_timestamp
-from fate_arch.common.file_utils import get_project_base_directory
 
 from fate_flow.settings import stat_logger
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
+from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.log_utils import sql_logger
 
 
 gen_key_string_separator = '#'
@@ -98,7 +98,7 @@ def query_model_info_from_db(model_version, role=None, party_id=None, model_id=N
 
 def query_model_info_from_file(model_id=None, model_version=None, role=None, party_id=None, query_filters=None, to_dict=False, **kwargs):
     res = {} if to_dict else []
-    model_dir = os.path.join(get_project_base_directory(), 'model_local_cache')
+    model_dir = os.path.join(get_fate_flow_directory(), 'model_local_cache')
     glob_dir = f"{model_dir}{os.sep}{role if role else '*'}#{party_id if party_id else '*'}#{model_id if model_id else '*'}{os.sep}{model_version if model_version else '*'}"
     stat_logger.info(f'glob model dir: {glob_dir}')
     model_fp_list = glob.glob(glob_dir)
