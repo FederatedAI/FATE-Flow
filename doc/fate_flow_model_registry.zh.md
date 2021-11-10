@@ -4,9 +4,9 @@
 
 ## 1. 版本历史
 
-| 版本状态      |  创建人|  完成日期 | 备注  |
-| :-------- | :--------| --------:| :-- |
-|1.0	|yuesun|2021-11-04	|初始化|
+| 版本状态 | 创建人 | 完成日期   | 备注   |
+| -------- | ------ | ---------- | ------ |
+| 1.0      | yuesun | 2021-11-04 | 初始化 |
 
 ## 2. 概述
 
@@ -448,6 +448,51 @@ flow checkpoint get --model-id <model_id> --model-version <model_version> --role
 }
 ```
 
-## 4. 远端存储配置
+## 4. 存储引擎配置
 
-具体配置方法请参考 `conf/service_conf.yaml` 中的 `enable_model_store` 和 `model_store_address`
+### `enable_model_store`
+
+开启后，在调用 `/model/load` 时：如果模型文件在本地磁盘存在、但不在存储引擎中，则自动把模型文件上传至存储引擎；如果模型文件在存储引擎存在、但不在本地磁盘中，则自动把模型文件下载到本地磁盘。
+
+此配置不影响 `/model/store` 和 `/model/restore`。
+
+### `model_store_address`
+
+此配置定义使用的存储引擎。
+
+#### 腾讯云对象存储
+
+```yaml
+storage: tencent_cos
+# 请从腾讯云控制台获取下列配置
+Region:
+SecretId:
+SecretKey:
+Bucket:
+```
+
+#### MySQL
+
+```yaml
+storage: mysql
+database: fate_model
+user: fate
+password: fate
+host: 127.0.0.1
+port: 3306
+# 可选的数据库连接参数
+max_connections: 10
+stale_timeout: 10
+```
+
+#### Redis
+
+```yaml
+storage: redis
+host: 127.0.0.1
+port: 6379
+db: 0
+password:
+# key 的超时时间，单位秒。默认 None，没有超时时间。
+ex:
+```
