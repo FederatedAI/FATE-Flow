@@ -10,19 +10,21 @@
 
 ## 2. 概述
 
-每个组件运行完成后保存的模型称为 Pipeline 模型，在组件运行时定时保存的模型称为 Checkpoint 模型。Checkpoint 模型也可以用于组件运行意外中断后，重试时的“断点续传”。
+由 FATE 训练的模型会自动保存到本地并记录在 FATE-Flow 的数据库中，每个组件运行完成后保存的模型称为 Pipeline 模型，在组件运行时定时保存的模型称为 Checkpoint 模型。Checkpoint 模型也可以用于组件运行意外中断后，重试时的“断点续传”。
 
 Checkpoint 模型的支持自 1.7.0 加入，默认是不保存的，如需启用，则要向 DSL 中加入 callback `ModelCheckpoint`。
 
 ### 本地磁盘存储
 
-- Pipeline 模型存储于 `model_local_cache/<party_model_id>/<model_version>/variables/data/<component_name>/<model_alias>`，
+- Pipeline 模型存储于 `model_local_cache/<party_model_id>/<model_version>/variables/data/<component_name>/<model_alias>`。
+
 - Checkpoint 模型存储于 `model_local_cache/<party_model_id>/<model_version>/checkpoint/<component_name>/<step_index>#<step_name>`。
 
 ### 远端存储引擎
 
-- 本地磁盘并不可靠，因此模型有丢失的风险，`FATE-Flow`支持导出模型到指定存储引擎、从指定存储引擎导入以及自动发布模型时推送模型到引擎存储
-- 存储引擎支持腾讯云对象存储、MySQL 和 Redis, 具体请参考[存储引擎配置](#5-存储引擎配置)
+本地磁盘并不可靠，因此模型有丢失的风险，FATE-Flow 支持导出模型到指定存储引擎、从指定存储引擎导入以及自动发布模型时推送模型到引擎存储。
+
+存储引擎支持腾讯云对象存储、MySQL 和 Redis, 具体请参考[存储引擎配置](#5-存储引擎配置)
 
 ## 3. Model
 
