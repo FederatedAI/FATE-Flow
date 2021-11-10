@@ -85,7 +85,7 @@ class WorkerManager:
         config_path, result_path = cls.get_config(config_dir=config_dir, config=config, log_dir=log_dir)
 
         process_cmd = [
-            sys.executable,
+            sys.executable or "python3",
             module_file_path,
             "--config", config_path,
             '--result', result_path,
@@ -186,7 +186,7 @@ class WorkerManager:
         if executable:
             process_cmd = executable
         else:
-            process_cmd = [sys.executable]
+            process_cmd = [sys.executable or "python3"]
 
         common_cmd = [
             module_file_path,

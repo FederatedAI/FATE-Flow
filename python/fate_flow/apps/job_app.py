@@ -18,7 +18,7 @@ import os
 import json
 import tarfile
 
-from flask import request, send_file
+from flask import request, send_file, abort
 
 from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
@@ -142,23 +142,40 @@ def job_config():
         return get_json_result(retcode=0, retmsg='success', data=response_data)
 
 
-@manager.route('/log', methods=['get'])
-def job_log():
-    job_id = request.json.get('job_id', '')
+def check_job_log_dir():
+    job_id = str(request.json['job_id'])
     job_log_dir = job_utils.get_job_log_directory(job_id=job_id)
-    if os.path.exists(job_log_dir):
-        memory_file = io.BytesIO()
-        tar = tarfile.open(fileobj=memory_file, mode='w:gz')
-        for root, dir, files in os.walk(job_log_dir):
-            for file in files:
-                full_path = os.path.join(root, file)
-                rel_path = os.path.relpath(full_path, job_log_dir)
-                tar.add(full_path, rel_path)
-        tar.close()
-        memory_file.seek(0)
-        return send_file(memory_file, attachment_filename='job_{}_log.tar.gz'.format(job_id), as_attachment=True)
-    else:
-        return error_response(210, "Log file path: {} not found. Please check if the job id is valid.".format(job_log_dir))
+
+    if not os.path.exists(job_log_dir):
+        abort(error_response(404, f"Log file path: '{job_log_dir}' not found. Please check if the job id is valid."))
+
+    return job_id, job_log_dir
+
+
+@manager.route('/log/download', methods=['POST'])
+@detect_utils.validate_request('job_id')
+def job_log_download():
+    job_id, job_log_dir = check_job_log_dir()
+
+    memory_file = io.BytesIO()
+    tar = tarfile.open(fileobj=memory_file, mode='w:gz')
+    for root, dir, files in os.walk(job_log_dir):
+        for file in files:
+            full_path = os.path.join(root, file)
+            rel_path = os.path.relpath(full_path, job_log_dir)
+            tar.add(full_path, rel_path)
+
+    tar.close()
+    memory_file.seek(0)
+    return send_file(memory_file, attachment_filename=f'job_{job_id}_log.tar.gz', as_attachment=True)
+
+
+@manager.route('/log/path', methods=['POST'])
+@detect_utils.validate_request('job_id')
+def job_log_path():
+    job_id, job_log_dir = check_job_log_dir()
+
+    return get_json_result(data={"logs_directory": job_log_dir})
 
 
 @manager.route('/task/query', methods=['POST'])
