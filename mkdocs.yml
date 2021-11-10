@@ -44,9 +44,9 @@ plugins:
   - awesome-pages
   - search
   - i18n:
-      default_language: en
+      default_language: zh
       languages:
-        zh: 中文
+        en: english
   
 markdown_extensions:
   - pymdownx.snippets
