@@ -22,23 +22,31 @@ Checkpoint 模型的支持自 1.7.0 加入，默认是不保存的，如需启�
 ### 远端存储引擎
 
 - 本地磁盘并不可靠，因此模型有丢失的风险，`FATE-Flow`支持导出模型到指定存储引擎、从指定存储引擎导入以及自动发布模型时推送模型到引擎存储
-- 存储引擎支持腾讯云对象存储、MySQL 和 Redis, 具体请参考[远端存储引擎配置](#4-远端存储配置)
+- 存储引擎支持腾讯云对象存储、MySQL 和 Redis, 具体请参考[存储引擎配置](#5-存储引擎配置)
 
 ## 3. Model
 
 ### `load`
 
+**简要描述**
+
 向 Fate-Serving 加载 `deploy` 生成的模型。
+
+**请求参数**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
 | job_id    | `-j`   | `--job-id`    | 是       | 任务 ID  |
 
+**请求CLI**
+
 ```bash
 flow model load -c examples/model/publish_load_model.json
 flow model load -c examples/model/publish_load_model.json -j <job_id>
 ```
+
+**样例**
 
 ```json
 {
@@ -72,17 +80,25 @@ flow model load -c examples/model/publish_load_model.json -j <job_id>
 
 ### `bind`
 
+**简要描述**
+
 向 Fate-Serving 绑定 `deploy` 生成的模型。
+
+**请求参数**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
 | job_id    | `-j`   | `--job-id`    | 是       | 任务 ID  |
 
+**请求CLI**
+
 ```bash
 flow model bind -c examples/model/bind_model_service.json
 flow model bind -c examples/model/bind_model_service.json -j <job_id>
 ```
+
+**样例**
 
 ```json
 {
@@ -93,17 +109,25 @@ flow model bind -c examples/model/bind_model_service.json -j <job_id>
 
 ### `import`
 
+**简要描述**
+
 从本地或存储引擎中导入模型。
+
+**请求参数**
 
 | 参数          | 短格式 | 长格式            | 可选参数 | 说明                             |
 | ------------- | ------ | ----------------- | -------- | -------------------------------- |
 | conf_path     | `-c`   | `--conf-path`     | 否       | 配置文件                         |
 | from_database |        | `--from-database` | 是       | 从 Flow 配置的存储引擎中导入模型 |
 
+**请求CLI**
+
 ```bash
 flow model import -c examples/model/import_model.json
 flow model import -c examples/model/restore_model.json --from-database
 ```
+
+**样例**
 
 ```json
 {
@@ -131,17 +155,25 @@ flow model import -c examples/model/restore_model.json --from-database
 
 ### `export`
 
+**简要描述**
+
 导出模型到本地或存储引擎中。
+
+**请求参数**
 
 | 参数        | 短格式 | 长格式          | 可选参数 | 说明                               |
 | ----------- | ------ | --------------- | -------- | ---------------------------------- |
 | conf_path   | `-c`   | `--conf-path`   | 否       | 配置文件                           |
 | to_database |        | `--to-database` | 是       | 将模型导出到 Flow 配置的存储引擎中 |
 
+**请求CLI**
+
 ```bash
 flow model export -c examples/model/export_model.json
 flow model export -c examplse/model/store_model.json --to-database
 ```
+
+**样例**
 
 ```json
 {
@@ -169,15 +201,23 @@ flow model export -c examplse/model/store_model.json --to-database
 
 ### `migrate`
 
+**简要描述**
+
 迁移模型。
+
+**请求参数**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
 
+**请求CLI**
+
 ```bash
 flow model migrate -c examples/model/migrate_model.json
 ```
+
+**样例**
 
 ```json
 {
@@ -220,11 +260,17 @@ flow model migrate -c examples/model/migrate_model.json
 
 ### `tag-list`
 
+**简要描述**
+
 获取模型的标签列表。
+
+**请求参数**
 
 | 参数   | 短格式 | 长格式     | 可选参数 | 说明    |
 | ------ | ------ | ---------- | -------- | ------- |
 | job_id | `-j`   | `--job_id` | 否       | 任务 ID |
+
+**请求CLI**
 
 ``` bash
 flow model tag-list -j <job_id>
@@ -232,13 +278,19 @@ flow model tag-list -j <job_id>
 
 ### `tag-model`
 
+**简要描述**
+
 向模型添加标签。
+
+**请求参数**
 
 | 参数     | 短格式 | 长格式       | 可选参数 | 说明           |
 | -------- | ------ | ------------ | -------- | -------------- |
 | job_id   | `-j`   | `--job_id`   | 否       | 任务 ID        |
 | tag_name | `-t`   | `--tag-name` | 否       | 标签名         |
 | remove   |        | `--remove`   | 是       | 移除指定的标签 |
+
+**请求CLI**
 
 ```bash
 flow model tag-model -j <job_id> -t <tag_name>
@@ -247,7 +299,11 @@ flow model tag-model -j <job_id> -t <tag_name> --remove
 
 ### `deploy`
 
+**简要描述**
+
 配置预测 DSL。
+
+**请求参数**
 
 | 参数           | 短格式 | 长格式             | 可选参数 | 说明                                                         |
 | -------------- | ------ | ------------------ | -------- | ------------------------------------------------------------ |
@@ -259,9 +315,13 @@ flow model tag-model -j <job_id> -t <tag_name> --remove
 | cpn_step_index |        | `--cpn-step-index` | 是       | 用指定的 Checkpoint 模型替换 Pipeline 模型<br />使用 `:` 分隔 component name 与 step index<br />例如 `--cpn-step-index cpn_a:123` |
 | cpn_step_name  |        | `--cpn-step-name`  | 是       | 用指定的 Checkpoint 模型替换 Pipeline 模型<br />使用 `:` 分隔 component name 与 step name<br />例如 `--cpn-step-name cpn_b:foobar` |
 
+**请求CLI**
+
 ```bash
 flow model deploy --model-id <model_id> --model-version <model_version>
 ```
+
+**样例**
 
 ```json
 {
@@ -305,13 +365,19 @@ flow model deploy --model-id <model_id> --model-version <model_version>
 
 ### `get-predict-dsl`
 
- 获取预测 DSL。
+**简要描述**
+
+获取预测 DSL。
+
+**请求参数**
 
 | 参数          | 短格式 | 长格式            | 可选参数 | 说明     |
 | ------------- | ------ | ----------------- | -------- | -------- |
 | model_id      |        | `--model-id`      | 否       | 模型 ID  |
 | model_version |        | `--model-version` | 否       | 模型版本 |
 | output_path   | `-o`   | `--output-path`   | 否       | 输出路径 |
+
+**请求CLI**
 
 ```bash
 flow model get-predict-dsl --model-id <model_id> --model-version <model_version> -o ./examples/
@@ -319,7 +385,11 @@ flow model get-predict-dsl --model-id <model_id> --model-version <model_version>
 
 ### `get-predict-conf`
 
+**简要描述**
+
 模型预测模板。
+
+**请求参数**
 
 | 参数          | 短格式 | 长格式            | 可选参数 | 说明     |
 | ------------- | ------ | ----------------- | -------- | -------- |
@@ -327,13 +397,19 @@ flow model get-predict-dsl --model-id <model_id> --model-version <model_version>
 | model_version |        | `--model-version` | 否       | 模型版本 |
 | output_path   | `-o`   | `--output-path`   | 否       | 输出路径 |
 
+**请求CLI**
+
 ```bash
 flow model get-predict-conf --model-id <model_id> --model-version <model_version> -o ./examples/
 ```
 
 ### `get-model-info`
 
+**简要描述**
+
 获取模型信息。
+
+**请求参数**
 
 | 参数          | 短格式 | 长格式            | 可选参数 | 说明         |
 | ------------- | ------ | ----------------- | -------- | ------------ |
@@ -343,6 +419,8 @@ flow model get-predict-conf --model-id <model_id> --model-version <model_version
 | party_id      | `-p`   | `--party-id`      | 是       | Party ID     |
 | detail        |        | `--detail`        | 是       | 展示详细信息 |
 
+**请求CLI**
+
 ```bash
 flow model get-model-info --model-id <model_id> --model-version <model_version>
 flow model get-model-info --model-id <model_id> --model-version <model_version> --detail
@@ -350,11 +428,17 @@ flow model get-model-info --model-id <model_id> --model-version <model_version> 
 
 ### `homo-convert`
 
+**简要描述**
+
 基于横向训练的模型，生成其他 ML  框架的模型文件。
+
+**请求参数**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
+
+**请求CLI**
 
 ```bash
 flow model homo-convert -c examples/model/homo_convert_model.json
@@ -362,11 +446,17 @@ flow model homo-convert -c examples/model/homo_convert_model.json
 
 ### `homo-deploy`
 
+**简要描述**
+
 将横向训练后使用 `homo-convert` 生成的模型部署到在线推理系统中，当前支持创建基于 KFServing 的推理服务。
+
+**请求参数**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明             |
 | --------- | ------ | ------------- | -------- | ---------------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 任务配置文件路径 |
+
+**请求CLI**
 
 ```bash
 flow model homo-deploy -c examples/model/homo_deploy_model.json
@@ -376,7 +466,11 @@ flow model homo-deploy -c examples/model/homo_deploy_model.json
 
 ### `list`
 
+**简要描述**
+
 获取 Checkpoint 模型列表。
+
+**请求参数**
 
 | 参数           | 短格式 | 长格式             | 可选参数 | 说明       |
 | -------------- | ------ | ------------------ | -------- | ---------- |
@@ -386,9 +480,13 @@ flow model homo-deploy -c examples/model/homo_deploy_model.json
 | party_id       | `-p`   | `--party-id`       | 否       | Party ID   |
 | component_name | `-cpn` | `--component-name` | 否       | 组件名     |
 
+**请求CLI**
+
 ```bash
 flow checkpoint list --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name>
 ```
+
+**样例**
 
 ```json
 {
@@ -416,7 +514,11 @@ flow checkpoint list --model-id <model_id> --model-version <model_version> --rol
 
 ### `get`
 
+**简要描述**
+
 获取 Checkpoint 模型信息。
+
+**请求参数**
 
 | 参数           | 短格式 | 长格式             | 可选参数 | 说明                                  |
 | -------------- | ------ | ------------------ | -------- | ------------------------------------- |
@@ -428,9 +530,13 @@ flow checkpoint list --model-id <model_id> --model-version <model_version> --rol
 | step_index     |        | `--step-index`     | 是       | Step index，不可与 step_name 同时使用 |
 | step_name      |        | `--step-name`      | 是       | Step name，不可与 step_index 同时使用 |
 
+**请求CLI**
+
 ```bash
 flow checkpoint get --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name> --step-index <step_index>
 ```
+
+**样例**
 
 ```json
 {
@@ -448,7 +554,7 @@ flow checkpoint get --model-id <model_id> --model-version <model_version> --role
 }
 ```
 
-## 4. 存储引擎配置
+## 5. 存储引擎配置
 
 ### `enable_model_store`
 
