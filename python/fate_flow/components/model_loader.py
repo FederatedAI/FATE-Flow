@@ -31,6 +31,13 @@ model_loader_cpn_meta = ComponentMeta('ModelLoader')
 
 @model_loader_cpn_meta.bind_runner.on_guest.on_host.on_arbiter
 class ModelLoader(ComponentBase):
+    """ ModelLoader is a component for loading models trained by previous jobs.
+
+        `self.model_id`, `self.model_version`, `self.component_name` and `self.model_alias`
+        come from the previous job. However, most of the data in `self.tracker` belongs to the current job.
+        Such as `self.tracker.job_id`, `self.tracker.task_id`, `self.tracker.task_version`, etc.
+        Be careful when using them.
+    """
 
     def __init__(self):
         super().__init__()
