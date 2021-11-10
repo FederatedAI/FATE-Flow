@@ -1,3 +1,3 @@
-## Demo
+## Swagger API
 
 !!swagger swagger.yaml!!
