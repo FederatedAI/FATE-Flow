@@ -16,11 +16,12 @@
 #  limitations under the License.
 #
 
-if [[ -z "${FATE_DEPLOY_BASE}" ]]; then
+if [[ -z "${FATE_PROJECT_BASE}" ]]; then
     PROJECT_BASE=$(cd "$(dirname "$0")";cd ../;cd ../;pwd)
 else
-    PROJECT_BASE="${FATE_DEPLOY_BASE}"
+    PROJECT_BASE="${FATE_PROJECT_BASE}"
 fi
+FATE_FLOW_BASE=${PROJECT_BASE}/fateflow
 echo "PROJECT_BASE: "${PROJECT_BASE}
 
 # source init_env.sh
@@ -33,7 +34,7 @@ else
   exit
 fi
 
-log_dir=${PROJECT_BASE}/logs
+log_dir=${FATE_FLOW_BASE}/logs
 
 module=fate_flow_server.py
 
@@ -100,13 +101,13 @@ start() {
     if [[ ${pid} == "" ]]; then
         mklogsdir
         if [[ $1x == "front"x ]];then
-          export FATE_DEPLOY_BASE=${PROJECT_BASE}
-          exec python ${PROJECT_BASE}/python/fate_flow/fate_flow_server.py >> "${log_dir}/console.log" 2>>"${log_dir}/error.log"
-          unset FATE_DEPLOY_BASE
+          export FATE_PROJECT_BASE=${PROJECT_BASE}
+          exec python ${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py >> "${log_dir}/console.log" 2>>"${log_dir}/error.log"
+          unset FATE_PROJECT_BASE
         else
-          export FATE_DEPLOY_BASE=${PROJECT_BASE}
-          nohup python ${PROJECT_BASE}/python/fate_flow/fate_flow_server.py >> "${log_dir}/console.log" 2>>"${log_dir}/error.log" &
-          unset FATE_DEPLOY_BASE
+          export FATE_PROJECT_BASE=${PROJECT_BASE}
+          nohup python ${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py >> "${log_dir}/console.log" 2>>"${log_dir}/error.log" &
+          unset FATE_PROJECT_BASE
         fi
         for((i=1;i<=100;i++));
         do
