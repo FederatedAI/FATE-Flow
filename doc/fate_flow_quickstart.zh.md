@@ -1,4 +1,4 @@
-# FATE Flow 快速开始
+# FATE Flow 快速开始(待更新)
 
 [TOC]
 
@@ -8,9 +8,7 @@
 | :------- | :--------- | ---------: | :--- |
 | 1.0      | jarviszeng | 2021-11-01 | 初始 |
 
-## 2. 术语表
-
-## 3. 通用文档变量
+## 2. 通用文档变量
 
 您会在所有`FATE Flow`的文档看到如下`文档变量`，其含义如下：
 
@@ -81,3 +79,17 @@
 
 - FATE_VERSION：表示`FATE`的版本号，如1.7.0
 - FATE_FLOW_VERSION：表示`FATE Flow`的版本号，如1.7.0
+
+## 3. 术语表
+
+`component_name`: 提交任务时组件的名称，一个任务可以有多个同样的组件的，但是 `component_name` 是不一样的，相当于类的实例
+
+`componet_module_name`: 组件的类名
+
+`model_alias`: 跟 `component_name` 类似，就是用户在 dsl 里面是可以配置输出的 model 名称的
+
+示例：
+
+图中 `dataio_0` 是 `component_name`，`DataIO` 是 `componet_module_name`，`dataio` 是 `model_alias`
+
+![](https://user-images.githubusercontent.com/1758850/124451776-52ee4500-ddb8-11eb-94f2-d43d5174ca4d.png)

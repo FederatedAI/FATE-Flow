@@ -14,6 +14,14 @@
 
 ## 3. 安装FATE Client
 
+### 3.1 在线安装
+
+FATE Client会发布到`pypi`，可直接使用`pip`等工具安装对应版本
+
+### 3.2 离线安装
+
+### 3.3 在FATE集群上安装
+
 请在装有1.5.1及其以上版本fate的机器中进行安装：
 
 安装命令：
@@ -77,3 +85,7 @@ cd $FATE_PROJECT_BASE/
 # 指定fate的IP地址和端口进行初始化
 flow init --ip 192.168.0.1 --port 9380
 ```
+
+## 5. 验证
+
+主要验证客户端是否能连接上`FATE Flow Server`
