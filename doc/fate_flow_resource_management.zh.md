@@ -1,4 +1,5 @@
-# FATE Flow 资源管理
+# FATE Flow 多方资源协调
+
 [TOC]
 
 ## 1. 版本历史
@@ -6,13 +7,13 @@
 | :------- | :--------- | ---------: | :--- |
 | 1.0      | jarviszeng | 2021-11-01 | 初始 |
 
-## 2. 概述
+## 2. 说明
 
 资源指基础引擎资源，主要指计算引擎的CPU资源和内存资源，传输引擎的CPU资源和网络资源，目前仅支持计算引擎CPU资源的管理
 
 ## 2. 总资源配置
 
-- 当前版本未实现自动获取基础引擎的资源大小，因此你通过配置文件`$PROJECT_BASE/conf/service_conf.yaml`进行配置，也即当前引擎分配给FATE集群的资源大小
+- 当前版本未实现自动获取基础引擎的资源大小，因此你通过配置文件`$FATE_PROJECT_BASE/conf/service_conf.yaml`进行配置，也即当前引擎分配给FATE集群的资源大小
 - `FATE Flow Server`启动时从配置文件获取所有基础引擎信息并注册到数据库表`t_engine_registry`
 - `FATE Flow Server`已经启动，修改资源配置，可重启`FATE Flow Server`，也可使用命令：`flow server reload`，重新加载配置
 - `total_cores` = `nodes` * `cores_per_node`
@@ -69,7 +70,7 @@ fate_on_spark:
 }
 ```
 
-作业申请的总资源为`task_cores` * `task_parallelism`，创建作业时，`FATE Flow`分发作业到各`party`时会依据上述配置、运行角色、本方使用引擎(通过`$PROJECT_BASE/conf/service_conf.yaml#default_engines`)，适配计算出实际参数，如下
+作业申请的总资源为`task_cores` * `task_parallelism`，创建作业时，`FATE Flow`分发作业到各`party`时会依据上述配置、运行角色、本方使用引擎(通过`$FATE_PROJECT_BASE/conf/service_conf.yaml#default_engines`)，适配计算出实际参数，如下
 
 ## 4. 资源申请实际参数适配计算过程
 
@@ -93,7 +94,7 @@ fate_on_spark:
     - spark_run["num-executors"] = `task_nodes`
     - spark_run["executor-cores"] = `task_cores_per_node`
 
-- 最终计算结果可以查看job的`job_runtime_conf_on_party.json`，一般在`$PROJECT_BASE/jobs/$job_id/$role/$party_id/job_runtime_on_party_conf.json`
+- 最终计算结果可以查看job的`job_runtime_conf_on_party.json`，一般在`$FATE_PROJECT_BASE/jobs/$job_id/$role/$party_id/job_runtime_on_party_conf.json`
 
 ## 5. 资源调度策略
 
