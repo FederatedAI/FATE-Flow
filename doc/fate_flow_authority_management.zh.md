@@ -13,7 +13,7 @@
 
 - 权限类型包括role、command、component
 
-- 鉴权开关: fate_flow/settings.py：
+- 鉴权开关: $FATE_FLOW_BASE/python/fate_flow/settings.py：
 
   ```python
   USE_AUTHENTICATION = True
