@@ -12,9 +12,6 @@
 
 主要介绍如何使用`FATE Flow`提交一个联邦学习作业，并观察使用
 
-- PROJECT_BASE：表示`FATE`部署目录
-- FATE_VERSION：表示`FATE`的版本号，如1.7.0
-
 ## 3. 作业提交
 
 **简要描述** 
@@ -58,18 +55,18 @@ flow job submit -d ./examples/simple/simple_dsl.json -c ./examples/simple/simple
     "data": {
         "board_url": "http://127.0.0.1:8080/index.html#/dashboard?job_id=202111061608424372620&role=guest&party_id=9999",
         "code": 0,
-        "dsl_path": "$PROJECT_BASE/jobs/202111061608424372620/job_dsl.json",
+        "dsl_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/job_dsl.json",
         "job_id": "202111061608424372620",
-        "logs_directory": "$PROJECT_BASE/logs/202111061608424372620",
+        "logs_directory": "$FATE_PROJECT_BASE/logs/202111061608424372620",
         "message": "success",
         "model_info": {
             "model_id": "arbiter-10000#guest-9999#host-10000#model",
             "model_version": "202111061608424372620"
         },
-        "pipeline_dsl_path": "$PROJECT_BASE/jobs/202111061608424372620/pipeline_dsl.json",
-        "runtime_conf_on_party_path": "$PROJECT_BASE/jobs/202111061608424372620/guest/9999/job_runtime_on_party_conf.json",
-        "runtime_conf_path": "$PROJECT_BASE/jobs/202111061608424372620/job_runtime_conf.json",
-        "train_runtime_conf_path": "$PROJECT_BASE/jobs/202111061608424372620/train_runtime_conf.json"
+        "pipeline_dsl_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/pipeline_dsl.json",
+        "runtime_conf_on_party_path": "$FATE_FATE_PROJECT_BASE/jobs/202111061608424372620/guest/9999/job_runtime_on_party_conf.json",
+        "runtime_conf_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/job_runtime_conf.json",
+        "train_runtime_conf_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/train_runtime_conf.json"
     },
     "jobId": "202111061608424372620",
     "retcode": 0,

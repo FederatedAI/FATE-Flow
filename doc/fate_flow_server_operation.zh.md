@@ -65,7 +65,7 @@ flow server versions
 
 如下配置项在`reload`后会重新生效
 
-- $PROJECT_BASE/conf/service_conf.yaml中# engine services后的所有配置
+- $FATE_PROJECT_BASE/conf/service_conf.yaml中# engine services后的所有配置
 - $FATE_FLOW_BASE/python/fate_flow/job_default_config.yaml中所有配置
 
 **请求CLI** 

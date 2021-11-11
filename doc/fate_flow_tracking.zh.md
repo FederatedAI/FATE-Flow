@@ -353,8 +353,8 @@ flow tracking output-data  -j 202111081618357358520 -r guest -p 9999 -cpn hetero
 ```json
 {
     "retcode": 0,
-    "directory": "$PROJECT_BASE/job_202111081618357358520_hetero_lr_0_guest_9999_output_data",
-    "retmsg": "Download successfully, please check $PROJECT_BASE/job_202111081618357358520_hetero_lr_0_guest_9999_output_data directory"
+    "directory": "$FATE_PROJECT_BASE/job_202111081618357358520_hetero_lr_0_guest_9999_output_data",
+    "retmsg": "Download successfully, please check $FATE_PROJECT_BASE/job_202111081618357358520_hetero_lr_0_guest_9999_output_data directory"
 }
 ```
 
