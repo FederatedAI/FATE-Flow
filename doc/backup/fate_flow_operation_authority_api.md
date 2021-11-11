@@ -1,6 +1,6 @@
 # FATE权限相关操作接口文档
 
-### 1. 概述
+### 1. 说明
 
 用于fate本地鉴权,包含role、command、component、dataset等权限。
 

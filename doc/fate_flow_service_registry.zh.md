@@ -8,7 +8,7 @@
 | -------- | ------ | ---------- | ------ |
 | 1.0      | yuesun | 2021-11-04 | 初始化 |
 
-## 2. 概述
+## 2. 说明
 
 FATE-Flow 通过 Apache ZooKeeper 与 FATE-Serving 交互，如果在配置中启用了 `use_registry`，则 Flow 在启动时会向 ZooKeeper 注册模型的下载 URL，Serving 可以通过这些 URL 获取模型。
 
