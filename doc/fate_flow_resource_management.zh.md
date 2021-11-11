@@ -1,4 +1,5 @@
-# FATE Flow 资源管理
+# FATE Flow 多方资源协调
+
 [TOC]
 
 ## 1. 版本历史
