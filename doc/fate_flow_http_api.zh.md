@@ -24,7 +24,7 @@ Flow HTTP API 在 1.7.0 新增了签名鉴权，如果在配置文件里设置�
 
 ### 3.1 签名生成方法
 
-#### 按照顺序组合下列内容
+- 按照顺序组合下列内容
 
 `TIMESTAMP`
 
@@ -38,17 +38,17 @@ Flow HTTP API 在 1.7.0 新增了签名鉴权，如果在配置文件里设置�
 
 如果 `Content-Type` 为 `application/x-www-form-urlencoded` 或 `multipart/form-data`，则需要把所有参数以字母顺序排序并 `urlencode`，转码方式参照 RFC 3986（即除 `a-zA-Z0-9-._~` 以外的字符都要转码），注意文件不参与签名；如果不是，此项使用空字符串填充
 
-#### 把所有参数用换行符 `\n` 连接然后以 `ASCII` 编码
+- 把所有参数用换行符 `\n` 连接然后以 `ASCII` 编码
 
-#### 使用 `HMAC-SHA1` 算法，以 Flow 配置文件中的 `http_secret_key` 为密钥，算出二进制摘要
+- 使用 `HMAC-SHA1` 算法，以 Flow 配置文件中的 `http_secret_key` 为密钥，算出二进制摘要
 
-#### 使用 base64 编码二进制摘要
+- 使用 base64 编码二进制摘要
 
-#### 示例
+### 3.2. 示例
 
 可以参考 [Fate SDK](https://github.com/FederatedAI/FATE/blob/develop-1.7/python/fate_client/flow_sdk/client/base.py#L63) 的签名方法或 [Fate Flow](https://github.com/FederatedAI/FATE-Flow/blob/develop-1.7.0/python/fate_flow/apps/__init__.py#L104) 的校验方法
 
-### 错误码
+### 3.3. 错误码
 
 `400 Bad Request` request body 既有 json 又有 form
 
@@ -61,3 +61,4 @@ Flow HTTP API 在 1.7.0 新增了签名鉴权，如果在配置文件里设置�
 `401 Unknown APP_KEY` header 中的 `APP_KEY` 与 Flow 配置文件中的 `http_app_key` 不一致
 
 `403 Forbidden` 签名校验失败
+

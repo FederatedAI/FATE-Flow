@@ -28,7 +28,7 @@
 
 **请求CLI** 
 
-- flow data upload -c $conf_path
+- `flow data upload -c $conf_path`
 
 注: conf_path为参数路径，具体参数如下
 
@@ -140,7 +140,7 @@
 - 可通过table bind将真实存储地址映射到fate存储表
 
 **请求CLI** 
-- flow table bind -c $conf_path
+- `flow table bind -c $conf_path`
 
 注: conf_path为参数路径，具体参数如下
 
@@ -248,7 +248,7 @@
 
 **请求CLI** 
 
-- flow table info -t $name -n $namespace
+- `flow table info -t $name -n $namespace`
 
 **请求参数** 
 
@@ -300,7 +300,7 @@
 
 **请求CLI** 
 
-- flow data download -c $conf_path
+- `flow data download -c $conf_path`
 
 注: conf_path为参数路径，具体参数如下
 

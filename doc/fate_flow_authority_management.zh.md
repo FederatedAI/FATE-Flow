@@ -13,7 +13,7 @@
 
 - 权限类型包括role、command、component
 
-- 鉴权开关: $FATE_FLOW_BASE/python/fate_flow/settings.py：
+- 鉴权开关: `$FATE_FLOW_BASE/python/fate_flow/settings.py`：
 
   ```python
   USE_AUTHENTICATION = True
@@ -27,7 +27,7 @@
 
 **请求CLI** 
 
-- flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
+- `flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all`
 
 **请求参数** 
 
@@ -93,7 +93,7 @@
 
 **请求CLI** 
 
-- flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
+- `flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all`
 
 **请求参数** 
 
@@ -157,7 +157,7 @@
 
 **请求CLI** 
 
-- flow privilege query --src-party-id 9999  --src-role guest 
+- `flow privilege query --src-party-id 9999  --src-role guest`
 
 **请求参数** 
 
