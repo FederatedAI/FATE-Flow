@@ -156,6 +156,7 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
     1.  model: 用于同种类型组件的模型输入。例如，hetero_binning_0 会对模型进行 fit，然后
         hetero_binning_1 将会使用 hetero_binning_0 的输出用于 predict 或
         transform。代码示例：
+
 ```json
         "hetero_feature_binning_1": {
             "module": "HeteroFeatureBinning",
@@ -219,9 +220,11 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 
 FATE-Flow 1.7.0版本开始，同一个FATE-Flow系统支持加载多种且多版本的组件提供方，也即provider，provider提供了若干个组件，提交作业时可以配置组件的来源provider
 
-**含义** 指定provider，支持全局指定以及单个组件指定；若不指定，默认provider：fate@$FATE_VERSION
-**格式** provider_name@$provider_version
-**进阶** 可以通过组件注册CLI注册新的provider：，目前支持的provider：fate、fate_sql
+**含义** 指定provider，支持全局指定以及单个组件指定；若不指定，默认 provider：`fate@$FATE_VERSION`
+
+**格式** `provider_name@$provider_version`
+
+**进阶** 可以通过组件注册CLI注册新的 provider，目前支持的 provider：fate 和 fate_sql
 
 **样例**
 
