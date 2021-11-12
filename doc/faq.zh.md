@@ -45,25 +45,39 @@
 
 ## 5. 在线部分
 ### 5.1. 推模型(load)retcode返回100，可能的原因有哪些？
-- 没有部署fate-servings;
-- flow没有获取到fate-servings的地址；flow读取fate-servings的地址的优先级排序: ①从zk读取；②没有打开zk的话，会从fate的服务配置文件读取，配置路径在/data/projects/fate/conf/service_conf.yaml(1.5.x) || /data/projects/fate/arch/conf/server_conf.json(1.4.x)
+
+- 没有部署fate-servings
+
+- flow没有获取到fate-servings的地址
+
+- flow读取fate-servings的地址的优先级排序: 
+
+  1. 从zk读取
+
+  2. 没有打开zk的话，会从fate的服务配置文件读取，配置路径在
+
+     - 1.5+: `/data/projects/fate/conf/service_conf.yaml`
+
+     - 1.5-: `/data/projects/fate/arch/conf/server_conf.json`
 
 ### 5.2. servings的配置在哪?怎么配？
-- 1.4.x配置路径:/data/projects/fate/arch/conf/server_conf.json
-```json
-{
-	"servers": {
-		"servings": ["127.0.0.1:8000"]
-		}
-}
-```
-- 1.5.x配置路径：/data/projects/fate/conf/service_conf.yaml 
-```json
+
+- 1.5+ 配置路径: `/data/projects/fate/conf/service_conf.yaml`
+
+```yaml
 servings:
-	hosts:
-	  - 127.0.0.1:8000
+  hosts:
+    - 127.0.0.1:8000
 ```
 
+- 1.5- 配置路径: `/data/projects/fate/arch/conf/server_conf.json`
+```json
+{
+    "servers": {
+        "servings": ["127.0.0.1:8000"]
+    }
+}
+```
 
 ### 5.3. 推模型(load)retcode返回123，可能原因有哪些？
 - 模型信息有误；
