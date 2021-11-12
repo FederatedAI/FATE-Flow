@@ -6,6 +6,7 @@
 1. 模型生成参与方任何一方的集群, 重新部署且部署后集群的party id变更, 例如源参与方为arbiter-10000#guest-9999#host-10000, 改为arbiter-10000#guest-99#host-10000
 2. 其中任意一个或多个参与方将模型文件从源集群复制到目标集群，需要在目标集群使用
    
+
 基本原理：
 1. 上述两种场景下，模型的参与方`party_id`会发生改变，如`arbiter-10000#guest-9999#host-10000` -> `arbiter-10000#guest-99#host-10000`，或者`arbiter-10000#guest-9999#host-10000` -> `arbiter-100#guest-99#host-100`
 2. 模型的参与方`party_id`发生改变，因此`model_id`以及模型文件里面涉及`party_id`需要改变
@@ -241,7 +242,7 @@ flow model migrate -c /data/projects/fate/python/fate_flow/examples/migrate_mode
 }
 ```
 
-任务成功执行后，执行方的机器中都会生成一份迁移后模型压缩文件，该文件路径可以在返回结果中得到。如上，guest方（9999）的迁移后模型文件路径为：/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip，host方（10000）的迁移后模型文件路径为：/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip。新的model_id与model_version同样可以从返回中获得。
+任务成功执行后，执行方的机器中都会生成一份迁移后模型压缩文件，该文件路径可以在返回结果中得到。如上，guest方（9999）的迁移后模型文件路径为：`/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip`，host方（10000）的迁移后模型文件路径为：`/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip`。新的model_id与model_version同样可以从返回中获得。
 
 
 

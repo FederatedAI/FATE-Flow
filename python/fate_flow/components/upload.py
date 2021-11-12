@@ -149,7 +149,10 @@ class Upload(ComponentBase):
                 LOGGER.info(
                     f"destroy table name: {name} namespace: {namespace} engine: {table.engine}"
                 )
-                table.destroy()
+                try:
+                    table.destroy()
+                except Exception as e:
+                    LOGGER.error(e)
             else:
                 LOGGER.info(
                     f"can not found table name: {name} namespace: {namespace}, pass destroy"

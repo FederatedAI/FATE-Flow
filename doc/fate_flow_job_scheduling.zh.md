@@ -80,7 +80,7 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 
 ### 4.1 组件列表
 
-**含义** 在这个 dict 的第一级是 "components"，用来表示这个任务将会使用到的各个模块。
+**含义** 在这个 dict 的第一级是 `components`，用来表示这个任务将会使用到的各个模块。
 **样例**
 
 ```json
@@ -156,7 +156,8 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
     1.  model: 用于同种类型组件的模型输入。例如，hetero_binning_0 会对模型进行 fit，然后
         hetero_binning_1 将会使用 hetero_binning_0 的输出用于 predict 或
         transform。代码示例：
-        ```json
+
+```json
         "hetero_feature_binning_1": {
             "module": "HeteroFeatureBinning",
             "input": {
@@ -174,11 +175,11 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
               "model": ["eval_model"]
             }
         }
-        ```
+```
     2.  isometric_model: 用于指定继承上游组件的模型输入。 例如，feature selection 的上游组件是
         feature binning，它将会用到 feature binning 的信息来作为 feature
         importance。代码示例：
-        ```json
+```json
         "hetero_feature_selection_0": {
             "module": "HeteroFeatureSelection",
             "input": {
@@ -196,7 +197,7 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
                 "model": ["output_model"]
             }
         }
-        ```
+```
 
 ### 4.4 输出
 
@@ -219,9 +220,11 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 
 FATE-Flow 1.7.0版本开始，同一个FATE-Flow系统支持加载多种且多版本的组件提供方，也即provider，provider提供了若干个组件，提交作业时可以配置组件的来源provider
 
-**含义** 指定provider，支持全局指定以及单个组件指定；若不指定，默认provider：fate@$FATE_VERSION
-**格式** provider_name@$provider_version
-**进阶** 可以通过组件注册CLI注册新的provider：，目前支持的provider：fate、fate_sql
+**含义** 指定provider，支持全局指定以及单个组件指定；若不指定，默认 provider：`fate@$FATE_VERSION`
+
+**格式** `provider_name@$provider_version`
+
+**进阶** 可以通过组件注册CLI注册新的 provider，目前支持的 provider：fate 和 fate_sql
 
 **样例**
 

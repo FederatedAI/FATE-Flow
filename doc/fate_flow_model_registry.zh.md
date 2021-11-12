@@ -172,7 +172,7 @@ flow model import -c examples/model/restore_model.json --from-database
 
 ```bash
 flow model export -c examples/model/export_model.json
-flow model export -c examplse/model/store_model.json --to-database
+flow model export -c examples/model/store_model.json --to-database
 ```
 
 **样例**

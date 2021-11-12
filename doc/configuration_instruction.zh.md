@@ -12,12 +12,10 @@
 
 ## 3. 全局配置
 
-- 路径：$project_path/fate/conf/server_conf.yaml
+- 路径：`$project_path/fate/conf/server_conf.yaml`
 - 说明：常用配置，一般部署时需要确定
 - 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
 ```yaml
-# FATEFlow的运行模式，0表示单机模式，1表示分布式模式；单机模式下使用SQLite，分布式模式下默认使用MySQL
-work_mode: 1
 # FATEFlow是否使用注册中心，使用注册中心的情况下，FATEFlow会注册FATEFlow Server地址以及发布的模型下载地址到注册中心以供在线系统FATEServing使用；同时也会从注册中心获取FATEServing地址
 use_registry: false
 # 是否启用更高安全级别的序列化模式
@@ -131,7 +129,7 @@ zookeeper:
 
 
 ## 4. FATE Flow配置
-- 路径：$project_path/fate/python/fate_flow/settings.py
+- 路径：`$project_path/fate/python/fate_flow/settings.py`
 - 说明：高级配置，一般不需要做改动
 - 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
 ```python
@@ -174,7 +172,7 @@ PRIVILEGE_COMMAND_WHITELIST = []
 
 
 ## 5. FATE Board配置
-- 路径：$project_path/fate/fateboard/conf/application.properties
+- 路径：`$project_path/fate/fateboard/conf/application.properties`
 - 说明：常用配置，一般部署时需要确定
 - 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
 ```properties
@@ -201,7 +199,7 @@ server.board.login.password=admin
 ## 6. EggRoll
 
 ### 6.1 系统配置
-- 路径：$project_path/fate/eggroll/conf/eggroll.properties
+- 路径：`$project_path/fate/eggroll/conf/eggroll.properties`
 - 说明：常用配置，一般部署时需要确定
 - 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
 ```properties
@@ -255,7 +253,7 @@ eggroll.rollsite.adapter.sendbuf.size=100000
 
 
 ### 6.2 路由表配置
-- 路径：$project_path/fate/eggroll/conf/route_table.json
+- 路径：`$project_path/fate/eggroll/conf/route_table.json`
 - 说明：常用配置，一般部署时需要确定 
   - 路由表主要分两个层级表示
   - 第一级表示站点，若找不到对应的目标站点配置，则使用**default**
