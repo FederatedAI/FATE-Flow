@@ -80,9 +80,7 @@ flow init -c ./conf/service_conf.yaml
 如果fate-client的安装机器与FATE-Flow不在同一台机器上，请使用IP地址和端口号进行初始化，初始化命令如下：
 
 ```shell
-# 进入FATE的安装路径，例如/data/projects/fate
-cd $FATE_PROJECT_BASE/
-# 指定fate的IP地址和端口进行初始化
+# 指定fateflow的IP地址和端口进行初始化
 flow init --ip 192.168.0.1 --port 9380
 ```
 
