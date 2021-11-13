@@ -2,15 +2,9 @@
 
 [TOC]
 
-## 1. 版本历史
+## 1. 说明
 
-| 版本状态 | 创建人     |   完成日期 | 备注 |
-| :------- | :--------- | ---------: | :--- |
-| 1.0      | jarviszeng | 2021-11-01 | 初始 |
-
-## 2. 说明
-
-## 3. 全局配置
+## 2. 全局配置
 
 - 路径：`$project_path/fate/conf/server_conf.yaml`
 - 说明：常用配置，一般部署时需要确定
@@ -128,7 +122,7 @@ zookeeper:
 ```
 
 
-## 4. FATE Flow配置
+## 3. FATE Flow配置
 - 路径：`$project_path/fate/python/fate_flow/settings.py`
 - 说明：高级配置，一般不需要做改动
 - 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
@@ -171,7 +165,7 @@ PRIVILEGE_COMMAND_WHITELIST = []
 ```
 
 
-## 5. FATE Board配置
+## 4. FATE Board配置
 - 路径：`$project_path/fate/fateboard/conf/application.properties`
 - 说明：常用配置，一般部署时需要确定
 - 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
@@ -196,9 +190,9 @@ server.board.login.password=admin
 ```
 
 
-## 6. EggRoll
+## 5. EggRoll
 
-### 6.1 系统配置
+### 5.1 系统配置
 - 路径：`$project_path/fate/eggroll/conf/eggroll.properties`
 - 说明：常用配置，一般部署时需要确定
 - 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
@@ -252,7 +246,7 @@ eggroll.rollsite.adapter.sendbuf.size=100000
 ```
 
 
-### 6.2 路由表配置
+### 5.2 路由表配置
 - 路径：`$project_path/fate/eggroll/conf/route_table.json`
 - 说明：常用配置，一般部署时需要确定 
   - 路由表主要分两个层级表示

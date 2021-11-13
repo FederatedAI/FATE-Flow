@@ -2,25 +2,19 @@
 
 [TOC]
 
-## 1. 版本历史
-
-| 版本状态 | 创建人     |   完成日期 | 备注 |
-| :------- | :--------- | ---------: | :--- |
-| 1.0      | jarviszeng | 2021-11-01 | 初始 |
-
-## 2. 说明
+## 1. 说明
 
 主要介绍如何安装使用`FATE Flow Client`，其通常包含在`FATE Client`中，`FATE Client`包含了`FATE项目`多个客户端：`Pipeline` `FATE Flow Client` `FATE Test`
 
-## 3. 安装FATE Client
+## 2. 安装FATE Client
 
-### 3.1 在线安装
+### 2.1 在线安装
 
 FATE Client会发布到`pypi`，可直接使用`pip`等工具安装对应版本
 
-### 3.2 离线安装
+### 2.2 离线安装
 
-### 3.3 在FATE集群上安装
+### 2.3 在FATE集群上安装
 
 请在装有1.5.1及其以上版本fate的机器中进行安装：
 
@@ -57,7 +51,7 @@ Commands:
   task       Task Operations
 ```
 
-## 4. 初始化
+## 3. 初始化
 
 在使用fate-client之前需要对其进行初始化，推荐使用fate的配置文件进行初始化，初始化命令如下：
 
@@ -84,6 +78,6 @@ flow init -c ./conf/service_conf.yaml
 flow init --ip 192.168.0.1 --port 9380
 ```
 
-## 5. 验证
+## 4. 验证
 
 主要验证客户端是否能连接上`FATE Flow Server`
