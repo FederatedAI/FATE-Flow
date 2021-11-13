@@ -2,13 +2,7 @@
 
 [TOC]
 
-## 1. 版本历史
-
-| 版本状态 | 创建人     |   完成日期 | 备注 |
-| :------- | :--------- | ---------: | :--- |
-| 1.0      | jarviszeng | 2021-11-01 | 初始 |
-
-## 2. 逻辑架构
+## 1. 逻辑架构
 
 - DSL定义作业
 - 自顶向下的纵向子任务流调度、多参与方联合子任务调度
@@ -20,19 +14,19 @@
 
 ![](./images/fate_flow_logical_arch.png)
 
-## 3. 整体架构
+## 2. 整体架构
 
-### 3.1 FATE整体架构
+### 2.1 FATE整体架构
 
 ![](./images/fate_arch.png)
 
-### 3.2 FATE Flow整体架构
+### 2.2 FATE Flow整体架构
 
 ![](./images/fate_flow_arch.png)
 
-## 4. 调度架构
+## 3. 调度架构
 
-### 4.1 基于共享状态的全新调度架构
+### 3.1 基于共享状态的全新调度架构
 
 - 剥离状态(资源、作业)与管理器(调度器、资源管理器)
 - 资源状态与作业状态持久化存于MySQL，全局共享，提供可靠事务性操作
@@ -41,7 +35,7 @@
 
 ![](./images/fate_flow_scheduling_arch.png)
 
-### 4.2 状态驱动调度
+### 3.2 状态驱动调度
 
 - 资源协调
 - 拉起子进程Executor运行组件
@@ -51,7 +45,7 @@
 
 ![](./images/fate_flow_resource_process.png)
 
-## 5. 多方资源协调
+## 4. 多方资源协调
 
 - 每个引擎总资源大小通过配置文件配置，后续实现系统对接
 - 总资源大小中的cores_per_node表示每个计算节点cpu核数，nodes表示计算节点个数
@@ -59,7 +53,7 @@
 - 以Job维度申请资源，Job Conf提交时生效，公式：task_parallelism*task_cores
 - 详细配置讲解： https://github.com/FederatedAI/FATE/blob/master/doc/dsl_conf_v2_setting_guide_zh.rst#4-%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E5%8F%82%E6%95%B0
 
-## 6. 数据流动追踪
+## 5. 数据流动追踪
 
 - 定义
  - metric type: 指标类型，如auc, loss, ks等等
@@ -73,7 +67,7 @@
  - get_metric_data(metric_namespace, metric_name)
  - get_metric_meta(metric_namespace, metric_name)
 
-## 7. 作业实时监测
+## 6. 作业实时监测
 
 - 任务执行工作进程
 - task executor存活检测
@@ -83,11 +77,11 @@
 
 ![](./images/fate_flow_detector.png)
 
-## 8. 任务组件中心
+## 7. 任务组件中心
 
 ![](./images/fate_flow_component_registry.png)
 
-## 9. 多方联合模型注册中心
+## 8. 多方联合模型注册中心
 
 - 使用Google Protocol Buffer作为模型存储协议，利用跨语言共享，每个算法模型由两部分组成：ModelParam & ModelMeta
 - 一个Pipeline产生一系列算法模型
@@ -102,7 +96,7 @@
 ![](./images/fate_flow_model_storage.png)
 
 
-## 10. 多生态数据接入
+## 9. 多生态数据接入
 
 - Upload：
  - 外部存储直接导入到FATE Storage，创建一个新的DTable
@@ -116,6 +110,6 @@
 ![](./images/fate_flow_inputoutput.png)
 
 
-## 11. 多方合作权限管理
+## 10. 多方合作权限管理
 
 ![](./images/fate_flow_authorization.png)

@@ -2,13 +2,7 @@
 
 [TOC]
 
-## 1. 版本历史
-
-| 版本状态 | 创建人 | 完成日期   | 备注   |
-| -------- | ------ | ---------- | ------ |
-| 1.0      | yuesun | 2021-11-04 | 初始化 |
-
-## 2. 说明
+## 1. 说明
 
 由 FATE 训练的模型会自动保存到本地并记录在 FATE-Flow 的数据库中，每个组件运行完成后保存的模型称为 Pipeline 模型，在组件运行时定时保存的模型称为 Checkpoint 模型。Checkpoint 模型也可以用于组件运行意外中断后，重试时的“断点续传”。
 
@@ -26,7 +20,7 @@ Checkpoint 模型的支持自 1.7.0 加入，默认是不保存的，如需启�
 
 存储引擎支持腾讯云对象存储、MySQL 和 Redis, 具体请参考[存储引擎配置](#5-存储引擎配置)
 
-## 3. Model
+## 2. Model
 
 ### `load`
 
@@ -464,7 +458,7 @@ flow model homo-convert -c examples/model/homo_convert_model.json
 flow model homo-deploy -c examples/model/homo_deploy_model.json
 ```
 
-## 4. Checkpoint
+## 3. Checkpoint
 
 ### `list`
 
@@ -556,7 +550,7 @@ flow checkpoint get --model-id <model_id> --model-version <model_version> --role
 }
 ```
 
-## 5. 存储引擎配置
+## 4. 存储引擎配置
 
 ### `enable_model_store`
 

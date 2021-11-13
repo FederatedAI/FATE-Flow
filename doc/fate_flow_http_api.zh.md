@@ -2,15 +2,9 @@
 
 [TOC]
 
-## 1. 版本历史
+## 1. 说明
 
-| 版本状态 | 创建人     |   完成日期 | 备注 |
-| :------- | :--------- | ---------: | :--- |
-| 1.0      | jarviszeng | 2021-11-01 | 初始 |
-
-## 2. 说明
-
-## 3. 接口鉴权
+## 2. 接口鉴权
 
 Flow HTTP API 在 1.7.0 新增了签名鉴权，如果在配置文件里设置了 `http_app_key` 和 `http_secret_key`，则所有发送到 Flow 的请求都需要增加以下 header
 
@@ -22,7 +16,7 @@ Flow HTTP API 在 1.7.0 新增了签名鉴权，如果在配置文件里设置�
 
 `SIGNATURE`：基于 Flow 配置文件中的 `http_secret_key` 和请求参数生成的签名
 
-### 3.1 签名生成方法
+### 2.1 签名生成方法
 
 - 按照顺序组合下列内容
 
@@ -44,11 +38,11 @@ Flow HTTP API 在 1.7.0 新增了签名鉴权，如果在配置文件里设置�
 
 - 使用 base64 编码二进制摘要
 
-### 3.2. 示例
+### 2.2. 示例
 
 可以参考 [Fate SDK](https://github.com/FederatedAI/FATE/blob/develop-1.7/python/fate_client/flow_sdk/client/base.py#L63) 的签名方法或 [Fate Flow](https://github.com/FederatedAI/FATE-Flow/blob/develop-1.7.0/python/fate_flow/apps/__init__.py#L104) 的校验方法
 
-### 3.3. 错误码
+### 2.3. 错误码
 
 `400 Bad Request` request body 既有 json 又有 form
 
