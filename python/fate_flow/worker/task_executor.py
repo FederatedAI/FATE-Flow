@@ -295,7 +295,8 @@ class TaskExecutor(BaseTaskWorker):
                         search_component_name, search_data_name = data_key_item[0], data_key_item[1]
                         storage_table_meta = None
                         tracker_client = TrackerClient(job_id=job_id, role=role, party_id=party_id,
-                                                       component_name=search_component_name)
+                                                       component_name=search_component_name,
+                                                       task_id=task_id, task_version=task_version)
                         if search_component_name == 'args':
                             if job_args.get('data', {}).get(search_data_name).get('namespace', '') and job_args.get(
                                     'data', {}).get(search_data_name).get('name', ''):
@@ -307,7 +308,8 @@ class TaskExecutor(BaseTaskWorker):
                                 data_name=search_data_name)
                             if upstream_output_table_infos_json:
                                 tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
-                                                  component_name=search_component_name)
+                                                  component_name=search_component_name,
+                                                  task_id=task_id, task_version=task_version)
                                 upstream_output_table_infos = []
                                 for _ in upstream_output_table_infos_json:
                                     upstream_output_table_infos.append(fill_db_model_object(
