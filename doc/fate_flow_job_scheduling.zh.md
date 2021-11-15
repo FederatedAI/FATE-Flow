@@ -574,8 +574,8 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 
 ### 6.1 说明
 
-DSL V2不会自动为训练任务生成预测dsl。 用户需要首先使用[Flow Client](../../api/flow_client.md) 部署所需模型中模块。
-详细命令说明请参考[FATE-Flow document](../../api/flow_client.md#deploy)
+DSL V2不会自动为训练任务生成预测dsl。 用户需要首先使用`Flow Client`部署所需模型中模块。
+详细命令说明请参考[fate_flow_client](./fate_flow_client.zh.md#deploy)
 
 ```bash
 flow model deploy --model-id $model_id --model-version $model_version --cpn-list ...
