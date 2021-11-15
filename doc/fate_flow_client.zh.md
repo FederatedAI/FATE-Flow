@@ -4,7 +4,33 @@
 
 ## 1. 说明
 
-主要介绍如何安装使用`FATE Flow Client`，其通常包含在`FATE Client`中，`FATE Client`包含了`FATE项目`多个客户端：`Pipeline` `FATE Flow Client` `FATE Test`
+- 介绍如何安装使用`FATE Flow Client`，其通常包含在`FATE Client`中，`FATE Client`包含了`FATE项目`多个客户端：`Pipeline` `FATE Flow Client` `FATE Test`
+- 介绍`FATE Flow Client`提供的命令行，所有的命令将有一个共有调用入口，您可以在命令行中键入`flow`以获取所有的命令分类及其子命令。
+
+```bash
+    [IN]
+    flow
+
+    [OUT]
+    Usage： flow [OPTIONS] COMMAND [ARGS]...
+
+      Fate Flow Client
+
+    Options：
+      -h, --help  Show this message and exit.
+
+    Commands：
+      component   Component Operations
+      data        Data Operations
+      init        Flow CLI Init Command
+      job         Job Operations
+      model       Model Operations
+      queue       Queue Operations
+      table       Table Operations
+      task        Task Operations
+```
+
+更多信息，请查阅如下文档或使用`flow --help`命令。
 
 ## 2. 安装FATE Client
 

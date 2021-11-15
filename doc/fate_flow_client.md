@@ -1,42 +1,68 @@
-# FATE Flow 客户端
+# FATE Flow Client
 
 [TOC]
 
-## 1. 说明
+## 1. Instructions
 
-主要介绍如何安装使用`FATE Flow Client`，其通常包含在`FATE Client`中，`FATE Client`包含了`FATE项目`多个客户端：`Pipeline` `FATE Flow Client` `FATE Test`
-
-## 2. 安装FATE Client
-
-### 2.1 在线安装
-
-FATE Client会发布到`pypi`，可直接使用`pip`等工具安装对应版本，如
+- Introduces how to install and use the `FATE Flow Client`, which is usually included in the `FATE Client`, which contains several clients of the `FATE Project`: `Pipeline` `FATE Flow Client` `FATE Test`
+- Introducing the command line provided by `FATE Flow Client`, all commands will have a common invocation portal, you can type `flow` in the command line to get all the command categories and their subcommands
 
 ```bash
-pip install fate-client
+    [IN]
+    flow
+
+    [OUT]
+    Usage： flow [OPTIONS] COMMAND [ARGS]...
+
+      Fate Flow Client
+
+    Options：
+      -h, --help  Show this message and exit.
+
+    Commands：
+      component   Component Operations
+      data        Data Operations
+      init        Flow CLI Init Command
+      job         Job Operations
+      model       Model Operations
+      queue       Queue Operations
+      table       Table Operations
+      task        Task Operations
 ```
 
-或者
+For more information, please consult the following documentation or use the `flow --help` command.
+
+## 2. Installation of FATE Client
+
+### 2.1 Online installation
+
+FATE Client will be distributed to `pypi`, you can use `pip` and other tools to install the corresponding version directly, such as
 
 ```bash
-pip install fate-client==${version}
+pip install fatale-client
 ```
 
-### 2.2 在FATE集群上安装
+or
 
-请在装有1.5.1及其以上版本fate的机器中进行安装：
+```bash
+pip install atmosphere-client==${version}
+```
 
-安装命令：
+### 2.2 Installing on a FATE cluster
+
+Please install on a machine with version 1.5.1 and above of FATE.
+
+Installation command.
 
 ```shell
 cd $FATE_PROJECT_BASE/
-# 进入FATE PYTHON的虚拟环境
+# Enter the virtual environment of FATE PYTHON
 source bin/init_env.sh
-# 执行安装
-cd ./fate/python/fate_client && python setup.py install
+# Execute the installation
+cd . /fate/python/fate_client && python setup.py install
 ```
 
-安装完成之后，在命令行键入`flow` 并回车，获得如下返回即视为安装成功：
+Once the installation is complete, type `flow` on the command line and enter, the installation will be considered successful if you get the following return.
 
 ```shell
 Usage: flow [OPTIONS] COMMAND [ARGS]...
@@ -44,40 +70,40 @@ Usage: flow [OPTIONS] COMMAND [ARGS]...
   Fate Flow Client
 
 Options:
-  -h, --help  Show this message and exit.
+  -h, --help Show this message and exit.
 
 Commands:
-  component  Component Operations
-  data       Data Operations
-  init       Flow CLI Init Command
-  job        Job Operations
-  model      Model Operations
-  queue      Queue Operations
-  table      Table Operations
-  tag        Tag Operations
-  task       Task Operations
+  component Component Operations
+  data Data Operations
+  init Flow CLI Init Command
+  Job Job Operations
+  model Model Operations
+  queue Queue Operations
+  Table Table Operations
+  tag Tag Operations
+  task Task Operations
 ```
 
-## 3. 初始化
+## 3. initialization
 
-在使用fate-client之前需要对其进行初始化，推荐使用fate的配置文件进行初始化，初始化命令如下：
+Before using fate-client, you need to initialize it. It is recommended to use the configuration file of fateflow to initialize it.
 
-### 3.1 指定fateflow服务地址
+### 3.1 Specify the fateflow service address
 
 ```bash
-# 指定fateflow的IP地址和端口进行初始化
+# Specify the IP address and port of the fateflow service for initialization
 flow init --ip 192.168.0.1 --port 9380
 ```
 
-### 3.2 通过FATE集群上的配置文件
+### 3.2 Pass the configuration file on the FATE cluster
 
 ```shell
-# 进入FATE的安装路径，例如/data/projects/fate
+# Go to the FATE installation path, e.g. /data/projects/fate
 cd $FATE_PROJECT_BASE/
-flow init -c ./conf/service_conf.yaml
+flow init -c . /conf/service_conf.yaml
 ```
 
-获得如下返回视为初始化成功：
+The initialization is considered successful if you get the following return.
 
 ```json
 {
@@ -86,15 +112,15 @@ flow init -c ./conf/service_conf.yaml
 }
 ```
 
-## 4. 验证
+## 4. Verification
 
-主要验证客户端是否能连接上`FATE Flow Server`，如尝试查询当前的作业情况
+Verify that the client can connect to the `FATE Flow Server`, e.g. try to query the current job status
 
 ```bash
 flow job query
 ```
 
-一般返回中的`retcode`为`0`即可
+Usually the `retcode` in the return is just `0`
 
 ```json
 {
@@ -104,7 +130,7 @@ flow job query
 }
 ```
 
-如返回类似如下，则表明连接不上，请检查网络情况
+If the return is similar to the following, it means that the connection is not available, please check the network condition
 
 ```json
 {
