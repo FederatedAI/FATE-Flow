@@ -218,7 +218,7 @@ FATE-Flow 1.7.0版本开始，同一个FATE-Flow系统支持加载多种且多�
 
 **格式** `provider_name@$provider_version`
 
-**进阶** 可以通过组件注册CLI注册新的 provider，目前支持的 provider：fate 和 fate_sql
+**进阶** 可以通过组件注册CLI注册新的 provider，目前支持的 provider：fate 和 fate_sql，具体请参考[FATE Flow 组件中心](./fate_flow_component_registry.zh.md)
 
 **样例**
 
