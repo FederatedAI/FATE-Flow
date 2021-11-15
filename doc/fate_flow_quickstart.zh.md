@@ -42,37 +42,10 @@
         - logs
       - fate.env
 
-    若直接在主仓库源码部署，主要目录结构如下(也即没有单独的`fate`目录，与$FATE_PROJECT_BASE合并)：
-
-      - bin
-      - conf
-      - examples
-      - doc
-      - python
-        - fate_arch
-        - federatedml
-      - fateflow
-        - conf
-        - doc
-        - python
-          - fate_flow
-        - logs
-        - jobs
-      - fateboard
-        - conf
-        - fateboard.jar
-        - logs
-      - eggroll
-        - bin
-        - conf
-        - lib
-        - python
-        - data
-        - logs
-      - fate.env
-
 - FATE_VERSION：表示`FATE`的版本号，如1.7.0
 - FATE_FLOW_VERSION：表示`FATE Flow`的版本号，如1.7.0
+- version：一般在部署文档中，表示`FATE项目`版本号，如`1.7.0`, `1.6.0`
+- version_tag：一般在部署文档中，表示`FATE项目`版本标签，如`release`, `rc1`, `rc10`
 
 ## 2. 术语表
 
