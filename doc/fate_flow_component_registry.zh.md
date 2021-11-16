@@ -10,7 +10,7 @@
 
 ## 2. 默认组件提供者
 
-部署`FATE`集群将包含一个默认的组件提供者，其通常在${FATE_PROJECT_BASE}/fate目录下
+部署`FATE`集群将包含一个默认的组件提供者，其通常在 `${FATE_PROJECT_BASE}/python/federatedml` 目录下
 
 ## 3. 列出当前组件提供者
 
@@ -88,7 +88,7 @@ flow provider list
                     "localbaseline",
                     "labeltransform"
                 ],
-                "path": "${FATE_PROJECT_BASE}/fate/fate/python/federatedml",
+                "path": "${FATE_PROJECT_BASE}/python/federatedml",
                 "python": ""
             },
             "default": {
@@ -114,7 +114,7 @@ flow provider list
                     "cacheloader",
                     "modelstore"
                 ],
-                "path": "${FATE_PROJECT_BASE}/fateflow/python/fate_flow",
+                "path": "${FATE_FLOW_BASE}/python/fate_flow",
                 "python": ""
             },
             "default": {
@@ -134,7 +134,7 @@ flow provider list
 **请求CLI** 
 
 ```bash
-flow provider register -c fateflow/examples/other/register_provider.json
+flow provider register -c $FATE_FLOW_BASE/examples/other/register_provider.json
 ```
 
 **请求参数** 
@@ -153,7 +153,7 @@ flow provider register -c fateflow/examples/other/register_provider.json
 **样例** 
 
 ```bash
-flow provider register -c fateflow/examples/other/register_provider.json
+flow provider register -c $FATE_FLOW_BASE/examples/other/register_provider.json
 ```
 
 配置文件：
@@ -162,7 +162,7 @@ flow provider register -c fateflow/examples/other/register_provider.json
 {
   "name": "fate",
   "version": "1.7.1",
-  "path": "${FATE_PROJECT_BASE}/fateflow/python/component_plugins/fateb/python/federatedml"
+  "path": "${FATE_FLOW_BASE}/python/component_plugins/fateb/python/federatedml"
 }
 ```
 
