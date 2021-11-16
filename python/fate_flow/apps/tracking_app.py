@@ -13,20 +13,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import io
 import json
 import os
-import shutil
-import tarfile
 
 from flask import request, send_file, jsonify
 
-from fate_arch.common.base_utils import fate_uuid
-from fate_arch.session import Session
 from fate_flow.component_env_utils.env_utils import import_component_output_depend
-
 from fate_flow.db.db_models import Job, DB
-from fate_flow.manager.data_manager import delete_metric_data
+from fate_flow.manager.data_manager import delete_metric_data, TableStorage, get_component_output_data_schema
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -224,7 +218,8 @@ def component_output_data():
             data_names.append(output_name)
             totals.append(total)
         if output_data:
-            header = get_component_output_data_schema(output_table_meta=output_table_meta, is_str=is_str, extend_header=extend_header)
+            header = get_component_output_data_schema(output_table_meta=output_table_meta, is_str=is_str,
+                                                                   extend_header=extend_header)
             headers.append(header)
         else:
             headers.append(None)
@@ -252,58 +247,10 @@ def component_output_data_download():
         return error_response(response_code=210, retmsg='no data')
     if limit == 0:
         return error_response(response_code=210, retmsg='limit is 0')
-
-    output_data_file_list = []
-    output_data_meta_file_list = []
-    output_tmp_dir = os.path.join(os.getcwd(), 'tmp/{}'.format(fate_uuid()))
-    for output_name, output_table_meta in output_tables_meta.items():
-        output_data_count = 0
-        is_str = False
-        output_data_file_path = "{}/{}.csv".format(output_tmp_dir, output_name)
-        os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
-        with open(output_data_file_path, 'w') as fw:
-            with Session() as sess:
-                output_table = sess.get_table(name=output_table_meta.get_name(), namespace=output_table_meta.get_namespace())
-                if output_table:
-                    for k, v in output_table.collect():
-                        data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
-                        fw.write('{}\n'.format(','.join(map(lambda x: str(x), data_line))))
-                        output_data_count += 1
-                        if output_data_count == limit:
-                            break
-
-        if output_data_count:
-            # get meta
-            output_data_file_list.append(output_data_file_path)
-            header = get_component_output_data_schema(output_table_meta=output_table_meta, is_str=is_str, extend_header=extend_header)
-            output_data_meta_file_path = "{}/{}.meta".format(output_tmp_dir, output_name)
-            output_data_meta_file_list.append(output_data_meta_file_path)
-            with open(output_data_meta_file_path, 'w') as fw:
-                json.dump({'header': header}, fw, indent=4)
-            if request_data.get('head', True) and header:
-                with open(output_data_file_path, 'r+') as f:
-                    content = f.read()
-                    f.seek(0, 0)
-                    f.write('{}\n'.format(','.join(header)) + content)
-    # tar
-    memory_file = io.BytesIO()
-    tar = tarfile.open(fileobj=memory_file, mode='w:gz')
-    for index in range(0, len(output_data_file_list)):
-        tar.add(output_data_file_list[index], os.path.relpath(output_data_file_list[index], output_tmp_dir))
-        tar.add(output_data_meta_file_list[index], os.path.relpath(output_data_meta_file_list[index], output_tmp_dir))
-    tar.close()
-    memory_file.seek(0)
-    output_data_file_list.extend(output_data_meta_file_list)
-    for path in output_data_file_list:
-        try:
-            shutil.rmtree(os.path.dirname(path))
-        except Exception as e:
-            # warning
-            stat_logger.warning(e)
-        tar_file_name = 'job_{}_{}_{}_{}_output_data.tar.gz'.format(request_data['job_id'],
-                                                                    request_data['component_name'],
-                                                                    request_data['role'], request_data['party_id'])
-        return send_file(memory_file, attachment_filename=tar_file_name, as_attachment=True)
+    tar_file_name = 'job_{}_{}_{}_{}_output_data.tar.gz'.format(request_data['job_id'],
+                                                                request_data['component_name'],
+                                                                request_data['role'], request_data['party_id'])
+    return TableStorage.send_table(output_tables_meta, tar_file_name, limit=limit, need_head=request_data.get("head", True))
 
 
 @manager.route('/component/output/data/table', methods=['post'])
@@ -377,25 +324,6 @@ def get_component_output_tables_meta(task_data):
 #     else:
 #         data_line.extend(feature_utils.dataset_to_list(src_value))
 #     return data_line, is_str, extend_header
-
-
-def get_component_output_data_schema(output_table_meta, extend_header, is_str=False):
-    # get schema
-    schema = output_table_meta.get_schema()
-    if not schema:
-         return ['sid']
-    header = [schema.get('sid_name', 'sid')]
-    header.extend(extend_header)
-    if is_str:
-        if not schema.get('header'):
-            if schema.get('sid'):
-                return [schema.get('sid')]
-            else:
-                return None
-        header.extend([feature for feature in schema.get('header').split(',')])
-    else:
-        header.extend(schema.get('header', []))
-    return header
 
 
 @DB.connection_context()
