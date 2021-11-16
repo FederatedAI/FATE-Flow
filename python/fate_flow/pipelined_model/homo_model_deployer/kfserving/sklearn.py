@@ -35,7 +35,10 @@ class SKLearnKFDeployer(KFServingDeployer, ABC):
 
 class SKLearnV1KFDeployer(SKLearnKFDeployer):
     def _do_prepare_predictor(self):
+        # Use our own sklearnserver image that has scikit-learn==0.24.2 because KFServing's default one
+        # uses scikit-learn==0.20.3 that cannot de-serialize models of higher versions.
         self.isvc.spec.predictor.sklearn = kfserving.V1beta1SKLearnSpec(
+            image="federatedai/sklearnserver:v0.6.1-0.24.2",
             protocol_version='v1',
             storage_uri=self.storage_uri)
 
