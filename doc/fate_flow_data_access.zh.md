@@ -55,7 +55,7 @@
       "partition": 10,
       "namespace": "experiment",
       "table_name": "breast_hetero_guest",
-      "storage_engine": "HDFS"
+      "storage_engine": "EGGROLL"
   }
   ```
 
