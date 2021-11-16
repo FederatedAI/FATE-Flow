@@ -5,7 +5,7 @@
 模型迁移功能使得模型文件复制拷贝到不同party id的集群依然可用，以下两种场景需要做模型迁移：
 1. 模型生成参与方任何一方的集群, 重新部署且部署后集群的party id变更, 例如源参与方为arbiter-10000#guest-9999#host-10000, 改为arbiter-10000#guest-99#host-10000
 2. 其中任意一个或多个参与方将模型文件从源集群复制到目标集群，需要在目标集群使用
-   
+  
 
 基本原理：
 1. 上述两种场景下，模型的参与方`party_id`会发生改变，如`arbiter-10000#guest-9999#host-10000` -> `arbiter-10000#guest-99#host-10000`，或者`arbiter-10000#guest-9999#host-10000` -> `arbiter-100#guest-99#host-100`
@@ -21,8 +21,8 @@
 
 请将源参与方fate flow服务所在机器生成的模型文件（包括以model id为命名的目录）进行打包并转移到目标参与方fate flow所在机器中，请将模型文件转移至固定目录中：
 
-```shell
-$FATE_PATH/model_local_cache
+```bash
+$FATE_PROJECT_BASE/model_local_cache
 ```
 
 说明:
@@ -43,7 +43,7 @@ $FATE_PATH/model_local_cache
 
 ```shell
 # 进入FATE的安装路径，例如/data/projects/fate
-cd $FATE_PATH/
+cd $FATE_PROJECT_BASE/
 # 进入FATE PYTHON的虚拟环境
 source bin/init_env.sh
 # 执行安装
@@ -98,7 +98,7 @@ flow init -c ./conf/service_conf.yaml
 
 ```shell
 # 进入FATE的安装路径，例如/data/projects/fate
-cd $FATE_PATH/
+cd $FATE_PROJECT_BASE/
 # 指定fate的IP地址和端口进行初始化
 flow init --ip 192.168.0.1 --port 9380
 ```
@@ -112,7 +112,7 @@ flow init --ip 192.168.0.1 --port 9380
 
 ### 1. 修改配置文件
 
-在新参与方（机器）中根据实际情况对迁移任务的配置文件进行修改，如下为迁移任务示例配置文件 [migrate_model.json](https://github.com/FederatedAI/FATE/blob/master/python/fate_flow/examples/migrate_model.json)
+在新参与方（机器）中根据实际情况对迁移任务的配置文件进行修改，如下为迁移任务示例配置文件 [migrate_model.json](fateflow/examples/model/migrate_model.json)
 
 ```json
 {
@@ -170,7 +170,7 @@ flow init --ip 192.168.0.1 --port 9380
 迁移任务需使用FATE Flow CLI v2进行提交，示例执行命令如下：
 
 ```bash
-flow model migrate -c /data/projects/fate/python/fate_flow/examples/migrate_model.json
+flow model migrate -c $FATE_FLOW_BASE/examples/model/migrate_model.json
 ```
 
 
@@ -267,7 +267,7 @@ flow model migrate -c /data/projects/fate/python/fate_flow/examples/migrate_mode
 如下为使用FATE Flow CLI v2提交导入模型的示例命令：
 
 ```bash
-flow model import -c /data/projects/fate/python/fate_flow/examples/import_model.json
+flow model import -c $FATE_FLOW_BASE/examples/model/import_model.json
 ```
 
 得到如下返回视为导入成功：
