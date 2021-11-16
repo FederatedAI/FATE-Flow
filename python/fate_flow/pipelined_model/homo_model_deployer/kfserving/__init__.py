@@ -15,11 +15,6 @@
 #
 
 
-from .pytorch import TorchServeKFDeployer
-from .sklearn import SKLearnV1KFDeployer, SKLearnV2KFDeployer
-from .tensorflow import TFServingKFDeployer
-
-
 def get_kfserving_deployer(party_model_id,
                            model_version,
                            model_object,
@@ -42,13 +37,16 @@ def get_kfserving_deployer(party_model_id,
     :return: an instance of the subclass of the base KFServingDeployer
     """
     if framework_name in ['sklearn', 'scikit-learn']:
+        from .sklearn import SKLearnV1KFDeployer, SKLearnV2KFDeployer
         if protocol_version == "v2":
             cls = SKLearnV2KFDeployer
         else:
             cls = SKLearnV1KFDeployer
     elif framework_name in ['pytorch', 'torch']:
+        from .pytorch import TorchServeKFDeployer
         cls = TorchServeKFDeployer
     elif framework_name in ['tf_keras', 'tensorflow', 'tf']:
+        from .tensorflow import TFServingKFDeployer
         cls = TFServingKFDeployer
     else:
         raise ValueError("unknown converted model framework: {}".format(framework_name))
