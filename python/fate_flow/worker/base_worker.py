@@ -17,6 +17,7 @@ import argparse
 import os
 import sys
 import traceback
+import logging
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.file_utils import load_json_conf, dump_json_conf
@@ -88,9 +89,13 @@ class BaseWorker:
             self.args = self.get_args(**kwargs)
             RuntimeConfig.set_process_role(ProcessRole(os.getenv("PROCESS_ROLE")))
             if RuntimeConfig.PROCESS_ROLE == ProcessRole.WORKER:
+                LoggerFactory.LEVEL = logging.getLevelName(os.getenv("FATE_LOG_LEVEL", "INFO"))
                 LoggerFactory.set_directory(directory=self.args.log_dir, parent_log_dir=self.args.parent_log_dir,
                                             append_to_parent_log=True, force=True)
-            LOGGER.info(f"enter {self.__class__.__name__} worker process, pid: {self.run_pid}")
+                LOGGER.info(f"enter {self.__class__.__name__} worker in subprocess, pid: {self.run_pid}")
+            else:
+                LOGGER.info(f"enter {self.__class__.__name__} worker in driver process, pid: {self.run_pid}")
+            LOGGER.info(f"log level: {logging.getLevelName(LoggerFactory.LEVEL)}")
             for env in {"VIRTUAL_ENV", "PYTHONPATH", "SPARK_HOME", "FATE_DEPLOY_BASE", "PROCESS_ROLE", "FATE_JOB_ID"}:
                 LOGGER.info(f"{env}: {os.getenv(env)}")
             if self.args.job_server:

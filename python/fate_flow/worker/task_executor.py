@@ -177,11 +177,23 @@ class TaskExecutor(BaseTaskWorker):
                 ),
                 flow_feeded_parameters=flow_feeded_parameters,
             )
-            # add profile logs
-            profile.profile_start()
-            cpn_output = run_object.run(cpn_input)
-            sess.wait_remote_all_done()
-            profile.profile_ends()
+            profile_log_enabled = False
+            try:
+                if int(os.getenv("FATE_PROFILE_LOG_ENABLED", "0")) > 0:
+                    profile_log_enabled = True
+            except Exception as e:
+                LOGGER.warning(e)
+            if profile_log_enabled:
+                # add profile logs
+                LOGGER.info("profile logging is enabled")
+                profile.profile_start()
+                cpn_output = run_object.run(cpn_input)
+                sess.wait_remote_all_done()
+                profile.profile_ends()
+            else:
+                LOGGER.info("profile logging is disabled")
+                cpn_output = run_object.run(cpn_input)
+                sess.wait_remote_all_done()
 
             output_table_list = []
             LOGGER.info(f"task output data {cpn_output.data}")
