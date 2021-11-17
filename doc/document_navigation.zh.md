@@ -63,5 +63,10 @@
 
 ## 3. 测试一下
 
-{{ snippet('FederatedAI/FATE-Flow', 'doc/fate_flow_client.zh.md', 'develop-1.7.0', '### `upload`') }}
+{{ snippet('fate_flow_job_scheduling.zh.md', '### 3.5 组件Provider') }}
+
+## 4. 测试一下
+
+{{ snippet('doc/fate_flow_job_scheduling.zh.md', '### 3.5 组件Provider', 'FederatedAI/FATE-Flow', 'develop-1.7.0')}}
+
 
