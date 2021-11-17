@@ -77,22 +77,3 @@ Servel plugins are introdused to makes mkdocs-material much powerful:
 
 - [mkdocs-simple-hooks](https://github.com/aklajnert/mkdocs-simple-hooks)
     for simple plugin-in
-
-## macro extension
-
-### include examples
-
-```
-{% include-examples "<name>" %}
-```
-extract all components's examples(pipeline, dsl v1, dsl v2) from `examples` folder
-
-### include example
-
-```
-{% include-example "???" %}
-```
-
-extract source code `???` from repo.
-
-

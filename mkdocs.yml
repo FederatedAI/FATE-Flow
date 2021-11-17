@@ -64,9 +64,11 @@ plugins:
       default_language: en
       languages:
         zh: 中文
-  
+  - markdown-include-snippet:
+      base_path: doc
 markdown_extensions:
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      base_path: doc
   - mdx_math
   - admonition
   - pymdownx.highlight
