@@ -48,6 +48,9 @@ def get_kfserving_deployer(party_model_id,
     elif framework_name in ['tf_keras', 'tensorflow', 'tf']:
         from .tensorflow import TFServingKFDeployer
         cls = TFServingKFDeployer
+    elif framework_name in ['lightgbm']:
+        from .lightgbm import LightGBMKFDeployer
+        cls = LightGBMKFDeployer
     else:
         raise ValueError("unknown converted model framework: {}".format(framework_name))
     return cls(party_model_id, model_version, model_object, service_id, **kwargs)
