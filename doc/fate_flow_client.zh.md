@@ -139,7 +139,7 @@ flow job query
 }
 ```
 
-## 5.1 Data
+## 5. 数据输入输出
 
 ### `upload`
 
@@ -318,20 +318,156 @@ flow job query
 
 ## 6. Job
 
-### `submit`
+### 6.1 作业提交
 
--   *介绍*： 提交执行pipeline任务。
--   *参数*：
+**简要描述** 
 
-| 编号 | 参数      | Flag_1 | Flag_2        | 必要参数 | 参数介绍                                                                                                   |
-| ---- | --------- | ------ | ------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
-| 1    | conf_path | `-c`   | `--conf-path` | 是       | 任务配置文件路径                                                                                           |
-| 2    | dsl_path  | `-d`   | `--dsl-path`  | 否       | DSL文件路径. 如果任务为预测任务，该字段可以不输入。另外，用户可以提供可用的自定义DSL文件用于执行预测任务。 |
+- 构建一个联邦学习作业，并提交到调度系统执行
+- 需要两个配置文件：job dsl和job conf
+- job dsl配置运行的组件：列表、输入输出关系
+- job conf配置组件执行参数、系统运行参数
 
--   *示例*：
+**请求CLI** 
 
-``` bash
-flow job submit -c fate_flow/examples/test_hetero_lr_job_conf.json -d fate_flow/examples/test_hetero_lr_job_dsl.json
+```bash
+flow job submit -d ./examples/simple/simple_dsl.json -c ./examples/simple/simple_job_conf.json
+```
+
+**请求参数** 
+
+| 参数名          | 必选 | 类型   | 说明           |
+| :-------------- | :--- | :----- | -------------- |
+| -d, --dsl-path  | 是   | string | job dsl的路径  |
+| -c, --conf-path | 是   | string | job conf的路径 |
+
+
+**返回参数** 
+
+| 参数名                          | 类型   | 说明                                                                  |
+| :------------------------------ | :----- | --------------------------------------------------------------------- |
+| retcode                         | int    | 返回码                                                                |
+| retmsg                          | string | 返回信息                                                              |
+| jobId                           | string | 作业ID                                                                |
+| data                            | dict   | 返回数据                                                              |
+| data.dsl_path                   | string | 依据提交的dsl内容，由系统生成的实际运行dsl配置的存放路径              |
+| data.runtime_conf_on_party_path | string | 依据提交的conf内容，由系统生成的在每个party实际运行conf配置的存放路径 |
+| data.board_url                  | string | fateboard查看地址                                                     |
+| data.model_info                 | dict   | 模型标识信息                                                          |
+
+**样例** 
+
+```json
+{
+    "data": {
+        "board_url": "http://127.0.0.1:8080/index.html#/dashboard?job_id=202111061608424372620&role=guest&party_id=9999",
+        "code": 0,
+        "dsl_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/job_dsl.json",
+        "job_id": "202111061608424372620",
+        "logs_directory": "$FATE_PROJECT_BASE/logs/202111061608424372620",
+        "message": "success",
+        "model_info": {
+            "model_id": "arbiter-10000#guest-9999#host-10000#model",
+            "model_version": "202111061608424372620"
+        },
+        "pipeline_dsl_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/pipeline_dsl.json",
+        "runtime_conf_on_party_path": "$FATE_FATE_PROJECT_BASE/jobs/202111061608424372620/guest/9999/job_runtime_on_party_conf.json",
+        "runtime_conf_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/job_runtime_conf.json",
+        "train_runtime_conf_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/train_runtime_conf.json"
+    },
+    "jobId": "202111061608424372620",
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### 6.2 作业重跑
+
+**请求CLI** 
+```bash
+flow job rerun
+```
+
+**请求参数** 
+
+| 参数名                 | 必选 | 类型   | 说明                                                                                                  |
+| :--------------------- | :--- | :----- | ----------------------------------------------------------------------------------------------------- |
+| -j, --job-id           | 是   | string | job id 路径                                                                                           |
+| -cpn, --component-name | 否   | string | 指定从哪个组件重跑，没被指定的组件若与指定组件没有上游依赖关系则不会执行;若不指定该参数则整个作业重跑 |
+| --force                | 否   | bool   | 作业即使成功也重跑;若不指定该参数，作业如果成功，则跳过重跑                                           |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| jobId   | string | 作业ID   |
+| data    | dict   | 返回数据 |
+
+**样例** 
+
+```bash
+flow job rerun -j 202111031100369723120
+```
+
+```bash
+flow job rerun -j 202111031100369723120 -cpn hetero_lr_0
+```
+
+```bash
+flow job rerun -j 202111031100369723120 -cpn hetero_lr_0 --force 
+```
+
+### 6.3 作业参数更新
+
+**请求CLI** 
+```bash
+flow job parameter-update
+```
+
+**请求参数** 
+
+| 参数名          | 必选 | 类型   | 说明                                                 |
+| :-------------- | :--- | :----- | ---------------------------------------------------- |
+| -j, --job-id    | 是   | string | job id 路径                                          |
+| -c, --conf-path | 是   | string | 需要更新的job conf的内容，不需要更新的参数不需要填写 |
+
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明                 |
+| :------ | :----- | -------------------- |
+| retcode | int    | 返回码               |
+| retmsg  | string | 返回信息             |
+| jobId   | string | 作业ID               |
+| data    | dict   | 返回更新后的job conf |
+
+**样例** 
+
+假设更新job中hetero_lr_0这个组件的部分执行参数，配置文件如下：
+```bash
+{
+  "job_parameters": {
+  },
+  "component_parameters": {
+    "common": {
+      "hetero_lr_0": {
+        "alpha": 0.02,
+        "max_iter": 5
+      }
+    }
+  }
+}
+```
+
+执行如下命令生效：
+```bash
+flow job parameter-update -j 202111061957421943730 -c examples/other/update_parameters.json
+```
+
+执行如下命令重跑：
+```bash
+flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force 
 ```
 
 ### `stop`
@@ -462,168 +598,625 @@ flow job dsl --cpn-list [dataio_0,hetero_feature_binning_0,hetero_feature_select
 
 ## 7. Tracking
 
-### `parameters`
+### 指标列表
 
--   *介绍*： 检索指定组件的参数。
--   *参数*：
+获取某个组件任务产生的所有指标名称列表
 
-| 编号 | 参数           | Flag_1 | Flag_2             | 必要参数 | 参数介绍 |
-| ---- | -------------- | ------ | ------------------ | -------- | -------- |
-| 1    | job_id         | `-j`   | `--job_id`         | 是       | Job ID   |
-| 2    | role           | `-r`   | `--role`           | 是       | 角色     |
-| 3    | party_id       | `-p`   | `--party_id`       | 是       | Party ID |
-| 4    | component_name | `-cpn` | `--component_name` | 是       | 组件名   |
+**请求CLI** 
 
--   *示例*：
-
-``` bash
-flow component parameters -j $JOB_ID -r host -p 10000 -cpn hetero_feature_binning_0
+```bash
+flow tracking metrics
 ```
 
-### `metric-all`
+**请求参数** 
 
--   *介绍*： 检索指定任务的所有metric数据。
--   *参数*：
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
 
-| 编号 | 参数           | Flag_1 | Flag_2             | 必要参数 | 参数介绍 |
-| ---- | -------------- | ------ | ------------------ | -------- | -------- |
-| 1    | job_id         | `-j`   | `--job_id`         | 是       | Job ID   |
-| 2    | role           | `-r`   | `--role`           | 是       | 角色     |
-| 3    | party_id       | `-p`   | `--party_id`       | 是       | Party ID |
-| 4    | component_name | `-cpn` | `--component_name` | 是       | 组件名   |
+**返回参数** 
 
--   *示例*：
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
 
-    ``` bash
-    flow component metric-all -j $JOB_ID -r host -p 10000 -cpn hetero_feature_binning_0
-    ```
+**样例** 
 
-### `metrics`
-
--   *介绍*： 检索指定任务指定组件的metric数据。
--   *参数*：
-
-| 编号 | 参数           | Flag_1 | Flag_2             | 必要参数 | 参数介绍 |
-| ---- | -------------- | ------ | ------------------ | -------- | -------- |
-| 1    | job_id         | `-j`   | `--job_id`         | 是       | Job ID   |
-| 2    | role           | `-r`   | `--role`           | 是       | 角色     |
-| 3    | party_id       | `-p`   | `--party_id`       | 是       | Party ID |
-| 4    | component_name | `-cpn` | `--component_name` | 是       | 组件名   |
-
--   *示例*：
-
-    ``` bash
-    flow component metrics -j $JOB_ID -r host -p 10000 -cpn hetero_feature_binning_0
-    ```
-
-### `metric-delete`
-
--   *介绍*： 删除指定metric数据。
--   *参数*：
-
-| 编号 | 参数   | Flag_1 | Flag_2     | 必要参数 | 参数介绍                 |
-| ---- | ------ | ------ | ---------- | -------- | ------------------------ |
-| 1    | date   | `-d`   | `--date`   | 否       | 8位日期, 形如 'YYYYMMDD' |
-| 2    | job_id | `-j`   | `--job_id` | 否       | Job ID                   |
-
--   *示例*：
-
-``` bash
-# 注意：如果同时键入date参数与job_id参数，CLI将优先检测date参数数据，job_id参数将被忽略。
-flow component metric-delete -d 20200101
-flow component metric-delete -j $JOB_ID
+```bash
+flow tracking metrics -j 202111081618357358520 -r guest -p 9999 -cpn evaluation_0
 ```
 
-### `output-model`
+输出:
 
--   *介绍*： 检索指定组件模型。
--   *参数*：
-
-| 编号 | 参数           | Flag_1 | Flag_2             | 必要参数 | 参数介绍 |
-| ---- | -------------- | ------ | ------------------ | -------- | -------- |
-| 1    | job_id         | `-j`   | `--job_id`         | 是       | Job ID   |
-| 2    | role           | `-r`   | `--role`           | 是       | 角色     |
-| 3    | party_id       | `-p`   | `--party_id`       | 是       | Party ID |
-| 4    | component_name | `-cpn` | `--component_name` | 是       | 组件名   |
-
--   *示例*：
-
-    ``` bash
-    flow component output-model -j $JOB_ID -r host -p 10000 -cpn hetero_feature_binning_0
-    ```
-
-### `output-data`
-
--   *介绍*： 下载指定组件的输出数据。
--   *参数*：
-
-| 编号 | 参数           | Flag_1 | Flag_2             | 必要参数 | 参数介绍     |
-| ---- | -------------- | ------ | ------------------ | -------- | ------------ |
-| 1    | job_id         | `-j`   | `--job_id`         | 是       | Job ID       |
-| 2    | role           | `-r`   | `--role`           | 是       | 角色         |
-| 3    | party_id       | `-p`   | `--party_id`       | 是       | Party ID     |
-| 4    | component_name | `-cpn` | `--component_name` | 是       | 组件名       |
-| 5    | output_path    | `-o`   | `--output-path`    | 是       | 输出目录     |
-| 6    | limit          | `-l`   | `--limit`          | 否       | 默认返回全部 |
-
--   *示例*：
-
-    ``` bash
-    flow component output-data -j $JOB_ID -r host -p 10000 -cpn hetero_feature_binning_0 --output-path ./examples/
-    ```
-
-### `output-data-table`
-
--   *介绍*： 查看数据表名及命名空间。
--   *参数*：
-
-| 编号 | 参数           | Flag_1 | Flag_2             | 必要参数 | 参数介绍 |
-| ---- | -------------- | ------ | ------------------ | -------- | -------- |
-| 1    | job_id         | `-j`   | `--job_id`         | 是       | Job ID   |
-| 2    | role           | `-r`   | `--role`           | 是       | 角色     |
-| 3    | party_id       | `-p`   | `--party_id`       | 是       | Party ID |
-| 4    | component_name | `-cpn` | `--component_name` | 是       | 组件名   |
-
--   *示例*：
-
-    ``` bash
-    flow component output-data-table -j $JOB_ID -r host -p 10000 -cpn hetero_feature_binning_0
-    ```
-
-### `list`
-
--   *介绍*： 展示指定任务的组件列表。
--   *参数*：
-
-| 编号 | 参数   | Flag_1 | Flag_2     | 必要参数 | 参数介绍 |
-| ---- | ------ | ------ | ---------- | -------- | -------- |
-| 1    | job_id | `-j`   | `--job_id` | 是       | Job ID   |
-
--   *示例*：
-
-``` bash
-flow component list -j $JOB_ID
+```json
+{
+    "data": {
+        "train": [
+            "hetero_lr_0",
+            "hetero_lr_0_ks_fpr",
+            "hetero_lr_0_ks_tpr",
+            "hetero_lr_0_lift",
+            "hetero_lr_0_gain",
+            "hetero_lr_0_accuracy",
+            "hetero_lr_0_precision",
+            "hetero_lr_0_recall",
+            "hetero_lr_0_roc",
+            "hetero_lr_0_confusion_mat",
+            "hetero_lr_0_f1_score",
+            "hetero_lr_0_quantile_pr"
+        ]
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
 ```
 
-### `get-summary`
+### 所有指标
 
--   *介绍*： 获取指定组件的概要。
--   *参数*：
+获取组件任务的所有输出指标
 
-| 编号 | 参数           | Flag_1 | Flag_2             | 必要参数 | 参数介绍     |
-| ---- | -------------- | ------ | ------------------ | -------- | ------------ |
-| 1    | job_id         | `-j`   | `--job_id`         | 是       | Job ID       |
-| 2    | role           | `-r`   | `--role`           | 是       | 角色         |
-| 3    | party_id       | `-p`   | `--party_id`       | 是       | Party ID     |
-| 4    | component_name | `-cpn` | `--component_name` | 是       | 组件名       |
-| 5    | output_path    | `-o`   | `--output-path`    | 否       | 输出目录路径 |
+**请求CLI** 
 
--   *示例*：
+```bash
+flow tracking metric-all
+```
 
-``` bash
-flow component get-summary -j $JOB_ID -r host -p 10000 -cpn hetero_feature_binning_0
+**请求参数** 
 
-flow component get-summary -j $JOB_ID -r host -p 10000 -cpn hetero_feature_binning_0 -o ./examples/
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
+| jobId   | string | 作业id   |
+
+**样例** 
+
+```bash
+flow tracking metric-all -j 202111081618357358520 -r guest -p 9999 -cpn evaluation_0
+```
+
+输出(篇幅有限，仅显示部分指标的数据且数组型数据中间省略了一些值):
+
+```json
+{
+    "data": {
+        "train": {
+            "hetero_lr_0": {
+                "data": [
+                    [
+                        "auc",
+                        0.293893
+                    ],
+                    [
+                        "ks",
+                        0.0
+                    ]
+                ],
+                "meta": {
+                    "metric_type": "EVALUATION_SUMMARY",
+                    "name": "hetero_lr_0"
+                }
+            },
+            "hetero_lr_0_accuracy": {
+                "data": [
+                    [
+                        0.0,
+                        0.372583
+                    ],
+                    [
+                        0.99,
+                        0.616872
+                    ]
+                ],
+                "meta": {
+                    "curve_name": "hetero_lr_0",
+                    "metric_type": "ACCURACY_EVALUATION",
+                    "name": "hetero_lr_0_accuracy",
+                    "thresholds": [
+                        0.999471,
+                        0.002577
+                    ]
+                }
+            },
+            "hetero_lr_0_confusion_mat": {
+                "data": [],
+                "meta": {
+                    "fn": [
+                        357,
+                        0
+                    ],
+                    "fp": [
+                        0,
+                        212
+                    ],
+                    "metric_type": "CONFUSION_MAT",
+                    "name": "hetero_lr_0_confusion_mat",
+                    "thresholds": [
+                        0.999471,
+                        0.0
+                    ],
+                    "tn": [
+                        212,
+                        0
+                    ],
+                    "tp": [
+                        0,
+                        357
+                    ]
+                }
+            }
+        }
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### 任务运行参数
+
+提交作业后，系统依据job conf中的component_parameters结合系统默认组件参数，最终解析得到的实际组件任务运行参数
+
+**请求CLI** 
+
+```bash
+flow tracking parameters
+```
+
+**请求参数** 
+
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
+
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
+| jobId   | string | 作业id   |
+
+**样例** 
+
+```bash
+flow tracking parameters  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0
+```
+
+输出:
+
+```json
+{
+    "data": {
+        "ComponentParam": {
+            "_feeded_deprecated_params": [],
+            "_is_raw_conf": false,
+            "_name": "HeteroLR#hetero_lr_0",
+            "_user_feeded_params": [
+                "batch_size",
+                "penalty",
+                "max_iter",
+                "learning_rate",
+                "init_param",
+                "optimizer",
+                "init_param.init_method",
+                "alpha"
+            ],
+            "alpha": 0.01,
+            "batch_size": 320,
+            "callback_param": {
+                "callbacks": [],
+                "early_stopping_rounds": null,
+                "metrics": [],
+                "save_freq": 1,
+                "use_first_metric_only": false,
+                "validation_freqs": null
+            },
+            "cv_param": {
+                "history_value_type": "score",
+                "mode": "hetero",
+                "n_splits": 5,
+                "need_cv": false,
+                "output_fold_history": true,
+                "random_seed": 1,
+                "role": "guest",
+                "shuffle": true
+            },
+            "decay": 1,
+            "decay_sqrt": true,
+            "early_stop": "diff",
+            "early_stopping_rounds": null,
+            "encrypt_param": {
+                "key_length": 1024,
+                "method": "Paillier"
+            },
+            "encrypted_mode_calculator_param": {
+                "mode": "strict",
+                "re_encrypted_rate": 1
+            },
+            "floating_point_precision": 23,
+            "init_param": {
+                "fit_intercept": true,
+                "init_const": 1,
+                "init_method": "random_uniform",
+                "random_seed": null
+            },
+            "learning_rate": 0.15,
+            "max_iter": 3,
+            "metrics": [
+                "auc",
+                "ks"
+            ],
+            "multi_class": "ovr",
+            "optimizer": "rmsprop",
+            "penalty": "L2",
+            "predict_param": {
+                "threshold": 0.5
+            },
+            "sqn_param": {
+                "memory_M": 5,
+                "random_seed": null,
+                "sample_size": 5000,
+                "update_interval_L": 3
+            },
+            "stepwise_param": {
+                "direction": "both",
+                "max_step": 10,
+                "mode": "hetero",
+                "need_stepwise": false,
+                "nvmax": null,
+                "nvmin": 2,
+                "role": "guest",
+                "score_name": "AIC"
+            },
+            "tol": 0.0001,
+            "use_first_metric_only": false,
+            "validation_freqs": null
+        },
+        "module": "HeteroLR"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### 下载输出数据
+
+**请求CLI** 
+
+```bash
+flow tracking output-data
+```
+
+**请求参数** 
+
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
+| -o, --output-path      | 是   | string | 输出数据的存放路径            |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
+| jobId   | string | 作业id   |
+
+**样例** 
+
+```bash
+flow tracking output-data  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0 -o ./
+```
+
+输出:
+
+```json
+{
+    "retcode": 0,
+    "directory": "$FATE_PROJECT_BASE/job_202111081618357358520_hetero_lr_0_guest_9999_output_data",
+    "retmsg": "Download successfully, please check $FATE_PROJECT_BASE/job_202111081618357358520_hetero_lr_0_guest_9999_output_data directory"
+}
+```
+
+### 获取输出数据存放数据表名称
+
+**请求CLI** 
+
+```bash
+flow tracking output-data-table
+```
+
+**请求参数** 
+
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
+| jobId   | string | 作业id   |
+
+**样例** 
+
+```bash
+flow tracking output-data-table  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0
+```
+
+输出:
+
+```json
+{
+    "data": [
+        {
+            "data_name": "train",
+            "table_name": "9688fa00406c11ecbd0bacde48001122",
+            "table_namespace": "output_data_202111081618357358520_hetero_lr_0_0"
+        }
+    ],
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### 任务输出模型
+
+获取某个组件任务的输出模型，更多详细关于模型的操作请见：todo
+
+**请求CLI** 
+
+```bash
+flow tracking output-model
+```
+
+**请求参数** 
+
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
+| jobId   | string | 作业id   |
+
+**样例** 
+
+```bash
+flow tracking output-model  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0
+```
+
+输出:
+
+```json
+{
+    "data": {
+        "bestIteration": -1,
+        "encryptedWeight": {},
+        "header": [
+            "x0",
+            "x1",
+            "x2",
+            "x3",
+            "x4",
+            "x5",
+            "x6",
+            "x7",
+            "x8",
+            "x9"
+        ],
+        "intercept": 0.24451607054764884,
+        "isConverged": false,
+        "iters": 3,
+        "lossHistory": [],
+        "needOneVsRest": false,
+        "weight": {
+            "x0": 0.04639947589856569,
+            "x1": 0.19899685467216902,
+            "x2": -0.18133550931649306,
+            "x3": 0.44928868756862206,
+            "x4": 0.05285905125502288,
+            "x5": 0.319187932844076,
+            "x6": 0.42578983446194013,
+            "x7": -0.025765956309895477,
+            "x8": -0.3699194462271593,
+            "x9": -0.1212094750908295
+        }
+    },
+    "meta": {
+        "meta_data": {
+            "alpha": 0.01,
+            "batchSize": "320",
+            "earlyStop": "diff",
+            "fitIntercept": true,
+            "learningRate": 0.15,
+            "maxIter": "3",
+            "needOneVsRest": false,
+            "optimizer": "rmsprop",
+            "partyWeight": 0.0,
+            "penalty": "L2",
+            "reEncryptBatches": "0",
+            "revealStrategy": "",
+            "tol": 0.0001
+        },
+        "module_name": "HeteroLR"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### 任务输出摘要
+
+每个组件允许设置一些摘要信息，便于观察分析
+
+**请求CLI** 
+
+```bash
+flow tracking get-summary
+```
+
+**请求参数** 
+
+| 参数名                 | 必选 | 类型   | 说明                          |
+| :--------------------- | :--- | :----- | ----------------------------- |
+| -j, --job-id           | 是   | string | 作业id                        |
+| -r, --role             | 是   | string | 参与角色                      |
+| -p, --partyid          | 是   | string | 参与方id                      |
+| -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
+| jobId   | string | 作业id   |
+
+**样例** 
+
+```bash
+flow tracking get-summary -j 202111081618357358520 -r guest -p 9999 -cpn hetero_lr_0
+```
+
+输出:
+
+```json
+{
+    "data": {
+        "best_iteration": -1,
+        "coef": {
+            "x0": 0.04639947589856569,
+            "x1": 0.19899685467216902,
+            "x2": -0.18133550931649306,
+            "x3": 0.44928868756862206,
+            "x4": 0.05285905125502288,
+            "x5": 0.319187932844076,
+            "x6": 0.42578983446194013,
+            "x7": -0.025765956309895477,
+            "x8": -0.3699194462271593,
+            "x9": -0.1212094750908295
+        },
+        "intercept": 0.24451607054764884,
+        "is_converged": false,
+        "one_vs_rest": false
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### 源表查询
+
+**请求CLI** 
+
+```bash
+flow table tracking-source -t $name -n $namespace
+```
+
+**简要描述：** 
+
+- 用于查询某张表的父表及源表
+
+**请求参数** 
+
+| 参数名    | 必选 | 类型   | 说明           |
+| :-------- | :--- | :----- | -------------- |
+| name      | 是   | string | fate表名       |
+| namespace | 是   | string | fate表命名空间 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例：
+
+```json
+{
+    "data": [{"parent_table_name": "61210fa23c8d11ec849a5254004fdc71", "parent_table_namespace": "output_data_202111031759294631020_hetero_lr_0_0", "source_table_name": "breast_hetero_guest", "source_table_namespace": "experiment"}],
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### 用表任务查询
+
+**请求CLI** 
+
+```bash
+flow table tracking-job -t $name -n $namespace
+```
+
+**简要描述：** 
+
+- 用于查询某张表的使用情况
+
+**请求参数** 
+
+| 参数名    | 必选 | 类型   | 说明           |
+| :-------- | :--- | :----- | -------------- |
+| name      | 是   | string | fate表名       |
+| namespace | 是   | string | fate表命名空间 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例:
+
+```json
+{
+    "data": {"count":2,"job":["202111052115375327830", "202111031816501123160"]},
+    "retcode": 0,
+    "retmsg": "success"
+}
 ```
 
 ## 8. Model
@@ -1390,3 +1983,281 @@ flow privilege query --src-party-id 9999  --src-role guest
 
 ```
 
+## 14. 组件中心
+
+### 列出当前组件提供者
+
+**请求CLI** 
+
+```bash
+flow provider list
+```
+
+**请求参数** 
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
+
+**样例** 
+
+输出:
+
+```json
+{
+    "data": {
+        "fate": {
+            "1.7.0": {
+                "class_path": {
+                    "feature_instance": "feature.instance.Instance",
+                    "feature_vector": "feature.sparse_vector.SparseVector",
+                    "homo_model_convert": "protobuf.homo_model_convert.homo_model_convert",
+                    "interface": "components.components.Components",
+                    "model": "protobuf.generated",
+                    "model_migrate": "protobuf.model_migrate.model_migrate"
+                },
+                "components": [
+                    "heterolinr",
+                    "homoonehotencoder",
+                    "dataio",
+                    "psi",
+                    "homodatasplit",
+                    "homolr",
+                    "columnexpand",
+                    "heterokmeans",
+                    "heterosshelr",
+                    "homosecureboost",
+                    "heteropoisson",
+                    "featureimputation",
+                    "heterofeatureselection",
+                    "heteropearson",
+                    "heterodatasplit",
+                    "ftl",
+                    "heterolr",
+                    "homonn",
+                    "evaluation",
+                    "featurescale",
+                    "intersection",
+                    "heteronn",
+                    "datastatistics",
+                    "heterosecureboost",
+                    "sbtfeaturetransformer",
+                    "datatransform",
+                    "heterofeaturebinning",
+                    "feldmanverifiablesum",
+                    "heterofastsecureboost",
+                    "federatedsample",
+                    "secureaddexample",
+                    "secureinformationretrieval",
+                    "sampleweight",
+                    "union",
+                    "onehotencoder",
+                    "homofeaturebinning",
+                    "scorecard",
+                    "localbaseline",
+                    "labeltransform"
+                ],
+                "path": "${FATE_PROJECT_BASE}/python/federatedml",
+                "python": ""
+            },
+            "default": {
+                "version": "1.7.0"
+            }
+        },
+        "fate_flow": {
+            "1.7.0": {
+                "class_path": {
+                    "feature_instance": "feature.instance.Instance",
+                    "feature_vector": "feature.sparse_vector.SparseVector",
+                    "homo_model_convert": "protobuf.homo_model_convert.homo_model_convert",
+                    "interface": "components.components.Components",
+                    "model": "protobuf.generated",
+                    "model_migrate": "protobuf.model_migrate.model_migrate"
+                },
+                "components": [
+                    "download",
+                    "upload",
+                    "modelloader",
+                    "reader",
+                    "modelrestore",
+                    "cacheloader",
+                    "modelstore"
+                ],
+                "path": "${FATE_FLOW_BASE}/python/fate_flow",
+                "python": ""
+            },
+            "default": {
+                "version": "1.7.0"
+            }
+        }
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+包含`组件提供者`的`名称`, `版本号`, `代码路径`, `提供的组件列表`
+
+### 注册一个组件提供者
+
+**请求CLI** 
+
+```bash
+flow provider register -c $FATE_FLOW_BASE/examples/other/register_provider.json
+```
+
+**请求参数** 
+
+| 参数名                 | 必选 | 类型   | 说明                             |
+| :--------------------- | :--- | :----- | ------------------------------|
+| -c, --conf-path          | 是   | string | 配置路径                         |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+
+**样例** 
+
+```bash
+flow provider register -c $FATE_FLOW_BASE/examples/other/register_provider.json
+```
+
+配置文件：
+
+```json
+{
+  "name": "fate",
+  "version": "1.7.1",
+  "path": "${FATE_FLOW_BASE}/python/component_plugins/fateb/python/federatedml"
+}
+```
+
+输出:
+
+```json
+{
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+## 15. FATE Flow Server相关操作
+
+### 查看版本信息
+
+**请求CLI** 
+
+```bash
+flow server
+```
+
+**请求参数** 
+
+无
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
+| jobId   | string | 作业id   |
+
+**样例** 
+
+```bash
+flow server versions
+```
+
+输出:
+
+```json
+{
+    "data": {
+        "API": "v1",
+        "CENTOS": "7.2",
+        "EGGROLL": "2.4.0",
+        "FATE": "1.7.0",
+        "FATEBoard": "1.7.0",
+        "FATEFlow": "1.7.0",
+        "JDK": "8",
+        "MAVEN": "3.6.3",
+        "PYTHON": "3.6.5",
+        "SPARK": "2.4.1",
+        "UBUNTU": "16.04"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### 重新加载配置文件
+
+如下配置项在`reload`后会重新生效
+
+- $FATE_PROJECT_BASE/conf/service_conf.yaml中# engine services后的所有配置
+- $FATE_FLOW_BASE/python/fate_flow/job_default_config.yaml中所有配置
+
+**请求CLI** 
+
+```bash
+flow server reload
+```
+
+**请求参数** 
+
+无
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | dict   | 返回数据 |
+| jobId   | string | 作业id   |
+
+**样例** 
+
+```bash
+flow server reload
+```
+
+输出:
+
+```json
+{
+    "data": {
+        "job_default_config": {
+            "auto_retries": 0,
+            "auto_retry_delay": 1,
+            "default_component_provider_path": "component_plugins/fate/python/federatedml",
+            "end_status_job_scheduling_time_limit": 300000,
+            "end_status_job_scheduling_updates": 1,
+            "federated_command_trys": 3,
+            "federated_status_collect_type": "PUSH",
+            "job_timeout": 259200,
+            "max_cores_percent_per_job": 1,
+            "output_data_summary_count_limit": 100,
+            "remote_request_timeout": 30000,
+            "task_cores": 4,
+            "task_memory": 0,
+            "task_parallelism": 1,
+            "total_cores_overweight_percent": 1,
+            "total_memory_overweight_percent": 1,
+            "upload_max_bytes": 4194304000
+        },
+        "service_registry": null
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
