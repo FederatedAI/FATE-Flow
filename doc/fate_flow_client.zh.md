@@ -143,52 +143,177 @@ flow job query
 
 ### `upload`
 
--   *介绍*： 上传数据表。
--   *参数*：
+**简要描述：** 
 
-| 编号 | 参数      | Flag_1 | Flag_2        | 必要参数 | 参数介绍                                                       |
-| ---- | --------- | ------ | ------------- | -------- | -------------------------------------------------------------- |
-| 1    | conf_path | `-c`   | `--conf-path` | 是       | 任务配置文件路径                                               |
-| 2    | verbose   |        | `--verbose`   | 否       | 如果指定，用户将在控制台获得上传进度（默认不开启）             |
-| 3    | drop      |        | `--drop`      | 否       | 如果指定，旧版已上传数据将被新上传的同名数据替换（默认不替换） |
+- 用于上传建模任务的输入数据到fate所支持的存储系统
 
--   *示例*：
+**请求CLI** 
 
-``` bash
-flow data upload -c fate_flow/examples/upload_guest.json
-flow data upload -c fate_flow/examples/upload_host.json --verbose --drop
+- `flow data upload -c $conf_path`
+
+注: conf_path为参数路径，具体参数如下
+
+**请求参数** 
+
+| 参数名              | 必选 | 类型         | 说明                                                         |
+| :------------------ | :--- | :----------- | ------------------------------------------------------------ |
+| file                | 是   | string       | 数据存储路径                                                 |
+| id_delimiter        | 是   | string       | 数据分隔符,如","                                             |
+| head                | 否   | int          | 数据是否有表头                                               |
+| partition           | 是   | int          | 数据分区数                                                   |
+| storage_engine      | 否   | 存储引擎类型 | 默认"EGGROLL"，还支持"HDFS","LOCALFS", "HIVE"等              |
+| namespace           | 是   | string       | 表命名空间                                                   |
+| table_name          | 是   | string       | 表名                                                         |
+| storage_address     | 否   | object       | 需要填写对应存储引擎的存储地址                               |
+| use_local_data      | 否   | int          | 默认1，代表使用client机器的数据;0代表使用fate flow服务所在机器的数据 |
+| drop                | 否   | int          | 是否覆盖上传                                                 |
+| extend_sid          | 否   | bool         | 是否新增一列uuid id，默认False                               |
+| auto_increasing_sid | 否   | bool         | 新增的id列是否自增(extend_sid为True才会生效), 默认False      |
+
+**样例** 
+
+- eggroll
+
+  ```json
+  {
+      "file": "examples/data/breast_hetero_guest.csv",
+      "id_delimiter": ",",
+      "head": 1,
+      "partition": 10,
+      "namespace": "experiment",
+      "table_name": "breast_hetero_guest",
+      "storage_engine": "EGGROLL"
+  }
+  ```
+
+- hdfs
+
+  ```json
+  {
+      "file": "examples/data/breast_hetero_guest.csv",
+      "id_delimiter": ",",
+      "head": 1,
+      "partition": 10,
+      "namespace": "experiment",
+      "table_name": "breast_hetero_guest",
+      "storage_engine": "HDFS"
+  }
+  ```
+
+- localfs
+
+  ```json
+  {
+      "file": "examples/data/breast_hetero_guest.csv",
+      "id_delimiter": ",",
+      "head": 1,
+      "partition": 4,
+      "namespace": "experiment",
+      "table_name": "breast_hetero_guest",
+      "storage_engine": "LOCALFS"
+  }
+  ```
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| jobId   | string | 任务id   |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+**样例** 
+
+```shell
+{
+    "data": {
+        "board_url": "http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202111081218319075660&role=local&party_id=0",
+        "code": 0,
+        "dsl_path": "/data/projects/fate/jobs/202111081218319075660/job_dsl.json",
+        "job_id": "202111081218319075660",
+        "logs_directory": "/data/projects/fate/logs/202111081218319075660",
+        "message": "success",
+        "model_info": {
+            "model_id": "local-0#model",
+            "model_version": "202111081218319075660"
+        },
+        "namespace": "experiment",
+        "pipeline_dsl_path": "/data/projects/fate/jobs/202111081218319075660/pipeline_dsl.json",
+        "runtime_conf_on_party_path": "/data/projects/fate/jobs/202111081218319075660/local/0/job_runtime_on_party_conf.json",
+        "runtime_conf_path": "/data/projects/fate/jobs/202111081218319075660/job_runtime_conf.json",
+        "table_name": "breast_hetero_host",
+        "train_runtime_conf_path": "/data/projects/fate/jobs/202111081218319075660/train_runtime_conf.json"
+    },
+    "jobId": "202111081218319075660",
+    "retcode": 0,
+    "retmsg": "success"
+}
+
 ```
 
 ### `download`
+**简要描述：** 
 
--   *介绍*： 下载数据表。
--   *参数*：
+- 用于下载fate存储引擎内的数据到文件格式数据
 
-| 编号 | 参数      | Flag_1 | Flag_2        | 必要参数 | 参数介绍         |
-| ---- | --------- | ------ | ------------- | -------- | ---------------- |
-| 1    | conf_path | `-c`   | `--conf-path` | 是       | 任务配置文件路径 |
+**请求CLI** 
 
--   *示例*：
+- `flow data download -c $conf_path`
 
-``` bash
-flow data download -c fate_flow/examples/download_host.json
+注: conf_path为参数路径，具体参数如下
+
+**请求参数** 
+
+| 参数名      | 必选 | 类型   | 说明           |
+| :---------- | :--- | :----- | -------------- |
+| output_path | 是   | string | 下载路径       |
+| table_name  | 是   | string | fate表名       |
+| namespace   | 是   | int    | fate表命名空间 |
+
+样例:
+
+```json
+{
+  "output_path": "/data/projects/fate/breast_hetero_guest.csv",
+  "namespace": "experiment",
+  "table_name": "breast_hetero_guest"
+}
 ```
 
-### `upload-history`
+**返回参数** 
 
--   *介绍*： 检索上传数据历史。
--   *参数*：
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
 
-| 编号 | 参数   | Flag_1 | Flag_2     | 必要参数 | 参数介绍                     |
-| ---- | ------ | ------ | ---------- | -------- | ---------------------------- |
-| 1    | limit  | `-l`   | `--limit`  | 否       | 返回结果数量限制（默认：10） |
-| 2    | job_id | `-j`   | `--job_id` | 否       | Job ID                       |
+样例
 
--   *示例*：
+```json
+{
+    "data": {
+        "board_url": "http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202111081457135282090&role=local&party_id=0",
+        "code": 0,
+        "dsl_path": "/data/projects/fate/jobs/202111081457135282090/job_dsl.json",
+        "job_id": "202111081457135282090",
+        "logs_directory": "/data/projects/fate/logs/202111081457135282090",
+        "message": "success",
+        "model_info": {
+            "model_id": "local-0#model",
+            "model_version": "202111081457135282090"
+        },
+        "pipeline_dsl_path": "/data/projects/fate/jobs/202111081457135282090/pipeline_dsl.json",
+        "runtime_conf_on_party_path": "/data/projects/fate/jobs/202111081457135282090/local/0/job_runtime_on_party_conf.json",
+        "runtime_conf_path": "/data/projects/fate/jobs/202111081457135282090/job_runtime_conf.json",
+        "train_runtime_conf_path": "/data/projects/fate/jobs/202111081457135282090/train_runtime_conf.json"
+    },
+    "jobId": "202111081457135282090",
+    "retcode": 0,
+    "retmsg": "success"
+}
 
-``` bash
-flow data upload-history -l 20
-flow data upload-history --job-id $JOB_ID
 ```
 
 ## 6. Job
@@ -698,64 +823,168 @@ flow model get-model-info --model-id $MODEL_ID --model-version $MODEL_VERSION --
 
 ### `info`
 
--   *介绍*： 检索数据表信息。
--   *参数*：
+**简要描述：** 
 
-| 编号 | 参数       | Flag_1 | Flag_2         | 必要参数 | 参数介绍 |
-| ---- | ---------- | ------ | -------------- | -------- | -------- |
-| 1    | namespace  | `-n`   | `--namespace`  | 是       | 命名空间 |
-| 2    | table_name | `-t`   | `--table-name` | 是       | 数据表名 |
+- 用于查询fate表的相关信息(真实存储地址,数量,schema等)
 
--   *示例*：
+**请求CLI** 
 
-``` bash
-flow table info -n $NAMESPACE -t $TABLE_NAME
+- `flow table info -t $name -n $namespace`
+
+**请求参数** 
+
+| 参数名    | 必选 | 类型   | 说明           |
+| :-------- | :--- | :----- | -------------- |
+| name      | 是   | string | fate表名       |
+| namespace | 是   | string | fate表命名空间 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例
+
+```json
+{
+    "data": {
+        "address": {
+            "home": null,
+            "name": "breast_hetero_guest",
+            "namespace": "experiment"
+        },
+        "count": 569,
+        "exist": 1,
+        "namespace": "experiment",
+        "partition": 4,
+        "schema": {
+            "header": "y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9",
+            "sid": "id"
+        },
+        "table_name": "breast_hetero_guest"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
 ```
+
 
 ### `delete`
 
--   *介绍*： 删除指定数据表。
--   *参数*：
+**简要描述：** 
+- 可通过table delete删除表数据
 
-| 编号 | 参数       | Flag_1 | Flag_2         | 必要参数 | 参数介绍 |
-| ---- | ---------- | ------ | -------------- | -------- | -------- |
-| 1    | namespace  | `-n`   | `--namespace`  | 否       | 命名空间 |
-| 2    | table_name | `-t`   | `--table_name` | 否       | 数据表名 |
+**请求CLI** 
+- `flow table delete -t $name -n $namespace`
 
--   *示例*：
+**请求参数** 
 
-``` bash
-flow table delete -n $NAMESPACE -t $TABLE_NAME
-```
+| 参数名    | 必选 | 类型   | 说明           |
+| :-------- | :--- | :----- | -------------- |
+| name      | 是   | string | fate表名       |
+| namespace | 是   | string | fate表命名空间 |
 
-### `add`
+**返回参数** 
 
--   *介绍*： 绑定数据真实存储路径到fate表中
--   *参数*：
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
 
-| 编号 | 参数      | Flag_1 | Flag_2        | 必要参数 | 参数介绍         |
-| ---- | --------- | ------ | ------------- | -------- | ---------------- |
-| 1    | conf_path | `-c`   | `--conf-path` | 是       | 任务配置文件路径 |
+样例
 
--   *示例*：
-
-``` bash
-flow table add -c $conf_path
+```json
+{
+    "data": {
+        "namespace": "xxx",
+        "table_name": "xxx"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
 ```
 
 ### `bind`
+**简要描述：** 
 
--   *介绍*： 绑定数据真实存储路径到fate表中，同add；
--   *参数*：
+- 可通过table bind将真实存储地址映射到fate存储表
 
-| 编号 | 参数      | Flag_1 | Flag_2        | 必要参数 | 参数介绍         |
-| ---- | --------- | ------ | ------------- | -------- | ---------------- |
-| 1    | conf_path | `-c`   | `--conf-path` | 是       | 任务配置文件路径 |
+**请求CLI** 
+- `flow table bind -c $conf_path`
 
--   *示例*：
+注: conf_path为参数路径，具体参数如下
 
-``` bash
-flow table bind -c $conf_path
+**请求参数** 
+
+| 参数名         | 必选 | 类型   | 说明                                  |
+| :------------- | :--- | :----- | ------------------------------------- |
+| name           | 是   | string | fate表名                              |
+| namespace      | 是   | string | fate表命名空间                        |
+| engine         | 是   | string | 存储引擎, 支持"HDFS", "MYSQL", "PATH" |
+| adress         | 是   | object | 真实存储地址                          |
+| drop           | 否   | int    | 覆盖以前的信息                        |
+| head           | 否   | int    | 是否有数据表头                        |
+| id_delimiter   | 否   | string | 数据分隔符                            |
+| id_column      | 否   | string | id字段                                |
+| feature_column | 否   | array  | 特征字段                              |
+
+**样例** 
+
+- hdfs
+
+```json
+{
+    "namespace": "experiment",
+    "name": "breast_hetero_guest",
+    "engine": "HDFS",
+    "address": {
+        "name_node": "hdfs://fate-cluster",
+        "path": "/data/breast_hetero_guest.csv"
+    },
+    "id_delimiter": ",",
+    "head": 1,
+    "partitions": 10
+}
+```
+
+- mysql
+
+```json
+{
+  "engine": "MYSQL",
+  "address": {
+    "user": "fate",
+    "passwd": "fate",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "db": "experiment",
+    "name": "breast_hetero_guest"
+  },
+  "namespace": "experiment",
+  "name": "breast_hetero_guest",
+  "head": 1,
+  "id_delimiter": ",",
+  "partitions": 10,
+  "id_column": "id",
+  "feature_column": "y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9"
+}
+```
+
+- PATH
+
+```json
+{
+    "namespace": "xxx",
+    "name": "xxx",
+    "engine": "PATH",
+    "address": {
+        "path": "xxx"
+    }
+}
 ```
 
 ## 10. Task
@@ -881,14 +1110,283 @@ flow tag query -t $TAG_NAME --with-model
 flow tag delete -t tag1
 ```
 
-## 12. Queue
+## 12. resource
 
-### `clean`
+### 12.1 资源查询
 
--   *介绍*： 取消所有在队列中的Job。
--   *参数*： 无
--   *示例*：
+**请求CLI** 
 
-``` bash
-flow queue clean
+```bash
+flow resource query
 ```
+
+**简要描述：** 
+
+- 用于查询fate系统资源
+
+**请求参数** 
+
+无
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例：
+
+```
+{
+    "data": {
+        "computing_engine_resource": {
+            "f_cores": 32,
+            "f_create_date": "2021-09-21 19:32:59",
+            "f_create_time": 1632223979564,
+            "f_engine_config": {
+                "cores_per_node": 32,
+                "nodes": 1
+            },
+            "f_engine_entrance": "fate_on_eggroll",
+            "f_engine_name": "EGGROLL",
+            "f_engine_type": "computing",
+            "f_memory": 0,
+            "f_nodes": 1,
+            "f_remaining_cores": 32,
+            "f_remaining_memory": 0,
+            "f_update_date": "2021-11-08 16:56:38",
+            "f_update_time": 1636361798812
+        },
+        "use_resource_job": []
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### 12.2 资源归还
+
+**请求CLI** 
+
+```bash
+flow resource return -j $JobId
+```
+
+**简要描述：** 
+
+- 用于归还某个job的资源
+
+**请求参数** 
+
+| 参数名 | 必选 | 类型   | 说明   |
+| :----- | :--- | :----- | ------ |
+| job_id | 是   | string | 任务id |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例：
+
+```json
+{
+    "data": [
+        {
+            "job_id": "202111081612427726750",
+            "party_id": "8888",
+            "resource_in_use": true,
+            "resource_return_status": true,
+            "role": "guest"
+        }
+    ],
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+##13 privilege
+## 13.1 授权
+
+**简要描述：** 
+
+- 添加权限
+
+**请求CLI** 
+
+- `flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all`
+
+**请求参数** 
+
+| 参数名              | 必选 | 类型   | 说明                                                         |
+| :------------------ | :--- | :----- | ------------------------------------------------------------ |
+| src-party-id        | 是   | string | 发起方partyid                                                |
+| src-role            | 是   | string | 发起方role                                                   |
+| privilege-role      | 否   | string | guest, host, arbiter，all, 其中all为全部权限都给予           |
+| privilege-command   | 否   | string | ”stop”, “run”, “create”, all, 其中all为全部权限都给予        |
+| privilege-component | 否   | string | 算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都给予 |
+
+**样例** 
+
+- 赋予role权限
+
+  ```shell
+  flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all
+  ```
+  
+- 赋予command权限
+
+  ```shell
+  flow privilege grant --src-party-id 9999  --src-role guest --privilege-command all
+  ```
+  
+- 赋予component权限
+
+  ```shell
+  flow privilege grant --src-party-id 9999  --src-role guest --privilege-component all
+  ```
+
+- 同时赋予多种权限
+
+  ```shell
+  flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
+  ```
+
+  
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| ------- | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+
+**样例** 
+
+```shell
+{
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+
+
+## 13.2 吊销权限
+
+**简要描述：** 
+
+- 删除权限
+
+**请求CLI** 
+
+- `flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all`
+
+**请求参数** 
+
+| 参数名              | 必选 | 类型   | 说明                                                         |
+| :------------------ | :--- | :----- | ------------------------------------------------------------ |
+| src-party-id        | 是   | string | 发起方partyid                                                |
+| src-role            | 是   | string | 发起方role                                                   |
+| privilege-role      | 否   | string | guest, host, arbiter，all, 其中all为全部权限都撤销           |
+| privilege-command   | 否   | string | ”stop”, “run”, “create”, all, 其中all为全部权限都撤销        |
+| privilege-component | 否   | string | 算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都撤销 |
+
+**样例** 
+
+- 撤销role权限
+
+  ```shell
+  flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all
+  ```
+
+- 撤销command权限
+
+  ```shell
+  flow privilege delete --src-party-id 9999  --src-role guest --privilege-command all
+  ```
+
+- 撤销component权限
+
+  ```shell
+  flow privilege delete --src-party-id 9999  --src-role guest --privilege-component all
+  ```
+
+- 同时赋予多种权限
+
+  ```shell
+  flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
+  ```
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| ------- | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+
+**样例** 
+
+```shell
+{
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+
+
+## 13.3 权限查询
+
+**简要描述：** 
+
+- 查询权限
+
+**请求CLI** 
+
+- `flow privilege query --src-party-id 9999  --src-role guest`
+
+**请求参数** 
+
+| 参数名       | 必选 | 类型   | 说明          |
+| :----------- | :--- | :----- | ------------- |
+| src-party-id | 是   | string | 发起方partyid |
+| src-role     | 是   | string | 发起方role    |
+
+**样例** 
+
+```shell
+flow privilege query --src-party-id 9999  --src-role guest 
+```
+
+- **返回参数** 
+
+
+| 参数名  | 类型   | 说明     |
+| ------- | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+**样例** 
+
+```shell
+{
+    "data": {
+        "privilege_command": [],
+        "privilege_component": [],
+        "privilege_role": [],
+        "role": "guest",
+        "src_party_id": "9999"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+
+```
+

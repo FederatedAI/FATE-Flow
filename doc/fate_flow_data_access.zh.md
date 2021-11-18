@@ -284,9 +284,48 @@
 }
 ```
 
+## 5. 删除表数据
+
+### `delete`
+
+**简要描述：** 
+- 可通过table delete删除表数据
+
+**请求CLI** 
+- `flow table delete -t $name -n $namespace`
+
+**请求参数** 
+
+| 参数名    | 必选 | 类型   | 说明           |
+| :-------- | :--- | :----- | -------------- |
+| name      | 是   | string | fate表名       |
+| namespace | 是   | string | fate表命名空间 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例
+
+```json
+{
+    "data": {
+        "namespace": "xxx",
+        "table_name": "xxx"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+
+```
 
 
-## 5.  数据下载
+
+## 6.  数据下载
 
 **简要描述：** 
 
@@ -353,7 +392,7 @@
 
 
 
-## 6.  reader组件
+## 7.  reader组件
 
 **简要描述：** 
 
