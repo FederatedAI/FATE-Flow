@@ -4,7 +4,7 @@
 
 ## 1. 说明
 
-- 介绍如何安装使用`FATE Flow Client`，其通常包含在`FATE Client`中，`FATE Client`包含了`FATE项目`多个客户端：`Pipeline` `FATE Flow Client` `FATE Test`
+- 介绍如何安装使用`FATE Flow Client`，其通常包含在`FATE Client`中，`FATE Client`包含了`FATE项目`多个客户端：`Pipeline`, `FATE Flow Client` 和 `FATE Test`
 - 介绍`FATE Flow Client`提供的命令行，所有的命令将有一个共有调用入口，您可以在命令行中键入`flow`以获取所有的命令分类及其子命令。
 
 ```bash
