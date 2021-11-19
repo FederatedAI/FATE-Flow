@@ -1,6 +1,4 @@
-# FATE Flow 任务组件注册中心
-
-[TOC]
+# 任务组件注册中心
 
 ## 1. 说明
 
@@ -12,10 +10,10 @@
 
 部署`FATE`集群将包含一个默认的组件提供者，其通常在 `${FATE_PROJECT_BASE}/python/federatedml` 目录下
 
-## 3. 列出当前组件提供者
+## 3. 当前组件提供者
 
-{{ snippet('cli/provider.zh.md', '### list') }}
+{{snippet('cli/provider.zh.md', '### list')}}
 
-## 4. 注册一个组件提供者
+## 4. 新组件提供者
 
-{{ snippet('cli/provider.zh.md', '### register') }}
+{{snippet('cli/provider.zh.md', '### register')}}
