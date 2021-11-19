@@ -4,7 +4,7 @@
 
 FATE Flow is a multi-participant scheduling platform for managing secure, privacy-preserving federatedlearning end-to-end pipeline, based on:
 
-- Shared-State scheduling architecture [References](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/41684.pdf)
+- [Shared-State scheduling architecture](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/41684.pdf)
 - Secure multi-participant communication across data centers
 
 Providing production-level service capabilities:
