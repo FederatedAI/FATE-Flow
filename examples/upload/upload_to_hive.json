@@ -1,0 +1,18 @@
+{
+  "file": "examples/data/breast_hetero_host.csv",
+  "id_delimiter": ",",
+  "head": 1,
+  "partition": 10,
+  "namespace": "experiment",
+  "table_name": "breast_hetero_guest",
+  "storage_engine": "HIVE",
+  "storage_address": {
+    "host": "127.0.0.1",
+    "port": 10000,
+    "user": "fate",
+    "passwd": "fate",
+    "database": "experiment",
+    "name": "breast_hetero_guest",
+    "auth_mechanism": "PLAIN"
+  }
+}

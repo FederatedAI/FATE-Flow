@@ -1,0 +1,8 @@
+{
+  "file": "examples/data/breast_hetero_host.csv",
+  "id_delimiter": ",",
+  "head": 1,
+  "partition": 10,
+  "namespace": "experiment",
+  "table_name": "breast_hetero_host"
+}

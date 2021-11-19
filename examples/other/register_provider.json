@@ -1,0 +1,5 @@
+{
+  "name": "fate",
+  "version": "1.7.1",
+  "path": "./python/component_plugins/fateb/python/federatedml"
+}

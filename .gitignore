@@ -1,0 +1,28 @@
+# common file patterns
+.DS_STORE
+.idea
+*.iml
+*.pyc
+__pycache__
+*.jar
+*.class
+.project
+*.prefs
+_build
+venv
+
+# excluded paths
+/data/
+/logs/
+/jobs/
+/audit/
+.vscode/*
+/temp/
+/worker/
+/provider_registrar/
+/model_local_cache/
+*.db
+*.db-journal
+*.whl
+/conf/local.*.yaml
+/cluster-deploy/FATE_install_*

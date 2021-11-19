@@ -1,0 +1,15 @@
+mkdocs-material==7.3.6
+#mkdocs-jupyter==0.13.0
+python-markdown-math==0.8
+git+git://github.com/weiwee/mkdocs-static-i18n@main#egg=mkdocs-static-i18n
+git+git://github.com/mkdocstrings/mkdocstrings@f6cf570#egg=mkdocstrings
+git+git://github.com/jarviszeng-zjc/markdown-include-snippet@develop-0.1.0#egg=markdown-include-snippet
+pytkdocs[numpy-style]==0.14.0
+mkdocs-simple-hooks
+mkdocs-awesome-pages-plugin
+mkdocs-render-swagger-plugin
+
+# for FATE api generate
+peewee
+cachetools
+ruamel.yaml

@@ -1,0 +1,12 @@
+{
+  "job_parameters": {
+  },
+  "component_parameters": {
+    "common": {
+      "hetero_lr_0": {
+        "alpha": 0.02,
+        "max_iter": 5
+      }
+    }
+  }
+}

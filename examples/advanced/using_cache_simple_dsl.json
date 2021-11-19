@@ -1,0 +1,60 @@
+{
+  "components": {
+    "reader_0": {
+      "module": "Reader",
+      "output": {
+        "data": [
+          "table"
+        ]
+      }
+    },
+    "dataio_0": {
+      "module": "DataIO",
+      "input": {
+        "data": {
+          "data": [
+            "reader_0.table"
+          ]
+        }
+      },
+      "output": {
+        "data": [
+          "train"
+        ],
+        "model": [
+          "dataio"
+        ]
+      },
+      "need_deploy": true
+    },
+    "cache_loader_0": {
+      "module": "CacheLoader",
+      "output": {
+        "cache": [
+          "cache2"
+        ]
+      }
+    },
+    "hetero_feature_binning_0": {
+      "module": "HeteroFeatureBinning",
+      "input": {
+        "data": {
+          "data": [
+            "dataio_0.train"
+          ]
+        },
+        "cache": [
+          "cache_loader_0.cache2"
+        ]
+      },
+      "output": {
+        "data": [
+          "train"
+        ],
+        "model": [
+          "hetero_feature_binning"
+        ]
+      }
+    }
+  }
+}

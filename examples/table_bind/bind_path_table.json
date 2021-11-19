@@ -1,0 +1,8 @@
+{
+  "namespace": "xxx",
+  "name": "xxx",
+  "engine": "PATH",
+  "address": {
+    "path": "xxx"
+  }
+}
