@@ -60,13 +60,3 @@
 图中 `dataio_0` 是 `component_name`，`DataIO` 是 `componet_module_name`，`dataio` 是 `model_alias`
 
 ![](https://user-images.githubusercontent.com/1758850/124451776-52ee4500-ddb8-11eb-94f2-d43d5174ca4d.png)
-
-## 3. 测试一下
-
-{{ snippet('fate_flow_job_scheduling.zh.md', '### 3.5 组件Provider') }}
-
-## 4. 测试一下
-
-{{ snippet('doc/fate_flow_job_scheduling.zh.md', '### 3.5 组件Provider', 'FederatedAI/FATE-Flow', 'develop-1.7.0')}}
-
-

@@ -1,26 +1,12 @@
-# FATE Flow 多方合作权限管理
+## privilege
 
-[TOC]
+### grant
 
-## 1. 说明
+添加权限
 
-- 权限类型包括role、command、component
-
-- 鉴权开关: `$FATE_FLOW_BASE/python/fate_flow/settings.py`：
-
-  ```python
-  USE_AUTHENTICATION = True
-  ```
-
-## 2.  授权
-
-**简要描述：** 
-
-- 添加权限
-
-**请求CLI** 
-
-- `flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all`
+```bash
+flow privilege grant [options]
+```
 
 **参数** 
 
@@ -58,8 +44,6 @@
   flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
   ```
 
-  
-
 **返回参数** 
 
 | 参数名  | 类型   | 说明     |
@@ -76,17 +60,13 @@
 }
 ```
 
+### delete
 
+删除权限
 
-## 3.  吊销权限
-
-**简要描述：** 
-
-- 删除权限
-
-**请求CLI** 
-
-- `flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all`
+```bash
+flow privilege delete [options]
+```
 
 **参数** 
 
@@ -140,17 +120,13 @@
 }
 ```
 
+### query
 
+查询权限
 
-## 4.  权限查询
-
-**简要描述：** 
-
-- 查询权限
-
-**请求CLI** 
-
-- `flow privilege query --src-party-id 9999  --src-role guest`
+```bash
+flow privilege query [options]
+```
 
 **参数** 
 
@@ -190,4 +166,3 @@ flow privilege query --src-party-id 9999  --src-role guest
 }
 
 ```
-
