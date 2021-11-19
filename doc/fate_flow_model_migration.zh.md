@@ -1,9 +1,9 @@
 # 集群间模型迁移
 
 模型迁移功能使得模型文件复制拷贝到不同party id的集群依然可用，以下两种场景需要做模型迁移：
+
 1. 模型生成参与方任何一方的集群, 重新部署且部署后集群的party id变更, 例如源参与方为arbiter-10000#guest-9999#host-10000, 改为arbiter-10000#guest-99#host-10000
 2. 其中任意一个或多个参与方将模型文件从源集群复制到目标集群，需要在目标集群使用
-  
 
 基本原理：
 1. 上述两种场景下，模型的参与方`party_id`会发生改变，如`arbiter-10000#guest-9999#host-10000` -> `arbiter-10000#guest-99#host-10000`，或者`arbiter-10000#guest-9999#host-10000` -> `arbiter-100#guest-99#host-100`
@@ -30,77 +30,8 @@ $FATE_PROJECT_BASE/model_local_cache
 ## 迁移前的准备工作
 
 ### 说明
-1. 安装支持模型迁移的客户端fate-client，只有fate 1.5.1及其以上版本支持
-2. 在所有目标集群完成如下迁移前的准备工作
 
-### 1. 安装fate-client
-
-请在装有1.5.1及其以上版本fate的机器中进行安装：
-
-安装命令：
-
-```shell
-# 进入FATE的安装路径，例如/data/projects/fate
-cd $FATE_PROJECT_BASE/
-# 进入FATE PYTHON的虚拟环境
-source bin/init_env.sh
-# 执行安装
-pip install ./python/fate_client
-```
-
-安装完成之后，在命令行键入`flow` 并回车，获得如下返回即视为安装成功：
-
-```shell
-Usage: flow [OPTIONS] COMMAND [ARGS]...
-
-  Fate Flow Client
-
-Options:
-  -h, --help  Show this message and exit.
-
-Commands:
-  component  Component Operations
-  data       Data Operations
-  init       Flow CLI Init Command
-  job        Job Operations
-  model      Model Operations
-  queue      Queue Operations
-  table      Table Operations
-  tag        Tag Operations
-  task       Task Operations
-```
-
-
-
-### 2. fate-client初始化：
-
-在使用fate-client之前需要对其进行初始化，推荐使用fate的配置文件进行初始化，初始化命令如下：
-
-```shell
-# 进入FATE的安装路径，例如/data/projects/fate
-cd $FATE_PATH/
-# 指定fate服务配置文件进行初始化
-flow init -c ./conf/service_conf.yaml
-```
-
-获得如下返回视为初始化成功：
-
-```json
-{
-    "retcode": 0,
-    "retmsg": "Fate Flow CLI has been initialized successfully."
-}
-```
-
-如果fate-client的安装机器与FATE-Flow不在同一台机器上，请使用IP地址和端口号进行初始化，初始化命令如下：
-
-```shell
-# 进入FATE的安装路径，例如/data/projects/fate
-cd $FATE_PROJECT_BASE/
-# 指定fate的IP地址和端口进行初始化
-flow init --ip 192.168.0.1 --port 9380
-```
-
+1. 参考[fate flow client](./fate_flow_client.zh.md)安装支持模型迁移的客户端fate-client，只有fate 1.5.1及其以上版本支持
 
 ## 执行迁移任务
 
@@ -241,8 +172,6 @@ flow model migrate -c $FATE_FLOW_BASE/examples/model/migrate_model.json
 ```
 
 任务成功执行后，执行方的机器中都会生成一份迁移后模型压缩文件，该文件路径可以在返回结果中得到。如上，guest方（9999）的迁移后模型文件路径为：`/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip`，host方（10000）的迁移后模型文件路径为：`/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip`。新的model_id与model_version同样可以从返回中获得。
-
-
 
 ## 4. 转移文件并导入(在所有目标集群分别操作)
 
