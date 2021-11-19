@@ -32,9 +32,11 @@
 
 更多信息，请查阅如下文档或使用`flow --help`命令。
 
+- 介绍所有命令使用说明
+
 ## 2. 安装FATE Client
 
-### 2.1 在线安装
+### 在线安装
 
 FATE Client会发布到`pypi`，可直接使用`pip`等工具安装对应版本，如
 
@@ -48,7 +50,7 @@ pip install fate-client
 pip install fate-client==${version}
 ```
 
-### 2.2 在FATE集群上安装
+### 在FATE集群上安装
 
 请在装有1.5.1及其以上版本fate的机器中进行安装：
 
@@ -88,14 +90,14 @@ Commands:
 
 在使用fate-client之前需要对其进行初始化，推荐使用fate的配置文件进行初始化，初始化命令如下：
 
-### 3.1 指定fateflow服务地址
+### 指定fateflow服务地址
 
 ```bash
 # 指定fateflow的IP地址和端口进行初始化
 flow init --ip 192.168.0.1 --port 9380
 ```
 
-### 3.2 通过FATE集群上的配置文件
+### 通过FATE集群上的配置文件
 
 ```shell
 # 进入FATE的安装路径，例如/data/projects/fate
@@ -139,17 +141,15 @@ flow job query
 }
 ```
 
-## 5. 数据输入输出
+## 5. Data
 
-### `upload`
+### upload
 
-**简要描述：** 
+用于上传建模任务的输入数据到fate所支持的存储系统
 
-- 用于上传建模任务的输入数据到fate所支持的存储系统
-
-**请求CLI** 
-
-- `flow data upload -c $conf_path`
+```bash
+flow data upload -c ${conf_path}
+```
 
 注: conf_path为参数路径，具体参数如下
 
@@ -252,14 +252,15 @@ flow job query
 
 ```
 
-### `download`
+### download
+
 **简要描述：** 
 
-- 用于下载fate存储引擎内的数据到文件格式数据
+用于下载fate存储引擎内的数据到文件格式数据
 
-**请求CLI** 
-
-- `flow data download -c $conf_path`
+```bash
+flow data download -c ${conf_path}
+```
 
 注: conf_path为参数路径，具体参数如下
 
@@ -316,21 +317,179 @@ flow job query
 
 ```
 
-## 6. Job
+## 6. Table
 
-### 6.1 作业提交
+### info
 
-**简要描述** 
-
-- 构建一个联邦学习作业，并提交到调度系统执行
-- 需要两个配置文件：job dsl和job conf
-- job dsl配置运行的组件：列表、输入输出关系
-- job conf配置组件执行参数、系统运行参数
-
-**请求CLI** 
+用于查询fate表的相关信息(真实存储地址,数量,schema等)
 
 ```bash
-flow job submit -d ./examples/simple/simple_dsl.json -c ./examples/simple/simple_job_conf.json
+flow table info [options]
+```
+
+**请求参数** 
+
+| 参数名    | 必选 | 类型   | 说明           |
+| :-------- | :--- | :----- | -------------- |
+| name      | 是   | string | fate表名       |
+| namespace | 是   | string | fate表命名空间 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例
+
+```json
+{
+    "data": {
+        "address": {
+            "home": null,
+            "name": "breast_hetero_guest",
+            "namespace": "experiment"
+        },
+        "count": 569,
+        "exist": 1,
+        "namespace": "experiment",
+        "partition": 4,
+        "schema": {
+            "header": "y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9",
+            "sid": "id"
+        },
+        "table_name": "breast_hetero_guest"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### delete
+
+可通过table delete删除表数据
+
+```bash
+flow table delete [options]
+```
+
+**请求参数** 
+
+| 参数名    | 必选 | 类型   | 说明           |
+| :-------- | :--- | :----- | -------------- |
+| name      | 是   | string | fate表名       |
+| namespace | 是   | string | fate表命名空间 |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例
+
+```json
+{
+    "data": {
+        "namespace": "xxx",
+        "table_name": "xxx"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### bind
+
+可通过table bind将真实存储地址映射到fate存储表
+
+```bash
+flow table bind [options]
+```
+
+注: conf_path为参数路径，具体参数如下
+
+**请求参数** 
+
+| 参数名         | 必选 | 类型   | 说明                                  |
+| :------------- | :--- | :----- | ------------------------------------- |
+| name           | 是   | string | fate表名                              |
+| namespace      | 是   | string | fate表命名空间                        |
+| engine         | 是   | string | 存储引擎, 支持"HDFS", "MYSQL", "PATH" |
+| adress         | 是   | object | 真实存储地址                          |
+| drop           | 否   | int    | 覆盖以前的信息                        |
+| head           | 否   | int    | 是否有数据表头                        |
+| id_delimiter   | 否   | string | 数据分隔符                            |
+| id_column      | 否   | string | id字段                                |
+| feature_column | 否   | array  | 特征字段                              |
+
+**样例** 
+
+- hdfs
+
+```json
+{
+    "namespace": "experiment",
+    "name": "breast_hetero_guest",
+    "engine": "HDFS",
+    "address": {
+        "name_node": "hdfs://fate-cluster",
+        "path": "/data/breast_hetero_guest.csv"
+    },
+    "id_delimiter": ",",
+    "head": 1,
+    "partitions": 10
+}
+```
+
+- mysql
+
+```json
+{
+  "engine": "MYSQL",
+  "address": {
+    "user": "fate",
+    "passwd": "fate",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "db": "experiment",
+    "name": "breast_hetero_guest"
+  },
+  "namespace": "experiment",
+  "name": "breast_hetero_guest",
+  "head": 1,
+  "id_delimiter": ",",
+  "partitions": 10,
+  "id_column": "id",
+  "feature_column": "y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9"
+}
+```
+
+- PATH
+
+```json
+{
+    "namespace": "xxx",
+    "name": "xxx",
+    "engine": "PATH",
+    "address": {
+        "path": "xxx"
+    }
+}
+```
+
+## 7. Job
+
+### submit
+
+通过两个配置文件：job dsl和job conf构建一个联邦学习作业，提交到调度系统执行
+
+```bash
+flow job submit [options]
 ```
 
 **请求参数** 
@@ -380,11 +539,12 @@ flow job submit -d ./examples/simple/simple_dsl.json -c ./examples/simple/simple
 }
 ```
 
-### 6.2 作业重跑
+### rerun
 
-**请求CLI** 
+重新运行某个作业
+
 ```bash
-flow job rerun
+flow job rerun [options]
 ```
 
 **请求参数** 
@@ -418,11 +578,12 @@ flow job rerun -j 202111031100369723120 -cpn hetero_lr_0
 flow job rerun -j 202111031100369723120 -cpn hetero_lr_0 --force 
 ```
 
-### 6.3 作业参数更新
+### parameter-update
 
-**请求CLI** 
+更新作业参数
+
 ```bash
-flow job parameter-update
+flow job parameter-update [options]
 ```
 
 **请求参数** 
@@ -431,7 +592,6 @@ flow job parameter-update
 | :-------------- | :--- | :----- | ---------------------------------------------------- |
 | -j, --job-id    | 是   | string | job id 路径                                          |
 | -c, --conf-path | 是   | string | 需要更新的job conf的内容，不需要更新的参数不需要填写 |
-
 
 **返回参数** 
 
@@ -470,9 +630,10 @@ flow job parameter-update -j 202111061957421943730 -c examples/other/update_para
 flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force 
 ```
 
-### `stop`
+### stop
 
--   *介绍*： 取消或终止指定任务。
+取消或终止指定任务
+
 -   *参数*：
 
 | 编号 | 参数   | 短格式 | 长格式     | 必要参数 | 参数介绍 |
@@ -485,7 +646,7 @@ flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force
     flow job stop -j $JOB_ID
     ```
 
-### `query`
+### query
 
 -   *介绍*： 检索任务信息。
 -   *参数*：
@@ -504,7 +665,7 @@ flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force
     flow job query -j $JOB_ID
     ```
 
-### `view`
+### view
 
 -   *介绍*： 检索任务数据视图。
 -   *参数*：
@@ -522,7 +683,7 @@ flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force
     flow job view -j $JOB_ID -s complete
     ```
 
-### `config`
+### config
 
 -   *介绍*： 下载指定任务的配置文件到指定目录。
 -   *参数*：
@@ -540,7 +701,7 @@ flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force
     flow job config -j $JOB_ID -r host -p 10000 --output-path ./examples/
     ```
 
-### `log`
+### log
 
 -   *介绍*： 下载指定任务的日志文件到指定目录。
 -   *参数*：
@@ -556,7 +717,7 @@ flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force
     flow job log -j JOB_ID --output-path ./examples/
     ```
 
-### `list`
+### list
 
 -   *介绍*： 展示任务列表。
 -   *参数*：
@@ -572,7 +733,7 @@ flow job list
 flow job list -l 30
 ```
 
-### `dsl`
+### dsl
 
 -   *介绍*： 预测DSL文件生成器。
 -   *参数*：
@@ -596,16 +757,53 @@ flow job dsl --cpn-list "dataio_0, hetero_feature_binning_0, hetero_feature_sele
 flow job dsl --cpn-list [dataio_0,hetero_feature_binning_0,hetero_feature_selection_0,evaluation_0] --train-dsl-path fate_flow/examples/test_hetero_lr_job_dsl.json -o fate_flow/examples/
 ```
 
-## 7. Tracking
+## 8. Task
 
-### 指标列表
+### query
+
+检索Task信息
+
+-   *参数*：
+
+| 编号 | 参数           | 短格式 | 长格式             | 必要参数 | 参数介绍 |
+| ---- | -------------- | ------ | ------------------ | -------- | -------- |
+| 1    | job_id         | `-j`   | `--job_id`         | 否       | Job ID   |
+| 2    | role           | `-r`   | `--role`           | 否       | 角色     |
+| 3    | party_id       | `-p`   | `--party_id`       | 否       | Party ID |
+| 4    | component_name | `-cpn` | `--component_name` | 否       | 组件名   |
+| 5    | status         | `-s`   | `--status`         | 否       | 任务状态 |
+
+-   *示例*：
+
+``` bash
+flow task query -j $JOB_ID -p 9999 -r guest
+flow task query -cpn hetero_feature_binning_0 -s complete
+```
+
+### list
+
+-   *介绍*： 展示Task列表。
+-   *参数*：
+
+| 编号 | 参数  | 短格式 | 长格式    | 必要参数 | 参数介绍                     |
+| ---- | ----- | ------ | --------- | -------- | ---------------------------- |
+| 1    | limit | `-l`   | `--limit` | 否       | 返回结果数量限制（默认：10） |
+
+-   *示例*：
+
+``` bash
+flow task list
+flow task list -l 25
+```
+
+## 9. Tracking
+
+### metrics
 
 获取某个组件任务产生的所有指标名称列表
 
-**请求CLI** 
-
 ```bash
-flow tracking metrics
+flow tracking metrics [options]
 ```
 
 **请求参数** 
@@ -656,14 +854,12 @@ flow tracking metrics -j 202111081618357358520 -r guest -p 9999 -cpn evaluation_
 }
 ```
 
-### 所有指标
+### metric-all
 
 获取组件任务的所有输出指标
 
-**请求CLI** 
-
 ```bash
-flow tracking metric-all
+flow tracking metric-all [options]
 ```
 
 **请求参数** 
@@ -767,14 +963,12 @@ flow tracking metric-all -j 202111081618357358520 -r guest -p 9999 -cpn evaluati
 }
 ```
 
-### 任务运行参数
+### parameters
 
 提交作业后，系统依据job conf中的component_parameters结合系统默认组件参数，最终解析得到的实际组件任务运行参数
 
-**请求CLI** 
-
 ```bash
-flow tracking parameters
+flow tracking parameters [options]
 ```
 
 **请求参数** 
@@ -899,12 +1093,12 @@ flow tracking parameters  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_
 }
 ```
 
-### 下载输出数据
+### output-data
 
-**请求CLI** 
+获取组件输出
 
 ```bash
-flow tracking output-data
+flow tracking output-data [options]
 ```
 
 **请求参数** 
@@ -942,12 +1136,12 @@ flow tracking output-data  -j 202111081618357358520 -r guest -p 9999 -cpn hetero
 }
 ```
 
-### 获取输出数据存放数据表名称
+### output-data-table
 
-**请求CLI** 
+获取组件的输出数据表名
 
 ```bash
-flow tracking output-data-table
+flow tracking output-data-table [options]
 ```
 
 **请求参数** 
@@ -990,14 +1184,12 @@ flow tracking output-data-table  -j 202111081618357358520 -r guest -p 9999 -cpn 
 }
 ```
 
-### 任务输出模型
+### output-model
 
-获取某个组件任务的输出模型，更多详细关于模型的操作请见：todo
-
-**请求CLI** 
+获取某个组件任务的输出模型
 
 ```bash
-flow tracking output-model
+flow tracking output-model [options]
 ```
 
 **请求参数** 
@@ -1084,14 +1276,12 @@ flow tracking output-model  -j 202111081618357358520 -r guest -p 9999 -cpn heter
 }
 ```
 
-### 任务输出摘要
+### get-summary
 
 每个组件允许设置一些摘要信息，便于观察分析
 
-**请求CLI** 
-
 ```bash
-flow tracking get-summary
+flow tracking get-summary [options]
 ```
 
 **请求参数** 
@@ -1145,17 +1335,13 @@ flow tracking get-summary -j 202111081618357358520 -r guest -p 9999 -cpn hetero_
 }
 ```
 
-### 源表查询
+### tracking-source
 
-**请求CLI** 
+用于查询某张表的父表及源表
 
 ```bash
-flow table tracking-source -t $name -n $namespace
+flow table tracking-source [options]
 ```
-
-**简要描述：** 
-
-- 用于查询某张表的父表及源表
 
 **请求参数** 
 
@@ -1182,17 +1368,15 @@ flow table tracking-source -t $name -n $namespace
 }
 ```
 
-### 用表任务查询
+### tracking-job
+
+用于查询某张表的使用情况
 
 **请求CLI** 
 
 ```bash
-flow table tracking-job -t $name -n $namespace
+flow table tracking-job [options]
 ```
-
-**简要描述：** 
-
-- 用于查询某张表的使用情况
 
 **请求参数** 
 
@@ -1219,13 +1403,16 @@ flow table tracking-job -t $name -n $namespace
 }
 ```
 
-## 8.1. Model
+## 10. Model
 
-### `load`
-
-**简要描述**
+### load
 
 向 Fate-Serving 加载 `deploy` 生成的模型。
+
+```bash
+flow model load -c examples/model/publish_load_model.json
+flow model load -c examples/model/publish_load_model.json -j <job_id>
+```
 
 **请求参数**
 
@@ -1233,13 +1420,6 @@ flow table tracking-job -t $name -n $namespace
 | --------- | ------ | ------------- | -------- | -------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
 | job_id    | `-j`   | `--job-id`    | 是       | 任务 ID  |
-
-**请求CLI**
-
-```bash
-flow model load -c examples/model/publish_load_model.json
-flow model load -c examples/model/publish_load_model.json -j <job_id>
-```
 
 **样例**
 
@@ -1273,11 +1453,14 @@ flow model load -c examples/model/publish_load_model.json -j <job_id>
 }
 ```
 
-### `bind`
-
-**简要描述**
+### bind
 
 向 Fate-Serving 绑定 `deploy` 生成的模型。
+
+```bash
+flow model bind -c examples/model/bind_model_service.json
+flow model bind -c examples/model/bind_model_service.json -j <job_id>
+```
 
 **请求参数**
 
@@ -1285,13 +1468,6 @@ flow model load -c examples/model/publish_load_model.json -j <job_id>
 | --------- | ------ | ------------- | -------- | -------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
 | job_id    | `-j`   | `--job-id`    | 是       | 任务 ID  |
-
-**请求CLI**
-
-```bash
-flow model bind -c examples/model/bind_model_service.json
-flow model bind -c examples/model/bind_model_service.json -j <job_id>
-```
 
 **样例**
 
@@ -1302,11 +1478,14 @@ flow model bind -c examples/model/bind_model_service.json -j <job_id>
 }
 ```
 
-### `import`
-
-**简要描述**
+### import
 
 从本地或存储引擎中导入模型。
+
+```bash
+flow model import -c examples/model/import_model.json
+flow model import -c examples/model/restore_model.json --from-database
+```
 
 **请求参数**
 
@@ -1314,13 +1493,6 @@ flow model bind -c examples/model/bind_model_service.json -j <job_id>
 | ------------- | ------ | ----------------- | -------- | -------------------------------- |
 | conf_path     | `-c`   | `--conf-path`     | 否       | 配置文件                         |
 | from_database |        | `--from-database` | 是       | 从 Flow 配置的存储引擎中导入模型 |
-
-**请求CLI**
-
-```bash
-flow model import -c examples/model/import_model.json
-flow model import -c examples/model/restore_model.json --from-database
-```
 
 **样例**
 
@@ -1348,11 +1520,14 @@ flow model import -c examples/model/restore_model.json --from-database
 }
 ```
 
-### `export`
-
-**简要描述**
+### export
 
 导出模型到本地或存储引擎中。
+
+```bash
+flow model export -c examples/model/export_model.json
+flow model export -c examples/model/store_model.json --to-database
+```
 
 **请求参数**
 
@@ -1360,13 +1535,6 @@ flow model import -c examples/model/restore_model.json --from-database
 | ----------- | ------ | --------------- | -------- | ---------------------------------- |
 | conf_path   | `-c`   | `--conf-path`   | 否       | 配置文件                           |
 | to_database |        | `--to-database` | 是       | 将模型导出到 Flow 配置的存储引擎中 |
-
-**请求CLI**
-
-```bash
-flow model export -c examples/model/export_model.json
-flow model export -c examples/model/store_model.json --to-database
-```
 
 **样例**
 
@@ -1394,23 +1562,19 @@ flow model export -c examples/model/store_model.json --to-database
 }
 ```
 
-### `migrate`
+### migrate
 
-**简要描述**
+迁移模型
 
-迁移模型。
+```bash
+flow model migrate -c examples/model/migrate_model.json
+```
 
 **请求参数**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
-
-**请求CLI**
-
-```bash
-flow model migrate -c examples/model/migrate_model.json
-```
 
 **样例**
 
@@ -1453,11 +1617,13 @@ flow model migrate -c examples/model/migrate_model.json
 }
 ```
 
-### `tag-list`
+### tag-list
 
-**简要描述**
+获取模型的标签列表
 
-获取模型的标签列表。
+``` bash
+flow model tag-list -j <job_id>
+```
 
 **请求参数**
 
@@ -1465,17 +1631,14 @@ flow model migrate -c examples/model/migrate_model.json
 | ------ | ------ | ---------- | -------- | ------- |
 | job_id | `-j`   | `--job_id` | 否       | 任务 ID |
 
-**请求CLI**
+### tag-model
 
-``` bash
-flow model tag-list -j <job_id>
+向模型添加标签
+
+```bash
+flow model tag-model -j <job_id> -t <tag_name>
+flow model tag-model -j <job_id> -t <tag_name> --remove
 ```
-
-### `tag-model`
-
-**简要描述**
-
-向模型添加标签。
 
 **请求参数**
 
@@ -1485,18 +1648,13 @@ flow model tag-list -j <job_id>
 | tag_name | `-t`   | `--tag-name` | 否       | 标签名         |
 | remove   |        | `--remove`   | 是       | 移除指定的标签 |
 
-**请求CLI**
+### deploy
+
+配置预测 DSL
 
 ```bash
-flow model tag-model -j <job_id> -t <tag_name>
-flow model tag-model -j <job_id> -t <tag_name> --remove
+flow model deploy --model-id <model_id> --model-version <model_version>
 ```
-
-### `deploy`
-
-**简要描述**
-
-配置预测 DSL。
 
 **请求参数**
 
@@ -1509,12 +1667,6 @@ flow model tag-model -j <job_id> -t <tag_name> --remove
 | dsl_path       |        | `--dsl-path`       | 是       | 预测 DSL 文件                                                |
 | cpn_step_index |        | `--cpn-step-index` | 是       | 用指定的 Checkpoint 模型替换 Pipeline 模型<br />使用 `:` 分隔 component name 与 step index<br />例如 `--cpn-step-index cpn_a:123` |
 | cpn_step_name  |        | `--cpn-step-name`  | 是       | 用指定的 Checkpoint 模型替换 Pipeline 模型<br />使用 `:` 分隔 component name 与 step name<br />例如 `--cpn-step-name cpn_b:foobar` |
-
-**请求CLI**
-
-```bash
-flow model deploy --model-id <model_id> --model-version <model_version>
-```
 
 **样例**
 
@@ -1558,31 +1710,29 @@ flow model deploy --model-id <model_id> --model-version <model_version>
 }
 ```
 
-### `get-predict-dsl`
-
-**简要描述**
+### get-predict-dsl
 
 获取预测 DSL。
-
-**请求参数**
-
-| 参数          | 短格式 | 长格式            | 可选参数 | 说明     |
-| ------------- | ------ | ----------------- | -------- | -------- |
-| model_id      |        | `--model-id`      | 否       | 模型 ID  |
-| model_version |        | `--model-version` | 否       | 模型版本 |
-| output_path   | `-o`   | `--output-path`   | 否       | 输出路径 |
-
-**请求CLI**
 
 ```bash
 flow model get-predict-dsl --model-id <model_id> --model-version <model_version> -o ./examples/
 ```
 
-### `get-predict-conf`
+**请求参数**
 
-**简要描述**
+| 参数          | 短格式 | 长格式            | 可选参数 | 说明     |
+| ------------- | ------ | ----------------- | -------- | -------- |
+| model_id      |        | `--model-id`      | 否       | 模型 ID  |
+| model_version |        | `--model-version` | 否       | 模型版本 |
+| output_path   | `-o`   | `--output-path`   | 否       | 输出路径 |
 
-模型预测模板。
+### get-predict-conf
+
+获取模型预测模板。
+
+```bash
+flow model get-predict-conf --model-id <model_id> --model-version <model_version> -o ./examples/
+```
 
 **请求参数**
 
@@ -1592,17 +1742,14 @@ flow model get-predict-dsl --model-id <model_id> --model-version <model_version>
 | model_version |        | `--model-version` | 否       | 模型版本 |
 | output_path   | `-o`   | `--output-path`   | 否       | 输出路径 |
 
-**请求CLI**
-
-```bash
-flow model get-predict-conf --model-id <model_id> --model-version <model_version> -o ./examples/
-```
-
-### `get-model-info`
-
-**简要描述**
+### get-model-info
 
 获取模型信息。
+
+```bash
+flow model get-model-info --model-id <model_id> --model-version <model_version>
+flow model get-model-info --model-id <model_id> --model-version <model_version> --detail
+```
 
 **请求参数**
 
@@ -1614,18 +1761,13 @@ flow model get-predict-conf --model-id <model_id> --model-version <model_version
 | party_id      | `-p`   | `--party-id`      | 是       | Party ID     |
 | detail        |        | `--detail`        | 是       | 展示详细信息 |
 
-**请求CLI**
-
-```bash
-flow model get-model-info --model-id <model_id> --model-version <model_version>
-flow model get-model-info --model-id <model_id> --model-version <model_version> --detail
-```
-
-### `homo-convert`
-
-**简要描述**
+### homo-convert
 
 基于横向训练的模型，生成其他 ML  框架的模型文件。
+
+```bash
+flow model homo-convert -c examples/model/homo_convert_model.json
+```
 
 **请求参数**
 
@@ -1633,17 +1775,13 @@ flow model get-model-info --model-id <model_id> --model-version <model_version> 
 | --------- | ------ | ------------- | -------- | -------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
 
-**请求CLI**
-
-```bash
-flow model homo-convert -c examples/model/homo_convert_model.json
-```
-
-### `homo-deploy`
-
-**简要描述**
+### homo-deploy
 
 将横向训练后使用 `homo-convert` 生成的模型部署到在线推理系统中，当前支持创建基于 KFServing 的推理服务。
+
+```bash
+flow model homo-deploy -c examples/model/homo_deploy_model.json
+```
 
 **请求参数**
 
@@ -1651,19 +1789,15 @@ flow model homo-convert -c examples/model/homo_convert_model.json
 | --------- | ------ | ------------- | -------- | ---------------- |
 | conf_path | `-c`   | `--conf-path` | 否       | 任务配置文件路径 |
 
-**请求CLI**
+## 11. Checkpoint
 
-```bash
-flow model homo-deploy -c examples/model/homo_deploy_model.json
-```
-
-## 8.2. Checkpoint
-
-### `list`
-
-**简要描述**
+### list
 
 获取 Checkpoint 模型列表。
+
+```bash
+flow checkpoint list --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name>
+```
 
 **请求参数**
 
@@ -1674,12 +1808,6 @@ flow model homo-deploy -c examples/model/homo_deploy_model.json
 | role           | `-r`   | `--role`           | 否       | Party 角色 |
 | party_id       | `-p`   | `--party-id`       | 否       | Party ID   |
 | component_name | `-cpn` | `--component-name` | 否       | 组件名     |
-
-**请求CLI**
-
-```bash
-flow checkpoint list --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name>
-```
 
 **样例**
 
@@ -1707,11 +1835,14 @@ flow checkpoint list --model-id <model_id> --model-version <model_version> --rol
 }
 ```
 
-### `get`
-
-**简要描述**
+### get
 
 获取 Checkpoint 模型信息。
+
+```bash
+flow checkpoint get --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name> --step-index <step_index>
+```
+
 
 **请求参数**
 
@@ -1724,12 +1855,6 @@ flow checkpoint list --model-id <model_id> --model-version <model_version> --rol
 | component_name | `-cpn` | `--component-name` | 否       | 组件名                                |
 | step_index     |        | `--step-index`     | 是       | Step index，不可与 step_name 同时使用 |
 | step_name      |        | `--step-name`      | 是       | Step name，不可与 step_index 同时使用 |
-
-**请求CLI**
-
-```bash
-flow checkpoint get --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name> --step-index <step_index>
-```
 
 **样例**
 
@@ -1749,585 +1874,14 @@ flow checkpoint get --model-id <model_id> --model-version <model_version> --role
 }
 ```
 
-## 9. Table
+## 12. Provider
 
-### `info`
+### list
 
-**简要描述：** 
-
-- 用于查询fate表的相关信息(真实存储地址,数量,schema等)
-
-**请求CLI** 
-
-- `flow table info -t $name -n $namespace`
-
-**请求参数** 
-
-| 参数名    | 必选 | 类型   | 说明           |
-| :-------- | :--- | :----- | -------------- |
-| name      | 是   | string | fate表名       |
-| namespace | 是   | string | fate表命名空间 |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
-
-样例
-
-```json
-{
-    "data": {
-        "address": {
-            "home": null,
-            "name": "breast_hetero_guest",
-            "namespace": "experiment"
-        },
-        "count": 569,
-        "exist": 1,
-        "namespace": "experiment",
-        "partition": 4,
-        "schema": {
-            "header": "y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9",
-            "sid": "id"
-        },
-        "table_name": "breast_hetero_guest"
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-
-### `delete`
-
-**简要描述：** 
-- 可通过table delete删除表数据
-
-**请求CLI** 
-- `flow table delete -t $name -n $namespace`
-
-**请求参数** 
-
-| 参数名    | 必选 | 类型   | 说明           |
-| :-------- | :--- | :----- | -------------- |
-| name      | 是   | string | fate表名       |
-| namespace | 是   | string | fate表命名空间 |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
-
-样例
-
-```json
-{
-    "data": {
-        "namespace": "xxx",
-        "table_name": "xxx"
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-### `bind`
-**简要描述：** 
-
-- 可通过table bind将真实存储地址映射到fate存储表
-
-**请求CLI** 
-- `flow table bind -c $conf_path`
-
-注: conf_path为参数路径，具体参数如下
-
-**请求参数** 
-
-| 参数名         | 必选 | 类型   | 说明                                  |
-| :------------- | :--- | :----- | ------------------------------------- |
-| name           | 是   | string | fate表名                              |
-| namespace      | 是   | string | fate表命名空间                        |
-| engine         | 是   | string | 存储引擎, 支持"HDFS", "MYSQL", "PATH" |
-| adress         | 是   | object | 真实存储地址                          |
-| drop           | 否   | int    | 覆盖以前的信息                        |
-| head           | 否   | int    | 是否有数据表头                        |
-| id_delimiter   | 否   | string | 数据分隔符                            |
-| id_column      | 否   | string | id字段                                |
-| feature_column | 否   | array  | 特征字段                              |
-
-**样例** 
-
-- hdfs
-
-```json
-{
-    "namespace": "experiment",
-    "name": "breast_hetero_guest",
-    "engine": "HDFS",
-    "address": {
-        "name_node": "hdfs://fate-cluster",
-        "path": "/data/breast_hetero_guest.csv"
-    },
-    "id_delimiter": ",",
-    "head": 1,
-    "partitions": 10
-}
-```
-
-- mysql
-
-```json
-{
-  "engine": "MYSQL",
-  "address": {
-    "user": "fate",
-    "passwd": "fate",
-    "host": "127.0.0.1",
-    "port": 3306,
-    "db": "experiment",
-    "name": "breast_hetero_guest"
-  },
-  "namespace": "experiment",
-  "name": "breast_hetero_guest",
-  "head": 1,
-  "id_delimiter": ",",
-  "partitions": 10,
-  "id_column": "id",
-  "feature_column": "y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9"
-}
-```
-
-- PATH
-
-```json
-{
-    "namespace": "xxx",
-    "name": "xxx",
-    "engine": "PATH",
-    "address": {
-        "path": "xxx"
-    }
-}
-```
-
-## 10. Task
-
-### `query`
-
--   *介绍*： 检索Task信息。
--   *参数*：
-
-| 编号 | 参数           | 短格式 | 长格式             | 必要参数 | 参数介绍 |
-| ---- | -------------- | ------ | ------------------ | -------- | -------- |
-| 1    | job_id         | `-j`   | `--job_id`         | 否       | Job ID   |
-| 2    | role           | `-r`   | `--role`           | 否       | 角色     |
-| 3    | party_id       | `-p`   | `--party_id`       | 否       | Party ID |
-| 4    | component_name | `-cpn` | `--component_name` | 否       | 组件名   |
-| 5    | status         | `-s`   | `--status`         | 否       | 任务状态 |
-
--   *示例*：
-
-``` bash
-flow task query -j $JOB_ID -p 9999 -r guest
-flow task query -cpn hetero_feature_binning_0 -s complete
-```
-
-### `list`
-
--   *介绍*： 展示Task列表。
--   *参数*：
-
-| 编号 | 参数  | 短格式 | 长格式    | 必要参数 | 参数介绍                     |
-| ---- | ----- | ------ | --------- | -------- | ---------------------------- |
-| 1    | limit | `-l`   | `--limit` | 否       | 返回结果数量限制（默认：10） |
-
--   *示例*：
-
-``` bash
-flow task list
-flow task list -l 25
-```
-
-## 11. Tag
-
-### `create`
-
--   *介绍*： 创建标签。
--   *参数*：
-
-| 编号 | 参数         | 短格式 | 长格式       | 必要参数 | 参数介绍 |
-| ---- | ------------ | ------ | ------------ | -------- | -------- |
-| 1    | tag_name     | `-t`   | `--tag-name` | 是       | 标签名   |
-| 2    | tag_参数介绍 | `-d`   | `--tag-desc` | 否       | 标签介绍 |
-
--   *示例*：
-
-``` bash
-flow tag create -t tag1 -d "This is the 参数介绍 of tag1."
-flow tag create -t tag2
-```
-
-### `update`
-
--   *介绍*： 更新标签信息。
--   *参数*：
-
-| 编号 | 参数         | 短格式 | 长格式           | 必要参数 | 参数介绍   |
-| ---- | ------------ | ------ | ---------------- | -------- | ---------- |
-| 1    | tag_name     | `-t`   | `--tag-name`     | 是       | 标签名     |
-| 2    | new_tag_name |        | `--new-tag-name` | 否       | 新标签名   |
-| 3    | new_tag_desc |        | `--new-tag-desc` | 否       | 新标签介绍 |
-
--   *示例*：
-
-``` bash
-flow tag update -t tag1 --new-tag-name tag2
-flow tag update -t tag1 --new-tag-desc "This is the new 参数介绍."
-```
-
-### `list`
-
--   *介绍*： 展示标签列表。
--   *参数*：
-
-| 编号 | 参数  | 短格式 | 长格式    | 必要参数 | 参数介绍                     |
-| ---- | ----- | ------ | --------- | -------- | ---------------------------- |
-| 1    | limit | `-l`   | `--limit` | 否       | 返回结果数量限制（默认：10） |
-
--   *示例*：
-
-``` bash
-flow tag list
-flow tag list -l 3
-```
-
-### `query`
-
--   *介绍*： 检索标签。
--   *参数*：
-
-| 编号 | 参数       | 短格式 | 长格式         | 必要参数 | 参数介绍                               |
-| ---- | ---------- | ------ | -------------- | -------- | -------------------------------------- |
-| 1    | tag_name   | `-t`   | `--tag-name`   | 是       | 标签名                                 |
-| 2    | with_model |        | `--with-model` | 否       | 如果指定，具有该标签的模型信息将被展示 |
-
--   *示例*：
-
-``` bash
-flow tag query -t $TAG_NAME
-flow tag query -t $TAG_NAME --with-model
-```
-
-### `delete`
-
--   *介绍*： 删除标签。
--   *参数*：
-
-| 编号 | 参数     | 短格式 | 长格式       | 必要参数 | 参数介绍 |
-| ---- | -------- | ------ | ------------ | -------- | -------- |
-| 1    | tag_name | `-t`   | `--tag-name` | 是       | 标签名   |
-
--   *示例*：
-
-``` bash
-flow tag delete -t tag1
-```
-
-## 12. resource
-
-### 12.1 资源查询
-
-**请求CLI** 
+列出当前所有组件提供者及其提供组件信息
 
 ```bash
-flow resource query
-```
-
-**简要描述：** 
-
-- 用于查询fate系统资源
-
-**请求参数** 
-
-无
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
-
-样例：
-
-```
-{
-    "data": {
-        "computing_engine_resource": {
-            "f_cores": 32,
-            "f_create_date": "2021-09-21 19:32:59",
-            "f_create_time": 1632223979564,
-            "f_engine_config": {
-                "cores_per_node": 32,
-                "nodes": 1
-            },
-            "f_engine_entrance": "fate_on_eggroll",
-            "f_engine_name": "EGGROLL",
-            "f_engine_type": "computing",
-            "f_memory": 0,
-            "f_nodes": 1,
-            "f_remaining_cores": 32,
-            "f_remaining_memory": 0,
-            "f_update_date": "2021-11-08 16:56:38",
-            "f_update_time": 1636361798812
-        },
-        "use_resource_job": []
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-### 12.2 资源归还
-
-**请求CLI** 
-
-```bash
-flow resource return -j $JobId
-```
-
-**简要描述：** 
-
-- 用于归还某个job的资源
-
-**请求参数** 
-
-| 参数名 | 必选 | 类型   | 说明   |
-| :----- | :--- | :----- | ------ |
-| job_id | 是   | string | 任务id |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
-
-样例：
-
-```json
-{
-    "data": [
-        {
-            "job_id": "202111081612427726750",
-            "party_id": "8888",
-            "resource_in_use": true,
-            "resource_return_status": true,
-            "role": "guest"
-        }
-    ],
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-##13 privilege
-## 13.1 授权
-
-**简要描述：** 
-
-- 添加权限
-
-**请求CLI** 
-
-- `flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all`
-
-**请求参数** 
-
-| 参数名              | 必选 | 类型   | 说明                                                         |
-| :------------------ | :--- | :----- | ------------------------------------------------------------ |
-| src-party-id        | 是   | string | 发起方partyid                                                |
-| src-role            | 是   | string | 发起方role                                                   |
-| privilege-role      | 否   | string | guest, host, arbiter，all, 其中all为全部权限都给予           |
-| privilege-command   | 否   | string | ”stop”, “run”, “create”, all, 其中all为全部权限都给予        |
-| privilege-component | 否   | string | 算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都给予 |
-
-**样例** 
-
-- 赋予role权限
-
-  ```shell
-  flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all
-  ```
-  
-- 赋予command权限
-
-  ```shell
-  flow privilege grant --src-party-id 9999  --src-role guest --privilege-command all
-  ```
-  
-- 赋予component权限
-
-  ```shell
-  flow privilege grant --src-party-id 9999  --src-role guest --privilege-component all
-  ```
-
-- 同时赋予多种权限
-
-  ```shell
-  flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
-  ```
-
-  
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| ------- | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-
-**样例** 
-
-```shell
-{
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-
-
-## 13.2 吊销权限
-
-**简要描述：** 
-
-- 删除权限
-
-**请求CLI** 
-
-- `flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all`
-
-**请求参数** 
-
-| 参数名              | 必选 | 类型   | 说明                                                         |
-| :------------------ | :--- | :----- | ------------------------------------------------------------ |
-| src-party-id        | 是   | string | 发起方partyid                                                |
-| src-role            | 是   | string | 发起方role                                                   |
-| privilege-role      | 否   | string | guest, host, arbiter，all, 其中all为全部权限都撤销           |
-| privilege-command   | 否   | string | ”stop”, “run”, “create”, all, 其中all为全部权限都撤销        |
-| privilege-component | 否   | string | 算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都撤销 |
-
-**样例** 
-
-- 撤销role权限
-
-  ```shell
-  flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all
-  ```
-
-- 撤销command权限
-
-  ```shell
-  flow privilege delete --src-party-id 9999  --src-role guest --privilege-command all
-  ```
-
-- 撤销component权限
-
-  ```shell
-  flow privilege delete --src-party-id 9999  --src-role guest --privilege-component all
-  ```
-
-- 同时赋予多种权限
-
-  ```shell
-  flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
-  ```
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| ------- | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-
-**样例** 
-
-```shell
-{
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
-
-
-
-## 13.3 权限查询
-
-**简要描述：** 
-
-- 查询权限
-
-**请求CLI** 
-
-- `flow privilege query --src-party-id 9999  --src-role guest`
-
-**请求参数** 
-
-| 参数名       | 必选 | 类型   | 说明          |
-| :----------- | :--- | :----- | ------------- |
-| src-party-id | 是   | string | 发起方partyid |
-| src-role     | 是   | string | 发起方role    |
-
-**样例** 
-
-```shell
-flow privilege query --src-party-id 9999  --src-role guest 
-```
-
-- **返回参数** 
-
-
-| 参数名  | 类型   | 说明     |
-| ------- | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
-
-**样例** 
-
-```shell
-{
-    "data": {
-        "privilege_command": [],
-        "privilege_component": [],
-        "privilege_role": [],
-        "role": "guest",
-        "src_party_id": "9999"
-    },
-    "retcode": 0,
-    "retmsg": "success"
-}
-
-```
-
-## 14. 组件中心
-
-### 列出当前组件提供者
-
-**请求CLI** 
-
-```bash
-flow provider list
+flow provider list [options]
 ```
 
 **请求参数** 
@@ -2439,12 +1993,12 @@ flow provider list
 
 包含`组件提供者`的`名称`, `版本号`, `代码路径`, `提供的组件列表`
 
-### 注册一个组件提供者
+### register
 
-**请求CLI** 
+注册一个组件提供者
 
 ```bash
-flow provider register -c $FATE_FLOW_BASE/examples/other/register_provider.json
+flow provider register [options]
 ```
 
 **请求参数** 
@@ -2485,11 +2039,355 @@ flow provider register -c $FATE_FLOW_BASE/examples/other/register_provider.json
 }
 ```
 
-## 15. FATE Flow Server相关操作
+## 13. resource
 
-### 查看版本信息
+### query
 
-**请求CLI** 
+用于查询fate系统资源
+
+```bash
+flow resource query
+```
+
+**请求参数** 
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例：
+
+```
+{
+    "data": {
+        "computing_engine_resource": {
+            "f_cores": 32,
+            "f_create_date": "2021-09-21 19:32:59",
+            "f_create_time": 1632223979564,
+            "f_engine_config": {
+                "cores_per_node": 32,
+                "nodes": 1
+            },
+            "f_engine_entrance": "fate_on_eggroll",
+            "f_engine_name": "EGGROLL",
+            "f_engine_type": "computing",
+            "f_memory": 0,
+            "f_nodes": 1,
+            "f_remaining_cores": 32,
+            "f_remaining_memory": 0,
+            "f_update_date": "2021-11-08 16:56:38",
+            "f_update_time": 1636361798812
+        },
+        "use_resource_job": []
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### return
+
+用于归还某个job的资源
+
+```bash
+flow resource return [options]
+```
+
+**请求参数** 
+
+| 参数名 | 必选 | 类型   | 说明   |
+| :----- | :--- | :----- | ------ |
+| job_id | 是   | string | 任务id |
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例：
+
+```json
+{
+    "data": [
+        {
+            "job_id": "202111081612427726750",
+            "party_id": "8888",
+            "resource_in_use": true,
+            "resource_return_status": true,
+            "role": "guest"
+        }
+    ],
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+## 14. privilege
+
+### grant
+
+添加权限
+
+```bash
+flow privilege grant [options]
+```
+
+**请求参数** 
+
+| 参数名              | 必选 | 类型   | 说明                                                         |
+| :------------------ | :--- | :----- | ------------------------------------------------------------ |
+| src-party-id        | 是   | string | 发起方partyid                                                |
+| src-role            | 是   | string | 发起方role                                                   |
+| privilege-role      | 否   | string | guest, host, arbiter，all, 其中all为全部权限都给予           |
+| privilege-command   | 否   | string | ”stop”, “run”, “create”, all, 其中all为全部权限都给予        |
+| privilege-component | 否   | string | 算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都给予 |
+
+**样例** 
+
+- 赋予role权限
+
+  ```shell
+  flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all
+  ```
+  
+- 赋予command权限
+
+  ```shell
+  flow privilege grant --src-party-id 9999  --src-role guest --privilege-command all
+  ```
+  
+- 赋予component权限
+
+  ```shell
+  flow privilege grant --src-party-id 9999  --src-role guest --privilege-component all
+  ```
+
+- 同时赋予多种权限
+
+  ```shell
+  flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
+  ```
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| ------- | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+
+**样例** 
+
+```shell
+{
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### delete
+
+删除权限
+
+```bash
+flow privilege delete [options]
+```
+
+**请求参数** 
+
+| 参数名              | 必选 | 类型   | 说明                                                         |
+| :------------------ | :--- | :----- | ------------------------------------------------------------ |
+| src-party-id        | 是   | string | 发起方partyid                                                |
+| src-role            | 是   | string | 发起方role                                                   |
+| privilege-role      | 否   | string | guest, host, arbiter，all, 其中all为全部权限都撤销           |
+| privilege-command   | 否   | string | ”stop”, “run”, “create”, all, 其中all为全部权限都撤销        |
+| privilege-component | 否   | string | 算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都撤销 |
+
+**样例** 
+
+- 撤销role权限
+
+  ```shell
+  flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all
+  ```
+
+- 撤销command权限
+
+  ```shell
+  flow privilege delete --src-party-id 9999  --src-role guest --privilege-command all
+  ```
+
+- 撤销component权限
+
+  ```shell
+  flow privilege delete --src-party-id 9999  --src-role guest --privilege-component all
+  ```
+
+- 同时赋予多种权限
+
+  ```shell
+  flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
+  ```
+
+**返回参数** 
+
+| 参数名  | 类型   | 说明     |
+| ------- | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+
+**样例** 
+
+```shell
+{
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### query
+
+查询权限
+
+```bash
+flow privilege query [options]
+```
+
+**请求参数** 
+
+| 参数名       | 必选 | 类型   | 说明          |
+| :----------- | :--- | :----- | ------------- |
+| src-party-id | 是   | string | 发起方partyid |
+| src-role     | 是   | string | 发起方role    |
+
+**样例** 
+
+```shell
+flow privilege query --src-party-id 9999  --src-role guest 
+```
+
+- **返回参数** 
+
+
+| 参数名  | 类型   | 说明     |
+| ------- | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+**样例** 
+
+```shell
+{
+    "data": {
+        "privilege_command": [],
+        "privilege_component": [],
+        "privilege_role": [],
+        "role": "guest",
+        "src_party_id": "9999"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+
+```
+
+## 15. Tag
+
+### create
+
+-   *介绍*： 创建标签。
+-   *参数*：
+
+| 编号 | 参数         | 短格式 | 长格式       | 必要参数 | 参数介绍 |
+| ---- | ------------ | ------ | ------------ | -------- | -------- |
+| 1    | tag_name     | `-t`   | `--tag-name` | 是       | 标签名   |
+| 2    | tag_参数介绍 | `-d`   | `--tag-desc` | 否       | 标签介绍 |
+
+-   *示例*：
+
+``` bash
+flow tag create -t tag1 -d "This is the 参数介绍 of tag1."
+flow tag create -t tag2
+```
+
+### update
+
+-   *介绍*： 更新标签信息。
+-   *参数*：
+
+| 编号 | 参数         | 短格式 | 长格式           | 必要参数 | 参数介绍   |
+| ---- | ------------ | ------ | ---------------- | -------- | ---------- |
+| 1    | tag_name     | `-t`   | `--tag-name`     | 是       | 标签名     |
+| 2    | new_tag_name |        | `--new-tag-name` | 否       | 新标签名   |
+| 3    | new_tag_desc |        | `--new-tag-desc` | 否       | 新标签介绍 |
+
+-   *示例*：
+
+``` bash
+flow tag update -t tag1 --new-tag-name tag2
+flow tag update -t tag1 --new-tag-desc "This is the new 参数介绍."
+```
+
+### list
+
+-   *介绍*： 展示标签列表。
+-   *参数*：
+
+| 编号 | 参数  | 短格式 | 长格式    | 必要参数 | 参数介绍                     |
+| ---- | ----- | ------ | --------- | -------- | ---------------------------- |
+| 1    | limit | `-l`   | `--limit` | 否       | 返回结果数量限制（默认：10） |
+
+-   *示例*：
+
+``` bash
+flow tag list
+flow tag list -l 3
+```
+
+### query
+
+-   *介绍*： 检索标签。
+-   *参数*：
+
+| 编号 | 参数       | 短格式 | 长格式         | 必要参数 | 参数介绍                               |
+| ---- | ---------- | ------ | -------------- | -------- | -------------------------------------- |
+| 1    | tag_name   | `-t`   | `--tag-name`   | 是       | 标签名                                 |
+| 2    | with_model |        | `--with-model` | 否       | 如果指定，具有该标签的模型信息将被展示 |
+
+-   *示例*：
+
+``` bash
+flow tag query -t $TAG_NAME
+flow tag query -t $TAG_NAME --with-model
+```
+
+### delete
+
+-   *介绍*： 删除标签。
+-   *参数*：
+
+| 编号 | 参数     | 短格式 | 长格式       | 必要参数 | 参数介绍 |
+| ---- | -------- | ------ | ------------ | -------- | -------- |
+| 1    | tag_name | `-t`   | `--tag-name` | 是       | 标签名   |
+
+-   *示例*：
+
+``` bash
+flow tag delete -t tag1
+```
+
+## 16. Server
+
+### versions
+
+列出所有相关系统版本号
 
 ```bash
 flow server
@@ -2536,14 +2434,12 @@ flow server versions
 }
 ```
 
-### 重新加载配置文件
+### reload
 
 如下配置项在`reload`后会重新生效
 
-- $FATE_PROJECT_BASE/conf/service_conf.yaml中# engine services后的所有配置
-- $FATE_FLOW_BASE/python/fate_flow/job_default_config.yaml中所有配置
-
-**请求CLI** 
+  - $FATE_PROJECT_BASE/conf/service_conf.yaml中# engine services后的所有配置
+  - $FATE_FLOW_BASE/python/fate_flow/job_default_config.yaml中所有配置
 
 ```bash
 flow server reload
