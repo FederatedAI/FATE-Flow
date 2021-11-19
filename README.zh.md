@@ -4,7 +4,7 @@
 
 FATE Flow是一个管理安全、隐私保护联邦学习端到端全流程的多参与方调度平台, 基于:
 
-- 共享状态调度架构 [参考文献](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/41684.pdf)
+- [共享状态调度架构](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/41684.pdf)
 - 跨数据中心的多方安全通信
 
 提供生产级服务能力:
