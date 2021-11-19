@@ -57,7 +57,9 @@ class MinIOModelStorage(BaseModelStorage):
         """
         super(MinIOModelStorage, self).__init__()
         self.bucket = bucket
-        self.sub_path = sub_path
+        # When parsing the uri, KFServing's storage initializer will incorrectly truncate it if
+        # it has pound key in it. Replace with another character.
+        self.sub_path = sub_path.replace("#", "^")
 
         if not endpoint:
             url = urlparse(os.getenv(ENV_MINIO_ENDPOINT_URL, "http://minio:9000"))
