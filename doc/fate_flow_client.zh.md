@@ -149,6 +149,8 @@ flow job query
 
 ### download
 
+{{snippet('cli/data.zh.md', '### download')}}
+
 ## 6. Table
 
 ### info
