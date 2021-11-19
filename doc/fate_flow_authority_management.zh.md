@@ -1,6 +1,4 @@
-# FATE Flow 多方合作权限管理
-
-[TOC]
+# 多方合作权限管理
 
 ## 1. 说明
 
@@ -16,11 +14,9 @@
 
 {{snippet('cli/privilege.zh.md', '### grant')}}
 
-
 ## 3.  吊销权限
 
 {{snippet('cli/privilege.zh.md', '### delete')}}
-
 
 ## 4.  权限查询
 
