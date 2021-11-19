@@ -28,3 +28,6 @@ FATE Flow是一个管理安全、隐私保护联邦学习端到端全流程的�
 ## 文档
 
 FATE Flow官方文档在这里[https://fate-flow.readthedocs.io/zh/latest/zh/](https://fate-flow.readthedocs.io/zh/latest/zh/)
+
+## License
+[Apache License 2.0](LICENSE)
