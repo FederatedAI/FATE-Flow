@@ -1,19 +1,11 @@
-# FATE Flow 数据流动追踪
+## Tracking
 
-[TOC]
-
-## 1. 说明
-
-## 2. 任务输出指标
-
-### 2.1 指标列表
+### metrics
 
 获取某个组件任务产生的所有指标名称列表
 
-**请求CLI** 
-
 ```bash
-flow tracking metrics
+flow tracking metrics [options]
 ```
 
 **参数** 
@@ -64,14 +56,12 @@ flow tracking metrics -j 202111081618357358520 -r guest -p 9999 -cpn evaluation_
 }
 ```
 
-### 2.2 所有指标
+### metric-all
 
 获取组件任务的所有输出指标
 
-**请求CLI** 
-
 ```bash
-flow tracking metric-all
+flow tracking metric-all [options]
 ```
 
 **参数** 
@@ -175,14 +165,12 @@ flow tracking metric-all -j 202111081618357358520 -r guest -p 9999 -cpn evaluati
 }
 ```
 
-## 3. 任务运行参数
+### parameters
 
 提交作业后，系统依据job conf中的component_parameters结合系统默认组件参数，最终解析得到的实际组件任务运行参数
 
-**请求CLI** 
-
 ```bash
-flow tracking parameters
+flow tracking parameters [options]
 ```
 
 **参数** 
@@ -307,14 +295,12 @@ flow tracking parameters  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_
 }
 ```
 
-## 4. 任务输出数据
+### output-data
 
-### 4.1 下载输出数据
-
-**请求CLI** 
+获取组件输出
 
 ```bash
-flow tracking output-data
+flow tracking output-data [options]
 ```
 
 **参数** 
@@ -352,12 +338,12 @@ flow tracking output-data  -j 202111081618357358520 -r guest -p 9999 -cpn hetero
 }
 ```
 
-### 4.2 获取输出数据存放数据表名称
+### output-data-table
 
-**请求CLI** 
+获取组件的输出数据表名
 
 ```bash
-flow tracking output-data-table
+flow tracking output-data-table [options]
 ```
 
 **参数** 
@@ -400,14 +386,12 @@ flow tracking output-data-table  -j 202111081618357358520 -r guest -p 9999 -cpn 
 }
 ```
 
-## 5. 任务输出模型
+### output-model
 
-获取某个组件任务的输出模型，更多详细关于模型的操作请见：todo
-
-**请求CLI** 
+获取某个组件任务的输出模型
 
 ```bash
-flow tracking output-model
+flow tracking output-model [options]
 ```
 
 **参数** 
@@ -494,14 +478,12 @@ flow tracking output-model  -j 202111081618357358520 -r guest -p 9999 -cpn heter
 }
 ```
 
-## 6. 任务输出摘要
+### get-summary
 
 每个组件允许设置一些摘要信息，便于观察分析
 
-**请求CLI** 
-
 ```bash
-flow tracking get-summary
+flow tracking get-summary [options]
 ```
 
 **参数** 
@@ -555,21 +537,13 @@ flow tracking get-summary -j 202111081618357358520 -r guest -p 9999 -cpn hetero_
 }
 ```
 
-## 7. 数据集使用追踪
+### tracking-source
 
-追踪源数据集及其衍生数据集，如组件任务输出数据集
-
-### 7.1 源表查询
-
-**请求CLI** 
+用于查询某张表的父表及源表
 
 ```bash
-flow table tracking-source -t $name -n $namespace
+flow table tracking-source [options]
 ```
-
-**简要描述：** 
-
-- 用于查询某张表的父表及源表
 
 **参数** 
 
@@ -596,17 +570,15 @@ flow table tracking-source -t $name -n $namespace
 }
 ```
 
-### 7.2 用表任务查询
+### tracking-job
+
+用于查询某张表的使用情况
 
 **请求CLI** 
 
 ```bash
-flow table tracking-job -t $name -n $namespace
+flow table tracking-job [options]
 ```
-
-**简要描述：** 
-
-- 用于查询某张表的使用情况
 
 **参数** 
 
@@ -632,5 +604,3 @@ flow table tracking-job -t $name -n $namespace
     "retmsg": "success"
 }
 ```
-
-## 8. 开发API
