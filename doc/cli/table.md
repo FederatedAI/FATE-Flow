@@ -2,28 +2,28 @@
 
 ### info
 
-用于查询fate表的相关信息(真实存储地址,数量,schema等)
+Query information about the fate table (real storage address, number, schema, etc.)
 
 ```bash
 flow table info [options]
 ```
 
-**参数** 
+**parameters** 
 
-| 参数名    | 必选 | 类型   | 说明           |
+| parameter name | required | type | description
 | :-------- | :--- | :----- | -------------- |
-| name      | 是   | string | fate表名       |
-| namespace | 是   | string | fate表命名空间 |
+| name | yes | string | fate table name |
+| namespace | yes | string | fate table namespace |
 
-**返回参数** 
+**return parameters** 
 
-| 参数名  | 类型   | 说明     |
+| parameter name | type | description |
 | :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
+| retcode | int | return code |
+| retmsg | string | return information |
+| data | object | return data |
 
-样例
+Sample
 
 ```json
 {
@@ -34,7 +34,7 @@ flow table info [options]
             "namespace": "experiment"
         },
         "count": 569,
-        "exist": 1,
+        "exists": 1,
         "namespace": "experiment",
         "partition": 4,
         "schema": {
@@ -50,28 +50,28 @@ flow table info [options]
 
 ### delete
 
-可通过table delete删除表数据
+You can delete table data with table delete
 
 ```bash
 flow table delete [options]
 ```
 
-**参数** 
+**parameters** 
 
-| 参数名    | 必选 | 类型   | 说明           |
+| parameter name | required | type | description |
 | :-------- | :--- | :----- | -------------- |
-| name      | 是   | string | fate表名       |
-| namespace | 是   | string | fate表命名空间 |
+| name | yes | string | fate table name |
+| namespace | yes | string | fate table namespace |
 
-**返回参数** 
+**return parameters** 
 
-| 参数名  | 类型   | 说明     |
+| parameter name | type | description |
 | :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
+| retcode | int | return code |
+| retmsg | string | return information |
+| data | object | return data |
 
-样例
+Sample
 
 ```json
 {
@@ -86,29 +86,29 @@ flow table delete [options]
 
 ### bind
 
-可通过table bind将真实存储地址映射到fate存储表
+Real storage addresses can be mapped to fate storage tables via table bind
 
 ```bash
 flow table bind [options]
 ```
 
-注: conf_path为参数路径，具体参数如下
+Note: conf_path is the parameter path, the specific parameters are as follows
 
-**参数** 
+**parameters** 
 
-| 参数名         | 必选 | 类型   | 说明                                  |
+| parameter name | required | type | description |
 | :------------- | :--- | :----- | ------------------------------------- |
-| name           | 是   | string | fate表名                              |
-| namespace      | 是   | string | fate表命名空间                        |
-| engine         | 是   | string | 存储引擎, 支持"HDFS", "MYSQL", "PATH" |
-| adress         | 是   | object | 真实存储地址                          |
-| drop           | 否   | int    | 覆盖以前的信息                        |
-| head           | 否   | int    | 是否有数据表头                        |
-| id_delimiter   | 否   | string | 数据分隔符                            |
-| id_column      | 否   | string | id字段                                |
-| feature_column | 否   | array  | 特征字段                              |
+| name | yes | string | fate table name |
+| namespace | yes | string | fate table namespace |
+| engine | yes | string | storage engine, supports "HDFS", "MYSQL", "PATH" |
+| yes | object | real storage address |
+| drop | no | int | Overwrite previous information |
+| head | no | int | Whether there is a data table header |
+| id_delimiter | no | string | Data separator |
+| id_column | no | string | id field |
+| feature_column | no | array | feature_field |
 
-**样例** 
+**Sample** 
 
 - hdfs
 
@@ -162,15 +162,15 @@ flow table bind [options]
     }
 }
 ```
-**返回参数** 
+**return parameters** 
 
-| 参数名  | 类型   | 说明     |
+| parameter name | type | description |
 | :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
+| retcode | int | return code |
+| retmsg | string | return information |
+| data | object | return data |
 
-样例
+Sample
 
 ```json
 {
