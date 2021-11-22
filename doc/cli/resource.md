@@ -1,4 +1,5 @@
 ## resource
+## Resources
 
 ### query
 
@@ -8,9 +9,9 @@ For querying fate system resources
 flow resource query
 ```
 
-**parameters** 
+**Options** 
 
-**return parameters** 
+**Returns**
 
 | parameter name | type | description |
 | :------ | :----- | -------- |
@@ -18,9 +19,9 @@ flow resource query
 | retmsg | string | return information |
 | data | object | return data |
 
-Example:
+**Example**
 
-```
+```json
 {
     "data": {
         "computing_engine_resource": {
@@ -56,13 +57,13 @@ Resources for returning a job
 flow resource return [options]
 ```
 
-**parameters** 
+**Options** 
 
 | parameter name | required | type | description |
 | :----- | :--- | :----- | ------ |
 | job_id | yes | string | job_id |
 
-**return parameters** 
+**Returns**
 
 | parameter name | type | description |
 | :------ | :----- | -------- |
@@ -70,7 +71,7 @@ flow resource return [options]
 | retmsg | string | return information |
 | data | object | return data |
 
-Example：
+**Example**
 
 ```json
 {

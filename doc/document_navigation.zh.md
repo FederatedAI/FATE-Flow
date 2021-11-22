@@ -1,6 +1,4 @@
-# 文档导航(待更新)
-
-[TOC]
+# 文档导航
 
 ## 1. 通用文档变量
 
@@ -60,3 +58,9 @@
 图中 `dataio_0` 是 `component_name`，`DataIO` 是 `componet_module_name`，`dataio` 是 `model_alias`
 
 ![](https://user-images.githubusercontent.com/1758850/124451776-52ee4500-ddb8-11eb-94f2-d43d5174ca4d.png)
+
+## 3. 阅读指引
+
+1. 可以先阅读[整体设计](./fate_flow.zh.md)
+2. 参考主仓库[FATE](https://github.com/FederatedAI/FATE)部署, 可选单机版(安装版, Docker, 源码编译)或集群版(Ansible, Docker, Kuberneters)
+3. 可依据导航目录顺序进行参考

@@ -1,6 +1,4 @@
-# FATE Flow 多方资源协调
-
-[TOC]
+# 多方资源协调
 
 ## 1. 说明
 
@@ -102,10 +100,4 @@ fate_on_spark:
 
 ## 6. 相关命令
 
-### 6.1 资源查询
-
-{{snippet('cli/resource.zh.md', '### query')}}
-
-### 6.2 资源归还
-
-{{snippet('cli/resource.zh.md', '### return')}}
+{{snippet('cli/resource.zh.md')}}

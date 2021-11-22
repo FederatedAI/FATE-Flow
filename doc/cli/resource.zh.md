@@ -1,4 +1,4 @@
-## resource
+## Resource
 
 ### query
 
@@ -8,9 +8,9 @@
 flow resource query
 ```
 
-**参数** 
+**选项**
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -18,9 +18,9 @@ flow resource query
 | retmsg  | string | 返回信息 |
 | data    | object | 返回数据 |
 
-样例：
+**样例**
 
-```
+```json
 {
     "data": {
         "computing_engine_resource": {
@@ -56,13 +56,13 @@ flow resource query
 flow resource return [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名 | 必选 | 类型   | 说明   |
 | :----- | :--- | :----- | ------ |
 | job_id | 是   | string | 任务id |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -70,7 +70,7 @@ flow resource return [options]
 | retmsg  | string | 返回信息 |
 | data    | object | 返回数据 |
 
-样例：
+**样例**
 
 ```json
 {

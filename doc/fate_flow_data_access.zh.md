@@ -1,6 +1,4 @@
-# FATE Flow 数据接入
-
-[TOC]
+# 数据接入
 
 ## 1. 说明
 
@@ -12,8 +10,6 @@
 
 - 若table bind的表存储类型与当前默认引擎不一致，reader组件会自动转化存储类型;
 
-  
-
 ## 2.  数据上传
 
 {{snippet('cli/data.zh.md', '### upload')}}
@@ -21,7 +17,6 @@
 ## 3.  表绑定
 
 {{snippet('cli/table.zh.md', '### bind')}}
-
 
 ## 4. 表信息查询
 
@@ -31,13 +26,9 @@
 
 {{snippet('cli/table.zh.md', '### delete')}}
 
-
-
 ## 6.  数据下载
 
 {{snippet('cli/data.zh.md', '### download')}}
-
-
 
 ## 7.  reader组件
 

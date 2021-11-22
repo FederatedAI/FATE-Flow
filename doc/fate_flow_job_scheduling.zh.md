@@ -1,6 +1,4 @@
-# FATE Flow 多方联合作业调度
-
-[TOC]
+# 多方联合作业调度
 
 ## 1. 说明
 
@@ -8,65 +6,12 @@
 
 ## 2. 作业提交
 
-**简要描述** 
-
 - 构建一个联邦学习作业，并提交到调度系统执行
 - 需要两个配置文件：job dsl和job conf
 - job dsl配置运行的组件：列表、输入输出关系
 - job conf配置组件执行参数、系统运行参数
 
-**请求CLI** 
-
-```bash
-flow job submit -d ./examples/simple/simple_dsl.json -c ./examples/simple/simple_job_conf.json
-```
-
-**参数** 
-
-| 参数名          | 必选 | 类型   | 说明           |
-| :-------------- | :--- | :----- | -------------- |
-| -d, --dsl-path  | 是   | string | job dsl的路径  |
-| -c, --conf-path | 是   | string | job conf的路径 |
-
-
-**返回参数** 
-
-| 参数名                          | 类型   | 说明                                                                  |
-| :------------------------------ | :----- | --------------------------------------------------------------------- |
-| retcode                         | int    | 返回码                                                                |
-| retmsg                          | string | 返回信息                                                              |
-| jobId                           | string | 作业ID                                                                |
-| data                            | dict   | 返回数据                                                              |
-| data.dsl_path                   | string | 依据提交的dsl内容，由系统生成的实际运行dsl配置的存放路径              |
-| data.runtime_conf_on_party_path | string | 依据提交的conf内容，由系统生成的在每个party实际运行conf配置的存放路径 |
-| data.board_url                  | string | fateboard查看地址                                                     |
-| data.model_info                 | dict   | 模型标识信息                                                          |
-
-**样例** 
-
-```json
-{
-    "data": {
-        "board_url": "http://127.0.0.1:8080/index.html#/dashboard?job_id=202111061608424372620&role=guest&party_id=9999",
-        "code": 0,
-        "dsl_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/job_dsl.json",
-        "job_id": "202111061608424372620",
-        "logs_directory": "$FATE_PROJECT_BASE/logs/202111061608424372620",
-        "message": "success",
-        "model_info": {
-            "model_id": "arbiter-10000#guest-9999#host-10000#model",
-            "model_version": "202111061608424372620"
-        },
-        "pipeline_dsl_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/pipeline_dsl.json",
-        "runtime_conf_on_party_path": "$FATE_FATE_PROJECT_BASE/jobs/202111061608424372620/guest/9999/job_runtime_on_party_conf.json",
-        "runtime_conf_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/job_runtime_conf.json",
-        "train_runtime_conf_path": "$FATE_PROJECT_BASE/jobs/202111061608424372620/train_runtime_conf.json"
-    },
-    "jobId": "202111061608424372620",
-    "retcode": 0,
-    "retmsg": "success"
-}
-```
+{{snippet('cli/job.zh.md', '### submit')}}
 
 ## 3. Job DSL配置说明
 
@@ -575,7 +520,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 ### 6.1 说明
 
 DSL V2不会自动为训练任务生成预测dsl。 用户需要首先使用`Flow Client`部署所需模型中模块。
-详细命令说明请参考[fate_flow_client](./fate_flow_client.zh.md#deploy)
+详细命令说明请参考[fate_flow_client](./fate_flow_client.zh.md)
 
 ```bash
 flow model deploy --model-id $model_id --model-version $model_version --cpn-list ...
@@ -734,93 +679,16 @@ flow model deploy --model-id $model_id --model-version $model_version --cpn-list
 
 ## 7. 作业重跑
 
-**请求CLI** 
-```bash
-flow job rerun
-```
+`1.5.0`版本, 开始支持重跑某个作业, 但是仅支持失败的作业
+`1.7.0`版本支持成功的作业重跑, 并且可以指定从哪个组件开始重跑, 被指定的组件及其下游组件会重跑, 但其他组件不会重跑
 
-**参数** 
-
-| 参数名                 | 必选 | 类型   | 说明                                                                                                  |
-| :--------------------- | :--- | :----- | ----------------------------------------------------------------------------------------------------- |
-| -j, --job-id           | 是   | string | job id 路径                                                                                           |
-| -cpn, --component-name | 否   | string | 指定从哪个组件重跑，没被指定的组件若与指定组件没有上游依赖关系则不会执行;若不指定该参数则整个作业重跑 |
-| --force                | 否   | bool   | 作业即使成功也重跑;若不指定该参数，作业如果成功，则跳过重跑                                           |
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| jobId   | string | 作业ID   |
-| data    | dict   | 返回数据 |
-
-**样例** 
-
-```bash
-flow job rerun -j 202111031100369723120
-```
-
-```bash
-flow job rerun -j 202111031100369723120 -cpn hetero_lr_0
-```
-
-```bash
-flow job rerun -j 202111031100369723120 -cpn hetero_lr_0 --force 
-```
+{{snippet('cli/job.zh.md', '### rerun')}}
 
 ## 8. 作业参数更新
 
-**请求CLI** 
-```bash
-flow job parameter-update
-```
+实际生产建模过程中, 需要进行不断调试修改组件参数且重跑, 但是此时并不是所有组件都需要调整并且重跑, 因此在`1.7.0`版本后支持修改某个组件的参数更新, 且配合`rerun`命令按需重跑
 
-**参数** 
-
-| 参数名          | 必选 | 类型   | 说明                                                 |
-| :-------------- | :--- | :----- | ---------------------------------------------------- |
-| -j, --job-id    | 是   | string | job id 路径                                          |
-| -c, --conf-path | 是   | string | 需要更新的job conf的内容，不需要更新的参数不需要填写 |
-
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明                 |
-| :------ | :----- | -------------------- |
-| retcode | int    | 返回码               |
-| retmsg  | string | 返回信息             |
-| jobId   | string | 作业ID               |
-| data    | dict   | 返回更新后的job conf |
-
-**样例** 
-
-假设更新job中hetero_lr_0这个组件的部分执行参数，配置文件如下：
-```bash
-{
-  "job_parameters": {
-  },
-  "component_parameters": {
-    "common": {
-      "hetero_lr_0": {
-        "alpha": 0.02,
-        "max_iter": 5
-      }
-    }
-  }
-}
-```
-
-执行如下命令生效：
-```bash
-flow job parameter-update -j 202111061957421943730 -c examples/other/update_parameters.json
-```
-
-执行如下命令重跑：
-```bash
-flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force 
-```
+{{snippet('cli/job.zh.md', '### parameter-update')}}
 
 ## 9. 作业调度策略
 
@@ -855,4 +723,6 @@ FATE_FLOW_UPDATE_CHECK = False
 
 - FATE_FLOW_UPDATE_CHECK: 依赖校验开关, 默认关闭;打开后每次提交任务都会自动校验fate代码是否发生改变;若发生改变则会重新上传fate代码依赖;
 
-## 11. 常用命令
+## 11. 更多命令
+
+请参考[Job CLI](./cli/job.zh.md)和[Task CLI](./cli/task.zh.md)

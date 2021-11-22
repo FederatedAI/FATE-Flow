@@ -1,12 +1,10 @@
-# FATE Flow Multi-party Resource Coordination
-
-[TOC]
+# Multi-Party Resource Coordination
 
 ## 1. Description
 
-Resources refer to the basic engine resources, mainly CPU resources and memory resources of the computation engine, CPU resources and network resources of the transmission engine, currently only the management of CPU resources of the computation engine is supported
+Resources refer to the basic engine resources, mainly CPU resources and memory resources of the compute engine, CPU resources and network resources of the transport engine, currently only the management of CPU resources of the compute engine is supported
 
-## 2. Total resource configuration
+## 2. Total resource allocation
 
 - The current version does not automatically get the resource size of the base engine, so you configure it through the configuration file `$FATE_PROJECT_BASE/conf/service_conf.yaml`, that is, the resource size of the current engine allocated to the FATE cluster
 - `FATE Flow Server` gets all the base engine information from the configuration file and registers it in the database table `t_engine_registry` when it starts.
@@ -94,18 +92,11 @@ The total resources requested by the job are `task_cores` * `task_parallelism`. 
 - The final calculation can be seen in the job's `job_runtime_conf_on_party.json`, typically in `$FATE_PROJECT_BASE/jobs/$job_id/$role/$party_id/job_runtime_on_party_conf.json `
 
 ## 5. Resource Scheduling Policy
-
-- `total_cores` see [total_resource_configuration](#2-Total resource configuration)
-- `apply_cores` see [job_request_resource_configuration](#3-Job request resource configuration) above, `apply_cores` = `task_nodes` * `task_cores_per_node` * `task_parallelism`
+- `total_cores` see [total_resource_allocation](#2-total-resource-allocation)
+- `apply_cores` see [job_request_resource_configuration](#3-job-request-resource-configuration), `apply_cores` = `task_nodes` * `task_cores_per_node` * `task_parallelism`
 - If all participants apply for resources successfully (total_cores - apply_cores) > 0, then the job applies for resources successfully
 - If not all participants apply for resources successfully, then send a resource rollback command to the participants who have applied successfully, and the job fails to apply for resources
 
 ## 6. Related commands
 
-### 6.1 Resource query
-
-{{snippet('cli/resource.md', '#### query')}}
-
-### 6.2 Resource return
-
-{{snippet('cli/resource.md', '#### return')}}
+{{snippet('cli/resource.md')}}
