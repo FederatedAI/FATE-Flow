@@ -88,9 +88,9 @@
 - The model IDs of the federated parties are the party identification information role, party_id, plus model_key
 - The model version of the federated parties must be unique and consistent, and FATE-Flow directly sets it to job_id
 
-![](./images/fate_flow_pipelined_model.png)
+![](./images/fate_flow_pipelined_model.png){: style="height:400px;width:450px"}
 
-![](./images/fate_flow_model_storage.png)
+![](./images/fate_flow_model_storage.png){: style="height:400px;width:800px"}
 
 ## 9. [Data Access](./fate_flow_data_access.md)
 

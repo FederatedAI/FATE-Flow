@@ -78,6 +78,7 @@ markdown_extensions:
   - footnotes
   - meta
   - def_list
+  - attr_list
   - pymdownx.arithmatex
   - pymdownx.betterem:
       smart_enable: all
