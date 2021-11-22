@@ -13,9 +13,9 @@ Resources refer to the basic engine resources, mainly CPU resources and memory r
 
 **sample**
 
-fate_on_standalone: is a standalone engine for executing on the same machine as `FATE Flow Server`, generally used for fast experiments, `nodes` is generally set to 1, `cores_per_node` is generally the number of CPU cores of the machine, also can be moderately over-provisioned
+fate_on_standalone: is for executing a standalone engine on the same machine as `FATE Flow Server`, generally used for fast experiments, `nodes` is generally set to 1, `cores_per_node` is generally the number of CPU cores of the machine, also can be moderately over-provisioned
 
-```json
+```yaml
 fate_on_standalone:
   standalone:
     cores_per_node: 20
@@ -24,7 +24,7 @@ fate_on_standalone:
 
 fate_on_eggroll: configured based on the actual deployment of `EggRoll` cluster, `nodes` denotes the number of `node manager` machines, `cores_per_node` denotes the average number of CPU cores per `node manager` machine
 
-```json
+```yaml
 fate_on_eggroll:
   clustermanager:
     cores_per_node: 16
@@ -36,7 +36,7 @@ fate_on_eggroll:
 
 fate_on_spark: configured based on the resources allocated to the `FATE` cluster in the `Spark` cluster, `nodes` indicates the number of `Spark` nodes, `cores_per_node` indicates the average number of CPU cores per node allocated to the `FATE` cluster
 
-```json
+```yaml
 fate_on_spark:
   spark:
     # default use SPARK_HOME environment variable
@@ -45,13 +45,14 @@ fate_on_spark:
     nodes: 2
 ```
 
-Note: Please make sure that the `Spark` cluster has allocated the corresponding amount of resources to the `FATE` cluster. If the `Spark` cluster allocates less resources than the resources configured in `FATE` here, then the `FATE` job can be submitted, but when `FATE Flow` submits the task to the `Spark` cluster, the task will not actually execute because the `Spark` cluster does not have enough resources.
+Note: Please make sure that the `Spark` cluster allocates the corresponding amount of resources to the `FATE` cluster, if the `Spark` cluster allocates less resources than the resources configured in `FATE` here, then it will be possible to submit the `FATE` job, but when `FATE Flow` submits the task to the `Spark` cluster, the task will not actually execute because the `Spark` cluster has insufficient resources. Insufficient resources, the task is not actually executed
 
 ## 3. Job request resource configuration
 
-We generally use ``task_cores`` and ``task_parallelism`` to configure job request resources, such as.
+We generally use ``task_cores`'' and ``task_parallelism`' to configure job request resources, such as
 
 ```json
+{
 "job_parameters": {
   "common": {
     "job_type": "train",
@@ -59,6 +60,7 @@ We generally use ``task_cores`` and ``task_parallelism`` to configure job reques
     "task_parallelism": 2,
     "computing_partitions": 8,
     "timeout": 36000
+    }
   }
 }
 ```
@@ -90,7 +92,6 @@ The total resources requested by the job are `task_cores` * `task_parallelism`. 
 - The final calculation can be seen in the job's `job_runtime_conf_on_party.json`, typically in `$FATE_PROJECT_BASE/jobs/$job_id/$role/$party_id/job_runtime_on_party_conf.json `
 
 ## 5. Resource Scheduling Policy
-
 - `total_cores` see [total_resource_allocation](#2-total-resource-allocation)
 - `apply_cores` see [job_request_resource_configuration](#3-job-request-resource-configuration), `apply_cores` = `task_nodes` * `task_cores_per_node` * `task_parallelism`
 - If all participants apply for resources successfully (total_cores - apply_cores) > 0, then the job applies for resources successfully

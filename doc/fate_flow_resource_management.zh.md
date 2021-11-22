@@ -15,7 +15,7 @@
 
 fate_on_standalone：是为执行在`FATE Flow Server`同台机器的单机引擎，一般用于快速实验，`nodes`一般设置为1，`cores_per_node`一般为机器CPU核数，也可适量超配
 
-```json
+```yaml
 fate_on_standalone:
   standalone:
     cores_per_node: 20
@@ -24,7 +24,7 @@ fate_on_standalone:
 
 fate_on_eggroll：依据`EggRoll`集群实际部署情况进行配置，`nodes`表示`node manager`的机器数量，`cores_per_node`表示平均每台`node manager`机器CPU核数
 
-```json
+```yaml
 fate_on_eggroll:
   clustermanager:
     cores_per_node: 16
@@ -36,7 +36,7 @@ fate_on_eggroll:
 
 fate_on_spark：依据在`Spark`集群中配置给`FATE`集群的资源进行配置，`nodes`表示`Spark`节点数量，`cores_per_node`表示平均每个节点分配给`FATE`集群的CPU核数
 
-```json
+```yaml
 fate_on_spark:
   spark:
     # default use SPARK_HOME environment variable
@@ -52,6 +52,7 @@ fate_on_spark:
 我们一般使用`task_cores`和`task_parallelism`进行配置作业申请资源，如：
 
 ```json
+{
 "job_parameters": {
   "common": {
     "job_type": "train",
@@ -59,6 +60,7 @@ fate_on_spark:
     "task_parallelism": 2,
     "computing_partitions": 8,
     "timeout": 36000
+    }
   }
 }
 ```
