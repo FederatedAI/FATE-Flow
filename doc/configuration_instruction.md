@@ -1,35 +1,35 @@
-# 配置说明
+# Configuration instructions
 
-## 1. 说明
+## 1. Description
 
-包含`FATE项目`总配置以及各个子系统的配置
+Contains the general configuration of the `FATE project` and the configuration of each subsystem
 
-## 2. 全局配置
+## 2. Global configuration
 
-- 路径：`${FATE_PROJECT_BASE}/conf/server_conf.yaml`
-- 说明：常用配置，一般部署时需要确定
-- 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
+- Path: `${FATE_PROJECT_BASE}/conf/server_conf.yaml`
+- Description: Commonly used configuration, generally needed to determine when deploying
+- Note: Configuration items that are not listed below in the configuration file are internal system parameters and are not recommended to be modified
 
 ```yaml
-# FATEFlow是否使用注册中心，使用注册中心的情况下，FATEFlow会注册FATEFlow Server地址以及发布的模型下载地址到注册中心以供在线系统FATEServing使用；同时也会从注册中心获取FATEServing地址
+# If FATEFlow uses the registry, FATEFlow will register the FATEFlow Server address and the published model download address to the registry for the online system FATEServing; it will also get the FATEServing address from the registry.
 use_registry: false
-# 是否启用更高安全级别的序列化模式
+# Whether to enable higher security serialization mode
 use_deserialize_safe_module: false
 dependent_distribution: false
 fateflow:
-  # 必须使用真实绑定的ip地址，避免因为多网卡/多IP引发的额外问题
   # you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported
   host: 127.0.0.1
   http_port: 9380
   grpc_port: 9360
   http_app_key:
   http_secret_key:
-  # 支持使用rollsite/nginx/fateflow作为多方任务协调通信代理
-  # rollsite支持fate on eggroll的场景，仅支持grpc协议，支持P2P组网及星型组网模式
-  # nginx支持所有引擎场景，支持http与grpc协议，默认为http，支持P2P组网及星型组网模式
-  # fateflow支持所有引擎场景，支持http与grpc协议，默认为http，仅支持P2P组网模式，也即只支持互相配置对端fateflow地址
-  # 格式(proxy: rollsite)表示使用rollsite并使用下方fate_one_eggroll配置大类中的rollsite配置；配置nginx表示使用下方fate_one_spark配置大类中的nginx配置
-  # 也可以直接配置对端fateflow的地址，如下所示：
+  # support rollsite/nginx/fateflow as a coordination proxy
+  # rollsite support fate on eggroll, use grpc protocol
+  # nginx support fate on eggroll and fate on spark, use http or grpc protocol, default is http
+  # fateflow support fate on eggroll and fate on spark, use http protocol, but not support exchange network mode
+
+  # format(proxy: rollsite) means rollsite use the rollsite configuration of fate_one_eggroll and nginx use the nginx configuration of fate_one_spark
+  # you also can customize the config like this(set fateflow of the opposite party as proxy):
   # proxy:
   #   name: fateflow
   #   host: xx
@@ -46,7 +46,7 @@ database:
   port: 3306
   max_connections: 100
   stale_timeout: 30
-# 注册中心地址及其身份认证参数
+# The registry address and its authentication parameters
 zookeeper:
   hosts:
     - 127.0.0.1:2181
@@ -64,9 +64,9 @@ fate_on_standalone:
     nodes: 1
 fate_on_eggroll:
   clustermanager:
-    # eggroll nodemanager服务所在机器的CPU核数
+    # CPU cores of the machine where eggroll nodemanager service is running
     cores_per_node: 16
-    # eggroll nodemanager服务的机器数量
+    # the number of eggroll nodemanager machine
     nodes: 1
   rollsite:
     host: 127.0.0.1
@@ -130,7 +130,7 @@ fateboard:
 # or download models from the model store if it does not exist locally but exists in the model storage
 # this config will not affect API `/model/store` or `/model/restore`
 enable_model_store: false
-# 模型导出(export model)操作默认的导出地址
+# default address for export model
 model_store_address:
   # use mysql as the model store engine
 #  storage: mysql
@@ -157,7 +157,7 @@ model_store_address:
   SecretKey:
   Bucket:
 
-# 不使用注册中心的情况下，需要配置FATE Serving Server的地址
+# The address of the FATE Serving Server needs to be configured if the registry is not used
 servings:
   hosts:
     - 127.0.0.1:8000
@@ -168,67 +168,67 @@ fatemanager:
 
 ```
 
-## 3. FATE Flow配置
+## 3. FATE Flow Configuration
 
-### 3.1 FATE Flow Server配置
+### 3.1 FATE Flow Server Configuration
 
-- 路径：`${FATE_FLOW_BASE}/python/fate_flow/settings.py`
-- 说明：高级配置，一般不需要做改动
-- 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
+- Path: `${FATE_FLOW_BASE}/python/fate_flow/settings.py`
+- Description: Advanced configuration, generally no changes are needed
+- Note: Configuration items that are not listed below in the configuration file are internal system parameters and are not recommended to be modified
 
 ```python
-# FATE Flow Server用于多方FATE Flow Server通信的grpc server的线程池大小，不设置默认等于机器CPU核数
+# Thread pool size of grpc server used by FATE Flow Server for multiparty FATE Flow Server communication, not set default equal to the number of CPU cores of the machine
 GRPC_SERVER_MAX_WORKERS = None
 
 # Switch
-# 上传数据接口默认从客户端获取数据，该值可以在接口调用时使用use_local_data配置自定义值
+# The upload data interface gets data from the client by default, this value can be configured at the time of the interface call using use_local_data
 UPLOAD_DATA_FROM_CLIENT = True
-# 是否开启多方通信身份认证功能，需要配合FATE Cloud使用
+# Whether to enable multi-party communication authentication, need to be used with FATE Cloud
 CHECK_NODES_IDENTITY = False
-# 是否开启资源鉴权功能，需要配合FATE Cloud使用
+# Whether to enable the resource authentication function, need to use with FATE Cloud
 USE_AUTHENTICATION = False
-# 默认授予的资源权限
+# Resource privileges granted by default
 PRIVILEGE_COMMAND_WHITELIST = []
 ```
 
-### 3.2 FATE Flow 默认作业配置
+### 3.2 FATE Flow Default Job Configuration
 
-- 路径：`${FATE_FLOW_BASE}/conf/job_default_config.yaml`
-- 说明：高级配置，一般不需要做改动
-- 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
-- 生效：使用flow server reload或者重启fate flow server
+- Path: `${FATE_FLOW_BASE}/conf/job_default_config.yaml`
+- Description: Advanced configuration, generally no changes are needed
+- Note: Configuration items that are not listed below in the configuration file are internal system parameters and are not recommended to be modified
+- Take effect: use flow server reload or restart fate flow server
 
 ```yaml
 # component provider, relative path to get_fate_python_directory
 default_component_provider_path: federatedml
 
 # resource
-# 总资源超配百分比
-total_cores_overweight_percent: 1  # 1 means no overweight
-total_memory_overweight_percent: 1  # 1 means no overweight
-# 默认的每个作业的任务并行度，可以在提交作业配置时使用job_parameters:task_parallelism配置自定义值
+# total_cores_overweight_percent
+total_cores_overweight_percent: 1 # 1 means no overweight
+total_memory_overweight_percent: 1 # 1 means no overweight
+# Default task parallelism per job, you can configure a custom value using job_parameters:task_parallelism when submitting the job configuration
 task_parallelism: 1
-# 默认的每个作业中每个任务使用的CPU核数，可以在提交作业配置时使用job_parameters:task_cores配置自定义值
+# The default number of CPU cores per task per job, which can be configured using job_parameters:task_cores when submitting the job configuration
 task_cores: 4
-# 暂时不支持内存资源的调度，该配置不生效
-task_memory: 0  # mb
-# 一个作业最大允许申请的CPU核数占总资源数量的比例，如总资源为10，此值为0.5，则表示一个作业最多允许申请5个CPU，也即task_cores * task_parallelism <= 10 * 0.5
-max_cores_percent_per_job: 1  # 1 means total
+# This configuration does not take effect as memory resources are not supported for scheduling at the moment
+task_memory: 0 # mb
+# The ratio of the maximum number of CPU cores allowed for a job to the total number of resources, e.g., if the total resources are 10 and the value is 0.5, then a job is allowed to request up to 5 CPUs, i.e., task_cores * task_parallelism <= 10 * 0.5
+max_cores_percent_per_job: 1 # 1 means total
 
 # scheduling
-# 默认的作业执行超时时间，可以在提交作业配置时使用job_parameters:timeout配置自定义值
+# Default job execution timeout, you can configure a custom value using job_parameters:timeout when submitting the job configuration
 job_timeout: 259200 # s
-# 发送跨参与方调度命令或者状态时，通信的超时时间
-remote_request_timeout: 30000  # ms
-# 发送跨参与方调度命令或者状态时，通信的重试次数
+# Timeout for communication when sending cross-participant scheduling commands or status
+remote_request_timeout: 30000 # ms
+# Number of retries to send cross-participant scheduling commands or status
 federated_command_trys: 3
 end_status_job_scheduling_time_limit: 300000 # ms
 end_status_job_scheduling_updates: 1
-# 默认自动重试次数, 可以在提交作业配置时使用job_parameters:auto_retries配置自定义值
+# Default number of auto retries, you can configure a custom value using job_parameters:auto_retries when submitting the job configuration
 auto_retries: 0
-# 默认重试次数间隔
-auto_retry_delay: 1  #seconds
-# 默认的多方状态收集方式，支持PULL和PUSH；也可在作业配置指定当前作业的收集模式
+# Default retry interval
+auto_retry_delay: 1 #seconds
+# Default multiparty status collection method, supports PULL and PUSH; you can also specify the current job collection mode in the job configuration
 federated_status_collect_type: PUSH
 
 # upload
@@ -238,81 +238,81 @@ upload_max_bytes: 104857600 # bytes
 output_data_summary_count_limit: 100
 ```
 
-## 4. FATE Board配置
+## 4. FATE Board Configuration
 
-- 路径：`${FATE_BOARD_BASE}/conf/application.properties`
-- 说明：常用配置，一般部署时需要确定
-- 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
+- Path: `${FATE_BOARD_BASE}/conf/application.properties`
+- Description: Commonly used configuration, generally needed to determine when deploying
+- Note: Configuration items that are not listed below in the configuration file are internal system parameters and are not recommended to be modified
 
 ```properties
-# 服务监听端口
+# Service listening port
 server.port=8080
-# fateflow地址，指fateflow的http端口地址
+# fateflow address, referring to the http port address of fateflow
 fateflow.url==http://127.0.0.1:9380
-# db地址，同上述全局配置service_conf.yaml里面的database配置
-fateboard.datasource.jdbc-url=jdbc:mysql://localhost:3306/fate_flow?characterEncoding=utf8&characterSetResults=utf8&autoReconnect=true&failOverReadOnly=false&serverTimezone=GMT%2B8
-# db配置，同上述全局配置service_conf.yaml里面的database配置
+# db address, same as the above global configuration service_conf.yaml inside the database configuration
+fateboard.datasource.jdbc-url=jdbc:mysql://localhost:3306/fate_flow?characterEncoding=utf8&characterSetResults=utf8&autoReconnect= true&failOverReadOnly=false&serverTimezone=GMT%2B8
+# db configuration, same as the above global configuration service_conf.yaml inside the database configuration
 fateboard.datasource.username=
-# db配置，同上述全局配置service_conf.yaml里面的database配置
+# db configuration, same as the above global configuration service_conf.yaml inside the database configuration
 fateboard.datasource.password=
 server.tomcat.max-threads=1000
 server.tomcat.max-connections=20000
 spring.servlet.multipart.max-file-size=10MB
 spring.servlet.multipart.max-request-size=100MB
-# 管理员账号配置
+# Administrator account configuration
 server.board.login.username=admin
 server.board.login.password=admin
 server.ssl.key-store=classpath:
 server.ssl.key-store-password=
 server.ssl.key-password=
 server.ssl.key-alias=
-# 当fateflo server开启api访问鉴权时，需要配置
+# When fateflo server enables api access authentication, you need to configure
 HTTP_APP_KEY=
 HTTP_SECRET_KEY=
 ```
 
 ## 5. EggRoll
 
-### 5.1 系统配置
+### 5.1 System configuration
 
-- 路径：`${EGGROLL_HOME}/conf/eggroll.properties`
-- 说明：常用配置，一般部署时需要确定
-- 注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改
+- Path: `${EGGROLL_HOME}/conf/eggroll.properties`
+- Description: Commonly used configuration, generally needed to determine when deploying
+- Note: Configuration items that are not listed below in the configuration file are internal system parameters and are not recommended to be modified
 
 ```properties
 [eggroll]
 # core
-# 连接MySQL配置，一般生产应用需要此配置
-eggroll.resourcemanager.clustermanager.jdbc.driver.class.name=com.mysql.cj.jdbc.Driver
-# 连接MySQL配置，一般生产应用需要此配置
-eggroll.resourcemanager.clustermanager.jdbc.url=jdbc:mysql://localhost:3306/eggroll_meta?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&allowPublicKeyRetrieval=true
-# 连接MySQL账户，一般生产应用需要此配置
+# MySQL connection configuration, generally required for production applications
+eggroll.resourcemanager.clustermanager.jdbc.driver.class.name=com.mysql.cj.jdbc.
+# MySQL connection configuration, generally required for production applications
+eggroll.resourcemanager.clustermanager.jdbc.url=jdbc:mysql://localhost:3306/eggroll_meta?useSSL=false&serverTimezone=UTC& characterEncoding=utf8&allowPublicKeyRetrieval=true
+# Connect to MySQL account, this configuration is required for general production applications
 eggroll.resourcemanager.clustermanager.jdbc.username=
-# 连接MySQL密码，一般生产应用需要此配置
+# Connect to MySQL password, generally required for production applications
 eggroll.resourcemanager.clustermanager.jdbc.password=
 
-# 数据存储目录
+# Data storage directory
 eggroll.data.dir=data/
-# 日志存储目录
+# Log storage directory
 eggroll.logs.dir=logs/
 eggroll.resourcemanager.clustermanager.host=127.0.0.1
 eggroll.resourcemanager.clustermanager.port=4670
 eggroll.resourcemanager.nodemanager.port=4670
 
-# python路径
-eggroll.resourcemanager.bootstrap.egg_pair.venv=
-# pythonpath, 一般需要指定eggroll的python目录以及fate的python目录
-eggroll.resourcemanager.bootstrap.egg_pair.pythonpath=python
+# python path
+eggroll.resourcemanager.bootstrap.eggg_pair.venv=
+# pythonpath, usually you need to specify the python directory of eggroll and the python directory of fate
+eggroll.resourcemanager.bootstrap.eggg_pair.pythonpath=python
 
-# java路径
-eggroll.resourcemanager.bootstrap.egg_frame.javahome=
-# java服务启动参数，无特别需要，无需配置
-eggroll.resourcemanager.bootstrap.egg_frame.jvm.options=
-# 多方通信时，grpc连接保持时间
+# java path
+eggroll.resourcemanager.bootstrap.eggg_frame.javahome=
+# java service startup parameters, no special needs, no need to configure
+eggroll.resourcemanager.bootstrap.eggg_frame.jvm.options=
+# grpc connection hold time for multi-party communication
 eggroll.core.grpc.channel.keepalive.timeout.sec=20
 
 # session
-# 一个eggroll会话中，每个nodemanager启动的计算进程数量;若使用fate进行提交任务，则会被fate flow的默认参数所代替
+# Number of computing processes started per nodemanager in an eggroll session; replaced by the default parameters of the fate flow if using fate for committing tasks
 eggroll.session.processors.per.node=4
 
 # rollsite
@@ -328,14 +328,14 @@ eggroll.rollsite.push.batches.per.stream=10
 eggroll.rollsite.adapter.sendbuf.size=100000
 ```
 
-### 5.2 路由表配置
+### 5.2 Routing table configuration
 
-- 路径：`${EGGROLL_HOME}/conf/route_table.json`
-- 说明：常用配置，一般部署时需要确定 
-  - 路由表主要分两个层级表示
-  - 第一级表示站点，若找不到对应的目标站点配置，则使用**default**
-  - 第二级表示服务，若找不到对应的目标服务，则使用**default**
-  - 第二级，通常将**default**设为本方**rollsite**服务地址，将**fateflow**设为本方**fate flow server**服务的grpc地址
+- Path: `${EGGROLL_HOME}/conf/route_table.json`
+- Description: Commonly used configuration, generally needed to determine when deploying
+  - The routing table is mainly divided into two levels
+  - The first level indicates the site, if the corresponding target site configuration is not found, then use **default**
+  - The second level represents the service, if you can not find the corresponding target service, then use **default**
+  - The second level, usually set **default** as the address of our **rollsite** service, and **fateflow** as the grpc address of our **fate flow server** service
 
 ```json
 {

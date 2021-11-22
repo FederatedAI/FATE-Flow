@@ -10,7 +10,7 @@
     flow
 
     [OUT]
-    Usage： flow [OPTIONS] COMMAND [ARGS]...
+    Usage: flow COMMAND [OPTIONS]
 
       Fate Flow Client
 
@@ -59,7 +59,7 @@ cd $FATE_PROJECT_BASE/
 # 进入FATE PYTHON的虚拟环境
 source bin/init_env.sh
 # 执行安装
-cd ./fate/python/fate_client && python setup.py install
+cd fate/python/fate_client && python setup.py install
 ```
 
 安装完成之后，在命令行键入`flow` 并回车，获得如下返回即视为安装成功：
@@ -100,7 +100,7 @@ flow init --ip 192.168.0.1 --port 9380
 ```shell
 # 进入FATE的安装路径，例如/data/projects/fate
 cd $FATE_PROJECT_BASE/
-flow init -c ./conf/service_conf.yaml
+flow init -c conf/service_conf.yaml
 ```
 
 获得如下返回视为初始化成功：

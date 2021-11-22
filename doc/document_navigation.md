@@ -1,16 +1,16 @@
-# 文档导航
+# Document navigation
 
-## 1. 通用文档变量
+## 1. General Document Variables
 
-您会在所有`FATE Flow`的文档看到如下`文档变量`，其含义如下：
+You will see the following `document variables` in all `FATE Flow` documentation, with the following meanings.
 
-- FATE_PROJECT_BASE：表示`FATE项目`部署目录，包含配置、fate算法包、fate客户端以及子系统: `bin`, `conf`, `examples`, `fate`, `fateflow`, `fateboard`, `eggroll`等
-- FATE_BASE：表示`FATE`的部署目录，名称`fate`，包含算法包、客户端: `federatedml`, `fate arch`, `fate client`, 通常路径为`${FATE_PROJECT_BASE}/fate`
-- FATE_FLOW_BASE：表示`FATE Flow`的部署目录，名称`fateflow`，包含`fate flow server`等, 通常路径为`${FATE_PROJECT_BASE}/fateflow`
-- FATE_BOARD_BASE：表示`FATE Board`的部署目录，名称`fateboard`，包含`fateboard`, 通常路径为`${FATE_PROJECT_BASE}/fateboard`
-- EGGROLL_HOME：表示`EggRoll`的部署目录，名称`eggroll`，包含`rollsite`, `clustermanager`, `nodemanager`等, 通常路径为`${FATE_PROJECT_BASE}/eggroll`
+- FATE_PROJECT_BASE: denotes the `FATE project` deployment directory, containing configuration, fate algorithm packages, fate clients and subsystems: `bin`, `conf`, `examples`, `fate`, `fateflow`, `fateboard`, `eggroll`, etc.
+- FATE_BASE: The deployment directory of `FATE`, named `fate`, contains algorithm packages, clients: `federatedml`, `fate arch`, `fate client`, usually the path is `${FATE_PROJECT_BASE}/fate`
+- FATE_FLOW_BASE: The deployment directory of `FATE Flow`, named `fateflow`, containing `fate flow server`, etc., usually the path is `${FATE_PROJECT_BASE}/fateflow`
+- FATE_BOARD_BASE: the deployment directory of `FATE Board`, name `fateboard`, contains `fateboard`, usually the path is `${FATE_PROJECT_BASE}/fateboard`
+- EGGROLL_HOME: the deployment directory for `EggRoll`, named `eggroll`, containing `rollsite`, `clustermanager`, `nodemanager`, etc., usually in `${FATE_PROJECT_BASE}/eggroll`
 
-    参考`FATE项目`主仓库[FederatedAI/FATE](https://github.com/FederatedAI/FATE)部署`FATE项目`，主要目录结构如下：
+    Deploy the `FATE project` with reference to the main repository [FederatedAI/FATE](https://github.com/FederatedAI/FATE), the main directory structure is as follows
 
       - bin
       - conf
@@ -40,27 +40,27 @@
         - logs
       - fate.env
 
-- FATE_VERSION：表示`FATE`的版本号，如1.7.0
-- FATE_FLOW_VERSION：表示`FATE Flow`的版本号，如1.7.0
-- version：一般在部署文档中，表示`FATE项目`版本号，如`1.7.0`, `1.6.0`
-- version_tag：一般在部署文档中，表示`FATE项目`版本标签，如`release`, `rc1`, `rc10`
+- FATE_VERSION: The version number of `FATE`, e.g. 1.7.0
+- FATE_FLOW_VERSION: the version number of `FATE Flow`, e.g. 1.7.0
+- version: Generally in the deployment documentation, it means the version number of `FATE project`, such as `1.7.0`, `1.6.0`.
+- version_tag: generally in the deployment documentation, indicates the `FATE project` version tag, such as `release`, `rc1`, `rc10`
 
-## 2. 术语表
+## 2. Glossary of terms
 
-`component_name`: 提交任务时组件的名称，一个任务可以有多个同样的组件的，但是 `component_name` 是不一样的，相当于类的实例
+`component_name`: the name of the component when the task is submitted, a task can have more than one of the same component, but the `component_name` is not the same, equivalent to an instance of the class
 
-`componet_module_name`: 组件的类名
+`componet_module_name`: the class name of the component
 
-`model_alias`: 跟 `component_name` 类似，就是用户在 dsl 里面是可以配置输出的 model 名称的
+`model_alias`: similar to `component_name`, which is the name of the output model that the user can configure inside dsl
 
-示例：
+Example.
 
-图中 `dataio_0` 是 `component_name`，`DataIO` 是 `componet_module_name`，`dataio` 是 `model_alias`
+In the figure `dataio_0` is `component_name`, `DataIO` is `componet_module_name`, `dataio` is `model_alias`
 
-![](https://user-images.githubusercontent.com/1758850/124451776-52ee4500-ddb8-11eb-94f2-d43d5174ca4d.png)
+! [](https://user-images.githubusercontent.com/1758850/124451776-52ee4500-ddb8-11eb-94f2-d43d5174ca4d.png)
 
-## 3. 阅读指引
+## 3. Reading guide
 
-1. 可以先阅读[整体设计](./fate_flow.zh.md)
-2. 参考主仓库[FATE](https://github.com/FederatedAI/FATE)部署, 可选单机版(安装版, Docker, 源码编译)或集群版(Ansible, Docker, Kuberneters)
-3. 可依据导航目录顺序进行参考
+1. you can first read [overall design](. /fate_flow.zh.md)
+2. Refer to the main repository [FATE](https://github.com/FederatedAI/FATE) for deployment, either standalone (installer, Docker, source compiler) or cluster (Ansible, Docker, Kuberneters)
+3. You can refer to the directory in order of navigation

@@ -6,7 +6,7 @@
 
 一般来说，排查问题，需要如下几个日志：
 
-### 1.7+:
+### v1.7+
 
 - `${FATE_PROJECT_BASE}/fateflow/logs/$job_id/fate_flow_schedule.log`，这个是某个任务的内部调度日志
 
@@ -18,7 +18,7 @@
 
 - `${FATE_PROJECT_BASE}/fateflow/logs/fate_flow/fate_flow_detect.log`，这个是所有任务的整体异常探测日志
 
-### 1.7-:
+### v1.7-
 
 - `${FATE_PROJECT_BASE}/logs/$job_id/fate_flow_schedule.log`，这个是某个任务的内部调度日志
 

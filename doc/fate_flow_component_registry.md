@@ -1,19 +1,19 @@
-# 任务组件注册中心
+# Task component registration center
 
-## 1. 说明
+## 1. Description
 
-- `FATE Flow` 1.7版本后，开始支持多版本组件包同时存在，例如可以同时放入`1.7.0`和`1.7.1`版本的`fate`算法组件包
-- 我们将算法组件包的提供者称为`组件提供者`，`名称`和`版本`唯一确定`组件提供者`
-- 在提交作业时，可通过`job dsl`指定本次作业使用哪个组件包，具体请参考[组件provider](./fate_flow_job_scheduling.zh.md#35-组件provider)
+- After `FATE Flow` version 1.7, it started to support multiple versions of component packages at the same time, for example, you can put both `fate` algorithm component packages of `1.7.0` and `1.7.1` versions
+- We refer to the provider of the algorithm component package as the `component provider`, and the `name` and `version` uniquely identify the `component provider`.
+- When submitting a job, you can specify which component package to use for this job via `job dsl`, please refer to [componentprovider](. /fate_flow_job_scheduling.zh.md#35-component-provider)
 
-## 2. 默认组件提供者
+## 2. Default Component Provider
 
-部署`FATE`集群将包含一个默认的组件提供者，其通常在 `${FATE_PROJECT_BASE}/python/federatedml` 目录下
+Deploying a `FATE` cluster will include a default component provider, which is usually found in the `${FATE_PROJECT_BASE}/python/federatedml` directory
 
-## 3. 当前组件提供者
+## 3. current component provider
 
-{{snippet('cli/provider.zh.md', '### list')}}
+{{snippet('cli/provider.zh.md', '## list')}}
 
-## 4. 新组件提供者
+## 4. new component provider
 
-{{snippet('cli/provider.zh.md', '### register')}}
+{{snippet('cli/provider.zh.md', '## register')}}
