@@ -84,10 +84,10 @@ flow model import -c examples/model/restore_model.json --from-database
 
 **参数**
 
-| 参数          | 短格式 | 长格式            | 可选参数 | 说明                             |
-| ------------- | ------ | ----------------- | -------- | -------------------------------- |
-| conf_path     | `-c`   | `--conf-path`     | 否       | 配置文件                         |
-| from_database |        | `--from-database` | 是       | 从 Flow 配置的存储引擎中导入模型 |
+| 参数          | 短格式 | 长格式            | 可选参数 | 说明                 |
+| ------------- | ------ | ----------------- | -------- | -------------------- |
+| conf_path     | `-c`   | `--conf-path`     | 否       | 配置文件             |
+| from_database |        | `--from-database` | 是       | 从存储引擎中导入模型 |
 
 **样例**
 
@@ -126,10 +126,10 @@ flow model export -c examples/model/store_model.json --to-database
 
 **参数**
 
-| 参数        | 短格式 | 长格式          | 可选参数 | 说明                               |
-| ----------- | ------ | --------------- | -------- | ---------------------------------- |
-| conf_path   | `-c`   | `--conf-path`   | 否       | 配置文件                           |
-| to_database |        | `--to-database` | 是       | 将模型导出到 Flow 配置的存储引擎中 |
+| 参数        | 短格式 | 长格式          | 可选参数 | 说明                   |
+| ----------- | ------ | --------------- | -------- | ---------------------- |
+| conf_path   | `-c`   | `--conf-path`   | 否       | 配置文件               |
+| to_database |        | `--to-database` | 是       | 将模型导出到存储引擎中 |
 
 **样例**
 
@@ -159,7 +159,7 @@ flow model export -c examples/model/store_model.json --to-database
 
 ### migrate
 
-迁移模型
+迁移模型。
 
 ```bash
 flow model migrate -c examples/model/migrate_model.json
@@ -214,7 +214,7 @@ flow model migrate -c examples/model/migrate_model.json
 
 ### tag-list
 
-获取模型的标签列表
+获取模型的标签列表。
 
 ``` bash
 flow model tag-list -j <job_id>
@@ -228,7 +228,7 @@ flow model tag-list -j <job_id>
 
 ### tag-model
 
-向模型添加标签
+从模型中添加或删除标签。
 
 ```bash
 flow model tag-model -j <job_id> -t <tag_name>
@@ -245,7 +245,7 @@ flow model tag-model -j <job_id> -t <tag_name> --remove
 
 ### deploy
 
-配置预测 DSL
+配置预测 DSL。
 
 ```bash
 flow model deploy --model-id <model_id> --model-version <model_version>
@@ -358,7 +358,7 @@ flow model get-model-info --model-id <model_id> --model-version <model_version> 
 
 ### homo-convert
 
-基于横向训练的模型，生成其他 ML  框架的模型文件。
+基于横向训练的模型，生成其他 ML 框架的模型文件。
 
 ```bash
 flow model homo-convert -c examples/model/homo_convert_model.json
@@ -380,6 +380,6 @@ flow model homo-deploy -c examples/model/homo_deploy_model.json
 
 **参数**
 
-| 参数      | 短格式 | 长格式        | 可选参数 | 说明             |
-| --------- | ------ | ------------- | -------- | ---------------- |
-| conf_path | `-c`   | `--conf-path` | 否       | 任务配置文件路径 |
+| 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
+| --------- | ------ | ------------- | -------- | -------- |
+| conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |

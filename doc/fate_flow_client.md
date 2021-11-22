@@ -139,26 +139,26 @@ If it returns something like the following, it means that the connection is not 
 }
 ```
 
-{{snippet('cli/data.zh.md')}}
+{{snippet('cli/data.md')}}
 
-{{snippet('cli/table.zh.md')}}
+{{snippet('cli/table.md')}}
 
-{{snippet('cli/job.zh.md')}}
+{{snippet('cli/job.md')}}
 
-{{snippet('cli/task.zh.md')}}
+{{snippet('cli/task.md')}}
 
-{{snippet('cli/tracking.zh.md')}}
+{{snippet('cli/tracking.md')}}
 
-{{snippet('cli/model.zh.md')}}
+{{snippet('cli/model.md')}}
 
-{{snippet('cli/checkpoint.zh.md')}}
+{{snippet('cli/checkpoint.md')}}
 
-{{snippet('cli/provider.zh.md')}}
+{{snippet('cli/provider.md')}}
 
-{{snippet('cli/resource.zh.md')}}
+{{snippet('cli/resource.md')}}
 
-{{snippet('cli/privilege.zh.md')}}
+{{snippet('cli/privilege.md')}}
 
-{{snippet('cli/tag.zh.md')}}
+{{snippet('cli/tag.md')}}
 
-{{snippet('cli/server.zh.md')}}
+{{snippet('cli/server.md')}}

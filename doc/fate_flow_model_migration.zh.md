@@ -41,7 +41,7 @@ $FATE_PROJECT_BASE/model_local_cache
 
 ### 1. 修改配置文件
 
-在新参与方（机器）中根据实际情况对迁移任务的配置文件进行修改，如下为迁移任务示例配置文件 [migrate_model.json](fateflow/examples/model/migrate_model.json)
+在新参与方（机器）中根据实际情况对迁移任务的配置文件进行修改，如下为迁移任务示例配置文件 [migrate_model.json](https://github.com/FederatedAI/FATE-Flow/blob/main/examples/model/migrate_model.json)
 
 ```json
 {
@@ -88,7 +88,7 @@ $FATE_PROJECT_BASE/model_local_cache
 
 上述配置文件举例说明：
 1. 源模型的参与方为guest: 9999, host: 10000, arbiter: 10000, 将模型迁移成参与方为guest: 99, host: 100, arbiter: 100, 且新发起方为guest: 99
-2. `federated_mode`: `SINGLE`: 表示每个迁移任务只在提交任务的集群执行任务，那么需要在99、100分别提交任务 
+2. `federated_mode`: `SINGLE`: 表示每个迁移任务只在提交任务的集群执行任务，那么需要在99、100分别提交任务
 3. 例如在`99`执行，则`execute_party`配置为"guest": [9999]
 4. 例如在`10`执行，则`execute_party`配置为"arbiter": [10000], "host": [10000]
 
@@ -101,8 +101,6 @@ $FATE_PROJECT_BASE/model_local_cache
 ```bash
 flow model migrate -c $FATE_FLOW_BASE/examples/model/migrate_model.json
 ```
-
-
 
 ## 3. 任务执行结果
 
@@ -136,8 +134,6 @@ flow model migrate -c $FATE_FLOW_BASE/examples/model/migrate_model.json
 ```
 
 该任务实现的是，将party_id为9999（guest），10000（host）的集群生成的model_id为guest-9999#host-10000#model，model_version为202010291539339602784的模型修改迁移生成适配party_id为99（guest），100（host）集群的新模型
-
-
 
 如下为迁移成功的后得到的返回结果：
 
