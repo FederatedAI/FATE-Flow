@@ -1,74 +1,74 @@
-# 系统运维
+# System Operation
 
-## 1. 说明
+## 1. Description
 
-## 2. 日志清理
+## 2. Log cleaning
 
-### 2.1 作业日志(N=14天)
+## 2.1 Job logs (N=14 days)
 
-- 所在机器：fate flow所在机器
-- 目录：${FATE_PROJECT_BASE}/fateflow/logs/
-- 规则：目录以$jobid开头，清理$jobid为**N天**前的数据
-- 参考命令：
+- Machine: the machine where fate flow is located
+- Directory: ${FATE_PROJECT_BASE}/fateflow/logs/
+- Rule: directory starts with $jobid, clean up the data before $jobid is **N days**
+- Reference command.
 
 ```bash
 rm -rf ${FATE_PROJECT_BASE}/fateflow/logs/20200417*
 ```
 
-### 2.2 EggRoll Session日志(N=14天)
+### 2.2 EggRoll Session logs (N=14 days)
 
-- 所在机器：eggroll node节点
-- 目录：${FATE_PROJECT_BASE}/eggroll/logs/
-- 规则：目录以$jobid开头，清理$jobid为**N天**前的数据
-- 参考命令：
+- Machine: eggroll node
+- Directory: ${FATE_PROJECT_BASE}/eggroll/logs/
+- Rule: directory starts with $jobid, clean up data before $jobid is **N days**
+- Reference command.
 
 ```bash
 rm -rf ${FATE_PROJECT_BASE}/eggroll/logs/20200417*
 ```
 
-### 2.3 fateflow 系统日志(N=14天)
+### 2.3 fateflow system logs (N=14 days)
 
-- 所在机器：fate flow所在机器
-- 目录：${FATE_PROJECT_BASE}/logs/fate_flow/
-- 规则：日志文件以yyyy-dd-mm结尾，清理**N天**前的数据
-- 归档：日志文件以yyyy-dd-mm结尾，归档保留180天的日志
-- 参考命令：
+- Machine: fate flow machine
+- Directory: ${FATE_PROJECT_BASE}/logs/fate_flow/
+- Rule: Log file ends with yyyy-dd-mm, clean up data before **N days**
+- Archive: log file ends with yyyy-dd-mm, archive to keep 180 days of logs
+- Reference command.
 
 ```bash
 rm -rf ${FATE_PROJECT_BASE}/logs/fate_flow/fate_flow_stat.log.2020-12-15
 ```
 
-### 2.4 EggRoll 系统日志(N=14天)
+### 2.4 EggRoll system logs (N=14 days)
 
-- 所在机器：eggroll部署机器
-- 目录：${FATE_PROJECT_BASE}/eggroll/logs/eggroll
-- 规则：目录为yyyy/mm/dd，清理**N天**前的数据
-- 归档：目录为yyyy/mm/dd，归档保留180天的日志
-- 参考命令：
+- Machine: eggroll deployment machine
+- Directory: ${FATE_PROJECT_BASE}/eggroll/logs/eggroll
+- Rule: directory is yyyy/mm/dd, clean up data before **N days**
+- Archive: directory is yyyy/mm/dd, archive the logs retained for 180 days
+- Reference command.
 
 ```bash
 rm -rf ${FATE_PROJECT_BASE}/eggroll/logs/2020/12/15/
 ```
 
-## 3. 数据清理
+## 3. Data cleanup
 
-### 3.1 计算临时数据(N=2天)
+### 3.1 Calculate temporary data (N=2 days)
 
-- 所在机器：eggroll node节点
-- 目录：${FATE_PROJECT_BASE}/eggroll/data/IN_MEMORY
-- 规则：namespace以$jobid开头，清理$jobid为**N天**前的数据
-- 参考命令：
+- Machine: eggroll node
+- Directory: ${FATE_PROJECT_BASE}/eggroll/data/IN_MEMORY
+- Rule: namespace starts with $jobid, clean up data before $jobid is **N days**
+- Reference command.
 
 ```bash
 rm -rf ${FATE_PROJECT_BASE}/eggroll/data/IN_MEMORY/20200417*
 ```
 
-### 3.2 组件输出数据(N=14天)
+### 3.2 Component output data (N=14 days)
 
-- 所在机器：eggroll node节点
-- 目录：${FATE_PROJECT_BASE}/eggroll/data/LMDB
-- 规则：namespace以output_data_$jobid开头，清理$jobid为**N天**前的数据
-- 参考命令：
+- Machine: eggroll node
+- Directory: ${FATE_PROJECT_BASE}/eggroll/data/LMDB
+- Rule: namespace starts with output_data_$jobid, clean up $jobid for data before **N days**
+- Reference command.
 
 ```bash
 rm -rf ${FATE_PROJECT_BASE}/eggroll/data/LMDB/output_data_20200417*

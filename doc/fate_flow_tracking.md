@@ -1,49 +1,49 @@
-# 数据流动追踪
+# Data flow tracking
 
-## 1. 说明
+## 1. Description
 
-## 2. 任务输出指标
+## 2. Task output indicators
 
-### 2.1 指标列表
+## 2.1 List of metrics
 
-{{snippet('cli/tracking.zh.md', '### metrics')}}
+{{snippet('cli/tracking.md', '#### metrics')}}
 
-### 2.2 所有指标
+### 2.2 All metrics
 
-{{snippet('cli/tracking.zh.md', '### metric-all')}}
+{{snippet('cli/tracking.md', '#### metric-all')}}
 
-## 3. 任务运行参数
+## 3. Task run parameters
 
-{{snippet('cli/tracking.zh.md', '### parameters')}}
+{{snippet('cli/tracking.md', '#### parameters')}}
 
-## 4. 任务输出数据
+## 4. Task output data
 
-### 4.1 下载输出数据
+### 4.1 Download output data
 
-{{snippet('cli/tracking.zh.md', '### output-data')}}
+{{snippet('cli/tracking.md', '#### output-data')}}
 
-### 4.2 获取输出数据存放数据表名称
+### 4.2 Get the name of the data table where the output data is stored
 
-{{snippet('cli/tracking.zh.md', '### output-data-table')}}
+{{snippet('cli/tracking.md', '#### output-data-table')}}
 
-## 5. 任务输出模型
+## 5. Task output model
 
-{{snippet('cli/tracking.zh.md', '### output-model')}}
+{{snippet('cli/tracking.md', '#### output-model')}}
 
-## 6. 任务输出摘要
+## 6. Task output summary
 
-{{snippet('cli/tracking.zh.md', '### get-summary')}}
+{{snippet('cli/tracking.md', '#### get-summary')}}
 
-## 7. 数据集使用追踪
+## 7. Dataset usage tracking
 
-追踪源数据集及其衍生数据集，如组件任务输出数据集
+Tracing source datasets and their derived datasets, such as component task output datasets
 
-### 7.1 源表查询
+### 7.1 Source table query
 
-{{snippet('cli/tracking.zh.md', '### tracking-source')}}
+{{snippet('cli/tracking.md', '#### tracking-source')}}
 
-### 7.2 用表任务查询
+### 7.2 Querying with table tasks
 
-{{snippet('cli/tracking.zh.md', '### tracking-job')}}
+{{snippet('cli/tracking.md', '#### tracking-job')}}
 
-## 8. 开发API
+## 8. Developing the API

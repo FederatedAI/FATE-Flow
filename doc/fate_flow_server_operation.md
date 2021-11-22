@@ -1,13 +1,13 @@
-# 服务端操作
+# Server Operation
 
-## 1. 说明
+## 1. Description
 
-从`1.7.0`版本开始, 提供`FATE Flow Server`的一些更新维护功能, 后续版本会进一步增强
+Starting from version `1.7.0`, we provide some maintenance functions for `FATE Flow Server`, which will be further enhanced in future versions.
 
-## 2. 查看版本信息
+## 2. View version information
 
-{{snippet('cli/server.zh.md', '### versions')}}
+{{snippet('cli/server.md', '#### versions')}}
 
-## 3. 重新加载配置文件
+## 3. Reload the configuration file
 
-{{snippet('cli/server.zh.md', '### reload')}}
+{{snippet('cli/server.md', '## reload')}}

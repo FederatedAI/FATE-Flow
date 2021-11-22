@@ -14,7 +14,7 @@ Retrieve Task information
 | 4 | component_name | `-cpn` | `--component_name` | no | component_name |
 | 5 | status | `-s` | `--status` | No | Task status |
 
-**Sample**
+**Example**
 
 ``` bash
 flow task query -j $JOB_ID -p 9999 -r guest
@@ -30,7 +30,7 @@ Show the list of Tasks.
 | ---- | ----- | ------ | --------- | -------- | ---------------------------- |
 | 1 | limit | `-l` | `-limit` | no | Returns a limit on the number of results (default: 10) |
 
-**Sample**
+**Example**
 
 ``` bash
 flow task list

@@ -11,7 +11,7 @@ Creates a label.
 | 1 | tag_name | `-t` | `-tag-name` | yes | tag_name |
 | 2 | tag_parameter_introduction | `-d` | `--tag-desc` | no | tag_introduction |
 
-**sample**
+**Example**
 
 ``` bash
 flow tag create -t tag1 -d "This is the parameter description of tag1."
@@ -30,7 +30,7 @@ Update the tag information.
 | 2 | new_tag_name | | `--new-tag-name` | no | new-tag-name |
 | 3 | new_tag_desc | | `--new-tag-desc` | no | new tag introduction |
 
-**Sample**
+**Example**
 
 ``` bash
 flow tag update -t tag1 --new-tag-name tag2
@@ -47,7 +47,7 @@ Show the list of tags.
 | ---- | ----- | ------ | --------- | -------- | ---------------------------- |
 | 1 | limit | `-l` | `-limit` | no | Returns a limit on the number of results (default: 10) |
 
-**Sample**
+**Example**
 
 ``` bash
 flow tag list
@@ -65,7 +65,7 @@ Retrieve tags.
 | 1 | tag_name | `-t` | `-tag-name` | yes | tag_name |
 | 2 | with_model | | `-with-model` | no | If specified, information about models with this tag will be displayed |
 
-**Sample**
+**Example**
 
 ``` bash
 flow tag query -t $TAG_NAME
@@ -82,7 +82,7 @@ Delete the tag.
 | ---- | -------- | ------ | ------------ | -------- | --------
 | 1 | tag_name | `-t` | `---tag-name` | yes | tag_name |
 
-**Sample**
+**Example**
 
 ``` bash
 flow tag delete -t tag1

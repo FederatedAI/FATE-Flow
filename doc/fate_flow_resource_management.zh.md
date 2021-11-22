@@ -4,7 +4,7 @@
 
 资源指基础引擎资源，主要指计算引擎的CPU资源和内存资源，传输引擎的CPU资源和网络资源，目前仅支持计算引擎CPU资源的管理
 
-## 1. 总资源配置
+## 2. 总资源配置
 
 - 当前版本未实现自动获取基础引擎的资源大小，因此你通过配置文件`$FATE_PROJECT_BASE/conf/service_conf.yaml`进行配置，也即当前引擎分配给FATE集群的资源大小
 - `FATE Flow Server`启动时从配置文件获取所有基础引擎信息并注册到数据库表`t_engine_registry`
@@ -47,7 +47,7 @@ fate_on_spark:
 
 注意：请务必确保在`Spark`集群分配了对应数量的资源于`FATE`集群，若`Spark`集群分配资源少于此处`FATE`所配置的资源，那么会出现可以提交`FATE`作业，但是`FATE Flow`将任务提交至`Spark`集群时，由于`Spark`集群资源不足，任务实际不执行
 
-## 2. 作业申请资源配置
+## 3. 作业申请资源配置
 
 我们一般使用`task_cores`和`task_parallelism`进行配置作业申请资源，如：
 
@@ -65,7 +65,7 @@ fate_on_spark:
 
 作业申请的总资源为`task_cores` * `task_parallelism`，创建作业时，`FATE Flow`分发作业到各`party`时会依据上述配置、运行角色、本方使用引擎(通过`$FATE_PROJECT_BASE/conf/service_conf.yaml#default_engines`)，适配计算出实际参数，如下
 
-## 3. 资源申请实际参数适配计算过程
+## 4. 资源申请实际参数适配计算过程
 
 - 计算`request_task_cores`:
   - guest、host：
@@ -89,13 +89,13 @@ fate_on_spark:
 
 - 最终计算结果可以查看job的`job_runtime_conf_on_party.json`，一般在`$FATE_PROJECT_BASE/jobs/$job_id/$role/$party_id/job_runtime_on_party_conf.json`
 
-## 4. 资源调度策略
+## 5. 资源调度策略
 
-- `total_cores`见上述[总资源配置](#41-总资源配置)
-- `apply_cores`见上述[作业申请资源配置](#42-作业申请资源配置)，`apply_cores` = `task_nodes` * `task_cores_per_node` * `task_parallelism`
+- `total_cores`见上述[总资源配置](#2-总资源配置)
+- `apply_cores`见上述[作业申请资源配置](#3-作业申请资源配置)，`apply_cores` = `task_nodes` * `task_cores_per_node` * `task_parallelism`
 - 若所有参与方均申请资源成功(total_cores - apply_cores) > 0，则该作业申请资源成功
 - 若非所有参与方均申请资源成功，则发送资源回滚指令到已申请成功的参与方，该作业申请资源失败
 
-## 5. 相关命令
+## 6. 相关命令
 
 {{snippet('cli/resource.zh.md')}}

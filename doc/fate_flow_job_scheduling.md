@@ -1,26 +1,26 @@
-# 多方联合作业调度
+# Multi-party job scheduling
 
-## 1. 说明
+## 1. Description
 
-主要介绍如何使用`FATE Flow`提交一个联邦学习作业，并观察使用
+Mainly describes how to submit a federated learning job using `FATE Flow` and observe the use of
 
-## 2. 作业提交
+## 2. Job submission
 
-- 构建一个联邦学习作业，并提交到调度系统执行
-- 需要两个配置文件：job dsl和job conf
-- job dsl配置运行的组件：列表、输入输出关系
-- job conf配置组件执行参数、系统运行参数
+- Build a federated learning job and submit it to the scheduling system for execution
+- Two configuration files are required: job dsl and job conf
+- job dsl configures the running components: list, input-output relationships
+- job conf configures the component execution parameters, system operation parameters
 
-{{snippet('cli/job.zh.md', '### submit')}}
+{{snippet('cli/job.md', '## submit')}}
 
-## 3. Job DSL配置说明
+## 3. Job DSL configuration description
 
-DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一个 json 对象 （dict）。
+The configuration file of DSL is in json format, in fact, the whole configuration file is a json object (dict).
 
-### 3.1 组件列表
+### 3.1 Component List
 
-**含义** 在这个 dict 的第一级是 `components`，用来表示这个任务将会使用到的各个模块。
-**样例**
+**meaning** The first level of this dict is `components`, which indicates the modules that will be used by this job.
+**Sample**
 
 ```json
 {
@@ -30,7 +30,7 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 }
 ```
 
-每个独立的模块定义在 "components" 之下，例如：
+Each individual module is defined under "components", e.g.
 
 ```json
 "data_transform_0": {
@@ -49,7 +49,7 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
   }
 ```
 
-所有数据需要通过**Reader**模块从数据存储拿取数据，注意此模块仅有输出`output`
+All data needs to be fetched from the data store via the **Reader** module, note that this module only has the output `output`
 
 ```json
 "reader_0": {
@@ -60,10 +60,10 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 }
 ```
 
-### 3.2 模块
+### 3.2 Modules
 
-**含义** 用来指定使用的组件，所有可选module名称参考：
-**样例**
+**meaning** Used to specify the components to be used, all optional module names refer to.
+**sample**
 
 ```json
 "hetero_feature_binning_1": {
@@ -72,29 +72,29 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 }
 ```
 
-### 3.3 输入
+### 3.3 Inputs
 
-**含义** 上游输入，分为两种输入类型，分别是数据和模型。
+**Implications** Upstream inputs, divided into two input types, data and model.
 
-#### 数据输入
+#### data input
 
-**含义** 上游数据输入，分为三种输入类型：
+**meaning** Upstream data input, divided into three input types.
     
-    > 1.  data: 一般被用于 data-transform模块, feature_engineering 模块或者
-    >     evaluation 模块
-    > 2.  train_data: 一般被用于 homo_lr, hetero_lr 和 secure_boost
-    >     模块。如果出现了 train_data 字段，那么这个任务将会被识别为一个 fit 任务
-    > 3.  validate_data： 如果存在 train_data
-    >     字段，那么该字段是可选的。如果选择保留该字段，则指向的数据将会作为
-    >     validation set
-    > 4.  test_data: 用作预测数据，如提供，需同时提供model输入。
+    > 1. data: generally used in the data-transform module, feature_engineering module or
+    > evaluation module.
+    > 2. train_data: Generally used in homo_lr, hetero_lr and secure_boost
+    > modules. If the train_data field is present, then the task will be recognized as a fit task
+    > validate_data: If the train_data
+    > field is present, then the field is optional. If you choose to keep this field, the data pointed to will be used as the
+    > validation set
+    > 4. test_data: Used as prediction data, if provided, along with model input.
 
-#### 模型输入
+#### model_input
 
-**含义** 上游模型输入，分为两种输入类型：
-    1.  model: 用于同种类型组件的模型输入。例如，hetero_binning_0 会对模型进行 fit，然后
-        hetero_binning_1 将会使用 hetero_binning_0 的输出用于 predict 或
-        transform。代码示例：
+**meaning** Upstream model input, divided into two input types.
+    1. model: Used for model input of the same type of component. For example, hetero_binning_0 will fit the model, and then
+        hetero_binning_1 will use the output of hetero_binning_0 for predict or
+        transform. code example.
 
 ```json
         "hetero_feature_binning_1": {
@@ -110,14 +110,14 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
                 ]
             },
             "output": {
-                "data": ["validate_data"],
+                "data": ["validate_data" ],
               "model": ["eval_model"]
             }
         }
 ```
-    2.  isometric_model: 用于指定继承上游组件的模型输入。 例如，feature selection 的上游组件是
-        feature binning，它将会用到 feature binning 的信息来作为 feature
-        importance。代码示例：
+    2. isometric_model: Used to specify the model input of the inherited upstream component. For example, the upstream component of feature selection is
+        feature binning, it will use the information of feature binning as the feature
+        Code example.
 ```json
         "hetero_feature_selection_0": {
             "module": "HeteroFeatureSelection",
@@ -132,40 +132,40 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
                 ]
             },
             "output": {
-                "data": ["train"],
+                "data": [ "train" ],
                 "model": ["output_model"]
             }
         }
 ```
 
-### 3.4 输出
+### 3.4 Output
 
-**含义** 输出，与输入一样，分为数据和模型输出
+**meaning** Output, like input, is divided into data and model output
 
-#### 数据输出
+#### data output
 
-**含义** 数据输出，分为四种输出类型：
+**meaning** Data output, divided into four output types.
 
-1.  data: 常规模块数据输出
-2.  train_data: 仅用于Data Split
-3.  validate_data: 仅用于Data Split
-4.  test_data： 仅用于Data Split
+1. data: General module data output
+2. train_data: only for Data Split
+3. validate_data: Only for Data Split
+4. test_data: Data Split only
 
-#### 模型输出
+#### Model Output
 
-**含义** 模型输出，仅使用model
+**meaning** Model output, using model only
 
-### 3.5 组件Provider
+### 3.5 Component Providers
 
-FATE-Flow 1.7.0版本开始，同一个FATE-Flow系统支持加载多种且多版本的组件提供方，也即provider，provider提供了若干个组件，提交作业时可以配置组件的来源provider
+Since FATE-Flow version 1.7.0, the same FATE-Flow system supports loading multiple component providers, i.e. providers, which provide several components, and the source provider of the component can be configured when submitting a job
 
-**含义** 指定provider，支持全局指定以及单个组件指定；若不指定，默认 provider：`fate@$FATE_VERSION`
+**meaning** Specify the provider, support global specification and individual component specification; if not specified, the default provider: `fate@$FATE_VERSION`
 
-**格式** `provider_name@$provider_version`
+**Format** `provider_name@$provider_version`
 
-**进阶** 可以通过组件注册CLI注册新的 provider，目前支持的 provider：fate 和 fate_sql，具体请参考[FATE Flow 组件中心](./fate_flow_component_registry.zh.md)
+**Advanced** You can register a new provider through the component registration CLI, currently supported providers: fate and fate_sql, please refer to [FATE Flow Component Center](./fate_flow_component_registry.md)
 
-**样例**
+**Sample**
 
 ```json
 {
@@ -221,24 +221,24 @@ FATE-Flow 1.7.0版本开始，同一个FATE-Flow系统支持加载多种且多�
 }
 ```
 
-## 4. Job Conf配置说明
+## 4. Job Conf Configuration Description
 
-Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的参数。 内容包括如下：
+Job Conf is used to set the information of each participant, the parameters of the job and the parameters of each component. The contents include the following.
 
-### 4.1 DSL版本
+### 4.1 DSL Version
 
-**含义** 配置版本，默认不配置为1，建议配置为2
-**样例**
+**Meaning** Configure the version, the default is not 1, it is recommended to configure 2
+**Sample**
 ```json
 "dsl_version": "2"
 ```
 
-### 4.2 作业参与方
+### 4.2 Job participants
 
-#### 发起方
+#### initiating party
 
-**含义** 任务发起方的role和party_id。
-**样例**
+**Meaning** The role and party_id of the assignment initiator.
+**Sample**
 ```json
 "initiator": {
     "role": "guest",
@@ -246,12 +246,12 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-#### 所有参与方
+#### All participants
 
-**含义** 各参与方的信息。
-**说明** 在 role 字段中，每一个元素代表一种角色以及承担这个角色的 party_id。每个角色的 party_id
-    以列表形式存在，因为一个任务可能涉及到多个 party 担任同一种角色。
-**样例**
+**Meaning** Information about each participant.
+**Description** In the role field, each element represents a role and the party_id that assumes that role. party_id for each role
+    The party_id of each role is in the form of a list, since a task may involve multiple parties in the same role.
+**Sample**
 
 ```json
 "role": {
@@ -261,15 +261,15 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-### 4.3 系统运行参数
+### 4.3 System operation parameters
 
-**含义**
-    配置作业运行时的主要系统参数
+**meaning**
+    Configure the main system parameters for job runtime
 
-#### 参数应用范围策略设置
+#### Parameter application scope policy setting
 
-**应用于所有参与方，使用common范围标识符
-**仅应用于某参与方，使用role范围标识符，使用(role:)party_index定位被指定的参与方，直接指定的参数优先级高于common参数
+**Apply to all participants, use the common scope identifier
+**Apply to only one participant, use the role scope identifier, use (role:)party_index to locate the specified participant, direct
 
 ```json
 "common": {
@@ -283,33 +283,33 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-其中common下的参数应用于所有参与方，role-guest-0配置下的参数应用于guest角色0号下标的参与方
-注意，当前版本系统运行参数未对仅应用于某参与方做严格测试，建议使用优先选用common
+The parameters under common are applied to all participants, and the parameters under role-guest-0 configuration are applied to the participants under the subscript 0 of the guest role.
+Note that the current version of the system operation parameters are not strictly tested for application to only one participant, so it is recommended to use common as a preference.
 
-#### 支持的系统参数
+#### Supported system parameters
 
-| 配置项                        | 默认值                | 支持值                          | 说明                                                                                              |
+| Configuration | Default | Supported | Description |
 | ----------------------------- | --------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------- |
-| job_type                      | train                 | train, predict                  | 任务类型                                                                                          |
-| task_cores                    | 4                     | 正整数                          | 作业申请的总cpu核数                                                                               |
-| task_parallelism              | 1                     | 正整数                          | task并行度                                                                                        |
-| computing_partitions          | task所分配到的cpu核数 | 正整数                          | 计算时数据表的分区数                                                                              |
-| eggroll_run                   | 无                    | processors_per_node等           | eggroll计算引擎相关配置参数，一般无须配置，由task_cores自动计算得到，若配置则task_cores参数不生效 |
-| spark_run                     | 无                    | num-executors, executor-cores等 | spark计算引擎相关配置参数，一般无须配置，由task_cores自动计算得到，若配置则task_cores参数不生效   |
-| rabbitmq_run                  | 无                    | queue, exchange等               | rabbitmq创建queue、exchange的相关配置参数，一般无须配置，采取系统默认值                           |
-| pulsar_run                    | 无                    | producer, consumer等            | pulsar创建producer和consumer时候的相关配置，一般无需配置。                                        |
-| federated_status_collect_type | PUSH                  | PUSH, PULL                      | 多方运行状态收集模式，PUSH表示每个参与方主动上报到发起方，PULL表示发起方定期向各个参与方拉取      |
-| timeout                       | 259200 (3天)          | 正整数                          | 任务超时时间,单位秒                                                                               |
-| audo_retries                  | 3                     | 正整数                          | 每个任务失败自动重试最大次数                                                                      |
-| model_id                      | \-                    | \-                              | 模型id，预测任务需要填入                                                                          |
-| model_version                 | \-                    | \-                              | 模型version，预测任务需要填入                                                                     |
+| job_type | train | train, predict | task_cores |
+| task_cores | 4 | positive_integer | total_cpu_cores_applied_to_job |
+| task_parallelism | 1 | positive_integer | task_parallelism |
+| computing_partitions | number of cpu cores allocated to task | positive integer | number of partitions in the data table at computation time |
+| eggroll_run | none | processors_per_node, etc. | eggroll computing engine related configuration parameters, generally do not need to be configured, from task_cores automatically calculated, if configured, task_cores parameters do not take effect |
+| spark_run | none | num-executors, executor-cores, etc. | spark compute engine related configuration parameters, generally do not need to be configured, automatically calculated by task_cores, if configured, task_cores parameters do not take effect |
+| rabbitmq_run | None | queue, exchange, etc. | Configuration parameters for rabbitmq to create queue, exchange, etc., which are generally not required and take the system defaults.
+| pulsar_run | none | producer, consumer, etc. | The configuration parameters for pulsar to create producer and consumer.                                        |
+| federated_status_collect_type | PUSH | PUSH, PULL | Multi-party run status collection mode, PUSH means that each participant actively reports to the initiator, PULL means that the initiator periodically pulls from each participant.
+| timeout | 259200 (3 days) | positive integer | task_timeout,unit_second |
+| audo_retries | 3 | positive integer | maximum number of retries per task failure |
+| model_id | \- | \- | The model id to be filled in for prediction tasks.
+| model_version | \- | \- | Model version, required for prediction tasks
 
-1. 计算引擎和存储引擎之间具有一定的支持依赖关系
-2. 开发者可自行实现适配的引擎，并在runtime config配置引擎
+1. there is a certain support dependency between the computation engine and the storage engine
+2. developers can implement their own adapted engines, and configure the engines in runtime config
 
-#### 参考配置
+#### reference configuration
 
-1.  无须关注计算引擎，采取系统默认cpu分配计算策略时的配置
+1. no need to pay attention to the compute engine, take the system default cpu allocation compute policy when the configuration
 
 ```json
 "job_parameters": {
@@ -323,7 +323,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-2.  使用eggroll作为computing engine，采取直接指定cpu等参数时的配置
+2. use eggroll as the computing engine, take the configuration when specifying cpu and other parameters directly
 
 ```json
 "job_parameters": {
@@ -339,7 +339,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-3.  使用spark作为computing engine，rabbitmq作为federation engine,采取直接指定cpu等参数时的配置
+3. use spark as the computing engine, rabbitmq as the federation engine, take the configuration when specifying the cpu and other parameters directly
 
 ```json
 "job_parameters": {
@@ -364,7 +364,7 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-4.  使用spark作为computing engine，pulsar作为federation engine
+4. use spark as the computing engine and pulsar as the federation engine
 
 ```json
 "job_parameters": {
@@ -376,14 +376,14 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
   }
 }
 ```
-更多资源相关高级配置请参考[资源管理](#4-资源管理)
+For more advanced resource-related configuration, please refer to [Resource Management](#4-Resource Management)
 
-### 4.3 组件运行参数
+### 4.3 Component operation parameters
 
-#### 参数应用范围策略设置
+#### Parameter application scope policy setting
 
-- 应用于所有参与方，使用common范围标识符
-- 仅应用于某参与方，使用role范围标识符，使用(role:)party_index定位被指定的参与方，直接指定的参数优先级高于common参数
+- Apply to all participants, use common scope identifier
+- Apply to only one participant, use the role scope identifier, use (role:)party_index to locate the specified participant, directly specified parameters have higher priority than common parameters
 
 ```json
 "commom": {
@@ -397,14 +397,14 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-其中common配置下的参数应用于所有参与方，role-guest-0配置下的参数表示应用于guest角色0号下标的参与方
-注意，当前版本组件运行参数已支持两种应用范围策略
+where the parameters under the common configuration are applied to all participants, and the parameters under the role-guest-0 configuration indicate that they are applied to the participants under the subscript 0 of the guest role
+Note that the current version of the component runtime parameter already supports two application scope policies
 
-#### 参考配置
+#### Reference Configuration
 
-- `intersection_0`与`hetero_lr_0`两个组件的运行参数，放在common范围下，应用于所有参与方
-- 对于`reader_0`与`data_transform_0`两个组件的运行参数，依据不同的参与方进行特定配置，这是因为通常不同参与方的输入参数并不一致，所有通常这两个组件一般按参与方设置
-- 上述组件名称是在DSL配置文件中定义
+- For the `intersection_0` and `hetero_lr_0` components, the runtime parameters are placed under the common scope and are applied to all participants
+- The operational parameters of `reader_0` and `data_transform_0` components are configured specific to each participant, because usually the input parameters are not consistent across participants, so usually these two components are set by participant
+- The above component names are defined in the DSL configuration file
 
 ```json
 "component_parameters": {
@@ -455,11 +455,11 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-## 5. 多Host 配置
+## 5. Multi-Host Configuration
 
-多Host任务应在role下列举所有host信息
+Multi-Host task should list all host information under role
 
-**样例**:
+**Sample**:
 
 ```json
 "role": {
@@ -475,9 +475,9 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-各host不同的配置应在各自对应模块下分别列举
+The different configurations for each host should be listed separately under their respective corresponding modules
 
-**样例**:
+**sample**:
 
 ```json
 "component_parameters": {
@@ -515,22 +515,22 @@ Job Conf用于设置各个参与方的信息, 作业的参数及各个组件的�
 }
 ```
 
-## 6. 预测任务配置
+## 6. Predictive Task Configuration
 
-### 6.1 说明
+### 6.1 Description
 
-DSL V2不会自动为训练任务生成预测dsl。 用户需要首先使用`Flow Client`部署所需模型中模块。
-详细命令说明请参考[fate_flow_client](./fate_flow_client.zh.md#deploy)
+DSL V2 does not automatically generate prediction dsl for the training task. Users need to deploy the modules in the required model using `Flow Client` first.
+For detailed command description, please refer to [fate_flow_client](./fate_flow_client.md)
 
 ```bash
 flow model deploy --model-id $model_id --model-version $model_version --cpn-list ...
 ```
 
-可选地，用户可以在预测dsl中加入新模块，如`Evaluation`
+Optionally, the user can add new modules to the prediction dsl, such as `Evaluation`
 
-### 6.2 样例
+### 6.2 Sample
 
-训练 dsl：
+Training dsl.
 
 ```json
 "components": {
@@ -596,7 +596,7 @@ flow model deploy --model-id $model_id --model-version $model_version --cpn-list
 }
 ```
 
-预测 dsl:
+Prediction dsl:
 
 ```json
 "components": {
@@ -677,33 +677,33 @@ flow model deploy --model-id $model_id --model-version $model_version --cpn-list
 }
 ```
 
-## 7. 作业重跑
+## 7. Job reruns
 
-`1.5.0`版本, 开始支持重跑某个作业, 但是仅支持失败的作业
-`1.7.0`版本支持成功的作业重跑, 并且可以指定从哪个组件开始重跑, 被指定的组件及其下游组件会重跑, 但其他组件不会重跑
+In `1.5.0`, we started to support re-running a job, but only failed jobs are supported.
+Version `1.7.0` supports rerunning of successful jobs, and you can specify which component to rerun from, the specified component and its downstream components will be rerun, but other components will not be rerun
 
-{{snippet('cli/job.zh.md', '### rerun')}}
+{{snippet('cli/job.md', '## rerun')}}
 
-## 8. 作业参数更新
+## 8. Job parameter update
 
-实际生产建模过程中, 需要进行不断调试修改组件参数且重跑, 但是此时并不是所有组件都需要调整并且重跑, 因此在`1.7.0`版本后支持修改某个组件的参数更新, 且配合`rerun`命令按需重跑
+In the actual production modeling process, it is necessary to constantly debug the component parameters and rerun, but not all components need to be adjusted and rerun at this time, so after `1.7.0` version support to modify a component parameter update, and with the `rerun` command on-demand rerun
 
-{{snippet('cli/job.zh.md', '### parameter-update')}}
+{{snippet('cli/job.md', '## parameter-update')}}
 
-## 9. 作业调度策略
+## 9. Job scheduling policy
 
-- 按提交时间先后入队
-- 目前仅支持FIFO策略，也即每次调度器仅会扫描第一个作业，若第一个作业申请资源成功则start且出队，若申请资源失败则等待下一轮调度
+- Queuing by commit time
+- Currently, only FIFO policy is supported, i.e. the scheduler will only scan the first job each time, if the first job is successful in requesting resources, it will start and get out of the queue, if the request fails, it will wait for the next round of scheduling.
 
-## 10. 依赖分发
+## 10. dependency distribution
 
-**简要描述：** 
+**Brief description:** 
 
-- 支持从client节点分发fate和python依赖;
-- work节点不用部署fate;
-- 当前版本只有fate on spark支持分发模式;
+- Support for distributing fate and python dependencies from client nodes;
+- The work node does not need to deploy fate;
+- Only fate on spark supports distribution mode in current version;
 
-**相关参数配置**:
+**Related parameters configuration**:
 
 conf/service_conf.yaml:
 
@@ -717,12 +717,12 @@ fate_flow/settings.py
 FATE_FLOW_UPDATE_CHECK = False
 ```
 
-**说明：**
+**Description:**
 
-- dependent_distribution: 依赖分发开关;，默认关闭;关闭时需要在每个work节点部署fate, 另外还需要在spark的配置spark-env.sh中填配置PYSPARK_DRIVER_PYTHON和PYSPARK_PYTHON；
+- dependent_distribution: dependent distribution switch;, off by default; when off, you need to deploy fate on each work node, and also fill in the configuration of spark in spark-env.sh to configure PYSPARK_DRIVER_PYTHON and PYSPARK_PYTHON.
 
-- FATE_FLOW_UPDATE_CHECK: 依赖校验开关, 默认关闭;打开后每次提交任务都会自动校验fate代码是否发生改变;若发生改变则会重新上传fate代码依赖;
+- FATE_FLOW_UPDATE_CHECK: Dependency check switch, turned off by default; it will automatically check if the fate code has changed every time a task is submitted; if it has changed, the fate code dependency will be re-uploaded;
 
-## 11. 更多命令
+## 11. More commands
 
-请参考[Job CLI](./cli/job.zh.md)和[Task CLI](./cli/task.zh.md)
+Please refer to [Job CLI](./cli/job.md) and [Task CLI](./cli/task.md)

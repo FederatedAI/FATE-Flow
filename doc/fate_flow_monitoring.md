@@ -1,6 +1,5 @@
-# 作业实时监测
+# Real-time monitoring of operations
 
-## 1. 说明
+## 1. Description
 
-主要介绍`FATE Flow`对作业运行状态、Worker执行状态等，进行实时监测，以保证最终一致性
-
+Mainly introduces `FATE Flow` to monitor job running status, Worker execution status, etc., in real time to ensure final consistency

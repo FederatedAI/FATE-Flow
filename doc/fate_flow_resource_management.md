@@ -1,19 +1,19 @@
-# 多方资源协调
+# Multi-Party Resource Coordination
 
-## 1. 说明
+## 1. Description
 
-资源指基础引擎资源，主要指计算引擎的CPU资源和内存资源，传输引擎的CPU资源和网络资源，目前仅支持计算引擎CPU资源的管理
+Resources refer to the basic engine resources, mainly CPU resources and memory resources of the compute engine, CPU resources and network resources of the transport engine, currently only the management of CPU resources of the compute engine is supported
 
-## 1. 总资源配置
+## 2. Total resource allocation
 
-- 当前版本未实现自动获取基础引擎的资源大小，因此你通过配置文件`$FATE_PROJECT_BASE/conf/service_conf.yaml`进行配置，也即当前引擎分配给FATE集群的资源大小
-- `FATE Flow Server`启动时从配置文件获取所有基础引擎信息并注册到数据库表`t_engine_registry`
-- `FATE Flow Server`已经启动，修改资源配置，可重启`FATE Flow Server`，也可使用命令：`flow server reload`，重新加载配置
+- The current version does not automatically get the resource size of the base engine, so you configure it through the configuration file `$FATE_PROJECT_BASE/conf/service_conf.yaml`, that is, the resource size of the current engine allocated to the FATE cluster
+- `FATE Flow Server` gets all the base engine information from the configuration file and registers it in the database table `t_engine_registry` when it starts.
+- `FATE Flow Server` has been started and the resource configuration can be modified by restarting `FATE Flow Server` or by reloading the configuration using the command: `flow server reload`.
 - `total_cores` = `nodes` * `cores_per_node`
 
-**样例**
+**sample**
 
-fate_on_standalone：是为执行在`FATE Flow Server`同台机器的单机引擎，一般用于快速实验，`nodes`一般设置为1，`cores_per_node`一般为机器CPU核数，也可适量超配
+fate_on_standalone: is a standalone engine for executing on the same machine as `FATE Flow Server`, generally used for fast experiments, `nodes` is generally set to 1, `cores_per_node` is generally the number of CPU cores of the machine, also can be moderately over-provisioned
 
 ```json
 fate_on_standalone:
@@ -22,7 +22,7 @@ fate_on_standalone:
     nodes: 1
 ```
 
-fate_on_eggroll：依据`EggRoll`集群实际部署情况进行配置，`nodes`表示`node manager`的机器数量，`cores_per_node`表示平均每台`node manager`机器CPU核数
+fate_on_eggroll: configured based on the actual deployment of `EggRoll` cluster, `nodes` denotes the number of `node manager` machines, `cores_per_node` denotes the average number of CPU cores per `node manager` machine
 
 ```json
 fate_on_eggroll:
@@ -34,7 +34,7 @@ fate_on_eggroll:
     port: 9370
 ```
 
-fate_on_spark：依据在`Spark`集群中配置给`FATE`集群的资源进行配置，`nodes`表示`Spark`节点数量，`cores_per_node`表示平均每个节点分配给`FATE`集群的CPU核数
+fate_on_spark: configured based on the resources allocated to the `FATE` cluster in the `Spark` cluster, `nodes` indicates the number of `Spark` nodes, `cores_per_node` indicates the average number of CPU cores per node allocated to the `FATE` cluster
 
 ```json
 fate_on_spark:
@@ -45,11 +45,11 @@ fate_on_spark:
     nodes: 2
 ```
 
-注意：请务必确保在`Spark`集群分配了对应数量的资源于`FATE`集群，若`Spark`集群分配资源少于此处`FATE`所配置的资源，那么会出现可以提交`FATE`作业，但是`FATE Flow`将任务提交至`Spark`集群时，由于`Spark`集群资源不足，任务实际不执行
+Note: Please make sure that the `Spark` cluster has allocated the corresponding amount of resources to the `FATE` cluster. If the `Spark` cluster allocates less resources than the resources configured in `FATE` here, then the `FATE` job can be submitted, but when `FATE Flow` submits the task to the `Spark` cluster, the task will not actually execute because the `Spark` cluster does not have enough resources.
 
-## 2. 作业申请资源配置
+## 3. Job request resource configuration
 
-我们一般使用`task_cores`和`task_parallelism`进行配置作业申请资源，如：
+We generally use ``task_cores`` and ``task_parallelism`` to configure job request resources, such as.
 
 ```json
 "job_parameters": {
@@ -63,39 +63,39 @@ fate_on_spark:
 }
 ```
 
-作业申请的总资源为`task_cores` * `task_parallelism`，创建作业时，`FATE Flow`分发作业到各`party`时会依据上述配置、运行角色、本方使用引擎(通过`$FATE_PROJECT_BASE/conf/service_conf.yaml#default_engines`)，适配计算出实际参数，如下
+The total resources requested by the job are `task_cores` * `task_parallelism`. When creating a job, `FATE Flow` will distribute the job to each `party` based on the above configuration, running role, and the engine used by the party (via `$FATE_PROJECT_BASE/conf/service_conf .yaml#default_engines`), the actual parameters will be calculated as follows
 
-## 3. 资源申请实际参数适配计算过程
+## 4. The process of calculating the actual parameter adaptation for resource requests
 
-- 计算`request_task_cores`:
-  - guest、host：
+- Calculate `request_task_cores`:
+  - guest, host.
     - `request_task_cores` = `task_cores`
-  - arbiter，考虑实际运行耗费极少资源：
+  - arbiter, considering that the actual operation consumes very few resources: `request_task_cores
     - `request_task_cores` = 1
 
-- 进一步计算`task_cores_per_node`：
+- Further calculate `task_cores_per_node`.
   - `task_cores_per_node"` = max(1, `request_task_cores` / `task_nodes`)
 
-  - 若在上述`job_parameters`使用了`eggroll_run`或`spark_run`配置资源时，则`task_cores`配置无效；计算`task_cores_per_node`：
-    - `task_cores_per_node"` = eggroll_run[“eggroll.session.processors.per.node”]
+  - If `eggroll_run` or `spark_run` configuration resource is used in the above `job_parameters`, then the `task_cores` configuration is invalid; calculate `task_cores_per_node`.
+    - `task_cores_per_node"` = eggroll_run["eggroll.session.processors.per.node"]
     - `task_cores_per_node"` = spark_run["executor-cores"]
 
-- 转换为适配引擎的参数(该参数会在运行任务时，提交到计算引擎识别)：
+- The parameter to convert to the adaptation engine (which will be presented to the compute engine for recognition when running the task).
   - fate_on_standalone/fate_on_eggroll:
     - eggroll_run["eggroll.session.processors.per.node"] = `task_cores_per_node`
   - fate_on_spark:
     - spark_run["num-executors"] = `task_nodes`
     - spark_run["executor-cores"] = `task_cores_per_node`
 
-- 最终计算结果可以查看job的`job_runtime_conf_on_party.json`，一般在`$FATE_PROJECT_BASE/jobs/$job_id/$role/$party_id/job_runtime_on_party_conf.json`
+- The final calculation can be seen in the job's `job_runtime_conf_on_party.json`, typically in `$FATE_PROJECT_BASE/jobs/$job_id/$role/$party_id/job_runtime_on_party_conf.json `
 
-## 4. 资源调度策略
+## 5. Resource Scheduling Policy
 
-- `total_cores`见上述[总资源配置](#41-总资源配置)
-- `apply_cores`见上述[作业申请资源配置](#42-作业申请资源配置)，`apply_cores` = `task_nodes` * `task_cores_per_node` * `task_parallelism`
-- 若所有参与方均申请资源成功(total_cores - apply_cores) > 0，则该作业申请资源成功
-- 若非所有参与方均申请资源成功，则发送资源回滚指令到已申请成功的参与方，该作业申请资源失败
+- `total_cores` see [total_resource_allocation](#2-total-resource-allocation)
+- `apply_cores` see [job_request_resource_configuration](#3-job-request-resource-configuration), `apply_cores` = `task_nodes` * `task_cores_per_node` * `task_parallelism`
+- If all participants apply for resources successfully (total_cores - apply_cores) > 0, then the job applies for resources successfully
+- If not all participants apply for resources successfully, then send a resource rollback command to the participants who have applied successfully, and the job fails to apply for resources
 
-## 5. 相关命令
+## 6. Related commands
 
-{{snippet('cli/resource.zh.md')}}
+{{snippet('cli/resource.md')}}
