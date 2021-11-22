@@ -1,6 +1,4 @@
-# FATE Flow Data Access
-
-[TOC]
+# Data Access
 
 ## 1. Description
 
@@ -16,26 +14,26 @@
 
 ## 2. data upload
 
-{{snippet('cli/data.md', '#### upload')}}
+{{snippet('cli/data.md', '### upload')}}
 
 ## 3. table binding
 
-{{snippet('cli/table.md', '#### bind')}}
+{{snippet('cli/table.md', '### bind')}}
 
 
 ## 4. table information query
 
-{{snippet('cli/table.md', '#### info')}}
+{{snippet('cli/table.md', '### info')}}
 
 ## 5. Delete table data
 
-{{snippet('cli/table.md', '#### delete')}}
+{{snippet('cli/table.md', '### delete')}}
 
 
 
 ## 6. Download data
 
-{{snippet('cli/data.md', '#### download')}}
+{{snippet('cli/data.md', '### download')}}
 
 
 

@@ -1,4 +1,4 @@
-# Multi-party job scheduling
+# Multi-Party Job Scheduling
 
 ## 1. Description
 
@@ -11,7 +11,7 @@ Mainly describes how to submit a federated learning job using `FATE Flow` and ob
 - job dsl configures the running components: list, input-output relationships
 - job conf configures the component execution parameters, system operation parameters
 
-{{snippet('cli/job.md', '## submit')}}
+{{snippet('cli/job.md', '### submit')}}
 
 ## 3. Job DSL configuration description
 
@@ -682,13 +682,13 @@ Prediction dsl:
 In `1.5.0`, we started to support re-running a job, but only failed jobs are supported.
 Version `1.7.0` supports rerunning of successful jobs, and you can specify which component to rerun from, the specified component and its downstream components will be rerun, but other components will not be rerun
 
-{{snippet('cli/job.md', '## rerun')}}
+{{snippet('cli/job.md', '### rerun')}}
 
 ## 8. Job parameter update
 
 In the actual production modeling process, it is necessary to constantly debug the component parameters and rerun, but not all components need to be adjusted and rerun at this time, so after `1.7.0` version support to modify a component parameter update, and with the `rerun` command on-demand rerun
 
-{{snippet('cli/job.md', '## parameter-update')}}
+{{snippet('cli/job.md', '### parameter-update')}}
 
 ## 9. Job scheduling policy
 

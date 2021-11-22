@@ -1,4 +1,4 @@
-# Task component registration center
+# Task Component Registry
 
 ## 1. Description
 
@@ -12,8 +12,8 @@ Deploying a `FATE` cluster will include a default component provider, which is u
 
 ## 3. current component provider
 
-{{snippet('cli/provider.zh.md', '## list')}}
+{{snippet('cli/provider.md', '### list')}}
 
 ## 4. new component provider
 
-{{snippet('cli/provider.zh.md', '## register')}}
+{{snippet('cli/provider.md', '### register')}}

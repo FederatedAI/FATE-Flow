@@ -1,4 +1,4 @@
-# Document navigation
+# Document Navigation
 
 ## 1. General Document Variables
 

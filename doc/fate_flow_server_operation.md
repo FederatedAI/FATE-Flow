@@ -6,8 +6,8 @@ Starting from version `1.7.0`, we provide some maintenance functions for `FATE F
 
 ## 2. View version information
 
-{{snippet('cli/server.md', '#### versions')}}
+{{snippet('cli/server.md', '### versions')}}
 
 ## 3. Reload the configuration file
 
-{{snippet('cli/server.md', '## reload')}}
+{{snippet('cli/server.md', '### reload')}}

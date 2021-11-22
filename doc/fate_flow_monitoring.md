@@ -1,4 +1,4 @@
-# Real-time monitoring of operations
+# Real-time Monitoring
 
 ## 1. Description
 

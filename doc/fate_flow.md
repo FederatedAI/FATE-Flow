@@ -1,4 +1,4 @@
-# Overall design
+# Overall Design
 
 ## 1. Logical Architecture
 

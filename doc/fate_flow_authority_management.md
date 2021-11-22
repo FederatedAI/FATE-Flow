@@ -1,6 +1,4 @@
-# FATE Flow Multi-Party Collaboration Rights Management
-
-[TOC]
+# Multi-Party Collaboration Authority Management
 
 ## 1. Description
 

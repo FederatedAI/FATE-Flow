@@ -1,4 +1,4 @@
-# Configuration instructions
+# Configuration Instructions
 
 ## 1. Description
 
