@@ -1,9 +1,9 @@
-# 整体设计(待更新)
+# 整体设计
 
 ## 1. 逻辑架构
 
 - DSL定义作业
-- 自顶向下的纵向子任务流调度、多参与方联合子任务调度
+- 自顶向下的纵向子任务流调度、多参与方联合子任务协调
 - 独立隔离的任务执行工作进程
 - 支持多类型多版本组件
 - 计算抽象API
@@ -22,7 +22,7 @@
 
 ![](./images/fate_flow_arch.png)
 
-## 3. 调度架构
+## 3. [调度架构](./fate_flow_job_scheduling.zh.md)
 
 ### 3.1 基于共享状态的全新调度架构
 
@@ -43,15 +43,15 @@
 
 ![](./images/fate_flow_resource_process.png)
 
-## 4. 多方资源协调
+## 4. [多方资源协调](./fate_flow_resource_management.zh.md)
 
 - 每个引擎总资源大小通过配置文件配置，后续实现系统对接
 - 总资源大小中的cores_per_node表示每个计算节点cpu核数，nodes表示计算节点个数
 - FATEFlow server启动时从配置文件读取资源大小配置，并注册更新到数据库
 - 以Job维度申请资源，Job Conf提交时生效，公式：task_parallelism*task_cores
-- 详细配置讲解： https://github.com/FederatedAI/FATE/blob/master/doc/dsl_conf_v2_setting_guide_zh.rst#4-%E7%B3%BB%E7%BB%9F%E8%BF%90%E8%A1%8C%E5%8F%82%E6%95%B0
+- 详细请看文档单独章节
 
-## 5. 数据流动追踪
+## 5. [数据流动追踪](./fate_flow_tracking.zh.md)
 
 - 定义
  - metric type: 指标类型，如auc, loss, ks等等
@@ -65,21 +65,20 @@
  - get_metric_data(metric_namespace, metric_name)
  - get_metric_meta(metric_namespace, metric_name)
 
-## 6. 作业实时监测
+## 6. [作业实时监测](./fate_flow_monitoring.zh.md)
 
-- 任务执行工作进程
-- task executor存活检测
+- 工作进程存活性检测
 - 作业超时检测
-- 资源使用超时检测
-- 会话超时检测
+- 资源回收检测
+- 基础引擎会话超时检测
 
 ![](./images/fate_flow_detector.png)
 
-## 7. 任务组件中心
+## 7. [任务组件中心](./fate_flow_component_registry.zh.md)
 
 ![](./images/fate_flow_component_registry.png)
 
-## 8. 多方联合模型注册中心
+## 8. [多方联合模型注册中心](./fate_flow_model_registry.zh.md)
 
 - 使用Google Protocol Buffer作为模型存储协议，利用跨语言共享，每个算法模型由两部分组成：ModelParam & ModelMeta
 - 一个Pipeline产生一系列算法模型
@@ -93,8 +92,7 @@
 
 ![](./images/fate_flow_model_storage.png)
 
-
-## 9. 多生态数据接入
+## 9. [数据接入](./fate_flow_data_access.zh.md)
 
 - Upload：
  - 外部存储直接导入到FATE Storage，创建一个新的DTable
@@ -107,7 +105,6 @@
 
 ![](./images/fate_flow_inputoutput.png)
 
-
-## 10. 多方合作权限管理
+## 10. [多方合作权限管理](./fate_flow_authority_management.zh.md)
 
 ![](./images/fate_flow_authorization.png)
