@@ -2,32 +2,32 @@
 
 ### versions
 
-列出所有相关系统版本号
-
-```bash
-flow server
-```
-
-**参数** 
-
-无
-
-**返回参数** 
-
-| 参数名  | 类型   | 说明     |
-| :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
-
-**样例** 
+List all relevant system version numbers
 
 ```bash
 flow server versions
 ```
 
-输出:
+**Options**
+
+None
+
+**Returns**
+
+| parameter name | type | description |
+| :------ | :----- | -------- |
+| retcode | int | return code |
+| retmsg | string | return message |
+| data | dict | return data |
+| jobId | string | job id |
+
+**Example**
+
+```bash
+flow server versions
+```
+
+Output:
 
 ```json
 {
@@ -51,35 +51,35 @@ flow server versions
 
 ### reload
 
-如下配置项在`reload`后会重新生效
+The following configuration items will take effect again after `reload`
 
-  - $FATE_PROJECT_BASE/conf/service_conf.yaml中# engine services后的所有配置
-  - $FATE_FLOW_BASE/python/fate_flow/job_default_config.yaml中所有配置
+  - All configurations after # engine services in $FATE_PROJECT_BASE/conf/service_conf.yaml
+  - All configurations in $FATE_FLOW_BASE/python/fate_flow/job_default_config.yaml
 
 ```bash
 flow server reload
 ```
 
-**参数** 
+**Options**
 
-无
+None
 
-**返回参数** 
+**Returns**
 
-| 参数名  | 类型   | 说明     |
+| parameter name | type | description |
 | :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | dict   | 返回数据 |
-| jobId   | string | 作业id   |
+| retcode | int | return code |
+| retmsg | string | return message |
+| data | dict | return data |
+| jobId | string | job id |
 
-**样例** 
+**Example**
 
 ```bash
 flow server reload
 ```
 
-输出:
+Output:
 
 ```json
 {

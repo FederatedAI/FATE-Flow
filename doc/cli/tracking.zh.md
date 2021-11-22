@@ -8,7 +8,7 @@
 flow tracking metrics [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名                 | 必选 | 类型   | 说明                          |
 | :--------------------- | :--- | :----- | ----------------------------- |
@@ -17,7 +17,7 @@ flow tracking metrics [options]
 | -p, --partyid          | 是   | string | 参与方id                      |
 | -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -64,7 +64,7 @@ flow tracking metrics -j 202111081618357358520 -r guest -p 9999 -cpn evaluation_
 flow tracking metric-all [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名                 | 必选 | 类型   | 说明                          |
 | :--------------------- | :--- | :----- | ----------------------------- |
@@ -73,7 +73,7 @@ flow tracking metric-all [options]
 | -p, --partyid          | 是   | string | 参与方id                      |
 | -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -173,7 +173,7 @@ flow tracking metric-all -j 202111081618357358520 -r guest -p 9999 -cpn evaluati
 flow tracking parameters [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名                 | 必选 | 类型   | 说明                          |
 | :--------------------- | :--- | :----- | ----------------------------- |
@@ -183,7 +183,7 @@ flow tracking parameters [options]
 | -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
 
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -303,7 +303,7 @@ flow tracking parameters  -j 202111081618357358520 -r guest -p 9999 -cpn hetero_
 flow tracking output-data [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名                 | 必选 | 类型   | 说明                          |
 | :--------------------- | :--- | :----- | ----------------------------- |
@@ -313,7 +313,7 @@ flow tracking output-data [options]
 | -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
 | -o, --output-path      | 是   | string | 输出数据的存放路径            |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -346,7 +346,7 @@ flow tracking output-data  -j 202111081618357358520 -r guest -p 9999 -cpn hetero
 flow tracking output-data-table [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名                 | 必选 | 类型   | 说明                          |
 | :--------------------- | :--- | :----- | ----------------------------- |
@@ -355,7 +355,7 @@ flow tracking output-data-table [options]
 | -p, --partyid          | 是   | string | 参与方id                      |
 | -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -394,7 +394,7 @@ flow tracking output-data-table  -j 202111081618357358520 -r guest -p 9999 -cpn 
 flow tracking output-model [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名                 | 必选 | 类型   | 说明                          |
 | :--------------------- | :--- | :----- | ----------------------------- |
@@ -403,7 +403,7 @@ flow tracking output-model [options]
 | -p, --partyid          | 是   | string | 参与方id                      |
 | -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -486,7 +486,7 @@ flow tracking output-model  -j 202111081618357358520 -r guest -p 9999 -cpn heter
 flow tracking get-summary [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名                 | 必选 | 类型   | 说明                          |
 | :--------------------- | :--- | :----- | ----------------------------- |
@@ -495,7 +495,7 @@ flow tracking get-summary [options]
 | -p, --partyid          | 是   | string | 参与方id                      |
 | -cpn, --component-name | 是   | string | 组件名，与job dsl中的保持一致 |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -545,14 +545,14 @@ flow tracking get-summary -j 202111081618357358520 -r guest -p 9999 -cpn hetero_
 flow table tracking-source [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名    | 必选 | 类型   | 说明           |
 | :-------- | :--- | :----- | -------------- |
 | name      | 是   | string | fate表名       |
 | namespace | 是   | string | fate表命名空间 |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -560,7 +560,7 @@ flow table tracking-source [options]
 | retmsg  | string | 返回信息 |
 | data    | object | 返回数据 |
 
-样例：
+**样例**
 
 ```json
 {
@@ -574,20 +574,18 @@ flow table tracking-source [options]
 
 用于查询某张表的使用情况
 
-**请求CLI** 
-
 ```bash
 flow table tracking-job [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名    | 必选 | 类型   | 说明           |
 | :-------- | :--- | :----- | -------------- |
 | name      | 是   | string | fate表名       |
 | namespace | 是   | string | fate表命名空间 |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -595,7 +593,7 @@ flow table tracking-job [options]
 | retmsg  | string | 返回信息 |
 | data    | object | 返回数据 |
 
-样例:
+**样例**
 
 ```json
 {

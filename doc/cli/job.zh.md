@@ -8,15 +8,14 @@
 flow job submit [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名          | 必选 | 类型   | 说明           |
 | :-------------- | :--- | :----- | -------------- |
 | -d, --dsl-path  | 是   | string | job dsl的路径  |
 | -c, --conf-path | 是   | string | job conf的路径 |
 
-
-**返回参数** 
+**返回**
 
 | 参数名                          | 类型   | 说明                                                                  |
 | :------------------------------ | :----- | --------------------------------------------------------------------- |
@@ -63,7 +62,7 @@ flow job submit [options]
 flow job rerun [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名                 | 必选 | 类型   | 说明                                                                                                  |
 | :--------------------- | :--- | :----- | ----------------------------------------------------------------------------------------------------- |
@@ -71,7 +70,7 @@ flow job rerun [options]
 | -cpn, --component-name | 否   | string | 指定从哪个组件重跑，没被指定的组件若与指定组件没有上游依赖关系则不会执行;若不指定该参数则整个作业重跑 |
 | --force                | 否   | bool   | 作业即使成功也重跑;若不指定该参数，作业如果成功，则跳过重跑                                           |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -102,14 +101,14 @@ flow job rerun -j 202111031100369723120 -cpn hetero_lr_0 --force
 flow job parameter-update [options]
 ```
 
-**参数** 
+**选项**
 
 | 参数名          | 必选 | 类型   | 说明                                                 |
 | :-------------- | :--- | :----- | ---------------------------------------------------- |
 | -j, --job-id    | 是   | string | job id 路径                                          |
 | -c, --conf-path | 是   | string | 需要更新的job conf的内容，不需要更新的参数不需要填写 |
 
-**返回参数** 
+**返回**
 
 | 参数名  | 类型   | 说明                 |
 | :------ | :----- | -------------------- |
@@ -137,11 +136,13 @@ flow job parameter-update [options]
 ```
 
 执行如下命令生效：
+
 ```bash
 flow job parameter-update -j 202111061957421943730 -c examples/other/update_parameters.json
 ```
 
 执行如下命令重跑：
+
 ```bash
 flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force 
 ```
@@ -150,22 +151,22 @@ flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force
 
 取消或终止指定任务
 
--   *参数*：
+**选项**
 
 | 编号 | 参数   | 短格式 | 长格式     | 必要参数 | 参数介绍 |
 | ---- | ------ | ------ | ---------- | -------- | -------- |
 | 1    | job_id | `-j`   | `--job_id` | 是       | Job ID   |
 
--   *示例*：
+**样例**
 
-    ``` bash
-    flow job stop -j $JOB_ID
-    ```
+``` bash
+flow job stop -j $JOB_ID
+```
 
 ### query
 
--   *介绍*： 检索任务信息。
--   *参数*：
+检索任务信息。
+**选项**
 
 | 编号 | 参数     | 短格式 | 长格式       | 必要参数 | 参数介绍 |
 | ---- | -------- | ------ | ------------ | -------- | -------- |
@@ -174,17 +175,17 @@ flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force
 | 3    | party_id | `-p`   | `--party_id` | 否       | Party ID |
 | 4    | status   | `-s`   | `--status`   | 否       | 任务状态 |
 
--   *示例*：
+**样例**：
 
-    ``` bash
-    flow job query -r guest -p 9999 -s complete
-    flow job query -j $JOB_ID
-    ```
+``` bash
+flow job query -r guest -p 9999 -s complete
+flow job query -j $JOB_ID
+```
 
 ### view
 
--   *介绍*： 检索任务数据视图。
--   *参数*：
+检索任务数据视图。
+**选项**
 
 | 编号 | 参数     | 短格式 | 长格式       | 必要参数 | 参数介绍 |
 | ---- | -------- | ------ | ------------ | -------- | -------- |
@@ -193,16 +194,16 @@ flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force
 | 3    | party_id | `-p`   | `--party_id` | 否       | Party ID |
 | 4    | status   | `-s`   | `--status`   | 否       | 任务状态 |
 
--   *示例*：
+**样例**：
 
-    ``` bash
-    flow job view -j $JOB_ID -s complete
-    ```
+``` bash
+flow job view -j $JOB_ID -s complete
+```
 
 ### config
 
--   *介绍*： 下载指定任务的配置文件到指定目录。
--   *参数*：
+下载指定任务的配置文件到指定目录。
+**选项**
 
 | 编号 | 参数        | 短格式 | 长格式          | 必要参数 | 参数介绍 |
 | ---- | ----------- | ------ | --------------- | -------- | -------- |
@@ -211,38 +212,38 @@ flow job rerun -j 202111061957421943730 -cpn hetero_lr_0 --force
 | 3    | party_id    | `-p`   | `--party_id`    | 是       | Party ID |
 | 4    | output_path | `-o`   | `--output-path` | 是       | 输出目录 |
 
--   *示例*：
+**样例**：
 
-    ``` bash
-    flow job config -j $JOB_ID -r host -p 10000 --output-path ./examples/
-    ```
+``` bash
+flow job config -j $JOB_ID -r host -p 10000 --output-path ./examples/
+```
 
 ### log
 
--   *介绍*： 下载指定任务的日志文件到指定目录。
--   *参数*：
+下载指定任务的日志文件到指定目录。
+**选项**
 
 | 编号 | 参数        | 短格式 | 长格式          | 必要参数 | 参数介绍 |
 | ---- | ----------- | ------ | --------------- | -------- | -------- |
 | 1    | job_id      | `-j`   | `--job_id`      | 是       | Job ID   |
 | 2    | output_path | `-o`   | `--output-path` | 是       | 输出目录 |
 
--   *示例*：
+**样例**：
 
-    ``` bash
-    flow job log -j JOB_ID --output-path ./examples/
-    ```
+``` bash
+flow job log -j JOB_ID --output-path ./examples/
+```
 
 ### list
 
--   *介绍*： 展示任务列表。
--   *参数*：
+展示任务列表。
+**选项**
 
 | 编号 | 参数  | 短格式 | 长格式    | 必要参数 | 参数介绍                 |
 | ---- | ----- | ------ | --------- | -------- | ------------------------ |
 | 1    | limit | `-l`   | `--limit` | 否       | 返回数量限制（默认：10） |
 
--   *示例*：
+**样例**：
 
 ``` bash
 flow job list
@@ -251,8 +252,8 @@ flow job list -l 30
 
 ### dsl
 
--   *介绍*： 预测DSL文件生成器。
--   *参数*：
+预测DSL文件生成器。
+**选项**
 
 | 编号 | 参数           | 短格式 | 长格式             | 必要参数 | 参数介绍                         |
 | ---- | -------------- | ------ | ------------------ | -------- | -------------------------------- |
@@ -261,7 +262,7 @@ flow job list -l 30
 | 3    | train_dsl_path |        | `--train-dsl-path` | 是       | 训练dsl文件路径                  |
 | 4    | output_path    | `-o`   | `--output-path`    | 否       | 输出目录路径                     |
 
--   *示例*：
+**样例**：
 
 ``` bash
 flow job dsl --cpn-path fate_flow/examples/component_list.txt --train-dsl-path fate_flow/examples/test_hetero_lr_job_dsl.json

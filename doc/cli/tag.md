@@ -2,49 +2,52 @@
 
 ### create
 
--   *介绍*： 创建标签。
--   *参数*：
+Creates a label.
 
-| 编号 | 参数         | 短格式 | 长格式       | 必要参数 | 参数介绍 |
+**Options**
+
+| number | parameters | short-format | long-format | required parameters | parameter description |
 | ---- | ------------ | ------ | ------------ | -------- | -------- |
-| 1    | tag_name     | `-t`   | `--tag-name` | 是       | 标签名   |
-| 2    | tag_参数介绍 | `-d`   | `--tag-desc` | 否       | 标签介绍 |
+| 1 | tag_name | `-t` | `-tag-name` | yes | tag_name |
+| 2 | tag_parameter_introduction | `-d` | `--tag-desc` | no | tag_introduction |
 
--   *示例*：
+**sample**
 
 ``` bash
-flow tag create -t tag1 -d "This is the 参数介绍 of tag1."
+flow tag create -t tag1 -d "This is the parameter description of tag1."
 flow tag create -t tag2
 ```
 
 ### update
 
--   *介绍*： 更新标签信息。
--   *参数*：
+Update the tag information.
 
-| 编号 | 参数         | 短格式 | 长格式           | 必要参数 | 参数介绍   |
+**Options**
+
+| number | parameters | short format | long format | required parameters | parameter description |
 | ---- | ------------ | ------ | ---------------- | -------- | ---------- |
-| 1    | tag_name     | `-t`   | `--tag-name`     | 是       | 标签名     |
-| 2    | new_tag_name |        | `--new-tag-name` | 否       | 新标签名   |
-| 3    | new_tag_desc |        | `--new-tag-desc` | 否       | 新标签介绍 |
+| 1 | tag_name | `-t` | `--tag-name` | yes | tag_name |
+| 2 | new_tag_name | | `--new-tag-name` | no | new-tag-name |
+| 3 | new_tag_desc | | `--new-tag-desc` | no | new tag introduction |
 
--   *示例*：
+**Sample**
 
 ``` bash
 flow tag update -t tag1 --new-tag-name tag2
-flow tag update -t tag1 --new-tag-desc "This is the new 参数介绍."
+flow tag update -t tag1 --new-tag-desc "This is the introduction of the new parameter."
 ```
 
 ### list
 
--   *介绍*： 展示标签列表。
--   *参数*：
+Show the list of tags.
 
-| 编号 | 参数  | 短格式 | 长格式    | 必要参数 | 参数介绍                     |
+**options**
+
+| number | parameters | short-format | long-format | required-parameters | parameter-introduction |
 | ---- | ----- | ------ | --------- | -------- | ---------------------------- |
-| 1    | limit | `-l`   | `--limit` | 否       | 返回结果数量限制（默认：10） |
+| 1 | limit | `-l` | `-limit` | no | Returns a limit on the number of results (default: 10) |
 
--   *示例*：
+**Sample**
 
 ``` bash
 flow tag list
@@ -53,15 +56,16 @@ flow tag list -l 3
 
 ### query
 
--   *介绍*： 检索标签。
--   *参数*：
+Retrieve tags.
 
-| 编号 | 参数       | 短格式 | 长格式         | 必要参数 | 参数介绍                               |
+**Options**
+
+| number | parameters | short-format | long-format | required parameters | parameter description |
 | ---- | ---------- | ------ | -------------- | -------- | -------------------------------------- |
-| 1    | tag_name   | `-t`   | `--tag-name`   | 是       | 标签名                                 |
-| 2    | with_model |        | `--with-model` | 否       | 如果指定，具有该标签的模型信息将被展示 |
+| 1 | tag_name | `-t` | `-tag-name` | yes | tag_name |
+| 2 | with_model | | `-with-model` | no | If specified, information about models with this tag will be displayed |
 
--   *示例*：
+**Sample**
 
 ``` bash
 flow tag query -t $TAG_NAME
@@ -70,14 +74,15 @@ flow tag query -t $TAG_NAME --with-model
 
 ### delete
 
--   *介绍*： 删除标签。
--   *参数*：
+Delete the tag.
 
-| 编号 | 参数     | 短格式 | 长格式       | 必要参数 | 参数介绍 |
-| ---- | -------- | ------ | ------------ | -------- | -------- |
-| 1    | tag_name | `-t`   | `--tag-name` | 是       | 标签名   |
+**Options**
 
--   *示例*：
+| number | parameters | short-format | long-format | required-parameters | parameters introduction |
+| ---- | -------- | ------ | ------------ | -------- | --------
+| 1 | tag_name | `-t` | `---tag-name` | yes | tag_name |
+
+**Sample**
 
 ``` bash
 flow tag delete -t tag1

@@ -2,15 +2,15 @@
 
 ### list
 
-列出当前所有组件提供者及其提供组件信息
+List all current component providers and information about the components they provide
 
 ```bash
 flow provider list [options]
 ```
 
-**参数** 
+**Options**
 
-**返回参数** 
+**Returns**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
@@ -18,9 +18,9 @@ flow provider list [options]
 | retmsg  | string | 返回信息 |
 | data    | dict   | 返回数据 |
 
-**样例** 
+**Example**
 
-输出:
+output:
 
 ```json
 {
@@ -115,36 +115,36 @@ flow provider list [options]
 }
 ```
 
-包含`组件提供者`的`名称`, `版本号`, `代码路径`, `提供的组件列表`
+Contains the `name`, `version number`, `codepath`, `list of provided components`
 
 ### register
 
-注册一个组件提供者
+Register a component provider
 
 ```bash
 flow provider register [options]
 ```
 
-**参数** 
+**Options**
 
 | 参数名                 | 必选 | 类型   | 说明                             |
 | :--------------------- | :--- | :----- | ------------------------------|
 | -c, --conf-path          | 是   | string | 配置路径                         |
 
-**返回参数** 
+**Returns**
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
 | retcode | int    | 返回码   |
 | retmsg  | string | 返回信息 |
 
-**样例** 
+**Example**
 
 ```bash
 flow provider register -c $FATE_FLOW_BASE/examples/other/register_provider.json
 ```
 
-配置文件：
+conf:
 
 ```json
 {
@@ -154,7 +154,7 @@ flow provider register -c $FATE_FLOW_BASE/examples/other/register_provider.json
 }
 ```
 
-输出:
+output:
 
 ```json
 {

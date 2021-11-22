@@ -1,26 +1,26 @@
-## resource
+## Resources
 
 ### query
 
-用于查询fate系统资源
+For querying fate system resources
 
 ```bash
 flow resource query
 ```
 
-**参数** 
+**Options** 
 
-**返回参数** 
+**Returns**
 
-| 参数名  | 类型   | 说明     |
+| parameter name | type | description |
 | :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
+| retcode | int | return code |
+| retmsg | string | return information |
+| data | object | return data |
 
-样例：
+**Example**
 
-```
+```json
 {
     "data": {
         "computing_engine_resource": {
@@ -50,27 +50,27 @@ flow resource query
 
 ### return
 
-用于归还某个job的资源
+Resources for returning a job
 
 ```bash
 flow resource return [options]
 ```
 
-**参数** 
+**Options** 
 
-| 参数名 | 必选 | 类型   | 说明   |
+| parameter name | required | type | description |
 | :----- | :--- | :----- | ------ |
-| job_id | 是   | string | 任务id |
+| job_id | yes | string | job_id |
 
-**返回参数** 
+**Returns**
 
-| 参数名  | 类型   | 说明     |
+| parameter name | type | description |
 | :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
+| retcode | int | return_code |
+| retmsg | string | return information |
+| data | object | return data |
 
-样例：
+**Example**
 
 ```json
 {
