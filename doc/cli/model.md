@@ -10,7 +10,7 @@ flow model load -c examples/model/publish_load_model.json
 flow model load -c examples/model/publish_load_model.json -j <job_id>
 ```
 
-**Parameters**
+**Options**
 
 | Parameter | Short Flag | Long Flag     | Optional | Description      |
 | --------- | ---------- | ------------- | -------- | ---------------- |
@@ -58,7 +58,7 @@ flow model bind -c examples/model/bind_model_service.json
 flow model bind -c examples/model/bind_model_service.json -j <job_id>
 ```
 
-**Parameters**
+**Options**
 
 | Parameter | Short Flag | Long Flag     | Optional | Description      |
 | --------- | ---------- | ------------- | -------- | ---------------- |
@@ -83,7 +83,7 @@ flow model import -c examples/model/import_model.json
 flow model import -c examples/model/restore_model.json --from-database
 ```
 
-**Parameters**
+**Options**
 
 | Parameter     | Short Flag | Long Flag         | Optional | Description                          |
 | ------------- | ---------- | ----------------- | -------- | ------------------------------------ |
@@ -125,7 +125,7 @@ flow model export -c examples/model/export_model.json
 flow model export -c examples/model/store_model.json --to-database
 ```
 
-**Parameters**
+**Options**
 
 | Parameter   | Short Flag | Long Flag       | Optional | Description                        |
 | ----------- | ---------- | --------------- | -------- | ---------------------------------- |
@@ -166,7 +166,7 @@ Migrate the model.
 flow model migrate -c examples/model/migrate_model.json
 ```
 
-**Parameters**
+**Options**
 
 | Parameter | Short Flag | Long Flag     | Optional | Description      |
 | --------- | ---------- | ------------- | -------- | ---------------- |
@@ -221,7 +221,7 @@ List tags of the model.
 flow model tag-list -j <job_id>
 ```
 
-**Parameters**
+**Options**
 
 | Parameter | Short Flag | Long Flag  | Optional | Description |
 | --------- | ---------- | ---------- | -------- | ----------- |
@@ -236,7 +236,7 @@ flow model tag-model -j <job_id> -t <tag_name>
 flow model tag-model -j <job_id> -t <tag_name> --remove
 ```
 
-**Parameters**
+**Options**
 
 | Parameter     | Short Flag | Long Flag       | Optional | Description           |
 | -------- | ------ | ------------ | -------- | -------------- |
@@ -252,7 +252,7 @@ Configure predict DSL.
 flow model deploy --model-id <model_id> --model-version <model_version>
 ```
 
-**Parameters**
+**Options**
 
 | Parameter      | Short Flag | Long Flag          | Optional | Description                                                  |
 | -------------- | ---------- | ------------------ | -------- | ------------------------------------------------------------ |
@@ -314,7 +314,7 @@ Get predict DSL of the model.
 flow model get-predict-dsl --model-id <model_id> --model-version <model_version> -o ./examples/
 ```
 
-**Parameters**
+**Options**
 
 | Parameter     | Short Flag | Long Flag         | Optional | Description   |
 | ------------- | ---------- | ----------------- | -------- | ------------- |
@@ -330,7 +330,7 @@ Get the template of predict config.
 flow model get-predict-conf --model-id <model_id> --model-version <model_version> -o ./examples/
 ```
 
-**Parameters**
+**Options**
 
 | Parameter     | Short Flag | Long Flag         | Optional | Description   |
 | ------------- | ---------- | ----------------- | -------- | ------------- |
@@ -347,7 +347,7 @@ flow model get-model-info --model-id <model_id> --model-version <model_version>
 flow model get-model-info --model-id <model_id> --model-version <model_version> --detail
 ```
 
-**Parameters**
+**Options**
 
 | Parameter     | Short Flag | Long Flag         | Optional | Description                  |
 | ------------- | ---------- | ----------------- | -------- | ---------------------------- |
@@ -365,7 +365,7 @@ Convert trained homogenous model to the format of another ML framework.
 flow model homo-convert -c examples/model/homo_convert_model.json
 ```
 
-**Parameters**
+**Options**
 
 | Parameter | Short Flag | Long Flag     | Optional | Description      |
 | --------- | ---------- | ------------- | -------- | ---------------- |
@@ -379,7 +379,7 @@ Deploy trained homogenous model to a target online serving system. Currently the
 flow model homo-deploy -c examples/model/homo_deploy_model.json
 ```
 
-**Parameters**
+**Options**
 
 | Parameter | Short Flag | Long Flag     | Optional | Description      |
 | --------- | ---------- | ------------- | -------- | ---------------- |

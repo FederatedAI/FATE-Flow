@@ -11,7 +11,7 @@ Resources refer to the basic engine resources, mainly CPU resources and memory r
 - `FATE Flow Server` has been started and the resource configuration can be modified by restarting `FATE Flow Server` or by reloading the configuration using the command: `flow server reload`.
 - `total_cores` = `nodes` * `cores_per_node`
 
-**sample**
+**Example**
 
 fate_on_standalone: is for executing a standalone engine on the same machine as `FATE Flow Server`, generally used for fast experiments, `nodes` is generally set to 1, `cores_per_node` is generally the number of CPU cores of the machine, also can be moderately over-provisioned
 

@@ -8,7 +8,7 @@
 flow checkpoint list --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name>
 ```
 
-**参数**
+**选项**
 
 | 参数           | 短格式 | 长格式             | 可选参数 | 说明       |
 | -------------- | ------ | ------------------ | -------- | ---------- |
@@ -53,7 +53,7 @@ flow checkpoint get --model-id <model_id> --model-version <model_version> --role
 ```
 
 
-**参数**
+**选项**
 
 | 参数           | 短格式 | 长格式             | 可选参数 | 说明                                  |
 | -------------- | ------ | ------------------ | -------- | ------------------------------------- |

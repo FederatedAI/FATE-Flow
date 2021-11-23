@@ -9,7 +9,7 @@ flow model load -c examples/model/publish_load_model.json
 flow model load -c examples/model/publish_load_model.json -j <job_id>
 ```
 
-**参数**
+**选项**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
@@ -57,7 +57,7 @@ flow model bind -c examples/model/bind_model_service.json
 flow model bind -c examples/model/bind_model_service.json -j <job_id>
 ```
 
-**参数**
+**选项**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
@@ -82,7 +82,7 @@ flow model import -c examples/model/import_model.json
 flow model import -c examples/model/restore_model.json --from-database
 ```
 
-**参数**
+**选项**
 
 | 参数          | 短格式 | 长格式            | 可选参数 | 说明                 |
 | ------------- | ------ | ----------------- | -------- | -------------------- |
@@ -124,7 +124,7 @@ flow model export -c examples/model/export_model.json
 flow model export -c examples/model/store_model.json --to-database
 ```
 
-**参数**
+**选项**
 
 | 参数        | 短格式 | 长格式          | 可选参数 | 说明                   |
 | ----------- | ------ | --------------- | -------- | ---------------------- |
@@ -165,7 +165,7 @@ flow model export -c examples/model/store_model.json --to-database
 flow model migrate -c examples/model/migrate_model.json
 ```
 
-**参数**
+**选项**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
@@ -220,7 +220,7 @@ flow model migrate -c examples/model/migrate_model.json
 flow model tag-list -j <job_id>
 ```
 
-**参数**
+**选项**
 
 | 参数   | 短格式 | 长格式     | 可选参数 | 说明    |
 | ------ | ------ | ---------- | -------- | ------- |
@@ -235,7 +235,7 @@ flow model tag-model -j <job_id> -t <tag_name>
 flow model tag-model -j <job_id> -t <tag_name> --remove
 ```
 
-**参数**
+**选项**
 
 | 参数     | 短格式 | 长格式       | 可选参数 | 说明           |
 | -------- | ------ | ------------ | -------- | -------------- |
@@ -251,7 +251,7 @@ flow model tag-model -j <job_id> -t <tag_name> --remove
 flow model deploy --model-id <model_id> --model-version <model_version>
 ```
 
-**参数**
+**选项**
 
 | 参数           | 短格式 | 长格式             | 可选参数 | 说明                                                         |
 | -------------- | ------ | ------------------ | -------- | ------------------------------------------------------------ |
@@ -313,7 +313,7 @@ flow model deploy --model-id <model_id> --model-version <model_version>
 flow model get-predict-dsl --model-id <model_id> --model-version <model_version> -o ./examples/
 ```
 
-**参数**
+**选项**
 
 | 参数          | 短格式 | 长格式            | 可选参数 | 说明     |
 | ------------- | ------ | ----------------- | -------- | -------- |
@@ -329,7 +329,7 @@ flow model get-predict-dsl --model-id <model_id> --model-version <model_version>
 flow model get-predict-conf --model-id <model_id> --model-version <model_version> -o ./examples/
 ```
 
-**参数**
+**选项**
 
 | 参数          | 短格式 | 长格式            | 可选参数 | 说明     |
 | ------------- | ------ | ----------------- | -------- | -------- |
@@ -346,7 +346,7 @@ flow model get-model-info --model-id <model_id> --model-version <model_version>
 flow model get-model-info --model-id <model_id> --model-version <model_version> --detail
 ```
 
-**参数**
+**选项**
 
 | 参数          | 短格式 | 长格式            | 可选参数 | 说明         |
 | ------------- | ------ | ----------------- | -------- | ------------ |
@@ -364,7 +364,7 @@ flow model get-model-info --model-id <model_id> --model-version <model_version> 
 flow model homo-convert -c examples/model/homo_convert_model.json
 ```
 
-**参数**
+**选项**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
@@ -378,7 +378,7 @@ flow model homo-convert -c examples/model/homo_convert_model.json
 flow model homo-deploy -c examples/model/homo_deploy_model.json
 ```
 
-**参数**
+**选项**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |

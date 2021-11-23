@@ -8,7 +8,7 @@ Add privileges
 flow privilege grant [options]
 ```
 
-**parameters** 
+**Options**
 
 | parameter name | required | type | description |
 | :------------------ | :--- | :----- | ------------------------------------------------------------ |
@@ -18,7 +18,7 @@ flow privilege grant [options]
 | privilege-command | no | string | "stop", "run", "create", all, where all is all privileges granted
 | privilege-component | no | string | Lowercase for algorithm components, such as dataio, heteronn, etc., where all is all privileges granted
 
-**Sample** 
+**Example** 
 
 - Give role privileges
 
@@ -51,7 +51,7 @@ flow privilege grant [options]
 | retcode | int | return-code |
 | retmsg | string | return message |
 
-**Sample** 
+**Example** 
 
 ```shell
 {
@@ -68,7 +68,7 @@ Delete permissions
 flow privilege delete [options]
 ```
 
-**parameters** 
+**Options**
 
 | parameter name | required | type | description |
 | :------------------ | :--- | :----- | ------------------------------------------------------------ |
@@ -78,7 +78,7 @@ flow privilege delete [options]
 | privilege-command | no | string | "stop", "run", "create", all, where all is revoke all privileges
 | privilege-component | no | string | lowercase for algorithm components, such as dataio, heteronn, etc., where all is revoke all privileges |
 
-**Sample** 
+**Example** 
 
 - Revoke role privileges
 
@@ -111,7 +111,7 @@ flow privilege delete [options]
 | retcode | int | return-code |
 | retmsg | string | return message |
 
-**Sample** 
+**Example** 
 
 ```shell
 {
@@ -128,14 +128,14 @@ Query permissions
 flow privilege query [options]
 ```
 
-**parameters** 
+**Options**
 
 | parameter name | required | type | description |
 | :----------- | :--- | :----- | ------------- |
 | src-party-id | yes | string | originating-party-id |
 | src-role | yes | string | originating-party-role |
 
-**Sample** 
+**Example** 
 
 ```shell
 flow privilege query --src-party-id 9999 --src-role guest 
@@ -150,7 +150,7 @@ flow privilege query --src-party-id 9999 --src-role guest
 | retmsg | string | return information |
 | data | object | return data |
 
-**Sample** 
+**Example** 
 
 ```shell
 {

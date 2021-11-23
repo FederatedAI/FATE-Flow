@@ -8,7 +8,7 @@ List checkpoints.
 flow checkpoint list --model-id <model_id> --model-version <model_version> --role <role> --party-id <party_id> --component-name <component_name>
 ```
 
-**Parameters**
+**Options**
 
 | Parameter      | Short Flag | Long Flag          | Optional | Description    |
 | -------------- | ---------- | ------------------ | -------- | -------------- |
