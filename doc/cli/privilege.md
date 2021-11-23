@@ -1,4 +1,4 @@
-## privilege
+## Privilege
 
 ### grant
 
