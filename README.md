@@ -4,8 +4,8 @@
 
 FATE Flow is a multi-party federated task security scheduling platform for federated learning end-to-end pipeline
 
-- Shared-State scheduling architecture [References](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/41684.pdf)
-- Secure multi-party communication across data centers
+- [Shared-State Scheduling Architecture](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/41684.pdf)
+- Secure Multi-Party Communication Across Data Centers
 
 Providing production-level service capabilities:
 
@@ -28,3 +28,6 @@ Please refer to [FATE](https://github.com/FederatedAI/FATE)
 ## Documentation
 
 The official FATE Flow documentation is here [https://fate-flow.readthedocs.io/en/latest/](https://fate-flow.readthedocs.io/en/latest/)
+
+## License
+[Apache License 2.0](LICENSE)
