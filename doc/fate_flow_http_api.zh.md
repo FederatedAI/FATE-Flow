@@ -1,6 +1,4 @@
-# REST API说明
-
-[TOC]
+# REST API
 
 ## 1. 说明
 

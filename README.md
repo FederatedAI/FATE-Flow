@@ -27,4 +27,4 @@ Please refer to [FATE](https://github.com/FederatedAI/FATE)
 
 ## Documentation
 
-The official FATE Flow documentation is here [https://fate-flow.readthedocs.io/zh/latest/zh/](https://fate-flow.readthedocs.io/zh/latest/zh/)
+The official FATE Flow documentation is here [https://fate-flow.readthedocs.io/en/latest/](https://fate-flow.readthedocs.io/en/latest/)

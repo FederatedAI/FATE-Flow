@@ -19,7 +19,7 @@ The configuration file of DSL is in json format, in fact, the whole configuratio
 
 ### 3.1 Component List
 
-**meaning** The first level of this dict is `components`, which indicates the modules that will be used by this job.
+**Description** The first level of this dict is `components`, which indicates the modules that will be used by this job.
 **Example**
 
 ```json
@@ -62,7 +62,7 @@ All data needs to be fetched from the data store via the **Reader** module, note
 
 ### 3.2 Modules
 
-**meaning** Used to specify the components to be used, all optional module names refer to.
+**Description** Used to specify the components to be used, all optional module names refer to.
 **Example**
 
 ```json
@@ -78,7 +78,7 @@ All data needs to be fetched from the data store via the **Reader** module, note
 
 #### data input
 
-**meaning** Upstream data input, divided into three input types.
+**Description** Upstream data input, divided into three input types.
     
     > 1. data: generally used in the data-transform module, feature_engineering module or
     > evaluation module.
@@ -91,7 +91,7 @@ All data needs to be fetched from the data store via the **Reader** module, note
 
 #### model_input
 
-**meaning** Upstream model input, divided into two input types.
+**Description** Upstream model input, divided into two input types.
     1. model: Used for model input of the same type of component. For example, hetero_binning_0 will fit the model, and then
         hetero_binning_1 will use the output of hetero_binning_0 for predict or
         transform. code example.
@@ -140,11 +140,11 @@ All data needs to be fetched from the data store via the **Reader** module, note
 
 ### 3.4 Output
 
-**meaning** Output, like input, is divided into data and model output
+**Description** Output, like input, is divided into data and model output
 
 #### data output
 
-**meaning** Data output, divided into four output types.
+**Description** Data output, divided into four output types.
 
 1. data: General module data output
 2. train_data: only for Data Split
@@ -153,13 +153,13 @@ All data needs to be fetched from the data store via the **Reader** module, note
 
 #### Model Output
 
-**meaning** Model output, using model only
+**Description** Model output, using model only
 
 ### 3.5 Component Providers
 
 Since FATE-Flow version 1.7.0, the same FATE-Flow system supports loading multiple component providers, i.e. providers, which provide several components, and the source provider of the component can be configured when submitting a job
 
-**meaning** Specify the provider, support global specification and individual component specification; if not specified, the default provider: `fate@$FATE_VERSION`
+**Description** Specify the provider, support global specification and individual component specification; if not specified, the default provider: `fate@$FATE_VERSION`
 
 **Format** `provider_name@$provider_version`
 
@@ -227,7 +227,7 @@ Job Conf is used to set the information of each participant, the parameters of t
 
 ### 4.1 DSL Version
 
-**Meaning** Configure the version, the default is not 1, it is recommended to configure 2
+**Description** Configure the version, the default is not 1, it is recommended to configure 2
 **Example**
 ```json
 "dsl_version": "2"
@@ -237,7 +237,7 @@ Job Conf is used to set the information of each participant, the parameters of t
 
 #### initiating party
 
-**Meaning** The role and party_id of the assignment initiator.
+**Description** The role and party_id of the assignment initiator.
 **Example**
 ```json
 "initiator": {
@@ -248,7 +248,7 @@ Job Conf is used to set the information of each participant, the parameters of t
 
 #### All participants
 
-**Meaning** Information about each participant.
+**Description** Information about each participant.
 **Description** In the role field, each element represents a role and the party_id that assumes that role. party_id for each role
     The party_id of each role is in the form of a list, since a task may involve multiple parties in the same role.
 **Example**
@@ -263,7 +263,7 @@ Job Conf is used to set the information of each participant, the parameters of t
 
 ### 4.3 System operation parameters
 
-**meaning**
+**Description**
     Configure the main system parameters for job runtime
 
 #### Parameter application scope policy setting

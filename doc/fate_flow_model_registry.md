@@ -1,4 +1,4 @@
-# Multi-party joint model registry
+# Multi-Party Federated Model Registry
 
 ## 1. Description
 

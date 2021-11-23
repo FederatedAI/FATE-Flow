@@ -1,4 +1,4 @@
-# Command line Client
+# FATE Flow Client
 
 ## Description
 

@@ -1,4 +1,4 @@
-# Service registration center
+# Service Registry
 
 ## 1. Description
 

@@ -27,4 +27,4 @@ FATE Flow是一个联邦学习端到端全流程的多方联合任务安全调�
 
 ## 文档
 
-FATE Flow官方文档在这里[https://fate-flow.readthedocs.io/zh/latest/zh/](https://fate-flow.readthedocs.io/zh/latest/zh/)
+FATE Flow官方文档在这里[https://fate-flow.readthedocs.io/en/latest/zh/](https://fate-flow.readthedocs.io/en/latest/zh/)

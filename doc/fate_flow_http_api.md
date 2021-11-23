@@ -1,8 +1,6 @@
-# REST API description
+# REST API
 
-[TOC]
-
-## 1. description
+## 1. Description
 
 ## 2. Interface Authentication
 
