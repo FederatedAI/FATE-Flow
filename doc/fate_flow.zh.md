@@ -88,9 +88,9 @@
 - 联邦各方的模型ID由本方标识信息role、party_id，加model_key
 - 联邦各方的模型版本必须唯一且保持一致，FATE-Flow直接设置为job_id
 
-![](./images/fate_flow_pipelined_model.png)
+![](./images/fate_flow_pipelined_model.png){: style="height:400px;width:450px"}
 
-![](./images/fate_flow_model_storage.png)
+![](./images/fate_flow_model_storage.png){: style="height:400px;width:800px"}
 
 ## 9. [数据接入](./fate_flow_data_access.zh.md)
 

@@ -8,7 +8,7 @@
 flow privilege grant [options]
 ```
 
-**参数**
+**选项**
 
 | 参数名              | 必选 | 类型   | 说明                                                         |
 | :------------------ | :--- | :----- | ------------------------------------------------------------ |
@@ -44,7 +44,7 @@ flow privilege grant [options]
   flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
   ```
 
-**返回参数**
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | ------- | :----- | -------- |
@@ -68,7 +68,7 @@ flow privilege grant [options]
 flow privilege delete [options]
 ```
 
-**参数**
+**选项**
 
 | 参数名              | 必选 | 类型   | 说明                                                         |
 | :------------------ | :--- | :----- | ------------------------------------------------------------ |
@@ -104,7 +104,7 @@ flow privilege delete [options]
   flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
   ```
 
-**返回参数**
+**返回**
 
 | 参数名  | 类型   | 说明     |
 | ------- | :----- | -------- |
@@ -128,7 +128,7 @@ flow privilege delete [options]
 flow privilege query [options]
 ```
 
-**参数**
+**选项**
 
 | 参数名       | 必选 | 类型   | 说明          |
 | :----------- | :--- | :----- | ------------- |
@@ -141,7 +141,7 @@ flow privilege query [options]
 flow privilege query --src-party-id 9999  --src-role guest
 ```
 
-- **返回参数**
+**返回**
 
 
 | 参数名  | 类型   | 说明     |

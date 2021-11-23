@@ -8,7 +8,7 @@ Query information about the fate table (real storage address, number, schema, et
 flow table info [options]
 ```
 
-**parameters** 
+**Options**
 
 | parameter name | required | type | description
 | :-------- | :--- | :----- | -------------- |
@@ -56,7 +56,7 @@ You can delete table data with table delete
 flow table delete [options]
 ```
 
-**parameters** 
+**Options**
 
 | parameter name | required | type | description |
 | :-------- | :--- | :----- | -------------- |
@@ -94,7 +94,7 @@ flow table bind [options]
 
 Note: conf_path is the parameter path, the specific parameters are as follows
 
-**parameters** 
+**Options**
 
 | parameter name | required | type | description |
 | :------------- | :--- | :----- | ------------------------------------- |
@@ -108,7 +108,7 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 | id_column | no | string | id field |
 | feature_column | no | array | feature_field |
 
-**Sample** 
+**Example** 
 
 - hdfs
 

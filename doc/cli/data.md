@@ -10,7 +10,7 @@ flow data upload -c ${conf_path}
 
 Note: conf_path is the parameter path, the specific parameters are as follows
 
-**parameters** 
+**Options**
 
 | parameter name | required | type | description |
 | :------------------ | :--- | :----------- | ------------------------------------------------------------ |
@@ -27,7 +27,7 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 | extend_sid | no | bool | Whether to add a new column for uuid id, default False |
 | auto_increasing_sid | no | bool | Whether the new id column is self-increasing (will only work if extend_sid is True), default False |
 
-**sample** 
+**Example** 
 
 - eggroll
 
@@ -80,7 +80,7 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 | retmsg | string | return message |
 | data | object | return data |
 
-**Sample** 
+**Example** 
 
 ```shell
 {
@@ -121,7 +121,7 @@ flow data download -c ${conf_path}
 
 Note: conf_path is the parameter path, the specific parameters are as follows
 
-**parameters** 
+**Options**
 
 | parameter name | required | type | description |
 | :---------- | :--- | :----- | -------------- |
@@ -147,7 +147,7 @@ Example:
 | retmsg | string | return information |
 | data | object | return data |
 
-**Sample** 
+**Example** 
 
 ```json
 {

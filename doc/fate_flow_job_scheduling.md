@@ -20,7 +20,7 @@ The configuration file of DSL is in json format, in fact, the whole configuratio
 ### 3.1 Component List
 
 **meaning** The first level of this dict is `components`, which indicates the modules that will be used by this job.
-**Sample**
+**Example**
 
 ```json
 {
@@ -63,7 +63,7 @@ All data needs to be fetched from the data store via the **Reader** module, note
 ### 3.2 Modules
 
 **meaning** Used to specify the components to be used, all optional module names refer to.
-**sample**
+**Example**
 
 ```json
 "hetero_feature_binning_1": {
@@ -165,7 +165,7 @@ Since FATE-Flow version 1.7.0, the same FATE-Flow system supports loading multip
 
 **Advanced** You can register a new provider through the component registration CLI, currently supported providers: fate and fate_sql, please refer to [FATE Flow Component Center](./fate_flow_component_registry.md)
 
-**Sample**
+**Example**
 
 ```json
 {
@@ -228,7 +228,7 @@ Job Conf is used to set the information of each participant, the parameters of t
 ### 4.1 DSL Version
 
 **Meaning** Configure the version, the default is not 1, it is recommended to configure 2
-**Sample**
+**Example**
 ```json
 "dsl_version": "2"
 ```
@@ -238,7 +238,7 @@ Job Conf is used to set the information of each participant, the parameters of t
 #### initiating party
 
 **Meaning** The role and party_id of the assignment initiator.
-**Sample**
+**Example**
 ```json
 "initiator": {
     "role": "guest",
@@ -251,7 +251,7 @@ Job Conf is used to set the information of each participant, the parameters of t
 **Meaning** Information about each participant.
 **Description** In the role field, each element represents a role and the party_id that assumes that role. party_id for each role
     The party_id of each role is in the form of a list, since a task may involve multiple parties in the same role.
-**Sample**
+**Example**
 
 ```json
 "role": {
@@ -459,7 +459,7 @@ Note that the current version of the component runtime parameter already support
 
 Multi-Host task should list all host information under role
 
-**Sample**:
+**Example**:
 
 ```json
 "role": {
@@ -477,7 +477,7 @@ Multi-Host task should list all host information under role
 
 The different configurations for each host should be listed separately under their respective corresponding modules
 
-**sample**:
+**Example**:
 
 ```json
 "component_parameters": {
