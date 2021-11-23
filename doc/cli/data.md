@@ -144,7 +144,7 @@ Example:
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | return code |
-| retmsg | string | return information |
+| retmsg | string | return message |
 | data | object | return data |
 
 **Example** 

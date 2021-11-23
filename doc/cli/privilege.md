@@ -147,7 +147,7 @@ flow privilege query --src-party-id 9999 --src-role guest
 | parameter name | type | description |
 | ------- | :----- | -------- |
 | retcode | int | return-code |
-| retmsg | string | return information |
+| retmsg | string | return message |
 | data | object | return data |
 
 **Example** 

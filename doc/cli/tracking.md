@@ -318,7 +318,7 @@ flow tracking output-data [options]
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | Return code |
-| retmsg | string | return information |
+| retmsg | string | return message |
 | data | dict | return data |
 | jobId | string | job id |
 
@@ -557,7 +557,7 @@ flow table tracking-source [options]
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | return code |
-| retmsg | string | return information |
+| retmsg | string | return message |
 | data | object | return data |
 
 **Example**
@@ -590,7 +590,7 @@ flow table tracking-job [options]
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | return code |
-| retmsg | string | return information |
+| retmsg | string | return message |
 | data | object | return data |
 
 **Example**

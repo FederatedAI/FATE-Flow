@@ -16,7 +16,7 @@ flow resource query
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | return code |
-| retmsg | string | return information |
+| retmsg | string | return message |
 | data | object | return data |
 
 **Example**
@@ -67,8 +67,8 @@ flow resource return [options]
 
 | parameter name | type | description |
 | :------ | :----- | -------- |
-| retcode | int | return_code |
-| retmsg | string | return information |
+| retcode | int | return code |
+| retmsg | string | return message |
 | data | object | return data |
 
 **Example**

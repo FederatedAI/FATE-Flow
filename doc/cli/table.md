@@ -20,7 +20,7 @@ flow table info [options]
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | return code |
-| retmsg | string | return information |
+| retmsg | string | return message |
 | data | object | return data |
 
 Sample
@@ -68,7 +68,7 @@ flow table delete [options]
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | return code |
-| retmsg | string | return information |
+| retmsg | string | return message |
 | data | object | return data |
 
 Sample
@@ -167,7 +167,7 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | return code |
-| retmsg | string | return information |
+| retmsg | string | return message |
 | data | object | return data |
 
 Sample
