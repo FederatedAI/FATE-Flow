@@ -2,32 +2,32 @@
 
 ### upload
 
-用于上传建模任务的输入数据到fate所支持的存储系统
+Used to upload the input data for the modeling task to the storage system supported by fate
 
 ```bash
 flow data upload -c ${conf_path}
 ```
 
-注: conf_path为参数路径，具体参数如下
+Note: conf_path is the parameter path, the specific parameters are as follows
 
-**选项** 
+**Options**
 
-| 参数名              | 必选 | 类型         | 说明                                                         |
+| parameter name | required | type | description |
 | :------------------ | :--- | :----------- | ------------------------------------------------------------ |
-| file                | 是   | string       | 数据存储路径                                                 |
-| id_delimiter        | 是   | string       | 数据分隔符,如","                                             |
-| head                | 否   | int          | 数据是否有表头                                               |
-| partition           | 是   | int          | 数据分区数                                                   |
-| storage_engine      | 否   | 存储引擎类型 | 默认"EGGROLL"，还支持"HDFS","LOCALFS", "HIVE"等              |
-| namespace           | 是   | string       | 表命名空间                                                   |
-| table_name          | 是   | string       | 表名                                                         |
-| storage_address     | 否   | object       | 需要填写对应存储引擎的存储地址                               |
-| use_local_data      | 否   | int          | 默认1，代表使用client机器的数据;0代表使用fate flow服务所在机器的数据 |
-| drop                | 否   | int          | 是否覆盖上传                                                 |
-| extend_sid          | 否   | bool         | 是否新增一列uuid id，默认False                               |
-| auto_increasing_sid | 否   | bool         | 新增的id列是否自增(extend_sid为True才会生效), 默认False      |
+| file | yes | string | data storage path |
+| id_delimiter | yes | string | Data separator, e.g. "," |
+| head | no | int | Whether the data has a table header | yes | int
+| partition | yes | int | Number of data partitions |
+| storage_engine | no | storage engine type | default "EGGROLL", also support "HDFS", "LOCALFS", "HIVE", etc. |
+| namespace | yes | string | table namespace | yes
+| table_name | yes | string | table name |
+| storage_address | no | object | The storage address of the corresponding storage engine is required
+| use_local_data | no | int | The default is 1, which means use the data from the client's machine; 0 means use the data from the fate flow service's machine.
+| drop | no | int | Whether to overwrite uploads |
+| extend_sid | no | bool | Whether to add a new column for uuid id, default False |
+| auto_increasing_sid | no | bool | Whether the new id column is self-increasing (will only work if extend_sid is True), default False |
 
-**样例** 
+**Example** 
 
 - eggroll
 
@@ -71,16 +71,16 @@ flow data upload -c ${conf_path}
   }
   ```
 
-**返回**
+**return parameters** 
 
-| 参数名  | 类型   | 说明     |
+| parameter name | type | description |
 | :------ | :----- | -------- |
-| jobId   | string | 任务id   |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
+| jobId | string | task id |
+| retcode | int | return code |
+| retmsg | string | return message |
+| data | object | return data |
 
-**样例** 
+**Example** 
 
 ```shell
 {
@@ -98,9 +98,9 @@ flow data upload -c ${conf_path}
         "namespace": "experiment",
         "pipeline_dsl_path": "/data/projects/fate/jobs/202111081218319075660/pipeline_dsl.json",
         "runtime_conf_on_party_path": "/data/projects/fate/jobs/202111081218319075660/local/0/job_runtime_on_party_conf.json",
-        "runtime_conf_path": "/data/projects/fate/jobs/202111081218319075660/job_runtime_conf.json",
+        "runtime_conf_path":"/data/projects/fate/jobs/202111081218319075660/job_runtime_conf.json",
         "table_name": "breast_hetero_host",
-        "train_runtime_conf_path": "/data/projects/fate/jobs/202111081218319075660/train_runtime_conf.json"
+        "train_runtime_conf_path":"/data/projects/fate/jobs/202111081218319075660/train_runtime_conf.json"
     },
     "jobId": "202111081218319075660",
     "retcode": 0,
@@ -111,25 +111,25 @@ flow data upload -c ${conf_path}
 
 ### download
 
-**简要描述：** 
+**Brief description:** 
 
-用于下载fate存储引擎内的数据到文件格式数据
+Used to download data from within the fate storage engine to file format data
 
 ```bash
 flow data download -c ${conf_path}
 ```
 
-注: conf_path为参数路径，具体参数如下
+Note: conf_path is the parameter path, the specific parameters are as follows
 
-**选项** 
+**Options**
 
-| 参数名      | 必选 | 类型   | 说明           |
+| parameter name | required | type | description |
 | :---------- | :--- | :----- | -------------- |
-| output_path | 是   | string | 下载路径       |
-| table_name  | 是   | string | fate表名       |
-| namespace   | 是   | int    | fate表命名空间 |
+| output_path | yes | string | download_path |
+| table_name | yes | string | fate table name |
+| namespace | yes | int | fate table namespace |
 
-样例:
+Example:
 
 ```json
 {
@@ -139,15 +139,15 @@ flow data download -c ${conf_path}
 }
 ```
 
-**返回**
+**return parameters** 
 
-| 参数名  | 类型   | 说明     |
+| parameter name | type | description |
 | :------ | :----- | -------- |
-| retcode | int    | 返回码   |
-| retmsg  | string | 返回信息 |
-| data    | object | 返回数据 |
+| retcode | int | return code |
+| retmsg | string | return message |
+| data | object | return data |
 
-样例
+**Example** 
 
 ```json
 {

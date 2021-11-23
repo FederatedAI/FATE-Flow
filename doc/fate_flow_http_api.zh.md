@@ -1,6 +1,4 @@
-# REST API说明
-
-[TOC]
+# REST API
 
 ## 1. 说明
 
@@ -55,4 +53,3 @@ Flow HTTP API 在 1.7.0 新增了签名鉴权，如果在配置文件里设置�
 `401 Unknown APP_KEY` header 中的 `APP_KEY` 与 Flow 配置文件中的 `http_app_key` 不一致
 
 `403 Forbidden` 签名校验失败
-
