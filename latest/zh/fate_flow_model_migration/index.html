@@ -1,0 +1,1158 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>集群间模型迁移 - FATE Flow</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../mkdocs/css/termynal.css">
+    
+      <link rel="stylesheet" href="../../mkdocs/css/custom.css">
+    
+      <link rel="stylesheet" href="../../mkdocs/css/extra.css">
+    
+      <link rel="stylesheet" href="../../mkdocs/css/landing.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+      <script>var palette=__get("__palette");if(null!==palette&&"object"==typeof palette.color)for(var key in palette.color)document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+  
+
+<header class="md-header md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="FATE Flow" class="md-header__button md-logo" aria-label="FATE Flow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FATE Flow
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              集群间模型迁移
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Select language">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../.." hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+                
+                <li class="md-select__item">
+                  <a href="../" hreflang="zh" class="md-select__link">
+                    中文
+                  </a>
+                </li>
+                
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/FederatedAI/FATE-Flow/" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    FederatedAI/FATE-Flow
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../" class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../document_navigation/" class="md-tabs__link md-tabs__link--active">
+        Docs
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../swagger" class="md-tabs__link">
+      API
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="FATE Flow" class="md-nav__button md-logo" aria-label="FATE Flow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    FATE Flow
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/FederatedAI/FATE-Flow/" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    FederatedAI/FATE-Flow
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Docs
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Docs" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Docs
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../document_navigation/" class="md-nav__link">
+        文档导航
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow/" class="md-nav__link">
+        整体设计
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_data_access/" class="md-nav__link">
+        数据接入
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_job_scheduling/" class="md-nav__link">
+        多方联合作业调度
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_tracking/" class="md-nav__link">
+        数据流动追踪
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_model_registry/" class="md-nav__link">
+        多方联合模型注册中心
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_component_registry/" class="md-nav__link">
+        任务组件注册中心
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_resource_management/" class="md-nav__link">
+        多方资源协调
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_authority_management/" class="md-nav__link">
+        多方合作权限管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_server_operation/" class="md-nav__link">
+        服务端操作
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_service_registry/" class="md-nav__link">
+        服务注册中心
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          集群间模型迁移
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        集群间模型迁移
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    转移模型文件
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    迁移前的准备工作
+  </a>
+  
+    <nav class="md-nav" aria-label="迁移前的准备工作">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    说明
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    执行迁移任务
+  </a>
+  
+    <nav class="md-nav" aria-label="执行迁移任务">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    说明
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    1. 修改配置文件
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    2. 提交迁移任务(在所有目标集群分别操作)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    3. 任务执行结果
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    4. 转移文件并导入(在所有目标集群分别操作)
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_monitoring/" class="md-nav__link">
+        作业实时监测
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_client/" class="md-nav__link">
+        命令行客户端
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_http_api/" class="md-nav__link">
+        REST API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration_instruction/" class="md-nav__link">
+        配置说明
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../system_operational/" class="md-nav__link">
+        系统运维
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        常见问题
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../swagger" class="md-nav__link">
+        API
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    转移模型文件
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    迁移前的准备工作
+  </a>
+  
+    <nav class="md-nav" aria-label="迁移前的准备工作">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    说明
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    执行迁移任务
+  </a>
+  
+    <nav class="md-nav" aria-label="执行迁移任务">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    说明
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    1. 修改配置文件
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    2. 提交迁移任务(在所有目标集群分别操作)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    3. 任务执行结果
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    4. 转移文件并导入(在所有目标集群分别操作)
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/FederatedAI/FATE-Flow/edit/master/doc/fate_flow_model_migration.zh.md" title="编辑此页" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="_1">集群间模型迁移<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>模型迁移功能使得模型文件复制拷贝到不同party id的集群依然可用，以下两种场景需要做模型迁移：</p>
+<ol>
+<li>模型生成参与方任何一方的集群, 重新部署且部署后集群的party id变更, 例如源参与方为arbiter-10000#guest-9999#host-10000, 改为arbiter-10000#guest-99#host-10000</li>
+<li>其中任意一个或多个参与方将模型文件从源集群复制到目标集群，需要在目标集群使用</li>
+</ol>
+<p>基本原理：
+1. 上述两种场景下，模型的参与方<code>party_id</code>会发生改变，如<code>arbiter-10000#guest-9999#host-10000</code> -&gt; <code>arbiter-10000#guest-99#host-10000</code>，或者<code>arbiter-10000#guest-9999#host-10000</code> -&gt; <code>arbiter-100#guest-99#host-100</code>
+2. 模型的参与方<code>party_id</code>发生改变，因此<code>model_id</code>以及模型文件里面涉及<code>party_id</code>需要改变
+3. 整体流程下来，有三个步骤：复制转移原有模型文件、对原有模型文件执行模型迁移任务、导入模型迁移任务生成的新模型
+4. 其中<code>对原有模型文件执行模型迁移任务</code>其实就是在执行处临时复制一份原模型文件，然后按照配置，修改<code>model_id</code>及模型文件里面涉及<code>party_id</code>的内容，以适配新的参与方<code>party_id</code>
+5. 上述步骤都需要在所有新的参与方执行，即使其中某个目标参与方的<code>party_id</code>没有改变，也需要执行
+6. 新的参与方集群版本需大于等于<code>1.5.1</code></p>
+<p>迁移流程如下：</p>
+<h2 id="_2">转移模型文件<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>请将源参与方fate flow服务所在机器生成的模型文件（包括以model id为命名的目录）进行打包并转移到目标参与方fate flow所在机器中，请将模型文件转移至固定目录中：</p>
+<div class="highlight"><pre><span></span><code><span class="nv">$FATE_PROJECT_BASE</span>/model_local_cache
+</code></pre></div>
+<p>说明:
+1. 文件夹转移即可，如果是通过压缩打包进行的转移，请在转移后将模型文件解压到模型所在目录中。
+2. 模型文件请按源目参与方一一对应转移</p>
+<h2 id="_3">迁移前的准备工作<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h3 id="_4">说明<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<ol>
+<li>参考<a href="../fate_flow_client/">fate flow client</a>安装支持模型迁移的客户端fate-client，只有fate 1.5.1及其以上版本支持</li>
+</ol>
+<h2 id="_5">执行迁移任务<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<h3 id="_6">说明<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<ol>
+<li>执行迁移任务是将源模型文件根据迁移任务配置文件修改model_id、model_version以及模型内涉及<code>role</code>和<code>party_id</code>的内容进行替换</li>
+<li>提交任务的集群必须完成上述迁移准备</li>
+</ol>
+<h3 id="1">1. 修改配置文件<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<p>在新参与方（机器）中根据实际情况对迁移任务的配置文件进行修改，如下为迁移任务示例配置文件 <a href="https://github.com/FederatedAI/FATE-Flow/blob/main/examples/model/migrate_model.json">migrate_model.json</a></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;federated_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;SINGLE&quot;</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;role&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9999</span><span class="p">],</span>
+    <span class="nt">&quot;arbiter&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">],</span>
+    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;migrate_initiator&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;guest&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;party_id&quot;</span><span class="p">:</span> <span class="mi">99</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;migrate_role&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">99</span><span class="p">],</span>
+    <span class="nt">&quot;arbiter&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">],</span>
+    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;execute_party&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9999</span><span class="p">],</span>
+    <span class="nt">&quot;arbiter&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">],</span>
+    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;model_id&quot;</span><span class="p">:</span> <span class="s2">&quot;arbiter-10000#guest-9999#host-10000#model&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;model_version&quot;</span><span class="p">:</span> <span class="s2">&quot;202006171904247702041&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;unify_model_version&quot;</span><span class="p">:</span> <span class="s2">&quot;20200901_0001&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>请将上述配置内容保存到服务器中的某一位置进行修改。</p>
+<p>以下为对该配置中的参数的解释说明：</p>
+<ol>
+<li><strong><code>job_parameters</code></strong>：该参数中的<code>federated_mode</code>有两个可选参数，分别为<code>MULTIPLE</code> 及<code>SINGLE</code>。如果设置为<code>SINGLE</code>，则该迁移任务只会在提交迁移任务的本方执行，那么需要分别在所有新参与方提交任务;如果设置为<code>MULTIPLE</code>，则将任务分发到<code>execute_party</code>中指定的参与方执行任务，只需要在作为<code>migrate_initiator</code>的新参与方提交。</li>
+<li><strong><code>role</code></strong>：该参数填写生成原始模型的参与方<code>role</code>及其对应的<code>party_id</code>信息。</li>
+<li><strong><code>migrate_initiator</code></strong>：该参数用于指定迁移后的模型的任务发起方信息，分别需指定发起方的<code>role</code>与<code>party_id</code>。</li>
+<li><strong><code>migrate_role</code></strong>：该参数用于指定迁移后的模型的参与方<code>role</code>及<code>party_id</code>信息。</li>
+<li><strong><code>execute_party</code></strong>：该参数用于指定需要执行迁移的<code>role</code>及<code>party_id</code>信息, 该<code>party_id</code>为源集群<code>party_id</code>。</li>
+<li><strong><code>model_id</code></strong>：该参数用于指定需要被迁移的原始模型的<code>model_id</code>。</li>
+<li><strong><code>model_version</code></strong>：该参数用于指定需要被迁移的原始模型的<code>model_version</code>。</li>
+<li><strong><code>unify_model_version</code></strong>：此参数为非必填参数，该参数用于指定新模型的<code>model_version</code>。若未提供该参数，新模型将以迁移任务的<code>job_id</code>作为其新<code>model_version</code>。</li>
+</ol>
+<p>上述配置文件举例说明：
+1. 源模型的参与方为guest: 9999, host: 10000, arbiter: 10000, 将模型迁移成参与方为guest: 99, host: 100, arbiter: 100, 且新发起方为guest: 99
+2. <code>federated_mode</code>: <code>SINGLE</code>: 表示每个迁移任务只在提交任务的集群执行任务，那么需要在99、100分别提交任务
+3. 例如在<code>99</code>执行，则<code>execute_party</code>配置为"guest": [9999]
+4. 例如在<code>10</code>执行，则<code>execute_party</code>配置为"arbiter": [10000], "host": [10000]</p>
+<h2 id="2">2. 提交迁移任务(在所有目标集群分别操作)<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p>迁移任务需使用FATE Flow CLI v2进行提交，示例执行命令如下：</p>
+<div class="highlight"><pre><span></span><code>flow model migrate -c <span class="nv">$FATE_FLOW_BASE</span>/examples/model/migrate_model.json
+</code></pre></div>
+<h2 id="3">3. 任务执行结果<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<p>如下为实际迁移任务的配置文件内容：</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;federated_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;SINGLE&quot;</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;role&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9999</span><span class="p">],</span>
+    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;migrate_initiator&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;guest&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;party_id&quot;</span><span class="p">:</span> <span class="mi">99</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;migrate_role&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">99</span><span class="p">],</span>
+    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;execute_party&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9999</span><span class="p">],</span>
+    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;model_id&quot;</span><span class="p">:</span> <span class="s2">&quot;guest-9999#host-10000#model&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;model_version&quot;</span><span class="p">:</span> <span class="s2">&quot;202010291539339602784&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;unify_model_version&quot;</span><span class="p">:</span> <span class="s2">&quot;fate_migration&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>该任务实现的是，将party_id为9999（guest），10000（host）的集群生成的model_id为guest-9999#host-10000#model，model_version为202010291539339602784的模型修改迁移生成适配party_id为99（guest），100（host）集群的新模型</p>
+<p>如下为迁移成功的后得到的返回结果：</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;detail&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;9999&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;Migrating model successfully. The configuration of model has been modified automatically. New model id is: guest-99#host-100#model, model version is: fate_migration. Model files can be found at &#39;/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip&#39;.&quot;</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;10000&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;Migrating model successfully. The configuration of model has been modified automatically. New model id is: guest-99#host-100#model, model version is: fate_migration. Model files can be found at &#39;/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip&#39;.&quot;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;9999&quot;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;10000&quot;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;jobId&quot;</span><span class="p">:</span> <span class="s2">&quot;202010292152299793981&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>任务成功执行后，执行方的机器中都会生成一份迁移后模型压缩文件，该文件路径可以在返回结果中得到。如上，guest方（9999）的迁移后模型文件路径为：<code>/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip</code>，host方（10000）的迁移后模型文件路径为：<code>/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip</code>。新的model_id与model_version同样可以从返回中获得。</p>
+<h2 id="4">4. 转移文件并导入(在所有目标集群分别操作)<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<p>迁移任务成功之后，请手动将新生成的模型压缩文件转移到目标集群的fateflow机器上。例如：第三点中guest方（99）生成的新模型压缩文件需要被转移到guest（99）机器上。压缩文件可以放在对应机器上的任意位置，接下来需要配置模型的导入任务，配置文件请见<a href="https://github.com/FederatedAI/FATE/blob/master/python/fate_flow/examples/import_model.json">import_model.json</a>。</p>
+<p>下面举例介绍在guest（99）中导入迁移后模型的配置文件：</p>
+<div class="highlight"><pre><span></span><code>{
+  &quot;role&quot;: &quot;guest&quot;,
+  &quot;party_id&quot;: 99,
+  &quot;model_id&quot;: &quot;guest-99#host-100#model&quot;,
+  &quot;model_version&quot;: &quot;fate_migration&quot;,
+  &quot;file&quot;: &quot;/data/projects/fate/python/temp/guest#99#guest-99#host-100#model_fate_migration.zip&quot;
+}
+</code></pre></div>
+<p>请根据实际情况对应填写角色role，当前本方party_id，迁移模型的新model_id及model_version，以及迁移模型的压缩文件所在路径。</p>
+<p>如下为使用FATE Flow CLI v2提交导入模型的示例命令：</p>
+<div class="highlight"><pre><span></span><code>flow model import -c <span class="nv">$FATE_FLOW_BASE</span>/examples/model/import_model.json
+</code></pre></div>
+<p>得到如下返回视为导入成功：</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>迁移任务至此完成，用户可使用新的model_id及model_version进行任务提交，以利用迁移后的模型执行预测任务。</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../fate_flow_service_registry/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 服务注册中心" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              服务注册中心
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../fate_flow_monitoring/" class="md-footer__link md-footer__link--next" aria-label="下一页: 作业实时监测" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              作业实时监测
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            © Copyright 2022 WeBank Co., Ltd. | All Rights Reserved.
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+        <script src="../../mkdocs/js/termynal.js"></script>
+      
+        <script src="../../mkdocs/js/custom.js"></script>
+      
+        <script src="../../mkdocs/js/lottie-player.js"></script>
+      
+    
+  </body>
+</html>
