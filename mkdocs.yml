@@ -3,7 +3,7 @@ repo_name: FederatedAI/FATE-Flow
 repo_url: https://github.com/FederatedAI/FATE-Flow
 edit_uri: edit/master/doc
 docs_dir: doc
-copyright: © Copyright 2020 WeBank Co., Ltd. | All Rights Reserved.
+copyright: © Copyright 2022 WeBank Co., Ltd. | All Rights Reserved.
 
 nav:
   - Home: index.md
@@ -56,17 +56,17 @@ theme:
         icon: material/weather-night
         name: Switch to light mode
 
-
 plugins:
-  - render_swagger
-  - awesome-pages
   - search
+  - awesome-pages
+  - render_swagger
   - i18n:
       default_language: en
       languages:
         zh: 中文
   - markdown-include-snippet:
       base_path: doc
+
 markdown_extensions:
   - pymdownx.snippets:
       base_path: doc
@@ -103,6 +103,8 @@ extra:
     - name: 中文
       lang: zh
       link: "zh/"
+  version:
+    provider: mike
 
 extra_css:
   - 'mkdocs/css/termynal.css'
@@ -114,4 +116,3 @@ extra_javascript:
   - 'mkdocs/js/termynal.js'
   - 'mkdocs/js/custom.js'
   - 'mkdocs/js/lottie-player.js'
-  - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'

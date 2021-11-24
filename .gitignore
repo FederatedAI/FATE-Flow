@@ -26,3 +26,6 @@ venv
 *.whl
 /conf/local.*.yaml
 /cluster-deploy/FATE_install_*
+
+# doc
+/site/
