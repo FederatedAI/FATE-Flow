@@ -27,7 +27,7 @@ nav:
     - configuration_instruction.md
     - system_operational.md
     - faq.md
-  #- API: swagger.md
+  - API: swagger
 
 theme:
   name: material
@@ -43,7 +43,7 @@ theme:
   icon:
     repo: fontawesome/brands/github
   language: en
-  palette: 
+  palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
       toggle:
