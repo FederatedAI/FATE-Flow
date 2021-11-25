@@ -12,33 +12,7 @@
 
     参考`FATE项目`主仓库[FederatedAI/FATE](https://github.com/FederatedAI/FATE)部署`FATE项目`，主要目录结构如下：
 
-      - bin
-      - conf
-      - examples
-      - doc
-      - fate
-        - python
-          - fate_arch
-          - federatedml
-      - fateflow
-        - conf
-        - doc
-        - python
-          - fate_flow
-        - logs
-        - jobs
-      - fateboard
-        - conf
-        - fateboard.jar
-        - logs
-      - eggroll
-        - bin
-        - conf
-        - lib
-        - python
-        - data
-        - logs
-      - fate.env
+    ![](./images/fate_deploy_directory.png){: style="height:566px;width:212px"}
 
 - FATE_VERSION：表示`FATE`的版本号，如1.7.0
 - FATE_FLOW_VERSION：表示`FATE Flow`的版本号，如1.7.0
