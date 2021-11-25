@@ -12,33 +12,7 @@ You will see the following `document variables` in all `FATE Flow` documentation
 
     Deploy the `FATE project` with reference to the main repository [FederatedAI/FATE](https://github.com/FederatedAI/FATE), the main directory structure is as follows
 
-      - bin
-      - conf
-      - examples
-      - doc
-      - fate
-        - python
-          - fate_arch
-          - federatedml
-      - fateflow
-        - conf
-        - doc
-        - python
-          - fate_flow
-        - logs
-        - jobs
-      - fateboard
-        - conf
-        - fateboard.jar
-        - logs
-      - eggroll
-        - bin
-        - conf
-        - lib
-        - python
-        - data
-        - logs
-      - fate.env
+    ![](./images/fate_deploy_directory.png){: style="height:566px;width:212px"}
 
 - FATE_VERSION: The version number of `FATE`, e.g. 1.7.0
 - FATE_FLOW_VERSION: the version number of `FATE Flow`, e.g. 1.7.0
