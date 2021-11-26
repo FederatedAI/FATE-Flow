@@ -9,14 +9,14 @@ FATE Flow is a multi-party federated task security scheduling platform for feder
 
 Providing production-level service capabilities:
 
-- Data access
-- Multi-party federated job scheduling
-- Multi-party resource coordination
-- Data flow tracking
-- Real-time job monitoring
+- Data Access
 - Component Registry
-- Multi-party joint model registry
-- Multi-party cooperation permission management
+- Federated Job&Task Scheduling
+- Multi-Party Resource Coordination
+- Data Flow Tracking
+- Real-Time Job Monitoring
+- Multi-Party Federated Model Registry
+- Multi-Party Cooperation Authority Management
 - CLI, REST API, Python API
 
 For detailed introduction, please refer to [FATE Flow Overall Design](https://fate-flow.readthedocs.io/zh/develop-1.7.0/zh/fate_flow/)
