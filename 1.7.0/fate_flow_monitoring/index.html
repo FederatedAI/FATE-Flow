@@ -14,7 +14,7 @@
     
     
       
-        <title>Real-time Monitoring - FATE Flow</title>
+        <title>Real-Time Monitoring - FATE Flow</title>
       
     
     
@@ -107,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Real-time Monitoring
+              Real-Time Monitoring
             
           </span>
         </div>
@@ -444,8 +444,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../fate_flow_component_registry/" class="md-nav__link">
+        Task Component Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../fate_flow_job_scheduling/" class="md-nav__link">
-        Multi-Party Job Scheduling
+        Multi-Party Job&Task Scheduling
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_resource_management/" class="md-nav__link">
+        Multi-Party Resource Coordination
       </a>
     </li>
   
@@ -470,38 +498,66 @@
               
   
   
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Real-Time Monitoring
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Real-Time Monitoring
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-description" class="md-nav__link">
+    1. Description
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
   
     <li class="md-nav__item">
       <a href="../fate_flow_model_registry/" class="md-nav__link">
         Multi-Party Federated Model Registry
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fate_flow_component_registry/" class="md-nav__link">
-        Task Component Registry
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fate_flow_resource_management/" class="md-nav__link">
-        Multi-Party Resource Coordination
       </a>
     </li>
   
@@ -559,62 +615,6 @@
       <a href="../fate_flow_model_migration/" class="md-nav__link">
         Inter-cluster Model Migration
       </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Real-time Monitoring
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        Real-time Monitoring
-      </a>
-      
-        
-
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-description" class="md-nav__link">
-    1. Description
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -762,7 +762,7 @@
                   </a>
                 
                 
-                <h1 id="real-time-monitoring">Real-time Monitoring<a class="headerlink" href="#real-time-monitoring" title="Permanent link">&para;</a></h1>
+                <h1 id="real-time-monitoring">Real-Time Monitoring<a class="headerlink" href="#real-time-monitoring" title="Permanent link">&para;</a></h1>
 <h2 id="1-description">1. Description<a class="headerlink" href="#1-description" title="Permanent link">&para;</a></h2>
 <p>Mainly introduces <code>FATE Flow</code> to monitor job running status, Worker execution status, etc., in real time to ensure final consistency</p>
                 
@@ -789,7 +789,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../fate_flow_model_migration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Inter-cluster Model Migration" rel="prev">
+        <a href="../fate_flow_tracking/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Data Flow Tracking" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -798,20 +798,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Inter-cluster Model Migration
+              Data Flow Tracking
             </div>
           </div>
         </a>
       
       
         
-        <a href="../fate_flow_client/" class="md-footer__link md-footer__link--next" aria-label="Next: FATE Flow Client" rel="next">
+        <a href="../fate_flow_model_registry/" class="md-footer__link md-footer__link--next" aria-label="Next: Multi-Party Federated Model Registry" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              FATE Flow Client
+              Multi-Party Federated Model Registry
             </div>
           </div>
           <div class="md-footer__button md-icon">
