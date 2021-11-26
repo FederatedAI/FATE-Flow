@@ -1,4 +1,4 @@
-# Multi-Party Job Scheduling
+# Multi-Party Job&Task Scheduling
 
 ## 1. Description
 
