@@ -72,13 +72,18 @@ class Writer(ComponentBase):
             LOGGER.info("start create table info")
             output_namespace, output_name = self._create_output_table_info()
         LOGGER.info(f"output_namespace: {output_namespace}, output_name: {output_name}")
-        dest_table = self._create_storage_table(engine=self.parameters.get("storage_engine"),
+        engine = self.parameters.get("storage_engine").upper()
+        dest_table = self._create_storage_table(engine=engine,
                                                 address_dict=self.parameters.get("address"),
                                                 name=output_name,
                                                 namespace=output_namespace,
-                                                partitions=self.parameters.get("partitions", src_table.meta.get_partitions()))
-        _, dest_table.meta = dest_table.meta.update_metas(schema=src_table.meta.get_schema(), id_delimiter=src_table.meta.get_id_delimiter())
-        count = TableStorage.copy_table(src_table, dest_table)
+                                                partitions=self.parameters.get("partitions", src_table.meta.get_partitions()),
+                                                id_delimiter=src_table.meta.get_id_delimiter() if src_table.meta.get_id_delimiter() else ",")
+
+        _, dest_table.meta = dest_table.meta.update_metas(schema=src_table.meta.get_schema(),
+                                                          id_delimiter=src_table.meta.get_id_delimiter() if src_table.meta.get_id_delimiter() else ',')
+
+        count = TableStorage.copy_table(src_table, dest_table, deserialize_value=True)
         LOGGER.info("save success")
         # output table track
         DataTableTracker.create_table_tracker(
@@ -110,7 +115,7 @@ class Writer(ComponentBase):
         return Session.get_global().get_table(name=name, namespace=namespace)
 
     @staticmethod
-    def _create_storage_table(engine, address_dict, name, namespace, partitions):
+    def _create_storage_table(engine, address_dict, name, namespace, partitions, id_delimiter):
         if not address_dict:
             address_dict = {}
         if engine == StorageEngine.MYSQL:
@@ -144,6 +149,7 @@ class Writer(ComponentBase):
             name=name,
             namespace=namespace,
             partitions=partitions,
+            id_delimiter=id_delimiter
         )
         return output_table
 

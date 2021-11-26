@@ -30,6 +30,8 @@ from fate_flow.component_env_utils import feature_utils
 from fate_flow.settings import stat_logger
 from fate_flow.db.db_models import DB, TrackingMetric, DataTableTracking
 from fate_flow.utils import data_utils
+from fate_flow.utils.data_utils import get_header_schema
+
 
 class DataTableTracker(object):
     @classmethod
@@ -105,12 +107,13 @@ class DataTableTracker(object):
 
 class TableStorage:
     @staticmethod
-    def copy_table(src_table: StorageTableABC, dest_table: StorageTableABC):
+    def copy_table(src_table: StorageTableABC, dest_table: StorageTableABC, deserialize_value=False):
         count = 0
         data_temp = []
         part_of_data = []
         src_table_meta = src_table.meta
         schema = {}
+        update_schema = False
         if not src_table_meta.get_in_serialized():
             if src_table_meta.get_have_head():
                 get_head = False
@@ -153,6 +156,15 @@ class TableStorage:
                 )
         else:
             for k, v in src_table.collect():
+                if deserialize_value:
+                    # writer component: deserialize value
+                    v, extend_header = feature_utils.get_deserialize_value(v, dest_table.meta.get_id_delimiter())
+                    if not update_schema:
+                        header_list = get_component_output_data_schema(src_table.meta, extend_header)
+                        schema = get_header_schema(dest_table.meta.get_id_delimiter().join(header_list),
+                                                   dest_table.meta.get_id_delimiter())
+                        _, dest_table.meta = dest_table.meta.update_metas(schema=schema)
+                        update_schema = True
                 count = TableStorage.put_in_table(
                     table=dest_table,
                     k=k,
@@ -164,7 +176,7 @@ class TableStorage:
             schema = src_table.meta.get_schema()
         if data_temp:
             dest_table.put_all(data_temp)
-        dest_table.meta.update_metas(schema=schema, part_of_data=part_of_data)
+        dest_table.meta.update_metas(schema=schema if not update_schema else None, part_of_data=part_of_data)
         return dest_table.count()
 
     @staticmethod
@@ -298,8 +310,10 @@ def get_component_output_data_schema(output_table_meta, extend_header, is_str=Fa
     if not schema:
         return ['sid']
     header = [schema.get('sid_name', 'sid')]
+    if "label" in extend_header and schema.get("label_name"):
+        extend_header[extend_header.index("label")] = schema.get("label_name")
     header.extend(extend_header)
-    if is_str:
+    if is_str or isinstance(schema.get('header'), str):
         if not schema.get('header'):
             if schema.get('sid'):
                 return [schema.get('sid')]
