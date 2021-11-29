@@ -19,7 +19,7 @@ Providing production-level service capabilities:
 - Multi-Party Cooperation Authority Management
 - CLI, REST API, Python API
 
-For detailed introduction, please refer to [FATE Flow Overall Design](https://fate-flow.readthedocs.io/zh/develop-1.7.0/zh/fate_flow/)
+For detailed introduction, please refer to [FATE Flow Overall Design](https://fate-flow.readthedocs.io/en/latest/zh/fate_flow/)
 
 ## Deployment
 
