@@ -100,4 +100,4 @@ fate_on_spark:
 
 ## 6. 相关命令
 
-{{snippet('cli/resource.zh.md')}}
+{{snippet('cli/resource.zh.md', header=False)}}
