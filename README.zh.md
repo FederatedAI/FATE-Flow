@@ -19,7 +19,7 @@ FATE Flow是一个联邦学习端到端全流程的多方联合任务安全调�
 - 多方合作权限管理
 - CLI、REST API、Python API
 
-详细介绍请参考[FATE Flow整体设计](https://fate-flow.readthedocs.io/en/latest/zh/fate_flow/)
+详细介绍请参考[FATE Flow整体设计](https://federatedai.github.io/FATE-Flow/latest/zh/fate_flow/)
 
 ## 部署
 
@@ -27,7 +27,7 @@ FATE Flow是一个联邦学习端到端全流程的多方联合任务安全调�
 
 ## 文档
 
-FATE Flow官方文档在这里[https://fate-flow.readthedocs.io/en/latest/zh/](https://fate-flow.readthedocs.io/en/latest/zh/)
+FATE Flow官方文档在这里[https://federatedai.github.io/FATE-Flow/latest/zh/](https://federatedai.github.io/FATE-Flow/latest/zh/)
 
 ## License
 [Apache License 2.0](LICENSE)
