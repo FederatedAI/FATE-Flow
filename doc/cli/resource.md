@@ -1,5 +1,4 @@
-## resource
-## Resources
+## Resource
 
 ### query
 

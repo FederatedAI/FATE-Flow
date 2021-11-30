@@ -99,4 +99,4 @@ The total resources requested by the job are `task_cores` * `task_parallelism`. 
 
 ## 6. Related commands
 
-{{snippet('cli/resource.md')}}
+{{snippet('cli/resource.md', header=False)}}
