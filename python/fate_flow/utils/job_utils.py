@@ -18,19 +18,19 @@ import os
 import sys
 import threading
 import typing
-from fate_arch.common import file_utils, FederatedMode
-from fate_arch.common.base_utils import json_dumps, fate_uuid, current_timestamp
-from fate_flow.utils.log_utils import schedule_logger
+
+from fate_arch.common import FederatedMode, file_utils
+from fate_arch.common.base_utils import current_timestamp, fate_uuid, json_dumps
 from fate_flow.db.db_models import DB, Job, Task
-from fate_flow.entity import JobConfiguration
-from fate_flow.entity.run_status import JobStatus, TaskStatus
-from fate_flow.entity import RunParameters
+from fate_flow.db.db_utils import query_db
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.db.service_registry import ServiceRegistry
-from fate_flow.utils import detect_utils, process_utils
-from fate_flow.utils import session_utils
+from fate_flow.entity import JobConfiguration, RunParameters
+from fate_flow.entity.run_status import JobStatus, TaskStatus
+from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
+from fate_flow.utils import detect_utils, process_utils, session_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.log_utils import schedule_logger
 
 
 class JobIdGenerator(object):
@@ -295,21 +295,13 @@ def job_pipeline_component_module_name():
 
 
 @DB.connection_context()
-def list_job(limit):
-    if limit > 0:
-        jobs = Job.select().order_by(Job.f_create_time.desc()).limit(limit)
-    else:
-        jobs = Job.select().order_by(Job.f_create_time.desc())
-    return [job for job in jobs]
+def list_job(limit=0, offset=0, query=None, order_by=None):
+    return query_db(Job, limit, offset, query, order_by)
 
 
 @DB.connection_context()
-def list_task(limit):
-    if limit > 0:
-        tasks = Task.select().order_by(Task.f_create_time.desc()).limit(limit)
-    else:
-        tasks = Task.select().order_by(Task.f_create_time.desc())
-    return [task for task in tasks]
+def list_task(limit=0, offset=0, query=None, order_by=None):
+    return query_db(Task, limit, offset, query, order_by)
 
 
 def check_job_process(pid):
