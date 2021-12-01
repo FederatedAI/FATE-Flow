@@ -6,10 +6,10 @@ labels: 'type:feature'
 ---
 
 **System information**
+
 - FATE Flow version (use command: python fate_flow_server.py --version):
 - Python version (use command: python --version):
 - Are you willing to contribute it (yes/no):
-
 
 **Describe the feature and the current behavior/state.**
 
