@@ -158,7 +158,7 @@ class TaskExecutor(BaseTaskWorker):
             need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
             provider_interface = provider_utils.get_provider_interface(provider=component_provider)
             run_object = provider_interface.get(module_name, ComponentRegistry.get_provider_components(provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(self.args.role)
-
+            flow_feeded_parameters.update({"table_info": input_table_list})
             cpn_input = ComponentInput(
                 tracker=tracker_client,
                 checkpoint_manager=checkpoint_manager,

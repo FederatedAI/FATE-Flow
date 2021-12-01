@@ -64,8 +64,16 @@ class Writer(ComponentBase):
 
     def _run(self, cpn_input: ComponentInputProtocol):
         self.parameters = cpn_input.parameters
+        if self.parameters.get("namespace") and self.parameters.get("table_name"):
+            namespace = self.parameters.get("namespace")
+            name = self.parameters.get("table_name")
+        elif cpn_input.flow_feeded_parameters.get("table_info"):
+            namespace = cpn_input.flow_feeded_parameters.get("table_info")[0].get("namespace")
+            name = cpn_input.flow_feeded_parameters.get("table_info")[0].get("name")
+        else:
+            raise Exception("no found name or namespace in input parameters")
         LOGGER.info(f"writer parameters:{self.parameters}")
-        src_table = self._get_storage_table(namespace=self.parameters.get("namespace"), name=self.parameters.get("table_name"))
+        src_table = self._get_storage_table(namespace=namespace, name=name)
         output_name = self.parameters.get("output_table_name")
         output_namespace = self.parameters.get("output_namespace")
         if not output_namespace or not output_name:
@@ -91,8 +99,8 @@ class Writer(ComponentBase):
             output_namespace,
             entity_info={
                 "have_parent": True,
-                "parent_table_namespace": self.parameters.get("namespace"),
-                "parent_table_name": self.parameters.get("table_name"),
+                "parent_table_namespace": namespace,
+                "parent_table_name": name,
                 "job_id": self.tracker.job_id,
             },
         )
