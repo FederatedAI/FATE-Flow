@@ -73,8 +73,11 @@ if __name__ == '__main__':
     RuntimeConfig.init_env()
     RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
+
     RuntimeConfig.set_service_db(service_db())
+    RuntimeConfig.SERVICE_DB.register_flow()
     RuntimeConfig.SERVICE_DB.register_models()
+
     ComponentRegistry.load()
     default_algorithm_provider = ProviderManager.register_default_providers()
     RuntimeConfig.set_component_provider(default_algorithm_provider)

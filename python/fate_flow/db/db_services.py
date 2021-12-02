@@ -121,6 +121,14 @@ class ServicesDB(abc.ABC):
         except ServicesError as e:
             stat_logger.exception(e)
 
+    def register_flow(self):
+        """Call `self.insert` for insert the model transfer url to database.
+        Backward compatible with FATE-Serving versions before 2.1.0.
+
+        :return: None
+        """
+        self.insert('fateflow', get_model_download_endpoint())
+
     def register_model(self, party_model_id, model_version):
         """Call `self.insert` for insert a service url to database.
         Currently, only `fateflow` (model download) urls are supported.
