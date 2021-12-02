@@ -1,41 +1,33 @@
-English \| [中文](README_zh.md)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![CodeStyle](https://img.shields.io/badge/Check%20Style-Google-brightgreen)](https://checkstyle.sourceforge.io/google_style.html) [![Style](https://img.shields.io/badge/Check%20Style-Black-black)](https://checkstyle.sourceforge.io/google_style.html)
 
-FATE FLOW
-=========
+[中文](./README.zh.md)
 
-Introduction
-------------
+FATE Flow is a multi-party federated task security scheduling platform for federated learning end-to-end pipeline
 
-FATE-Flow is the job scheduling system of the federated learning framework FATE, which realizes the complete management of the federated learning job life cycle, including data input, training job scheduling, indicator tracking, model center and other functions
+- [Shared-State Scheduling Architecture](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/41684.pdf)
+- Secure Multi-Party Communication Across Data Centers
 
-![FATE-Flow Federated Learning Pipeline](images/federated_learning_pipeline.png)
+Providing production-level service capabilities:
 
-### FATE-Flow now supports
+- Data Access
+- Component Registry
+- Federated Job&Task Scheduling
+- Multi-Party Resource Coordination
+- Data Flow Tracking
+- Real-Time Job Monitoring
+- Multi-Party Federated Model Registry
+- Multi-Party Cooperation Authority Management
+- CLI, REST API, Python API
 
--   DAG define Pipeline
--   Describe DAG using FATE-DSL in JSON format
--   Advanced scheduling framework, based on global state and optimistic lock scheduling, single-party DAG scheduling, multi-party coordinated scheduling, and support for multiple schedulers
--   Flexible scheduling strategy, support start/stop/rerun, etc.
--   Fine-grained resource scheduling capabilities, supporting core, memory, and working node strategies based on different computing engines
--   Realtime tracker, real-time tracking data, parameters, models and indicators during operation
--   Federated Learning Model Registry, model management, federated consistency, import and export, migration between clusters
--   Provide CLI, HTTP API, Python SDK
+For detailed introduction, please refer to [FATE Flow Overall Design](https://federatedai.github.io/FATE-Flow/latest/fate_flow/#overall-design)
 
-[Wiki](https://github.com/FederatedAI/FATE-Flow/wiki)
-------------
+## Deployment
 
-[Deploy](../../README.md)
-------
+Please refer to [FATE](https://github.com/FederatedAI/FATE)
 
-Usage
------
+## Documentation
 
-##### [Command Line Interface v2](../fate_client/flow_client/README.rst)
+The official FATE Flow documentation is here [https://federatedai.github.io/FATE-Flow/latest/](https://federatedai.github.io/FATE-Flow/latest/)
 
-##### [Python SDK](../fate_client/flow_sdk/README.rst)
-
-##### [HTTP API](doc/fate_flow_http_api.rst)
-
-##### [Training Examples](examples/README.rst)
-
-##### [Online Inference Examples](../../doc/model_publish_with_serving_guide.md)
+## License
+[Apache License 2.0](LICENSE)

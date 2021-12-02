@@ -17,7 +17,7 @@ import sys
 import datetime
 from copy import deepcopy
 
-from peewee import Model, CharField, BigIntegerField, TextField, CompositeKey, IntegerField
+from peewee import Model, CharField, BigIntegerField, TextField, CompositeKey, IntegerField, PeeweeException
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
@@ -45,7 +45,11 @@ class MysqlModelStorage(ModelStorageBase):
                     MachineLearningModel.f_model_version == model_version,
                 ).count()
             return counts > 0
-        except Exception as e:
+        except PeeweeException as e:
+            # Table doesn't exist
+            if e.args and e.args[0] == 1146:
+                return False
+
             raise e
         finally:
             self.close_connection()

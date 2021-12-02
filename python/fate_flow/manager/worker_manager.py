@@ -37,6 +37,8 @@ class WorkerManager:
     @classmethod
     def start_general_worker(cls, worker_name: WorkerName, job_id="", role="", party_id=0, provider: ComponentProvider = None,
                              initialized_config: dict = None, run_in_subprocess=True, **kwargs):
+        if RuntimeConfig.DEBUG:
+            run_in_subprocess = True
         participate = locals()
         worker_id, config_dir, log_dir = cls.get_process_dirs(worker_name=worker_name,
                                                               job_id=job_id,

@@ -52,7 +52,7 @@ def singleton(cls, *args, **kw):
 
 
 @singleton
-class BaseDataBase(object):
+class BaseDataBase:
     def __init__(self):
         database_config = DATABASE.copy()
         db_name = database_config.pop("name")
@@ -66,7 +66,7 @@ class BaseDataBase(object):
             stat_logger.info('init mysql database on cluster mode successfully')
 
 
-class DatabaseLock():
+class DatabaseLock:
     def __init__(self, lock_name, timeout=10, db=None):
         self.lock_name = lock_name
         self.timeout = timeout

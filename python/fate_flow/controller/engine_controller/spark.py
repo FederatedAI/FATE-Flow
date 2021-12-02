@@ -85,4 +85,4 @@ class SparkEngine(EngineABC):
             job_utils.start_session_stop(task)
 
     def is_alive(self, task):
-        return process_utils.check_process(pid=int(task.f_run_pid))
+        return process_utils.check_process(pid=int(task.f_run_pid), task=task)

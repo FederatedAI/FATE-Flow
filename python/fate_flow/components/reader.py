@@ -356,7 +356,7 @@ class Reader(ComponentBase):
             schema=schema,
             need_read=False
         )
-        dest_table.meta.update_metas(schema=schema, part_of_data=src_table_meta.get_part_of_data())
+        dest_table.meta.update_metas(schema=schema, part_of_data=src_table_meta.get_part_of_data(), count=src_table_meta.get_count())
         LOGGER.info(
             f"save {dest_table.namespace} {dest_table.name} success"
         )

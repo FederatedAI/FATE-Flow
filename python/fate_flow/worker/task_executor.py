@@ -177,11 +177,23 @@ class TaskExecutor(BaseTaskWorker):
                 ),
                 flow_feeded_parameters=flow_feeded_parameters,
             )
-            # add profile logs
-            profile.profile_start()
-            cpn_output = run_object.run(cpn_input)
-            sess.wait_remote_all_done()
-            profile.profile_ends()
+            profile_log_enabled = False
+            try:
+                if int(os.getenv("FATE_PROFILE_LOG_ENABLED", "0")) > 0:
+                    profile_log_enabled = True
+            except Exception as e:
+                LOGGER.warning(e)
+            if profile_log_enabled:
+                # add profile logs
+                LOGGER.info("profile logging is enabled")
+                profile.profile_start()
+                cpn_output = run_object.run(cpn_input)
+                sess.wait_remote_all_done()
+                profile.profile_ends()
+            else:
+                LOGGER.info("profile logging is disabled")
+                cpn_output = run_object.run(cpn_input)
+                sess.wait_remote_all_done()
 
             output_table_list = []
             LOGGER.info(f"task output data {cpn_output.data}")
@@ -295,7 +307,8 @@ class TaskExecutor(BaseTaskWorker):
                         search_component_name, search_data_name = data_key_item[0], data_key_item[1]
                         storage_table_meta = None
                         tracker_client = TrackerClient(job_id=job_id, role=role, party_id=party_id,
-                                                       component_name=search_component_name)
+                                                       component_name=search_component_name,
+                                                       task_id=task_id, task_version=task_version)
                         if search_component_name == 'args':
                             if job_args.get('data', {}).get(search_data_name).get('namespace', '') and job_args.get(
                                     'data', {}).get(search_data_name).get('name', ''):
@@ -307,7 +320,8 @@ class TaskExecutor(BaseTaskWorker):
                                 data_name=search_data_name)
                             if upstream_output_table_infos_json:
                                 tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
-                                                  component_name=search_component_name)
+                                                  component_name=search_component_name,
+                                                  task_id=task_id, task_version=task_version)
                                 upstream_output_table_infos = []
                                 for _ in upstream_output_table_infos_json:
                                     upstream_output_table_infos.append(fill_db_model_object(

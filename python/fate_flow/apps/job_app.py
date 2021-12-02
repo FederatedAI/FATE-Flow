@@ -89,10 +89,54 @@ def query_job():
 
 @manager.route('/list/job', methods=['POST'])
 def list_job():
-    jobs = job_utils.list_job(request.json.get('limit'))
-    if not jobs:
-        return get_json_result(retcode=101, retmsg='No job found')
-    return get_json_result(retcode=0, retmsg='success', data=[job.to_dict() for job in jobs])
+    limit, offset = parse_limit_and_offset()
+
+    query = {
+        'tag': ('!=', 'submit_failed'),
+    }
+
+    for i in ('job_id', 'party_id', 'description'):
+        if request.json.get(i) is not None:
+            query[i] = request.json[i]
+    if query.get('party_id') is not None:
+        try:
+            query['party_id'] = int(query['party_id'])
+        except Exception:
+            return error_response(400, f"Invalid parameter 'party_id'.")
+    if query.get('description') is not None:
+        query['description'] = ('contains', query['description'])
+
+    for i in ('role', 'status'):
+        if request.json.get(i) is None:
+            continue
+
+        if isinstance(request.json[i], str):
+            request.json[i] = [request.json[i]]
+        if not isinstance(request.json[i], list):
+            return error_response(400, f"Invalid parameter '{i}'.")
+        request.json[i] = set(request.json[i])
+
+        for j in request.json[i]:
+            if j not in valid_query_parameters[i]:
+                return error_response(400, f"Invalid parameter '{i}'.")
+        query[i] = ('in_', request.json[i])
+
+    jobs, count = job_utils.list_job(limit, offset, query, parse_order_by(('create_time', 'desc')))
+    jobs = [job.to_human_model_dict() for job in jobs]
+
+    for job in jobs:
+        job['party_id'] = int(job['party_id'])
+
+        job['partners'] = set()
+        for i in ('guest', 'host', 'arbiter'):
+            job['partners'].update(job['roles'].get(i, []))
+        job['partners'].discard(job['party_id'])
+        job['partners'] = sorted(job['partners'])
+
+    return get_json_result(data={
+        'jobs': jobs,
+        'count': count,
+    })
 
 
 @manager.route('/update', methods=['POST'])
@@ -188,10 +232,26 @@ def query_task():
 
 @manager.route('/list/task', methods=['POST'])
 def list_task():
-    tasks = job_utils.list_task(request.json.get('limit'))
-    if not tasks:
-        return get_json_result(retcode=100, retmsg='No task found')
-    return get_json_result(retcode=0, retmsg='success', data=[task.to_dict() for task in tasks])
+    limit, offset = parse_limit_and_offset()
+
+    query = {}
+    for i in ('job_id', 'role', 'party_id'):
+        if request.json.get(i) is not None:
+            query[i] = request.json[i]
+    if query.get('role') is not None:
+        if query['role'] not in valid_query_parameters['role']:
+            return error_response(400, f"Invalid parameter 'role'.")
+    if query.get('party_id') is not None:
+        try:
+            query['party_id'] = int(query['party_id'])
+        except Exception:
+            return error_response(400, f"Invalid parameter 'party_id'.")
+
+    tasks, count = job_utils.list_task(limit, offset, query, parse_order_by(('create_time', 'asc')))
+    return get_json_result(data={
+        'tasks': [task.to_human_model_dict() for task in tasks],
+        'count': count,
+    })
 
 
 @manager.route('/data/view/query', methods=['POST'])
@@ -263,3 +323,37 @@ def get_url():
         return get_json_result(data={'board_url': board_urls})
     else:
         return get_json_result(retcode=101, retmsg='no found job')
+
+
+def parse_limit_and_offset():
+    try:
+        limit = int(request.json.get('limit', 0))
+        page = int(request.json.get('page', 1)) - 1
+    except Exception:
+        abort(error_response(400, f"Invalid parameter 'limit' or 'page'."))
+
+    return limit, limit * page
+
+
+def parse_order_by(default=None):
+    order_by = []
+
+    if request.json.get('order_by') is not None:
+        if request.json['order_by'] not in valid_query_parameters['order_by']:
+            abort(error_response(400, f"Invalid parameter 'order_by'."))
+        order_by.append(request.json['order_by'])
+
+        if request.json.get('order') is not None:
+            if request.json['order'] not in valid_query_parameters['order']:
+                abort(error_response(400, f"Invalid parameter order 'order'."))
+            order_by.append(request.json['order'])
+
+    return order_by or default
+
+
+valid_query_parameters = {
+    'role': {'guest', 'host', 'arbiter', 'local'},
+    'status': {'success', 'running', 'waiting', 'failed', 'canceled'},
+    'order_by': {'create_time', 'start_time', 'end_time', 'elapsed'},
+    'order': {'asc', 'desc'},
+}

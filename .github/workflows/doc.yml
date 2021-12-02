@@ -1,0 +1,46 @@
+name: generate doc
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'develop-[0-9].[0-9].[0-9]'
+
+  schedule:
+    - cron: '0 8 * * *'
+
+  workflow_dispatch: {}
+
+concurrency:
+  group: doc_generator_${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  doc_generator:
+    name: generate doc on branch ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out the repo
+        uses: actions/checkout@v2
+
+      - name: fetch gh-pages
+        continue-on-error: true
+        run: git fetch origin gh-pages --depth=1
+
+      - name: configure a git user
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: install python packages
+        run: pip install -Ur doc/mkdocs/requirements.txt
+
+      - name: build doc via mike
+        shell: bash
+        run: |
+          VERSION='${{ github.ref_name }}'
+          [ "$VERSION" == main ] && { VERSION=latest; ALIAS='main master'; }
+          VERSION="${VERSION#develop-}"
+
+          mike deploy --push --update-aliases "$VERSION" $ALIAS
+          mike set-default --push latest

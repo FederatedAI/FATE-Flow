@@ -1,7 +1,19 @@
 # Release 1.7.0
-## Major Features and Improvements
-## Bug Fixes
 
+## Major Features and Improvements
+
+* Independent repository instead of all code in the main FATE repository
+* Component registry, which can hot load many different versions of component packages at the same time
+* Hot update of component parameters, component-specific reruns, automatic reruns
+* Model Checkpoint to support task hot start, model deployment and other
+* Data, Model and Cache can be reused between jobs
+* Reader component supports more data sources, such as MySQL, Hive
+* Realtime recording of dataset usage derivation routes
+* Multi-party permission control for datasets
+* Automatic push to reliable storage when model deployment, support Tencent Cloud COS, MySQL, Redis
+* REST API authentication
+
+## Bug Fixes
 
 # Release 1.6.1
 ## Major Features and Improvements

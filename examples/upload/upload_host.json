@@ -4,6 +4,5 @@
   "head": 1,
   "partition": 10,
   "namespace": "experiment",
-  "table_name": "breast_hetero_host",
-  "task_cores": 2
+  "table_name": "breast_hetero_host"
 }
