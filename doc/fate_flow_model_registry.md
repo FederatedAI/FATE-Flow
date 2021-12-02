@@ -1,4 +1,4 @@
-# Multi-Party Federated Model Registry
+# Federated Model Registry
 
 ## 1. Description
 
@@ -16,7 +16,7 @@ Checkpoint model support has been added since 1.7.0 and is not saved by default.
 
 Local disk is not reliable, so there is a risk of losing models. FATE-Flow supports exporting models to specified storage engines, importing from specified storage engines, and pushing models to engine storage when publishing models automatically.
 
-The storage engine supports Tencent Cloud Object Storage, MySQL and Redis, please refer to [Storage Engine Configuration](#5 - Storage Engine Configuration)
+The storage engine supports Tencent Cloud Object Storage, MySQL and Redis, please refer to [Storage Engine Configuration](#4-storage-engine-configuration)
 
 ## 2. Model
 
