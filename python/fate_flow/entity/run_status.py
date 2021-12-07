@@ -150,3 +150,4 @@ class FederatedSchedulingStatusCode(object):
     PARTIAL = 1
     FAILED = 2
     ERROR = 3
+    NOT_EFFECTIVE = 4
