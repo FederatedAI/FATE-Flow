@@ -512,8 +512,5 @@ class JobController(object):
     @classmethod
     def clean_job(cls, job_id, role, party_id, roles):
         schedule_logger(job_id).info(f"start to clean job on {role} {party_id}")
-        tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, reverse=True)
-        for task in tasks:
-            TaskController.clean_task(job_id=job_id, task_id=task.f_task_id, task_version=task.f_task_version, role=role, party_id=int(party_id), content_type=TaskCleanResourceType.TABLE)
         # todo
         schedule_logger(job_id).info(f"job on {role} {party_id} clean done")
