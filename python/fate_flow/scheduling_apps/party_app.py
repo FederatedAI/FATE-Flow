@@ -23,6 +23,7 @@ from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.authentication_utils import request_authority_certification
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.manager.resource_manager import ResourceManager
+from fate_flow.entity.types import TaskCleanResourceType
 
 
 # execute command on every party
@@ -226,7 +227,7 @@ def stop_task(job_id, component_name, task_id, task_version, role, party_id, sto
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/clean/<content_type>', methods=['POST'])
 def clean_task(job_id, component_name, task_id, task_version, role, party_id, content_type):
-    TaskController.clean_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id), content_type=content_type)
+    TaskController.clean_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id), content_type=TaskCleanResourceType(content_type))
     return get_json_result(retcode=0, retmsg='success')
 
 

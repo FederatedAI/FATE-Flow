@@ -25,6 +25,8 @@ from fate_flow.db.db_models import Job, Task
 from fate_flow.operation.job_saver import JobSaver
 import threading
 
+from fate_flow.entity.types import TaskCleanResourceType
+
 
 class FederatedScheduler(object):
     """
@@ -216,9 +218,9 @@ class FederatedScheduler(object):
         return status_code, response
 
     @classmethod
-    def clean_task(cls, job, task, content_type):
+    def clean_task(cls, job, task, content_type: TaskCleanResourceType):
         schedule_logger(task.f_job_id).info("try to clean task {} {} {}".format(task.f_task_id, task.f_task_version, content_type))
-        status_code, response = cls.task_command(job=job, task=task, command="clean/{}".format(content_type))
+        status_code, response = cls.task_command(job=job, task=task, command="clean/{}".format(content_type.value))
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
             schedule_logger(job.f_job_id).info("clean task {} {} {} successfully".format(task.f_task_id, task.f_task_version, content_type))
         else:

@@ -119,5 +119,10 @@ class WorkerName(CustomEnum):
     DEPENDENCE_UPLOAD = "dependence_upload"
 
 
+class TaskCleanResourceType(CustomEnum):
+    TABLE = "table"
+    METRICS = "metrics"
+
+
 class ExternalStorage(CustomEnum):
     MYSQL = "MYSQL"

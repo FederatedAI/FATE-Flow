@@ -101,10 +101,12 @@ if __name__ == '__main__':
     proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
     server.add_insecure_port("{}:{}".format(HOST, GRPC_PORT))
     server.start()
+    print("FATE Flow grpc server start successfully")
     stat_logger.info("FATE Flow grpc server start successfully")
 
     # start http server
     try:
+        print("FATE Flow http server start...")
         stat_logger.info("FATE Flow http server start...")
         werkzeug_logger = logging.getLogger("werkzeug")
         for h in access_logger.handlers:
