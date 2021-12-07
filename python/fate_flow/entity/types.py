@@ -116,3 +116,7 @@ class WorkerName(CustomEnum):
     TASK_INITIALIZER = "task_initializer"
     PROVIDER_REGISTRAR = "provider_registrar"
     DEPENDENCE_UPLOAD = "dependence_upload"
+
+class TaskCleanResourceType(CustomEnum):
+    TABLE = "table"
+    METRICS = "metrics"
