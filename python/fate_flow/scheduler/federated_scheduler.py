@@ -16,7 +16,7 @@
 
 from fate_arch.common import base_utils
 from fate_flow.utils.api_utils import federated_api
-from fate_flow.utils.log_utils import start_log, failed_log, successful_log
+from fate_flow.utils.log_utils import start_log, failed_log, successful_log, warning_log
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.entity import RetCode
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
@@ -244,6 +244,10 @@ class FederatedScheduler(object):
         status_code, response = cls.return_federated_response(federated_response=federated_response)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
             schedule_logger(job.f_job_id).info(successful_log(msg))
+        elif status_code == FederatedSchedulingStatusCode.NOT_EFFECTIVE:
+            schedule_logger(job.f_job_id).warning(warning_log(msg))
+        elif status_code == FederatedSchedulingStatusCode.ERROR:
+            schedule_logger(job.f_job_id).critical(failed_log(msg, detail=response))
         else:
             schedule_logger(job.f_job_id).error(failed_log(msg, detail=response))
         return status_code, response
@@ -251,7 +255,8 @@ class FederatedScheduler(object):
     @classmethod
     def federated_command(cls, job_id, src_role, src_party_id, dest_role, dest_party_id, endpoint, body, federated_mode, federated_response):
         st = base_utils.current_timestamp()
-        schedule_logger(job_id).info(f"start sending {endpoint} federated command")
+        log_msg = f"sending {endpoint} federated command"
+        schedule_logger(job_id).info(start_log(msg=log_msg))
         try:
             response = federated_api(job_id=job_id,
                                      method='POST',
@@ -268,15 +273,13 @@ class FederatedScheduler(object):
                 "retmsg": "Federated schedule error, {}".format(e)
             }
         if response["retcode"] != RetCode.SUCCESS:
-            schedule_logger(job_id=job_id).warning("an error occurred while {} the job to role {} party {}: \n{}".format(
-                endpoint,
-                dest_role,
-                dest_party_id,
-                response["retmsg"]
-            ))
+            if response["retcode"] == RetCode.NOT_EFFECTIVE:
+                schedule_logger(job_id).warning(warning_log(msg=log_msg, role=dest_role, party_id=dest_party_id))
+            else:
+                schedule_logger(job_id).error(failed_log(msg=log_msg, role=dest_role, party_id=dest_party_id, detail=response["retmsg"]))
         federated_response[dest_role][dest_party_id] = response
         et = base_utils.current_timestamp()
-        schedule_logger(job_id).info(f"send {endpoint} federated command use {et - st} ms")
+        schedule_logger(job_id).info(f"{log_msg} use {et - st} ms")
 
     @classmethod
     def report_task_to_initiator(cls, task: Task):
@@ -341,6 +344,8 @@ class FederatedScheduler(object):
             federated_scheduling_status_code = FederatedSchedulingStatusCode.SUCCESS
         elif RetCode.EXCEPTION_ERROR in retcode_set:
             federated_scheduling_status_code = FederatedSchedulingStatusCode.ERROR
+        elif retcode_set == {RetCode.SUCCESS, RetCode.NOT_EFFECTIVE}:
+            federated_scheduling_status_code = FederatedSchedulingStatusCode.NOT_EFFECTIVE
         elif RetCode.SUCCESS in retcode_set:
             federated_scheduling_status_code = FederatedSchedulingStatusCode.PARTIAL
         else:

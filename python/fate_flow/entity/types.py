@@ -101,7 +101,7 @@ class InputSearchType(IntEnum, CustomEnum):
 
 class RetCode(IntEnum, CustomEnum):
     SUCCESS = 0
-    OPERATING_NOT_TASK_EFFECT = 10
+    NOT_EFFECTIVE = 10
     EXCEPTION_ERROR = 100
     ARGUMENT_ERROR = 101
     DATA_ERROR = 102
