@@ -34,6 +34,7 @@ from fate_flow.utils import job_utils, schedule_utils, data_utils
 from fate_flow.utils.authentication_utils import authentication_check
 from fate_flow.utils.authentication_utils import data_authentication_check
 from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.entity.types import TaskCleanResourceType
 
 
 class JobController(object):
