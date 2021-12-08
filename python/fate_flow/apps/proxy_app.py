@@ -30,13 +30,26 @@ def start_proxy(role):
     if role in ['marketplace']:
         response = proxy_api(role, _job_id, request_config)
     else:
+        headers = request.headers
+        json_body = {}
+        if request_config.get('header') and request_config.get("body"):
+            src_party_id = request_config.get('header').get('src_party_id')
+            dest_party_id = request_config.get('header').get('dest_party_id')
+            json_body = request_config
+            if headers:
+                json_body['header'].update(headers)
+        else:
+            src_party_id = headers.get('src_party_id')
+            dest_party_id = headers.get('dest_party_id')
+            json_body["header"] = request.headers
+            json_body["body"] = request_config
         response = federated_api(job_id=_job_id,
                                  method='POST',
                                  endpoint='/forward/{}/do'.format(role),
-                                 src_party_id=request_config.get('header').get('src_party_id'),
-                                 dest_party_id=request_config.get('header').get('dest_party_id'),
+                                 src_party_id=src_party_id,
+                                 dest_party_id=dest_party_id,
                                  src_role=None,
-                                 json_body=request_config,
+                                 json_body=json_body,
                                  federated_mode=FederatedMode.MULTIPLE)
     return jsonify(response)
 
