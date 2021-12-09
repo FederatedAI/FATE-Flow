@@ -235,7 +235,7 @@ def list_task():
     limit, offset = parse_limit_and_offset()
 
     query = {}
-    for i in ('job_id', 'role', 'party_id'):
+    for i in ('job_id', 'role', 'party_id', 'component_name'):
         if request.json.get(i) is not None:
             query[i] = request.json[i]
     if query.get('role') is not None:
