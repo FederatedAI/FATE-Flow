@@ -871,6 +871,9 @@ paths:
                     - host
                     - arbiter
                     - local
+                component_name:
+                  type: string
+                  example: upload_0
                 order_by:
                   type: string
                   description: 'defaults `create_time`'
