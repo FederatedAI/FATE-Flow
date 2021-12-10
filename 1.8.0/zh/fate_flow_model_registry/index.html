@@ -1191,7 +1191,7 @@
 <h3 id="load">load<a class="headerlink" href="#load" title="Permanent link">&para;</a></h3>
 <p>向 Fate-Serving 加载 <code>deploy</code> 生成的模型。</p>
 <div class="highlight"><pre><span></span><code>flow model load -c examples/model/publish_load_model.json
-flow model load -c examples/model/publish_load_model.json -j &lt;job_id&gt;
+flow model load -j &lt;job_id&gt;
 </code></pre></div>
 <p><strong>选项</strong></p>
 <table>
@@ -1209,7 +1209,7 @@ flow model load -c examples/model/publish_load_model.json -j &lt;job_id&gt;
 <td>conf_path</td>
 <td><code>-c</code></td>
 <td><code>--conf-path</code></td>
-<td>否</td>
+<td>是</td>
 <td>配置文件</td>
 </tr>
 <tr>
