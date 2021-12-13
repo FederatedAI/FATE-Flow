@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.0.5">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.0">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.a617204b.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.82f3c0b9.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.9204c3b2.min.css">
@@ -810,12 +810,18 @@
 <li>version_tag：一般在部署文档中，表示<code>FATE项目</code>版本标签，如<code>release</code>, <code>rc1</code>, <code>rc10</code></li>
 </ul>
 <h2 id="2">2. 术语表<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p><code>component_name</code>: 提交任务时组件的名称，一个任务可以有多个同样的组件的，但是 <code>component_name</code> 是不一样的，相当于类的实例</p>
+<p><code>party</code>, 站点，一般物理上指一个FATE单机或者FATE集群</p>
+<p><code>job</code>, 作业</p>
+<p><code>task</code>, 任务, 一个作业由多个任务构成</p>
+<p><code>component</code>, 组件，静态名称，提交作业时需要两个描述配置文件，分别描述该作业需要执行的组件列表、组件依赖关系、组件运行参数</p>
+<p><code>dsl</code>, 指用来描述作业中组件关系的语言, 可以描述组件列表以及组件依赖关系</p>
+<p><code>component_name</code>: 提交作业时组件的名称，一个作业可以有多个同样的组件的，但是 <code>component_name</code> 是不一样的，相当于类的实例, 一个<code>component_name</code>对应的组件会生成一个<code>task</code>运行</p>
 <p><code>componet_module_name</code>: 组件的类名</p>
 <p><code>model_alias</code>: 跟 <code>component_name</code> 类似，就是用户在 dsl 里面是可以配置输出的 model 名称的</p>
 <p>示例：</p>
 <p>图中 <code>dataio_0</code> 是 <code>component_name</code>，<code>DataIO</code> 是 <code>componet_module_name</code>，<code>dataio</code> 是 <code>model_alias</code></p>
 <p><img alt="" src="https://user-images.githubusercontent.com/1758850/124451776-52ee4500-ddb8-11eb-94f2-d43d5174ca4d.png" /></p>
+<p><code>party status</code>, 指任务中每方的执行状态，<code>status</code>是由所有方的<code>party status</code>推断出，如所有<code>party status</code>为<code>success</code>，<code>status</code>才为success</p>
 <h2 id="3">3. 阅读指引<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <ol>
 <li>可以先阅读<a href="../fate_flow/">整体设计</a></li>
@@ -899,7 +905,7 @@
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "search": "../../assets/javascripts/workers/search.cefbb252.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.a5f8ea78.min.js"></script>
+      <script src="../../assets/javascripts/bundle.17f42bbf.min.js"></script>
       
         <script src="../../mkdocs/js/termynal.js"></script>
       
