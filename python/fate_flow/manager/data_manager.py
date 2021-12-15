@@ -49,14 +49,16 @@ class DataTableTracker(object):
                 DataTableTracking.f_table_name == entity_info.get("parent_table_name"),
                 DataTableTracking.f_table_namespace == entity_info.get("parent_table_namespace")).order_by(DataTableTracking.f_create_time.desc())
             if not parent_trackers:
-                raise Exception(f"table {table_name} {table_namespace} no found parent")
-            parent_tracker = parent_trackers[0]
-            if parent_tracker.f_have_parent:
-                tracker.f_source_table_name = parent_tracker.f_source_table_name
-                tracker.f_source_table_namespace = parent_tracker.f_source_table_namespace
+                tracker.f_source_table_name = entity_info.get("parent_table_name")
+                tracker.f_source_table_namespace = entity_info.get("parent_table_namespace")
             else:
-                tracker.f_source_table_name = parent_tracker.f_table_name
-                tracker.f_source_table_namespace = parent_tracker.f_table_namespace
+                parent_tracker = parent_trackers[0]
+                if parent_tracker.f_have_parent:
+                    tracker.f_source_table_name = parent_tracker.f_source_table_name
+                    tracker.f_source_table_namespace = parent_tracker.f_source_table_namespace
+                else:
+                    tracker.f_source_table_name = parent_tracker.f_table_name
+                    tracker.f_source_table_namespace = parent_tracker.f_table_namespace
         rows = tracker.save(force_insert=True)
         if rows != 1:
             raise Exception("Create {} failed".format(tracker))
