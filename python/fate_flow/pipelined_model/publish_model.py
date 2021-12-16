@@ -44,22 +44,24 @@ def load_model(config_data):
     stat_logger.info(config_data)
     if not config_data.get('servings'):
         return 100, 'Please configure servings address'
-    for serving in config_data.get('servings'):
+
+    for serving in config_data['servings']:
         with grpc.insecure_channel(serving) as channel:
             stub = model_service_pb2_grpc.ModelServiceStub(channel)
             load_model_request = model_service_pb2.PublishRequest()
-            for role_name, role_partys in config_data.get("role").items():
+            for role_name, role_partys in config_data.get("role", {}).items():
                 for _party_id in role_partys:
-                    load_model_request.role[role_name].partyId.append(_party_id)
-            for role_name, role_model_config in config_data.get("model").items():
+                    load_model_request.role[role_name].partyId.append(str(_party_id))
+            for role_name, role_model_config in config_data.get("model", {}).items():
                 for _party_id, role_party_model_config in role_model_config.items():
-                    load_model_request.model[role_name].roleModelInfo[_party_id].tableName = role_party_model_config[
-                        'model_version']
-                    load_model_request.model[role_name].roleModelInfo[_party_id].namespace = role_party_model_config[
-                        'model_id']
+                    load_model_request.model[role_name].roleModelInfo[str(_party_id)].tableName = \
+                        role_party_model_config['model_version']
+                    load_model_request.model[role_name].roleModelInfo[str(_party_id)].namespace = \
+                        role_party_model_config['model_id']
+
             stat_logger.info('request serving: {} load model'.format(serving))
-            load_model_request.local.role = config_data.get('local').get('role')
-            load_model_request.local.partyId = config_data.get('local').get('party_id')
+            load_model_request.local.role = config_data.get('local', {}).get('role', '')
+            load_model_request.local.partyId = str(config_data.get('local', {}).get('party_id', ''))
             load_model_request.loadType = config_data['job_parameters'].get("load_type", "FATEFLOW")
             # make use of 'model.transfer.url' in serving server
             use_serving_url = config_data['job_parameters'].get('use_transfer_url_on_serving', False)
