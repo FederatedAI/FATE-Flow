@@ -266,6 +266,9 @@ class Tracker(object):
                 group[group_key] = cache
         return list(group.values())
 
+    def query_output_cache_record(self):
+        return CacheManager.query_record(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name)
+
     @DB.connection_context()
     def insert_summary_into_db(self, summary_data: dict):
         try:

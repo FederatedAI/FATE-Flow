@@ -96,6 +96,26 @@ class JobSaver(object):
         return update_status
 
     @classmethod
+    def reload_task(cls, source_task, target_task):
+        task_info = {"job_id": target_task.f_job_id, "task_id": target_task.f_task_id, "task_version": target_task.f_task_version,
+                     "role": target_task.f_role, "party_id": target_task.f_party_id}
+        update_info = {}
+        update_list = ["cmd", "elapsed", "end_date", "end_time", "engine_conf", "party_status", "run_ip",
+                       "run_pid", "start_date", "start_time", "status", "worker_id"]
+        for k in update_list:
+            update_info[k] = getattr(source_task, f"f_{k}")
+        task_info.update(update_info)
+        schedule_logger(task_info["job_id"]).info("try to update task {} {}".format(task_info["task_id"], task_info["task_version"]))
+        schedule_logger(task_info["job_id"]).info("update info: {}".format(update_info))
+        update_status = cls.update_entity_table(Task, task_info)
+        if update_status:
+            cls.update_task_status(task_info)
+            schedule_logger(task_info["job_id"]).info("task {} {} update successfully".format(task_info["task_id"], task_info["task_version"]))
+        else:
+            schedule_logger(task_info["job_id"]).warning("task {} {} update does not take effect".format(task_info["task_id"], task_info["task_version"]))
+        return update_status
+
+    @classmethod
     @DB.connection_context()
     def create_job_family_entity(cls, entity_model, entity_info):
         obj = entity_model()

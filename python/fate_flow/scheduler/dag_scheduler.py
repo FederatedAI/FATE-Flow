@@ -25,7 +25,8 @@ from fate_flow.scheduler.task_scheduler import TaskScheduler
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.entity.types import ResourceOperation
 from fate_flow.entity import RetCode
-from fate_flow.entity.run_status import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus
+from fate_flow.entity.run_status import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, \
+    JobInheritanceStatus
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.entity.run_status import SchedulingStatusCode
 from fate_flow.entity import JobConfigurationBase
@@ -115,6 +116,10 @@ class DAGScheduler(Cron):
             # initiator runtime conf as template
             job.f_runtime_conf_on_party = job.f_runtime_conf.copy()
             job.f_runtime_conf_on_party["job_parameters"] = common_job_parameters.to_dict()
+
+            # inherit job
+            job.f_inheritance_info = common_job_parameters.inheritance_info
+            job.f_inheritance_status = JobInheritanceStatus.WAITING if common_job_parameters.inheritance_info else JobInheritanceStatus.PASS
 
             status_code, response = FederatedScheduler.create_job(job=job)
             if status_code != FederatedSchedulingStatusCode.SUCCESS:
@@ -304,6 +309,13 @@ class DAGScheduler(Cron):
                     if apply_status_code == FederatedSchedulingStatusCode.ERROR:
                         cls.stop_job(job_id=job_id, role=initiator_role, party_id=initiator_party_id, stop_status=JobStatus.FAILED)
                         schedule_logger(job_id).info(f"apply resource error, stop job")
+            else:
+                retcode_set = set()
+                for dest_role in federated_dependence_response.keys():
+                    for party_id in federated_dependence_response[dest_role].keys():
+                        retcode_set.add(federated_dependence_response[dest_role][party_id]["retcode"])
+                if not retcode_set.issubset({RetCode.RUNNING, RetCode.SUCCESS}):
+                    FederatedScheduler.stop_job(job, StatusSet.FAILED)
         except Exception as e:
             raise e
         finally:

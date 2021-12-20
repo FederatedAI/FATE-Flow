@@ -61,6 +61,11 @@ def exception_to_trace_string(ex):
     return "".join(traceback.TracebackException.from_exception(ex).format())
 
 
+def get_logger_base_dir():
+    job_log_dir = get_fate_flow_directory('logs')
+    return job_log_dir
+
+
 def get_job_logger(job_id, log_type):
     fate_flow_log_dir = get_fate_flow_directory('logs', 'fate_flow')
     job_log_dir = get_fate_flow_directory('logs', job_id)
