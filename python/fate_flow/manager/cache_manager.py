@@ -88,3 +88,10 @@ class CacheManager:
             records = CacheRecord.query(role=role, party_id=party_id, component_name=component_name,
                                         cache_name=cache_name, **kwargs)
         return [record.f_cache for record in records]
+
+
+    @classmethod
+    @DB.connection_context()
+    def query_record(cls, role: str = None, party_id: int = None, component_name: str = None, **kwargs) -> typing.List[CacheRecord]:
+        records = CacheRecord.query(role=role, party_id=party_id, component_name=component_name, **kwargs)
+        return [record for record in records]

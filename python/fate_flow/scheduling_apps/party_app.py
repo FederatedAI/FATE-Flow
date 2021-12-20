@@ -43,7 +43,7 @@ def check_dependence(job_id, role, party_id):
     if status:
         return get_json_result(retcode=0, retmsg='success')
     else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR,
+        return get_json_result(retcode=RetCode.RUNNING,
                                retmsg=f"check for job {job_id} dependence failed, "
                                       f"dependencies are being installed automatically, it may take a few minutes")
 

@@ -108,6 +108,7 @@ class RetCode(IntEnum, CustomEnum):
     OPERATING_ERROR = 103
     FEDERATED_ERROR = 104
     CONNECTION_ERROR = 105
+    RUNNING = 106
     SERVER_ERROR = 500
 
 

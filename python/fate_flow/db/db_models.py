@@ -178,6 +178,9 @@ class Job(DataBaseModel):
     f_apply_resource_time = BigIntegerField(null=True)
     f_return_resource_time = BigIntegerField(null=True)
 
+    f_inheritance_info = JSONField(null=True)
+    f_inheritance_status = CharField(max_length=50, null=True)
+
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)
