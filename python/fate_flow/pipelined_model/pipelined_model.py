@@ -345,3 +345,11 @@ class PipelinedModel(Locker):
 
     def component_run_parameters_path(self, component_name):
         return os.path.join(self.run_parameters_path, component_name, "run_parameters.json")
+
+    def reload_component_model(self, model_id, model_version, component_list):
+        for component_name in component_list:
+            target_path = os.path.join(self.variables_data_path, component_name)
+            source_path = os.path.join(PipelinedModel(model_id, model_version).variables_data_path, component_name)
+            if not os.path.exists(source_path):
+                continue
+            shutil.copytree(source_path, target_path)

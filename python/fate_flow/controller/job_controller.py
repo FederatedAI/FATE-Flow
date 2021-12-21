@@ -31,9 +31,10 @@ from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.protobuf.python import pipeline_pb2
 from fate_flow.settings import USE_AUTHENTICATION, USE_DATA_AUTHENTICATION, ENGINES
-from fate_flow.utils import job_utils, schedule_utils, data_utils, log_utils
+from fate_flow.utils import job_utils, schedule_utils, data_utils, log_utils, model_utils
 from fate_flow.utils.authentication_utils import authentication_check
 from fate_flow.utils.authentication_utils import data_authentication_check
 from fate_flow.utils.log_utils import schedule_logger
@@ -521,7 +522,6 @@ class JobController(object):
     def job_reload(cls, job):
         schedule_logger(job.f_job_id).info(f"start job reload")
         cls.log_reload(job)
-        cls.output_model_reload(job)
         source_tasks = JobSaver.query_task(job_id=job.f_inheritance_info.get("job_id"), role=job.f_role,
                                            party_id=job.f_party_id, only_latest=True)
         target_tasks = JobSaver.query_task(job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id,
@@ -536,7 +536,7 @@ class JobController(object):
                 if cpn == target_task.f_component_name:
                     target_inheritance_tasks.append(target_task)
         schedule_logger(job.f_job_id).info(f"source_inheritance_tasks:{source_inheritance_tasks}, target_inheritance_tasks:{target_inheritance_tasks}")
-        cls.output_data_reload(job, source_inheritance_tasks, target_inheritance_tasks)
+        cls.output_reload(job, source_inheritance_tasks, target_inheritance_tasks)
         cls.status_reload(job, source_inheritance_tasks, target_inheritance_tasks)
 
     @classmethod
@@ -553,7 +553,11 @@ class JobController(object):
         schedule_logger(job.f_job_id).info("reload job log success")
 
     @classmethod
-    def output_data_reload(cls, job, source_tasks, target_tasks):
+    def output_reload(cls, job, source_tasks, target_tasks):
+        # model reload
+        schedule_logger(job.f_job_id).info("start reload model")
+        cls.output_model_reload(job)
+
         schedule_logger(job.f_job_id).info("start reload data")
         for index, source_cpn_task in enumerate(source_tasks):
             target_cpn_task = target_tasks[index]
@@ -567,17 +571,29 @@ class JobController(object):
                                      task_id=target_cpn_task.f_task_id,
                                      task_version=target_cpn_task.f_task_version)
             table_infos = source_tracker.get_output_data_info()
+
+            # data reload
             schedule_logger(job.f_job_id).info(f"table infos:{table_infos}")
             for table in table_infos:
                 target_tracker.log_output_data_info(data_name=table.f_data_name,
                                                     table_namespace=table.f_table_namespace,
                                                     table_name=table.f_table_name)
 
-            # cache save
+            # cache reload
+            schedule_logger(job.f_job_id).info("start reload cache")
             cache_list = source_tracker.query_output_cache_record()
             for cache in cache_list:
                 source_tracker.tracking_output_cache(cache.f_cache, cache_name=cache.f_cache_name)
-        schedule_logger(job.f_job_id).info("reload data success")
+
+            # summary reload
+            schedule_logger(job.f_job_id).info("start reload summary")
+            target_tracker.reload_summary(source_tracker=source_tracker)
+
+            # metric reload
+            schedule_logger(job.f_job_id).info("start reload metric")
+            target_tracker.reload_metric(source_tracker=source_tracker)
+
+        schedule_logger(job.f_job_id).info("reload output success")
 
     @classmethod
     def status_reload(cls, job, source_tasks, target_tasks):
@@ -592,11 +608,8 @@ class JobController(object):
 
     @classmethod
     def output_model_reload(cls, job):
-        schedule_logger(job.f_job_id).info("start reload model")
-        model_id = job.f_runtime_conf.get("job_parameters").get("common").get("model_id")
-        source_path = os.path.join(log_utils.get_fate_flow_directory(), "model_local_cache", "#".join([job.f_role, job.f_party_id, model_id]), job.f_inheritance_info.get("job_id"))
-        target_path = os.path.join(log_utils.get_fate_flow_directory(), "model_local_cache", "#".join([job.f_role, job.f_party_id, model_id]), job.f_job_id)
-        if os.path.exists(target_path):
-            shutil.rmtree(target_path)
-        shutil.copytree(source_path, target_path)
-        schedule_logger(job.f_job_id).info("reload model success")
+
+        model_id = model_utils.gen_party_model_id(job.f_runtime_conf.get("job_parameters").get("common").get("model_id"),
+                                                  job.f_role, job.f_party_id)
+        PipelinedModel(model_id=model_id, model_version=job.f_job_id).reload_component_model(model_id=model_id, model_version=job.f_inheritance_info.get("job_id"),
+                                                                                             component_list=job.f_inheritance_info.get("component_list"))

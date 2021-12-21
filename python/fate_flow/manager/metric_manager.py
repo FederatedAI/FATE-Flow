@@ -129,5 +129,40 @@ class MetricManager:
 
         return metrics
 
+    @DB.connection_context()
+    def read_component_metrics(self):
+        try:
+            tracking_metric_model = self.get_model_class()
+            tracking_metrics = tracking_metric_model.select().where(
+                tracking_metric_model.f_job_id == self.job_id,
+                tracking_metric_model.f_component_name == self.component_name,
+                tracking_metric_model.f_role == self.role,
+                tracking_metric_model.f_party_id == self.party_id,
+                tracking_metric_model.f_task_version == self.task_version
+            )
+            return [tracking_metric for tracking_metric in tracking_metrics]
+        except Exception as e:
+            schedule_logger(self.job_id).exception(e)
+            raise e
+
+    @DB.connection_context()
+    def reload_metric(self, source_metric_manager):
+        component_metrics = source_metric_manager.read_component_metrics()
+        for component_metric in component_metrics:
+            model_class = self.get_model_class()
+            tracking_metric = model_class()
+            tracking_metric.f_job_id = self.job_id
+            tracking_metric.f_component_name = self.component_name
+            tracking_metric.f_task_id = self.task_id
+            tracking_metric.f_task_version = self.task_version
+            tracking_metric.f_role = self.role
+            tracking_metric.f_party_id = self.party_id
+            tracking_metric.f_metric_namespace = component_metric.f_metric_namespace
+            tracking_metric.f_metric_name = component_metric.f_metric_name
+            tracking_metric.f_type = component_metric.f_type
+            tracking_metric.f_key = component_metric.f_key
+            tracking_metric.f_value = component_metric.f_value
+            tracking_metric.save()
+
     def get_model_class(self):
         return db_utils.get_dynamic_db_model(TrackingMetric, self.job_id)
