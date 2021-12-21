@@ -309,7 +309,11 @@ def list_task(limit):
         tasks = Task.select().order_by(Task.f_create_time.desc()).limit(limit)
     else:
         tasks = Task.select().order_by(Task.f_create_time.desc())
-    return [task for task in tasks]
+    task_list = []
+    tasks_len = len(tasks)
+    for i in range(0,tasks_len):
+        task_list.append(tasks[i])
+    return task_list
 
 
 def check_job_process(pid):
