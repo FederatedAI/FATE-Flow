@@ -1139,15 +1139,12 @@ class DSLParserV2(BaseDSLParser):
 
         return reader_components
 
-    def get_source_connect_sub_graph(self, dsl, unlink_node):
-        self.dsl = dsl
-        self._init_components(mode="train", version=2)
-        self._find_dependencies(mode="train", version=2)
-
+    def get_source_connect_sub_graph(self, valid_nodes):
+        invalid_nodes = set([self.components[i].get_name() for i in range(len(self.components))]) - set(valid_nodes)
         in_degree = copy.deepcopy(self.in_degree)
         stack = []
         for i in range(len(self.components)):
-            if self.components[i].get_name() in unlink_node:
+            if self.components[i].get_name() in invalid_nodes:
                 continue
 
             if in_degree[i] == 0:
@@ -1159,7 +1156,7 @@ class DSLParserV2(BaseDSLParser):
             connected_nodes.append(self.components[idx])
 
             for down_name in self.component_downstream[idx]:
-                if down_name in unlink_node:
+                if down_name in invalid_nodes:
                     continue
                 down_idx = self.component_name_index.get(down_name)
                 in_degree[down_idx] -= 1
