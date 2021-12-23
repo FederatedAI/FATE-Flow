@@ -1,7 +1,9 @@
 import os
 import sys
 
+from fate_arch import storage
 from fate_arch.common import EngineType
+from fate_flow.controller.job_controller import JobController
 from fate_flow.entity.run_status import JobInheritanceStatus
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.log_utils import schedule_logger
@@ -26,7 +28,8 @@ class DependenceManager:
 
     @classmethod
     def check_job_inherit_dependence(cls, job):
-        schedule_logger(job.f_job_id).info(f"check job inherit dependence: {job.f_inheritance_info}, {job.f_inheritance_status}")
+        schedule_logger(job.f_job_id).info(
+            f"check job inherit dependence: {job.f_inheritance_info}, {job.f_inheritance_status}")
         if job.f_inheritance_info:
             if job.f_inheritance_status == JobInheritanceStatus.WAITING:
                 cls.start_inheriting_job(job)
@@ -39,6 +42,24 @@ class DependenceManager:
                 return True
         else:
             return True
+
+    @classmethod
+    def component_inheritance_check(cls, job):
+        tasks = JobController.load_tasks(component_list=job.f_inheritance_info.get("component_list", []),
+                                         job_id=job.f_inheritance_info.get("job_id"),
+                                         role=job.f_role,
+                                         party_id=job.f_party_id)
+        tracker_dict = JobController.load_task_tracker(tasks)
+        missing_dependence_component_list = []
+        # data dependence
+        for tracker in tracker_dict.values():
+            table_infos = tracker.get_output_data_info()
+            for table in table_infos:
+                table_meta = storage.StorageTableMeta(name=table.f_table_name, namespace=table.f_table_namespace)
+                if not table_meta:
+                    missing_dependence_component_list.append(tracker.component_name)
+                    continue
+        return list(set(job.f_inheritance_info.get("component_list", [])) - set(missing_dependence_component_list))
 
     @classmethod
     def start_inheriting_job(cls, job):
@@ -89,7 +110,8 @@ class DependenceManager:
         return check_tag
 
     @classmethod
-    def check_upload(cls, job_id, provider_group, fate_flow_version_provider_info, storage_engine=FateDependenceStorageEngine.HDFS.value):
+    def check_upload(cls, job_id, provider_group, fate_flow_version_provider_info,
+                     storage_engine=FateDependenceStorageEngine.HDFS.value):
         schedule_logger(job_id).info("start Check if need to upload dependencies")
         schedule_logger(job_id).info(f"{provider_group}")
         upload_details = {}
@@ -105,7 +127,7 @@ class DependenceManager:
                     version=provider.version,
                     type=dependence_type,
                     get_or_one=True
-                    )
+                )
                 need_upload = False
                 if dependencies_storage_info:
                     if dependencies_storage_info.f_upload_status:
@@ -123,12 +145,12 @@ class DependenceManager:
                                     dependencies_storage_info.f_fate_flow_snapshot_time:
                                 need_upload = True
                                 upload_total += 1
-                            elif DependenceRegistry.get_modify_time(provider.path) !=\
+                            elif DependenceRegistry.get_modify_time(provider.path) != \
                                     dependencies_storage_info.f_snapshot_time:
                                 need_upload = True
                                 upload_total += 1
                         elif provider.name == ComponentProviderName.FATE_FLOW.value and FATE_FLOW_UPDATE_CHECK:
-                            if DependenceRegistry.get_modify_time(provider.path) !=\
+                            if DependenceRegistry.get_modify_time(provider.path) != \
                                     dependencies_storage_info.f_fate_flow_snapshot_time:
                                 need_upload = True
                                 upload_total += 1
@@ -161,7 +183,8 @@ class DependenceManager:
                                                    callback_param=["dependence_type", "pid", "provider"])
 
     @classmethod
-    def record_upload_process(cls, provider, dependence_type, pid, storage_engine=FateDependenceStorageEngine.HDFS.value):
+    def record_upload_process(cls, provider, dependence_type, pid,
+                              storage_engine=FateDependenceStorageEngine.HDFS.value):
         storage_meta = {
             "f_storage_engine": storage_engine,
             "f_type": dependence_type,

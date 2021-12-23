@@ -392,6 +392,13 @@ class JobController(object):
         return {'min_input_data_partition': min_partition}
 
     @classmethod
+    def align_job_args(cls, job_id, role, party_id, job_info):
+        job_info["job_id"] = job_id
+        job_info["role"] = role
+        job_info["party_id"] = party_id
+        JobSaver.update_job(job_info)
+
+    @classmethod
     def start_job(cls, job_id, role, party_id, extra_info=None):
         schedule_logger(job_id).info(
             f"try to start job on {role} {party_id}")
@@ -522,22 +529,42 @@ class JobController(object):
     def job_reload(cls, job):
         schedule_logger(job.f_job_id).info(f"start job reload")
         cls.log_reload(job)
-        source_tasks = JobSaver.query_task(job_id=job.f_inheritance_info.get("job_id"), role=job.f_role,
-                                           party_id=job.f_party_id, only_latest=True)
-        target_tasks = JobSaver.query_task(job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id,
-                                           only_latest=True)
-        source_inheritance_tasks = []
-        target_inheritance_tasks = []
-        for cpn in job.f_inheritance_info.get("component_list", []):
-            for source_task in source_tasks:
-                if cpn == source_task.f_component_name:
-                    source_inheritance_tasks.append(source_task)
-            for target_task in target_tasks:
-                if cpn == target_task.f_component_name:
-                    target_inheritance_tasks.append(target_task)
+        source_inheritance_tasks, target_inheritance_tasks = cls.load_source_target_tasks(job)
         schedule_logger(job.f_job_id).info(f"source_inheritance_tasks:{source_inheritance_tasks}, target_inheritance_tasks:{target_inheritance_tasks}")
         cls.output_reload(job, source_inheritance_tasks, target_inheritance_tasks)
         cls.status_reload(job, source_inheritance_tasks, target_inheritance_tasks)
+
+    @classmethod
+    def load_source_target_tasks(cls, job):
+        source_inheritance_tasks = cls.load_tasks(job_id=job.f_inheritance_info.get("job_id"), role=job.f_role,
+                                                  party_id=job.f_party_id,
+                                                  component_list=job.f_inheritance_info.get("component_list", []))
+        target_inheritance_tasks = cls.load_tasks(job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id,
+                                                  component_list=job.f_inheritance_info.get("component_list", []))
+        return source_inheritance_tasks, target_inheritance_tasks
+
+    @classmethod
+    def load_tasks(cls, component_list, job_id, role, party_id):
+        tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, only_latest=True)
+        task_dict = {}
+        for cpn in component_list:
+            for task in tasks:
+                if cpn == task.f_component_name:
+                    task_dict[cpn] = task
+        return task_dict
+
+    @classmethod
+    def load_task_tracker(cls, tasks: dict):
+        tracker_dict = {}
+        for key, task in tasks.items():
+            schedule_logger(task.f_job_id).info(
+                f"task:{task.f_job_id}, {task.f_role}, {task.f_party_id},{task.f_component_name},{task.f_task_version}")
+            tracker = Tracker(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id,
+                              component_name=task.f_component_name,
+                              task_id=task.f_task_id,
+                              task_version=task.f_task_version)
+            tracker_dict[key] = tracker
+        return tracker_dict
 
     @classmethod
     def log_reload(cls, job):
@@ -553,25 +580,16 @@ class JobController(object):
         schedule_logger(job.f_job_id).info("reload job log success")
 
     @classmethod
-    def output_reload(cls, job, source_tasks, target_tasks):
+    def output_reload(cls, job, source_tasks: dict, target_tasks: dict):
         # model reload
         schedule_logger(job.f_job_id).info("start reload model")
         cls.output_model_reload(job)
-
         schedule_logger(job.f_job_id).info("start reload data")
-        for index, source_cpn_task in enumerate(source_tasks):
-            target_cpn_task = target_tasks[index]
-            schedule_logger(job.f_job_id).info(f"source task:{job.f_job_id}, {job.f_role}, {job.f_party_id},{source_cpn_task.f_component_name},{source_cpn_task.f_task_version}")
-            source_tracker = Tracker(job_id=source_cpn_task.f_job_id, role=source_cpn_task.f_role,
-                                     party_id=source_cpn_task.f_party_id,
-                                     component_name=source_cpn_task.f_component_name,
-                                     task_version=source_cpn_task.f_task_version)
-            target_tracker = Tracker(job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id,
-                                     component_name=target_cpn_task.f_component_name,
-                                     task_id=target_cpn_task.f_task_id,
-                                     task_version=target_cpn_task.f_task_version)
+        source_tracker_dict = cls.load_task_tracker(source_tasks)
+        target_tracker_dict = cls.load_task_tracker(target_tasks)
+        for key, source_tracker in source_tracker_dict.items():
+            target_tracker = target_tracker_dict[key]
             table_infos = source_tracker.get_output_data_info()
-
             # data reload
             schedule_logger(job.f_job_id).info(f"table infos:{table_infos}")
             for table in table_infos:
@@ -599,8 +617,8 @@ class JobController(object):
     def status_reload(cls, job, source_tasks, target_tasks):
         schedule_logger(job.f_job_id).info("start reload status")
         # update task status
-        for index, source_task in enumerate(source_tasks):
-            JobSaver.reload_task(source_task, target_tasks[index])
+        for key, source_task in source_tasks.items():
+            JobSaver.reload_task(source_task, target_tasks[key])
 
         # update job status
         JobSaver.update_job(job_info={"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id, "inheritance_status": JobInheritanceStatus.SUCCESS})
