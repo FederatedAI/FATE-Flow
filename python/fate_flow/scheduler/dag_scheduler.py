@@ -276,6 +276,8 @@ class DAGScheduler(Cron):
                 FederatedScheduler.sync_job_status(job=job)
                 schedule_logger(job_id).info(f"job have cancel signal")
                 return
+            if job.f_inheritance_status != JobInheritanceStatus.PASS:
+                cls.check_component(job)
             schedule_logger(job_id).info(f"job dependence check")
             dependence_status_code, federated_dependence_response = FederatedScheduler.dependence_for_job(job=job)
             schedule_logger(job_id).info(f"dependence check: {dependence_status_code}, {federated_dependence_response}")
@@ -321,6 +323,23 @@ class DAGScheduler(Cron):
         finally:
             update_status = cls.ready_signal(job_id=job_id, set_or_reset=False)
             schedule_logger(job_id).info(f"reset job ready signal {update_status}")
+
+    @classmethod
+    def check_component(cls, job):
+        schedule_logger(job.f_job_id).info(f"component check")
+        dependence_status_code, response = FederatedScheduler.check_component(job=job)
+        schedule_logger(job.f_job_id).info(f"component check response: {response}")
+        component_set = set(job.f_inheritance_info.get("component_list"))
+        for dest_role in response.keys():
+            for party_id in response[dest_role].keys():
+                component_set = component_set.intersection(set(response[dest_role][party_id].get("data")))
+        if component_set != set(job.f_inheritance_info.get("component_list")):
+            command_body = {"inheritance_info": job.f_inheritance_info}
+            command_body["inheritance_info"].update({"component_list": list(component_set)})
+            schedule_logger(job.f_job_id).info(f"start align job info:{command_body}")
+            status_code, response = FederatedScheduler.align_args(job, command_body=command_body)
+            schedule_logger(job.f_job_id).info(f"align result:{status_code}, {response}")
+        schedule_logger(job.f_job_id).info(f"check success")
 
     @classmethod
     def schedule_ready_job(cls, job):
