@@ -53,3 +53,30 @@ Flow HTTP API 在 1.7.0 新增了签名鉴权，如果在配置文件里设置�
 `401 Unknown APP_KEY` header 中的 `APP_KEY` 与 Flow 配置文件中的 `http_app_key` 不一致
 
 `403 Forbidden` 签名校验失败
+
+## 3. 设计规范
+
+### 3.1 HTTP Method
+
+- HTTP Method: 一律采用`POST`
+- Content Type: application/json
+
+### 3.2 URL规则(现有)
+
+/一级/二级/N级/最后一级
+
+- 一级：接口版本，如v1
+- 二级：主资源名称，如job
+- N级：子资源名称，如list, 允许有多个N级
+- 最后一级：操作: create/update/query/get/delete
+
+### 3.3 URL规则(建议改进)
+
+/一级/二级/三级/四级/N级/最后一级
+
+- 一级：系统名称: fate
+- 三级：子系统名称: flow
+- 二级：接口版本，如v1
+- 四级：主资源名称，如job
+- N级：子资源名称，如list, 允许有多个N级
+- 最后一级：操作: create/update/query/get/delete

@@ -625,6 +625,40 @@ class BaseDSLParser(object):
         dsl_parser._find_dependencies(mode=mode, version=2)
 
     @staticmethod
+    def verify_dsl_reusability(reused_dsl, new_dsl):
+        # step 1, verify new dsl
+        dsl_parser = DSLParserV2()
+        dsl_parser.dsl = new_dsl
+        dsl_parser._init_components(mode="train", version=2)
+        dsl_parser._find_dependencies(mode="train", version=2)
+
+        # step 2, verify reused components is a sub-graph
+        reused_components = set(reused_dsl["components"]) & set(new_dsl["components"])
+        for cpn in reused_components:
+            validate_key = ["input", "output", "provider"]
+            for vk in validate_key:
+                config_old = reused_dsl["components"][cpn].get(vk, None)
+                config_new = new_dsl["components"][cpn].get(vk, None)
+                if config_old != config_new:
+                    raise ValueError(f"Component {cpn}'s {vk} should be same, but old is {config_old}, new is {config_new}")
+
+            inputs = reused_dsl["components"][cpn].get("input", {})
+            list_dep_key = ["cache", "model", "isometric_model"]
+            for dep_key in list_dep_key:
+                dep_list = inputs.get(dep_key, [])
+                for dep in dep_list:
+                    input_dep = dep.split(".", -1)[0]
+                    if input_dep not in reused_components:
+                        raise ValueError(f"Component {cpn}'s {dep_key} input {input_dep} should be reused")
+
+            data_dep = inputs.get("data", {})
+            for data_key, data_list in data_dep.items():
+                for dep in data_list:
+                    input_dep = dep.split(".", -1)[0]
+                    if input_dep not in reused_components:
+                        raise ValueError(f"Component {cpn}'s {data_key} input {input_dep} should be reused")
+
+    @staticmethod
     def deploy_component(components, train_dsl, provider_update_dsl=None):
         training_cpns = set(train_dsl.get("components").keys())
         deploy_cpns = set(components)
@@ -1104,4 +1138,80 @@ class DSLParserV2(BaseDSLParser):
                 reader_components.append(cpn)
 
         return reader_components
+
+    def get_source_connect_sub_graph(self, dsl, unlink_node):
+        self.dsl = dsl
+        self._init_components(mode="train", version=2)
+        self._find_dependencies(mode="train", version=2)
+
+        in_degree = copy.deepcopy(self.in_degree)
+        stack = []
+        for i in range(len(self.components)):
+            if self.components[i].get_name() in unlink_node:
+                continue
+
+            if in_degree[i] == 0:
+                stack.append(i)
+
+        connected_nodes = []
+        while len(stack) > 0:
+            idx = stack.pop()
+            connected_nodes.append(self.components[idx])
+
+            for down_name in self.component_downstream[idx]:
+                if down_name in unlink_node:
+                    continue
+                down_idx = self.component_name_index.get(down_name)
+                in_degree[down_idx] -= 1
+
+                if in_degree[down_idx] == 0:
+                    stack.append(down_idx)
+
+        return connected_nodes
+
+    @staticmethod
+    def verify_conf_reusability(reused_dsl, reused_conf, new_dsl, new_conf):
+        reused_components = set(reused_dsl["components"]) & set(new_dsl["components"])
+
+        # step1: check role, it should be same
+        reused_conf_role = reused_conf.get("role", {})
+        new_conf_role = new_conf.get("role", {})
+        if reused_conf_role != new_conf_role:
+            raise ValueError(f"role {reused_conf_role} does not equals to {new_conf_role}")
+
+        # step2: check component common parameters
+        pre_component_parameters = reused_conf.get("component_parameters", {})
+        cur_component_parameters = new_conf.get("component_parameters", {})
+        pre_common_params = pre_component_parameters.get("common", {})
+        cur_common_params = cur_component_parameters.get("common", {})
+        pre_role_params = pre_component_parameters.get("role", {})
+        cur_role_params = cur_component_parameters.get("role", {})
+        for cpn in reused_components:
+            cpn_pre_common_params = pre_common_params.get(cpn, {})
+            cpn_cur_common_params = cur_common_params.get(cpn, {})
+            if cpn_pre_common_params != cpn_cur_common_params:
+                raise ValueError(f"{cpn}'s common parameters old:{cpn_pre_common_params} != new:{cpn_cur_common_params}")
+
+        # step3: check component role parameters
+        first_role_params = pre_role_params
+        second_role_params = cur_role_params
+        for idx in range(2):
+            for r, role_params in first_role_params.items():
+                for party_idx, params in role_params.items():
+                    for cpn in reused_components:
+                        cpn_first_role_params = params.get(cpn)
+                        if not cpn_first_role_params:
+                            continue
+
+                        cpn_second_role_params = second_role_params.get(r, {}).get(party_idx, {}).get(cpn)
+                        if cpn_first_role_params != cpn_second_role_params:
+                            if idx == 1:
+                                cpn_first_role_params, cpn_second_role_params = cpn_second_role_params, cpn_first_role_params
+
+                            raise ValueError(f"{cpn}'s role parameters old:{r}-{party_idx}-{cpn_first_role_params} "
+                                             f"!= new: {r}-{party_idx}-{cpn_second_role_params}")
+
+            first_role_params, second_role_params = cur_role_params, pre_role_params
+
+
 

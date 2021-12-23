@@ -6,14 +6,14 @@
 
 ```bash
 flow model load -c examples/model/publish_load_model.json
-flow model load -c examples/model/publish_load_model.json -j <job_id>
+flow model load -j <job_id>
 ```
 
 **选项**
 
 | 参数      | 短格式 | 长格式        | 可选参数 | 说明     |
 | --------- | ------ | ------------- | -------- | -------- |
-| conf_path | `-c`   | `--conf-path` | 否       | 配置文件 |
+| conf_path | `-c`   | `--conf-path` | 是       | 配置文件 |
 | job_id    | `-j`   | `--job-id`    | 是       | 任务 ID  |
 
 **样例**

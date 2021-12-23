@@ -37,6 +37,11 @@ def successful_log(msg, job=None, task=None, role=None, party_id=None, detail=No
     return f"{prefix}{msg} successfully{suffix}"
 
 
+def warning_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
+    prefix, suffix = base_msg(job, task, role, party_id, detail)
+    return f"{prefix}{msg} is not effective{suffix}"
+
+
 def failed_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
     prefix, suffix = base_msg(job, task, role, party_id, detail)
     return f"{prefix}failed to {msg}{suffix}"
