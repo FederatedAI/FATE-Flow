@@ -13,6 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os
+import shutil
+
 from fate_arch.common import EngineType
 from fate_arch.common import engine_utils
 from fate_arch.common.base_utils import json_dumps, current_timestamp
@@ -21,16 +24,18 @@ from fate_flow.controller.task_controller import TaskController
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RunParameters
-from fate_flow.entity.run_status import JobStatus, EndStatus
+from fate_flow.entity.run_status import JobStatus, EndStatus, JobInheritanceStatus
 from fate_flow.entity.types import InputSearchType, WorkerName
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.protobuf.python import pipeline_pb2
 from fate_flow.settings import USE_AUTHENTICATION, USE_DATA_AUTHENTICATION, ENGINES
-from fate_flow.utils import job_utils, schedule_utils, data_utils
+from fate_flow.utils import job_utils, schedule_utils, data_utils, log_utils, model_utils
 from fate_flow.utils.authentication_utils import authentication_check
 from fate_flow.utils.authentication_utils import data_authentication_check
 from fate_flow.utils.log_utils import schedule_logger
@@ -389,6 +394,13 @@ class JobController(object):
         return {'min_input_data_partition': min_partition}
 
     @classmethod
+    def align_job_args(cls, job_id, role, party_id, job_info):
+        job_info["job_id"] = job_id
+        job_info["role"] = role
+        job_info["party_id"] = party_id
+        JobSaver.update_job(job_info)
+
+    @classmethod
     def start_job(cls, job_id, role, party_id, extra_info=None):
         schedule_logger(job_id).info(
             f"try to start job on {role} {party_id}")
@@ -514,3 +526,126 @@ class JobController(object):
         schedule_logger(job_id).info(f"start to clean job on {role} {party_id}")
         # todo
         schedule_logger(job_id).info(f"job on {role} {party_id} clean done")
+
+    @classmethod
+    def job_reload(cls, job):
+        schedule_logger(job.f_job_id).info(f"start job reload")
+        cls.log_reload(job)
+        source_inheritance_tasks, target_inheritance_tasks = cls.load_source_target_tasks(job)
+        schedule_logger(job.f_job_id).info(f"source_inheritance_tasks:{source_inheritance_tasks}, target_inheritance_tasks:{target_inheritance_tasks}")
+        cls.output_reload(job, source_inheritance_tasks, target_inheritance_tasks)
+        cls.status_reload(job, source_inheritance_tasks, target_inheritance_tasks)
+
+    @classmethod
+    def load_source_target_tasks(cls, job):
+        source_inheritance_tasks = cls.load_tasks(job_id=job.f_inheritance_info.get("job_id"), role=job.f_role,
+                                                  party_id=job.f_party_id,
+                                                  component_list=job.f_inheritance_info.get("component_list", []))
+        target_inheritance_tasks = cls.load_tasks(job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id,
+                                                  component_list=job.f_inheritance_info.get("component_list", []))
+        return source_inheritance_tasks, target_inheritance_tasks
+
+    @classmethod
+    def load_tasks(cls, component_list, job_id, role, party_id):
+        tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, only_latest=True)
+        task_dict = {}
+        for cpn in component_list:
+            for task in tasks:
+                if cpn == task.f_component_name:
+                    task_dict[cpn] = task
+        return task_dict
+
+    @classmethod
+    def load_task_tracker(cls, tasks: dict):
+        tracker_dict = {}
+        for key, task in tasks.items():
+            schedule_logger(task.f_job_id).info(
+                f"task:{task.f_job_id}, {task.f_role}, {task.f_party_id},{task.f_component_name},{task.f_task_version}")
+            tracker = Tracker(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id,
+                              component_name=task.f_component_name,
+                              task_id=task.f_task_id,
+                              task_version=task.f_task_version)
+            tracker_dict[key] = tracker
+        return tracker_dict
+
+    @classmethod
+    def log_reload(cls, job):
+        schedule_logger(job.f_job_id).info("start reload job log")
+        if job.f_inheritance_info:
+            for component_name in job.f_inheritance_info.get("component_list"):
+                source_path = os.path.join(log_utils.get_logger_base_dir(), job.f_inheritance_info.get("job_id"), job.f_role, job.f_party_id, component_name)
+                target_path = os.path.join(log_utils.get_logger_base_dir(), job.f_job_id, job.f_role, job.f_party_id, component_name)
+                if os.path.exists(source_path):
+                    if os.path.exists(target_path):
+                        shutil.rmtree(target_path)
+                    shutil.copytree(source_path, target_path)
+        schedule_logger(job.f_job_id).info("reload job log success")
+
+    @classmethod
+    def output_reload(cls, job, source_tasks: dict, target_tasks: dict):
+        # model reload
+        schedule_logger(job.f_job_id).info("start reload model")
+        cls.output_model_reload(job)
+        cls.checkpoint_reload(job)
+        schedule_logger(job.f_job_id).info("start reload data")
+        source_tracker_dict = cls.load_task_tracker(source_tasks)
+        target_tracker_dict = cls.load_task_tracker(target_tasks)
+        for key, source_tracker in source_tracker_dict.items():
+            target_tracker = target_tracker_dict[key]
+            table_infos = source_tracker.get_output_data_info()
+            # data reload
+            schedule_logger(job.f_job_id).info(f"table infos:{table_infos}")
+            for table in table_infos:
+                target_tracker.log_output_data_info(data_name=table.f_data_name,
+                                                    table_namespace=table.f_table_namespace,
+                                                    table_name=table.f_table_name)
+
+            # cache reload
+            schedule_logger(job.f_job_id).info("start reload cache")
+            cache_list = source_tracker.query_output_cache_record()
+            for cache in cache_list:
+                schedule_logger(job.f_job_id).info(f"start reload cache name: {cache.f_cache_name}")
+                target_tracker.tracking_output_cache(cache.f_cache, cache_name=cache.f_cache_name)
+
+            # summary reload
+            schedule_logger(job.f_job_id).info("start reload summary")
+            target_tracker.reload_summary(source_tracker=source_tracker)
+
+            # metric reload
+            schedule_logger(job.f_job_id).info("start reload metric")
+            target_tracker.reload_metric(source_tracker=source_tracker)
+
+        schedule_logger(job.f_job_id).info("reload output success")
+
+    @classmethod
+    def status_reload(cls, job, source_tasks, target_tasks):
+        schedule_logger(job.f_job_id).info("start reload status")
+        # update task status
+        for key, source_task in source_tasks.items():
+            JobSaver.reload_task(source_task, target_tasks[key])
+
+        # update job status
+        JobSaver.update_job(job_info={"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id, "inheritance_status": JobInheritanceStatus.SUCCESS})
+        schedule_logger(job.f_job_id).info("reload status success")
+
+    @classmethod
+    def output_model_reload(cls, job):
+
+        model_id = model_utils.gen_party_model_id(job.f_runtime_conf.get("job_parameters").get("common").get("model_id"),
+                                                  job.f_role, job.f_party_id)
+        PipelinedModel(model_id=model_id, model_version=job.f_job_id).reload_component_model(model_id=model_id, model_version=job.f_inheritance_info.get("job_id"),
+                                                                                             component_list=job.f_inheritance_info.get("component_list"))
+    @classmethod
+    def checkpoint_reload(cls, job):
+        for component_name in job.f_inheritance_info.get("component_list"):
+            path = CheckpointManager(role=job.f_role, party_id=job.f_party_id,
+                                     component_name=component_name, model_version=job.f_inheritance_info.get("job_id"),
+                                     model_id=job.f_runtime_conf.get("job_parameters").get("common").get("model_id")).directory
+            target_path = CheckpointManager(role=job.f_role, party_id=job.f_party_id,
+                                            component_name=component_name, model_version=job.f_job_id,
+                                            model_id=job.f_runtime_conf.get("job_parameters").get("common").get(
+                                                "model_id")).directory
+            if os.path.exists(path):
+                if os.path.exists(target_path):
+                    shutil.rmtree(target_path)
+                shutil.copytree(path, target_path)

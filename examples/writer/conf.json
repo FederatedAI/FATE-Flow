@@ -47,8 +47,7 @@
             "output_format": "dense"
           },
           "writer_0": {
-            "storage_engine": "EGGROLL",
-            "test": "test"
+            "storage_engine": "EGGROLL"
           }
         }
       },
@@ -65,8 +64,7 @@
             "output_format": "dense"
           },
           "writer_0": {
-            "storage_engine": "EGGROLL",
-            "test": "test"
+            "storage_engine": "EGGROLL"
           }
         }
       }
