@@ -266,8 +266,12 @@ class Tracker(object):
                 group[group_key] = cache
         return list(group.values())
 
+    def query_output_cache_record(self):
+        return CacheManager.query_record(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name,
+                                         task_version=self.task_version)
+
     @DB.connection_context()
-    def insert_summary_into_db(self, summary_data: dict):
+    def insert_summary_into_db(self, summary_data: dict, need_serialize=True):
         try:
             summary_model = self.get_dynamic_db_model(ComponentSummary, self.job_id)
             DB.create_tables([summary_model])
@@ -280,7 +284,7 @@ class Tracker(object):
                 summary_model.f_task_version == self.task_version
             )
             if summary_obj:
-                summary_obj.f_summary = serialize_b64(summary_data, to_str=True)
+                summary_obj.f_summary = serialize_b64(summary_data, to_str=True) if need_serialize else summary_data
                 summary_obj.f_update_time = current_timestamp()
                 summary_obj.save()
             else:
@@ -301,7 +305,7 @@ class Tracker(object):
             )
 
     @DB.connection_context()
-    def read_summary_from_db(self):
+    def read_summary_from_db(self, need_deserialize=True):
         try:
             summary_model = self.get_dynamic_db_model(ComponentSummary, self.job_id)
             summary = summary_model.get_or_none(
@@ -311,13 +315,18 @@ class Tracker(object):
                 summary_model.f_party_id == self.party_id
             )
             if summary:
-                cpn_summary = deserialize_b64(summary.f_summary)
+                cpn_summary = deserialize_b64(summary.f_summary) if need_deserialize else summary.f_summary
             else:
                 cpn_summary = ""
         except Exception as e:
             schedule_logger(self.job_id).exception(e)
             raise e
         return cpn_summary
+
+    @DB.connection_context()
+    def reload_summary(self, source_tracker):
+        cpn_summary = source_tracker.read_summary_from_db(need_deserialize=False)
+        self.insert_summary_into_db(cpn_summary, need_serialize=False)
 
     def log_output_data_info(self, data_name: str, table_namespace: str, table_name: str):
         self.insert_output_data_info_into_db(data_name=data_name, table_namespace=table_namespace, table_name=table_name)
@@ -377,6 +386,10 @@ class Tracker(object):
     @DB.connection_context()
     def get_metric_list(self, job_level: bool = False):
         return self.metric_manager.get_metric_list(job_level=job_level)
+
+    @DB.connection_context()
+    def reload_metric(self, source_tracker):
+        return self.metric_manager.reload_metric(source_tracker.metric_manager)
 
     def get_output_data_info(self, data_name=None):
         return self.read_output_data_info_from_db(data_name=data_name)

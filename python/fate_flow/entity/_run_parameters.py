@@ -19,6 +19,7 @@ from ._base import BaseEntity
 class RunParameters(BaseEntity):
     def __init__(self, **kwargs):
         self.job_type = "train"
+        self.inheritance_info = {}  # job_id, component_list
         self.computing_engine = None
         self.federation_engine = None
         self.storage_engine = None

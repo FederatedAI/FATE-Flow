@@ -37,6 +37,13 @@ def create_job(job_id, role, party_id):
         return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=str(e), data={"job_id": job_id})
 
 
+@manager.route('/<job_id>/<role>/<party_id>/component/inheritance/check', methods=['POST'])
+def component_inheritance_check(job_id, role, party_id):
+    job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
+    component_list = DependenceManager.component_inheritance_check(job)
+    return get_json_result(data=component_list)
+
+
 @manager.route('/<job_id>/<role>/<party_id>/dependence/check', methods=['POST'])
 def check_dependence(job_id, role, party_id):
     job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
@@ -44,7 +51,7 @@ def check_dependence(job_id, role, party_id):
     if status:
         return get_json_result(retcode=0, retmsg='success')
     else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR,
+        return get_json_result(retcode=RetCode.RUNNING,
                                retmsg=f"check for job {job_id} dependence failed, "
                                       f"dependencies are being installed automatically, it may take a few minutes")
 
@@ -74,9 +81,9 @@ def start_job(job_id, role, party_id):
 
 
 @manager.route('/<job_id>/<role>/<party_id>/align', methods=['POST'])
-def query_job_input_args(job_id, role, party_id):
-    job_input_args = JobController.query_job_input_args(input_data=request.json, role=role, party_id=party_id)
-    return get_json_result(retcode=0, retmsg='success', data=job_input_args)
+def align_job_args(job_id, role, party_id):
+    JobController.align_job_args(job_info=request.json, role=role, party_id=party_id, job_id=job_id)
+    return get_json_result(retcode=0, retmsg='success')
 
 
 @manager.route('/<job_id>/<role>/<party_id>/update', methods=['POST'])

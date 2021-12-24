@@ -93,6 +93,14 @@ class TaskStatus(BaseStatus):
         }
 
 
+class JobInheritanceStatus(BaseStatus):
+    PASS = StatusSet.PASS
+    WAITING = StatusSet.WAITING
+    RUNNING = StatusSet.RUNNING
+    SUCCESS = StatusSet.SUCCESS
+    FAILED = StatusSet.FAILED
+
+
 class OngoingStatus(BaseStatus):
     WAITING = StatusSet.WAITING
     RUNNING = StatusSet.RUNNING
