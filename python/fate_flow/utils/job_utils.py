@@ -31,6 +31,7 @@ from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.utils import detect_utils, process_utils, session_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 
 class JobIdGenerator(object):
@@ -390,3 +391,21 @@ def get_board_url(job_id, role, party_id):
         ServiceRegistry.FATEBOARD.get("port"),
         FATE_BOARD_DASHBOARD_ENDPOINT).format(job_id, role, party_id)
     return board_url
+
+
+def check_job_inheritance_parameters(job, inheritance_jobs, inheritance_tasks):
+    if not inheritance_jobs:
+        raise Exception(
+            f"no found job {job.f_inheritance_info.get('job_id')} role {job.f_role} party id {job.f_party_id}")
+    inheritance_job = inheritance_jobs[0]
+    task_status = {}
+    for task in inheritance_tasks:
+        task_status[task.f_component_name] = task.f_status
+    for component in job.f_inheritance_info.get('component_list'):
+        if component not in task_status.keys():
+            raise Exception(f"job {job.f_inheritance_info.get('job_id')} no found component {component}")
+        elif task_status[component] not in [TaskStatus.SUCCESS, TaskStatus.PASS]:
+            raise Exception(F"job {job.f_inheritance_info.get('job_id')} component {component} status:{task_status[component]}")
+    dsl_parser = get_dsl_parser_by_version()
+    dsl_parser.verify_conf_reusability(inheritance_job.f_runtime_conf, job.f_runtime_conf, job.f_inheritance_info.get('component_list'))
+    dsl_parser.verify_dsl_reusability(inheritance_job.f_dsl, job.f_dsl)

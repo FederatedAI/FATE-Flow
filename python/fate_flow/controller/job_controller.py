@@ -29,6 +29,7 @@ from fate_flow.entity.types import InputSearchType, WorkerName
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
@@ -584,6 +585,7 @@ class JobController(object):
         # model reload
         schedule_logger(job.f_job_id).info("start reload model")
         cls.output_model_reload(job)
+        cls.checkpoint_reload(job)
         schedule_logger(job.f_job_id).info("start reload data")
         source_tracker_dict = cls.load_task_tracker(source_tasks)
         target_tracker_dict = cls.load_task_tracker(target_tasks)
@@ -601,7 +603,8 @@ class JobController(object):
             schedule_logger(job.f_job_id).info("start reload cache")
             cache_list = source_tracker.query_output_cache_record()
             for cache in cache_list:
-                source_tracker.tracking_output_cache(cache.f_cache, cache_name=cache.f_cache_name)
+                schedule_logger(job.f_job_id).info(f"start reload cache name: {cache.f_cache_name}")
+                target_tracker.tracking_output_cache(cache.f_cache, cache_name=cache.f_cache_name)
 
             # summary reload
             schedule_logger(job.f_job_id).info("start reload summary")
@@ -631,3 +634,17 @@ class JobController(object):
                                                   job.f_role, job.f_party_id)
         PipelinedModel(model_id=model_id, model_version=job.f_job_id).reload_component_model(model_id=model_id, model_version=job.f_inheritance_info.get("job_id"),
                                                                                              component_list=job.f_inheritance_info.get("component_list"))
+    @classmethod
+    def checkpoint_reload(cls, job):
+        for component_name in job.f_inheritance_info.get("component_list"):
+            path = CheckpointManager(role=job.f_role, party_id=job.f_party_id,
+                                     component_name=component_name, model_version=job.f_inheritance_info.get("job_id"),
+                                     model_id=job.f_runtime_conf.get("job_parameters").get("common").get("model_id")).directory
+            target_path = CheckpointManager(role=job.f_role, party_id=job.f_party_id,
+                                            component_name=component_name, model_version=job.f_job_id,
+                                            model_id=job.f_runtime_conf.get("job_parameters").get("common").get(
+                                                "model_id")).directory
+            if os.path.exists(path):
+                if os.path.exists(target_path):
+                    shutil.rmtree(target_path)
+                shutil.copytree(path, target_path)

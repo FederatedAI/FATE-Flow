@@ -120,6 +120,10 @@ class DAGScheduler(Cron):
             # inherit job
             job.f_inheritance_info = common_job_parameters.inheritance_info
             job.f_inheritance_status = JobInheritanceStatus.WAITING if common_job_parameters.inheritance_info else JobInheritanceStatus.PASS
+            if job.f_inheritance_info:
+                inheritance_jobs = JobSaver.query_job(job_id=job.f_inheritance_info.get("job_id"), role=job_initiator["role"], party_id=job_initiator["party_id"])
+                inheritance_tasks = JobSaver.query_task(job_id=job.f_inheritance_info.get("job_id"), role=job_initiator["role"], party_id=job_initiator["party_id"], only_latest=True)
+                job_utils.check_job_inheritance_parameters(job, inheritance_jobs, inheritance_tasks)
 
             status_code, response = FederatedScheduler.create_job(job=job)
             if status_code != FederatedSchedulingStatusCode.SUCCESS:
@@ -329,13 +333,20 @@ class DAGScheduler(Cron):
         schedule_logger(job.f_job_id).info(f"component check")
         dependence_status_code, response = FederatedScheduler.check_component(job=job)
         schedule_logger(job.f_job_id).info(f"component check response: {response}")
-        component_set = set(job.f_inheritance_info.get("component_list"))
+        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
+                                                       runtime_conf=job.f_runtime_conf,
+                                                       train_runtime_conf=job.f_train_runtime_conf)
+        component_set = set([cpn.name for cpn in dsl_parser.get_source_connect_sub_graph(job.f_inheritance_info.get("component_list"))])
         for dest_role in response.keys():
             for party_id in response[dest_role].keys():
                 component_set = component_set.intersection(set(response[dest_role][party_id].get("data")))
         if component_set != set(job.f_inheritance_info.get("component_list")):
+            schedule_logger(job.f_job_id).info(f"dsl parser components:{component_set}")
+
+            component_list = [cpn.name for cpn in dsl_parser.get_source_connect_sub_graph(list(component_set))]
+            schedule_logger(job.f_job_id).info(f"parser result:{component_list}")
             command_body = {"inheritance_info": job.f_inheritance_info}
-            command_body["inheritance_info"].update({"component_list": list(component_set)})
+            command_body["inheritance_info"].update({"component_list": component_list})
             schedule_logger(job.f_job_id).info(f"start align job info:{command_body}")
             status_code, response = FederatedScheduler.align_args(job, command_body=command_body)
             schedule_logger(job.f_job_id).info(f"align result:{status_code}, {response}")
