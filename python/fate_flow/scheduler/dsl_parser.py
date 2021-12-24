@@ -1141,6 +1141,21 @@ class DSLParserV2(BaseDSLParser):
 
     def get_source_connect_sub_graph(self, valid_nodes):
         invalid_nodes = set([self.components[i].get_name() for i in range(len(self.components))]) - set(valid_nodes)
+        return self._get_source_connect_nodes(invalid_nodes)
+
+    def get_need_revisit_nodes(self, visited_nodes, failed_nodes):
+        invalid_nodes = set([self.components[i].get_name() for i in range(len(self.components))]) - set(visited_nodes)
+        invalid_nodes |= set(failed_nodes)
+        connected_nodes = self._get_source_connect_nodes(invalid_nodes)
+        connected_nodes_name = [node.get_name() for node in connected_nodes]
+        revisit_nodes = []
+        for node in visited_nodes:
+            if node not in connected_nodes_name:
+                revisit_nodes.append(node)
+
+        return revisit_nodes
+
+    def _get_source_connect_nodes(self, invalid_nodes):
         in_degree = copy.deepcopy(self.in_degree)
         stack = []
         for i in range(len(self.components)):
@@ -1169,6 +1184,7 @@ class DSLParserV2(BaseDSLParser):
     @staticmethod
     def verify_conf_reusability(reused_conf, new_conf, reused_components):
         reused_components = set(reused_components)
+
         # step1: check role, it should be same
         reused_conf_role = reused_conf.get("role", {})
         new_conf_role = new_conf.get("role", {})
