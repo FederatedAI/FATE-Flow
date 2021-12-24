@@ -1167,9 +1167,8 @@ class DSLParserV2(BaseDSLParser):
         return connected_nodes
 
     @staticmethod
-    def verify_conf_reusability(reused_dsl, reused_conf, new_dsl, new_conf):
-        reused_components = set(reused_dsl["components"]) & set(new_dsl["components"])
-
+    def verify_conf_reusability(reused_conf, new_conf, reused_components):
+        reused_components = set(reused_components)
         # step1: check role, it should be same
         reused_conf_role = reused_conf.get("role", {})
         new_conf_role = new_conf.get("role", {})

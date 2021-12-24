@@ -89,7 +89,6 @@ class CacheManager:
                                         cache_name=cache_name, **kwargs)
         return [record.f_cache for record in records]
 
-
     @classmethod
     @DB.connection_context()
     def query_record(cls, role: str = None, party_id: int = None, component_name: str = None, **kwargs) -> typing.List[CacheRecord]:

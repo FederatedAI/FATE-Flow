@@ -267,7 +267,8 @@ class Tracker(object):
         return list(group.values())
 
     def query_output_cache_record(self):
-        return CacheManager.query_record(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name)
+        return CacheManager.query_record(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name,
+                                         task_version=self.task_version)
 
     @DB.connection_context()
     def insert_summary_into_db(self, summary_data: dict, need_serialize=True):
