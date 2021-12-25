@@ -18,6 +18,7 @@ import os
 import sys
 import threading
 import typing
+import time
 from fate_arch.common import file_utils, FederatedMode
 from fate_arch.common.base_utils import json_dumps, fate_uuid, current_timestamp
 from fate_flow.utils.log_utils import schedule_logger
@@ -32,6 +33,7 @@ from fate_flow.utils import detect_utils, process_utils
 from fate_flow.utils import session_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
 
+mutex = 1
 
 class JobIdGenerator(object):
     _lock = threading.RLock()
@@ -305,14 +307,21 @@ def list_job(limit):
 
 @DB.connection_context()
 def list_task(limit):
-    if limit > 0:
-        tasks = Task.select().order_by(Task.f_create_time.desc()).limit(limit)
+    global mutex
+    # lock get
+    if mutex > 0:
+        mutex = mutex -1
+        if limit > 0:
+            tasks = Task.select().order_by(Task.f_create_time.desc()).limit(limit)
+        else:
+            tasks = Task.select().order_by(Task.f_create_time.desc())
+        task_list = []
+        tasks_len = len(tasks)
+        for i in range(0,tasks_len):
+            task_list.append(tasks[i])
+    #  lock can not get
     else:
-        tasks = Task.select().order_by(Task.f_create_time.desc())
-    task_list = []
-    tasks_len = len(tasks)
-    for i in range(0,tasks_len):
-        task_list.append(tasks[i])
+        time.sleep(5)
     return task_list
 
 
