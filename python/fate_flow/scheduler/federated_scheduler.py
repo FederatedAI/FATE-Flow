@@ -57,9 +57,9 @@ class FederatedScheduler(object):
         return status_code, response
 
     @classmethod
-    def check_component(cls, job, specific_dest=None):
+    def check_component(cls, job, check_type, specific_dest=None):
         schedule_logger(job.f_job_id).info(f"try to check component inheritance dependence")
-        status_code, response = cls.job_command(job=job, command=f"component/inheritance/check", specific_dest=specific_dest)
+        status_code, response = cls.job_command(job=job, command=f"component/{check_type}/check", specific_dest=specific_dest)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
             schedule_logger(job.f_job_id).info(f"check job dependence successfully")
         else:

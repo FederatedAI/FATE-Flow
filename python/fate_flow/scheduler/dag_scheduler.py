@@ -329,9 +329,9 @@ class DAGScheduler(Cron):
             schedule_logger(job_id).info(f"reset job ready signal {update_status}")
 
     @classmethod
-    def check_component(cls, job):
+    def check_component(cls, job, check_type="inheritance"):
         schedule_logger(job.f_job_id).info(f"component check")
-        dependence_status_code, response = FederatedScheduler.check_component(job=job)
+        dependence_status_code, response = FederatedScheduler.check_component(job=job, check_type=check_type)
         schedule_logger(job.f_job_id).info(f"component check response: {response}")
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                        runtime_conf=job.f_runtime_conf,
@@ -448,6 +448,8 @@ class DAGScheduler(Cron):
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl,
                                                        runtime_conf=job.f_runtime_conf_on_party,
                                                        train_runtime_conf=job.f_train_runtime_conf)
+        component_name, force = cls.get_rerun_component(component_name, job, dsl_parser, force)
+        schedule_logger(job_id).info(f"rerun component: {component_name}")
 
         if tasks:
             schedule_logger(job_id).info(f"require {[task.f_component_name for task in tasks]} to rerun")
@@ -487,6 +489,29 @@ class DAGScheduler(Cron):
         status = cls.rerun_signal(job_id=job_id, set_or_reset=True)
         schedule_logger(job_id).info(f"job set rerun signal {'successfully' if status else 'failed'}")
         return True
+
+    @classmethod
+    def get_rerun_component(cls, component_name, job, dsl_parser, force):
+        if not component_name or component_name == job_utils.job_pipeline_component_name():
+            pass
+        else:
+            dependence_status_code, response = FederatedScheduler.check_component(job=job, check_type="rerun")
+            success_task_list = [task.f_component_name for task in JobSaver.query_task(job_id=job.f_job_id, party_id=job.f_party_id, role=job.f_role,
+                                                                                       status=TaskStatus.SUCCESS, only_latest=True)]
+            component_set = set()
+            for dest_role in response.keys():
+                for party_id in response[dest_role].keys():
+                    component_set = component_set.union(set(response[dest_role][party_id].get("data")))
+            schedule_logger(job.f_job_id).info(f"success task list: {success_task_list}, check failed component list: {list(component_set)}")
+            need_rerun = [cpn.name for cpn in dsl_parser.get_need_revisit_nodes(success_task_list, list(component_set))]
+            schedule_logger(job.f_job_id).info(f"need rerun success component: {need_rerun}")
+            if component_set:
+                force = True
+            if isinstance(component_name, str):
+                component_name = set(need_rerun).union({component_name})
+            else:
+                component_name = set(need_rerun).union(set(component_name))
+        return component_name, force
 
     @classmethod
     def update_job_on_initiator(cls, initiator_job: Job, update_fields: list):

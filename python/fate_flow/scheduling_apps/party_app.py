@@ -40,7 +40,14 @@ def create_job(job_id, role, party_id):
 @manager.route('/<job_id>/<role>/<party_id>/component/inheritance/check', methods=['POST'])
 def component_inheritance_check(job_id, role, party_id):
     job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
-    component_list = DependenceManager.component_inheritance_check(job)
+    component_list = DependenceManager.component_check(job, check_type="inheritance")
+    return get_json_result(data=component_list)
+
+
+@manager.route('/<job_id>/<role>/<party_id>/component/rerun/check', methods=['POST'])
+def component_rerun_check(job_id, role, party_id):
+    job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
+    component_list = DependenceManager.component_check(job, check_type="rerun")
     return get_json_result(data=component_list)
 
 
