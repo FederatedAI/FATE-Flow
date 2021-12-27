@@ -29,7 +29,7 @@ class ServiceRegistry(ReloadConfigBase):
     MODEL_STORE_ADDRESS = None
     SERVINGS = None
     FATEMANAGER = None
-    FATESTUDIO = None
+    STUDIO = None
 
     @classmethod
     def load(cls):
@@ -72,7 +72,7 @@ class ServiceRegistry(ReloadConfigBase):
                 manager_conf.update(service_info)
             conf_utils.update_config(service_name, manager_conf)
             update_server[service_name] = manager_conf
-            setattr(cls, service_name, manager_conf)
+            setattr(cls, service_name.upper(), manager_conf)
         return update_server
 
     @classmethod
@@ -82,7 +82,7 @@ class ServiceRegistry(ReloadConfigBase):
             "studio": ["host", "port"]
         }
         if service_name not in registry_service_info.keys():
-            return
+            raise Exception(f"service {service_name} cannot be registered")
         if set(service_info.keys()) != set(registry_service_info.get(service_name)):
             raise Exception(f'the registration service {service_name} configuration item is'
                             f' {registry_service_info.get(service_name)}')
