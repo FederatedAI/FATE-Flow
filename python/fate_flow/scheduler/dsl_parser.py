@@ -1151,7 +1151,8 @@ class DSLParserV2(BaseDSLParser):
         revisit_nodes = []
         for node in visited_nodes:
             if node not in connected_nodes_name:
-                revisit_nodes.append(node)
+                idx = self.component_name_index[node]
+                revisit_nodes.append(self.components[idx])
 
         return revisit_nodes
 
