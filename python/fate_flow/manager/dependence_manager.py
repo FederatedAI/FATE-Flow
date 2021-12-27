@@ -4,7 +4,7 @@ import sys
 from fate_arch import storage
 from fate_arch.common import EngineType
 from fate_flow.controller.job_controller import JobController
-from fate_flow.entity.run_status import JobInheritanceStatus
+from fate_flow.entity.run_status import JobInheritanceStatus, TaskStatus
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.computing import ComputingEngine
@@ -44,11 +44,18 @@ class DependenceManager:
             return True
 
     @classmethod
-    def component_inheritance_check(cls, job):
-        tasks = JobController.load_tasks(component_list=job.f_inheritance_info.get("component_list", []),
-                                         job_id=job.f_inheritance_info.get("job_id"),
-                                         role=job.f_role,
-                                         party_id=job.f_party_id)
+    def component_check(cls, job, check_type="inheritance"):
+        if check_type == "rerun":
+            task_list = JobSaver.query_task(job_id=job.f_job_id, party_id=job.f_party_id, role=job.f_role,
+                                            status=TaskStatus.SUCCESS, only_latest=True)
+            tasks = {}
+            for task in task_list:
+                tasks[task.f_component_name] = task
+        else:
+            tasks = JobController.load_tasks(component_list=job.f_inheritance_info.get("component_list", []),
+                                             job_id=job.f_inheritance_info.get("job_id"),
+                                             role=job.f_role,
+                                             party_id=job.f_party_id)
         tracker_dict = JobController.load_task_tracker(tasks)
         missing_dependence_component_list = []
         # data dependence
@@ -59,7 +66,11 @@ class DependenceManager:
                 if not table_meta:
                     missing_dependence_component_list.append(tracker.component_name)
                     continue
-        return list(set(job.f_inheritance_info.get("component_list", [])) - set(missing_dependence_component_list))
+        if check_type == "rerun":
+            return missing_dependence_component_list
+        elif check_type == "inheritance":
+            # reload component list
+            return list(set(job.f_inheritance_info.get("component_list", [])) - set(missing_dependence_component_list))
 
     @classmethod
     def start_inheriting_job(cls, job):
