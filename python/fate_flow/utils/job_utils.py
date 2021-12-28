@@ -408,4 +408,4 @@ def check_job_inheritance_parameters(job, inheritance_jobs, inheritance_tasks):
             raise Exception(F"job {job.f_inheritance_info.get('job_id')} component {component} status:{task_status[component]}")
     dsl_parser = get_dsl_parser_by_version()
     dsl_parser.verify_conf_reusability(inheritance_job.f_runtime_conf, job.f_runtime_conf, job.f_inheritance_info.get('component_list'))
-    dsl_parser.verify_dsl_reusability(inheritance_job.f_dsl, job.f_dsl)
+    dsl_parser.verify_dsl_reusability(inheritance_job.f_dsl, job.f_dsl, job.f_inheritance_info.get('component_list', []))
