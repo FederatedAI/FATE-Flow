@@ -625,7 +625,7 @@ class BaseDSLParser(object):
         dsl_parser._find_dependencies(mode=mode, version=2)
 
     @staticmethod
-    def verify_dsl_reusability(reused_dsl, new_dsl):
+    def verify_dsl_reusability(reused_dsl, new_dsl, reused_components):
         # step 1, verify new dsl
         dsl_parser = DSLParserV2()
         dsl_parser.dsl = new_dsl
@@ -633,7 +633,8 @@ class BaseDSLParser(object):
         dsl_parser._find_dependencies(mode="train", version=2)
 
         # step 2, verify reused components is a sub-graph
-        reused_components = set(reused_dsl["components"]) & set(new_dsl["components"])
+        reused_components = set(reused_components)
+        # reused_components = set(reused_dsl["components"]) & set(new_dsl["components"])
         for cpn in reused_components:
             validate_key = ["input", "output", "provider"]
             for vk in validate_key:
