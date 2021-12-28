@@ -1188,10 +1188,10 @@ class DSLParserV2(BaseDSLParser):
         reused_components = set(reused_components)
 
         # step1: check role, it should be same
-        reused_conf_role = reused_conf.get("role", {})
-        new_conf_role = new_conf.get("role", {})
-        if reused_conf_role != new_conf_role:
-            raise ValueError(f"role {reused_conf_role} does not equals to {new_conf_role}")
+        # reused_conf_role = reused_conf.get("role", {})
+        # new_conf_role = new_conf.get("role", {})
+        # if reused_conf_role != new_conf_role:
+        #     raise ValueError(f"role {reused_conf_role} does not equals to {new_conf_role}")
 
         # step2: check component common parameters
         pre_component_parameters = reused_conf.get("component_parameters", {})
