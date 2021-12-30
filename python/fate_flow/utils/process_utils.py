@@ -44,16 +44,17 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
         startupinfo.wShowWindow = subprocess.SW_HIDE
     else:
         startupinfo = None
+
     subprocess_env = os.environ.copy()
     subprocess_env["PROCESS_ROLE"] = ProcessRole.WORKER.value
     if added_env:
         for name, value in added_env.items():
             if name.endswith("PATH"):
-                subprocess_env[name] = subprocess_env.get(name, "") + f":{value}"
+                subprocess_env[name] = f"{value}:{subprocess_env.get(name, '')}".rstrip(':')
             else:
                 subprocess_env[name] = value
-    if "CLASSPATH" in subprocess_env:
-        del subprocess_env["CLASSPATH"]
+    subprocess_env.pop("CLASSPATH", None)
+
     p = subprocess.Popen(process_cmd,
                          stdout=std,
                          stderr=std,
