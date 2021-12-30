@@ -98,8 +98,10 @@ class JobController(object):
         # update job parameters on party
         job_info["runtime_conf_on_party"]["job_parameters"] = job_parameters.to_dict()
         JobSaver.create_job(job_info=job_info)
+        schedule_logger(job_id).info("start initialize tasks")
         initialized_result, provider_group = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
                                                                   initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
+        schedule_logger(job_id).info("initialize tasks success")
         for provider_key, group_info in provider_group.items():
             for cpn in group_info["components"]:
                 dsl["components"][cpn]["provider"] = provider_key
