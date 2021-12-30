@@ -145,11 +145,23 @@ class ComponentRegistry:
                 component_registry["components"][component_alias] = component_registry["components"][component.f_component_name]
 
         provider_list = ComponentProviderInfo.select()
+
+        # get key names from `fateflow/conf/component_registry.json`
+        default_version_keys = {
+            provider_name: default_settings["default_version_key"]
+            for provider_name, default_settings in component_registry["default_settings"].items()
+            if "default_version_key" in default_settings
+        }
+
         for provider_info in provider_list:
             if provider_info.f_provider_name not in component_registry["providers"]:
                 component_registry["providers"][provider_info.f_provider_name] = {
-                    "default": {"version": get_versions()[component_registry["default_settings"][provider_info.f_provider_name]["default_version_key"]]}
+                    "default": {
+                        "version": get_versions()[default_version_keys[provider_info.f_provider_name]]
+                        if provider_info.f_provider_name in default_version_keys else provider_info.f_version,
+                    }
                 }
+
             component_registry["providers"][provider_info.f_provider_name][provider_info.f_version] = {
                 "path": provider_info.f_path,
                 "python": provider_info.f_python,
