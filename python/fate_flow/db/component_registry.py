@@ -18,6 +18,7 @@ from fate_arch.common.versions import get_versions
 
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.db.db_models import ComponentProviderInfo, ComponentRegistryInfo, ComponentInfo, DB
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import ComponentProvider
 from fate_flow.entity.types import ComponentProviderName
 from fate_flow.settings import FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH
@@ -38,6 +39,7 @@ class ComponentRegistry:
                 raise Exception(f"not support component provider: {provider_name}")
         cls.REGISTRY["providers"] = cls.REGISTRY.get("providers", {})
         cls.REGISTRY["components"] = cls.REGISTRY.get("components", {})
+        RuntimeConfig.load_component_registry()
 
     @classmethod
     def register_provider(cls, provider: ComponentProvider):
