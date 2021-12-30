@@ -457,10 +457,12 @@ class JobController(object):
     @classmethod
     def stop_job(cls, job, stop_status):
         tasks = JobSaver.query_task(
-            job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id, reverse=True)
+            job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id, only_latest=True, reverse=True)
         kill_status = True
         kill_details = {}
         for task in tasks:
+            if task.f_status in [TaskStatus.SUCCESS, TaskStatus.WAITING, TaskStatus.PASS]:
+                continue
             kill_task_status = TaskController.stop_task(
                 task=task, stop_status=stop_status)
             kill_status = kill_status & kill_task_status
