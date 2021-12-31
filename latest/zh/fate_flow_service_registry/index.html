@@ -794,12 +794,12 @@
 <p>FATE-Flow 通过 Apache ZooKeeper 与 FATE-Serving 交互，如果在配置中启用了 <code>use_registry</code>，则 Flow 在启动时会向 ZooKeeper 注册模型的下载 URL，Serving 可以通过这些 URL 获取模型。</p>
 <p>同样，Serving 也会向 ZooKeeper 注册其自身的地址，Flow 会获取该地址以与之通信。 如果没有启用 <code>use_registry</code>，Flow 则会尝试与配置文件中的设置 <code>servings</code> 地址通信。</p>
 <h2 id="2-zookeeper">2. 配置 ZooKeeper 服务<a class="headerlink" href="#2-zookeeper" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="nt">zookeeper</span><span class="p">:</span>
-  <span class="nt">hosts</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span>
-  <span class="nt">use_acl</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
-  <span class="nt">user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fate</span>
-  <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fate</span>
+<div class="highlight"><pre><span></span><code><span class="nt">zookeeper</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span><span class="w"></span>
+<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
+<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
 </code></pre></div>
 <h2 id="3-znode">3. ZNode<a class="headerlink" href="#3-znode" title="Permanent link">&para;</a></h2>
 <ul>
