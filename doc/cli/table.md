@@ -12,7 +12,7 @@ flow table info [options]
 
 | parameter name | required | type | description
 | :-------- | :--- | :----- | -------------- |
-| name | yes | string | fate table name |
+| table-name | yes | string | fate table name |
 | namespace | yes | string | fate table namespace |
 
 **return parameters** 
@@ -60,7 +60,7 @@ flow table delete [options]
 
 | parameter name | required | type | description |
 | :-------- | :--- | :----- | -------------- |
-| name | yes | string | fate table name |
+| table-name | yes | string | fate table name |
 | namespace | yes | string | fate table namespace |
 
 **return parameters** 
@@ -98,7 +98,7 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 
 | parameter name | required | type | description |
 | :------------- | :--- | :----- | ------------------------------------- |
-| name | yes | string | fate table name |
+| table-name | yes | string | fate table name |
 | namespace | yes | string | fate table namespace |
 | engine | yes | string | storage engine, supports "HDFS", "MYSQL", "PATH" |
 | yes | object | real storage address |
