@@ -24,8 +24,8 @@ LOGGER = getLogger()
 
 def get_provider_interface(provider: ComponentProvider):
     obj = get_provider_class_object(provider, "interface")
-    setattr(obj, "provider_name", provider.name)
-    setattr(obj, "provider_version", provider.version)
+    for i in ('name', 'version', 'path'):
+        setattr(obj, f'provider_{i}', getattr(provider, i))
     return obj
 
 
