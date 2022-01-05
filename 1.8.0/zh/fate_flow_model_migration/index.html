@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.edf004c2.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bb3983ee.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -931,33 +931,33 @@
 </ol>
 <h3 id="1">1. 修改配置文件<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
 <p>在新参与方（机器）中根据实际情况对迁移任务的配置文件进行修改，如下为迁移任务示例配置文件 <a href="https://github.com/FederatedAI/FATE-Flow/blob/main/examples/model/migrate_model.json">migrate_model.json</a></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;federated_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;SINGLE&quot;</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;role&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9999</span><span class="p">],</span>
-    <span class="nt">&quot;arbiter&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">],</span>
-    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">]</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;migrate_initiator&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;guest&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;party_id&quot;</span><span class="p">:</span> <span class="mi">99</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;migrate_role&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">99</span><span class="p">],</span>
-    <span class="nt">&quot;arbiter&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">],</span>
-    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">]</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;execute_party&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9999</span><span class="p">],</span>
-    <span class="nt">&quot;arbiter&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">],</span>
-    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">]</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;model_id&quot;</span><span class="p">:</span> <span class="s2">&quot;arbiter-10000#guest-9999#host-10000#model&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;model_version&quot;</span><span class="p">:</span> <span class="s2">&quot;202006171904247702041&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;unify_model_version&quot;</span><span class="p">:</span> <span class="s2">&quot;20200901_0001&quot;</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;federated_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SINGLE&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">9999</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10000</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10000</span><span class="p">]</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;migrate_initiator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">99</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;migrate_role&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">99</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">100</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;execute_party&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">9999</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10000</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10000</span><span class="p">]</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;arbiter-10000#guest-9999#host-10000#model&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202006171904247702041&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;unify_model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;20200901_0001&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>请将上述配置内容保存到服务器中的某一位置进行修改。</p>
 <p>以下为对该配置中的参数的解释说明：</p>
@@ -982,60 +982,60 @@
 </code></pre></div>
 <h2 id="3">3. 任务执行结果<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <p>如下为实际迁移任务的配置文件内容：</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;federated_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;SINGLE&quot;</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;role&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9999</span><span class="p">],</span>
-    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">]</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;migrate_initiator&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;guest&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;party_id&quot;</span><span class="p">:</span> <span class="mi">99</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;migrate_role&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">99</span><span class="p">],</span>
-    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">]</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;execute_party&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9999</span><span class="p">],</span>
-    <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10000</span><span class="p">]</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;model_id&quot;</span><span class="p">:</span> <span class="s2">&quot;guest-9999#host-10000#model&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;model_version&quot;</span><span class="p">:</span> <span class="s2">&quot;202010291539339602784&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;unify_model_version&quot;</span><span class="p">:</span> <span class="s2">&quot;fate_migration&quot;</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;federated_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SINGLE&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">9999</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10000</span><span class="p">]</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;migrate_initiator&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">99</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;migrate_role&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">99</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;execute_party&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">9999</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10000</span><span class="p">]</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest-9999#host-10000#model&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202010291539339602784&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;unify_model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate_migration&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>该任务实现的是，将party_id为9999（guest），10000（host）的集群生成的model_id为guest-9999#host-10000#model，model_version为202010291539339602784的模型修改迁移生成适配party_id为99（guest），100（host）集群的新模型</p>
 <p>如下为迁移成功的后得到的返回结果：</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;detail&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;9999&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                    <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;Migrating model successfully. The configuration of model has been modified automatically. New model id is: guest-99#host-100#model, model version is: fate_migration. Model files can be found at &#39;/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip&#39;.&quot;</span>
-                <span class="p">}</span>
-            <span class="p">},</span>
-            <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;10000&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                    <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;Migrating model successfully. The configuration of model has been modified automatically. New model id is: guest-99#host-100#model, model version is: fate_migration. Model files can be found at &#39;/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip&#39;.&quot;</span>
-                <span class="p">}</span>
-            <span class="p">}</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;guest&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;9999&quot;</span><span class="p">:</span> <span class="mi">0</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;10000&quot;</span><span class="p">:</span> <span class="mi">0</span>
-        <span class="p">}</span>
-    <span class="p">},</span>
-    <span class="nt">&quot;jobId&quot;</span><span class="p">:</span> <span class="s2">&quot;202010292152299793981&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Migrating model successfully. The configuration of model has been modified automatically. New model id is: guest-99#host-100#model, model version is: fate_migration. Model files can be found at &#39;/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip&#39;.&quot;</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="w">            </span><span class="p">},</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Migrating model successfully. The configuration of model has been modified automatically. New model id is: guest-99#host-100#model, model version is: fate_migration. Model files can be found at &#39;/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip&#39;.&quot;</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">},</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="p">},</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202010292152299793981&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>任务成功执行后，执行方的机器中都会生成一份迁移后模型压缩文件，该文件路径可以在返回结果中得到。如上，guest方（9999）的迁移后模型文件路径为：<code>/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip</code>，host方（10000）的迁移后模型文件路径为：<code>/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip</code>。新的model_id与model_version同样可以从返回中获得。</p>
 <h2 id="4">4. 转移文件并导入(在所有目标集群分别操作)<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
@@ -1054,10 +1054,10 @@
 <div class="highlight"><pre><span></span><code>flow model import -c <span class="nv">$FATE_FLOW_BASE</span>/examples/model/import_model.json
 </code></pre></div>
 <p>得到如下返回视为导入成功：</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-  <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>迁移任务至此完成，用户可使用新的model_id及model_version进行任务提交，以利用迁移后的模型执行预测任务。</p>
 
@@ -1134,10 +1134,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "search": "../../assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.e1a181d9.min.js"></script>
+      <script src="../../assets/javascripts/bundle.289a2a4b.min.js"></script>
       
         <script src="../../mkdocs/js/termynal.js"></script>
       

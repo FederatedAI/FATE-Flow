@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.edf004c2.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bb3983ee.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -883,42 +883,42 @@
 </ul>
 <p><strong>样例</strong></p>
 <p>fate_on_standalone：是为执行在<code>FATE Flow Server</code>同台机器的单机引擎，一般用于快速实验，<code>nodes</code>一般设置为1，<code>cores_per_node</code>一般为机器CPU核数，也可适量超配</p>
-<div class="highlight"><pre><span></span><code><span class="nt">fate_on_standalone</span><span class="p">:</span>
-  <span class="nt">standalone</span><span class="p">:</span>
-    <span class="nt">cores_per_node</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">20</span>
-    <span class="nt">nodes</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+<div class="highlight"><pre><span></span><code><span class="nt">fate_on_standalone</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">standalone</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
 </code></pre></div>
 <p>fate_on_eggroll：依据<code>EggRoll</code>集群实际部署情况进行配置，<code>nodes</code>表示<code>node manager</code>的机器数量，<code>cores_per_node</code>表示平均每台<code>node manager</code>机器CPU核数</p>
-<div class="highlight"><pre><span></span><code><span class="nt">fate_on_eggroll</span><span class="p">:</span>
-  <span class="nt">clustermanager</span><span class="p">:</span>
-    <span class="nt">cores_per_node</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">16</span>
-    <span class="nt">nodes</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
-  <span class="nt">rollsite</span><span class="p">:</span>
-    <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
-    <span class="nt">port</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">9370</span>
+<div class="highlight"><pre><span></span><code><span class="nt">fate_on_eggroll</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">clustermanager</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span><span class="w"></span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+<span class="w">  </span><span class="nt">rollsite</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9370</span><span class="w"></span>
 </code></pre></div>
 <p>fate_on_spark：依据在<code>Spark</code>集群中配置给<code>FATE</code>集群的资源进行配置，<code>nodes</code>表示<code>Spark</code>节点数量，<code>cores_per_node</code>表示平均每个节点分配给<code>FATE</code>集群的CPU核数</p>
-<div class="highlight"><pre><span></span><code><span class="nt">fate_on_spark</span><span class="p">:</span>
-  <span class="nt">spark</span><span class="p">:</span>
-    <span class="c1"># default use SPARK_HOME environment variable</span>
-    <span class="nt">home</span><span class="p">:</span>
-    <span class="nt">cores_per_node</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">20</span>
-    <span class="nt">nodes</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+<div class="highlight"><pre><span></span><code><span class="nt">fate_on_spark</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">spark</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="c1"># default use SPARK_HOME environment variable</span><span class="w"></span>
+<span class="w">    </span><span class="nt">home</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
 </code></pre></div>
 <p>注意：请务必确保在<code>Spark</code>集群分配了对应数量的资源于<code>FATE</code>集群，若<code>Spark</code>集群分配资源少于此处<code>FATE</code>所配置的资源，那么会出现可以提交<code>FATE</code>作业，但是<code>FATE Flow</code>将任务提交至<code>Spark</code>集群时，由于<code>Spark</code>集群资源不足，任务实际不执行</p>
 <h2 id="3">3. 作业申请资源配置<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <p>我们一般使用<code>task_cores</code>和<code>task_parallelism</code>进行配置作业申请资源，如：</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-  <span class="nt">&quot;common&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;job_type&quot;</span><span class="p">:</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;task_cores&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
-    <span class="nt">&quot;task_parallelism&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="nt">&quot;computing_partitions&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
-    <span class="nt">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">36000</span>
-    <span class="p">}</span>
-  <span class="p">}</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;common&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;job_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;train&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;task_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;task_parallelism&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;computing_partitions&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">36000</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <p>作业申请的总资源为<code>task_cores</code> * <code>task_parallelism</code>，创建作业时，<code>FATE Flow</code>分发作业到各<code>party</code>时会依据上述配置、运行角色、本方使用引擎(通过<code>$FATE_PROJECT_BASE/conf/service_conf.yaml#default_engines</code>)，适配计算出实际参数，如下</p>
 <h2 id="4">4. 资源申请实际参数适配计算过程<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
@@ -1006,31 +1006,31 @@
 </tbody>
 </table>
 <p><strong>样例</strong></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;computing_engine_resource&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;f_cores&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
-            <span class="nt">&quot;f_create_date&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-09-21 19:32:59&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;f_create_time&quot;</span><span class="p">:</span> <span class="mi">1632223979564</span><span class="p">,</span>
-            <span class="nt">&quot;f_engine_config&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;cores_per_node&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
-                <span class="nt">&quot;nodes&quot;</span><span class="p">:</span> <span class="mi">1</span>
-            <span class="p">},</span>
-            <span class="nt">&quot;f_engine_entrance&quot;</span><span class="p">:</span> <span class="s2">&quot;fate_on_eggroll&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;f_engine_name&quot;</span><span class="p">:</span> <span class="s2">&quot;EGGROLL&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;f_engine_type&quot;</span><span class="p">:</span> <span class="s2">&quot;computing&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;f_memory&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="nt">&quot;f_nodes&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="nt">&quot;f_remaining_cores&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
-            <span class="nt">&quot;f_remaining_memory&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="nt">&quot;f_update_date&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-11-08 16:56:38&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;f_update_time&quot;</span><span class="p">:</span> <span class="mi">1636361798812</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;use_resource_job&quot;</span><span class="p">:</span> <span class="p">[]</span>
-    <span class="p">},</span>
-    <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;computing_engine_resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_create_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-09-21 19:32:59&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1632223979564</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_engine_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;cores_per_node&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">            </span><span class="p">},</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_engine_entrance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate_on_eggroll&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_engine_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EGGROLL&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_engine_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computing&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_remaining_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_remaining_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_update_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-11-08 16:56:38&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;f_update_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1636361798812</span><span class="w"></span>
+<span class="w">        </span><span class="p">},</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;use_resource_job&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <h3 id="return">return<a class="headerlink" href="#return" title="Permanent link">&para;</a></h3>
 <p>用于归还某个job的资源</p>
@@ -1083,19 +1083,19 @@
 </tbody>
 </table>
 <p><strong>样例</strong></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="nt">&quot;job_id&quot;</span><span class="p">:</span> <span class="s2">&quot;202111081612427726750&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;party_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8888&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;resource_in_use&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-            <span class="nt">&quot;resource_return_status&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-            <span class="nt">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;guest&quot;</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="nt">&quot;retcode&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="nt">&quot;retmsg&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081612427726750&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8888&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;resource_in_use&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;resource_return_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
               
@@ -1171,10 +1171,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "search": "../../assets/javascripts/workers/search.0bbba5b5.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "search": "../../assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.e1a181d9.min.js"></script>
+      <script src="../../assets/javascripts/bundle.289a2a4b.min.js"></script>
       
         <script src="../../mkdocs/js/termynal.js"></script>
       
