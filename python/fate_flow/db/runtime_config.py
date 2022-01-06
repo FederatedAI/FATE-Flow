@@ -35,8 +35,9 @@ class RuntimeConfig(ReloadConfigBase):
     PROCESS_ROLE = None
     ENV = dict()
     COMPONENT_PROVIDER: ComponentProvider = None
-
     SERVICE_DB = None
+    LOAD_COMPONENT_REGISTRY = False
+    LOAD_CONFIG_MANAGER = False
 
     @classmethod
     def init_config(cls, **kwargs):
@@ -47,6 +48,14 @@ class RuntimeConfig(ReloadConfigBase):
     @classmethod
     def init_env(cls):
         cls.ENV.update(get_versions())
+
+    @classmethod
+    def load_component_registry(cls):
+        cls.LOAD_COMPONENT_REGISTRY = True
+
+    @classmethod
+    def load_config_manager(cls):
+        cls.LOAD_CONFIG_MANAGER = True
 
     @classmethod
     def get_env(cls, key):
