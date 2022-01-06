@@ -101,9 +101,10 @@ class BaseWorker:
             if self.args.job_server:
                 RuntimeConfig.init_config(JOB_SERVER_HOST=self.args.job_server.split(':')[0],
                                           HTTP_PORT=self.args.job_server.split(':')[1])
-            # todo: get conf from server
-            ConfigManager.load()
-            ComponentRegistry.load()
+            if not RuntimeConfig.LOAD_COMPONENT_REGISTRY:
+                ComponentRegistry.load()
+            if not RuntimeConfig.LOAD_CONFIG_MANAGER:
+                ConfigManager.load()
             result = self._run()
         except Exception as e:
             LOGGER.exception(e)
