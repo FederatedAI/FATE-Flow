@@ -180,12 +180,11 @@ def gen_data_access_job_config(config_data, access_module):
     if access_module == 'writer':
         parameters = {
             "namespace",
-            "table_name",
+            "name",
             "storage_engine",
             "address",
             "output_namespace",
-            "output_table_name",
-            "partitions"
+            "output_name"
         }
         update_config(job_runtime_conf, job_dsl, initiator_role, parameters, access_module, config_data)
     return job_dsl, job_runtime_conf
