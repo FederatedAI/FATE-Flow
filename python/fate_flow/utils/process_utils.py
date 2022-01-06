@@ -91,10 +91,10 @@ def check_process(pid, task: Task = None, expected_cmdline: list = None):
     else:
         ret = True
     if ret and task is not None:
-        p = psutil.Process(int(pid))
+        p = get_process_instance(pid)
         return is_task_executor_process(task=task, process=p)
     elif ret and expected_cmdline is not None:
-        p = psutil.Process(int(pid))
+        p = get_process_instance(pid)
         return check_process_by_cmdline(actual=p.cmdline(), expected=expected_cmdline)
     else:
         return ret
@@ -187,7 +187,9 @@ def kill_task_executor_process(task: Task, only_child=False):
             schedule_logger(task.f_job_id).info("can not found task {} {} {} with {} party status process pid:{}".format(
                 task.f_task_id, task.f_role, task.f_party_id, task.f_party_status, pid))
             return KillProcessRetCode.NOT_FOUND
-        p = psutil.Process(pid)
+        p = get_process_instance(pid)
+        if p is None:
+            return KillProcessRetCode.NOT_FOUND
         if not is_task_executor_process(task=task, process=p):
             schedule_logger(task.f_job_id).warning("this pid {} is not task {} {} {} executor".format(
                 pid, task.f_task_id, task.f_role, task.f_party_id))
@@ -206,7 +208,9 @@ def kill_task_executor_process(task: Task, only_child=False):
 
 
 def kill_process(process: psutil.Process = None, pid: int = None, expected_cmdline: list = None):
-    process = process if process is not None else psutil.Process(pid)
+    process = process if process is not None else get_process_instance(pid)
+    if process is None:
+        return
     for child in process.children(recursive=True):
         try:
             if check_process(pid=child.pid):
@@ -215,3 +219,13 @@ def kill_process(process: psutil.Process = None, pid: int = None, expected_cmdli
             stat_logger.warning(f"kill {child.pid} process failed", exc_info=True)
     if check_process(pid=process.pid, expected_cmdline=expected_cmdline):
         process.kill()
+
+
+def get_process_instance(pid: int):
+    try:
+        return psutil.Process(int(pid))
+    except psutil.NoSuchProcess:
+        stat_logger.warning(f"no such process {pid}")
+        return
+    except Exception as e:
+        raise e

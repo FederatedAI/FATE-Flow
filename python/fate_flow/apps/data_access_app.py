@@ -59,6 +59,8 @@ def download_upload(access_module):
         required_arguments.extend(['file', 'head', 'partition'])
     elif access_module == 'download':
         required_arguments.extend(['output_path'])
+    elif access_module == 'writer':
+        pass
     else:
         raise Exception('can not support this operating: {}'.format(access_module))
     detect_utils.check_config(job_config, required_arguments=required_arguments)
@@ -164,14 +166,7 @@ def gen_data_access_job_config(config_data, access_module):
                 "auto_increasing_sid",
                 "block_size"
             }
-        job_runtime_conf["component_parameters"]["role"][initiator_role]["0"]["upload_0"] = {}
-        for p in parameters:
-            if p in config_data:
-                job_runtime_conf["component_parameters"]["role"][initiator_role]["0"]["upload_0"][p] = config_data[p]
-        job_runtime_conf['dsl_version'] = 2
-        job_dsl["components"]["upload_0"] = {
-            "module": "Upload"
-        }
+        update_config(job_runtime_conf, job_dsl, initiator_role, parameters, access_module, config_data)
 
     if access_module == 'download':
         parameters = {
@@ -180,13 +175,28 @@ def gen_data_access_job_config(config_data, access_module):
                 "namespace",
                 "name"
         }
-        job_runtime_conf["component_parameters"]['role'][initiator_role]["0"]["download_0"] = {}
-        for p in parameters:
-            if p in config_data:
-                job_runtime_conf["component_parameters"]['role'][initiator_role]["0"]["download_0"][p] = config_data[p]
-        job_runtime_conf['dsl_version'] = 2
-        job_dsl["components"]["download_0"] = {
-            "module": "Download"
-        }
+        update_config(job_runtime_conf, job_dsl, initiator_role, parameters, access_module, config_data)
 
+    if access_module == 'writer':
+        parameters = {
+            "namespace",
+            "table_name",
+            "storage_engine",
+            "address",
+            "output_namespace",
+            "output_table_name",
+            "partitions"
+        }
+        update_config(job_runtime_conf, job_dsl, initiator_role, parameters, access_module, config_data)
     return job_dsl, job_runtime_conf
+
+
+def update_config(job_runtime_conf, job_dsl, initiator_role, parameters, access_module, config_data):
+    job_runtime_conf["component_parameters"]['role'][initiator_role]["0"][f"{access_module}_0"] = {}
+    for p in parameters:
+        if p in config_data:
+            job_runtime_conf["component_parameters"]['role'][initiator_role]["0"][f"{access_module}_0"][p] = config_data[p]
+    job_runtime_conf['dsl_version'] = 2
+    job_dsl["components"][f"{access_module}_0"] = {
+        "module": access_module.capitalize()
+    }

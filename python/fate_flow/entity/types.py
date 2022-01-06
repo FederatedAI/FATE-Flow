@@ -101,13 +101,14 @@ class InputSearchType(IntEnum, CustomEnum):
 
 class RetCode(IntEnum, CustomEnum):
     SUCCESS = 0
-    OPERATING_NOT_TASK_EFFECT = 10
+    NOT_EFFECTIVE = 10
     EXCEPTION_ERROR = 100
     ARGUMENT_ERROR = 101
     DATA_ERROR = 102
     OPERATING_ERROR = 103
     FEDERATED_ERROR = 104
     CONNECTION_ERROR = 105
+    RUNNING = 106
     SERVER_ERROR = 500
 
 
@@ -116,3 +117,11 @@ class WorkerName(CustomEnum):
     TASK_INITIALIZER = "task_initializer"
     PROVIDER_REGISTRAR = "provider_registrar"
     DEPENDENCE_UPLOAD = "dependence_upload"
+
+class TaskCleanResourceType(CustomEnum):
+    TABLE = "table"
+    METRICS = "metrics"
+
+
+class ExternalStorage(CustomEnum):
+    MYSQL = "MYSQL"

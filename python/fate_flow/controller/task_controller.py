@@ -30,6 +30,7 @@ from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.entity.types import TaskCleanResourceType
 
 
 class TaskController(object):
@@ -147,8 +148,7 @@ class TaskController(object):
                            task_version=task_info["task_version"],
                            role=task_info["role"],
                            party_id=task_info["party_id"],
-                           content_type="table"
-                           )
+                           content_type=TaskCleanResourceType.TABLE)
         cls.report_task_to_initiator(task_info=task_info)
         return update_status
 
@@ -214,12 +214,12 @@ class TaskController(object):
             return kill_status
 
     @classmethod
-    def clean_task(cls, job_id, task_id, task_version, role, party_id, content_type):
+    def clean_task(cls, job_id, task_id, task_version, role, party_id, content_type: TaskCleanResourceType):
         status = set()
-        if content_type == "metrics":
+        if content_type == TaskCleanResourceType.METRICS:
             tracker = Tracker(job_id=job_id, role=role, party_id=party_id, task_id=task_id, task_version=task_version)
             status.add(tracker.clean_metrics())
-        elif content_type == "table":
+        elif content_type == TaskCleanResourceType.TABLE:
             jobs = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)
             if jobs:
                 job = jobs[0]

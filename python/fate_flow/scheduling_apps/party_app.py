@@ -23,6 +23,7 @@ from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.authentication_utils import request_authority_certification
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.manager.resource_manager import ResourceManager
+from fate_flow.entity.types import TaskCleanResourceType
 
 
 # execute command on every party
@@ -36,6 +37,20 @@ def create_job(job_id, role, party_id):
         return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=str(e), data={"job_id": job_id})
 
 
+@manager.route('/<job_id>/<role>/<party_id>/component/inheritance/check', methods=['POST'])
+def component_inheritance_check(job_id, role, party_id):
+    job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
+    component_list = DependenceManager.component_check(job, check_type="inheritance")
+    return get_json_result(data=component_list)
+
+
+@manager.route('/<job_id>/<role>/<party_id>/component/rerun/check', methods=['POST'])
+def component_rerun_check(job_id, role, party_id):
+    job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
+    component_list = DependenceManager.component_check(job, check_type="rerun")
+    return get_json_result(data=component_list)
+
+
 @manager.route('/<job_id>/<role>/<party_id>/dependence/check', methods=['POST'])
 def check_dependence(job_id, role, party_id):
     job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
@@ -43,7 +58,7 @@ def check_dependence(job_id, role, party_id):
     if status:
         return get_json_result(retcode=0, retmsg='success')
     else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR,
+        return get_json_result(retcode=RetCode.RUNNING,
                                retmsg=f"check for job {job_id} dependence failed, "
                                       f"dependencies are being installed automatically, it may take a few minutes")
 
@@ -73,9 +88,9 @@ def start_job(job_id, role, party_id):
 
 
 @manager.route('/<job_id>/<role>/<party_id>/align', methods=['POST'])
-def query_job_input_args(job_id, role, party_id):
-    job_input_args = JobController.query_job_input_args(input_data=request.json, role=role, party_id=party_id)
-    return get_json_result(retcode=0, retmsg='success', data=job_input_args)
+def align_job_args(job_id, role, party_id):
+    JobController.align_job_args(job_info=request.json, role=role, party_id=party_id, job_id=job_id)
+    return get_json_result(retcode=0, retmsg='success')
 
 
 @manager.route('/<job_id>/<role>/<party_id>/update', methods=['POST'])
@@ -110,7 +125,7 @@ def job_status(job_id, role, party_id, status):
     if JobController.update_job_status(job_info=job_info):
         return get_json_result(retcode=0, retmsg='success')
     else:
-        return get_json_result(retcode=RetCode.OPERATING_NOT_TASK_EFFECT, retmsg="update job status does not take effect")
+        return get_json_result(retcode=RetCode.NOT_EFFECTIVE, retmsg="update job status does not take effect")
 
 
 @manager.route('/<job_id>/<role>/<party_id>/model', methods=['POST'])
@@ -161,7 +176,7 @@ def report_task(job_id, component_name, task_id, task_version, role, party_id):
     TaskController.update_task(task_info=task_info)
     if task_info.get("party_status"):
         if not TaskController.update_task_status(task_info=task_info):
-            return get_json_result(retcode=RetCode.OPERATING_NOT_TASK_EFFECT, retmsg="update job status does not take effect")
+            return get_json_result(retcode=RetCode.NOT_EFFECTIVE, retmsg="update job status does not take effect")
     return get_json_result(retcode=0, retmsg='success')
 
 
@@ -203,7 +218,7 @@ def task_status(job_id, component_name, task_id, task_version, role, party_id, s
     if TaskController.update_task_status(task_info=task_info):
         return get_json_result(retcode=0, retmsg='success')
     else:
-        return get_json_result(retcode=RetCode.OPERATING_NOT_TASK_EFFECT, retmsg="update job status does not take effect")
+        return get_json_result(retcode=RetCode.NOT_EFFECTIVE, retmsg="update job status does not take effect")
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/stop/<stop_status>', methods=['POST'])
@@ -219,7 +234,7 @@ def stop_task(job_id, component_name, task_id, task_version, role, party_id, sto
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/clean/<content_type>', methods=['POST'])
 def clean_task(job_id, component_name, task_id, task_version, role, party_id, content_type):
-    TaskController.clean_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id), content_type=content_type)
+    TaskController.clean_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id), content_type=TaskCleanResourceType(content_type))
     return get_json_result(retcode=0, retmsg='success')
 
 
