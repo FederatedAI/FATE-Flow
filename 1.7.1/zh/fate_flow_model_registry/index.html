@@ -561,10 +561,23 @@
     本地磁盘存储
   </a>
   
-</li>
+    <nav class="md-nav" aria-label="本地磁盘存储">
+      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
+    目录结构
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
     远端存储引擎
   </a>
   
@@ -730,7 +743,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     腾讯云对象存储
   </a>
   
@@ -955,10 +968,23 @@
     本地磁盘存储
   </a>
   
-</li>
+    <nav class="md-nav" aria-label="本地磁盘存储">
+      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
+    目录结构
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
     远端存储引擎
   </a>
   
@@ -1124,7 +1150,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     腾讯云对象存储
   </a>
   
@@ -1184,14 +1210,119 @@
 <p>Checkpoint 模型存储于 <code>model_local_cache/&lt;party_model_id&gt;/&lt;model_version&gt;/checkpoint/&lt;component_name&gt;/&lt;step_index&gt;#&lt;step_name&gt;</code>。</p>
 </li>
 </ul>
-<h3 id="_3">远端存储引擎<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<h4 id="_3">目录结构<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>tree model_local_cache/guest#9999#arbiter-10000#guest-9999#host-10000#model/202112181502241234200
+
+model_local_cache/guest#9999#arbiter-10000#guest-9999#host-10000#model/202112181502241234200
+├── checkpoint
+│   ├── data_transform_0
+│   ├── evaluation_0
+│   ├── hetero_linr_0
+│   │   ├── 0#step_name
+│   │   │   ├── HeteroLinearRegressionMeta.json
+│   │   │   ├── HeteroLinearRegressionMeta.pb
+│   │   │   ├── HeteroLinearRegressionParam.json
+│   │   │   ├── HeteroLinearRegressionParam.pb
+│   │   │   └── database.yaml
+│   │   ├── 1#step_name
+│   │   │   ├── HeteroLinearRegressionMeta.json
+│   │   │   ├── HeteroLinearRegressionMeta.pb
+│   │   │   ├── HeteroLinearRegressionParam.json
+│   │   │   ├── HeteroLinearRegressionParam.pb
+│   │   │   └── database.yaml
+│   │   ├── 2#step_name
+│   │   │   ├── HeteroLinearRegressionMeta.json
+│   │   │   ├── HeteroLinearRegressionMeta.pb
+│   │   │   ├── HeteroLinearRegressionParam.json
+│   │   │   ├── HeteroLinearRegressionParam.pb
+│   │   │   └── database.yaml
+│   │   ├── 3#step_name
+│   │   │   ├── HeteroLinearRegressionMeta.json
+│   │   │   ├── HeteroLinearRegressionMeta.pb
+│   │   │   ├── HeteroLinearRegressionParam.json
+│   │   │   ├── HeteroLinearRegressionParam.pb
+│   │   │   └── database.yaml
+│   │   └── 4#step_name
+│   │       ├── HeteroLinearRegressionMeta.json
+│   │       ├── HeteroLinearRegressionMeta.pb
+│   │       ├── HeteroLinearRegressionParam.json
+│   │       ├── HeteroLinearRegressionParam.pb
+│   │       └── database.yaml
+│   ├── hetero_linr_1
+│   ├── intersection_0
+│   └── reader_0
+├── define
+│   ├── define_meta.yaml
+│   ├── proto
+│   │   └── pipeline.proto
+│   └── proto_generated_python
+│       ├── __pycache__
+│       │   └── pipeline_pb2.cpython-36.pyc
+│       └── pipeline_pb2.py
+├── run_parameters
+│   ├── data_transform_0
+│   │   └── run_parameters.json
+│   ├── hetero_linr_0
+│   │   └── run_parameters.json
+│   ├── hetero_linr_1
+│   │   └── run_parameters.json
+│   └── pipeline
+│       └── run_parameters.json
+└── variables
+    ├── data
+    │   ├── data_transform_0
+    │   │   └── model
+    │   │       ├── DataTransformMeta
+    │   │       ├── DataTransformMeta.json
+    │   │       ├── DataTransformParam
+    │   │       └── DataTransformParam.json
+    │   ├── hetero_linr_0
+    │   │   └── model
+    │   │       ├── HeteroLinearRegressionMeta
+    │   │       ├── HeteroLinearRegressionMeta.json
+    │   │       ├── HeteroLinearRegressionParam
+    │   │       └── HeteroLinearRegressionParam.json
+    │   ├── hetero_linr_1
+    │   │   └── model
+    │   │       ├── HeteroLinearRegressionMeta
+    │   │       ├── HeteroLinearRegressionMeta.json
+    │   │       ├── HeteroLinearRegressionParam
+    │   │       └── HeteroLinearRegressionParam.json
+    │   └── pipeline
+    │       └── pipeline
+    │           ├── Pipeline
+    │           └── Pipeline.json
+    └── index
+
+32 directories, 47 files
+</code></pre></div>
+<p><strong><code>checkpoint</code></strong></p>
+<p>此目录存储组件运行过程中，每轮迭代产生的模型，不是所有组件都支持 checkpoint。</p>
+<p>以 <code>checkpoint/hetero_linr_0/2#step_name</code> 为例：</p>
+<p><code>hetero_linr_0</code> 是 <code>component_name</code>；<code>2</code> 是 <code>step_index</code>，即迭代次数；<code>step_name</code> 目前只做占位符，没有使用。</p>
+<p><code>HeteroLinearRegressionMeta.json</code>, <code>HeteroLinearRegressionMeta.pb</code>, <code>HeteroLinearRegressionParam.json</code>, <code>HeteroLinearRegressionParam.pb</code> 都是训练产生的数据，可以理解为模型文件。<code>database.yaml</code> 主要记录上述文件的 hash 以作校验，还存储有 <code>step_index</code>, <code>step_name</code>, <code>create_time</code>。</p>
+<p><strong><code>define</code></strong></p>
+<p>该目录储存作业的基本信息，在作业初始化时创建。<code>pipeline</code> 不是一个组件，而是代表整个作业。</p>
+<p><code>define/proto/pipeline.proto</code> 和 <code>define/proto/pipeline_pb2.py</code> 目前没有使用。</p>
+<p><code>define/define_meta.yaml</code> 记录组件列表，包括 <code>component_name</code>, <code>componet_module_name</code>, <code>model_alias</code>。</p>
+<p><strong><code>run_parameters</code></strong></p>
+<p>此目录存储组件的配置信息，也称为 DSL。</p>
+<p><code>run_parameters/pipeline/run_parameters.json</code> 为一个空的 object <code>{}</code>。</p>
+<p><strong><code>variables</code></strong></p>
+<p>此目录存储组件运行结束后产生的模型，与最后一轮迭代产生的模型一致。</p>
+<p>以 <code>variables/data/hetero_linr_0/model</code> 为例：</p>
+<p><code>hetero_linr_0</code> 是 <code>component_name</code>；<code>model</code> 是 <code>model_alias</code>。</p>
+<p><code>HeteroLinearRegressionMeta</code>, <code>HeteroLinearRegressionMeta.json</code>, <code>HeteroLinearRegressionParam</code> <code>HeteroLinearRegressionParam.json</code> 与 <code>checkpoint</code> 目录下的文件格式完全一致，除了 <code>.pb</code> 文件去掉了扩展名。</p>
+<p><code>variables/data/pipeline/</code>存储作业的详细信息。</p>
+<p><code>variables/index/</code> 目前没有使用。</p>
+<h3 id="_4">远端存储引擎<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
 <p>本地磁盘并不可靠，因此模型有丢失的风险，FATE-Flow 支持导出模型到指定存储引擎、从指定存储引擎导入以及自动发布模型时推送模型到引擎存储。</p>
 <p>存储引擎支持腾讯云对象存储、MySQL 和 Redis, 具体请参考<a href="#4-存储引擎配置">存储引擎配置</a></p>
 <h2 id="2-model">2. Model<a class="headerlink" href="#2-model" title="Permanent link">&para;</a></h2>
 <h3 id="load">load<a class="headerlink" href="#load" title="Permanent link">&para;</a></h3>
 <p>向 Fate-Serving 加载 <code>deploy</code> 生成的模型。</p>
 <div class="highlight"><pre><span></span><code>flow model load -c examples/model/publish_load_model.json
-flow model load -c examples/model/publish_load_model.json -j &lt;job_id&gt;
+flow model load -j &lt;job_id&gt;
 </code></pre></div>
 <p><strong>选项</strong></p>
 <table>
@@ -1209,7 +1340,7 @@ flow model load -c examples/model/publish_load_model.json -j &lt;job_id&gt;
 <td>conf_path</td>
 <td><code>-c</code></td>
 <td><code>--conf-path</code></td>
-<td>否</td>
+<td>是</td>
 <td>配置文件</td>
 </tr>
 <tr>
@@ -1982,7 +2113,7 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <p>此配置不影响 <code>/model/store</code> 和 <code>/model/restore</code>。</p>
 <h3 id="model_store_address"><code>model_store_address</code><a class="headerlink" href="#model_store_address" title="Permanent link">&para;</a></h3>
 <p>此配置定义使用的存储引擎。</p>
-<h4 id="_4">腾讯云对象存储<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h4>
+<h4 id="_5">腾讯云对象存储<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tencent_cos</span><span class="w"></span>
 <span class="c1"># 请从腾讯云控制台获取下列配置</span><span class="w"></span>
 <span class="nt">Region</span><span class="p">:</span><span class="w"></span>
