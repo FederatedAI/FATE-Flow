@@ -151,9 +151,12 @@ class DependenceManager:
 
                     elif dependence_type == FateDependenceName.Fate_Source_Code.value:
                         if provider.name == ComponentProviderName.FATE.value:
-                            flow_provider = ComponentProvider(**list(fate_flow_version_provider_info.values())[0])
-                            if FATE_FLOW_UPDATE_CHECK and DependenceRegistry.get_modify_time(flow_provider.path) != \
-                                    dependencies_storage_info.f_fate_flow_snapshot_time:
+                            check_fate_flow_provider_status = False
+                            if fate_flow_version_provider_info.values():
+                                flow_provider = ComponentProvider(**list(fate_flow_version_provider_info.values())[0])
+                                check_fate_flow_provider_status = DependenceRegistry.get_modify_time(flow_provider.path) \
+                                                                  != dependencies_storage_info.f_fate_flow_snapshot_time
+                            if FATE_FLOW_UPDATE_CHECK and check_fate_flow_provider_status:
                                 need_upload = True
                                 upload_total += 1
                             elif DependenceRegistry.get_modify_time(provider.path) != \
