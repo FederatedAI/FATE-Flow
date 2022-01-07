@@ -94,8 +94,10 @@ def bind_model_service(config_data):
             stub = model_service_pb2_grpc.ModelServiceStub(channel)
             publish_model_request = model_service_pb2.PublishRequest()
             publish_model_request.serviceId = service_id
+
+            # {"role": {"guest": ["9999"], "host": ["10000"], "arbiter": ["9999"]}}
             for role_name, role_party in config_data.get("role").items():
-                publish_model_request.role[role_name].partyId.extend(str(role_party))
+                publish_model_request.role[role_name].partyId.extend([str(party_id) for party_id in role_party])
 
             party_model_id = model_utils.gen_party_model_id(model_id, initiator_role, initiator_party_id)
             publish_model_request.model[initiator_role].roleModelInfo[initiator_party_id].tableName = model_version
