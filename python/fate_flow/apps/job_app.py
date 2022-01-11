@@ -14,27 +14,26 @@
 #  limitations under the License.
 #
 import io
-import os
 import json
+import os
 import tarfile
 
-from flask import request, send_file, abort
+from flask import abort, request, send_file
 
-from fate_arch.common.base_utils import json_loads, json_dumps
+from fate_arch.common.base_utils import json_dumps, json_loads
+from fate_flow.controller.job_controller import JobController
+from fate_flow.entity import JobConfigurationBase, RetCode
+from fate_flow.entity.run_status import FederatedSchedulingStatusCode, JobStatus
+from fate_flow.operation.job_clean import JobClean
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.settings import stat_logger, TEMP_DIRECTORY
-from fate_flow.utils import job_utils, detect_utils, schedule_utils, log_utils
-from fate_flow.entity.run_status import FederatedSchedulingStatusCode, JobStatus
-from fate_flow.utils.api_utils import get_json_result, error_response
-from fate_flow.entity import RetCode
-from fate_flow.entity import JobConfigurationBase
-from fate_flow.operation.job_tracker import Tracker
-from fate_flow.operation.job_saver import JobSaver
-from fate_flow.operation.job_clean import JobClean
+from fate_flow.settings import TEMP_DIRECTORY, stat_logger
+from fate_flow.utils import detect_utils, job_utils, log_utils, schedule_utils
+from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.log_utils import schedule_logger
-from fate_flow.controller.job_controller import JobController
 
 
 @manager.route('/submit', methods=['POST'])
@@ -354,6 +353,6 @@ def parse_order_by(default=None):
 valid_query_parameters = {
     'role': {'guest', 'host', 'arbiter', 'local'},
     'status': {'success', 'running', 'waiting', 'failed', 'canceled'},
-    'order_by': {'create_time', 'start_time', 'end_time', 'elapsed'},
+    'order_by': {'job_id', 'create_time', 'start_time', 'end_time', 'elapsed'},
     'order': {'asc', 'desc'},
 }
