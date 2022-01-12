@@ -80,7 +80,7 @@ class DAGScheduler(Cron):
                                                      model_version=common_job_parameters.model_version):
                     raise Exception(f"Model {common_job_parameters.model_id} {common_job_parameters.model_version} has not been deployed yet.")
                 dsl = json_loads(pipeline_model.inference_dsl)
-            dsl = ProviderManager.fill_fate_flow_provider(dsl)
+            # dsl = ProviderManager.fill_fate_flow_provider(dsl)
 
             job = Job()
             job.f_job_id = job_id
