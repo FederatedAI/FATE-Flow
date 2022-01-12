@@ -36,8 +36,12 @@
 {{snippet('cli/data.md', '### download')}}
 
 
+## 7. Writer
 
-## 7. reader component
+{{snippet('cli/data.md', '### writer')}}
+
+
+## 8. reader component
 
 **Brief description:** 
 
