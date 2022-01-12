@@ -47,8 +47,7 @@ def table_bind():
         else:
             return get_json_result(retcode=100,
                                    retmsg='The data table already exists.'
-                                          'If you still want to continue uploading, please add the parameter -drop.'
-                                          '1 means to add again after deleting the table')
+                                          'If you still want to continue uploading, please add the parameter --drop')
     id_column = request_data.get("id_column") or request_data.get("id_name")
     feature_column = request_data.get("feature_column") or request_data.get("feature_name")
     schema = None

@@ -82,9 +82,7 @@ def download_upload(access_module):
         if data_table_meta and not job_config["destroy"]:
             return get_json_result(retcode=100,
                                    retmsg='The data table already exists.'
-                                          'If you still want to continue uploading, please add the parameter -drop.'
-                                          ' 0 means not to delete and continue uploading, '
-                                          '1 means to upload again after deleting the table')
+                                          'If you still want to continue uploading, please add the parameter --drop')
     job_dsl, job_runtime_conf = gen_data_access_job_config(job_config, access_module)
     submit_result = DAGScheduler.submit(JobConfigurationBase(**{'dsl': job_dsl, 'runtime_conf': job_runtime_conf}), job_id=job_id)
     data.update(submit_result)
