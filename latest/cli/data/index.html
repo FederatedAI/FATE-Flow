@@ -712,6 +712,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#writer" class="md-nav__link">
+    writer
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -880,7 +887,7 @@
 <tr>
 <td align="left">jobId</td>
 <td align="left">string</td>
-<td>task id</td>
+<td>job id</td>
 </tr>
 <tr>
 <td align="left">retcode</td>
@@ -979,6 +986,11 @@
 </thead>
 <tbody>
 <tr>
+<td align="left">jobId</td>
+<td align="left">string</td>
+<td>job id</td>
+</tr>
+<tr>
 <td align="left">retcode</td>
 <td align="left">int</td>
 <td>return code</td>
@@ -1014,6 +1026,136 @@
 <span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/train_runtime_conf.json&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081457135282090&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h3 id="writer">writer<a class="headerlink" href="#writer" title="Permanent link">&para;</a></h3>
+<p><strong>Brief description:</strong> </p>
+<p>Used to download data from the fate storage engine to the external engine or to save data as a new table</p>
+<div class="highlight"><pre><span></span><code>flow data writer -c <span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
+</code></pre></div>
+<p>Note: conf_path is the parameter path, the specific parameters are as follows</p>
+<p><strong>Options</strong> </p>
+<table>
+<thead>
+<tr>
+<th align="left">parameter name</th>
+<th align="left">required</th>
+<th align="left">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">table_name</td>
+<td align="left">yes</td>
+<td align="left">string</td>
+<td>fate table name</td>
+</tr>
+<tr>
+<td align="left">namespace</td>
+<td align="left">yes</td>
+<td align="left">int</td>
+<td>fate table namespace</td>
+</tr>
+<tr>
+<td align="left">storage_engine</td>
+<td align="left">no</td>
+<td align="left">string</td>
+<td>Storage type, e.g., MYSQL</td>
+</tr>
+<tr>
+<td align="left">address</td>
+<td align="left">no</td>
+<td align="left">object</td>
+<td>storage_address</td>
+</tr>
+<tr>
+<td align="left">output_namespace</td>
+<td align="left">no</td>
+<td align="left">string</td>
+<td>Save as a table namespace for fate</td>
+</tr>
+<tr>
+<td align="left">output_name</td>
+<td align="left">no</td>
+<td align="left">string</td>
+<td>Save as fate's table name</td>
+</tr>
+<tr>
+<td align="left">**Note: storage_engine, address are combined parameters that provide storage to the specified engine.</td>
+<td align="left"></td>
+<td align="left"></td>
+<td></td>
+</tr>
+<tr>
+<td align="left">output_namespace, output_name are also combined parameters, providing the function to save as a new table of the same engine**</td>
+<td align="left"></td>
+<td align="left"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;output_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name2&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;output_namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace2&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<p><strong>return</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">parameter name</th>
+<th align="left">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">jobId</td>
+<td align="left">string</td>
+<td>job id</td>
+</tr>
+<tr>
+<td align="left">retcode</td>
+<td align="left">int</td>
+<td>return code</td>
+</tr>
+<tr>
+<td align="left">retmsg</td>
+<td align="left">string</td>
+<td>return information</td>
+</tr>
+<tr>
+<td align="left">data</td>
+<td align="left">object</td>
+<td>return data</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong> </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202201121235115028490&amp;role=local&amp;party_id=0&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/job_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/logs/202201121235115028490&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local-0#model&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">},</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/pipeline_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/local/0/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/job_runtime_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/train_runtime_conf.json&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
