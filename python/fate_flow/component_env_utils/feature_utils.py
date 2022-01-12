@@ -38,6 +38,24 @@ def get_component_output_data_line(src_key, src_value, match_id_name=None):
     return data_line, is_str, extend_header
 
 
+def get_deserialize_value(src_value, id_delimiter):
+    extend_header = []
+    if hasattr(src_value, "is_instance"):
+        v_list = []
+        for inst in ["inst_id", "label", "weight"]:
+            if getattr(src_value, inst) is not None:
+                v_list.append(getattr(src_value, inst))
+                extend_header.append(inst)
+        v_list.extend(dataset_to_list(src_value.features))
+        v_list = list(map(str, v_list))
+        deserialize_value = id_delimiter.join(v_list)
+    elif isinstance(src_value, str):
+        deserialize_value = src_value
+    else:
+        deserialize_value = id_delimiter.join(list(map(str, dataset_to_list(src_value))))
+    return deserialize_value, extend_header
+
+
 def dataset_to_list(src):
     if isinstance(src, numpy.ndarray):
         return src.tolist()

@@ -1,0 +1,6 @@
+{
+  "table_name": "name1",
+  "namespace": "namespace1",
+  "output_name": "name2",
+  "output_namespace": "namespace2"
+}

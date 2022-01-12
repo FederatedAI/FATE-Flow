@@ -16,11 +16,11 @@
 from fate_arch import storage
 from fate_arch.session import Session
 from fate_flow.entity import RunParameters
-from fate_flow.manager.data_manager import DataTableTracker
+from fate_flow.manager.data_manager import DataTableTracker, TableStorage
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.worker.task_executor import TaskExecutor
-from fate_flow.utils.api_utils import get_json_result
+from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.utils import detect_utils, job_utils, schedule_utils
 from fate_flow.utils.detect_utils import validate_request
 from flask import request
@@ -47,8 +47,7 @@ def table_bind():
         else:
             return get_json_result(retcode=100,
                                    retmsg='The data table already exists.'
-                                          'If you still want to continue uploading, please add the parameter -drop.'
-                                          '1 means to add again after deleting the table')
+                                          'If you still want to continue uploading, please add the parameter --drop')
     id_column = request_data.get("id_column") or request_data.get("id_name")
     feature_column = request_data.get("feature_column") or request_data.get("feature_name")
     schema = None
@@ -72,6 +71,21 @@ def table_bind():
     sess.destroy_all_sessions()
     return response
 
+
+@manager.route('/download', methods=['get'])
+def table_download():
+    request_data = request.json
+    from fate_flow.component_env_utils.env_utils import import_component_output_depend
+    import_component_output_depend()
+    data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
+    if not data_table_meta:
+        return error_response(response_code=210, retmsg=f'no found table:{request_data.get("namespace")}, {request_data.get("name")}')
+    tar_file_name = 'table_{}_{}.tar.gz'.format(request_data.get("namespace"), request_data.get("name"))
+    return TableStorage.send_table(
+        output_tables_meta={"table": data_table_meta},
+        tar_file_name=tar_file_name,
+        need_head=request_data.get("head", True)
+    )
 
 
 @manager.route('/delete', methods=['post'])

@@ -16,6 +16,8 @@
 import os
 import sys
 
+from fate_flow.manager.provider_manager import ProviderManager
+
 
 def get_python_path(provider_info):
     return provider_info.get("env").get("PYTHONPATH")
@@ -42,7 +44,9 @@ def import_class_path(provider_info, name):
     import_path(path)
 
 
-def import_component_output_depend(provider_info):
+def import_component_output_depend(provider_info=None):
+    if not provider_info:
+        provider_info = ProviderManager.get_default_fate_provider().to_dict()
     import_python_path(provider_info)
     import_class_path(provider_info, "feature_instance")
     import_class_path(provider_info, "feature_vector")

@@ -75,7 +75,7 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 
 | parameter name | type | description |
 | :------ | :----- | -------- |
-| jobId | string | task id |
+| jobId | string | job id |
 | retcode | int | return code |
 | retmsg | string | return message |
 | data | object | return data |
@@ -143,6 +143,7 @@ Example:
 
 | parameter name | type | description |
 | :------ | :----- | -------- |
+| jobId | string | job id |
 | retcode | int | return code |
 | retmsg | string | return message |
 | data | object | return data |
@@ -172,4 +173,75 @@ Example:
     "retmsg": "success"
 }
 
+```
+
+### writer
+
+**Brief description:** 
+
+Used to download data from the fate storage engine to the external engine or to save data as a new table
+
+```bash
+flow data writer -c ${conf_path}
+```
+
+Note: conf_path is the parameter path, the specific parameters are as follows
+
+**Options** 
+
+| parameter name | required | type | description |
+| :---------- | :--- | :----- | -------------- |
+| table_name | yes | string | fate table name |
+| namespace | yes | int | fate table namespace |
+| storage_engine | no | string | Storage type, e.g., MYSQL |
+| address | no | object | storage_address |
+| output_namespace | no | string | Save as a table namespace for fate |
+| output_name | no | string | Save as fate's table name |
+**Note: storage_engine, address are combined parameters that provide storage to the specified engine.
+output_namespace, output_name are also combined parameters, providing the function to save as a new table of the same engine**
+
+Example:
+
+```json
+{
+  "table_name": "name1",
+  "namespace": "namespace1",
+  "output_name": "name2",
+  "output_namespace": "namespace2"
+}
+```
+
+**return**
+
+| parameter name | type | description |
+| :------ | :----- | -------- |
+| jobId | string | job id |
+| retcode | int | return code |
+| retmsg | string | return information |
+| data | object | return data |
+
+**Example** 
+
+```json
+{
+    "data": {
+        "board_url": "http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202201121235115028490&role=local&party_id=0",
+        "code": 0,
+        "dsl_path": "/data/projects/fate/fateflow/jobs/202201121235115028490/job_dsl.json",
+        "job_id": "202201121235115028490",
+        "logs_directory": "/data/projects/fate/fateflow/logs/202201121235115028490",
+        "message": "success",
+        "model_info": {
+            "model_id": "local-0#model",
+            "model_version": "202201121235115028490"
+        },
+        "pipeline_dsl_path": "/data/projects/fate/fateflow/jobs/202201121235115028490/pipeline_dsl.json",
+        "runtime_conf_on_party_path": "/data/projects/fate/fateflow/jobs/202201121235115028490/local/0/job_runtime_on_party_conf.json",
+        "runtime_conf_path":"/data/projects/fate/fateflow/jobs/202201121235115028490/job_runtime_conf.json",
+        "train_runtime_conf_path": "/data/projects/fate/fateflow/jobs/202201121235115028490/train_runtime_conf.json"
+    },
+    "jobId": "202201121235115028490",
+    "retcode": 0,
+    "retmsg": "success"
+}
 ```

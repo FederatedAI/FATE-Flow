@@ -1,0 +1,13 @@
+{
+  "table_name": "name1",
+  "namespace": "namespace1",
+  "storage_engine": "MYSQL",
+  "address": {
+    "user": "fate",
+    "passwd": "fate_dev",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "db": "namespace2",
+    "name": "name2"
+  }
+}

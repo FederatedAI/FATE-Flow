@@ -37,6 +37,11 @@ def successful_log(msg, job=None, task=None, role=None, party_id=None, detail=No
     return f"{prefix}{msg} successfully{suffix}"
 
 
+def warning_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
+    prefix, suffix = base_msg(job, task, role, party_id, detail)
+    return f"{prefix}{msg} is not effective{suffix}"
+
+
 def failed_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
     prefix, suffix = base_msg(job, task, role, party_id, detail)
     return f"{prefix}failed to {msg}{suffix}"
@@ -59,6 +64,11 @@ def base_msg(job=None, task=None, role: str = None, party_id: typing.Union[str, 
 
 def exception_to_trace_string(ex):
     return "".join(traceback.TracebackException.from_exception(ex).format())
+
+
+def get_logger_base_dir():
+    job_log_dir = get_fate_flow_directory('logs')
+    return job_log_dir
 
 
 def get_job_logger(job_id, log_type):

@@ -204,7 +204,7 @@ def forward_api(role, request_config):
     url = "http://{}:{}{}".format(ip, port, endpoint)
     audit_logger().info('api request: {}'.format(url))
 
-    http_response = request(method=method, url=url, json=request_config.get('body'), headers=HEADERS)
+    http_response = request(method=method, url=url, json=request_config.get('body'), headers=request_config.get('header'))
     if http_response.status_code == 200:
         response = http_response.json()
     else:

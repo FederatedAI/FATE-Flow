@@ -30,7 +30,11 @@
 
 {{snippet('cli/data.zh.md', '### download')}}
 
-## 7.  reader组件
+## 7.  writer组件
+
+{{snippet('cli/data.zh.md', '### writer')}}
+
+## 8.  reader组件
 
 **简要描述：** 
 

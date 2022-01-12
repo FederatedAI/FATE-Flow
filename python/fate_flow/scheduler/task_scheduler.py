@@ -26,6 +26,7 @@ from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.controller.job_controller import JobController
 from fate_flow.db.db_models import Job, Task
+from fate_flow.entity.types import TaskCleanResourceType
 
 
 class TaskScheduler(object):
@@ -141,7 +142,7 @@ class TaskScheduler(object):
     def create_new_version_task(cls, job, task, dsl_parser, auto):
         # stop old version task
         FederatedScheduler.stop_task(job=job, task=task, stop_status=TaskStatus.CANCELED)
-        FederatedScheduler.clean_task(job=job, task=task, content_type="metrics")
+        FederatedScheduler.clean_task(job=job, task=task, content_type=TaskCleanResourceType.METRICS)
         # create new version task
         task.f_task_version = task.f_task_version + 1
         if auto:

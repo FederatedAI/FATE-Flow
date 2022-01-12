@@ -52,7 +52,7 @@ def singleton(cls, *args, **kw):
 
 
 @singleton
-class BaseDataBase(object):
+class BaseDataBase:
     def __init__(self):
         database_config = DATABASE.copy()
         db_name = database_config.pop("name")
@@ -66,7 +66,7 @@ class BaseDataBase(object):
             stat_logger.info('init mysql database on cluster mode successfully')
 
 
-class DatabaseLock():
+class DatabaseLock:
     def __init__(self, lock_name, timeout=10, db=None):
         self.lock_name = lock_name
         self.timeout = timeout
@@ -177,6 +177,9 @@ class Job(DataBaseModel):
     f_resource_in_use = BooleanField(index=True, default=False)
     f_apply_resource_time = BigIntegerField(null=True)
     f_return_resource_time = BigIntegerField(null=True)
+
+    f_inheritance_info = JSONField(null=True)
+    f_inheritance_status = CharField(max_length=50, null=True)
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)

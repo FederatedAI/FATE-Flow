@@ -21,7 +21,17 @@
 
 ## 2. 术语表
 
-`component_name`: 提交任务时组件的名称，一个任务可以有多个同样的组件的，但是 `component_name` 是不一样的，相当于类的实例
+`party`, 站点，一般物理上指一个FATE单机或者FATE集群
+
+`job`, 作业
+
+`task`, 任务, 一个作业由多个任务构成
+
+`component`, 组件，静态名称，提交作业时需要两个描述配置文件，分别描述该作业需要执行的组件列表、组件依赖关系、组件运行参数
+
+`dsl`, 指用来描述作业中组件关系的语言, 可以描述组件列表以及组件依赖关系
+
+`component_name`: 提交作业时组件的名称，一个作业可以有多个同样的组件的，但是 `component_name` 是不一样的，相当于类的实例, 一个`component_name`对应的组件会生成一个`task`运行
 
 `componet_module_name`: 组件的类名
 
@@ -32,6 +42,8 @@
 图中 `dataio_0` 是 `component_name`，`DataIO` 是 `componet_module_name`，`dataio` 是 `model_alias`
 
 ![](https://user-images.githubusercontent.com/1758850/124451776-52ee4500-ddb8-11eb-94f2-d43d5174ca4d.png)
+
+`party status`, 指任务中每方的执行状态，`status`是由所有方的`party status`推断出，如所有`party status`为`success`，`status`才为success
 
 ## 3. 阅读指引
 

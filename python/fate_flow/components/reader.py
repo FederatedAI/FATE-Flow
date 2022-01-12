@@ -15,8 +15,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import uuid
-
 import numpy as np
 from fate_arch import session
 from fate_arch.abc import AddressABC, StorageTableABC, StorageTableMetaABC
@@ -34,9 +32,9 @@ from fate_flow.components._base import (
 from fate_flow.errors import ParameterError
 from fate_flow.entity import MetricMeta
 from fate_flow.entity.types import InputSearchType
-from fate_flow.manager.data_manager import DataTableTracker
+from fate_flow.manager.data_manager import DataTableTracker, TableStorage
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.utils import data_utils, job_utils
+from fate_flow.utils import data_utils
 
 LOGGER = log.getLogger()
 MAX_NUM = 10000
@@ -336,7 +334,7 @@ class Reader(ComponentBase):
         if src_table.engine == dest_table.engine and src_table.meta.get_in_serialized():
             self.to_save(src_table, dest_table)
         else:
-            self.copy_table(src_table, dest_table)
+            TableStorage.copy_table(src_table, dest_table)
 
     def to_save(self, src_table, dest_table):
         src_table_meta = src_table.meta
@@ -362,79 +360,3 @@ class Reader(ComponentBase):
         LOGGER.info(
             f"save {dest_table.namespace} {dest_table.name} success"
         )
-
-    def copy_table(self, src_table: StorageTableABC, dest_table: StorageTableABC):
-        count = 0
-        data_temp = []
-        part_of_data = []
-        src_table_meta = src_table.meta
-        schema = {}
-        if not src_table_meta.get_in_serialized():
-            if src_table_meta.get_have_head():
-                get_head = False
-            else:
-                get_head = True
-            line_index = 0
-            fate_uuid = uuid.uuid1().hex
-            if not src_table.meta.get_extend_sid():
-                get_line = data_utils.get_data_line
-            elif not src_table_meta.get_auto_increasing_sid():
-                get_line = data_utils.get_sid_data_line
-            else:
-                get_line = data_utils.get_auto_increasing_sid_data_line
-            for line in src_table.read():
-                if not get_head:
-                    schema = data_utils.get_header_schema(
-                        header_line=line,
-                        id_delimiter=src_table_meta.get_id_delimiter(),
-                        extend_sid=src_table_meta.get_extend_sid(),
-                    )
-                    get_head = True
-                    continue
-                values = line.rstrip().split(src_table.meta.get_id_delimiter())
-                k, v = values[0], data_utils.list_to_str(
-                    values[1:], id_delimiter=src_table.meta.get_id_delimiter()
-                )
-                values = line.rstrip().split(src_table.meta.get_id_delimiter())
-                k, v = get_line(
-                    values=values,
-                    line_index=line_index,
-                    extend_sid=src_table.meta.get_extend_sid(),
-                    auto_increasing_sid=src_table.meta.get_auto_increasing_sid(),
-                    id_delimiter=src_table.meta.get_id_delimiter(),
-                    fate_uuid=fate_uuid,
-                )
-                line_index += 1
-                count = self.put_in_table(
-                    table=dest_table,
-                    k=k,
-                    v=v,
-                    temp=data_temp,
-                    count=count,
-                    part_of_data=part_of_data,
-                )
-        else:
-            for k, v in src_table.collect():
-                count = self.put_in_table(
-                    table=dest_table,
-                    k=k,
-                    v=v,
-                    temp=data_temp,
-                    count=count,
-                    part_of_data=part_of_data,
-                )
-            schema = src_table.meta.get_schema()
-        if data_temp:
-            dest_table.put_all(data_temp)
-        LOGGER.info("copy successfully")
-        dest_table.meta.update_metas(schema=schema, part_of_data=part_of_data)
-        dest_table.count()
-
-    def put_in_table(self, table: StorageTableABC, k, v, temp, count, part_of_data):
-        temp.append((k, v))
-        if count < 100:
-            part_of_data.append((k, v))
-        if len(temp) == MAX_NUM:
-            table.put_all(temp)
-            temp.clear()
-        return count + 1

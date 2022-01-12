@@ -315,10 +315,13 @@ class PipelinedModel(Locker):
                 f.truncate()
 
     @local_cache_required
-    def get_model_proto_index(self, component_name, model_alias):
+    def get_model_proto_index(self, component_name, model_alias=None):
         with open(self.define_meta_path, "r", encoding="utf-8") as fr:
             define_index = yaml.safe_load(fr)
-        return define_index.get("model_proto", {}).get(component_name, {}).get(model_alias, {})
+        if model_alias is not None:
+            return define_index.get("model_proto", {}).get(component_name, {}).get(model_alias, {})
+        else:
+            return define_index.get("model_proto", {}).get(component_name, {})
 
     @local_cache_required
     def get_component_define(self, component_name=None):
@@ -345,3 +348,18 @@ class PipelinedModel(Locker):
 
     def component_run_parameters_path(self, component_name):
         return os.path.join(self.run_parameters_path, component_name, "run_parameters.json")
+
+    def reload_component_model(self, model_id, model_version, component_list):
+        for component_name in component_list:
+            target_path = os.path.join(self.variables_data_path, component_name)
+            source_pipeline_model = PipelinedModel(model_id, model_version)
+            source_path = os.path.join(source_pipeline_model.variables_data_path, component_name)
+            if not os.path.exists(source_path):
+                continue
+            shutil.copytree(source_path, target_path)
+
+            # update meta
+            component_model_proto = source_pipeline_model.get_model_proto_index(component_name)
+            component_define = source_pipeline_model.get_component_define(component_name)
+            for model_alias, model_proto_index in component_model_proto.items():
+                self.update_component_meta(component_name, component_define.get("module_name"), model_alias, model_proto_index)

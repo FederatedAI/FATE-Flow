@@ -143,6 +143,7 @@ flow data download -c ${conf_path}
 
 | 参数名  | 类型   | 说明     |
 | :------ | :----- | -------- |
+| jobId | string | 任务id |
 | retcode | int    | 返回码   |
 | retmsg  | string | 返回信息 |
 | data    | object | 返回数据 |
@@ -172,4 +173,75 @@ flow data download -c ${conf_path}
     "retmsg": "success"
 }
 
+```
+
+### writer
+
+**简要描述：** 
+
+用于下载fate存储引擎内的数据到外部引擎或者将数据另存为新表
+
+```bash
+flow data writer -c ${conf_path}
+```
+
+注: conf_path为参数路径，具体参数如下
+
+**选项** 
+
+| 参数名      | 必选 | 类型   | 说明           |
+| :---------- | :--- | :----- | -------------- |
+| table_name  | 是   | string | fate表名       |
+| namespace   | 是   | int    | fate表命名空间 |
+| storage_engine  | 否   | string    | 存储类型,如：MYSQL |
+| address   | 否   | object    | 存储地址 |
+| output_namespace   | 否   | string    | 另存为fate的表命名空间 |
+| output_name   | 否   | string    | 另存为fate的表名 |
+**注: storage_engine、address是组合参数，提供存储到指定引擎的功能；
+output_namespace、output_name也是组合参数，提供另存为同种引擎的新表功能**
+
+样例:
+
+```json
+{
+  "table_name": "name1",
+  "namespace": "namespace1",
+  "output_name": "name2",
+  "output_namespace": "namespace2"
+}
+```
+
+**返回**
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| jobId | string | 任务id |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例
+
+```json
+{
+    "data": {
+        "board_url": "http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202201121235115028490&role=local&party_id=0",
+        "code": 0,
+        "dsl_path": "/data/projects/fate/fateflow/jobs/202201121235115028490/job_dsl.json",
+        "job_id": "202201121235115028490",
+        "logs_directory": "/data/projects/fate/fateflow/logs/202201121235115028490",
+        "message": "success",
+        "model_info": {
+            "model_id": "local-0#model",
+            "model_version": "202201121235115028490"
+        },
+        "pipeline_dsl_path": "/data/projects/fate/fateflow/jobs/202201121235115028490/pipeline_dsl.json",
+        "runtime_conf_on_party_path": "/data/projects/fate/fateflow/jobs/202201121235115028490/local/0/job_runtime_on_party_conf.json",
+        "runtime_conf_path": "/data/projects/fate/fateflow/jobs/202201121235115028490/job_runtime_conf.json",
+        "train_runtime_conf_path": "/data/projects/fate/fateflow/jobs/202201121235115028490/train_runtime_conf.json"
+    },
+    "jobId": "202201121235115028490",
+    "retcode": 0,
+    "retmsg": "success"
+}
 ```

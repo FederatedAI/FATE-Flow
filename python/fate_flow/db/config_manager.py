@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from .runtime_config import RuntimeConfig
 from .service_registry import ServiceRegistry
 from .job_default_config import JobDefaultConfig
 from fate_flow.manager.resource_manager import ResourceManager
@@ -26,4 +27,5 @@ class ConfigManager:
             "service_registry": ServiceRegistry.load(),
         }
         ResourceManager.initialize()
+        RuntimeConfig.load_config_manager()
         return configs

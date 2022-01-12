@@ -23,7 +23,6 @@ from fate_flow.entity import ComponentProvider
 from fate_flow.entity import RetCode
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import WorkerName
-from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 
 @manager.route('/register', methods=['POST'])
@@ -44,9 +43,11 @@ def register():
     else:
         return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"register failed:\n{std}")
 
+
 @manager.route('/registry/get', methods=['POST'])
 def get_registry():
     return get_json_result(data=ComponentRegistry.REGISTRY)
+
 
 @manager.route('/get', methods=['POST'])
 def get_providers():
@@ -59,6 +60,7 @@ def get_providers():
             if "components" in detail:
                 result[name][version]["components"] = set([c.lower() for c in detail["components"].keys()])
     return get_json_result(data=result)
+
 
 @manager.route('/<provider_name>/get', methods=['POST'])
 def get_provider(provider_name):

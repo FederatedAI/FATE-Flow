@@ -250,6 +250,7 @@ class WorkerManager:
     def get_env(cls, job_id, provider_info):
         provider = ComponentProvider(**provider_info)
         env = provider.env.copy()
+        env["PYTHONPATH"] = provider.path
         if job_id:
             env["FATE_JOB_ID"] = job_id
         return env
@@ -300,5 +301,4 @@ class WorkerManager:
 
     @classmethod
     def kill_worker(cls, worker_info: WorkerInfo):
-        process = psutil.Process(worker_info.f_run_pid)
-        process_utils.kill_process(process=process, expected_cmdline=worker_info.f_cmd)
+        process_utils.kill_process(pid=worker_info.f_run_pid, expected_cmdline=worker_info.f_cmd)
