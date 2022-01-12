@@ -12,7 +12,7 @@ flow table info [options]
 
 | 参数名    | 必选 | 类型   | 说明           |
 | :-------- | :--- | :----- | -------------- |
-| name      | 是   | string | fate表名       |
+| table-name      | 是   | string | fate表名       |
 | namespace | 是   | string | fate表命名空间 |
 
 **返回**
@@ -60,7 +60,7 @@ flow table delete [options]
 
 | 参数名    | 必选 | 类型   | 说明           |
 | :-------- | :--- | :----- | -------------- |
-| name      | 是   | string | fate表名       |
+| table-name      | 是   | string | fate表名       |
 | namespace | 是   | string | fate表命名空间 |
 
 **返回**
@@ -98,7 +98,7 @@ flow table bind [options]
 
 | 参数名         | 必选 | 类型   | 说明                                  |
 | :------------- | :--- | :----- | ------------------------------------- |
-| name           | 是   | string | fate表名                              |
+| table-name           | 是   | string | fate表名                              |
 | namespace      | 是   | string | fate表命名空间                        |
 | engine         | 是   | string | 存储引擎, 支持"HDFS", "MYSQL", "PATH" |
 | adress         | 是   | object | 真实存储地址                          |
