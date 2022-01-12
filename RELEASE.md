@@ -1,3 +1,15 @@
+# Release 1.7.1
+## Major Features and Improvements
+* Added the writer component, which supports exporting data to mysql and saving data as a new table;
+* Added job reuse function, which supports the reuse of successful status components of historical tasks in new jobs;
+* Optimize the time-consuming problem of submitting tasks and the time-consuming problem of stopping tasks;
+* Component registration supports automatic setting of PYTHONPYTH.
+
+## Bug Fixes
+* Fix the problem of OOM when uploading hdfs table;
+* Fix the problem of incompatibility with the old version of serving;
+* The parameter partitions of the toy test is set to 4, and a timeout prompt is added.
+
 # Release 1.7.0
 
 ## Major Features and Improvements
