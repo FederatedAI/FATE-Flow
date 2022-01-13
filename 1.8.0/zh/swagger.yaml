@@ -1097,4 +1097,4 @@ servers:
     url: http://localhost:9380/v1
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/Jat/Fate-Flow/1.8.0
+    url: https://virtserver.swaggerhub.com/Jat/Fate-Flow/1.7.1

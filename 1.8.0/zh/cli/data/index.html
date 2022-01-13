@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.4">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.bb3983ee.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.cd566b2a.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.e6a45f82.min.css">
@@ -62,7 +62,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -712,6 +712,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#writer" class="md-nav__link">
+    writer
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -979,6 +986,11 @@
 </thead>
 <tbody>
 <tr>
+<td align="left">jobId</td>
+<td align="left">string</td>
+<td>任务id</td>
+</tr>
+<tr>
 <td align="left">retcode</td>
 <td align="left">int</td>
 <td>返回码</td>
@@ -1014,6 +1026,136 @@
 <span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/train_runtime_conf.json&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081457135282090&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h3 id="writer">writer<a class="headerlink" href="#writer" title="Permanent link">&para;</a></h3>
+<p><strong>简要描述：</strong> </p>
+<p>用于下载fate存储引擎内的数据到外部引擎或者将数据另存为新表</p>
+<div class="highlight"><pre><span></span><code>flow data writer -c <span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
+</code></pre></div>
+<p>注: conf_path为参数路径，具体参数如下</p>
+<p><strong>选项</strong> </p>
+<table>
+<thead>
+<tr>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">table_name</td>
+<td align="left">是</td>
+<td align="left">string</td>
+<td>fate表名</td>
+</tr>
+<tr>
+<td align="left">namespace</td>
+<td align="left">是</td>
+<td align="left">int</td>
+<td>fate表命名空间</td>
+</tr>
+<tr>
+<td align="left">storage_engine</td>
+<td align="left">否</td>
+<td align="left">string</td>
+<td>存储类型,如：MYSQL</td>
+</tr>
+<tr>
+<td align="left">address</td>
+<td align="left">否</td>
+<td align="left">object</td>
+<td>存储地址</td>
+</tr>
+<tr>
+<td align="left">output_namespace</td>
+<td align="left">否</td>
+<td align="left">string</td>
+<td>另存为fate的表命名空间</td>
+</tr>
+<tr>
+<td align="left">output_name</td>
+<td align="left">否</td>
+<td align="left">string</td>
+<td>另存为fate的表名</td>
+</tr>
+<tr>
+<td align="left">**注: storage_engine、address是组合参数，提供存储到指定引擎的功能；</td>
+<td align="left"></td>
+<td align="left"></td>
+<td></td>
+</tr>
+<tr>
+<td align="left">output_namespace、output_name也是组合参数，提供另存为同种引擎的新表功能**</td>
+<td align="left"></td>
+<td align="left"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>样例:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;output_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name2&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;output_namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace2&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<p><strong>返回</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">参数名</th>
+<th align="left">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">jobId</td>
+<td align="left">string</td>
+<td>任务id</td>
+</tr>
+<tr>
+<td align="left">retcode</td>
+<td align="left">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td align="left">retmsg</td>
+<td align="left">string</td>
+<td>返回信息</td>
+</tr>
+<tr>
+<td align="left">data</td>
+<td align="left">object</td>
+<td>返回数据</td>
+</tr>
+</tbody>
+</table>
+<p>样例</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202201121235115028490&amp;role=local&amp;party_id=0&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/job_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/logs/202201121235115028490&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local-0#model&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">},</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/pipeline_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/local/0/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/job_runtime_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/train_runtime_conf.json&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
@@ -1057,10 +1199,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "search": "../../../assets/javascripts/workers/search.361d90f1.min.js", "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "search": "../../../assets/javascripts/workers/search.22074ed6.min.js", "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.289a2a4b.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.1514a9a0.min.js"></script>
       
         <script src="../../../mkdocs/js/termynal.js"></script>
       
