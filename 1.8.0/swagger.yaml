@@ -543,6 +543,9 @@ paths:
                 description:
                   type: string
                   description: '`notes` on front-end'
+                partner:
+                  type: string
+                  example: host
                 order_by:
                   type: string
                   description: 'defaults `create_time`'
