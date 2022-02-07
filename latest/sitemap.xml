@@ -1,198 +1,315 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>.</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>configuration_instruction/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/configuration_instruction/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/configuration_instruction/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>document_navigation/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/document_navigation/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/document_navigation/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>faq/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/faq/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/faq/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_authority_management/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_authority_management/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_authority_management/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_client/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_client/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_client/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_component_registry/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_component_registry/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_component_registry/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_data_access/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_data_access/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_data_access/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_http_api/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_http_api/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_http_api/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_job_scheduling/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_job_scheduling/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_job_scheduling/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_model_migration/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_model_migration/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_model_migration/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_model_registry/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_model_registry/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_model_registry/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_monitoring/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_monitoring/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_monitoring/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_resource_management/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_resource_management/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_resource_management/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_server_operation/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_server_operation/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_server_operation/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_service_registry/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_service_registry/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_service_registry/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>fate_flow_tracking/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_tracking/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/fate_flow_tracking/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>swagger/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/swagger/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/swagger/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>system_operational/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/system_operational/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/system_operational/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>backup/Model_Restore_After_Deploy_Guide.zh/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         
+         <xhtml:link rel="alternate" hreflang="en" href="en/backup/Model_Restore_After_Deploy_Guide.zh/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>backup/fate_flow_client.zh/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         
+         <xhtml:link rel="alternate" hreflang="en" href="en/backup/fate_flow_client.zh/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>backup/fate_flow_operation_authority_api/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/backup/fate_flow_operation_authority_api/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/backup/fate_flow_operation_authority_api/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/checkpoint/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/checkpoint/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/checkpoint/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/data/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/data/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/data/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/job/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/job/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/job/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/model/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/model/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/model/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/privilege/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/privilege/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/privilege/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/provider/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/provider/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/provider/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/resource/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/resource/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/resource/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/server/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/server/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/server/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/table/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/table/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/table/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/tag/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/tag/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/tag/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/task/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/task/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/task/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>cli/tracking/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/tracking/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/cli/tracking/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>mkdocs/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/mkdocs/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/mkdocs/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>mkdocs/docker/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/mkdocs/docker/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/mkdocs/docker/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>mkdocs/theme/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/mkdocs/theme/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/mkdocs/theme/"/>
+         
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2022-02-06</lastmod>
+         <loc>template/cli_desc/</loc>
+         <lastmod>2022-02-07</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/template/cli_desc/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="en/template/cli_desc/"/>
+         
     </url>
 </urlset>
