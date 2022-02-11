@@ -14,17 +14,35 @@
 #  limitations under the License.
 #
 from fate_arch import storage
+from fate_arch.metastore.db_utils import StorageConnector
 from fate_arch.session import Session
+from fate_arch.storage import StorageTableMeta
 from fate_flow.entity import RunParameters
 from fate_flow.manager.data_manager import DataTableTracker, TableStorage
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.worker.task_executor import TaskExecutor
 from fate_flow.utils.api_utils import get_json_result, error_response
-from fate_flow.utils import detect_utils, job_utils, schedule_utils
-from fate_flow.utils.detect_utils import validate_request
+from fate_flow.utils import job_utils, schedule_utils
 from flask import request
 from fate_flow.utils.detect_utils import validate_request
+
+
+@manager.route('/connector/create', methods=['POST'])
+def create_storage_connector():
+    request_data = request.json
+    address = StorageTableMeta.create_address(request_data.get("engine"), request_data.get("connector_info"))
+    connector = StorageConnector(connector_name=request_data.get("connector_name"), engine=request_data.get("engine"),
+                                 connector_info=address.connector)
+    connector.create_or_update()
+    return get_json_result(retcode=0, retmsg='success')
+
+
+@manager.route('/connector/query', methods=['POST'])
+def query_storage_connector():
+    request_data = request.json
+    connector = StorageConnector(connector_name=request_data.get("connector_name"))
+    return get_json_result(retcode=0, retmsg='success', data=connector.get_info())
 
 
 @manager.route('/add', methods=['post'])

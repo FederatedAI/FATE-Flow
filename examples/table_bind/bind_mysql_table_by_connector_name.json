@@ -1,0 +1,15 @@
+{
+  "engine": "MYSQL",
+  "address": {
+    "connector_name": "test",
+    "db": "experiment",
+    "name": "breast_hetero_guest"
+  },
+  "namespace": "experiment",
+  "name": "breast_hetero_guest",
+  "head": 1,
+  "id_delimiter": ",",
+  "partitions": 10,
+  "id_column": "id",
+  "feature_column": "y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9"
+}
