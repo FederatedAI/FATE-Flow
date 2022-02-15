@@ -289,7 +289,7 @@ def get_component_output_data_schema(output_table_meta, extend_header, is_str=Fa
     # get schema
     schema = output_table_meta.get_schema()
     if not schema:
-        return ['sid']
+        return []
     header = [schema.get('sid_name', 'sid')]
     if "label" in extend_header and schema.get("label_name"):
         extend_header[extend_header.index("label")] = schema.get("label_name")
