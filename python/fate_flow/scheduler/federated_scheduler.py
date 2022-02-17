@@ -283,7 +283,7 @@ class FederatedScheduler(object):
                 "retmsg": "Federated schedule error, {}".format(e)
             }
         if response["retcode"] != RetCode.SUCCESS:
-            if response["retcode"] == RetCode.NOT_EFFECTIVE:
+            if response["retcode"] in [RetCode.NOT_EFFECTIVE, RetCode.RUNNING]:
                 schedule_logger(job_id).warning(warning_log(msg=log_msg, role=dest_role, party_id=dest_party_id))
             else:
                 schedule_logger(job_id).error(failed_log(msg=log_msg, role=dest_role, party_id=dest_party_id, detail=response["retmsg"]))
@@ -354,7 +354,7 @@ class FederatedScheduler(object):
             federated_scheduling_status_code = FederatedSchedulingStatusCode.SUCCESS
         elif RetCode.EXCEPTION_ERROR in retcode_set:
             federated_scheduling_status_code = FederatedSchedulingStatusCode.ERROR
-        elif retcode_set == {RetCode.SUCCESS, RetCode.NOT_EFFECTIVE}:
+        elif RetCode.NOT_EFFECTIVE in retcode_set:
             federated_scheduling_status_code = FederatedSchedulingStatusCode.NOT_EFFECTIVE
         elif RetCode.SUCCESS in retcode_set:
             federated_scheduling_status_code = FederatedSchedulingStatusCode.PARTIAL
