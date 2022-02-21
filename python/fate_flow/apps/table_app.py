@@ -71,8 +71,8 @@ def table_bind():
     schema = None
     if id_column and feature_column:
         schema = {'header': feature_column, 'sid': id_column}
-    if id_column:
-        schema = {'sid': id_column}
+    elif id_column:
+        schema = {'sid': id_column, 'header': ''}
     sess = Session()
     storage_session = sess.storage(storage_engine=engine, options=request_data.get("options"))
     table = storage_session.create_table(address=address, name=name, namespace=namespace,
