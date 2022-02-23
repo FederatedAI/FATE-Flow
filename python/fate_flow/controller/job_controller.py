@@ -588,8 +588,9 @@ class JobController(object):
     def output_reload(cls, job, source_tasks: dict, target_tasks: dict):
         # model reload
         schedule_logger(job.f_job_id).info("start reload model")
-        cls.output_model_reload(job)
-        cls.checkpoint_reload(job)
+        source_job = JobSaver.query_job(job_id=job.f_inheritance_info.get("job_id"))[0]
+        cls.output_model_reload(job, source_job)
+        cls.checkpoint_reload(job, source_job)
         schedule_logger(job.f_job_id).info("start reload data")
         source_tracker_dict = cls.load_task_tracker(source_tasks)
         target_tracker_dict = cls.load_task_tracker(target_tasks)
@@ -632,22 +633,43 @@ class JobController(object):
         schedule_logger(job.f_job_id).info("reload status success")
 
     @classmethod
-    def output_model_reload(cls, job):
+    def output_model_reload(cls, job, source_job):
+        source_model_id = model_utils.gen_party_model_id(
+            source_job.f_runtime_conf.get("job_parameters").get("common").get("model_id"),
+            job.f_role,
+            job.f_party_id
+        )
+        model_id = model_utils.gen_party_model_id(
+            job.f_runtime_conf.get("job_parameters").get("common").get("model_id"),
+            job.f_role,
+            job.f_party_id
+        )
+        PipelinedModel(
+            model_id=model_id,
+            model_version=job.f_job_id
+        ).reload_component_model(
+            model_id=source_model_id,
+            model_version=job.f_inheritance_info.get("job_id"),
+            component_list=job.f_inheritance_info.get("component_list")
+        )
 
-        model_id = model_utils.gen_party_model_id(job.f_runtime_conf.get("job_parameters").get("common").get("model_id"),
-                                                  job.f_role, job.f_party_id)
-        PipelinedModel(model_id=model_id, model_version=job.f_job_id).reload_component_model(model_id=model_id, model_version=job.f_inheritance_info.get("job_id"),
-                                                                                             component_list=job.f_inheritance_info.get("component_list"))
     @classmethod
-    def checkpoint_reload(cls, job):
+    def checkpoint_reload(cls, job, source_job):
         for component_name in job.f_inheritance_info.get("component_list"):
-            path = CheckpointManager(role=job.f_role, party_id=job.f_party_id,
-                                     component_name=component_name, model_version=job.f_inheritance_info.get("job_id"),
-                                     model_id=job.f_runtime_conf.get("job_parameters").get("common").get("model_id")).directory
-            target_path = CheckpointManager(role=job.f_role, party_id=job.f_party_id,
-                                            component_name=component_name, model_version=job.f_job_id,
-                                            model_id=job.f_runtime_conf.get("job_parameters").get("common").get(
-                                                "model_id")).directory
+            path = CheckpointManager(
+                role=job.f_role,
+                party_id=job.f_party_id,
+                component_name=component_name,
+                model_version=job.f_inheritance_info.get("job_id"),
+                model_id=source_job.f_runtime_conf.get("job_parameters").get("common").get("model_id")
+            ).directory
+            target_path = CheckpointManager(
+                role=job.f_role,
+                party_id=job.f_party_id,
+                component_name=component_name,
+                model_version=job.f_job_id,
+                model_id=job.f_runtime_conf.get("job_parameters").get("common").get("model_id")
+            ).directory
             if os.path.exists(path):
                 if os.path.exists(target_path):
                     shutil.rmtree(target_path)
