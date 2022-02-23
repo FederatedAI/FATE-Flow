@@ -17,7 +17,7 @@ import os
 
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import engine_utils
-from fate_arch.common.conf_utils import get_base_config
+from fate_arch.common.conf_utils import get_base_config, decrypt_database_config
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import LoggerFactory, getLogger
 
@@ -61,7 +61,7 @@ PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol")
 ENGINES = engine_utils.get_engines()
 IS_STANDALONE = engine_utils.is_standalone()
 
-DATABASE = get_base_config("database", {})
+DATABASE = decrypt_database_config()
 ZOOKEEPER = get_base_config("zookeeper", {})
 FATE_FLOW_SERVER_START_CONFIG_ITEMS = {
     "use_registry",
@@ -71,6 +71,7 @@ FATE_FLOW_SERVER_START_CONFIG_ITEMS = {
     "database",
     "zookeeper",
     "enable_model_store",
+    "private_key", "encrypt_password", "encrypt_module"
 }
 
 # Registry
