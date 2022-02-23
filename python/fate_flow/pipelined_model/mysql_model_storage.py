@@ -20,6 +20,7 @@ from copy import deepcopy
 from peewee import Model, CharField, BigIntegerField, TextField, CompositeKey, IntegerField, PeeweeException
 from playhouse.pool import PooledMySQLDatabase
 
+from fate_arch.common.conf_utils import decrypt_database_config
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.pipelined_model.model_storage_base import ModelStorageBase
 from fate_flow.utils.log_utils import getLogger
@@ -149,6 +150,7 @@ class MysqlModelStorage(ModelStorageBase):
     def get_connection(store_address: dict):
         store_address = deepcopy(store_address)
         db_name = store_address.pop('database')
+        store_address = decrypt_database_config(store_address, passwd_key="password")
         del store_address['storage']
         DB.init(db_name, **store_address)
 
