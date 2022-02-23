@@ -125,10 +125,20 @@ class DataBaseModel(BaseModel):
 def init_database_tables():
     members = inspect.getmembers(sys.modules[__name__], inspect.isclass)
     table_objs = []
+    create_failed_list = []
     for name, obj in members:
         if obj != DataBaseModel and issubclass(obj, DataBaseModel):
             table_objs.append(obj)
-    DB.create_tables(table_objs)
+            LOGGER.info(f"start create table {obj.__name__}")
+            try:
+                obj.create_table()
+                LOGGER.info(f"create table success: {obj.__name__}")
+            except Exception as e:
+                LOGGER.exception(e)
+                create_failed_list.append(obj.__name__)
+    if create_failed_list:
+        LOGGER.info(f"create tables failed: {create_failed_list}")
+        raise Exception(f"create tables failed: {create_failed_list}")
 
 
 def fill_db_model_object(model_object, human_model_dict):
@@ -141,40 +151,40 @@ def fill_db_model_object(model_object, human_model_dict):
 
 class Job(DataBaseModel):
     # multi-party common configuration
-    f_user_id = CharField(max_length=25, index=True, null=True)
+    f_user_id = CharField(max_length=25, null=True)
     f_job_id = CharField(max_length=25, index=True)
     f_name = CharField(max_length=500, null=True, default='')
     f_description = TextField(null=True, default='')
-    f_tag = CharField(max_length=50, null=True, index=True, default='')
+    f_tag = CharField(max_length=50, null=True, default='')
     f_dsl = JSONField()
     f_runtime_conf = JSONField()
     f_runtime_conf_on_party = JSONField()
     f_train_runtime_conf = JSONField(null=True)
     f_roles = JSONField()
-    f_initiator_role = CharField(max_length=50, index=True)
-    f_initiator_party_id = CharField(max_length=50, index=True)
-    f_status = CharField(max_length=50, index=True)
-    f_status_code = IntegerField(null=True, index=True)
+    f_initiator_role = CharField(max_length=50)
+    f_initiator_party_id = CharField(max_length=50)
+    f_status = CharField(max_length=50)
+    f_status_code = IntegerField(null=True)
     f_user = JSONField()
     # this party configuration
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=10, index=True)
-    f_is_initiator = BooleanField(null=True, index=True, default=False)
+    f_is_initiator = BooleanField(null=True, default=False)
     f_progress = IntegerField(null=True, default=0)
-    f_ready_signal = BooleanField(index=True, default=False)
+    f_ready_signal = BooleanField(default=False)
     f_ready_time = BigIntegerField(null=True)
-    f_cancel_signal = BooleanField(index=True, default=False)
+    f_cancel_signal = BooleanField(default=False)
     f_cancel_time = BigIntegerField(null=True)
-    f_rerun_signal = BooleanField(index=True, default=False)
+    f_rerun_signal = BooleanField(default=False)
     f_end_scheduling_updates = IntegerField(null=True, default=0)
 
-    f_engine_name = CharField(max_length=50, null=True, index=True)
-    f_engine_type = CharField(max_length=10, null=True, index=True)
-    f_cores = IntegerField(index=True, default=0)
-    f_memory = IntegerField(index=True, default=0)  # MB
-    f_remaining_cores = IntegerField(index=True, default=0)
-    f_remaining_memory = IntegerField(index=True, default=0)  # MB
-    f_resource_in_use = BooleanField(index=True, default=False)
+    f_engine_name = CharField(max_length=50, null=True)
+    f_engine_type = CharField(max_length=10, null=True)
+    f_cores = IntegerField(default=0)
+    f_memory = IntegerField(default=0)  # MB
+    f_remaining_cores = IntegerField(default=0)
+    f_remaining_memory = IntegerField(default=0)  # MB
+    f_resource_in_use = BooleanField(default=False)
     f_apply_resource_time = BigIntegerField(null=True)
     f_return_resource_time = BigIntegerField(null=True)
 
@@ -196,26 +206,26 @@ class Task(DataBaseModel):
     # multi-party common configuration
     f_job_id = CharField(max_length=25, index=True)
     f_component_name = TextField()
-    f_component_module = CharField(max_length=200, index=True)
-    f_task_id = CharField(max_length=100, index=True)
-    f_task_version = BigIntegerField(index=True)
-    f_initiator_role = CharField(max_length=50, index=True)
-    f_initiator_party_id = CharField(max_length=50, index=True, default=-1)
-    f_federated_mode = CharField(max_length=10, index=True)
-    f_federated_status_collect_type = CharField(max_length=10, index=True)
+    f_component_module = CharField(max_length=200)
+    f_task_id = CharField(max_length=100)
+    f_task_version = BigIntegerField()
+    f_initiator_role = CharField(max_length=50)
+    f_initiator_party_id = CharField(max_length=50, default=-1)
+    f_federated_mode = CharField(max_length=10)
+    f_federated_status_collect_type = CharField(max_length=10)
     f_status = CharField(max_length=50, index=True)
-    f_status_code = IntegerField(null=True, index=True)
-    f_auto_retries = IntegerField(default=0, index=True)
+    f_status_code = IntegerField(null=True)
+    f_auto_retries = IntegerField(default=0)
     f_auto_retry_delay = IntegerField(default=0)
     # this party configuration
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=10, index=True)
     f_run_on_this_party = BooleanField(null=True, index=True, default=False)
-    f_worker_id = CharField(null=True, max_length=100, index=True)
+    f_worker_id = CharField(null=True, max_length=100)
     f_cmd = JSONField(null=True)
     f_run_ip = CharField(max_length=100, null=True)
     f_run_pid = IntegerField(null=True)
-    f_party_status = CharField(max_length=50, index=True)
+    f_party_status = CharField(max_length=50)
     f_provider_info = JSONField()
     f_component_parameters = JSONField()
     f_engine_conf = JSONField(null=True)
@@ -260,11 +270,11 @@ class TrackingMetric(DataBaseModel):
     f_task_version = BigIntegerField(null=True, index=True)
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=10, index=True)
-    f_metric_namespace = CharField(max_length=180, index=True)
-    f_metric_name = CharField(max_length=180, index=True)
+    f_metric_namespace = CharField(max_length=180)
+    f_metric_name = CharField(max_length=180)
     f_key = CharField(max_length=200)
     f_value = LongTextField()
-    f_type = IntegerField(index=True)  # 0 is data, 1 is meta
+    f_type = IntegerField()  # 0 is data, 1 is meta
 
 
 class TrackingOutputDataInfo(DataBaseModel):
@@ -294,7 +304,7 @@ class TrackingOutputDataInfo(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
     f_component_name = TextField()
     f_task_id = CharField(max_length=100, null=True, index=True)
-    f_task_version = BigIntegerField(null=True, index=True)
+    f_task_version = BigIntegerField(null=True)
     f_data_name = CharField(max_length=30)
     # this party configuration
     f_role = CharField(max_length=50, index=True)
@@ -305,8 +315,8 @@ class TrackingOutputDataInfo(DataBaseModel):
 
 
 class MachineLearningModelInfo(DataBaseModel):
-    f_role = CharField(max_length=50, index=True)
-    f_party_id = CharField(max_length=10, index=True)
+    f_role = CharField(max_length=50)
+    f_party_id = CharField(max_length=10)
     f_roles = JSONField(default={})
     f_job_id = CharField(max_length=25, index=True)
     f_model_id = CharField(max_length=100, index=True)
@@ -314,8 +324,8 @@ class MachineLearningModelInfo(DataBaseModel):
     f_loaded_times = IntegerField(default=0)
     f_size = BigIntegerField(default=0)
     f_description = TextField(null=True, default='')
-    f_initiator_role = CharField(max_length=50, index=True)
-    f_initiator_party_id = CharField(max_length=50, index=True, default=-1)
+    f_initiator_role = CharField(max_length=50)
+    f_initiator_party_id = CharField(max_length=50, default=-1)
     f_runtime_conf = JSONField(default={})
     f_train_dsl = JSONField(default={})
     f_train_runtime_conf = JSONField(default={})
@@ -334,8 +344,8 @@ class MachineLearningModelInfo(DataBaseModel):
 
 class DataTableTracking(DataBaseModel):
     f_table_id = BigAutoField(primary_key=True)
-    f_table_name = CharField(max_length=300, index=True, null=True)
-    f_table_namespace = CharField(max_length=300, index=True, null=True)
+    f_table_name = CharField(max_length=300, null=True)
+    f_table_namespace = CharField(max_length=300, null=True)
     f_job_id = CharField(max_length=25, index=True, null=True)
     f_have_parent = BooleanField(default=False)
     f_parent_number = IntegerField(default=0)
@@ -350,13 +360,13 @@ class DataTableTracking(DataBaseModel):
 
 
 class CacheRecord(DataBaseModel):
-    f_cache_key = CharField(max_length=500, primary_key=True)
+    f_cache_key = CharField(max_length=500)
     f_cache = JsonSerializedField()
     f_job_id = CharField(max_length=25, index=True, null=True)
     f_role = CharField(max_length=50, index=True, null=True)
     f_party_id = CharField(max_length=10, index=True, null=True)
     f_component_name = TextField(null=True)
-    f_task_id = CharField(max_length=100, null=True, index=True)
+    f_task_id = CharField(max_length=100, null=True)
     f_task_version = BigIntegerField(null=True, index=True)
     f_cache_name = CharField(max_length=50, null=True)
     t_ttl = BigIntegerField(default=0)
@@ -376,7 +386,7 @@ class ModelTag(DataBaseModel):
 
 class Tag(DataBaseModel):
     f_id = BigAutoField(primary_key=True)
-    f_name = CharField(max_length=100, index=True, unique=True)
+    f_name = CharField(max_length=100, unique=True)
     f_desc = TextField(null=True)
 
     class Meta:
@@ -410,7 +420,7 @@ class ComponentSummary(DataBaseModel):
     f_party_id = CharField(max_length=10, index=True)
     f_component_name = TextField()
     f_task_id = CharField(max_length=50, null=True, index=True)
-    f_task_version = CharField(max_length=50, null=True, index=True)
+    f_task_version = CharField(max_length=50, null=True)
     f_summary = LongTextField()
 
 
@@ -420,8 +430,8 @@ class ModelOperationLog(DataBaseModel):
     f_initiator_role = CharField(max_length=50, index=True, null=True)
     f_initiator_party_id = CharField(max_length=10, index=True, null=True)
     f_request_ip = CharField(max_length=20, null=True)
-    f_model_id = CharField(max_length=100, index=True)
-    f_model_version = CharField(max_length=100, index=True)
+    f_model_id = CharField(max_length=100)
+    f_model_version = CharField(max_length=100)
 
     class Meta:
         db_table = "t_model_operation_log"
@@ -432,11 +442,11 @@ class EngineRegistry(DataBaseModel):
     f_engine_name = CharField(max_length=50, index=True)
     f_engine_entrance = CharField(max_length=50, index=True)
     f_engine_config = JSONField()
-    f_cores = IntegerField(index=True)
-    f_memory = IntegerField(index=True)  # MB
-    f_remaining_cores = IntegerField(index=True)
-    f_remaining_memory = IntegerField(index=True) # MB
-    f_nodes = IntegerField(index=True)
+    f_cores = IntegerField()
+    f_memory = IntegerField()  # MB
+    f_remaining_cores = IntegerField()
+    f_remaining_memory = IntegerField() # MB
+    f_nodes = IntegerField()
 
     class Meta:
         db_table = "t_engine_registry"
@@ -481,9 +491,9 @@ class WorkerInfo(DataBaseModel):
     f_worker_id = CharField(max_length=100, primary_key=True)
     f_worker_name = CharField(max_length=50, index=True)
     f_job_id = CharField(max_length=25, index=True)
-    f_task_id = CharField(max_length=100, index=True)
+    f_task_id = CharField(max_length=100)
     f_task_version = BigIntegerField(index=True)
-    f_role = CharField(max_length=50, index=True)
+    f_role = CharField(max_length=50)
     f_party_id = CharField(max_length=10, index=True)
     f_run_ip = CharField(max_length=100, null=True)
     f_run_pid = IntegerField(null=True)
