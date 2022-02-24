@@ -1,3 +1,8 @@
+# Release 1.7.2
+## Major Features and Improvements
+* Separate the base connection address of the data storage table from the data table information, and compatible with historical versions;
+* Optimize the component output data download interface.
+
 # Release 1.7.1
 ## Major Features and Improvements
 * Added the writer component, which supports exporting data to mysql and saving data as a new table;
