@@ -911,7 +911,14 @@
 <span class="nt">use_registry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
 <span class="c1"># 是否启用更高安全级别的序列化模式</span><span class="w"></span>
 <span class="nt">use_deserialize_safe_module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="c1"># fate on spark模式下是否启动依赖分发</span><span class="w"></span>
 <span class="nt">dependent_distribution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="c1"># 是否启动密码加密(数据库密码)，开启后配置encrypt_module和private_key才生效</span><span class="w"></span>
+<span class="nt">encrypt_password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="c1"># 加密包及加密函数(“#”号拼接)</span><span class="w"></span>
+<span class="nt">encrypt_module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_arch.common.encrypt_utils#pwdecrypt</span><span class="w"></span>
+<span class="c1"># 加密私钥</span><span class="w"></span>
+<span class="nt">private_key</span><span class="p">:</span><span class="w"></span>
 <span class="nt">fateflow</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="c1"># 必须使用真实绑定的ip地址，避免因为多网卡/多IP引发的额外问题</span><span class="w"></span>
 <span class="w">  </span><span class="c1"># you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported</span><span class="w"></span>
