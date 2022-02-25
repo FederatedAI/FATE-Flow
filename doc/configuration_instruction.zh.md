@@ -15,7 +15,14 @@
 use_registry: false
 # 是否启用更高安全级别的序列化模式
 use_deserialize_safe_module: false
+# fate on spark模式下是否启动依赖分发
 dependent_distribution: false
+# 是否启动密码加密(数据库密码)，开启后配置encrypt_module和private_key才生效
+encrypt_password: false
+# 加密包及加密函数(“#”号拼接)
+encrypt_module: fate_arch.common.encrypt_utils#pwdecrypt
+# 加密私钥
+private_key:
 fateflow:
   # 必须使用真实绑定的ip地址，避免因为多网卡/多IP引发的额外问题
   # you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported

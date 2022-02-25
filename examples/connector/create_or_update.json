@@ -1,0 +1,10 @@
+{
+  "connector_name": "test",
+  "engine": "MYSQL",
+  "connector_info": {
+    "user": "fate",
+    "passwd": "fate",
+    "host": "127.0.0.1",
+    "port": 3306
+  }
+}
