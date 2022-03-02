@@ -19,7 +19,7 @@ import uuid
 from fate_flow.utils.log_utils import schedule_logger
 from fate_arch import session, storage
 from fate_arch.session import Session
-from fate_arch.storage import StorageEngine, EggRollStoreType
+from fate_arch.storage import StorageEngine, EggRollStoreType, StorageTableOrigin
 from fate_flow.utils import data_utils
 
 
@@ -48,7 +48,7 @@ class UploadFile(object):
             address = storage.StorageTableMeta.create_address(
                 storage_engine=args.storage, address_dict=upload_address
             )
-            table = storage_session.create_table(address=address, name=args.name, namespace=args.namespace, partitions=args.partitions)
+            table = storage_session.create_table(address=address, name=args.name, namespace=args.namespace, partitions=args.partitions, origin=StorageTableOrigin.UPLOAD)
             cls.upload(args.file, False, table=table)
 
     @classmethod

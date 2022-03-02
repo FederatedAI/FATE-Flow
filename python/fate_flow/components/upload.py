@@ -23,7 +23,7 @@ from fate_arch import storage, session
 from fate_arch.common import EngineType, file_utils, log, path_utils
 from fate_arch.common.data_utils import default_input_fs_path
 from fate_arch.session import Session
-from fate_arch.storage import DEFAULT_ID_DELIMITER, EggRollStoreType, StorageEngine
+from fate_arch.storage import DEFAULT_ID_DELIMITER, EggRollStoreType, StorageEngine, StorageTableOrigin
 from fate_flow.components._base import (
     BaseParam,
     ComponentBase,
@@ -198,7 +198,7 @@ class Upload(ComponentBase):
         )
         self.parameters["partitions"] = partitions
         self.parameters["name"] = name
-        self.table = storage_session.create_table(address=address, **self.parameters)
+        self.table = storage_session.create_table(address=address, origin=StorageTableOrigin.UPLOAD, **self.parameters)
         if storage_engine not in [StorageEngine.PATH]:
             data_table_count = self.save_data_table(job_id, name, namespace, storage_engine, head)
         else:
