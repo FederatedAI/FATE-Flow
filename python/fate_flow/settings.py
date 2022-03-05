@@ -63,15 +63,6 @@ IS_STANDALONE = engine_utils.is_standalone()
 
 DATABASE = get_base_config("database", {})
 ZOOKEEPER = get_base_config("zookeeper", {})
-FATE_FLOW_SERVER_START_CONFIG_ITEMS = {
-    "use_registry",
-    "use_deserialize_safe_module",
-    "dependent_distribution",
-    FATE_FLOW_SERVICE_NAME,
-    "database",
-    "zookeeper",
-    "enable_model_store",
-}
 
 # Registry
 FATE_SERVICES_REGISTRY = {
