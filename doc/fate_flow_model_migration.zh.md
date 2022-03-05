@@ -1,15 +1,15 @@
 # 集群间模型迁移
 
-模型迁移功能使得模型文件复制拷贝到不同party id的集群依然可用，以下两种场景需要做模型迁移：
+模型迁移功能使得模型文件复制拷贝到不同`party_id`的集群依然可用，以下两种场景需要做模型迁移：
 
-1. 模型生成参与方任何一方的集群, 重新部署且部署后集群的party id变更, 例如源参与方为arbiter-10000#guest-9999#host-10000, 改为arbiter-10000#guest-99#host-10000
+1. 模型生成参与方任何一方的集群, 重新部署且部署后集群的`party_id`变更, 例如源参与方为`arbiter-10000#guest-9999#host-10000`, 改为`arbiter-10000#guest-99#host-10000`
 2. 其中任意一个或多个参与方将模型文件从源集群复制到目标集群，需要在目标集群使用
 
 基本原理：
 1. 上述两种场景下，模型的参与方`party_id`会发生改变，如`arbiter-10000#guest-9999#host-10000` -> `arbiter-10000#guest-99#host-10000`，或者`arbiter-10000#guest-9999#host-10000` -> `arbiter-100#guest-99#host-100`
 2. 模型的参与方`party_id`发生改变，因此`model_id`以及模型文件里面涉及`party_id`需要改变
 3. 整体流程下来，有三个步骤：复制转移原有模型文件、对原有模型文件执行模型迁移任务、导入模型迁移任务生成的新模型
-4. 其中`对原有模型文件执行模型迁移任务`其实就是在执行处临时复制一份原模型文件，然后按照配置，修改`model_id`及模型文件里面涉及`party_id`的内容，以适配新的参与方`party_id`
+4. 其中*原有模型文件执行模型迁移任务*其实就是在执行处临时复制一份原模型文件，然后按照配置，修改`model_id`及模型文件里面涉及`party_id`的内容，以适配新的参与方`party_id`
 5. 上述步骤都需要在所有新的参与方执行，即使其中某个目标参与方的`party_id`没有改变，也需要执行
 6. 新的参与方集群版本需大于等于`1.5.1`
 
@@ -36,7 +36,8 @@ $FATE_PROJECT_BASE/model_local_cache
 ## 执行迁移任务
 
 ### 说明
-1. 执行迁移任务是将源模型文件根据迁移任务配置文件修改model_id、model_version以及模型内涉及`role`和`party_id`的内容进行替换
+1. 执行迁移任务是将源模型文件根据迁移任务配置文件修改`model_id`、`model_version`以及模型内涉及`role`和`party_id`的内容进行替换
+
 2. 提交任务的集群必须完成上述迁移准备
 
 ### 1. 修改配置文件
@@ -87,16 +88,16 @@ $FATE_PROJECT_BASE/model_local_cache
 8. **`unify_model_version`**：此参数为非必填参数，该参数用于指定新模型的`model_version`。若未提供该参数，新模型将以迁移任务的`job_id`作为其新`model_version`。
 
 上述配置文件举例说明：
-1. 源模型的参与方为guest: 9999, host: 10000, arbiter: 10000, 将模型迁移成参与方为guest: 99, host: 100, arbiter: 100, 且新发起方为guest: 99
-2. `federated_mode`: `SINGLE`: 表示每个迁移任务只在提交任务的集群执行任务，那么需要在99、100分别提交任务
-3. 例如在`99`执行，则`execute_party`配置为"guest": [9999]
-4. 例如在`10`执行，则`execute_party`配置为"arbiter": [10000], "host": [10000]
+1. 源模型的参与方为`guest: 9999, host: 10000, arbiter: 10000,` 将模型迁移成参与方为`guest: 99, host: 100, arbiter: 100`, 且新发起方为`guest: 99`
+2. `federated_mode: SINGLE` 表示每个迁移任务只在提交任务的集群执行任务，那么需要在99、100分别提交任务
+3. 例如在99执行，则`execute_party`配置为`"guest": [9999]`
+4. 例如在100执行，则`execute_party`配置为`"arbiter": [10000], "host": [10000]`
 
 
 ## 2. 提交迁移任务(在所有目标集群分别操作)
 
 
-迁移任务需使用FATE Flow CLI v2进行提交，示例执行命令如下：
+迁移任务需使用fate-client进行提交，示例执行命令如下：
 
 ```bash
 flow model migrate -c $FATE_FLOW_BASE/examples/model/migrate_model.json
@@ -133,7 +134,7 @@ flow model migrate -c $FATE_FLOW_BASE/examples/model/migrate_model.json
 }
 ```
 
-该任务实现的是，将party_id为9999（guest），10000（host）的集群生成的model_id为guest-9999#host-10000#model，model_version为202010291539339602784的模型修改迁移生成适配party_id为99（guest），100（host）集群的新模型
+该任务实现的是，将`party_id`为9999 (guest)，10000 (host)的集群生成的`model_id`为`guest-9999#host-10000#model`，`model_version`为`202010291539339602784`的模型修改迁移生成适配`party_id`为99 (guest)，100 (host)集群的新模型
 
 如下为迁移成功的后得到的返回结果：
 
@@ -167,27 +168,27 @@ flow model migrate -c $FATE_FLOW_BASE/examples/model/migrate_model.json
 }
 ```
 
-任务成功执行后，执行方的机器中都会生成一份迁移后模型压缩文件，该文件路径可以在返回结果中得到。如上，guest方（9999）的迁移后模型文件路径为：`/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip`，host方（10000）的迁移后模型文件路径为：`/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip`。新的model_id与model_version同样可以从返回中获得。
+任务成功执行后，执行方的机器中都会生成一份迁移后模型压缩文件，该文件路径可以在返回结果中得到。如上，9999 (guest)的迁移后模型文件路径为：`/data/projects/fate/temp/fate_flow/guest#99#guest-99#host-100#model_fate_migration.zip`，10000 (host)的迁移后模型文件路径为：`/data/projects/fate/temp/fate_flow/host#100#guest-99#host-100#model_fate_migration.zip`。新的`model_id`与`model_version`同样可以从返回中获得。
 
 ## 4. 转移文件并导入(在所有目标集群分别操作)
 
-迁移任务成功之后，请手动将新生成的模型压缩文件转移到目标集群的fateflow机器上。例如：第三点中guest方（99）生成的新模型压缩文件需要被转移到guest（99）机器上。压缩文件可以放在对应机器上的任意位置，接下来需要配置模型的导入任务，配置文件请见[import_model.json](https://github.com/FederatedAI/FATE/blob/master/python/fate_flow/examples/import_model.json)。
+迁移任务成功之后，请手动将新生成的模型压缩文件转移到目标集群的fate flow机器上。例如：第三点中9999 (guest)生成的新模型压缩文件需要被转移到99 (guest) 机器上。压缩文件可以放在对应机器上的任意位置，接下来需要配置模型的导入任务，配置文件请见[import_model.json](https://github.com/FederatedAI/FATE/blob/master/python/fate_flow/examples/import_model.json)（压缩文件内包含此配置文件，请根据实际情况修改，**切勿直接使用**）。
 
-下面举例介绍在guest（99）中导入迁移后模型的配置文件：
+下面举例介绍在guest (99)中导入迁移后模型的配置文件：
 
-```
+```json
 {
   "role": "guest",
   "party_id": 99,
   "model_id": "guest-99#host-100#model",
-  "model_version": "fate_migration",
+  "model_version": "202010292152299793981",
   "file": "/data/projects/fate/python/temp/guest#99#guest-99#host-100#model_fate_migration.zip"
 }
 ```
 
-请根据实际情况对应填写角色role，当前本方party_id，迁移模型的新model_id及model_version，以及迁移模型的压缩文件所在路径。
+请根据实际情况对应填写角色`role`，当前本方`party_id`，迁移模型的新`model_id`及`model_version`，以及迁移模型的压缩文件所在路径。
 
-如下为使用FATE Flow CLI v2提交导入模型的示例命令：
+如下为使用fate-client提交导入模型的示例命令：
 
 ```bash
 flow model import -c $FATE_FLOW_BASE/examples/model/import_model.json
@@ -202,4 +203,4 @@ flow model import -c $FATE_FLOW_BASE/examples/model/import_model.json
 }
 ```
 
-迁移任务至此完成，用户可使用新的model_id及model_version进行任务提交，以利用迁移后的模型执行预测任务。
+迁移任务至此完成，用户可使用新的`model_id`及`model_version`进行任务提交，以利用迁移后的模型执行预测任务。
