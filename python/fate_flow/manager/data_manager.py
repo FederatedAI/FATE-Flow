@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import datetime
 import io
 import json
 import operator
@@ -30,6 +31,7 @@ from fate_flow.component_env_utils import feature_utils
 from fate_flow.settings import stat_logger
 from fate_flow.db.db_models import DB, TrackingMetric, DataTableTracking
 from fate_flow.utils import data_utils
+from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.data_utils import get_header_schema
 
 
@@ -195,11 +197,11 @@ class TableStorage:
     def send_table(output_tables_meta, tar_file_name, limit=-1, need_head=True):
         output_data_file_list = []
         output_data_meta_file_list = []
-        output_tmp_dir = os.path.join(os.getcwd(), 'tmp/{}'.format(fate_uuid()))
+        output_tmp_dir = os.path.join(get_fate_flow_directory(), 'tmp/{}/{}'.format(datetime.datetime.now().strftime("%Y%m%d"), fate_uuid()))
         for output_name, output_table_meta in output_tables_meta.items():
             output_data_count = 0
-            is_str = False
             output_data_file_path = "{}/{}.csv".format(output_tmp_dir, output_name)
+            output_data_meta_file_path = "{}/{}.meta".format(output_tmp_dir, output_name)
             os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
             with open(output_data_file_path, 'w') as fw:
                 with Session() as sess:
@@ -209,43 +211,37 @@ class TableStorage:
                         for k, v in output_table.collect():
                             data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k,
                                                                                                             src_value=v)
+                            # save meta
+                            if output_data_count == 0:
+                                output_data_file_list.append(output_data_file_path)
+                                header = get_component_output_data_schema(output_table_meta=output_table_meta,
+                                                                          is_str=is_str,
+                                                                          extend_header=extend_header)
+                                output_data_meta_file_list.append(output_data_meta_file_path)
+                                with open(output_data_meta_file_path, 'w') as f:
+                                    json.dump({'header': header}, f, indent=4)
+                                if need_head and header and output_table_meta.get_have_head():
+                                    fw.write('{}\n'.format(','.join(header)))
                             fw.write('{}\n'.format(','.join(map(lambda x: str(x), data_line))))
                             output_data_count += 1
                             if output_data_count == limit:
                                 break
-
-            if output_data_count:
-                # get meta
-                output_data_file_list.append(output_data_file_path)
-                header = get_component_output_data_schema(output_table_meta=output_table_meta,
-                                                          is_str=is_str,
-                                                          extend_header=extend_header)
-                output_data_meta_file_path = "{}/{}.meta".format(output_tmp_dir, output_name)
-                output_data_meta_file_list.append(output_data_meta_file_path)
-                with open(output_data_meta_file_path, 'w') as fw:
-                    json.dump({'header': header}, fw, indent=4)
-                if need_head and header:
-                    with open(output_data_file_path, 'r+') as f:
-                        content = f.read()
-                        f.seek(0, 0)
-                        f.write('{}\n'.format(','.join(header)) + content)
             # tar
-        memory_file = io.BytesIO()
-        tar = tarfile.open(fileobj=memory_file, mode='w:gz')
+        output_data_tarfile = "{}/{}".format(output_tmp_dir, tar_file_name)
+        tar = tarfile.open(output_data_tarfile, mode='w:gz')
         for index in range(0, len(output_data_file_list)):
             tar.add(output_data_file_list[index], os.path.relpath(output_data_file_list[index], output_tmp_dir))
             tar.add(output_data_meta_file_list[index],
                     os.path.relpath(output_data_meta_file_list[index], output_tmp_dir))
         tar.close()
-        memory_file.seek(0)
-        output_data_file_list.extend(output_data_meta_file_list)
-        for path in output_data_file_list:
+        for key, path in enumerate(output_data_file_list):
             try:
-                shutil.rmtree(os.path.dirname(path))
+                os.remove(path)
+                os.remove(output_data_meta_file_list[key])
             except Exception as e:
                 # warning
                 stat_logger.warning(e)
-            return send_file(memory_file, attachment_filename=tar_file_name, as_attachment=True)
+        return send_file(output_data_tarfile, attachment_filename=tar_file_name)
 
 
 def delete_tables_by_table_infos(output_data_table_infos):
@@ -293,7 +289,7 @@ def get_component_output_data_schema(output_table_meta, extend_header, is_str=Fa
     # get schema
     schema = output_table_meta.get_schema()
     if not schema:
-        return ['sid']
+        return []
     header = [schema.get('sid_name', 'sid')]
     if "label" in extend_header and schema.get("label_name"):
         extend_header[extend_header.index("label")] = schema.get("label_name")

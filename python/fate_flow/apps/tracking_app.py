@@ -219,13 +219,14 @@ def component_output_data():
             totals.append(total)
         if output_data:
             header = get_component_output_data_schema(output_table_meta=output_table_meta, is_str=is_str,
-                                                                   extend_header=extend_header)
+                                                      extend_header=extend_header)
             headers.append(header)
         else:
             headers.append(None)
     if len(output_data_list) == 1 and not output_data_list[0]:
         return get_json_result(retcode=0, retmsg='no data', data=[])
-    return get_json_result(retcode=0, retmsg='success', data=output_data_list, meta={'header': headers, 'total': totals, 'names':data_names})
+    return get_json_result(retcode=0, retmsg='success', data=output_data_list,
+                           meta={'header': headers, 'total': totals, 'names': data_names})
 
 
 @manager.route('/component/output/data/download', methods=['get'])
