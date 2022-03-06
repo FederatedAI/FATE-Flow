@@ -118,6 +118,8 @@ def federated_coordination_on_http(job_id, method, host, port, endpoint, src_par
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
     endpoint = f"/{api_version}{endpoint}"
     exception = None
+
+    json_body['src_fate_ver'] = RuntimeConfig.get_env('FATE')
     json_body['src_role'] = src_role
     json_body['src_party_id'] = src_party_id
 
@@ -128,6 +130,7 @@ def federated_coordination_on_http(job_id, method, host, port, endpoint, src_par
 
             headers = HEADERS.copy()
             headers["dest-party-id"] = str(dest_party_id)
+            headers["src-fate-ver"] = RuntimeConfig.get_env("FATE")
             headers["src-party-id"] = str(src_party_id)
             headers["src-role"] = str(src_role)
 
@@ -148,8 +151,11 @@ def federated_coordination_on_grpc(job_id, method, host, port, endpoint, src_par
                                    overall_timeout=None, try_times=3):
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
     endpoint = f"/{api_version}{endpoint}"
+
+    json_body['src_fate_ver'] = RuntimeConfig.get_env('FATE')
     json_body['src_role'] = src_role
     json_body['src_party_id'] = src_party_id
+
     if CHECK_NODES_IDENTITY:
         get_node_identity(json_body, src_party_id)
     _packet = wrap_grpc_packet(json_body, method, endpoint, src_party_id, dest_party_id, job_id,
