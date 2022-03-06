@@ -139,6 +139,7 @@ def migration(config_data: dict):
                 migrate_model.save_component_model(component_name=key, component_module_name=module_name,
                                                    model_alias=v, model_buffers=modified_buffer)
 
+        migrate_model.gen_model_import_config()
         archive_path = migrate_model.packaging_model()
         shutil.rmtree(os.path.abspath(migrate_model.model_path))
 
