@@ -87,6 +87,7 @@ class BaseWorker:
         self.run_pid = os.getpid()
         try:
             self.args = self.get_args(**kwargs)
+            RuntimeConfig.init_env()
             RuntimeConfig.set_process_role(ProcessRole(os.getenv("PROCESS_ROLE")))
             if RuntimeConfig.PROCESS_ROLE == ProcessRole.WORKER:
                 LoggerFactory.LEVEL = logging.getLevelName(os.getenv("FATE_LOG_LEVEL", "INFO"))
