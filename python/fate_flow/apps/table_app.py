@@ -16,7 +16,7 @@
 from fate_arch import storage
 from fate_arch.metastore.db_utils import StorageConnector
 from fate_arch.session import Session
-from fate_arch.storage import StorageTableMeta
+from fate_arch.storage import StorageTableMeta, StorageTableOrigin
 from fate_flow.entity import RunParameters
 from fate_flow.manager.data_manager import DataTableTracker, TableStorage
 from fate_flow.operation.job_saver import JobSaver
@@ -78,7 +78,8 @@ def table_bind():
     table = storage_session.create_table(address=address, name=name, namespace=namespace,
                                          partitions=request_data.get('partitions', None),
                                          hava_head=request_data.get("head"), schema=schema,
-                                         id_delimiter=request_data.get("id_delimiter"), in_serialized=in_serialized)
+                                         id_delimiter=request_data.get("id_delimiter"), in_serialized=in_serialized,
+                                         origin=request_data.get("origin", StorageTableOrigin.TABLE_BIND))
     response = get_json_result(data={"table_name": name, "namespace": namespace})
     if not table.check_address():
         response = get_json_result(retcode=100, retmsg=f'engine {engine} address {address_dict} check failed')
@@ -119,6 +120,23 @@ def table_delete():
     if table:
         table.destroy()
         data = {'table_name': table_name, 'namespace': namespace}
+    sess.destroy_all_sessions()
+    if data:
+        return get_json_result(data=data)
+    return get_json_result(retcode=101, retmsg='no find table')
+
+
+@manager.route('/delete/all', methods=['post'])
+def table_delete_all():
+    request_data = request.json
+    tables_meta = storage.StorageTableMeta.query_table_meta(filter_fields=dict(**request_data))
+    data = []
+    sess = Session()
+    for table_meta in tables_meta:
+        table = sess.get_table(name=table_meta.f_name, namespace=table_meta.f_namespace)
+        if table:
+            table.destroy()
+            data.append({'table_name': table_meta.f_name, 'namespace': table_meta.f_namespace})
     sess.destroy_all_sessions()
     if data:
         return get_json_result(data=data)
