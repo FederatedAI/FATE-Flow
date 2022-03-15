@@ -182,7 +182,7 @@ The following is an example of the configuration file for importing the migrated
   "party_id": 99,
   "model_id": "guest-99#host-100#model",
   "model_version": "202010292152299793981",
-  "file": "/data/projects/fate/python/temp/guest#99#guest-99#host-100#model_fate_migration.zip"
+  "file": "/data/projects/fate/python/temp/guest#99#guest-99#host-100#202010292152299793981.zip"
 }
 ```
 
