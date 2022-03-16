@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.utils.log_utils import getLogger
+from fate_flow.utils.log_utils import getLogger, schedule_logger
 
 from fate_flow.components._base import BaseParam, ComponentBase, ComponentInputProtocol, ComponentMeta
 from fate_flow.entity import JobConfiguration
@@ -23,6 +23,7 @@ from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.scheduling_apps.client.operation_client import OperationClient
 from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.utils.schedule_utils import get_job_dsl_parser
+from federatedml.framework.scheduler.interface import get_support_role
 
 
 LOGGER = getLogger()
@@ -50,7 +51,7 @@ class ModelLoader(ComponentBase):
         self.step_index = None
         self.step_name = None
 
-    def get_model_alias(self):
+    def get_model_alias(self) -> bool:
         job_configuration = OperationClient().get_job_conf(self.model_version, self.tracker.role, self.tracker.party_id)
         if not job_configuration:
             raise ValueError('The job was not found.')
@@ -62,6 +63,7 @@ class ModelLoader(ComponentBase):
         task_output_dsl = component.get_output()
 
         self.model_alias = task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default'
+        return self.tracker.role in get_support_role(str(component.get_module()))
 
     def read_component_model(self):
         pipelined_model = PipelinedModel(gen_party_model_id(
@@ -127,7 +129,10 @@ class ModelLoader(ComponentBase):
                 break
         else:
             try:
-                self.get_model_alias()
+                result = self.get_model_alias()
+                if not result:
+                    schedule_logger().info(f"current party's role is not support this component executed by model_loader")
+                    return
             except Exception:
                 # This should not have happened. But give me a chance to find a checkpoint.
                 LOGGER.exception("Get 'model_alias' failed. Trying to find a checkpoint...")
