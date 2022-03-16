@@ -133,8 +133,8 @@ class Reader(ComponentBase):
             output_table_meta.get_namespace(),
             entity_info={
                 "have_parent": True,
-                "parent_table_namespace": self.parameters[table_key]["namespace"],
-                "parent_table_name": self.parameters[table_key]["name"],
+                "parent_table_namespace": input_table_namespace,
+                "parent_table_name": input_table_name,
                 "job_id": self.tracker.job_id,
             },
         )
