@@ -116,7 +116,7 @@ def table_delete():
     namespace = request_data.get('namespace')
     data = None
     sess = Session()
-    table = sess.get_table(name=table_name, namespace=namespace)
+    table = sess.get_table(name=table_name, namespace=namespace, ignore_disable=True)
     if table:
         table.destroy()
         data = {'table_name': table_name, 'namespace': namespace}
@@ -126,14 +126,33 @@ def table_delete():
     return get_json_result(retcode=101, retmsg='no find table')
 
 
-@manager.route('/delete/all', methods=['post'])
-def table_delete_all():
+@manager.route('/disable', methods=['post'])
+@manager.route('/enable', methods=['post'])
+def table_disable():
     request_data = request.json
+    adapter_request_data(request_data)
+    disable = True if request.url.endswith("disable") else False
     tables_meta = storage.StorageTableMeta.query_table_meta(filter_fields=dict(**request_data))
+    data = []
+    if tables_meta:
+        for table_meta in tables_meta:
+            storage.StorageTableMeta(name=table_meta.f_name,
+                                     namespace=table_meta.f_namespace
+                                     ).update_metas(disable=disable)
+            data.append({'table_name': table_meta.f_name, 'namespace': table_meta.f_namespace})
+        return get_json_result(data=data)
+    return get_json_result(retcode=101, retmsg='no find table')
+
+
+@manager.route('/disable/delete', methods=['post'])
+def table_delete_disable():
+    request_data = request.json
+    adapter_request_data(request_data)
+    tables_meta = storage.StorageTableMeta.query_table_meta(filter_fields={"disable": True})
     data = []
     sess = Session()
     for table_meta in tables_meta:
-        table = sess.get_table(name=table_meta.f_name, namespace=table_meta.f_namespace)
+        table = sess.get_table(name=table_meta.f_name, namespace=table_meta.f_namespace, ignore_disable=True)
         if table:
             table.destroy()
             data.append({'table_name': table_meta.f_name, 'namespace': table_meta.f_namespace})
@@ -165,11 +184,15 @@ def table_api(table_func):
         table_name, namespace = config.get("name") or config.get("table_name"), config.get("namespace")
         table_meta = storage.StorageTableMeta(name=table_name, namespace=namespace)
         address = None
+        enable = True
+        origin = None
         if table_meta:
             table_key_count = table_meta.get_count()
             table_partition = table_meta.get_partitions()
             table_schema = table_meta.get_schema()
             address = table_meta.get_address().__dict__
+            enable = not table_meta.get_disable()
+            origin = table_meta.get_origin()
             exist = 1
         else:
             exist = 0
@@ -179,7 +202,10 @@ def table_api(table_func):
                                      "count": table_key_count,
                                      "partition": table_partition,
                                      "schema": table_schema,
-                                     "address": address})
+                                     "enable": enable,
+                                     "origin": origin,
+                                     "address": address,
+                                     })
     else:
         return get_json_result()
 
@@ -252,3 +278,8 @@ def get_component_input_table(dsl_parser, job, component_name):
 
 def get_component_module(component_name, job_dsl):
     return job_dsl["components"][component_name]["module"].lower()
+
+
+def adapter_request_data(request_data):
+    if request_data.get("table_name"):
+        request_data["name"] = request_data.get("table_name")
