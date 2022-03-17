@@ -14,21 +14,25 @@
 #  limitations under the License.
 #
 import copy
+from pathlib import Path
+
 from flask import request
 
-from fate_flow.utils.api_utils import get_json_result
-from fate_flow.utils.detect_utils import validate_request
 from fate_flow.db.component_registry import ComponentRegistry
-from fate_flow.entity import ComponentProvider
-from fate_flow.entity import RetCode
-from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.entity import ComponentProvider, RetCode
 from fate_flow.entity.types import WorkerName
+from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.utils.api_utils import error_response, get_json_result
+from fate_flow.utils.detect_utils import validate_request
 
 
 @manager.route('/register', methods=['POST'])
 @validate_request("name", "version", "path")
 def register():
     info = request.json or request.form.to_dict()
+    if not Path(info["path"]).is_dir():
+        return error_response(400, "invalid path")
+
     provider = ComponentProvider(name=info["name"],
                                  version=info["version"],
                                  path=info["path"],
