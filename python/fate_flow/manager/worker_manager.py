@@ -250,7 +250,7 @@ class WorkerManager:
     def get_env(cls, job_id, provider_info):
         provider = ComponentProvider(**provider_info)
         env = provider.env.copy()
-        env["PYTHONPATH"] = provider.path
+        env["PYTHONPATH"] = os.path.dirname(provider.path)
         if job_id:
             env["FATE_JOB_ID"] = job_id
         return env
