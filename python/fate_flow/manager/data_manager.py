@@ -210,7 +210,8 @@ class TableStorage:
                     if output_table:
                         for k, v in output_table.collect():
                             data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k,
-                                                                                                            src_value=v)
+                                                                                                            src_value=v,
+                                                                                                            schema=output_table_meta.get_schema())
                             # save meta
                             if output_data_count == 0:
                                 output_data_file_list.append(output_data_file_path)
