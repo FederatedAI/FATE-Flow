@@ -16,8 +16,7 @@
 import argparse
 import uuid
 
-from fate_flow.utils.log_utils import schedule_logger
-from fate_arch import session, storage
+from fate_arch import storage
 from fate_arch.session import Session
 from fate_arch.storage import StorageEngine, EggRollStoreType
 from fate_flow.utils import data_utils
@@ -52,10 +51,17 @@ class UploadFile(object):
             cls.upload(args.file, False, table=table)
 
     @classmethod
-    def upload(cls, input_file, head, job_id=None, input_feature_count=None, table=None, without_block=True):
+    def upload(cls, input_file, head, table=None, id_delimiter=","):
         with open(input_file, "r") as fin:
-            lines_count = 0
-            n = 0
+            if head is True:
+                data_head = fin.readline()
+                _, meta = table.meta.update_metas(
+                    schema=data_utils.get_header_schema(
+                        header_line=data_head,
+                        id_delimiter=id_delimiter
+                    )
+                )
+                table.meta = meta
             fate_uuid = uuid.uuid1().hex
             get_line = cls.get_line()
             while True:
@@ -78,14 +84,12 @@ class UploadFile(object):
                         line_index += 1
                     table.put_all(data)
                 else:
-                    return
-                n += 1
+                    return line_index
 
     @classmethod
     def get_line(cls):
         line = data_utils.get_data_line
         return line
-
 
 
 if __name__ == '__main__':
