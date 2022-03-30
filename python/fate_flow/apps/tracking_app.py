@@ -211,7 +211,7 @@ def component_output_data():
         is_str = False
         if output_table_meta:
             for k, v in output_table_meta.get_part_of_data():
-                data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k, src_value=v)
+                data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k, src_value=v, schema=output_table_meta.get_schema())
                 output_data.append(data_line)
             total = output_table_meta.get_count()
             output_data_list.append(output_data)
