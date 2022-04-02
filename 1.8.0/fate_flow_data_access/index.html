@@ -508,15 +508,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-writer" class="md-nav__link">
-    7. Writer
+  <a href="#7-disable-data" class="md-nav__link">
+    7.  disable data
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-reader-component" class="md-nav__link">
-    8. reader component
+  <a href="#8-enable-data" class="md-nav__link">
+    8.  enable data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-delete-disable-data" class="md-nav__link">
+    9.  delete disable data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-writer" class="md-nav__link">
+    10. Writer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-reader-component" class="md-nav__link">
+    11. reader component
   </a>
   
 </li>
@@ -830,15 +851,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-writer" class="md-nav__link">
-    7. Writer
+  <a href="#7-disable-data" class="md-nav__link">
+    7.  disable data
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-reader-component" class="md-nav__link">
-    8. reader component
+  <a href="#8-enable-data" class="md-nav__link">
+    8.  enable data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-delete-disable-data" class="md-nav__link">
+    9.  delete disable data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-writer" class="md-nav__link">
+    10. Writer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-reader-component" class="md-nav__link">
+    11. reader component
   </a>
   
 </li>
@@ -1068,12 +1110,13 @@
 <p>Real storage addresses can be mapped to fate storage tables via table bind</p>
 <div class="highlight"><pre><span></span><code>flow table <span class="nb">bind</span> <span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
-<p>Note: conf_path is the parameter path, the specific parameters are as follows</p>
-<p><strong>Options</strong></p>
+<p><strong>options</strong> </p>
 <table>
 <thead>
 <tr>
-<th align="left">parameter name</th>
+<th align="left">parameters</th>
+<th align="left">short format</th>
+<th align="left">long format</th>
 <th align="left">required</th>
 <th align="left">type</th>
 <th>description</th>
@@ -1081,7 +1124,28 @@
 </thead>
 <tbody>
 <tr>
-<td align="left">table-name</td>
+<td align="left">conf_path</td>
+<td align="left"><code>-c</code></td>
+<td align="left"><code>--conf-path</code></td>
+<td align="left">yes</td>
+<td align="left">string</td>
+<td>configuration-path</td>
+</tr>
+</tbody>
+</table>
+<p>Note: conf_path is the parameter path, the specific parameters are as follows</p>
+<table>
+<thead>
+<tr>
+<th align="left">parameter_name</th>
+<th align="left">required</th>
+<th align="left">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">name</td>
 <td align="left">yes</td>
 <td align="left">string</td>
 <td>fate table name</td>
@@ -1136,7 +1200,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
+<p><strong>Sample</strong> </p>
 <ul>
 <li>hdfs</li>
 </ul>
@@ -1187,7 +1251,7 @@
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div>
-<strong>return parameters</strong> </p>
+<strong>return</strong></p>
 <table>
 <thead>
 <tr>
@@ -1205,7 +1269,7 @@
 <tr>
 <td align="left">retmsg</td>
 <td align="left">string</td>
-<td>return message</td>
+<td>return information</td>
 </tr>
 <tr>
 <td align="left">data</td>
@@ -1228,11 +1292,13 @@
 <p>Query information about the fate table (real storage address, number, schema, etc.)</p>
 <div class="highlight"><pre><span></span><code>flow table info <span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
-<p><strong>Options</strong></p>
+<p><strong>options</strong> </p>
 <table>
 <thead>
 <tr>
-<th align="left">parameter name</th>
+<th align="left">parameters</th>
+<th align="left">short-format</th>
+<th align="left">long-format</th>
 <th align="left">required</th>
 <th align="left">type</th>
 <th>description</th>
@@ -1240,46 +1306,29 @@
 </thead>
 <tbody>
 <tr>
-<td align="left">table-name</td>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
 <td align="left">yes</td>
 <td align="left">string</td>
 <td>fate table name</td>
 </tr>
 <tr>
 <td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
 <td align="left">yes</td>
 <td align="left">string</td>
 <td>fate table namespace</td>
 </tr>
 </tbody>
 </table>
-<p><strong>return parameters</strong> </p>
-<table>
-<thead>
-<tr>
-<th align="left">parameter name</th>
-<th align="left">type</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left">retcode</td>
-<td align="left">int</td>
-<td>return code</td>
-</tr>
-<tr>
-<td align="left">retmsg</td>
-<td align="left">string</td>
-<td>return message</td>
-</tr>
-<tr>
-<td align="left">data</td>
-<td align="left">object</td>
-<td>return data</td>
-</tr>
-</tbody>
-</table>
+<p><strong>returns</strong>
+| parameter name | type | description |
+| :------ | :----- | -------- |
+| retcode | int | return code |
+| retmsg | string | return information |
+| data | object | return data |</p>
 <p>Sample</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -1306,11 +1355,13 @@
 <p>You can delete table data with table delete</p>
 <div class="highlight"><pre><span></span><code>flow table delete <span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
-<p><strong>Options</strong></p>
+<p><strong>Options</strong> </p>
 <table>
 <thead>
 <tr>
-<th align="left">parameter name</th>
+<th align="left">parameters</th>
+<th align="left">short-format</th>
+<th align="left">long-format</th>
 <th align="left">required</th>
 <th align="left">type</th>
 <th>description</th>
@@ -1318,20 +1369,24 @@
 </thead>
 <tbody>
 <tr>
-<td align="left">table-name</td>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
 <td align="left">yes</td>
 <td align="left">string</td>
 <td>fate table name</td>
 </tr>
 <tr>
 <td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
 <td align="left">yes</td>
 <td align="left">string</td>
 <td>fate table namespace</td>
 </tr>
 </tbody>
 </table>
-<p><strong>return parameters</strong> </p>
+<p><strong>returns</strong></p>
 <table>
 <thead>
 <tr>
@@ -1467,7 +1522,198 @@
 <span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div>
-<h2 id="7-writer">7. Writer<a class="headerlink" href="#7-writer" title="Permanent link">&para;</a></h2>
+<h2 id="7-disable-data">7.  disable data<a class="headerlink" href="#7-disable-data" title="Permanent link">&para;</a></h2>
+<p>Tables can be made unavailable by table disable</p>
+<div class="highlight"><pre><span></span><code>flow table disable <span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options</strong> </p>
+<table>
+<thead>
+<tr>
+<th align="left">parameters</th>
+<th align="left">short-format</th>
+<th align="left">long-format</th>
+<th align="left">required</th>
+<th align="left">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
+<td align="left">yes</td>
+<td align="left">string</td>
+<td>fate table name</td>
+</tr>
+<tr>
+<td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
+<td align="left">yes</td>
+<td align="left">string</td>
+<td>fate table namespace</td>
+</tr>
+</tbody>
+</table>
+<p><strong>returns</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">parameter name</th>
+<th align="left">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">retcode</td>
+<td align="left">int</td>
+<td>return code</td>
+</tr>
+<tr>
+<td align="left">retmsg</td>
+<td align="left">string</td>
+<td>return information</td>
+</tr>
+<tr>
+<td align="left">data</td>
+<td align="left">object</td>
+<td>return data</td>
+</tr>
+</tbody>
+</table>
+<p>Sample</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h2 id="8-enable-data">8.  enable data<a class="headerlink" href="#8-enable-data" title="Permanent link">&para;</a></h2>
+<p>Tables can be made available with table enable</p>
+<div class="highlight"><pre><span></span><code>flow table <span class="nb">enable</span> <span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<p><strong>Options</strong> </p>
+<table>
+<thead>
+<tr>
+<th align="left">parameters</th>
+<th align="left">short-format</th>
+<th align="left">long-format</th>
+<th align="left">required</th>
+<th align="left">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
+<td align="left">yes</td>
+<td align="left">string</td>
+<td>fate table name</td>
+</tr>
+<tr>
+<td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
+<td align="left">yes</td>
+<td align="left">string</td>
+<td>fate table namespace</td>
+</tr>
+</tbody>
+</table>
+<p><strong>returns</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">parameter name</th>
+<th align="left">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">retcode</td>
+<td align="left">int</td>
+<td>return code</td>
+</tr>
+<tr>
+<td align="left">retmsg</td>
+<td align="left">string</td>
+<td>return information</td>
+</tr>
+<tr>
+<td align="left">data</td>
+<td align="left">object</td>
+<td>return data</td>
+</tr>
+</tbody>
+</table>
+<p>Sample</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h2 id="9-delete-disable-data">9.  delete disable data<a class="headerlink" href="#9-delete-disable-data" title="Permanent link">&para;</a></h2>
+<p>Tables that are currently unavailable can be deleted with disable-delete</p>
+<div class="highlight"><pre><span></span><code>flow table disable-delete 
+</code></pre></div>
+<p><strong>return</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">parameter name</th>
+<th align="left">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">retcode</td>
+<td align="left">int</td>
+<td>return-code</td>
+</tr>
+<tr>
+<td align="left">retmsg</td>
+<td align="left">string</td>
+<td>return information</td>
+</tr>
+<tr>
+<td align="left">data</td>
+<td align="left">object</td>
+<td>return data</td>
+</tr>
+</tbody>
+</table>
+<p>Sample</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">],</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h2 id="10-writer">10. Writer<a class="headerlink" href="#10-writer" title="Permanent link">&para;</a></h2>
 <p><strong>Brief description:</strong> </p>
 <p>Used to download data from the fate storage engine to the external engine or to save data as a new table</p>
 <div class="highlight"><pre><span></span><code>flow data writer -c <span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
@@ -1597,7 +1843,7 @@
 <span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div>
-<h2 id="8-reader-component">8. reader component<a class="headerlink" href="#8-reader-component" title="Permanent link">&para;</a></h2>
+<h2 id="11-reader-component">11. reader component<a class="headerlink" href="#11-reader-component" title="Permanent link">&para;</a></h2>
 <p><strong>Brief description:</strong> </p>
 <ul>
 <li>The reader component is a data input component of fate;</li>

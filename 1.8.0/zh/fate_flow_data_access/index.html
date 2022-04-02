@@ -508,15 +508,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-writer" class="md-nav__link">
-    7.  writer组件
+  <a href="#7" class="md-nav__link">
+    7.  将数据设置为“不可用”状态
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-reader" class="md-nav__link">
-    8.  reader组件
+  <a href="#8" class="md-nav__link">
+    8.  将数据设置为“可用”状态
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    9.  删除“不可用”数据
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-writer" class="md-nav__link">
+    10.  writer组件
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-reader" class="md-nav__link">
+    11.  reader组件
   </a>
   
 </li>
@@ -830,15 +851,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-writer" class="md-nav__link">
-    7.  writer组件
+  <a href="#7" class="md-nav__link">
+    7.  将数据设置为“不可用”状态
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-reader" class="md-nav__link">
-    8.  reader组件
+  <a href="#8" class="md-nav__link">
+    8.  将数据设置为“可用”状态
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    9.  删除“不可用”数据
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-writer" class="md-nav__link">
+    10.  writer组件
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-reader" class="md-nav__link">
+    11.  reader组件
   </a>
   
 </li>
@@ -1068,8 +1110,30 @@
 <p>可通过table bind将真实存储地址映射到fate存储表</p>
 <div class="highlight"><pre><span></span><code>flow table <span class="nb">bind</span> <span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
-<p>注: conf_path为参数路径，具体参数如下</p>
 <p><strong>选项</strong> </p>
+<table>
+<thead>
+<tr>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">conf_path</td>
+<td align="left"><code>-c</code></td>
+<td align="left"><code>--conf-path</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
+<td>配置路径</td>
+</tr>
+</tbody>
+</table>
+<p>注: conf_path为参数路径，具体参数如下</p>
 <table>
 <thead>
 <tr>
@@ -1081,7 +1145,7 @@
 </thead>
 <tbody>
 <tr>
-<td align="left">table-name</td>
+<td align="left">name</td>
 <td align="left">是</td>
 <td align="left">string</td>
 <td>fate表名</td>
@@ -1232,7 +1296,9 @@
 <table>
 <thead>
 <tr>
-<th align="left">参数名</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
 <th align="left">必选</th>
 <th align="left">类型</th>
 <th>说明</th>
@@ -1240,13 +1306,17 @@
 </thead>
 <tbody>
 <tr>
-<td align="left">table-name</td>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
 <td align="left">是</td>
 <td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
 <td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
 <td align="left">是</td>
 <td align="left">string</td>
 <td>fate表命名空间</td>
@@ -1310,7 +1380,9 @@
 <table>
 <thead>
 <tr>
-<th align="left">参数名</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
 <th align="left">必选</th>
 <th align="left">类型</th>
 <th>说明</th>
@@ -1318,13 +1390,17 @@
 </thead>
 <tbody>
 <tr>
-<td align="left">table-name</td>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
 <td align="left">是</td>
 <td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
 <td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
 <td align="left">是</td>
 <td align="left">string</td>
 <td>fate表命名空间</td>
@@ -1467,7 +1543,198 @@
 <span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div>
-<h2 id="7-writer">7.  writer组件<a class="headerlink" href="#7-writer" title="Permanent link">&para;</a></h2>
+<h2 id="7">7.  将数据设置为“不可用”状态<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<p>可通过table disable将表置为不可用状态</p>
+<div class="highlight"><pre><span></span><code>flow table disable <span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<p><strong>选项</strong> </p>
+<table>
+<thead>
+<tr>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
+<td>fate表名</td>
+</tr>
+<tr>
+<td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
+<td>fate表命名空间</td>
+</tr>
+</tbody>
+</table>
+<p><strong>返回</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">参数名</th>
+<th align="left">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">retcode</td>
+<td align="left">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td align="left">retmsg</td>
+<td align="left">string</td>
+<td>返回信息</td>
+</tr>
+<tr>
+<td align="left">data</td>
+<td align="left">object</td>
+<td>返回数据</td>
+</tr>
+</tbody>
+</table>
+<p>样例</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h2 id="8">8.  将数据设置为“可用”状态<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<p>可通过table enable将表置为可用状态</p>
+<div class="highlight"><pre><span></span><code>flow table <span class="nb">enable</span> <span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<p><strong>选项</strong> </p>
+<table>
+<thead>
+<tr>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
+<td>fate表名</td>
+</tr>
+<tr>
+<td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
+<td>fate表命名空间</td>
+</tr>
+</tbody>
+</table>
+<p><strong>返回</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">参数名</th>
+<th align="left">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">retcode</td>
+<td align="left">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td align="left">retmsg</td>
+<td align="left">string</td>
+<td>返回信息</td>
+</tr>
+<tr>
+<td align="left">data</td>
+<td align="left">object</td>
+<td>返回数据</td>
+</tr>
+</tbody>
+</table>
+<p>样例</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h2 id="9">9.  删除“不可用”数据<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<p>可通过disable-delete删除当前不可用的表</p>
+<div class="highlight"><pre><span></span><code>flow table disable-delete 
+</code></pre></div>
+<p><strong>返回</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">参数名</th>
+<th align="left">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">retcode</td>
+<td align="left">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td align="left">retmsg</td>
+<td align="left">string</td>
+<td>返回信息</td>
+</tr>
+<tr>
+<td align="left">data</td>
+<td align="left">object</td>
+<td>返回数据</td>
+</tr>
+</tbody>
+</table>
+<p>样例</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">],</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h2 id="10-writer">10.  writer组件<a class="headerlink" href="#10-writer" title="Permanent link">&para;</a></h2>
 <p><strong>简要描述：</strong> </p>
 <p>用于下载fate存储引擎内的数据到外部引擎或者将数据另存为新表</p>
 <div class="highlight"><pre><span></span><code>flow data writer -c <span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
@@ -1597,7 +1864,7 @@
 <span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div>
-<h2 id="8-reader">8.  reader组件<a class="headerlink" href="#8-reader" title="Permanent link">&para;</a></h2>
+<h2 id="11-reader">11.  reader组件<a class="headerlink" href="#11-reader" title="Permanent link">&para;</a></h2>
 <p><strong>简要描述：</strong> </p>
 <ul>
 <li>reader组件为fate的数据输入组件;</li>
