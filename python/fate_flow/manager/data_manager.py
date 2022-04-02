@@ -118,13 +118,13 @@ class TableStorage:
         src_table_meta = src_table.meta
         schema = {}
         update_schema = False
+        line_index = 0
+        fate_uuid = uuid.uuid1().hex
         if not src_table_meta.get_in_serialized():
             if src_table_meta.get_have_head():
                 get_head = False
             else:
                 get_head = True
-            line_index = 0
-            fate_uuid = uuid.uuid1().hex
             if not src_table.meta.get_extend_sid():
                 get_line = data_utils.get_data_line
             elif not src_table_meta.get_auto_increasing_sid():
@@ -160,6 +160,9 @@ class TableStorage:
                 )
         else:
             for k, v in src_table.collect():
+                if src_table.meta.get_extend_sid():
+                    v = src_table.meta.get_id_delimiter().join([k, v])
+                    k = fate_uuid+str(line_index)
                 if deserialize_value:
                     # writer component: deserialize value
                     v, extend_header = feature_utils.get_deserialize_value(v, dest_table.meta.get_id_delimiter())

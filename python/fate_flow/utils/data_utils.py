@@ -25,11 +25,15 @@ def get_header_schema(header_line, id_delimiter, extend_sid=False):
     header_source_item = header_line.split(id_delimiter)
     if extend_sid:
         header = id_delimiter.join(header_source_item).strip()
-        sid = "sid"
+        sid = get_extend_id_name()
     else:
         header = id_delimiter.join(header_source_item[1:]).strip()
         sid = header_source_item[0].strip()
     return {'header': header, 'sid': sid}
+
+
+def get_extend_id_name():
+    return "extend_sid"
 
 
 def get_sid_data_line(values, id_delimiter, fate_uuid, line_index, **kwargs):
