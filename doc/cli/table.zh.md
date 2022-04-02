@@ -10,10 +10,10 @@ flow table info [options]
 
 **选项** 
 
-| 参数名    | 必选 | 类型   | 说明           |
-| :-------- | :--- | :----- | -------------- |
-| table-name      | 是   | string | fate表名       |
-| namespace | 是   | string | fate表命名空间 |
+| 参数    | 短格式 | 长格式 | 必选 | 类型   | 说明           |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| table_name | `-t`   |`--table-name`   |是   | string | fate表名       |
+| namespace | `-n`   |`--namespace`   | 是 |string   | fate表命名空间 |
 
 **返回**
 
@@ -58,10 +58,10 @@ flow table delete [options]
 
 **选项** 
 
-| 参数名    | 必选 | 类型   | 说明           |
-| :-------- | :--- | :----- | -------------- |
-| table-name      | 是   | string | fate表名       |
-| namespace | 是   | string | fate表命名空间 |
+| 参数    | 短格式 | 长格式 | 必选 | 类型   | 说明           |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| table_name | `-t`   |`--table-name`   |是   | string | fate表名       |
+| namespace | `-n`   |`--namespace`   | 是 |string   | fate表命名空间 |
 
 **返回**
 
@@ -92,13 +92,17 @@ flow table delete [options]
 flow table bind [options]
 ```
 
-注: conf_path为参数路径，具体参数如下
-
 **选项** 
+
+| 参数    | 短格式 | 长格式 | 必选 | 类型   | 说明           |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| conf_path | `-c`   |`--conf-path`   |是   | string | 配置路径  |
+
+注: conf_path为参数路径，具体参数如下
 
 | 参数名         | 必选 | 类型   | 说明                                  |
 | :------------- | :--- | :----- | ------------------------------------- |
-| table-name           | 是   | string | fate表名                              |
+| name           | 是   | string | fate表名                              |
 | namespace      | 是   | string | fate表命名空间                        |
 | engine         | 是   | string | 存储引擎, 支持"HDFS", "MYSQL", "PATH" |
 | adress         | 是   | object | 真实存储地址                          |
@@ -180,5 +184,115 @@ flow table bind [options]
     },
     "retcode": 0,
     "retmsg": "success"
+}
+```
+
+
+### disable
+
+可通过table disable将表置为不可用状态
+
+```bash
+flow table disable [options]
+```
+
+**选项** 
+
+| 参数    | 短格式 | 长格式 | 必选 | 类型   | 说明           |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| table_name | `-t`   |`--table-name`   |是   | string | fate表名       |
+| namespace | `-n`   |`--namespace`   | 是 |string   | fate表命名空间 |
+
+**返回**
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例
+
+```json
+{
+    "data": {
+        "namespace": "xxx",
+        "table_name": "xxx"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### enable
+
+可通过table enable将表置为可用状态
+
+```bash
+flow table enable [options]
+```
+
+**选项** 
+
+| 参数    | 短格式 | 长格式 | 必选 | 类型   | 说明           |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| table_name | `-t`   |`--table-name`   |是   | string | fate表名       |
+| namespace | `-n`   |`--namespace`   | 是 |string   | fate表命名空间 |
+
+
+**返回**
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例
+
+```json
+{
+    "data": [{
+        "namespace": "xxx",
+        "table_name": "xxx"
+    }],
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### disable-delete
+
+可通过disable-delete删除当前不可用的表
+
+```bash
+flow table disable-delete 
+```
+
+
+**返回**
+
+| 参数名  | 类型   | 说明     |
+| :------ | :----- | -------- |
+| retcode | int    | 返回码   |
+| retmsg  | string | 返回信息 |
+| data    | object | 返回数据 |
+
+样例
+
+```json
+{
+  "data": [
+    {
+      "namespace": "xxx",
+      "table_name": "xxx"
+    },
+    {
+      "namespace": "xxx",
+      "table_name": "xxx"
+    }
+  ],
+  "retcode": 0,
+  "retmsg": "success"
 }
 ```

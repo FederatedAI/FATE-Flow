@@ -30,11 +30,23 @@
 
 {{snippet('cli/data.zh.md', '### download')}}
 
-## 7.  writer组件
+## 7.  将数据设置为“不可用”状态
+
+{{snippet('cli/table.zh.md', '### disable')}}
+
+## 8.  将数据设置为“可用”状态
+
+{{snippet('cli/table.zh.md', '### enable')}}
+
+## 9.  删除“不可用”数据
+
+{{snippet('cli/table.zh.md', '### disable-delete')}}
+
+## 10.  writer组件
 
 {{snippet('cli/data.zh.md', '### writer')}}
 
-## 8.  reader组件
+## 11.  reader组件
 
 **简要描述：** 
 

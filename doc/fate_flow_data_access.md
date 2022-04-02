@@ -35,13 +35,25 @@
 
 {{snippet('cli/data.md', '### download')}}
 
+## 7.  disable data
 
-## 7. Writer
+{{snippet('cli/table.md', '### disable')}}
+
+## 8.  enable data 
+
+{{snippet('cli/table.md', '### enable')}}
+
+## 9.  delete disable data 
+
+{{snippet('cli/table.md', '### disable-delete')}}
+
+
+## 10. Writer
 
 {{snippet('cli/data.md', '### writer')}}
 
 
-## 8. reader component
+## 11. reader component
 
 **Brief description:** 
 
