@@ -255,11 +255,8 @@ def get_bind_table_schema(id_column, feature_column):
 def update_bind_table_schema(id_column, feature_column, extend_sid, id_delimiter):
     schema = None
     if id_column and feature_column:
-        schema = {'header': feature_column, 'sid': id_column}
-        if extend_sid:
-            schema = {'header': id_delimiter.join([id_column, feature_column]), 'sid': get_extend_id_name()}
+        schema = {'header': id_delimiter.join([id_column, feature_column]), 'sid': get_extend_id_name()}
     elif id_column:
-        schema = {'sid': id_column, 'header': ''}
-        if extend_sid:
-            schema = {'header': id_column, 'sid': get_extend_id_name()}
+        schema = {'header': id_column, 'sid': get_extend_id_name()}
+    schema.update({'extend_tag': True})
     return schema

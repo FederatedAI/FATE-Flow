@@ -37,7 +37,11 @@ def get_extend_id_name():
 
 
 def get_sid_data_line(values, id_delimiter, fate_uuid, line_index, **kwargs):
-    return fate_uuid+str(line_index), list_to_str(values, id_delimiter=id_delimiter)
+    return line_extend_uuid(fate_uuid, line_index), list_to_str(values, id_delimiter=id_delimiter)
+
+
+def line_extend_uuid(fate_uuid, line_index):
+    return fate_uuid + str(line_index)
 
 
 def get_auto_increasing_sid_data_line(values, id_delimiter, line_index, **kwargs):
