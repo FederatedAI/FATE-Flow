@@ -1,5 +1,11 @@
 # Release 1.7.2
 ## Major Features and Improvements
+* Optimize the model migration function to reduce user operation steps;
+* Add version compatibility check in component center to support multiple parties to use different versions;
+* Add data table disable/enable function, and support batch delete disable table
+
+# Release 1.7.2
+## Major Features and Improvements
 * Separate the base connection address of the data storage table from the data table information, and compatible with historical versions;
 * Optimize the component output data download interface.
 
