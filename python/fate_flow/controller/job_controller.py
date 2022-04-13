@@ -24,7 +24,7 @@ from fate_flow.controller.task_controller import TaskController
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RunParameters
-from fate_flow.entity.run_status import JobStatus, EndStatus, JobInheritanceStatus
+from fate_flow.entity.run_status import JobStatus, EndStatus, TaskStatus, JobInheritanceStatus
 from fate_flow.entity.types import InputSearchType, WorkerName
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
