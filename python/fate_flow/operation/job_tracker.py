@@ -523,8 +523,7 @@ class Tracker(object):
                         'train_runtime_conf': job_data.get('f_train_runtime_conf'),
                         'size': self.get_model_size(),
                         'job_status': job_data.get('f_status'),
-
-                        'parent': False if json_loads(pipeline.inference_dsl) else True,
+                        'parent': pipeline.parent,
                         'fate_version': pipeline.fate_version,
                         'runtime_conf_on_party': json_loads(pipeline.runtime_conf_on_party),
                         'parent_info': json_loads(pipeline.parent_info),

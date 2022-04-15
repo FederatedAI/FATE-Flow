@@ -1,8 +1,9 @@
 {
-  "provider": "fate@1.7.0",
+  "provider": "fate@1.8.0",
   "components": {
     "reader_0": {
       "module": "Reader",
+      "provider": "fate_flow@1.8.0",
       "output": {
         "data": [
           "table"
@@ -11,7 +12,7 @@
     },
     "dataio_0": {
       "module": "DataIO",
-      "provider": "fate@1.7.0",
+      "provider": "fate@1.8.0",
       "input": {
         "data": {
           "data": [
@@ -31,6 +32,7 @@
     },
     "hetero_feature_binning_0": {
       "module": "HeteroFeatureBinning",
+      "provider": "fate@1.8.0",
       "input": {
         "data": {
           "data": [

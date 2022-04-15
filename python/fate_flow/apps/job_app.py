@@ -94,16 +94,17 @@ def list_job():
         'tag': ('!=', 'submit_failed'),
     }
 
-    for i in ('job_id', 'party_id', 'description'):
+    for i in ('job_id', 'description'):
         if request.json.get(i) is not None:
-            query[i] = request.json[i]
-    if query.get('party_id') is not None:
+            query[i] = ('contains', request.json[i])
+    if request.json.get('party_id') is not None:
         try:
-            query['party_id'] = int(query['party_id'])
+            query['party_id'] = int(request.json['party_id'])
         except Exception:
             return error_response(400, f"Invalid parameter 'party_id'.")
-    if query.get('description') is not None:
-        query['description'] = ('contains', query['description'])
+        query['party_id'] = ('contains', query['party_id'])
+    if request.json.get('partner') is not None:
+        query['roles'] = ('contains', query['partner'])
 
     for i in ('role', 'status'):
         if request.json.get(i) is None:

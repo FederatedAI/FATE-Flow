@@ -109,6 +109,7 @@ class RetCode(IntEnum, CustomEnum):
     FEDERATED_ERROR = 104
     CONNECTION_ERROR = 105
     RUNNING = 106
+    INCOMPATIBLE_FATE_VER = 107
     SERVER_ERROR = 500
 
 

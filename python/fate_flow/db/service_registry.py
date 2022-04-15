@@ -17,7 +17,6 @@ import socket
 from pathlib import Path
 from fate_arch.common import file_utils, conf_utils
 from fate_arch.common.conf_utils import SERVICE_CONF
-from fate_flow.settings import FATE_FLOW_SERVER_START_CONFIG_ITEMS, stat_logger
 from .reload_config_base import ReloadConfigBase
 
 
@@ -48,11 +47,7 @@ class ServiceRegistry(ReloadConfigBase):
         cls.LINKIS_SPARK_CONFIG = conf.get('fate_on_spark', {}).get('linkis_spark')
 
         for k, v in conf.items():
-            if k in FATE_FLOW_SERVER_START_CONFIG_ITEMS:
-                stat_logger.info(f"{k} is fate flow server start config, pass load")
-            else:
-                if not isinstance(v, dict):
-                    raise ValueError(f'{k} is not a dict, external services config must be a dict')
+            if isinstance(v, dict):
                 setattr(cls, k.upper(), v)
 
     @classmethod

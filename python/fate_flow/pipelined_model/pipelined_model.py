@@ -15,6 +15,7 @@
 #
 import base64
 import hashlib
+import json
 import os
 import shutil
 import typing
@@ -24,14 +25,14 @@ from functools import wraps
 from google.protobuf import json_format
 from ruamel import yaml
 
-from fate_arch.common import base_utils, file_utils
+from fate_arch.common import base_utils
+from fate_flow.component_env_utils import provider_utils
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.model import Locker, parse_proto_object, serialize_buffer_object
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger
 from fate_flow.utils import job_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory, get_fate_flow_python_directory
-from fate_flow.component_env_utils import provider_utils
-from fate_flow.db.runtime_config import RuntimeConfig
 
 
 def local_cache_required(method):
@@ -363,3 +364,15 @@ class PipelinedModel(Locker):
             component_define = source_pipeline_model.get_component_define(component_name)
             for model_alias, model_proto_index in component_model_proto.items():
                 self.update_component_meta(component_name, component_define.get("module_name"), model_alias, model_proto_index)
+
+    def gen_model_import_config(self):
+        role, party_id, model_id = self.model_id.split('#', 2)
+        config = {
+            'role': role,
+            'party_id': int(party_id),
+            'model_id': model_id,
+            'model_version': self.model_version,
+            'file': self.archive_model_file_path,
+        }
+        with self.lock, open(os.path.join(self.model_path, 'import_model.json'), 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4)

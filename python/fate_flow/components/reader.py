@@ -22,7 +22,7 @@ from fate_arch.common import EngineType, log
 from fate_arch.common.data_utils import default_output_fs_path, default_output_info
 from fate_arch.computing import ComputingEngine
 from fate_arch.session import Session
-from fate_arch.storage import StorageEngine, StorageTableMeta
+from fate_arch.storage import StorageEngine, StorageTableMeta, StorageTableOrigin
 from fate_flow.components._base import (
     BaseParam,
     ComponentBase,
@@ -113,6 +113,7 @@ class Reader(ComponentBase):
             name=output_table_name,
             namespace=output_table_namespace,
             partitions=input_table_meta.partitions,
+            origin=StorageTableOrigin.READER
         )
         self.save_table(src_table=input_table, dest_table=output_table)
         # update real count to meta info
@@ -132,8 +133,8 @@ class Reader(ComponentBase):
             output_table_meta.get_namespace(),
             entity_info={
                 "have_parent": True,
-                "parent_table_namespace": self.parameters[table_key]["namespace"],
-                "parent_table_name": self.parameters[table_key]["name"],
+                "parent_table_namespace": input_table_namespace,
+                "parent_table_name": input_table_name,
                 "job_id": self.tracker.job_id,
             },
         )
