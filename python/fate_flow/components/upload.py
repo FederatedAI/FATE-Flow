@@ -57,7 +57,8 @@ class UploadParam(BaseParam):
             destroy=False,
             extend_sid=False,
             auto_increasing_sid=False,
-            block_size=1
+            block_size=1,
+            schema=None
     ):
         self.file = file
         self.head = head
@@ -71,6 +72,7 @@ class UploadParam(BaseParam):
         self.extend_sid = extend_sid
         self.auto_increasing_sid = auto_increasing_sid
         self.block_size = block_size
+        self.schema = schema if schema else {}
 
     def check(self):
         return True
@@ -408,12 +410,15 @@ class Upload(ComponentBase):
                 break
 
     def update_table_meta(self, data_head):
+        LOGGER.info(f"data head: {data_head}")
+        schema = data_utils.get_header_schema(
+            header_line=data_head,
+            id_delimiter=self.parameters["id_delimiter"],
+            extend_sid=self.parameters["extend_sid"],
+        )
+        schema.update(self.parameters.get("schema", {}))
         _, meta = self.table.meta.update_metas(
-            schema=data_utils.get_header_schema(
-                header_line=data_head,
-                id_delimiter=self.parameters["id_delimiter"],
-                extend_sid=self.parameters["extend_sid"],
-            ),
+            schema=schema,
             auto_increasing_sid=self.parameters["auto_increasing_sid"],
             extend_sid=self.parameters["extend_sid"],
         )

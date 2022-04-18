@@ -167,7 +167,8 @@ def gen_data_access_job_config(config_data, access_module):
                 "destroy",
                 "extend_sid",
                 "auto_increasing_sid",
-                "block_size"
+                "block_size",
+                "schema"
             }
         update_config(job_runtime_conf, job_dsl, initiator_role, parameters, access_module, config_data)
 

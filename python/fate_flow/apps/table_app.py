@@ -55,6 +55,7 @@ def table_bind():
     engine = request_data.get('engine')
     name = request_data.get('name')
     namespace = request_data.get('namespace')
+    extra_schema = request_data.get("schema", {})
     address = storage.StorageTableMeta.create_address(storage_engine=engine, address_dict=address_dict)
     in_serialized = request_data.get("in_serialized", 1 if engine in {storage.StorageEngine.STANDALONE, storage.StorageEngine.EGGROLL,
                                                                       storage.StorageEngine.MYSQL, storage.StorageEngine.PATH,
@@ -71,6 +72,7 @@ def table_bind():
     id_column = request_data.get("id_column") or request_data.get("id_name")
     feature_column = request_data.get("feature_column") or request_data.get("feature_name")
     schema = get_bind_table_schema(id_column, feature_column)
+    schema.update(extra_schema)
     sess = Session()
     storage_session = sess.storage(storage_engine=engine, options=request_data.get("options"))
     table = storage_session.create_table(address=address, name=name, namespace=namespace,
@@ -244,7 +246,7 @@ def get_component_module(component_name, job_dsl):
 
 
 def get_bind_table_schema(id_column, feature_column):
-    schema = None
+    schema = {}
     if id_column and feature_column:
         schema = {'header': feature_column, 'sid': id_column}
     elif id_column:
