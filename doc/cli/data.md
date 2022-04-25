@@ -109,6 +109,23 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 
 ```
 
+### upload-history
+
+Used to query upload table history.
+
+```
+flow data upload-history -l 20
+flow data upload-history --job-id $JOB_ID
+```
+
+**Options**
+
+| parameter name | required | type   | description                                |
+| :------------- | :------- | :----- | ------------------------------------------ |
+| -l --limit     | no       | int    | Number of records to return. (default: 10) |
+| -j --job_id    | no       | string | Job ID                                     |
+|                |          |        |                                            |
+
 ### download
 
 **Brief description:** 
