@@ -13,7 +13,7 @@
     
     
       
-        <title>Swagger - FATE Flow</title>
+        <title>Fate Flow Table Api - FATE Flow</title>
       
     
     
@@ -70,11 +70,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#swagger-api" class="md-skip">
-          跳转至
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -106,7 +101,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Swagger
+              Fate Flow Table Api
             
           </span>
         </div>
@@ -250,15 +245,11 @@
   
 
 
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../../restful_api/swagger.md" class="md-tabs__link">
-        API
-      </a>
-    </li>
-  
+  <li class="md-tabs__item">
+    <a href="../../swagger" class="md-tabs__link">
+      API
+    </a>
+  </li>
 
       
     </ul>
@@ -657,47 +648,10 @@
   
   
   
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" data-md-state="indeterminate" type="checkbox" id="__nav_3" checked>
-      
-      
-      
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_3">
-          API
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="API" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
-          <span class="md-nav__icon md-icon"></span>
-          API
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../restful_api/swagger.md" class="md-nav__link">
-        None
+      <a href="../../swagger" class="md-nav__link">
+        API
       </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
     </li>
   
 
@@ -720,21 +674,6 @@
   
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#swagger-api" class="md-nav__link">
-    Swagger API
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -751,19 +690,1571 @@
 
 
 
-  <h1>Swagger</h1>
+  <h1>Fate Flow Table Api</h1>
 
-<h2 id="swagger-api">Swagger API<a class="headerlink" href="#swagger-api" title="Permanent link">&para;</a></h2>
-<p><link type="text/css" rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@3/swagger-ui.css"></p>
-<div id="swagger-ui">
-</div>
-<script src="https://unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js" charset="UTF-8"></script>
-<script>
-    const ui = SwaggerUIBundle({
-    url: 'swagger.yaml',
-    dom_id: '#swagger-ui',
-    })
-</script>
+<p>'/data/upload':
+    post:
+      summary: upload
+      tags:
+        - data-access
+      parameters:
+        - in: query
+          name: id_delimiter
+          description: data delimiter
+          required: false
+          schema:
+            type: string
+            example: ","
+        - in: query
+          name: head
+          description: data head
+          required: true
+          schema:
+            type: integer
+            example: 0, 1
+        - in: query
+          name: partition
+          description: compoting table partitions
+          required: true
+          schema:
+            type: integer
+            example: 16, ...
+        - in: query
+          name: table_name
+          description: fate table name
+          required: true
+          schema:
+            type: string
+            example: breast_hetero_guest
+        - in: query
+          name: namespace
+          description: fate table namespace
+          required: true
+          schema:
+            type: string
+            example: experiment
+        - in: query
+          name: storage_engine
+          description: data storage engin
+          required: false
+          schema:
+            type: string
+            example: eggroll, localfs, hdfs, ...
+        - in: query
+          name: destory
+          description: destory old table and upload new table
+          required: false
+          schema:
+            type: integer
+            example: 0, 1
+        - in: query
+          name: extend_sid
+          description: extend sid to first column
+          required: false
+          schema:
+            type: integer
+            example: 0, 1
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: upload success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: {
+                "board_url": "<a href="http://xxx:8080/index.html#/dashboard?job_id=xxx&amp;role=local&amp;party_id=0">http://xxx:8080/index.html#/dashboard?job_id=xxx&amp;role=local&amp;party_id=0</a>",
+                "code": 0,
+                "dsl_path": "/data/projects/fate/fateflow/jobs/xxx/job_dsl.json",
+                "job_id": "xxx",
+                "logs_directory": "/data/projects/fate/fateflow/logs/xxx",
+                "message": "success",
+                "model_info": {
+                  "model_id": "local-0#model",
+                  "model_version": "xxx"
+                },
+                "namespace": "experiment",
+                "pipeline_dsl_path": "/data/projects/fate/fateflow/jobs/xxx/pipeline_dsl.json",
+                "runtime_conf_on_party_path": "/data/projects/fate/fateflow/jobs/xxx/local/0/job_runtime_on_party_conf.json",
+                "runtime_conf_path": "/data/projects/fate/fateflow/jobs/xxx/job_runtime_conf.json",
+                "table_name": "breast_hetero_guest",
+                "train_runtime_conf_path": "/data/projects/fate/fateflow/jobs/xxx/train_runtime_conf.json"
+              }
+        '404':
+          description: upload failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: required parameters are missing
+  '/data/download':
+    post:
+      summary: download data
+      tags:
+        - data-access
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - table_name
+                - namespace
+                - output_path
+              properties:
+                table_name:
+                  type: string
+                  example: breast_hetero_guest
+                namespace:
+                  type: string
+                  example: experiment
+                output_path:
+                  type: string
+                  example: /data/projects/fate/fateflow/experiment_download_breast_guest.csv
+                delimiter:
+                  type: string
+                  example: ","
+      responses:
+        '200':
+          description: download success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: {
+            "board_url": "<a href="http://xxx:8080/index.html#/dashboard?job_id=xxx&amp;role=local&amp;party_id=0">http://xxx:8080/index.html#/dashboard?job_id=xxx&amp;role=local&amp;party_id=0</a>",
+            "code": 0,
+            "dsl_path": "/data/projects/fate/fateflow/jobs/xxx/job_dsl.json",
+            "job_id": "xxx",
+            "logs_directory": "/data/projects/fate/fateflow/logs/xxx",
+            "message": "success",
+            "model_info": {
+              "model_id": "local-0#model",
+              "model_version": "xxx"
+            },
+            "namespace": "experiment",
+            "pipeline_dsl_path": "/data/projects/fate/fateflow/jobs/xxx/pipeline_dsl.json",
+            "runtime_conf_on_party_path": "/data/projects/fate/fateflow/jobs/xxx/local/0/job_runtime_on_party_conf.json",
+            "runtime_conf_path": "/data/projects/fate/fateflow/jobs/xxx/job_runtime_conf.json",
+            "table_name": "breast_hetero_guest",
+            "train_runtime_conf_path": "/data/projects/fate/fateflow/jobs/xxx/train_runtime_conf.json"
+          }
+        '404':
+          description: download failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: required parameters are missing
+  '/data/upload/history':
+    post:
+      summary: history of upload job info
+      tags:
+        - data-access
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_id:
+                  type: string
+                  example: 202103241706521313480
+                limit:
+                  type: integer
+                  description: limit output
+                  example: 1
+      responses:
+        '200':
+          description: get success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: [{
+                              "202103241706521313480": {
+                                  "notes": "",
+                                  "schema": {
+                                      "header": "y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9",
+                                      "sid": "id"
+                                  },
+                                  "upload_info": {
+                                      "namespace": "experiment",
+                                      "partition": 4,
+                                      "table_name": "breast_hetero_guest",
+                                      "upload_count": 569
+                                  }
+                              }
+                          }
+                      ]</p>
+<div class="highlight"><pre><span></span><code>    &#39;404&#39;:
+      description: get failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 100
+              retmsg:
+                type: string
+                example: server error
+</code></pre></div>
+<p>'/table/bind':
+    post:
+      summary: bind a storage address to fate table
+      tags:
+        - table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - engine
+                - address
+                - namespace
+                - name
+                - head
+                - id_delimiter
+                - partitions
+              properties:
+                engine:
+                  type: string
+                  example: mysql
+                name:
+                  type: string
+                  example: breast_hetero_guest
+                namespace:
+                  type: string
+                  example: experiment
+                address:
+                  type: object
+                  description: storage address
+                  example:
+                    user: fate
+                    passwd: fate
+                    host: 127.0.0.1
+                    port: 3306
+                    db: xxx
+                    name: xxx
+                partitions:
+                  type: integer
+                  description: fate computing table partitions
+                  example: 16
+                head:
+                  type: integer
+                  description: 1 means data have head
+                  example: 0,1
+                id_delimiter:
+                  type: string
+                  description: data table or intermediate storage table delimiter
+                  example: ","
+                in_serialized:
+                  type: integer
+                  description: data serialized, standlone/eggroll/mysql/path storage default 1, others default 0
+                  example: 0, 1
+                drop:
+                  type: integer
+                  description: if table is exist, will delete it
+                  example: 0,1
+                id_column:
+                  type: string
+                  example: "id"
+                feature_column:
+                  type: string
+                  description: delimited by ","
+                  example: x1,x2,x3</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: bind table success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+                properties:
+                  table_name:
+                    type: string
+                    example: breast_hetero_guest
+                  namespace:
+                    type: string
+                    example: experiment
+    &#39;404&#39;:
+      description: bind table failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 100
+              retmsg:
+                type: string
+                example: engine xxx address xxx check failed
+</code></pre></div>
+<p>'/table/delete':
+    post:
+      summary: delete fate table
+      tags:
+        - table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - table_name
+                - namespace
+              properties:
+                table_name:
+                  type: string
+                  example: breast_hetero_guest
+                namespace:
+                  type: string
+                  example: experiment
+      responses:
+        '200':
+          description: delete table success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      table_name:
+                        type: string
+                        example: breast_hetero_guest
+                      namespace:
+                        type: string
+                        example: experiment
+        '404':
+          description: delete table failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: no find table
+  '/table/list':
+    post:
+      summary: get job all tables
+      tags:
+        - table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+                - role
+                - party_id
+              properties:
+                job_id:
+                  type: string
+                  example: 202101251515021092240
+                role:
+                  type: string
+                  example: guest
+                party_id:
+                  type: string
+                  example: 10000
+      responses:
+        '200':
+          description: get tables success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: {"Reader_0":{"input":{"table":{"name":"xxx","namespace":"xxxx"}},"output":{"data_0":{"name":"xxx","namespace":"xxx"}}},"DataIO_0":{"input":{"Reader_0.data_0":{"name":"xxx","namespace":"xxx"}},"output":{"data_0":{"name":"xxx","namespace":"xxx"}}},"Intersection_0":{"input":{"DataIO_0.data_0":{"name":"xxx","namespace":"xxx"}},"output":{"data_0":{"name":"xxx","namespace":"xxx"}}}}</p>
+<div class="highlight"><pre><span></span><code>    &#39;404&#39;:
+      description: delete table failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find table
+</code></pre></div>
+<p>'/table/table_info':
+    post:
+      summary: query table info
+      tags:
+        - table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - table_name
+                - namespace
+              properties:
+                table_name:
+                  type: string
+                  example: breast_hetero_guest
+                namespace:
+                  type: string
+                  example: experiment</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: get tables success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+                example: {
+    &quot;address&quot;: {xxx},
+    &quot;count&quot;: 569,
+    &quot;exist&quot;: 1,
+    &quot;table_name&quot;: &quot;breast_hetero_guest&quot;,
+    &quot;namespace&quot;: &quot;experiment&quot;,
+    &quot;partition&quot;: 16,
+    &quot;schema&quot;: {&quot;sid&quot;: &quot;id&quot;, &quot;header&quot;: &quot;id, y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9&quot;}
+}
+
+    &#39;404&#39;:
+      description: query table failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find table
+</code></pre></div>
+<p>'/table/tracking/source':
+    post:
+      summary: tracking table source
+      tags:
+        - table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - table_name
+                - namespace
+              properties:
+                table_name:
+                  type: string
+                  example: breast_hetero_guest
+                namespace:
+                  type: string
+                  example: experiment</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: tracking success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+                example: [{&quot;parent_table_name&quot;:&quot;xxx&quot;,&quot;parent_table_namespace&quot;:&quot;xxx&quot;,&quot;source_table_name&quot;:&quot;xxx&quot;,&quot;source_table_namespace&quot;:&quot;xxx&quot;}]
+    &#39;404&#39;:
+      description: tracking failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find table
+</code></pre></div>
+<p>'/table/tracking/job':
+    post:
+      summary: tracking using table job
+      tags:
+        - table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - table_name
+                - namespace
+              properties:
+                table_name:
+                  type: string
+                  example: breast_hetero_guest
+                namespace:
+                  type: string
+                  example: experiment</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: tracking success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+                example: {&quot;count&quot;:5,&quot;job&quot;:[&quot;202104212104472450460&quot;,&quot;202104212127150470680&quot;,&quot;202104220937051579910&quot;,&quot;202104212038599210200&quot;,&quot;202104212131462630720&quot;]}
+    &#39;404&#39;:
+      description: tracking failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find table
+</code></pre></div>
+<p>'/job/submit':
+    post:
+      summary: submit job
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dsl
+                - runtime_conf
+              properties:
+                dsl:
+                  type: object
+                  example: {
+                    "components": {
+                      "reader_0": {
+                        "module": "Reader",
+                        "output": {
+                          "data": [
+                            "table"
+                          ]
+                        }
+                      },
+                      "dataio_0": {
+                        "module": "DataIO",
+                        "input": {
+                          "data": {
+                            "data": [
+                              "reader_0.table"
+                            ]
+                          }
+                        },
+                        "output": {
+                          "data": [
+                            "train"
+                          ],
+                          "model": [
+                            "dataio"
+                          ]
+                        },
+                        "need_deploy": true
+                      },
+                      "intersection_0": {
+                        "module": "Intersection",
+                        "input": {
+                          "data": {
+                            "data": [
+                              "dataio_0.train"
+                            ]
+                          }
+                        },
+                        "output": {
+                          "data": [
+                            "train"
+                          ]
+                        }
+                      },
+                      "hetero_feature_binning_0": {
+                        "module": "HeteroFeatureBinning",
+                        "input": {
+                          "data": {
+                            "data": [
+                              "intersection_0.train"
+                            ]
+                          }
+                        },
+                        "output": {
+                          "data": [
+                            "train"
+                          ],
+                          "model": [
+                            "hetero_feature_binning"
+                          ]
+                        }
+                      },
+                      "hetero_feature_selection_0": {
+                        "module": "HeteroFeatureSelection",
+                        "input": {
+                          "data": {
+                            "data": [
+                              "hetero_feature_binning_0.train"
+                            ]
+                          },
+                          "isometric_model": [
+                            "hetero_feature_binning_0.hetero_feature_binning"
+                          ]
+                        },
+                        "output": {
+                          "data": [
+                            "train"
+                          ],
+                          "model": [
+                            "selected"
+                          ]
+                        }
+                      },
+                      "hetero_lr_0": {
+                        "module": "HeteroLR",
+                        "input": {
+                          "data": {
+                            "train_data": [
+                              "hetero_feature_selection_0.train"
+                            ]
+                          }
+                        },
+                        "output": {
+                          "data": [
+                            "train"
+                          ],
+                          "model": [
+                            "hetero_lr"
+                          ]
+                        }
+                      },
+                      "evaluation_0": {
+                        "module": "Evaluation",
+                        "input": {
+                          "data": {
+                            "data": [
+                              "hetero_lr_0.train"
+                            ]
+                          }
+                        },
+                        "output": {
+                          "data": [
+                            "evaluate"
+                          ]
+                        }
+                      }
+                    }
+                  }</p>
+<div class="highlight"><pre><span></span><code>            runtime_conf:
+              type: object
+              example: {
+                &quot;dsl_version&quot;: &quot;2&quot;,
+                &quot;initiator&quot;: {
+                  &quot;role&quot;: &quot;guest&quot;,
+                  &quot;party_id&quot;: 9999
+                },
+                &quot;role&quot;: {
+                  &quot;guest&quot;: [9999],
+                  &quot;host&quot;: [10000],
+                  &quot;arbiter&quot;: [10000]
+                },
+                &quot;job_parameters&quot;: {
+                  &quot;common&quot;: {
+                    &quot;task_parallelism&quot;: 2,
+                    &quot;computing_partitions&quot;: 8,
+                    &quot;task_cores&quot;: 4,
+                    &quot;auto_retries&quot;: 1
+                  }
+                },
+                &quot;component_parameters&quot;: {
+                  &quot;common&quot;: {
+                    &quot;intersection_0&quot;: {
+                      &quot;intersect_method&quot;: &quot;raw&quot;,
+                      &quot;sync_intersect_ids&quot;: true,
+                      &quot;only_output_key&quot;: false
+                    },
+                    &quot;hetero_lr_0&quot;: {
+                      &quot;penalty&quot;: &quot;L2&quot;,
+                      &quot;optimizer&quot;: &quot;rmsprop&quot;,
+                      &quot;alpha&quot;: 0.01,
+                      &quot;max_iter&quot;: 3,
+                      &quot;batch_size&quot;: 320,
+                      &quot;learning_rate&quot;: 0.15,
+                      &quot;init_param&quot;: {
+                        &quot;init_method&quot;: &quot;random_uniform&quot;
+                      }
+                    }
+                  },
+                  &quot;role&quot;: {
+                    &quot;guest&quot;: {
+                      &quot;0&quot;: {
+                        &quot;reader_0&quot;: {
+                          &quot;table&quot;: {
+                            &quot;name&quot;: &quot;breast_hetero_guest&quot;,
+                            &quot;namespace&quot;: &quot;experiment&quot;
+                          }
+                        },
+                        &quot;dataio_0&quot;: {
+                          &quot;with_label&quot;: true,
+                          &quot;label_name&quot;: &quot;y&quot;,
+                          &quot;label_type&quot;: &quot;int&quot;,
+                          &quot;output_format&quot;: &quot;dense&quot;
+                        }
+                      }
+                    },
+                    &quot;host&quot;: {
+                      &quot;0&quot;: {
+                        &quot;reader_0&quot;: {
+                          &quot;table&quot;: {
+                            &quot;name&quot;: &quot;breast_hetero_host&quot;,
+                            &quot;namespace&quot;: &quot;experiment&quot;
+                          }
+                        },
+                        &quot;dataio_0&quot;: {
+                          &quot;with_label&quot;: false,
+                          &quot;output_format&quot;: &quot;dense&quot;
+                        },
+                        &quot;evaluation_0&quot;: {&quot;need_run&quot;: false}
+                      }
+                    }
+                  }
+                }
+              }
+  responses:
+    &#39;200&#39;:
+      description: submit job success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+                example: {&quot;board_url&quot;:&quot;xxx&quot;,&quot;code&quot;:0,&quot;dsl_path&quot;:&quot;xxx&quot;,&quot;job_id&quot;:&quot;xxx&quot;,&quot;logs_directory&quot;:&quot;xxx&quot;,&quot;message&quot;:&quot;success&quot;,&quot;model_info&quot;:{&quot;model_id&quot;:&quot;xxx&quot;,&quot;model_version&quot;:&quot;xxx&quot;},&quot;pipeline_dsl_path&quot;:&quot;xxx&quot;,&quot;runtime_conf_on_party_path&quot;:&quot;xxx&quot;,&quot;runtime_conf_path&quot;:&quot;xxx&quot;,&quot;train_runtime_conf_path&quot;:&quot;xxx&quot;}
+    &#39;404&#39;:
+      description: submit job failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: &quot;config error&quot;
+</code></pre></div>
+<p>'/job/stop':
+    post:
+      summary: stop job
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+              properties:
+                job_id:
+                  type: string
+                  example: 202103231958539401540
+                stop_status:
+                  type: string
+                  default: cancel
+                  example: "failed"
+                  description: "failed or cancel"</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: stop job success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+    &#39;404&#39;:
+      description: stop job failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find job
+</code></pre></div>
+<p>'/job/rerun':
+    post:
+      summary: rerun job
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+              properties:
+                job_id:
+                  type: string
+                  example: 202103231958539401540</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: rerun job success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+    &#39;404&#39;:
+      description: rerun job failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find job
+</code></pre></div>
+<p>'/job/query':
+    post:
+      summary: query job
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+              properties:
+                job_id:
+                  type: string
+                  example: xxx</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: query job success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+                example: [
+                  {
+                    &quot;f_apply_resource_time&quot;: xxx,
+                    &quot;f_cancel_signal&quot;: false,
+                    &quot;f_cancel_time&quot;: xxx,
+                    &quot;f_cores&quot;: 8,
+                    &quot;f_create_date&quot;: &quot;xxx&quot;,
+                    &quot;f_create_time&quot;: xxx,
+                    &quot;f_description&quot;: &quot;&quot;,
+                    &quot;f_dsl&quot;: {},
+                    &quot;f_elapsed&quot;: 14380,
+                    &quot;f_end_date&quot;: &quot;xxx&quot;,
+                    &quot;f_end_scheduling_updates&quot;: 1,
+                    &quot;f_end_time&quot;: xxx,
+                    &quot;f_engine_name&quot;: &quot;EGGROLL&quot;,
+                    &quot;f_engine_type&quot;: &quot;computing&quot;,
+                    &quot;f_initiator_party_id&quot;: &quot;20001&quot;,
+                    &quot;f_initiator_role&quot;: &quot;guest&quot;,
+                    &quot;f_is_initiator&quot;: true,
+                    &quot;f_job_id&quot;: &quot;xxx&quot;,
+                    &quot;f_memory&quot;: 0,
+                    &quot;f_name&quot;: &quot;&quot;,
+                    &quot;f_party_id&quot;: &quot;20001&quot;,
+                    &quot;f_progress&quot;: 14,
+                    &quot;f_ready_signal&quot;: false,
+                    &quot;f_ready_time&quot;: null,
+                    &quot;f_remaining_cores&quot;: 8,
+                    &quot;f_remaining_memory&quot;: 0,
+                    &quot;f_rerun_signal&quot;: false,
+                    &quot;f_resource_in_use&quot;: false,
+                    &quot;f_return_resource_time&quot;: xxx,
+                    &quot;f_role&quot;: &quot;guest&quot;,
+                    &quot;f_roles&quot;: {},
+                    &quot;f_runtime_conf&quot;: {},
+                    &quot;f_runtime_conf_on_party&quot;: {},
+                    &quot;f_start_date&quot;: &quot;xxx&quot;,
+                    &quot;f_start_time&quot;: xxx,
+                    &quot;f_status&quot;: &quot;failed&quot;,
+                    &quot;f_status_code&quot;: null,
+                    &quot;f_tag&quot;: &quot;job_end&quot;,
+                    &quot;f_train_runtime_conf&quot;: {},
+                    &quot;f_update_date&quot;: &quot;xxx&quot;,
+                    &quot;f_update_time&quot;: xxx,
+                    &quot;f_user&quot;: {},
+                    &quot;f_user_id&quot;: &quot;&quot;
+                  }
+                ]
+    &#39;404&#39;:
+      description: query job failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find job
+</code></pre></div>
+<p>'/job/list/job':
+    post:
+      summary: get job list
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: string
+                  example: 10</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: get job list success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+    &#39;404&#39;:
+      description: get job list failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find job
+</code></pre></div>
+<p>'/job/update':
+    post:
+      summary: job notes
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+                - role
+                - party_id
+                - notes
+              properties:
+                job_id:
+                  type: string
+                  example: "2022xxx"
+                role:
+                  type: string
+                  example: guest
+                party_id:
+                  type: integer
+                  example: 10000
+                notes:
+                  type: string
+                  example: this is a test</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+    &#39;404&#39;:
+      description: failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find job
+</code></pre></div>
+<p>'/job/parameter/update':
+    post:
+      summary: update job parameter
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+              properties:
+                job_id:
+                  type: string
+                  example: "2022xxx"
+                component_parameters:
+                  type: object
+                  example: {"common": {"hetero_lr_0": {"max_iter": 10}}}
+                job_parameters:
+                  type: object
+                  example: {"common": {"auto_retries": 2}}</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+                example: {
+                  &quot;component_parameters&quot;:{&quot;common&quot;:{&quot;hetero_lr_0&quot;:{&quot;alpha&quot;:0.01,&quot;batch_size&quot;:320,&quot;init_param&quot;:{&quot;init_method&quot;:&quot;random_uniform&quot;},&quot;learning_rate&quot;:0.15,&quot;max_iter&quot;:10,&quot;optimizer&quot;:&quot;rmsprop&quot;,&quot;penalty&quot;:&quot;L2&quot;},&quot;intersection_0&quot;:{&quot;intersect_method&quot;:&quot;raw&quot;,&quot;only_output_key&quot;:false,&quot;sync_intersect_ids&quot;:true}},&quot;role&quot;:{&quot;guest&quot;:{&quot;0&quot;:{&quot;dataio_0&quot;:{&quot;label_name&quot;:&quot;y&quot;,&quot;label_type&quot;:&quot;int&quot;,&quot;output_format&quot;:&quot;dense&quot;,&quot;with_label&quot;:true},&quot;reader_0&quot;:{&quot;table&quot;:{&quot;name&quot;:&quot;breast_hetero_guest&quot;,&quot;namespace&quot;:&quot;experiment&quot;}}}},&quot;host&quot;:{&quot;0&quot;:{&quot;dataio_0&quot;:{&quot;output_format&quot;:&quot;dense&quot;,&quot;with_label&quot;:false},&quot;evaluation_0&quot;:{&quot;need_run&quot;:false},&quot;reader_0&quot;:{&quot;table&quot;:{&quot;name&quot;:&quot;breast_hetero_host&quot;,&quot;namespace&quot;:&quot;experiment&quot;}}}}}},&quot;components&quot;:[],&quot;job_parameters&quot;:{&quot;common&quot;:{&quot;adaptation_parameters&quot;:{&quot;if_initiator_baseline&quot;:true,&quot;request_task_cores&quot;:4,&quot;task_cores_per_node&quot;:4,&quot;task_memory_per_node&quot;:0,&quot;task_nodes&quot;:1},&quot;auto_retries&quot;:2,&quot;auto_retry_delay&quot;:1,&quot;computing_engine&quot;:&quot;EGGROLL&quot;,&quot;computing_partitions&quot;:4,&quot;eggroll_run&quot;:{},&quot;engines_address&quot;:{},&quot;federated_mode&quot;:&quot;MULTIPLE&quot;,&quot;federated_status_collect_type&quot;:&quot;PUSH&quot;,&quot;inheritance_info&quot;:{},&quot;job_type&quot;:&quot;train&quot;,&quot;model_id&quot;:&quot;arbiter-10001#guest-20001#host-10001#model&quot;,&quot;model_version&quot;:&quot;202204251958539401540&quot;,&quot;pulsar_run&quot;:{},&quot;rabbitmq_run&quot;:{},&quot;spark_run&quot;:{},&quot;task_parallelism&quot;:1}},&quot;src_party_id&quot;:&quot;20001&quot;,&quot;src_role&quot;:&quot;guest&quot;}
+    &#39;404&#39;:
+      description: failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find job
+</code></pre></div>
+<p>'/job/config':
+    post:
+      summary: job config
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+              properties:
+                job_id:
+                  type: string
+                  example: "2022xxx"
+                role:
+                  type: string
+                  example: guest
+                party_id:
+                  type: integer
+                  example: 10000</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+                example: {&quot;job_id&quot;: &quot;xxx&quot;, &quot;dsl&quot;: {}, &quot;runtime_conf&quot;: {}, &quot;train_runtime_conf&quot;: {}, &quot;model_info&quot;: {}}
+    &#39;404&#39;:
+      description: failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find job
+</code></pre></div>
+<p>'/job/log/download':
+    post:
+      summary: download job log (tar.gz)
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+              properties:
+                job_id:
+                  type: string
+                  example: "xxx"
+      responses:
+        '200':
+          description: get job log success
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                example: ""
+                description: file xxx_log.tar.gz</p>
+<div class="highlight"><pre><span></span><code>    &#39;404&#39;:
+      description: get job list failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 404
+              retmsg:
+                type: string
+                example: Log file path xxx not found. Please check if the job id is valid.
+</code></pre></div>
+<p>'/job/log/path':
+    post:
+      summary: job log path
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+              properties:
+                job_id:
+                  type: string
+                  example: "xxx"</p>
+<div class="highlight"><pre><span></span><code>  responses:
+    &#39;200&#39;:
+      description: success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 0
+              retmsg:
+                type: string
+                example: success
+              data:
+                type: object
+                example: {&quot;logs_directory&quot;:&quot;/data/projects/fate/fateflow/logs/xxx&quot;}
+    &#39;404&#39;:
+      description: failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              retcode:
+                type: integer
+                example: 101
+              retmsg:
+                type: string
+                example: no find job
+</code></pre></div>
+<p>'/job/task/query':
+    post:
+      summary: query task
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - job_id
+              properties:
+                job_id:
+                  type: string
+                  example: "xxx"
+                role:
+                  type: string
+                  example: guest
+                party_id:
+                  type: integer
+                  example: 10000
+                component_name:
+                  type: string
+                  example: reader_0
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: [{}]
+                    description: "[{task_info}]"
+        '404':
+          description: failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: no find task
+  '/job/list/task':
+    post:
+      summary: get task list
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  example: 5
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: {"count": 5, "tasks": [{},{},{},{},{}]}
+                    description: "[{task_info}]"
+        '404':
+          description: failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: no find task
+  '/job/clean':
+    post:
+      summary: clean job
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - job_id
+              type: object
+              properties:
+                job_id:
+                  type: string
+                  example: xxx
+                role:
+                  type: string
+                  example: guest
+                party_id:
+                  type: integer
+                  example: 10000
+                component_name:
+                  type: string
+                  example: reader_0
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+        '404':
+          description: failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: no find task
+  '/job/clean/queue':
+    post:
+      summary: cancel waiting job
+      tags:
+        - job
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: {"202204261616186991350":0,"202204261616198643190":0,"202204261616210073410":0}
+        '404':
+          description: failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: server error</p>
+<p>tags:
+  - name: data-access
+  - name: table
+  - name: job</p>
+<p>servers:
+  - description: Default Server URL
+    url: <a href="http://localhost:9380/v1">http://localhost:9380/v1</a></p>
 
               
             </article>
