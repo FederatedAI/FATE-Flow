@@ -1,0 +1,1103 @@
+openapi: 3.0.3
+info:
+  version: '1.8.0'
+  title: Fate Flow
+
+paths:
+  '/info/fateboard':
+    post:
+      summary: get fateboard host and port
+      tags:
+        - information
+      responses:
+        '200':
+          description: fateboard host and port
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      host:
+                        type: string
+                        example: 127.0.0.1
+                      port:
+                        type: integer
+                        example: 8080
+        '404':
+          description: fateboard is not configured
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 404
+                  retmsg:
+                    type: string
+                    example: fateboard is not configured
+
+  '/model/deploy':
+    post:
+      summary: deploy a model for predict
+      tags:
+        - model
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - model_id
+                - model_version
+              properties:
+                model_id:
+                  type: string
+                  example: 'arbiter-10000#guest-9999#host-10000#model'
+                model_version:
+                  type: string
+                  example: '202111032155391167400'
+                components_checkpoint:
+                  type: object
+                  description: specify a checkpoint model to replace the pipeline model
+                  example:
+                    hetero_lr_0:
+                      step_index: 5
+                  additionalProperties:
+                    type: object
+                    description: use step_index or step_name to specity a checkpoint
+                    properties:
+                      step_index:
+                        type: integer
+                        example: 5
+                      step_name:
+                        type: string
+                        example: round_5
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      model_id:
+                        type: string
+                        example: 'arbiter-9999#guest-10000#host-9999#model'
+                      model_version:
+                        type: string
+                        example: '202111032227378766180'
+                      arbiter:
+                        type: object
+                        properties:
+                          party_id:
+                            type: integer
+                            example: 9999
+                      guest:
+                        type: object
+                        properties:
+                          party_id:
+                            type: integer
+                            example: 10000
+                      host:
+                        type: object
+                        properties:
+                          party_id:
+                            type: integer
+                            example: 9999
+                      detail:
+                        type: object
+                        properties:
+                          arbiter:
+                            type: object
+                            properties:
+                              party_id:
+                                type: object
+                                properties:
+                                  retcode:
+                                    type: integer
+                                    example: 0
+                                  retmsg:
+                                    type: string
+                                    example: deploy model of role arbiter 9999 success
+                          guest:
+                            type: object
+                            properties:
+                              party_id:
+                                type: object
+                                properties:
+                                  retcode:
+                                    type: integer
+                                    example: 0
+                                  retmsg:
+                                    type: string
+                                    example: deploy model of role guest 10000 success
+                          host:
+                            type: object
+                            properties:
+                              party_id:
+                                type: object
+                                properties:
+                                  retcode:
+                                    type: integer
+                                    example: 0
+                                  retmsg:
+                                    type: string
+                                    example: deploy model of role host 9999 success
+
+  '/model/transfer/{model_id}/{model_version}':
+    post:
+      summary: download a model by model_id and model_version
+      tags:
+        - model
+      parameters:
+        - name: model_id
+          in: path
+          required: true
+          description: 'model id (replace # with ~)'
+          schema:
+            type : string
+            example: 'host~10000~arbiter-10000~guest-9999~host-10000~model'
+        - name: model_version
+          in: path
+          required: true
+          description: model version
+          schema:
+            type : string
+            example: '202105060929263278441'
+      responses:
+        '200':
+          description: model data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    description: base64 encoded model data
+        '404':
+          description: model not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 404
+                  retmsg:
+                    type: string
+                    example: model not found
+
+  '/checkpoint/list':
+    post:
+      summary: list checkpoints
+      tags:
+        - checkpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - model_id
+                - model_version
+                - role
+                - party_id
+                - component_name
+              properties:
+                model_id:
+                  type: string
+                  example: 'arbiter-10000#guest-9999#host-10000#model'
+                model_version:
+                  type: string
+                  example: '202111032155391167400'
+                role:
+                  type: string
+                  example: guest
+                party_id:
+                  type: integer
+                  example: 9999
+                component_name:
+                  type: string
+                  example: hetero_lr_0
+      responses:
+        '200':
+          description: checkpoints list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        create_time:
+                          type: string
+                          example: '2021-11-07T02:34:54.683015'
+                        step_index:
+                          type: integer
+                          example: 0
+                        step_name:
+                          type: string
+                          example: step_name
+                        models:
+                          type: object
+                          example:
+                            HeteroLogisticRegressionMeta:
+                              buffer_name: LRModelMeta
+                              sha1: 6871508f6e6228341b18031b3623f99a53a87147
+                            HeteroLogisticRegressionParam:
+                              buffer_name: LRModelParam
+                              sha1: e3cb636fc93675684bff27117943f5bfa87f3029
+                          additionalProperties:
+                            type: object
+                            properties:
+                              buffer_name:
+                                type: string
+                                example: HeteroLogisticRegressionMeta
+                              sha1:
+                                type: string
+                                example: 6871508f6e6228341b18031b3623f99a53a87147
+
+  '/checkpoint/get':
+    post:
+      summary: get a checkpoint
+      tags:
+        - checkpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - model_id
+                - model_version
+                - role
+                - party_id
+                - component_name
+              properties:
+                model_id:
+                  type: string
+                  example: 'arbiter-10000#guest-9999#host-10000#model'
+                model_version:
+                  type: string
+                  example: '202111032155391167400'
+                role:
+                  type: string
+                  example: guest
+                party_id:
+                  type: integer
+                  example: 9999
+                component_name:
+                  type: string
+                  example: hetero_lr_0
+                step_index:
+                  type: integer
+                  example: 0
+      responses:
+        '200':
+          description: checkpoint data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      create_time:
+                        type: string
+                        example: '2021-11-07T02:34:54.683015'
+                      step_index:
+                        type: integer
+                        example: 0
+                      step_name:
+                        type: string
+                        example: step_name
+                      models:
+                        type: object
+                        example:
+                          HeteroLogisticRegressionMeta: 'CgJMMhEtQxzr4jYaPxkAAAAAAADwPyIHcm1zcHJvcDD///////////8BOTMzMzMzM8M/QApKBGRpZmZYAQ=='
+                          HeteroLogisticRegressionParam: 'Ig0KAng3EW1qASu+uuO/Ig0KAng0EcNi7a65ReG/Ig0KAng4EbJbl4gvVea/Ig0KAng2EcZwlVZTkOu/Ig0KAngwEVpG8dCbGvG/Ig0KAng5ESJNTx5MLve/Ig0KAngzEZ88H9P8qfO/Ig0KAng1EVfWP8JJv/K/Ig0KAngxEVS0xVXoTem/Ig0KAngyEaApgW32Q/K/KSiiE8AukPs/MgJ4MDICeDEyAngyMgJ4MzICeDQyAng1MgJ4NjICeDcyAng4MgJ4OUj///////////8B'
+                        additionalProperties:
+                          type: string
+                          description: base64 encoded model data
+        '404':
+          description: checkpoint not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 404
+                  retmsg:
+                    type: string
+                    example: The checkpoint was not found.
+
+  '/component/validate':
+    post:
+      summary: validate component parameters
+      tags:
+        - component
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dsl_version:
+                  type: integer
+                  example: 2
+                component_name:
+                  type: string
+                  example: dataio_0
+                component_module_name:
+                  type: string
+                  example: DataIO
+                role:
+                  type: object
+                  example:
+                    guest:
+                      - 10000
+                    host:
+                      - 9999
+                    arbiter:
+                      - 9999
+                component_parameters:
+                  type: object
+                  description: 'required if `dsl_version` == 2'
+                  example:
+                    common:
+                      dataio_0:
+                        output_format: dense
+                      role:
+                        guest:
+                          '0':
+                            dataio_0:
+                              with_label: true
+                        host:
+                          '0':
+                            dataio_0:
+                              with_label: false
+                              output_format: dense
+                role_parameters:
+                  type: object
+                  description: 'required if `dsl_version` == 1'
+                  example:
+                    guest:
+                      dataio_0:
+                        with_label:
+                          - true
+                        label_name:
+                          - y
+                        label_type:
+                          - int
+                        output_format:
+                          - dense
+                        missing_fill:
+                          - true
+                        outlier_replace:
+                          - true
+                    host:
+                      dataio_0:
+                        with_label:
+                          - false
+                        output_format:
+                          - dense
+                        outlier_replace:
+                          - true
+                algorithm_parameters:
+                  type: object
+                  description: 'required if `dsl_version` == 1'
+                  example:
+                    hetero_feature_binning_0:
+                      method: quantile
+                      compress_thres: 10000
+                      head_size: 10000
+                      error: 0.001
+                      bin_num: 10
+                      adjustment_factor: 0.5
+                      local_only: false
+                      transform_param:
+                        transform_cols: -1
+                        transform_type: bin_num
+      responses:
+        '200':
+          description: validation passed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+        '400':
+          description: validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 400
+                  retmsg:
+                    type: string
+                    description: error message
+                    example: "Component dataio_0, module DataIO, does not pass component check, error msg is dataio param's dendse not supported, should be one of ['dense', 'sparse']"
+
+  '/job/list/job':
+    post:
+      summary: list jobs
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: '`0` means no limit'
+                  example: 20
+                page:
+                  type: integer
+                  example: 1
+                job_id:
+                  type: string
+                  example: '202112020129140220090'
+                party_id:
+                  type: integer
+                  example: 9999
+                role:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - guest
+                      - host
+                      - arbiter
+                      - local
+                status:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - success
+                      - running
+                      - waiting
+                      - failed
+                      - canceled
+                description:
+                  type: string
+                  description: '`notes` on front-end'
+                partner:
+                  type: string
+                  example: host
+                order_by:
+                  type: string
+                  description: 'defaults `create_time`'
+                  enum:
+                      - create_time
+                      - start_time
+                      - end_time
+                      - elapsed
+                order:
+                  type: string
+                  description: 'defaults `desc`'
+                  enum:
+                      - asc
+                      - desc
+      responses:
+        '200':
+          description: jobs list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        example: 1
+                      jobs:
+                        type: array
+                        items:
+                          type: object
+                          example:
+                            apply_resource_time: 1638379762883
+                            cancel_signal: false
+                            cancel_time:
+                            cores: 4
+                            create_date: '2021-12-02 01:29:18'
+                            create_time: 1638379758581
+                            description: ''
+                            dsl:
+                              components:
+                                dataio_0:
+                                  input:
+                                    data:
+                                      data:
+                                        - reader_0.data
+                                  module: DataIO
+                                  output:
+                                    data:
+                                      - data
+                                    model:
+                                      - model
+                                hetero_feature_binning_0:
+                                  input:
+                                    data:
+                                      data:
+                                        - intersection_0.data
+                                  module: HeteroFeatureBinning
+                                  output:
+                                    data:
+                                      - data
+                                    model:
+                                      - model
+                                intersection_0:
+                                  input:
+                                    data:
+                                      data:
+                                        - dataio_0.data
+                                  module: Intersection
+                                  output:
+                                    cache:
+                                      - cache
+                                    data:
+                                      - data
+                                reader_0:
+                                  module: Reader
+                                  output:
+                                    data:
+                                      - data
+                                  provider: fate_flow@1.7.0
+                            elapsed: 116548
+                            end_date: '2021-12-02 01:31:19'
+                            end_scheduling_updates: 1
+                            end_time: 1638379879547
+                            engine_name: STANDALONE
+                            engine_type: computing
+                            initiator_party_id: '10000'
+                            initiator_role: guest
+                            is_initiator: true
+                            job_id: '202112020129140220090'
+                            memory: 0
+                            name: ''
+                            partners:
+                              - 9999
+                            party_id: 10000
+                            progress: 100
+                            ready_signal: false
+                            ready_time:
+                            remaining_cores: 4
+                            remaining_memory: 0
+                            rerun_signal: false
+                            resource_in_use: false
+                            return_resource_time: 1638379879568
+                            role: guest
+                            roles:
+                              guest:
+                                - 10000
+                              host:
+                                - 9999
+                            runtime_conf:
+                              component_parameters:
+                                common:
+                                  hetero_feature_binning_0:
+                                    adjustment_factor: 0.5
+                                    bin_indexes: -1
+                                    bin_names:
+                                    bin_num: 10
+                                    category_indexes:
+                                    category_names:
+                                    compress_thres: 10000
+                                    error: 0.001
+                                    head_size: 10000
+                                    local_only: false
+                                    method: quantile
+                                    transform_param:
+                                      transform_cols:
+                                        - 0
+                                        - 1
+                                        - 2
+                                      transform_names:
+                                      transform_type: woe
+                                role:
+                                  guest:
+                                    '0':
+                                      dataio_0:
+                                        with_label: true
+                                      reader_0:
+                                        table:
+                                          name: breast_hetero_guest
+                                          namespace: experiment
+                                  host:
+                                    '0':
+                                      dataio_0:
+                                        with_label: false
+                                      hetero_feature_binning_0:
+                                        transform_param:
+                                          transform_type:
+                                      reader_0:
+                                        table:
+                                          name: breast_hetero_host
+                                          namespace: experiment
+                              conf_path: "/tmp/tmp2zc5tf8b/job_runtime_conf.json"
+                              dsl_path: "/tmp/tmp2zc5tf8b/job_dsl.json"
+                              dsl_version: 2
+                              initiator:
+                                party_id: 10000
+                                role: guest
+                              job_parameters:
+                                common:
+                                  adaptation_parameters:
+                                    if_initiator_baseline: true
+                                    request_task_cores: 4
+                                    task_cores_per_node: 4
+                                    task_memory_per_node: 0
+                                    task_nodes: 1
+                                  auto_retries: 0
+                                  auto_retry_delay: 1
+                                  computing_engine: STANDALONE
+                                  computing_partitions: 4
+                                  eggroll_run: { }
+                                  engines_address: { }
+                                  federated_mode: SINGLE
+                                  federated_status_collect_type: PUSH
+                                  federation_engine: STANDALONE
+                                  job_type: train
+                                  model_id: guest-10000#host-9999#model
+                                  model_version: '202112020129140220090'
+                                  pulsar_run: { }
+                                  rabbitmq_run: { }
+                                  spark_run: { }
+                                  storage_engine: STANDALONE
+                                  task_parallelism: 1
+                              role:
+                                guest:
+                                  - 10000
+                                host:
+                                  - 9999
+                            runtime_conf_on_party:
+                              component_parameters:
+                                common:
+                                  hetero_feature_binning_0:
+                                    adjustment_factor: 0.5
+                                    bin_indexes: -1
+                                    bin_names:
+                                    bin_num: 10
+                                    category_indexes:
+                                    category_names:
+                                    compress_thres: 10000
+                                    error: 0.001
+                                    head_size: 10000
+                                    local_only: false
+                                    method: quantile
+                                    transform_param:
+                                      transform_cols:
+                                        - 0
+                                        - 1
+                                        - 2
+                                      transform_names:
+                                      transform_type: woe
+                                role:
+                                  guest:
+                                    '0':
+                                      dataio_0:
+                                        with_label: true
+                                      reader_0:
+                                        table:
+                                          name: breast_hetero_guest
+                                          namespace: experiment
+                                  host:
+                                    '0':
+                                      dataio_0:
+                                        with_label: false
+                                      hetero_feature_binning_0:
+                                        transform_param:
+                                          transform_type:
+                                      reader_0:
+                                        table:
+                                          name: breast_hetero_host
+                                          namespace: experiment
+                              conf_path: "/tmp/tmp2zc5tf8b/job_runtime_conf.json"
+                              dsl_path: "/tmp/tmp2zc5tf8b/job_dsl.json"
+                              dsl_version: 2
+                              initiator:
+                                party_id: 10000
+                                role: guest
+                              job_parameters:
+                                adaptation_parameters:
+                                  if_initiator_baseline: false
+                                  request_task_cores: 4
+                                  task_cores_per_node: 4
+                                  task_memory_per_node: 0
+                                  task_nodes: 1
+                                auto_retries: 0
+                                auto_retry_delay: 1
+                                computing_engine: STANDALONE
+                                computing_partitions: 4
+                                eggroll_run:
+                                  eggroll.session.processors.per.node: 4
+                                engines_address:
+                                  computing:
+                                    cores_per_node: 20
+                                    nodes: 1
+                                  federation:
+                                    cores_per_node: 20
+                                    nodes: 1
+                                  storage:
+                                    cores_per_node: 20
+                                    nodes: 1
+                                federated_mode: SINGLE
+                                federated_status_collect_type: PUSH
+                                federation_engine: STANDALONE
+                                job_type: train
+                                model_id: guest-10000#host-9999#model
+                                model_version: '202112020129140220090'
+                                pulsar_run: { }
+                                rabbitmq_run: { }
+                                spark_run: { }
+                                storage_engine: STANDALONE
+                                task_parallelism: 1
+                              role:
+                                guest:
+                                  - 10000
+                                host:
+                                  - 9999
+                            start_date: '2021-12-02 01:29:22'
+                            start_time: 1638379762999
+                            status: success
+                            status_code:
+                            tag: job_end
+                            train_runtime_conf: { }
+                            update_date: '2021-12-02 01:32:04'
+                            update_time: 1638379924749
+                            user:
+                              guest:
+                                '10000': ''
+                              host:
+                                '9999': ''
+                            user_id: ''
+
+  '/job/list/task':
+    post:
+      summary: list tasks
+      tags:
+        - job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: '`0` means no limit'
+                  example: 20
+                page:
+                  type: integer
+                  example: 1
+                job_id:
+                  type: string
+                  example: '202112020129140220090'
+                party_id:
+                  type: integer
+                  example: 9999
+                role:
+                  type: string
+                  enum:
+                    - guest
+                    - host
+                    - arbiter
+                    - local
+                component_name:
+                  type: string
+                  example: upload_0
+                order_by:
+                  type: string
+                  description: 'defaults `create_time`'
+                  enum:
+                      - create_time
+                      - start_time
+                      - end_time
+                      - elapsed
+                order:
+                  type: string
+                  description: 'defaults `asc`'
+                  enum:
+                      - asc
+                      - desc
+      responses:
+        '200':
+          description: jobs list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        example: 1
+                      tasks:
+                        type: array
+                        items:
+                          type: object
+                          example:
+                            auto_retries: 0
+                            auto_retry_delay: 1
+                            cmd:
+                              - "/root/Codes/FATE/venv/bin/python3.6"
+                              - "/root/Codes/FATE/fateflow/python/fate_flow/worker/task_executor.py"
+                              - "--job_id"
+                              - '202112020129140220090'
+                              - "--component_name"
+                              - hetero_feature_binning_0
+                              - "--task_id"
+                              - 202112020129140220090_hetero_feature_binning_0
+                              - "--task_version"
+                              - 0
+                              - "--role"
+                              - guest
+                              - "--party_id"
+                              - '10000'
+                              - "--config"
+                              - "/root/Codes/FATE/fateflow/jobs/202112020129140220090/guest/10000/hetero_feature_binning_0/202112020129140220090_hetero_feature_binning_0/0/task_executor/6b6f4b1852cc11ec8a8700155d13c16c/config.json"
+                              - "--result"
+                              - "/root/Codes/FATE/fateflow/jobs/202112020129140220090/guest/10000/hetero_feature_binning_0/202112020129140220090_hetero_feature_binning_0/0/task_executor/6b6f4b1852cc11ec8a8700155d13c16c/result.json"
+                              - "--log_dir"
+                              - "/root/Codes/FATE/fateflow/logs/202112020129140220090/guest/10000/hetero_feature_binning_0"
+                              - "--parent_log_dir"
+                              - "/root/Codes/FATE/fateflow/logs/202112020129140220090/guest/10000"
+                              - "--worker_id"
+                              - 6b6f4b1852cc11ec8a8700155d13c16c
+                              - "--run_ip"
+                              - 127.0.0.1
+                              - "--job_server"
+                              - 127.0.0.1:9380
+                              - "--session_id"
+                              - 202112020129140220090_hetero_feature_binning_0_0_guest_10000
+                              - "--federation_session_id"
+                              - 202112020129140220090_hetero_feature_binning_0_0
+                            component_module: HeteroFeatureBinning
+                            component_name: hetero_feature_binning_0
+                            component_parameters:
+                              CodePath: HeteroFeatureBinningGuest
+                              ComponentParam:
+                                _feeded_deprecated_params: [ ]
+                                _is_raw_conf: false
+                                _name: HeteroFeatureBinning#hetero_feature_binning_0
+                                _user_feeded_params:
+                                  - head_size
+                                  - category_names
+                                  - bin_num
+                                  - transform_param.transform_names
+                                  - transform_param
+                                  - compress_thres
+                                  - error
+                                  - method
+                                  - bin_indexes
+                                  - transform_param.transform_type
+                                  - bin_names
+                                  - category_indexes
+                                  - local_only
+                                  - transform_param.transform_cols
+                                  - adjustment_factor
+                                adjustment_factor: 0.5
+                                bin_indexes: -1
+                                bin_names:
+                                bin_num: 10
+                                category_indexes:
+                                category_names:
+                                compress_thres: 10000
+                                encrypt_param:
+                                  key_length: 1024
+                                  method: Paillier
+                                error: 0.001
+                                head_size: 10000
+                                local_only: false
+                                method: quantile
+                                need_run: true
+                                optimal_binning_param:
+                                  adjustment_factor:
+                                  init_bin_nums: 1000
+                                  init_bucket_method: quantile
+                                  max_bin:
+                                  max_bin_pct: 1
+                                  metric_method: iv
+                                  min_bin_pct: 0.05
+                                  mixture: true
+                                skip_static: false
+                                transform_param:
+                                  transform_cols:
+                                    - 0
+                                    - 1
+                                    - 2
+                                  transform_names:
+                                  transform_type: woe
+                              conf_path: "/tmp/tmp2zc5tf8b/job_runtime_conf.json"
+                              dsl_path: "/tmp/tmp2zc5tf8b/job_dsl.json"
+                              dsl_version: 2
+                              initiator:
+                                party_id: 10000
+                                role: guest
+                              job_parameters:
+                                common:
+                                  adaptation_parameters:
+                                    if_initiator_baseline: true
+                                    request_task_cores: 4
+                                    task_cores_per_node: 4
+                                    task_memory_per_node: 0
+                                    task_nodes: 1
+                                  auto_retries: 0
+                                  auto_retry_delay: 1
+                                  computing_engine: STANDALONE
+                                  computing_partitions: 4
+                                  eggroll_run: { }
+                                  engines_address: { }
+                                  federated_mode: SINGLE
+                                  federated_status_collect_type: PUSH
+                                  federation_engine: STANDALONE
+                                  job_type: train
+                                  model_id: guest-10000#host-9999#model
+                                  model_version: '202112020129140220090'
+                                  pulsar_run: { }
+                                  rabbitmq_run: { }
+                                  spark_run: { }
+                                  storage_engine: STANDALONE
+                                  task_parallelism: 1
+                              local:
+                                party_id: 10000
+                                role: guest
+                              module: HeteroFeatureBinning
+                              role:
+                                guest:
+                                  - 10000
+                                host:
+                                  - 9999
+                            create_date: '2021-12-02 01:29:21'
+                            create_time: 1638379761918
+                            elapsed: 9095
+                            end_date: '2021-12-02 01:31:04'
+                            end_time: 1638379864051
+                            engine_conf:
+                              computing_engine: STANDALONE
+                            federated_mode: SINGLE
+                            federated_status_collect_type: PUSH
+                            initiator_party_id: '10000'
+                            initiator_role: guest
+                            job_id: '202112020129140220090'
+                            party_id: '10000'
+                            party_status: success
+                            provider_info:
+                              class_path:
+                                feature_instance: feature.instance.Instance
+                                feature_vector: feature.sparse_vector.SparseVector
+                                homo_model_convert: protobuf.homo_model_convert.homo_model_convert
+                                interface: components.components.Components
+                                model: protobuf.generated
+                                model_migrate: protobuf.model_migrate.model_migrate
+                              env:
+                                PYTHONPATH: "/root/Codes/FATE/python"
+                              name: fate
+                              path: "/root/Codes/FATE/python/federatedml"
+                              version: 1.7.0
+                            role: guest
+                            run_ip: 127.0.0.1
+                            run_on_this_party: true
+                            run_pid: 29934
+                            start_date: '2021-12-02 01:30:47'
+                            start_time: 1638379847118
+                            status: success
+                            status_code:
+                            task_id: 202112020129140220090_hetero_feature_binning_0
+                            task_version: 0
+                            update_date: '2021-12-02 01:31:06'
+                            update_time: 1638379866439
+                            worker_id: 6b6f4b1852cc11ec8a8700155d13c16c
+
+tags:
+  - name: information
+  - name: model
+  - name: checkpoint
+  - name: component
+  - name: job
+
+servers:
+  - description: Default Server URL
+    url: http://localhost:9380/v1
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/Jat/Fate-Flow/1.7.1
