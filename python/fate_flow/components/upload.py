@@ -309,10 +309,10 @@ class Upload(ComponentBase):
             n = 0
             fate_uuid = uuid.uuid1().hex
             get_line = self.get_line()
+            line_index = 0
             while True:
                 data = list()
                 lines = fin.readlines(JobDefaultConfig.upload_max_bytes)
-                line_index = 0
                 if lines:
                     # self.append_data_line(lines, data, n)
                     for line in lines:
