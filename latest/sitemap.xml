@@ -81,6 +81,14 @@
          
     </url>
     <url>
+         <loc>fate_flow_http_api_call_demo/</loc>
+         <lastmod>2022-04-28</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_http_api_call_demo/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="fate_flow_http_api_call_demo/"/>
+         
+    </url>
+    <url>
          <loc>fate_flow_job_scheduling/</loc>
          <lastmod>2022-04-28</lastmod>
          <changefreq>daily</changefreq>
@@ -142,14 +150,6 @@
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_tracking/"/>
          <xhtml:link rel="alternate" hreflang="en" href="fate_flow_tracking/"/>
-         
-    </url>
-    <url>
-         <loc>swagger/</loc>
-         <lastmod>2022-04-28</lastmod>
-         <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="zh" href="zh/swagger/"/>
-         <xhtml:link rel="alternate" hreflang="en" href="swagger/"/>
          
     </url>
     <url>
@@ -302,6 +302,14 @@
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="zh" href="zh/mkdocs/theme/"/>
          <xhtml:link rel="alternate" hreflang="en" href="mkdocs/theme/"/>
+         
+    </url>
+    <url>
+         <loc>swagger/</loc>
+         <lastmod>2022-04-28</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/swagger/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="swagger/"/>
          
     </url>
     <url>
