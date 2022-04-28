@@ -3329,6 +3329,279 @@ paths:
                     type: string
                     example: error
 
+  '/resource/query':
+    post:
+      summary: query conputing engine resource
+      tags:
+        - resource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - engine_name
+              type: object
+              properties:
+                engine_name:
+                  type: string
+                  example: EGGROLL, SPARK
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: {"computing_engine_resource":{"f_cores":16,"f_create_date":"2022-02-10 16:14:03","f_create_time":1644480843818,"f_engine_config":{"cores_per_node":16,"nodes":1},"f_engine_entrance":"fate_on_eggroll","f_engine_name":"EGGROLL","f_engine_type":"computing","f_memory":0,"f_nodes":1,"f_remaining_cores":16,"f_remaining_memory":0,"f_update_date":"2022-04-27 15:48:33","f_update_time":1651045713996},"use_resource_job":[]}
+        '404':
+          description: failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: error
+
+  '/resource/return':
+    post:
+      summary: return job resource
+      tags:
+        - resource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - job_id
+              type: object
+              properties:
+                engine_name:
+                  type: string
+                  example: 202204261616175720130
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: [{"job_id":"202204261616175720130","party_id":"20001","resource_in_use":true,"resource_return_status":ture,"role":"guest"}]
+        '404':
+          description: failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: no found job
+
+  '/permission/grant/privilege':
+    post:
+      summary: grant privilege
+      tags:
+        - permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - src_role
+                - src_party_id
+              type: object
+              properties:
+                src_role:
+                  type: string
+                  example: "guest"
+                src_party_id:
+                  type: string
+                  example: 9999
+                privilege_role:
+                  type: string
+                  description: multiple separated by ",". like "guest, host, arbiter" or "all"
+                  example: all
+                privilege_component:
+                  type: string
+                  description: multiple separated by ",". like "create, run, stop" or "all"
+                  example: all
+                privilege_command:
+                  type: string
+                  description: multiple separated bu ",". like "reader, dataio, ..." or "all"
+                  example: all
+
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+        '404':
+          description: failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: error
+
+  '/permission/delete/privilege':
+    post:
+      summary: delete privilege
+      tags:
+        - permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - src_role
+                - src_party_id
+              type: object
+              properties:
+                src_role:
+                  type: string
+                  example: "guest"
+                src_party_id:
+                  type: string
+                  example: 9999
+                privilege_role:
+                  type: string
+                  description: multiple separated by ",". like "guest, host, arbiter" or "all"
+                  example: all
+                privilege_component:
+                  type: string
+                  description: multiple separated by ",". like "create, run, stop" or "all"
+                  example: all
+                privilege_command:
+                  type: string
+                  description: multiple separated bu ",". like "reader, dataio, ..." or "all"
+                  example: all
+
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+        '404':
+          description: failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: error
+
+  '/permission/query/privilege':
+    post:
+      summary: query privilege
+      tags:
+        - permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - src_role
+                - src_party_id
+              type: object
+              properties:
+                src_role:
+                  type: string
+                  example: "guest"
+                src_party_id:
+                  type: string
+                  example: 9999
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    example: {"privilege_command":["stop","run","create"],"privilege_component":["reader", "dataio","heterolinr", "heterolr", "localbaseline","columnexpand","heteropearson","featurescale","datastatistics","feldmanverifiablesum"],"privilege_role":["host","guest","arbiter"],"role":"guest","src_party_id":"9999"}
+        '404':
+          description: failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 101
+                  retmsg:
+                    type: string
+                    example: error
+
+
   '/info/fateboard':
     post:
       summary: get fateboard host and port
@@ -3918,6 +4191,8 @@ tags:
   - name: table
   - name: job
   - name: tracking
+  - name: resource
+  - name: permission
   - name: information
   - name: model
   - name: checkpoint
