@@ -24,6 +24,7 @@ nav:
     - fate_flow_model_migration.md
     - fate_flow_client.md
     - fate_flow_http_api.md
+    - fate_flow_http_api_call_demo.md
     - configuration_instruction.md
     - system_operational.md
     - faq.md
