@@ -677,36 +677,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2_1" class="md-nav__link">
-    2. 数据表操作
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#3" class="md-nav__link">
-    3. 任务
+    3. 数据表操作
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#4" class="md-nav__link">
-    4. 指标
+    4. 任务
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#5" class="md-nav__link">
-    5. 资源
+    5. 指标
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#6" class="md-nav__link">
-    6. 权限
+    6. 资源
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    7. 权限
   </a>
   
 </li>
@@ -837,36 +837,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2_1" class="md-nav__link">
-    2. 数据表操作
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#3" class="md-nav__link">
-    3. 任务
+    3. 数据表操作
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#4" class="md-nav__link">
-    4. 指标
+    4. 任务
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#5" class="md-nav__link">
-    5. 资源
+    5. 指标
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#6" class="md-nav__link">
-    6. 权限
+    6. 资源
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    7. 权限
   </a>
   
 </li>
@@ -946,7 +946,7 @@
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">base_url</span> <span class="o">+</span> <span class="n">uri</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">config_data</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="2_1">2. 数据表操作<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h2>
+<h2 id="3">3. 数据表操作<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;http://127.0.0.1:9380/v1&quot;</span>
@@ -1009,7 +1009,7 @@
     <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">base_url</span> <span class="o">+</span> <span class="n">uri</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="3">3. 任务<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h2 id="4">4. 任务<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">tarfile</span>
 
 <span class="kn">import</span> <span class="nn">requests</span>
@@ -1321,7 +1321,7 @@
     <span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">base_url</span> <span class="o">+</span> <span class="n">uri</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="4">4. 指标<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<h2 id="5">5. 指标<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">tarfile</span>
 
 <span class="kn">import</span> <span class="nn">requests</span>
@@ -1439,7 +1439,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 <span class="n">component_list</span><span class="p">()</span>
 </code></pre></div>
-<h2 id="5">5. 资源<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<h2 id="6">6. 资源<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;http://127.0.0.1:9380/v1&quot;</span>
@@ -1460,7 +1460,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 <span class="n">resource_return</span><span class="p">()</span>
 </code></pre></div>
-<h2 id="6">6. 权限<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<h2 id="7">7. 权限<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;http://127.0.0.1:9380/v1&quot;</span>
