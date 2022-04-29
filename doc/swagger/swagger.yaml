@@ -3905,6 +3905,136 @@ paths:
                     type: string
                     example: model not found
 
+  '/model/load':
+    post:
+      summary: load a deployed model on Fate-Serving
+      tags:
+        - model
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - initiator
+                - role
+                - job_parameters
+              properties:
+                initiator:
+                  type: object
+                  properties:
+                    party_id:
+                      type: string
+                      example: '10000'
+                    role:
+                      type: string
+                      example: guest
+                role:
+                  type: object
+                  example:
+                    guest:
+                      - '10000'
+                    host:
+                      - '10000'
+                    arbiter:
+                      - '10000'
+                job_parameters:
+                  type: object
+                  properties:
+                    model_id:
+                      type: string
+                      example: arbiter-10000#guest-10000#host-10000#model
+                    model_version:
+                      type: string
+                      example: '2019081217340125761469'
+      responses:
+        '200':
+          description: loading success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  jobId:
+                    type: string
+                    example: "2019081217340125761469"
+                  data:
+                    type: object
+                    example:
+                      detail:
+                        guest:
+                          '9999':
+                            retcode: 0
+                            retmsg: success
+                        host:
+                          '10000':
+                            retcode: 0
+                            retmsg: success
+                      guest:
+                        '9999': 0
+                      host:
+                        '10000': 0
+
+  '/model/bind':
+    post:
+      summary: bind a deployed model to Fate-Serving
+      tags:
+        - model
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - service_id
+                - initiator
+                - role
+                - job_parameters
+              properties:
+                service_id:
+                  type: string
+                  example: "123"
+                initiator:
+                  type: object
+                  properties:
+                    party_id:
+                      type: string
+                      example: "10000"
+                    role:
+                      type: string
+                      example: guest
+                job_parameters:
+                  type: object
+                  properties:
+                    model_id:
+                      type: string
+                      example: arbiter-10000#guest-10000#host-10000#model
+                    model_version:
+                      type: string
+                      example: "2019081217340125761469"
+      responses:
+        '200':
+          description: binding success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: service id is 123
+
   '/checkpoint/list':
     post:
       summary: list checkpoints
