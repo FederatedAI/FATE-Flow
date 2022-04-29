@@ -159,7 +159,7 @@ def gather_model_info_data(model: PipelinedModel, query_filters=None):
 def query_model_info(model_version, role=None, party_id=None, model_id=None, query_filters=None, **kwargs):
     arguments = locals()
 
-    file_only = arguments.pop('file_only', False)
+    file_only = kwargs.pop('file_only', False)
     if not file_only:
         retcode, retmsg, data = query_model_info_from_db(**arguments)
         if not retcode:
