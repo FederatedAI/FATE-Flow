@@ -34,7 +34,8 @@ from fate_flow.entity.types import TaskCleanResourceType
 
 
 class TaskController(object):
-    INITIATOR_COLLECT_FIELDS = ["status", "party_status", "start_time", "update_time", "end_time", "elapsed"]
+    INITIATOR_COLLECT_FIELDS = ["status", "party_status",
+                                "start_time", "update_time", "end_time", "elapsed"]
 
     @classmethod
     def create_task(cls, role, party_id, run_on_this_party, task_info):
@@ -45,7 +46,8 @@ class TaskController(object):
         task_info["create_time"] = base_utils.current_timestamp()
         task_info["run_on_this_party"] = run_on_this_party
         if task_info.get("task_id") is None:
-            task_info["task_id"] = job_utils.generate_task_id(job_id=task_info["job_id"], component_name=task_info["component_name"])
+            task_info["task_id"] = job_utils.generate_task_id(
+                job_id=task_info["job_id"], component_name=task_info["component_name"])
         if task_info.get("task_version") is None:
             task_info["task_version"] = 0
 
@@ -81,33 +83,43 @@ class TaskController(object):
         }
         is_failed = False
         try:
-            task = JobSaver.query_task(task_id=task_id, task_version=task_version, role=role, party_id=party_id)[0]
-            run_parameters_dict = job_utils.get_job_parameters(job_id, role, party_id)
+            task = JobSaver.query_task(
+                task_id=task_id, task_version=task_version, role=role, party_id=party_id)[0]
+            run_parameters_dict = job_utils.get_job_parameters(
+                job_id, role, party_id)
             run_parameters_dict["src_user"] = kwargs.get("src_user")
 
             # update job parameters by component
-            component_job_parameters = cls._get_component_job_parameters(job_id=job_id, component_name=component_name, role=role, party_id=party_id)
+            component_job_parameters = cls._get_component_job_parameters(
+                job_id=job_id, component_name=component_name, role=role, party_id=party_id)
             run_parameters_dict.update(component_job_parameters)
-            schedule_logger(job_id).info(f"run_parameters_dict: {json_dumps(run_parameters_dict)}") 
+            schedule_logger(job_id).info(
+                f"run_parameters_dict: {json_dumps(run_parameters_dict)}")
 
             run_parameters = RunParameters(**run_parameters_dict)
 
-            config_dir = job_utils.get_task_directory(job_id, role, party_id, component_name, task_id, task_version)
+            config_dir = job_utils.get_task_directory(
+                job_id, role, party_id, component_name, task_id, task_version)
             os.makedirs(config_dir, exist_ok=True)
 
-            run_parameters_path = os.path.join(config_dir, 'task_parameters.json')
+            run_parameters_path = os.path.join(
+                config_dir, 'task_parameters.json')
             with open(run_parameters_path, 'w') as fw:
                 fw.write(json_dumps(run_parameters_dict))
 
-            schedule_logger(job_id).info(f"use computing engine {run_parameters.computing_engine}")
-            task_info["engine_conf"] = {"computing_engine": run_parameters.computing_engine}
+            schedule_logger(job_id).info(
+                f"use computing engine {run_parameters.computing_engine}")
+            task_info["engine_conf"] = {
+                "computing_engine": run_parameters.computing_engine}
             backend_engine = build_engine(run_parameters.computing_engine)
             run_info = backend_engine.run(task=task,
                                           run_parameters=run_parameters,
                                           run_parameters_path=run_parameters_path,
                                           config_dir=config_dir,
-                                          log_dir=job_utils.get_job_log_directory(job_id, role, party_id, component_name),
-                                          cwd_dir=job_utils.get_job_directory(job_id, role, party_id, component_name),
+                                          log_dir=job_utils.get_job_log_directory(
+                                              job_id, role, party_id, component_name),
+                                          cwd_dir=job_utils.get_job_directory(
+                                              job_id, role, party_id, component_name),
                                           user_name=kwargs.get("user_id"))
             task_info.update(run_info)
             task_info["start_time"] = current_timestamp()
@@ -130,9 +142,11 @@ class TaskController(object):
 
     @classmethod
     def _get_component_job_parameters(cls, job_id, component_name, role, party_id):
-        job_configuration = job_utils.get_job_configuration(job_id, role, party_id)
+        job_configuration = job_utils.get_job_configuration(
+            job_id, role, party_id)
 
-        job_parameters_roles = job_configuration.runtime_conf["job_parameters"].get("role")
+        job_parameters_roles = job_configuration.runtime_conf["job_parameters"].get(
+            "role")
         if job_parameters_roles is None:
             return {}
 
@@ -144,7 +158,8 @@ class TaskController(object):
         if job_parameters_components is None:
             return {}
 
-        job_parameters_component = job_parameters_components.get(component_name)
+        job_parameters_component = job_parameters_components.get(
+            component_name)
         if job_parameters_component is None:
             return {}
 
@@ -191,7 +206,8 @@ class TaskController(object):
 
     @classmethod
     def collect_task(cls, job_id, component_name, task_id, task_version, role, party_id):
-        tasks = JobSaver.query_task(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version, role=role, party_id=party_id)
+        tasks = JobSaver.query_task(job_id=job_id, component_name=component_name,
+                                    task_id=task_id, task_version=task_version, role=role, party_id=party_id)
         if tasks:
             return tasks[0].to_human_model_dict(only_primary_with=cls.INITIATOR_COLLECT_FIELDS)
         else:
@@ -223,7 +239,8 @@ class TaskController(object):
         kill_status = False
         try:
             # kill task executor
-            backend_engine = build_engine(task.f_engine_conf.get("computing_engine"))
+            backend_engine = build_engine(
+                task.f_engine_conf.get("computing_engine"))
             if backend_engine:
                 backend_engine.kill(task)
             WorkerManager.kill_task_all_workers(task)
@@ -245,17 +262,20 @@ class TaskController(object):
     def clean_task(cls, job_id, task_id, task_version, role, party_id, content_type: TaskCleanResourceType):
         status = set()
         if content_type == TaskCleanResourceType.METRICS:
-            tracker = Tracker(job_id=job_id, role=role, party_id=party_id, task_id=task_id, task_version=task_version)
+            tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
+                              task_id=task_id, task_version=task_version)
             status.add(tracker.clean_metrics())
         elif content_type == TaskCleanResourceType.TABLE:
-            jobs = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)
+            jobs = JobSaver.query_job(
+                job_id=job_id, role=role, party_id=party_id)
             if jobs:
                 job = jobs[0]
-                job_parameters = RunParameters(**job.f_runtime_conf_on_party["job_parameters"])
-                tracker = Tracker(job_id=job_id, role=role, party_id=party_id, task_id=task_id, task_version=task_version, job_parameters=job_parameters)
+                job_parameters = RunParameters(
+                    **job.f_runtime_conf_on_party["job_parameters"])
+                tracker = Tracker(job_id=job_id, role=role, party_id=party_id, task_id=task_id,
+                                  task_version=task_version, job_parameters=job_parameters)
                 status.add(tracker.clean_task(job.f_runtime_conf_on_party))
         if len(status) == 1 and True in status:
             return True
         else:
             return False
-
