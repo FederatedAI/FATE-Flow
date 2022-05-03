@@ -84,6 +84,12 @@ class TaskController(object):
             task = JobSaver.query_task(task_id=task_id, task_version=task_version, role=role, party_id=party_id)[0]
             run_parameters_dict = job_utils.get_job_parameters(job_id, role, party_id)
             run_parameters_dict["src_user"] = kwargs.get("src_user")
+
+            # update job parameters by component
+            component_job_parameters = cls._get_component_job_parameters(job_id=job_id, component_name=component_name, role=role, party_id=party_id)
+            run_parameters_dict.update(component_job_parameters)
+            schedule_logger(job_id).info(f"run_parameters_dict: {json_dumps(run_parameters_dict)}") 
+
             run_parameters = RunParameters(**run_parameters_dict)
 
             config_dir = job_utils.get_task_directory(job_id, role, party_id, component_name, task_id, task_version)
@@ -121,6 +127,28 @@ class TaskController(object):
                 schedule_logger(job_id).exception(e)
             schedule_logger(job_id).info(
                 "task {} {} on {} {} executor subprocess start {}".format(task_id, task_version, role, party_id, "success" if task_executor_process_start_status else "failed"))
+
+    @classmethod
+    def _get_component_job_parameters(cls, job_id, component_name, role, party_id):
+        job_configuration = job_utils.get_job_configuration(job_id, role, party_id)
+
+        job_parameters_roles = job_configuration.runtime_conf["job_parameters"].get("role")
+        if job_parameters_roles is None:
+            return {}
+
+        job_parameters_parties = job_parameters_roles.get(role)
+        if job_parameters_parties is None:
+            return {}
+
+        job_parameters_components = job_parameters_parties.get(party_id)
+        if job_parameters_components is None:
+            return {}
+
+        job_parameters_component = job_parameters_components.get(component_name)
+        if job_parameters_component is None:
+            return {}
+
+        return job_parameters_component
 
     @classmethod
     def update_task(cls, task_info):
