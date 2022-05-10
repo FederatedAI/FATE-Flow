@@ -164,6 +164,7 @@ class TableStorage:
                     # extend id
                     v = src_table.meta.get_id_delimiter().join([k, v])
                     k = line_extend_uuid(fate_uuid, line_index)
+                    line_index += 1
                 if deserialize_value:
                     # writer component: deserialize value
                     v, extend_header = feature_utils.get_deserialize_value(v, dest_table.meta.get_id_delimiter())

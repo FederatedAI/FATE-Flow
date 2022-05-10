@@ -37,9 +37,9 @@ api_reader_cpn_meta = ComponentMeta("ApiReader")
 
 @api_reader_cpn_meta.bind_param
 class ApiReaderParam(BaseParam):
-    def __init__(self, service_name=None, request_info=None, timeout=60*60*8):
+    def __init__(self, service_name=None, parameters=None, timeout=60*60*8):
         self.service_name = service_name
-        self.request_info = request_info
+        self.parameters = parameters
         self.time_out = timeout
 
     def check(self):
@@ -169,7 +169,7 @@ class ApiReader(ComponentBase):
             logger.info(f"upload info:{upload_registry_info.to_dict()}")
             response = getattr(requests, upload_registry_info.f_method.lower(), None)(
                 url=upload_registry_info.f_url,
-                params={"requestBody": json.dumps(self.parameters.get("request_info", {}).get("upload", {}).get("extra_parameters", {}))},
+                params={"requestBody": json.dumps(self.parameters.get("parameters", {}))},
                 data=data,
                 headers={'Content-Type': data.content_type}
             )

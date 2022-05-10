@@ -85,9 +85,9 @@ def table_bind():
         response = get_json_result(retcode=100, retmsg=f'engine {engine} address {address_dict} check failed')
     else:
         if request_data.get("extend_sid"):
-            table.meta.update_metas(
-                schema=update_bind_table_schema(id_column, feature_column, request_data.get("extend_sid"),
-                                                request_data.get("id_delimiter")))
+            schema = update_bind_table_schema(id_column, feature_column, request_data.get("extend_sid"), request_data.get("id_delimiter"))
+            schema.update(extra_schema)
+            table.meta.update_metas(schema=schema)
         DataTableTracker.create_table_tracker(
             table_name=name,
             table_namespace=namespace,
@@ -219,7 +219,7 @@ def get_job_all_table(job):
 def get_component_input_table(dsl_parser, job, component_name):
     component = dsl_parser.get_component_info(component_name=component_name)
     module_name = get_component_module(component_name, job.f_dsl)
-    if 'reader' in module_name.lower():
+    if 'reader' == module_name.lower():
         return job.f_runtime_conf.get("component_parameters", {}).get("role", {}).get(job.f_role, {}).get(str(job.f_roles.get(job.f_role).index(int(job.f_party_id)))).get(component_name)
     task_input_dsl = component.get_input()
     job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser=dsl_parser,
