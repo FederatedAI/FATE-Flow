@@ -144,26 +144,42 @@ class TaskController(object):
     def _get_component_job_parameters(cls, job_id, component_name, role, party_id):
         job_configuration = job_utils.get_job_configuration(
             job_id, role, party_id)
+        result = cls._get_component_job_parameters_by_role(
+            job_configuration, component_name, role, party_id)
+        if result is None:
+            result = cls._get_component_job_parameters_by_common(
+                job_configuration, component_name)
 
+        return result if result else {}
+
+    @classmethod
+    def _get_component_job_parameters_by_role(cls, job_configuration, component_name, role, party_id):
         job_parameters_roles = job_configuration.runtime_conf["job_parameters"].get(
-            "role")
+            "role"
+        )
         if job_parameters_roles is None:
-            return {}
+            return None
 
         job_parameters_parties = job_parameters_roles.get(role)
         if job_parameters_parties is None:
-            return {}
+            return None
 
         job_parameters_components = job_parameters_parties.get(party_id)
         if job_parameters_components is None:
-            return {}
+            return None
 
-        job_parameters_component = job_parameters_components.get(
-            component_name)
-        if job_parameters_component is None:
-            return {}
+        return job_parameters_components.get(component_name)
 
-        return job_parameters_component
+    @classmethod
+    def _get_component_job_parameters_by_common(cls, job_configuration, component_name):
+        job_parameters_components = job_configuration.runtime_conf["job_parameters"].get(
+            "component"
+        )
+
+        if job_parameters_components is None:
+            return None
+
+        return job_parameters_components.get(component_name)
 
     @classmethod
     def update_task(cls, task_info):
