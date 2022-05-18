@@ -58,6 +58,10 @@ class LogCollector():
         line_list = []
         if begin and end:
             cmd = f"cat {self.get_log_file_path()} | tail -n +{begin}| head -n {end-begin+1}"
+        elif begin:
+            cmd = f"cat {self.get_log_file_path()} | tail -n +{begin}"
+        elif end:
+            cmd = f"cat {self.get_log_file_path()} | head -n {end}"
         else:
             cmd = f"cat {self.get_log_file_path()}"
         lines = self.execute(cmd)
