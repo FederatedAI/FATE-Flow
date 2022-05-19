@@ -24,6 +24,7 @@ from fate_flow.utils.log_utils import LoggerFactory, getLogger
 
 # Server
 API_VERSION = "v1"
+FATE_ENV_KEY_LIST = ['FATE', 'FATEFlow', 'FATEBoard', 'EGGROLL', 'CENTOS', 'UBUNTU', 'PYTHON', 'MAVEN', 'JDK', 'SPARK']
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
 TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
