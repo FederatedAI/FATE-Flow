@@ -60,11 +60,11 @@ class Detector(cron.Cron):
                         if _tasks:
                             if _tasks[0].f_party_status == TaskStatus.RUNNING:
                                 stop_job_ids.add(task.f_job_id)
-                                detect_logger(task.f_job_id).info(f"{msg} party status has been checked twice, try to stop job")
+                                detect_logger(job_id=task.f_job_id).info(f"{msg} party status has been checked twice, try to stop job")
                             else:
-                                detect_logger(task.f_job_id).info(f"{msg} party status has changed to {_tasks[0].f_party_status}, may be stopped by task_controller.stop_task, pass stop job again")
+                                detect_logger(job_id=task.f_job_id).info(f"{msg} party status has changed to {_tasks[0].f_party_status}, may be stopped by task_controller.stop_task, pass stop job again")
                         else:
-                            detect_logger(task.f_job_id).warning(f"{msg} can not found on db")
+                            detect_logger(job_id=task.f_job_id).warning(f"{msg} can not found on db")
                 except Exception as e:
                     detect_logger(job_id=task.f_job_id).exception(e)
             if stop_job_ids:
