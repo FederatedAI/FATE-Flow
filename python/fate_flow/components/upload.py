@@ -249,7 +249,7 @@ class Upload(ComponentBase):
     def get_count(self, input_file):
         with open(input_file, "r", encoding="utf-8") as fp:
             count = 0
-            for line in fp:
+            for _ in fp:
                 count += 1
         return count
 
