@@ -134,7 +134,7 @@ def federated_coordination_on_http(job_id, method, host, port, endpoint, src_par
             headers["src-party-id"] = str(src_party_id)
             headers["src-role"] = str(src_role)
 
-            response = request(method=method, url=url, json=json_body, headers=headers)
+            response = request(method=method, url=url, json=json_body, headers=headers, overall_timeout=(overall_timeout/1000))
             audit_logger(job_id).info(response.text)
             audit_logger(job_id).info('remote http api response: {} {}'.format(endpoint, response.json()))
 

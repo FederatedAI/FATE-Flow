@@ -32,7 +32,9 @@ requests.models.complexjson.dumps = functools.partial(json.dumps, cls=CustomJSON
 
 def request(**kwargs):
     sess = requests.Session()
+    overall_timeout = kwargs.pop('overall_timeout')
     stream = kwargs.pop('stream', sess.stream)
+    request_kwargs = {'timeout': overall_timeout, 'stream': stream}
     prepped = requests.Request(**kwargs).prepare()
 
     if HTTP_APP_KEY and HTTP_SECRET_KEY:
@@ -55,4 +57,4 @@ def request(**kwargs):
             'SIGNATURE': signature,
         })
 
-    return sess.send(prepped, stream=stream)
+    return sess.send(prepped, **request_kwargs)
