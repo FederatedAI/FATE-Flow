@@ -16,7 +16,6 @@
 import argparse
 import uuid
 
-from fate_flow.utils.log_utils import schedule_logger
 from fate_arch import session, storage
 from fate_arch.session import Session
 from fate_arch.storage import StorageEngine, EggRollStoreType, StorageTableOrigin
@@ -28,7 +27,7 @@ class UploadFile(object):
     def run(cls):
         parser = argparse.ArgumentParser()
         parser.add_argument('--session_id', required=True, type=str, help="session id")
-        parser.add_argument('--storage', help="storage engine", type=str)
+        parser.add_argument('--storage', required=True, help="storage engine", type=str)
         parser.add_argument('--file', required=True, type=str, help="file path")
         parser.add_argument('--namespace', required=True, type=str, help="namespace")
         parser.add_argument('--name', required=True, type=str, help="name")
@@ -54,7 +53,6 @@ class UploadFile(object):
     @classmethod
     def upload(cls, input_file, head, job_id=None, input_feature_count=None, table=None, without_block=True):
         with open(input_file, "r") as fin:
-            lines_count = 0
             n = 0
             fate_uuid = uuid.uuid1().hex
             get_line = cls.get_line()
@@ -85,7 +83,6 @@ class UploadFile(object):
     def get_line(cls):
         line = data_utils.get_data_line
         return line
-
 
 
 if __name__ == '__main__':
