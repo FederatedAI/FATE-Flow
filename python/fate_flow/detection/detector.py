@@ -156,7 +156,7 @@ class Detector(cron.Cron):
             manager_session_id_list = []
             for session_record in session_records:
                 manager_session_id = session_record.f_manager_session_id
-                if manager_session_id not in manager_session_id:
+                if manager_session_id in manager_session_id_list:
                     continue
                 manager_session_id_list.append(manager_session_id)
                 detect_logger().info(f'start destroy session {manager_session_id}')
