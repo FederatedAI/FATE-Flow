@@ -72,7 +72,6 @@ class ApiReader(ComponentBase):
 
     def _run_host(self):
         self.set_service_registry_info()
-        # self.request = getattr(requests, self.parameters.get("method", "post").lower(), None)
         response = self.upload_data()
         logger.info(f"upload response: {response.text}")
         if response.status_code == 200:
@@ -86,10 +85,12 @@ class ApiReader(ComponentBase):
                     table, output_name, output_namespace = self.output_feature_table()
                     count = UploadFile.upload(
                         download_path,
-                        head=True,
+                        head=self.parameters.get("head", True),
                         table=table,
-                        id_delimiter=","
+                        id_delimiter=self.parameters.get("id_delimiter", ","),
+                        extend_sid=self.parameters.get("extend_sid", False)
                     )
+                    table.meta.update_metas(count=count)
                     self.tracker.log_output_data_info(
                         data_name=self.cpn_input.flow_feeded_parameters.get("output_data_name")[0],
                         table_namespace=output_namespace,
@@ -100,6 +101,8 @@ class ApiReader(ComponentBase):
                         metric_name="upload",
                         metrics=[Metric("count", count)],
                     )
+        else:
+            raise Exception(f"upload return: {response.text}")
 
     def output_feature_table(self):
         (
@@ -153,6 +156,8 @@ class ApiReader(ComponentBase):
                     for chunk in response.iter_content(1024):
                         if chunk:
                             fw.write(chunk)
+            else:
+                raise Exception(f"download return: {response.text}")
         return download_path
 
     def upload_data(self):

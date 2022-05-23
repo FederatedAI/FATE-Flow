@@ -51,7 +51,7 @@ class UploadFile(object):
             cls.upload(args.file, False, table=table)
 
     @classmethod
-    def upload(cls, input_file, head, table=None, id_delimiter=","):
+    def upload(cls, input_file, head, table=None, id_delimiter=",", extend_sid=False):
         with open(input_file, "r") as fin:
             if head is True:
                 data_head = fin.readline()
@@ -63,11 +63,12 @@ class UploadFile(object):
                 )
                 table.meta = meta
             fate_uuid = uuid.uuid1().hex
-            get_line = cls.get_line()
+            get_line = cls.get_line(extend_sid)
+            line_index = 0
+            n = 0
             while True:
                 data = list()
                 lines = fin.readlines(1024 * 1024 * 8 * 500)
-                line_index = 0
                 if lines:
                     # self.append_data_line(lines, data, n)
                     for line in lines:
@@ -75,20 +76,26 @@ class UploadFile(object):
                         k, v = get_line(
                             values=values,
                             line_index=line_index,
-                            extend_sid=False,
+                            extend_sid=extend_sid,
                             auto_increasing_sid=False,
-                            id_delimiter=',',
-                            fate_uuid=fate_uuid,
+                            id_delimiter=id_delimiter,
+                            fate_uuid=fate_uuid
                         )
                         data.append((k, v))
                         line_index += 1
                     table.put_all(data)
+                    if n == 0:
+                        table.meta.update_metas(part_of_data=data[:100])
+                    n += 1
                 else:
                     return line_index
 
     @classmethod
-    def get_line(cls):
-        line = data_utils.get_data_line
+    def get_line(self, extend_sid=False):
+        if extend_sid:
+            line = data_utils.get_sid_data_line
+        else:
+            line = data_utils.get_data_line
         return line
 
 
