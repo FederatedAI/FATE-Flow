@@ -30,7 +30,7 @@ from fate_flow.components._base import (
     ComponentMeta,
     ComponentInputProtocol,
 )
-from fate_flow.entity import Metric, MetricMeta
+from fate_flow.entity import Metric, MetricMeta, MetricType
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.db.job_default_config import JobDefaultConfig
@@ -448,7 +448,7 @@ class Upload(ComponentBase):
         self.tracker.set_metric_meta(
             metric_namespace="upload",
             metric_name="data_access",
-            metric_meta=MetricMeta(name="upload", metric_type="UPLOAD"),
+            metric_meta=MetricMeta(name="upload", metric_type=MetricType.UPLOAD),
         )
 
     def get_data_table_count(self, path, name, namespace):

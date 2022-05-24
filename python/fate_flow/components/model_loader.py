@@ -16,7 +16,7 @@
 from fate_flow.utils.log_utils import getLogger
 
 from fate_flow.components._base import BaseParam, ComponentBase, ComponentInputProtocol, ComponentMeta
-from fate_flow.entity import JobConfiguration
+from fate_flow.entity import JobConfiguration, MetricType
 from fate_flow.entity import MetricMeta
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
@@ -74,7 +74,7 @@ class ModelLoader(ComponentBase):
 
         self.model_output = component_model
         self.tracker.set_metric_meta('model_loader', f'{self.component_name}-{self.model_alias}',
-                                     MetricMeta('component_model', 'component_model_info', {
+                                     MetricMeta('component_model', MetricType.COMPONENT_MODEL_INFO, {
                                          'model_id': self.model_id,
                                          'model_version': self.model_version,
                                          'component_name': self.component_name,
@@ -107,7 +107,7 @@ class ModelLoader(ComponentBase):
 
         self.model_output = data.pop('models')
         self.tracker.set_metric_meta('model_loader', f'{checkpoint.step_index}-{checkpoint.step_name}',
-                                     MetricMeta('checkpoint', 'checkpoint_info', data))
+                                     MetricMeta('checkpoint', MetricType.CHECKPOINT_INFO, data))
 
     def _run(self, cpn_input: ComponentInputProtocol):
         need_run = cpn_input.parameters.get('need_run', True)
