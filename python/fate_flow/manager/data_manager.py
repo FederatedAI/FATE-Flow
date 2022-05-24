@@ -240,7 +240,6 @@ class TableStorage:
                 os.remove(path)
                 os.remove(output_data_meta_file_list[key])
             except Exception as e:
-                # warning
                 stat_logger.warning(e)
         return send_file(output_data_tarfile, attachment_filename=tar_file_name)
 
@@ -260,8 +259,8 @@ def delete_tables_by_table_infos(output_data_table_infos):
                         table.destroy()
                         data.append(table_info)
                         status = True
-                    except:
-                        pass
+                    except Exception as e:
+                        stat_logger.warning(e)
     return status, data
 
 
@@ -286,7 +285,7 @@ def get_delete_filters(tracking_metric_model, metric_info):
     return delete_filters
 
 
-def get_component_output_data_schema(output_table_meta, extend_header, is_str=False):
+def get_component_output_data_schema(output_table_meta, extend_header, is_str=False) -> list:
     # get schema
     schema = output_table_meta.get_schema()
     if not schema:
@@ -300,7 +299,7 @@ def get_component_output_data_schema(output_table_meta, extend_header, is_str=Fa
             if schema.get('sid'):
                 return [schema.get('sid')]
             else:
-                return None
+                return []
         header.extend([feature for feature in schema.get('header').split(',')])
     else:
         header.extend(schema.get('header', []))
