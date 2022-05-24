@@ -303,10 +303,6 @@ class RuntimeConfParserUtil(object):
         provider_name, provider_version = RuntimeConfParserUtil.get_component_provider(alias=alias,
                                                                                        module=module,
                                                                                        provider_detail=provider_detail,
-                                                                                       local_role=local_role,
-                                                                                       local_party_id=local_party_id,
-                                                                                       job_parameters=job_parameters,
-                                                                                       provider_cache=provider_cache,
                                                                                        detect=detect)
 
         return RuntimeConfParserUtil.instantiate_component_provider(provider_detail,

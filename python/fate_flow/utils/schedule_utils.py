@@ -98,7 +98,7 @@ def fill_inference_dsl(dsl_parser: typing.Union[DSLParserV1, DSLParserV2], origi
             components_module_name[component] = param["CodePath"]
         return dsl_parser.get_predict_dsl(predict_dsl=origin_inference_dsl, module_object_dict=components_module_name)
     elif isinstance(dsl_parser, DSLParserV1):
-        return dsl_parser.get_predict_dsl(component_parameters=components_parameters)
+        return dsl_parser.get_predict_dsl()
     else:
         raise Exception(f"not support dsl parser {type(dsl_parser)}")
 
