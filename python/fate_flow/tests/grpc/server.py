@@ -49,7 +49,8 @@ def get_url(_suffix):
 
 
 class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
-    def unaryCall(self, _request, context):
+    @staticmethod
+    def unaryCall(_request, context):
         packet = _request
         header = packet.header
         _suffix = packet.body.key

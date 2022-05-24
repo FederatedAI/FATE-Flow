@@ -829,7 +829,8 @@ class BaseDSLParser(object):
     def get_args_input(self):
         return self.args_input
 
-    def get_need_deploy_parameter(self, name, deploy_cpns=None):
+    @staticmethod
+    def get_need_deploy_parameter(name, deploy_cpns=None):
         if deploy_cpns is not None:
             return name in deploy_cpns
 
