@@ -285,7 +285,7 @@ def get_delete_filters(tracking_metric_model, metric_info):
     return delete_filters
 
 
-def get_component_output_data_schema(output_table_meta, extend_header, is_str=False):
+def get_component_output_data_schema(output_table_meta, extend_header, is_str=False) -> list:
     # get schema
     schema = output_table_meta.get_schema()
     if not schema:
