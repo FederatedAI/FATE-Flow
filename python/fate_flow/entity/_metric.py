@@ -20,6 +20,7 @@ from fate_flow.entity import BaseEntity
 class MetricType(Enum):
     LOSS = 'LOSS'
     DOWNLOAD = 'DOWNLOAD'
+    CACHE_INFO = 'cache_info'
 
 
 class Metric(BaseEntity):
