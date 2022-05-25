@@ -24,7 +24,7 @@ from fate_flow.components._base import (
     ComponentMeta,
     ComponentInputProtocol,
 )
-from fate_flow.entity import Metric, MetricMeta
+from fate_flow.entity import Metric, MetricMeta, MetricType
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.utils import job_utils
 
@@ -118,5 +118,5 @@ class Download(ComponentBase):
         self.tracker.set_metric_meta(
             metric_namespace,
             metric_name,
-            MetricMeta(name="download", metric_type="DOWNLOAD"),
+            MetricMeta(name="download", metric_type=MetricType.DOWNLOAD),
         )
