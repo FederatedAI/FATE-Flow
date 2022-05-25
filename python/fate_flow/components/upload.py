@@ -261,7 +261,7 @@ class Upload(ComponentBase):
         block_size = self.parameters.get("block_size", 1)
         if storage_engine not in {StorageEngine.EGGROLL, StorageEngine.STANDALONE} or block_size == 1:
             return data_head, [file_path], None
-        if isinstance(block_size, int) and block_size> 1:
+        if isinstance(block_size, int) and block_size > 1:
             block_line = int(input_feature_count / self.parameters.get("block_size", 5)) + 1
         else:
             raise ValueError(f"block size value error:{block_size}")
@@ -400,8 +400,8 @@ class Upload(ComponentBase):
         while True:
             for p in upload_process:
                 LOGGER.info(f"pid {p.pid} poll status: {p.poll()}")
-                if p.poll() != None:
-                    if p.poll() !=0:
+                if p.poll() is not None:
+                    if p.poll() != 0:
                         raise Exception(p.stderr)
                     upload_process.remove(p)
             LOGGER.info(f"running pid:{[p.pid for p in upload_process]}")
