@@ -13,7 +13,7 @@ database_config = {
 
 
 class MysqldbHelper(object):
-    def __init__(self, host='', user='', passwd='', port='',  database=''):
+    def __init__(self, host='', user='', passwd='', port='', database=''):
         self.host = host
         self.user = user
         self.password = passwd
@@ -23,7 +23,8 @@ class MysqldbHelper(object):
         self.cur = None
         try:
             print(host, user, passwd, port, database)
-            self.con = pymysql.connect(host=self.host, user=self.user, passwd=self.password, port=self.port, db=self.database)
+            self.con = pymysql.connect(host=self.host, user=self.user, passwd=self.password, port=self.port,
+                                       db=self.database)
             self.cur = self.con.cursor()
         except:
             print("DataBase connect error,please check the db config.")
@@ -59,7 +60,8 @@ def write_to_db(conf, table_name, file_name, namespace, partitions, head):
         if head:
             data_head = f.readline()
             header_source_item = data_head.split(',')
-            table_meta.update_metas(schema={'header': ','.join(header_source_item[1:]).strip(), 'sid': header_source_item[0]})
+            table_meta.update_metas(
+                schema={'header': ','.join(header_source_item[1:]).strip(), 'sid': header_source_item[0]})
         n = 0
         count = 0
         while True:
@@ -76,7 +78,7 @@ def write_to_db(conf, table_name, file_name, namespace, partitions, head):
                 sql = ','.join(sql.split(',')[:-1]) + ';'
                 if n == 0:
                     table_meta.update_metas(part_of_data=data, partitions=partitions)
-                n +=1
+                n += 1
                 db.execute(sql)
                 db.con.commit()
             else:

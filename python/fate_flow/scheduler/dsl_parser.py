@@ -209,7 +209,8 @@ class BaseDSLParser(object):
                         if input_component not in self.component_name_index:
                             raise InputComponentNotExistError(component=name, value_type=keyword, input=input_component)
                         else:
-                            if input_component not in components_output or out_type not in components_output[input_component]:
+                            if input_component not in components_output or out_type not in components_output[
+                                input_component]:
                                 raise InputNameNotExistError(component=name, input=input_component,
                                                              value_type=keyword, other_info=input_model_name)
 
@@ -606,14 +607,14 @@ class BaseDSLParser(object):
                 if self.train_input_model.get(name, None) is None:
                     param_name = "ComponentParam"
                     if parameters.get(param_name) is None \
-                        or parameters[param_name].get("need_run") is False:
+                            or parameters[param_name].get("need_run") is False:
                         graph_dependency["component_need_run"][name] = False
                     else:
                         graph_dependency["component_need_run"][name] = True
                 else:
                     input_model_name = self.train_input_model.get(name)
                     graph_dependency["component_need_run"][name] = graph_dependency["component_need_run"][
-                            input_model_name]
+                        input_model_name]
 
         return graph_dependency
 
@@ -641,7 +642,8 @@ class BaseDSLParser(object):
                 config_old = reused_dsl["components"][cpn].get(vk, None)
                 config_new = new_dsl["components"][cpn].get(vk, None)
                 if config_old != config_new:
-                    raise ValueError(f"Component {cpn}'s {vk} should be same, but old is {config_old}, new is {config_new}")
+                    raise ValueError(
+                        f"Component {cpn}'s {vk} should be same, but old is {config_old}, new is {config_new}")
 
             inputs = reused_dsl["components"][cpn].get("input", {})
             list_dep_key = ["cache", "model", "isometric_model"]
@@ -737,16 +739,19 @@ class BaseDSLParser(object):
                             for input_data in data_set:
                                 if version == 1 and input_data.split(".")[0] == "args":
                                     new_input_data = "args.eval_data"
-                                    self.predict_dsl["components"][name]["input"]["data"][data_value].append(new_input_data)
+                                    self.predict_dsl["components"][name]["input"]["data"][data_value].append(
+                                        new_input_data)
                                 elif version == 2 and input_data.split(".")[0] == "args":
                                     self.predict_dsl["components"][name]["input"]["data"][data_value].append(input_data)
-                                elif version == 2 and self.dsl["components"][input_data.split(".")[0]].get("module") == "Reader":
+                                elif version == 2 and self.dsl["components"][input_data.split(".")[0]].get(
+                                        "module") == "Reader":
                                     self.predict_dsl["components"][name]["input"]["data"][data_value].append(input_data)
                                 else:
                                     pre_name = input_data.split(".")[0]
                                     data_suffix = input_data.split(".")[1]
                                     if self.get_need_deploy_parameter(name=pre_name, deploy_cpns=deploy_cpns):
-                                        self.predict_dsl["components"][name]["input"]["data"][data_value].append(input_data)
+                                        self.predict_dsl["components"][name]["input"]["data"][data_value].append(
+                                            input_data)
                                     else:
                                         self.predict_dsl["components"][name]["input"]["data"][data_value].extend(
                                             output_data_maps[pre_name][data_suffix])
@@ -809,13 +814,16 @@ class BaseDSLParser(object):
 
                     up_input_data_component_name = up_input_data.split(".", -1)[0]
                     if up_input_data_component_name == "args" \
-                            or self.get_need_deploy_parameter(name=up_input_data_component_name, deploy_cpns=deploy_cpns):
+                            or self.get_need_deploy_parameter(name=up_input_data_component_name,
+                                                              deploy_cpns=deploy_cpns):
                         output_data_maps[name][output_data_str] = [up_input_data]
-                    elif self.components[self.component_name_index.get(up_input_data_component_name)].get_module() == "Reader":
+                    elif self.components[
+                        self.component_name_index.get(up_input_data_component_name)].get_module() == "Reader":
                         output_data_maps[name][output_data_str] = [up_input_data]
                     else:
                         up_input_data_suf = up_input_data.split(".", -1)[-1]
-                        output_data_maps[name][output_data_str] = output_data_maps[up_input_data_component_name][up_input_data_suf]
+                        output_data_maps[name][output_data_str] = output_data_maps[up_input_data_component_name][
+                            up_input_data_suf]
 
     def run(self, *args, **kwargs):
         pass
@@ -1039,8 +1047,9 @@ class DSLParserV1(BaseDSLParser):
             if conf_v1.get("role_parameters"):
                 conf_v2["component_parameters"]["role"] = dict()
                 for cpn, role_params in role_parameters.items():
-                    conf_v2["component_parameters"]["role"] = RuntimeConfParserUtil.merge_dict(conf_v2["component_parameters"]["role"],
-                                                                                               role_params)
+                    conf_v2["component_parameters"]["role"] = RuntimeConfParserUtil.merge_dict(
+                        conf_v2["component_parameters"]["role"],
+                        role_params)
 
         conf_v2["dsl_version"] = 2
 
@@ -1114,7 +1123,8 @@ class DSLParserV2(BaseDSLParser):
         return self.components
 
     def parse_user_specified_component_parameters(self, component_name, provider_detail, provider_name,
-                                                  provider_version, local_role, local_party_id, previous_parameters=None):
+                                                  provider_version, local_role, local_party_id,
+                                                  previous_parameters=None):
         if self.mode == "predict":
             runtime_conf = self.predict_runtime_conf
         else:
@@ -1205,7 +1215,8 @@ class DSLParserV2(BaseDSLParser):
             cpn_pre_common_params = pre_common_params.get(cpn, {})
             cpn_cur_common_params = cur_common_params.get(cpn, {})
             if cpn_pre_common_params != cpn_cur_common_params:
-                raise ValueError(f"{cpn}'s common parameters old:{cpn_pre_common_params} != new:{cpn_cur_common_params}")
+                raise ValueError(
+                    f"{cpn}'s common parameters old:{cpn_pre_common_params} != new:{cpn_cur_common_params}")
 
         # step3: check component role parameters
         first_role_params = pre_role_params
@@ -1227,6 +1238,3 @@ class DSLParserV2(BaseDSLParser):
                                              f"!= new: {r}-{party_idx}-{cpn_second_role_params}")
 
             first_role_params, second_role_params = cur_role_params, pre_role_params
-
-
-

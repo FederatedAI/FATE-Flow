@@ -8,7 +8,6 @@ from fate_flow.entity.run_status import JobStatus
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.settings import API_VERSION, HOST, HTTP_PORT
 
-
 server_url = "http://{}:{}/{}".format(HOST, HTTP_PORT, API_VERSION)
 
 
@@ -17,8 +16,8 @@ class TestTable(unittest.TestCase):
         self.data_dir = os.path.join(get_fate_flow_directory(), "examples", "data")
         self.upload_config = {"file": os.path.join(self.data_dir, "breast_hetero_guest.csv"), "head": 1,
                               "partition": 10, "namespace": "fate_flow_test_table_breast_hetero",
-                              "table_name": "breast_hetero_guest", "use_local_data": 0, 'drop': 1, 'backend': 0, "id_delimiter": ','}
-
+                              "table_name": "breast_hetero_guest", "use_local_data": 0, 'drop': 1, 'backend': 0,
+                              "id_delimiter": ','}
 
     def test_upload_guest(self):
         response = requests.post("/".join([server_url, 'data', 'upload']), json=self.upload_config)
@@ -42,7 +41,6 @@ class TestTable(unittest.TestCase):
         self.assertTrue(int(response.json()['retcode']) == 0)
 
 
-
 def test_table_info():
     response = requests.post("/".join([server_url, 'table', 'table_info']),
                              json={'table_name': 'breast_hetero_guest',
@@ -60,5 +58,3 @@ def test_table_delete():
 
 if __name__ == '__main__':
     unittest.main()
-
-

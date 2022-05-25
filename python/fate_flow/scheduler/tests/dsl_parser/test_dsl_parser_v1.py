@@ -33,17 +33,16 @@ with open(conf_path_v1, "r") as fin:
 with open(provider_path, "r") as fin:
     provider_detail = json.loads(fin.read())
 
-
 dsl_parser_v1 = dsl_parser.DSLParserV1()
 dsl_v2, warning_msg = dsl_parser_v1.convert_dsl_v1_to_v2(dsl_v1)
 
 pprint.pprint(dsl_v2)
-print (warning_msg)
+print(warning_msg)
 exit(0)
 components = dsl_parser_v1.get_components_light_weight(dsl_v2)
 for cpn in components:
-    print (cpn.get_name())
-    print (cpn.get_module())
+    print(cpn.get_name())
+    print(cpn.get_module())
 
 pprint.pprint(dsl_parser_v1.get_job_parameters(conf_v1))
 
@@ -58,16 +57,18 @@ for cpn in components:
                                                                 dsl=dsl_v2,
                                                                 runtime_conf=conf_v1,
                                                                 provider_detail=provider_detail,
-                                                                provider_name=job_providers[cpn_name]["provider"]["name"],
-                                                                provider_version=job_providers[cpn_name]["provider"]["version"])
+                                                                provider_name=job_providers[cpn_name]["provider"][
+                                                                    "name"],
+                                                                provider_version=job_providers[cpn_name]["provider"][
+                                                                    "version"])
 
-    print (cpn_name)
+    print(cpn_name)
     pprint.pprint(role_params)
-    print ("\n")
+    print("\n")
 
     cpn_role_parameters[cpn_name] = role_params
 
-print ("\n\n\n")
+print("\n\n\n")
 
 conf_v2 = dsl_parser_v1.convert_conf_v1_to_v2(conf_v1, cpn_role_parameters)
 pprint.pprint(conf_v2)

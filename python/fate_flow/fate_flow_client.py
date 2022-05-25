@@ -161,12 +161,16 @@ def call_fun(func, config_data, dsl_path, config_path):
 
                     def read_callback(monitor):
                         if config_data.get('verbose') == 1:
-                            sys.stdout.write("\r UPLOADING:{0}{1}".format("|" * (monitor.bytes_read * 100 // monitor.len), '%.2f%%' % (monitor.bytes_read * 100 // monitor.len)))
+                            sys.stdout.write(
+                                "\r UPLOADING:{0}{1}".format("|" * (monitor.bytes_read * 100 // monitor.len),
+                                                             '%.2f%%' % (monitor.bytes_read * 100 // monitor.len)))
                             sys.stdout.flush()
-                            if monitor.bytes_read /monitor.len == 1:
-                                tag[0] += 1
-                                if tag[0] == 2:
-                                    sys.stdout.write('\n')
+                            if monitor.len != 1:
+                                return
+                            tag[0] += 1
+                            if tag[0] == 2:
+                                sys.stdout.write('\n')
+
                     data = MultipartEncoderMonitor(data, read_callback)
                     response = requests_utils.request(method="post", url="/".join([server_url, "data", func.replace('_', '/')]), data=data,
                                                       params=json.dumps(config_data), headers={'Content-Type': data.content_type})

@@ -34,7 +34,8 @@ class JobRuntimeConfigAdapter(object):
         else:
             if "processors_per_node" in self.job_runtime_conf['job_parameters']:
                 self.job_runtime_conf['job_parameters']["eggroll_run"] = \
-                    {"eggroll.session.processors.per.node": self.job_runtime_conf['job_parameters']["processors_per_node"]}
+                    {"eggroll.session.processors.per.node": self.job_runtime_conf['job_parameters'][
+                        "processors_per_node"]}
             job_parameters = RunParameters(**self.job_runtime_conf['job_parameters'])
             self.job_runtime_conf['job_parameters'] = job_parameters.to_dict()
         return job_parameters
@@ -54,7 +55,6 @@ class JobRuntimeConfigAdapter(object):
                 self.job_runtime_conf['job_parameters'] = job_parameters.to_dict()
         return self.job_runtime_conf['job_parameters']
 
-
     def check_removed_parameter(self):
         check_list = []
         if self.check_backend():
@@ -62,7 +62,6 @@ class JobRuntimeConfigAdapter(object):
         if self.check_work_mode():
             check_list.append("work_mode")
         return ','.join(check_list)
-
 
     def check_backend(self):
         if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
@@ -99,10 +98,3 @@ class JobRuntimeConfigAdapter(object):
             if model_version:
                 self.job_runtime_conf['job_parameters']['model_version'] = model_version
         return self.job_runtime_conf
-
-
-
-
-
-
-

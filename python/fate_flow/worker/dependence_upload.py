@@ -48,6 +48,7 @@ def upload_except_exit(func):
             }
             DependenceRegistry.save_dependencies_storage_meta(storage_meta)
             raise e
+
     return _wrapper
 
 
@@ -59,7 +60,8 @@ class DependenceUpload(BaseWorker):
 
     @classmethod
     @upload_except_exit
-    def upload_dependencies_to_hadoop(cls, provider, dependence_type, storage_engine=FateDependenceStorageEngine.HDFS.value):
+    def upload_dependencies_to_hadoop(cls, provider, dependence_type,
+                                      storage_engine=FateDependenceStorageEngine.HDFS.value):
         LOGGER.info(f'upload {dependence_type} dependencies to hadoop')
         LOGGER.info(f'dependencies loading ...')
         if dependence_type == FateDependenceName.Python_Env.value:
@@ -121,7 +123,8 @@ class DependenceUpload(BaseWorker):
             storage_meta["f_dependencies_conf"].update(dependencies_conf)
             DependenceRegistry.save_dependencies_storage_meta(storage_meta)
         else:
-            raise Exception(f"{os.getenv('HADOOP_HOME')}/bin/hdfs dfs -put {target_file} {storage_dir} failed status: {status}")
+            raise Exception(
+                f"{os.getenv('HADOOP_HOME')}/bin/hdfs dfs -put {target_file} {storage_dir} failed status: {status}")
         return storage_meta
 
     @classmethod
@@ -150,7 +153,6 @@ class DependenceUpload(BaseWorker):
     @staticmethod
     def move_dir(source_path, target_path):
         shutil.move(source_path, target_path)
-
 
     @classmethod
     def rewrite_pyvenv_cfg(cls, file, dir_name):

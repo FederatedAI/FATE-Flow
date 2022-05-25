@@ -54,7 +54,6 @@ class ServiceRegistry(ReloadConfigBase):
     def register(cls, service_name, service_config):
         setattr(cls, service_name, service_config)
 
-
     @classmethod
     def save(cls, service_config):
         update_server = {}
@@ -71,7 +70,7 @@ class ServiceRegistry(ReloadConfigBase):
         return update_server
 
     @classmethod
-    def parameter_verification(cls,service_name, service_info):
+    def parameter_verification(cls, service_name, service_info):
         registry_service_info = {
             "fatemanager": ["host", "port", "federatedId"],
             "studio": ["host", "port"]
@@ -83,7 +82,6 @@ class ServiceRegistry(ReloadConfigBase):
                             f' {registry_service_info.get(service_name)}')
         if "host" in service_info and "port" in service_info:
             cls.connection_test(service_info.get("host"), service_info.get("port"))
-
 
     @classmethod
     def connection_test(cls, ip, port):

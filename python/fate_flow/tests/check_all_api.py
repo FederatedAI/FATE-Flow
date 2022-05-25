@@ -53,7 +53,7 @@ for component_name in dependency_response['data']['component_list']:
             for metric_name in metric_names:
                 base_request_data['metric_name'] = metric_name
                 response = requests.post('{}/tracking/component/metric_data'.format(fate_flow_server_host), json=base_request_data)
-                if response.json()['retcode'] == 0 :
+                if response.json()['retcode'] == 0:
                     print('{} {} metric data:'.format(metric_namespace, metric_name))
                     print(response.json())
                 else:

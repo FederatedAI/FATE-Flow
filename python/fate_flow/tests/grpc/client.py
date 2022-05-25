@@ -32,7 +32,7 @@ def get_command_federation_channel(host, port):
 
 
 def remote_api(host, port, job_id, method, endpoint, src_party_id, dest_party_id, src_role, json_body, api_version="v1",
-               overall_timeout=30*1000, try_times=3):
+               overall_timeout=30 * 1000, try_times=3):
     endpoint = f"/{api_version}{endpoint}"
     json_body['src_role'] = src_role
     json_body['src_party_id'] = src_party_id
@@ -44,7 +44,8 @@ def remote_api(host, port, job_id, method, endpoint, src_party_id, dest_party_id
     for t in range(try_times):
         try:
             channel, stub = get_command_federation_channel(host, port)
-            _return, _call = stub.unaryCall.with_call(_packet, metadata=_routing_metadata, timeout=(overall_timeout/1000))
+            _return, _call = stub.unaryCall.with_call(_packet, metadata=_routing_metadata,
+                                                      timeout=(overall_timeout / 1000))
             audit_logger(job_id).info("grpc api response: {}".format(_return))
             channel.close()
             response = json.loads(_return.body.value)
@@ -52,16 +53,17 @@ def remote_api(host, port, job_id, method, endpoint, src_party_id, dest_party_id
         except Exception as e:
             exception = e
             schedule_logger(job_id).warning(f"remote request {endpoint} error, sleep and try again")
-            time.sleep(2 * (t+1))
+            time.sleep(2 * (t + 1))
     else:
         tips = 'Please check rollSite and fateflow network connectivity'
         raise Exception('{}rpc request error: {}'.format(tips, exception))
+
 
 host = sys.argv[1]
 port = int(sys.argv[2])
 src_role = sys.argv[3]
 src_party_id = sys.argv[4]
 dest_party_id = sys.argv[5]
-response = remote_api(host, port, "test_job_command", "POST", "/version/get", src_party_id, dest_party_id, src_role, {"src_role": src_role, "src_party_id": src_party_id})
+response = remote_api(host, port, "test_job_command", "POST", "/version/get", src_party_id, dest_party_id, src_role,
+                      {"src_role": src_role, "src_party_id": src_party_id})
 print(response)
-

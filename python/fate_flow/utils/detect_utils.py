@@ -42,7 +42,8 @@ def check_config(config: typing.Dict, required_arguments: typing.List):
         if no_arguments:
             error_string += "required parameters are missing: {}; ".format(",".join(no_arguments))
         if error_arguments:
-            error_string += "required parameter values: {}".format(",".join(["{}={}".format(a[0], a[1]) for a in error_arguments]))
+            error_string += "required parameter values: {}".format(
+                ",".join(["{}={}".format(a[0], a[1]) for a in error_arguments]))
         raise KeyError(error_string)
 
 
@@ -70,8 +71,11 @@ def validate_request(*args, **kwargs):
                 if no_arguments:
                     error_string += "required argument are missing: {}; ".format(",".join(no_arguments))
                 if error_arguments:
-                    error_string += "required argument values: {}".format(",".join(["{}={}".format(a[0], a[1]) for a in error_arguments]))
+                    error_string += "required argument values: {}".format(
+                        ",".join(["{}={}".format(a[0], a[1]) for a in error_arguments]))
                 return get_json_result(retcode=RetCode.ARGUMENT_ERROR, retmsg=error_string)
             return func(*_args, **_kwargs)
+
         return decorated_function
+
     return wrapper

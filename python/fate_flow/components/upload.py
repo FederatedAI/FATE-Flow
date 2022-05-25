@@ -290,7 +290,7 @@ class Upload(ComponentBase):
                 if read_count > 0:
                     file_list.append(part_file_name)
                     table_list.append({"name": table_name + '_' + name_uuid + str(partno), "namespace": namespace})
-                if (read_count < block_line):
+                if read_count < block_line:
                     break
                 partno += 1
         LOGGER.debug('finish split file {}: {}, {}, {}'.format(file_path, data_head, file_list, table_list))

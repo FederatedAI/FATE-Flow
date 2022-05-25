@@ -31,9 +31,11 @@ from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 def get_components():
     return get_json_result(data=ComponentRegistry.get_components())
 
+
 @manager.route('/<component_name>/get', methods=['POST'])
 def get_component(component_name):
     return get_json_result(data=ComponentRegistry.get_components().get(component_name))
+
 
 @manager.route('/validate', methods=['POST'])
 def validate_component_param():

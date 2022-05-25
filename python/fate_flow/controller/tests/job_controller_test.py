@@ -43,7 +43,7 @@ class TestJobController(unittest.TestCase):
                         "reader_0": {
                             "table": {"name": "breast_hetero_guest", "namespace": "unitest_experiment"}
                         },
-                        "homo_nn_0":{
+                        "homo_nn_0": {
                             "with_label": True,
                             "output_format": "dense"
                         },
@@ -51,7 +51,7 @@ class TestJobController(unittest.TestCase):
                 },
                 "host": {
                     "1": {
-                        "dataio_0":{
+                        "dataio_0": {
                             "with_label": True,
                             "output_format": "dense"
                         },

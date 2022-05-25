@@ -43,10 +43,10 @@ class JobIdGenerator(object):
         self._max = 99999
 
     def next_id(self):
-        '''
+        """
         generate next job id with locking
-        '''
-        #todo: there is duplication in the case of multiple instances deployment
+        """
+        # todo: there is duplication in the case of multiple instances deployment
         now = datetime.datetime.now()
         with JobIdGenerator._lock:
             if self._pre_timestamp == now:
@@ -159,7 +159,8 @@ def new_runtime_conf(job_dir, method, module, role, party_id):
     return os.path.join(conf_path_dir, 'runtime_conf.json')
 
 
-def save_job_conf(job_id, role, party_id, dsl, runtime_conf, runtime_conf_on_party, train_runtime_conf, pipeline_dsl=None):
+def save_job_conf(job_id, role, party_id, dsl, runtime_conf, runtime_conf_on_party, train_runtime_conf,
+                  pipeline_dsl=None):
     path_dict = get_job_conf_path(job_id=job_id, role=role, party_id=party_id)
     dump_job_conf(path_dict=path_dict,
                   dsl=dsl,
@@ -213,9 +214,10 @@ def dump_job_conf(path_dict, dsl, runtime_conf, runtime_conf_on_party, train_run
 
 @DB.connection_context()
 def get_job_configuration(job_id, role, party_id) -> JobConfiguration:
-    jobs = Job.select(Job.f_dsl, Job.f_runtime_conf, Job.f_train_runtime_conf, Job.f_runtime_conf_on_party).where(Job.f_job_id == job_id,
-                                                                                                                  Job.f_role == role,
-                                                                                                                  Job.f_party_id == party_id)
+    jobs = Job.select(Job.f_dsl, Job.f_runtime_conf, Job.f_train_runtime_conf, Job.f_runtime_conf_on_party).where(
+        Job.f_job_id == job_id,
+        Job.f_role == role,
+        Job.f_party_id == party_id)
     if jobs:
         job = jobs[0]
         return JobConfiguration(**job.to_human_model_dict())
@@ -256,9 +258,11 @@ def get_job_conf_path(job_id, role, party_id, specified_dir=None):
 def get_upload_job_configuration_summary(upload_tasks: typing.List[Task]):
     jobs_run_conf = {}
     for task in upload_tasks:
-        jobs = Job.select(Job.f_job_id, Job.f_runtime_conf_on_party, Job.f_description).where(Job.f_job_id == task.f_job_id)
+        jobs = Job.select(Job.f_job_id, Job.f_runtime_conf_on_party, Job.f_description).where(
+            Job.f_job_id == task.f_job_id)
         job = jobs[0]
-        jobs_run_conf[job.f_job_id] = job.f_runtime_conf_on_party["component_parameters"]["role"]["local"]["0"]["upload_0"]
+        jobs_run_conf[job.f_job_id] = job.f_runtime_conf_on_party["component_parameters"]["role"]["local"]["0"][
+            "upload_0"]
         jobs_run_conf[job.f_job_id]["notes"] = job.f_description
     return jobs_run_conf
 
@@ -331,7 +335,7 @@ def check_job_is_timeout(job: Job):
     job_parameters = job.f_runtime_conf_on_party["job_parameters"]
     timeout = job_parameters.get("timeout", JobDefaultConfig.job_timeout)
     now_time = current_timestamp()
-    running_time = (now_time - job.f_create_time)/1000
+    running_time = (now_time - job.f_create_time) / 1000
     if running_time > timeout:
         schedule_logger(job.f_job_id).info(f'run time {running_time}s timeout')
         return True
@@ -340,7 +344,8 @@ def check_job_is_timeout(job: Job):
 
 
 def start_session_stop(task):
-    job_parameters = RunParameters(**get_job_parameters(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id))
+    job_parameters = RunParameters(
+        **get_job_parameters(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id))
     session_manager_id = generate_session_id(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id)
     if task.f_status != TaskStatus.WAITING:
         schedule_logger(task.f_job_id).info(f'start run subprocess to stop task sessions {session_manager_id}')
@@ -371,11 +376,13 @@ def get_timeout(job_id, timeout, runtime_conf, dsl):
             return timeout
         else:
             default_timeout = job_default_timeout(runtime_conf, dsl)
-            schedule_logger(job_id).info(f'setting job timeout {timeout} not a positive number, using the default timeout {default_timeout}')
+            schedule_logger(job_id).info(
+                f'setting job timeout {timeout} not a positive number, using the default timeout {default_timeout}')
             return default_timeout
     except:
         default_timeout = job_default_timeout(runtime_conf, dsl)
-        schedule_logger(job_id).info(f'setting job timeout {timeout} is incorrect, using the default timeout {default_timeout}')
+        schedule_logger(job_id).info(
+            f'setting job timeout {timeout} is incorrect, using the default timeout {default_timeout}')
         return default_timeout
 
 
@@ -405,7 +412,10 @@ def check_job_inheritance_parameters(job, inheritance_jobs, inheritance_tasks):
         if component not in task_status.keys():
             raise Exception(f"job {job.f_inheritance_info.get('job_id')} no found component {component}")
         elif task_status[component] not in [TaskStatus.SUCCESS, TaskStatus.PASS]:
-            raise Exception(F"job {job.f_inheritance_info.get('job_id')} component {component} status:{task_status[component]}")
+            raise Exception(
+                F"job {job.f_inheritance_info.get('job_id')} component {component} status:{task_status[component]}")
     dsl_parser = get_dsl_parser_by_version()
-    dsl_parser.verify_conf_reusability(inheritance_job.f_runtime_conf, job.f_runtime_conf, job.f_inheritance_info.get('component_list'))
-    dsl_parser.verify_dsl_reusability(inheritance_job.f_dsl, job.f_dsl, job.f_inheritance_info.get('component_list', []))
+    dsl_parser.verify_conf_reusability(inheritance_job.f_runtime_conf, job.f_runtime_conf,
+                                       job.f_inheritance_info.get('component_list'))
+    dsl_parser.verify_dsl_reusability(inheritance_job.f_dsl, job.f_dsl,
+                                      job.f_inheritance_info.get('component_list', []))

@@ -36,7 +36,8 @@ def compare_roles(request_conf_roles: dict, run_time_conf_roles: dict):
         verify_format = True
         verify_equality = True
         for key in request_conf_roles.keys():
-            verify_format = verify_format and (len(request_conf_roles[key]) == len(run_time_conf_roles[key])) and (isinstance(request_conf_roles[key], list))
+            verify_format = verify_format and (len(request_conf_roles[key]) == len(run_time_conf_roles[key])) and (
+                isinstance(request_conf_roles[key], list))
             request_conf_roles_set = set(str(item) for item in request_conf_roles[key])
             run_time_conf_roles_set = set(str(item) for item in run_time_conf_roles[key])
             verify_equality = verify_equality and (request_conf_roles_set == run_time_conf_roles_set)
@@ -83,10 +84,11 @@ def migration(config_data: dict):
         if "pipeline.pipeline:Pipeline" not in model_data:
             raise Exception("Can not found pipeline file in model.")
 
-        migrate_model = pipelined_model.PipelinedModel(model_id=model_utils.gen_party_model_id(model_id=model_utils.gen_model_id(config_data["migrate_role"]),
-                                                                                               role=config_data["local"]["role"],
-                                                                                               party_id=config_data["local"]["migrate_party_id"]),
-                                                       model_version=config_data["unify_model_version"])
+        migrate_model = pipelined_model.PipelinedModel(
+            model_id=model_utils.gen_party_model_id(model_id=model_utils.gen_model_id(config_data["migrate_role"]),
+                                                    role=config_data["local"]["role"],
+                                                    party_id=config_data["local"]["migrate_party_id"]),
+            model_version=config_data["unify_model_version"])
 
         # migrate_model.create_pipelined_model()
         shutil.copytree(src=model.model_path, dst=migrate_model.model_path)
@@ -99,8 +101,9 @@ def migration(config_data: dict):
         train_runtime_conf["initiator"] = config_data["migrate_initiator"]
 
         adapter = JobRuntimeConfigAdapter(train_runtime_conf)
-        train_runtime_conf = adapter.update_model_id_version(model_id=model_utils.gen_model_id(train_runtime_conf["role"]),
-                                                             model_version=migrate_model.model_version)
+        train_runtime_conf = adapter.update_model_id_version(
+            model_id=model_utils.gen_model_id(train_runtime_conf["role"]),
+            model_version=migrate_model.model_version)
 
         # update pipeline.pb file
         pipeline.train_runtime_conf = json_dumps(train_runtime_conf, byte=True)
@@ -134,8 +137,10 @@ def migration(config_data: dict):
                                                                new_guest_list=config_data['migrate_role']['guest'],
                                                                old_host_list=config_data['role']['host'],
                                                                new_host_list=config_data['migrate_role']['host'],
-                                                               old_arbiter_list=config_data.get('role', {}).get('arbiter', None),
-                                                               new_arbiter_list=config_data.get('migrate_role', {}).get('arbiter', None))
+                                                               old_arbiter_list=config_data.get('role', {}).get(
+                                                                   'arbiter', None),
+                                                               new_arbiter_list=config_data.get('migrate_role', {}).get(
+                                                                   'arbiter', None))
                 migrate_model.save_component_model(component_name=key, component_module_name=module_name,
                                                    model_alias=v, model_buffers=modified_buffer)
 
@@ -144,11 +149,11 @@ def migration(config_data: dict):
         shutil.rmtree(os.path.abspath(migrate_model.model_path))
 
         return (0, f"Migrating model successfully. " \
-                  "The configuration of model has been modified automatically. " \
-                  "New model id is: {}, model version is: {}. " \
-                  "Model files can be found at '{}'.".format(adapter.get_common_parameters().to_dict().get("model_id"),
-                                                             migrate_model.model_version,
-                                                             os.path.abspath(archive_path)),
+                   "The configuration of model has been modified automatically. " \
+                   "New model id is: {}, model version is: {}. " \
+                   "Model files can be found at '{}'.".format(adapter.get_common_parameters().to_dict().get("model_id"),
+                                                              migrate_model.model_version,
+                                                              os.path.abspath(archive_path)),
                 {"model_id": migrate_model.model_id,
                  "model_version": migrate_model.model_version,
                  "path": os.path.abspath(archive_path)})

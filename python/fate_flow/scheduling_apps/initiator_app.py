@@ -36,7 +36,7 @@ def rerun_job(job_id, role, party_id):
                                component_name=request.json.get("component_name"),
                                force=request.json.get("force", False),
                                auto=False)
-    #todo: 判断状态
+    # todo: 判断状态
     return get_json_result(retcode=0, retmsg='success')
 
 

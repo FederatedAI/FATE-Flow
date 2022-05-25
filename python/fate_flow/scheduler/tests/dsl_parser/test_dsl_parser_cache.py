@@ -32,24 +32,19 @@ with open(conf_path, "r") as fin:
 with open(provider_path, "r") as fin:
     provider_detail = json.loads(fin.read())
 
-
 dsl_parser_v2 = dsl_parser.DSLParserV2()
 dsl_parser_v2.run(dsl=dsl,
                   runtime_conf=conf,
                   mode="train")
 
 pprint.pprint(dsl_parser_v2.get_job_parameters())
-print ("\n\n\n")
-pprint.pprint(dsl_parser_v2.get_job_providers(provider_detail=provider_detail,
-                                              local_role="arbiter",
-                                              local_party_id=9999))
-print ("\n\n\n")
+print("\n\n\n")
+pprint.pprint(dsl_parser_v2.get_job_providers(provider_detail=provider_detail))
+print("\n\n\n")
 pprint.pprint(dsl_parser_v2.get_dependency())
-print ("\n\n\n")
+print("\n\n\n")
 
-job_providers = dsl_parser_v2.get_job_providers(provider_detail=provider_detail,
-                                                local_role="arbiter",
-                                                local_party_id=9999)
+job_providers = dsl_parser_v2.get_job_providers(provider_detail=provider_detail)
 component_parameters = dict()
 for component in job_providers.keys():
     provider_info = job_providers[component]["provider"]
@@ -64,17 +59,16 @@ for component in job_providers.keys():
                                                          local_party_id=9999)
 
     component_parameters[component] = parameter
-    pprint.pprint (parameter)
+    pprint.pprint(parameter)
 
 pprint.pprint(dsl_parser_v2.get_dependency_with_parameters(component_parameters))
-print ("\n\n\n")
-
+print("\n\n\n")
 
 pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "dataio_0", "intersection_0"], dsl))
-print ("\n\n\n")
+print("\n\n\n")
 
 pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "dataio_0", "intersection_1"], dsl))
-print ("\n\n\n")
+print("\n\n\n")
 
 pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "dataio_0", "intersection_0", "intersection_1"], dsl))
-print ("\n\n\n")
+print("\n\n\n")

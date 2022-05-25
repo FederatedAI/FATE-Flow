@@ -49,7 +49,8 @@ class DataTableTracker(object):
         if entity_info.get("have_parent"):
             parent_trackers = DataTableTracking.select().where(
                 DataTableTracking.f_table_name == entity_info.get("parent_table_name"),
-                DataTableTracking.f_table_namespace == entity_info.get("parent_table_namespace")).order_by(DataTableTracking.f_create_time.desc())
+                DataTableTracking.f_table_namespace == entity_info.get("parent_table_namespace")).order_by(
+                DataTableTracking.f_create_time.desc())
             if not parent_trackers:
                 tracker.f_source_table_name = entity_info.get("parent_table_name")
                 tracker.f_source_table_namespace = entity_info.get("parent_table_namespace")
@@ -77,7 +78,6 @@ class DataTableTracker(object):
                        operator.attrgetter('f_parent_table_namespace')(DataTableTracking) == table_namespace]
         trackers = DataTableTracking.select().where(*filters)
         return [tracker for tracker in trackers]
-
 
     @classmethod
     @DB.connection_context()
@@ -197,7 +197,8 @@ class TableStorage:
     def send_table(output_tables_meta, tar_file_name, limit=-1, need_head=True):
         output_data_file_list = []
         output_data_meta_file_list = []
-        output_tmp_dir = os.path.join(get_fate_flow_directory(), 'tmp/{}/{}'.format(datetime.datetime.now().strftime("%Y%m%d"), fate_uuid()))
+        output_tmp_dir = os.path.join(get_fate_flow_directory(),
+                                      'tmp/{}/{}'.format(datetime.datetime.now().strftime("%Y%m%d"), fate_uuid()))
         for output_name, output_table_meta in output_tables_meta.items():
             output_data_count = 0
             output_data_file_path = "{}/{}.csv".format(output_tmp_dir, output_name)

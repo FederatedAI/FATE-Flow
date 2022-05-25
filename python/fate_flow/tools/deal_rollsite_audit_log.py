@@ -5,7 +5,8 @@ import re
 import requests
 import traceback
 import datetime
-from deal_rollsite_audit_log_settings import LOG_INDEX, ELASTIC_SEARCH_URL, ELASTIC_SEARCH_AUTH, ELASTIC_SEARCH_USER, ELASTIC_SEARCH_PASSWORD, HOST_ROLE_PARTY_ID
+from deal_rollsite_audit_log_settings import LOG_INDEX, ELASTIC_SEARCH_URL, ELASTIC_SEARCH_AUTH, ELASTIC_SEARCH_USER, \
+    ELASTIC_SEARCH_PASSWORD, HOST_ROLE_PARTY_ID
 
 LOG_PATH = ""
 SERVER_IP = None
@@ -63,7 +64,7 @@ def deal_log(LOG_PATH, end_pos):
 
 def merge_audit_log(audit_log, audit_logs):
     if audit_log:
-        #audit_logs.append(json.dumps({"index": {"_index": "fate_rollsite_exchange_audit"}}))
+        # audit_logs.append(json.dumps({"index": {"_index": "fate_rollsite_exchange_audit"}}))
         audit_logs.append('{"index":{}}')
         audit_logs.append(json.dumps(audit_log))
 
@@ -76,12 +77,14 @@ def search_pending_logs(log_dir, st_ino, st_mtime):
     year_dirs.sort(key=lambda f: os.stat(f).st_mtime, reverse=True)
     for year_dir in year_dirs:
         print(f"search year dir: {year_dir}")
-        month_dirs = [os.path.join(year_dir, f) for f in os.listdir(year_dir) if os.path.isdir(os.path.join(year_dir, f))]
+        month_dirs = [os.path.join(year_dir, f) for f in os.listdir(year_dir) if
+                      os.path.isdir(os.path.join(year_dir, f))]
         month_dirs.sort(key=lambda f: os.stat(f).st_mtime, reverse=True)
         year_search = False
         for month_dir in month_dirs:
             print(f"search month dir: {month_dir}")
-            day_dirs = [os.path.join(month_dir, f) for f in os.listdir(month_dir) if os.path.isdir(os.path.join(month_dir, f))]
+            day_dirs = [os.path.join(month_dir, f) for f in os.listdir(month_dir) if
+                        os.path.isdir(os.path.join(month_dir, f))]
             day_dirs.sort(key=lambda f: os.stat(f).st_mtime, reverse=True)
             month_search = False
             for day_dir in day_dirs:
@@ -143,13 +146,15 @@ def save_progress(progress):
 
 
 def deal_line(src):
-    #a = "[INFO ][36165610][2021-03-19 20:08:05,935][grpc-server-9370-30,pid:32590,tid:89][audit:87] - task={taskId=202103192007180194594}|src={name=202103192007180194594,partyId=9999,role=fateflow,callback={ip=127.0.0.1,port=9360}}|dst={name=202103192007180194594,partyId=10000,role=fateflow}|command={name=/v1/party/202103192007180194594/arbiter/10000/clean}|operator=POST|conf={overallTimeout=30000}"
+    # a = "[INFO ][36165610][2021-03-19 20:08:05,935][grpc-server-9370-30,pid:32590,tid:89][audit:87] - task={taskId=202103192007180194594}|src={name=202103192007180194594,partyId=9999,role=fateflow,callback={ip=127.0.0.1,port=9360}}|dst={name=202103192007180194594,partyId=10000,role=fateflow}|command={name=/v1/party/202103192007180194594/arbiter/10000/clean}|operator=POST|conf={overallTimeout=30000}"
     meta_data = {}
     try:
         split_items = src.split(" - ")
         meta_line = split_items[1].strip()
         meta_data["logTime"] = re.findall("\[.*?\]", split_items[0])[2].strip("[").strip("]")
-        meta_data["logTime"] = (datetime.datetime.strptime(meta_data["logTime"], "%Y-%m-%d %H:%M:%S,%f") - datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
+        meta_data["logTime"] = (datetime.datetime.strptime(meta_data["logTime"],
+                                                           "%Y-%m-%d %H:%M:%S,%f") - datetime.timedelta(
+            hours=8)).strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
         for meta_item_str in meta_line.split("|"):
             meta_item_key = meta_item_str[:meta_item_str.index("=")]
             meta_item_value_str = meta_item_str[meta_item_str.index("=") + 1:]
@@ -159,7 +164,9 @@ def deal_line(src):
                 meta_item_value = meta_item_value_str
             meta_data[meta_item_key] = meta_item_value
         meta_data["jobId"] = meta_data["task"]["taskId"]
-        meta_data["jobDate"] = (datetime.datetime.strptime(meta_data["jobId"][:14], "%Y%m%d%H%M%S") - datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
+        meta_data["jobDate"] = (
+                datetime.datetime.strptime(meta_data["jobId"][:14], "%Y%m%d%H%M%S") - datetime.timedelta(
+            hours=8)).strftime("%Y-%m-%d %H:%M:%S")
         meta_data["server"] = SERVER_IP
         meta_data["exchangeType"] = EXCHANGE_TYPE
         meta_data["src"]["role"] = "host" if meta_data["src"]["partyId"] in HOST_ROLE_PARTY_ID else "guest"
@@ -223,13 +230,13 @@ def bulk_save(audit_logs):
     if ELASTIC_SEARCH_AUTH:
         res = requests.post("/".join([ELASTIC_SEARCH_URL, LOG_INDEX, "_doc", "_bulk"]),
                             data=data,
-                            headers={'content-type':'application/json', 'charset':'UTF-8'},
+                            headers={'content-type': 'application/json', 'charset': 'UTF-8'},
                             timeout=(30, 300),
                             auth=(ELASTIC_SEARCH_USER, ELASTIC_SEARCH_PASSWORD))
     else:
         res = requests.post("/".join([ELASTIC_SEARCH_URL, LOG_INDEX, "_doc", "_bulk"]),
                             data=data,
-                            headers={'content-type':'application/json', 'charset':'UTF-8'},
+                            headers={'content-type': 'application/json', 'charset': 'UTF-8'},
                             timeout=(30, 300))
     print(res.text)
     print(res.json())

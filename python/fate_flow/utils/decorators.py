@@ -34,5 +34,7 @@ def trys(times=20):
                         LOGGER.error(f"function {func.__name__} error, no retries", exc_info=True)
                         raise e
                 time.sleep(0.1 * n)
+
         return decorated_function
+
     return wrapper

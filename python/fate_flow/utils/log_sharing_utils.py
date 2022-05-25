@@ -16,20 +16,21 @@ LOGMapping = {
     "componentInfo": "INFO.log"
 }
 
+
 def parameters_check(log_type, job_id, role, party_id, component_name):
     if log_type in JOB:
         if not job_id:
             return False
     if log_type in PARTY:
         if not job_id or not role or not party_id:
-            return  False
+            return False
     if log_type in COMPONENT:
         if not job_id or not role or not party_id or not component_name:
             return False
     return True
 
 
-class LogCollector():
+class LogCollector:
     def __init__(self, log_type, job_id, party_id="", role="", component_name="", **kwargs):
         self.log_type = log_type
         self.job_id = job_id
@@ -46,7 +47,7 @@ class LogCollector():
             "jobScheduleError": os.path.join(self.job_id, "fate_flow_schedule_error.log"),
             "partyError": os.path.join(self.job_id, self.role, self.party_id, "ERROR.log"),
             "partyWarning": os.path.join(self.job_id, self.role, self.party_id, "WARNING.log"),
-            "partyInfo": os.path.join(self.job_id,self.role, self.party_id, "INFO.log"),
+            "partyInfo": os.path.join(self.job_id, self.role, self.party_id, "INFO.log"),
             "partyDebug": os.path.join(self.job_id, self.role, self.party_id, "DEBUG.log"),
             "componentInfo": os.path.join(self.job_id, self.role, self.party_id, self.component_name, "INFO.log")
         }
@@ -57,7 +58,7 @@ class LogCollector():
     def cat_log(self, begin, end):
         line_list = []
         if begin and end:
-            cmd = f"cat {self.get_log_file_path()} | tail -n +{begin}| head -n {end-begin+1}"
+            cmd = f"cat {self.get_log_file_path()} | tail -n +{begin}| head -n {end - begin + 1}"
         elif begin:
             cmd = f"cat {self.get_log_file_path()} | tail -n +{begin}"
         elif end:
@@ -89,4 +90,3 @@ class LogCollector():
         data = res.read()
         res.close()
         return data
-

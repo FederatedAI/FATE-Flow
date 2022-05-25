@@ -42,7 +42,6 @@ from fate_flow.component_env_utils import provider_utils
 from fate_flow.worker.task_base_worker import BaseTaskWorker, ComponentInput
 from fate_flow.utils.base_utils import get_fate_flow_python_directory
 
-
 LOGGER = getLogger()
 
 
@@ -52,7 +51,8 @@ class TaskExecutor(BaseTaskWorker):
         args = self.args
         start_time = current_timestamp()
         try:
-            LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
+            LOGGER.info(
+                f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
             self.report_info.update({
                 "job_id": args.job_id,
                 "component_name": args.component_name,
@@ -64,7 +64,9 @@ class TaskExecutor(BaseTaskWorker):
                 "run_pid": self.run_pid
             })
             operation_client = OperationClient()
-            job_configuration = JobConfiguration(**operation_client.get_job_conf(args.job_id, args.role, args.party_id, args.component_name, args.task_id, args.task_version))
+            job_configuration = JobConfiguration(
+                **operation_client.get_job_conf(args.job_id, args.role, args.party_id, args.component_name,
+                                                args.task_id, args.task_version))
             task_parameters_conf = args.config
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
                                                            runtime_conf=job_configuration.runtime_conf,
@@ -79,7 +81,8 @@ class TaskExecutor(BaseTaskWorker):
             if job_parameters.assistant_role:
                 TaskExecutor.monkey_patch()
 
-            job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser, job_configuration.runtime_conf_on_party, args.role, args.party_id)
+            job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser, job_configuration.runtime_conf_on_party,
+                                                                   args.role, args.party_id)
             component = dsl_parser.get_component_info(component_name=args.component_name)
             module_name = component.get_module()
             task_input_dsl = component.get_input()
@@ -107,11 +110,12 @@ class TaskExecutor(BaseTaskWorker):
             previous_components_parameters = tracker_client.get_model_run_parameters()
             LOGGER.info(f"previous_components_parameters:\n{json_dumps(previous_components_parameters, indent=4)}")
 
-            component_provider, component_parameters_on_party, user_specified_parameters = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
-                                                                                                                                  component_name=args.component_name,
-                                                                                                                                  role=args.role,
-                                                                                                                                  party_id=args.party_id,
-                                                                                                                                  previous_components_parameters=previous_components_parameters)
+            component_provider, component_parameters_on_party, user_specified_parameters = ProviderManager.get_component_run_info(
+                dsl_parser=dsl_parser,
+                component_name=args.component_name,
+                role=args.role,
+                party_id=args.party_id,
+                previous_components_parameters=previous_components_parameters)
             RuntimeConfig.set_component_provider(component_provider)
             LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
             flow_feeded_parameters = {"output_data_name": task_output_dsl.get("data")}
@@ -139,10 +143,12 @@ class TaskExecutor(BaseTaskWorker):
                 sess.init_federation(federation_session_id=args.federation_session_id,
                                      runtime_conf=component_parameters_on_party,
                                      service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
-            LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
+            LOGGER.info(
+                f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
             LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
             LOGGER.info(f"task input dsl {task_input_dsl}")
-            task_run_args, input_table_list = self.get_task_run_args(job_id=args.job_id, role=args.role, party_id=args.party_id,
+            task_run_args, input_table_list = self.get_task_run_args(job_id=args.job_id, role=args.role,
+                                                                     party_id=args.party_id,
                                                                      task_id=args.task_id,
                                                                      task_version=args.task_version,
                                                                      job_args=job_args_on_party,
@@ -156,7 +162,9 @@ class TaskExecutor(BaseTaskWorker):
 
             need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
             provider_interface = provider_utils.get_provider_interface(provider=component_provider)
-            run_object = provider_interface.get(module_name, ComponentRegistry.get_provider_components(provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(self.args.role)
+            run_object = provider_interface.get(module_name, ComponentRegistry.get_provider_components(
+                provider_name=component_provider.name, provider_version=component_provider.version)).get_run_obj(
+                self.args.role)
             flow_feeded_parameters.update({"table_info": input_table_list})
             cpn_input = ComponentInput(
                 tracker=tracker_client,
@@ -198,7 +206,7 @@ class TaskExecutor(BaseTaskWorker):
             LOGGER.info(f"task output data {cpn_output.data}")
             for index, data in enumerate(cpn_output.data):
                 data_name = task_output_dsl.get('data')[index] if task_output_dsl.get('data') else '{}'.format(index)
-                #todo: the token depends on the engine type, maybe in job parameters
+                # todo: the token depends on the engine type, maybe in job parameters
                 persistent_table_namespace, persistent_table_name = tracker.save_output_data(
                     computing_table=data,
                     output_storage_engine=job_parameters.storage_engine,
@@ -212,7 +220,8 @@ class TaskExecutor(BaseTaskWorker):
 
             # There is only one model output at the current dsl version.
             tracker_client.save_component_output_model(model_buffers=cpn_output.model,
-                                                       model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
+                                                       model_alias=task_output_dsl['model'][0] if task_output_dsl.get(
+                                                           'model') else 'default',
                                                        user_specified_run_parameters=user_specified_parameters)
             if cpn_output.cache is not None:
                 for i, cache in enumerate(cpn_output.cache):
@@ -226,7 +235,8 @@ class TaskExecutor(BaseTaskWorker):
                                                   cache_meta=cache[1],
                                                   cache_name=name,
                                                   output_storage_engine=job_parameters.storage_engine,
-                                                  output_storage_address=job_parameters.engines_address.get(EngineType.STORAGE, {}),
+                                                  output_storage_address=job_parameters.engines_address.get(
+                                                      EngineType.STORAGE, {}),
                                                   token={"username": user_name})
                     else:
                         raise RuntimeError(f"can not support type {type(cache)} module run object output cache")
@@ -258,7 +268,7 @@ class TaskExecutor(BaseTaskWorker):
     def log_output_data_table_tracker(cls, job_id, input_table_list, output_table_list):
         try:
             parent_number = 0
-            if len(input_table_list) > 1 and len(output_table_list)>1:
+            if len(input_table_list) > 1 and len(output_table_list) > 1:
                 # TODO
                 return
             for input_table in input_table_list:
@@ -271,7 +281,7 @@ class TaskExecutor(BaseTaskWorker):
                                                               "parent_number": parent_number,
                                                               "job_id": job_id
                                                           })
-                parent_number +=1
+                parent_number += 1
         except Exception as e:
             LOGGER.exception(e)
 
@@ -367,7 +377,10 @@ class TaskExecutor(BaseTaskWorker):
                         search_component_name, search_model_alias = dsl_model_key_items[1], dsl_model_key_items[2]
                     else:
                         raise Exception('get input {} failed'.format(input_type))
-                    tracker_client = TrackerClient(job_id=job_id, role=role, party_id=party_id, component_name=search_component_name, model_id=job_parameters.model_id, model_version=job_parameters.model_version)
+                    tracker_client = TrackerClient(job_id=job_id, role=role, party_id=party_id,
+                                                   component_name=search_component_name,
+                                                   model_id=job_parameters.model_id,
+                                                   model_version=job_parameters.model_version)
                     models = tracker_client.read_component_output_model(search_model_alias)
                     this_type_args[search_component_name] = models
             else:
@@ -394,4 +407,3 @@ if __name__ == '__main__':
     worker = TaskExecutor()
     worker.run()
     worker.report_task_info_to_driver()
-

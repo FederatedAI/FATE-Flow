@@ -51,7 +51,8 @@ class JobController(object):
         runtime_conf = job_info['runtime_conf']
         train_runtime_conf = job_info['train_runtime_conf']
         if USE_AUTHENTICATION:
-            authentication_check(src_role=job_info.get('src_role', None), src_party_id=job_info.get('src_party_id', None),
+            authentication_check(src_role=job_info.get('src_role', None),
+                                 src_party_id=job_info.get('src_party_id', None),
                                  dsl=dsl, runtime_conf=runtime_conf, role=role, party_id=party_id)
 
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=dsl,
@@ -100,8 +101,11 @@ class JobController(object):
         job_info["runtime_conf_on_party"]["job_parameters"] = job_parameters.to_dict()
         JobSaver.create_job(job_info=job_info)
         schedule_logger(job_id).info("start initialize tasks")
-        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
-                                                                  initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
+        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id,
+                                                                  run_on_this_party=True,
+                                                                  initiator_role=job_info["initiator_role"],
+                                                                  initiator_party_id=job_info["initiator_party_id"],
+                                                                  job_parameters=job_parameters, dsl_parser=dsl_parser)
         schedule_logger(job_id).info("initialize tasks success")
         for provider_key, group_info in provider_group.items():
             for cpn in group_info["components"]:
@@ -109,7 +113,8 @@ class JobController(object):
 
         roles = job_info['roles']
         cls.initialize_job_tracker(job_id=job_id, role=role, party_id=party_id,
-                                   job_parameters=job_parameters, roles=roles, is_initiator=is_initiator, dsl_parser=dsl_parser)
+                                   job_parameters=job_parameters, roles=roles, is_initiator=is_initiator,
+                                   dsl_parser=dsl_parser)
 
         job_utils.save_job_conf(job_id=job_id,
                                 role=role,
@@ -139,7 +144,8 @@ class JobController(object):
         JobController.set_federated_mode(job_parameters=common_job_parameters)
         JobController.set_engines(job_parameters=common_job_parameters, engine_type={EngineType.COMPUTING})
         JobController.fill_default_job_parameters(job_id=job_id, job_parameters=common_job_parameters)
-        JobController.adapt_job_parameters(role=initiator_role, job_parameters=common_job_parameters, create_initiator_baseline=True)
+        JobController.adapt_job_parameters(role=initiator_role, job_parameters=common_job_parameters,
+                                           create_initiator_baseline=True)
 
     @classmethod
     def create_job_parameters_on_party(cls, role, party_id, job_parameters: RunParameters):
@@ -163,7 +169,8 @@ class JobController(object):
                 if hasattr(JobDefaultConfig, key):
                     setattr(job_parameters, key, getattr(JobDefaultConfig, key))
                 else:
-                    schedule_logger(job_id).warning(f"can not found {key} job parameter default value from job_default_settings")
+                    schedule_logger(job_id).warning(
+                        f"can not found {key} job parameter default value from job_default_settings")
 
     @classmethod
     def adapt_job_parameters(cls, role, job_parameters: RunParameters, create_initiator_baseline=False):
@@ -176,7 +183,8 @@ class JobController(object):
                 job_parameters.federated_status_collect_type = JobDefaultConfig.federated_status_collect_type
         if create_initiator_baseline and not job_parameters.computing_partitions:
             job_parameters.computing_partitions = job_parameters.adaptation_parameters[
-                "task_cores_per_node"] * job_parameters.adaptation_parameters["task_nodes"]
+                                                      "task_cores_per_node"] * job_parameters.adaptation_parameters[
+                                                      "task_nodes"]
 
     @classmethod
     def get_job_engines_address(cls, job_parameters: RunParameters):
@@ -208,7 +216,8 @@ class JobController(object):
                 f"max cores per job is {max_cores_per_job} base on (fate_flow/settings#MAX_CORES_PERCENT_PER_JOB * conf/service_conf.yaml#nodes * conf/service_conf.yaml#cores_per_node), expect {cores_submit} cores, {msg}, {msg2}")
 
     @classmethod
-    def gen_updated_parameters(cls, job_id, initiator_role, initiator_party_id, input_job_parameters, input_component_parameters):
+    def gen_updated_parameters(cls, job_id, initiator_role, initiator_party_id, input_job_parameters,
+                               input_component_parameters):
         # todo: check can not update job parameters
         job_configuration = job_utils.get_job_configuration(job_id=job_id,
                                                             role=initiator_role,
@@ -218,7 +227,8 @@ class JobController(object):
         if input_job_parameters:
             if input_job_parameters.get("common"):
                 common_job_parameters = RunParameters(**input_job_parameters["common"])
-                cls.create_common_job_parameters(job_id=job_id, initiator_role=initiator_role, common_job_parameters=common_job_parameters)
+                cls.create_common_job_parameters(job_id=job_id, initiator_role=initiator_role,
+                                                 common_job_parameters=common_job_parameters)
                 for attr in {"model_id", "model_version"}:
                     setattr(common_job_parameters, attr, updated_job_parameters["common"].get(attr))
                 updated_job_parameters["common"] = common_job_parameters.to_dict()
@@ -274,7 +284,8 @@ class JobController(object):
         return initialized_result
 
     @classmethod
-    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id, job_parameters: RunParameters = None, dsl_parser=None, components: list = None, **kwargs):
+    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id,
+                         job_parameters: RunParameters = None, dsl_parser=None, components: list = None, **kwargs):
         common_task_info = {}
         common_task_info["job_id"] = job_id
         common_task_info["initiator_role"] = initiator_role
@@ -282,10 +293,14 @@ class JobController(object):
         common_task_info["role"] = role
         common_task_info["party_id"] = party_id
         common_task_info["run_on_this_party"] = run_on_this_party
-        common_task_info["federated_mode"] = kwargs.get("federated_mode", job_parameters.federated_mode if job_parameters else None)
-        common_task_info["federated_status_collect_type"] = kwargs.get("federated_status_collect_type", job_parameters.federated_status_collect_type if job_parameters else None)
-        common_task_info["auto_retries"] = kwargs.get("auto_retries", job_parameters.auto_retries if job_parameters else None)
-        common_task_info["auto_retry_delay"] = kwargs.get("auto_retry_delay", job_parameters.auto_retry_delay if job_parameters else None)
+        common_task_info["federated_mode"] = kwargs.get("federated_mode",
+                                                        job_parameters.federated_mode if job_parameters else None)
+        common_task_info["federated_status_collect_type"] = kwargs.get("federated_status_collect_type",
+                                                                       job_parameters.federated_status_collect_type if job_parameters else None)
+        common_task_info["auto_retries"] = kwargs.get("auto_retries",
+                                                      job_parameters.auto_retries if job_parameters else None)
+        common_task_info["auto_retry_delay"] = kwargs.get("auto_retry_delay",
+                                                          job_parameters.auto_retry_delay if job_parameters else None)
         common_task_info["task_version"] = kwargs.get("task_version")
         if dsl_parser is None:
             dsl_parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id)
@@ -302,7 +317,8 @@ class JobController(object):
                                                                    role=role,
                                                                    party_id=party_id,
                                                                    initialized_config=initialized_config,
-                                                                   run_in_subprocess=False if initialized_config["if_default_provider"] else True)
+                                                                   run_in_subprocess=False if initialized_config[
+                                                                       "if_default_provider"] else True)
                 initialized_result.update(_result)
             else:
                 cls.initialize_task_holder_for_scheduling(role=role,
@@ -326,7 +342,8 @@ class JobController(object):
                                        task_info=task_info)
 
     @classmethod
-    def initialize_job_tracker(cls, job_id, role, party_id, job_parameters: RunParameters, roles, is_initiator, dsl_parser):
+    def initialize_job_tracker(cls, job_id, role, party_id, job_parameters: RunParameters, roles, is_initiator,
+                               dsl_parser):
         tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
                           model_id=job_parameters.model_id,
                           model_version=job_parameters.model_version,
@@ -383,9 +400,13 @@ class JobController(object):
                                 for _data_type, _data_location in _role_party_args[_party_index][key].items():
                                     search_type = data_utils.get_input_search_type(parameters=_data_location)
                                     if search_type is InputSearchType.TABLE_INFO:
-                                        dataset[_role][_party_id][key] = '{}.{}'.format(_data_location['namespace'], _data_location['name'])
+                                        dataset[_role][_party_id][key] = '{}.{}'.format(_data_location['namespace'],
+                                                                                        _data_location['name'])
                                     elif search_type is InputSearchType.JOB_COMPONENT_OUTPUT:
-                                        dataset[_role][_party_id][key] = '{}.{}.{}'.format(_data_location['job_id'], _data_location['component_name'], _data_location['data_name'])
+                                        dataset[_role][_party_id][key] = '{}.{}.{}'.format(_data_location['job_id'],
+                                                                                           _data_location[
+                                                                                               'component_name'],
+                                                                                           _data_location['data_name'])
                                     else:
                                         dataset[_role][_party_id][key] = "unknown"
         return dataset
@@ -500,7 +521,8 @@ class JobController(object):
         tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, only_latest=True)
         for task in tasks:
             components_parameters[task.f_component_name] = task.f_component_parameters
-        predict_dsl = schedule_utils.fill_inference_dsl(dsl_parser, origin_inference_dsl=job_configuration.dsl, components_parameters=components_parameters)
+        predict_dsl = schedule_utils.fill_inference_dsl(dsl_parser, origin_inference_dsl=job_configuration.dsl,
+                                                        components_parameters=components_parameters)
 
         pipeline = pipeline_pb2.Pipeline()
         pipeline.inference_dsl = json_dumps(predict_dsl, byte=True)
@@ -520,7 +542,8 @@ class JobController(object):
         pipeline.parent_info = json_dumps({}, byte=True)
 
         tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
-                          model_id=model_id, model_version=model_version, job_parameters=RunParameters(**job_parameters))
+                          model_id=model_id, model_version=model_version,
+                          job_parameters=RunParameters(**job_parameters))
         tracker.save_pipeline_model(pipeline_buffer_object=pipeline)
         if role != 'local':
             tracker.save_machine_learning_model_info()
@@ -537,7 +560,8 @@ class JobController(object):
         schedule_logger(job.f_job_id).info(f"start job reload")
         cls.log_reload(job)
         source_inheritance_tasks, target_inheritance_tasks = cls.load_source_target_tasks(job)
-        schedule_logger(job.f_job_id).info(f"source_inheritance_tasks:{source_inheritance_tasks}, target_inheritance_tasks:{target_inheritance_tasks}")
+        schedule_logger(job.f_job_id).info(
+            f"source_inheritance_tasks:{source_inheritance_tasks}, target_inheritance_tasks:{target_inheritance_tasks}")
         cls.output_reload(job, source_inheritance_tasks, target_inheritance_tasks)
         cls.status_reload(job, source_inheritance_tasks, target_inheritance_tasks)
 
@@ -578,8 +602,10 @@ class JobController(object):
         schedule_logger(job.f_job_id).info("start reload job log")
         if job.f_inheritance_info:
             for component_name in job.f_inheritance_info.get("component_list"):
-                source_path = os.path.join(log_utils.get_logger_base_dir(), job.f_inheritance_info.get("job_id"), job.f_role, job.f_party_id, component_name)
-                target_path = os.path.join(log_utils.get_logger_base_dir(), job.f_job_id, job.f_role, job.f_party_id, component_name)
+                source_path = os.path.join(log_utils.get_logger_base_dir(), job.f_inheritance_info.get("job_id"),
+                                           job.f_role, job.f_party_id, component_name)
+                target_path = os.path.join(log_utils.get_logger_base_dir(), job.f_job_id, job.f_role, job.f_party_id,
+                                           component_name)
                 if os.path.exists(source_path):
                     if os.path.exists(target_path):
                         shutil.rmtree(target_path)
@@ -631,7 +657,8 @@ class JobController(object):
             JobSaver.reload_task(source_task, target_tasks[key])
 
         # update job status
-        JobSaver.update_job(job_info={"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id, "inheritance_status": JobInheritanceStatus.SUCCESS})
+        JobSaver.update_job(job_info={"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id,
+                                      "inheritance_status": JobInheritanceStatus.SUCCESS})
         schedule_logger(job.f_job_id).info("reload status success")
 
     @classmethod

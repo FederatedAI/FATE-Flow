@@ -55,8 +55,9 @@ def table_bind():
     name = request_data.get('name')
     namespace = request_data.get('namespace')
     address = storage.StorageTableMeta.create_address(storage_engine=engine, address_dict=address_dict)
-    in_serialized = request_data.get("in_serialized", 1 if engine in {storage.StorageEngine.STANDALONE, storage.StorageEngine.EGGROLL,
-                                                                      storage.StorageEngine.MYSQL, storage.StorageEngine.PATH} else 0)
+    in_serialized = request_data.get("in_serialized",
+                                     1 if engine in {storage.StorageEngine.STANDALONE, storage.StorageEngine.EGGROLL,
+                                                     storage.StorageEngine.MYSQL, storage.StorageEngine.PATH} else 0)
     destroy = (int(request_data.get("drop", 0)) == 1)
     data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
     if data_table_meta:
@@ -100,7 +101,8 @@ def table_download():
     import_component_output_depend()
     data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
     if not data_table_meta:
-        return error_response(response_code=210, retmsg=f'no found table:{request_data.get("namespace")}, {request_data.get("name")}')
+        return error_response(response_code=210,
+                              retmsg=f'no found table:{request_data.get("namespace")}, {request_data.get("name")}')
     tar_file_name = 'table_{}_{}.tar.gz'.format(request_data.get("namespace"), request_data.get("name"))
     return TableStorage.send_table(
         output_tables_meta={"table": data_table_meta},
@@ -255,7 +257,8 @@ def get_component_input_table(dsl_parser, job, component_name):
     component = dsl_parser.get_component_info(component_name=component_name)
     module_name = get_component_module(component_name, job.f_dsl)
     if 'reader' in module_name.lower():
-        return job.f_runtime_conf.get("component_parameters", {}).get("role", {}).get(job.f_role, {}).get(str(job.f_roles.get(job.f_role).index(int(job.f_party_id)))).get(component_name)
+        return job.f_runtime_conf.get("component_parameters", {}).get("role", {}).get(job.f_role, {}).get(
+            str(job.f_roles.get(job.f_role).index(int(job.f_party_id)))).get(component_name)
     task_input_dsl = component.get_input()
     job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser=dsl_parser,
                                                            job_runtime_conf=job.f_runtime_conf, role=job.f_role,

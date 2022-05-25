@@ -21,7 +21,6 @@ from fate_flow.db.db_models import DB, DataBaseModel
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.utils.log_utils import getLogger
 
-
 LOGGER = getLogger()
 
 
@@ -89,6 +88,8 @@ query = {
     'description': ('distinct', ),
 }
 '''
+
+
 def query_dict2expression(model: Type[DataBaseModel], query: Dict[str, Union[bool, int, str, list, tuple]]):
     expression = []
 

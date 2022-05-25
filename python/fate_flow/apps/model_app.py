@@ -358,7 +358,7 @@ def operate_model(model_operation):
                         if model_utils.compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
                             model_info['roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
                             model_info['initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
-                            model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get( 'initiator', {}).get('party_id')
+                            model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
                             model_info['parent'] = False if model_info.get('f_inference_dsl') else True
                         model_utils.save_model_info(model_info)
                     else:
