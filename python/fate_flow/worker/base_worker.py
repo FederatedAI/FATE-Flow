@@ -69,7 +69,8 @@ class WorkerArgs(BaseEntity):
         # Dependence Upload
         self.dependence_type = kwargs.get("dependence_type")
 
-    def load_dict_attr(self, kwargs: dict, attr_name: str):
+    @staticmethod
+    def load_dict_attr(kwargs: dict, attr_name: str):
         return load_json_conf(kwargs[attr_name]) if kwargs.get(attr_name) else {}
 
 
@@ -132,7 +133,8 @@ class BaseWorker:
     def _handle_exception(self):
         pass
 
-    def get_args(self, **kwargs):
+    @staticmethod
+    def get_args(**kwargs):
         if kwargs:
             return WorkerArgs(**kwargs)
         else:
