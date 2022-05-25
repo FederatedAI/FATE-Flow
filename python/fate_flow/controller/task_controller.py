@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 import os
-from fate_arch.common import FederatedCommunicationType, FederatedMode
+from fate_arch.common import FederatedCommunicationType
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.db.db_models import Task
@@ -25,10 +25,8 @@ from fate_flow.operation.job_saver import JobSaver
 from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_arch.common import base_utils
 from fate_flow.entity import RunParameters
-from fate_flow.entity.types import WorkerName
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import TaskCleanResourceType
 
@@ -66,9 +64,6 @@ class TaskController(object):
         :return:
         """
         job_dsl = job_utils.get_job_dsl(job_id, role, party_id)
-        PrivilegeAuth.authentication_component(job_dsl, src_party_id=kwargs.get('src_party_id'), src_role=kwargs.get('src_role'),
-                                               party_id=party_id, component_name=component_name)
-
         schedule_logger(job_id).info(
             f"try to start task {task_id} {task_version} on {role} {party_id} executor subprocess")
         task_executor_process_start_status = False

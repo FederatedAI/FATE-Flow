@@ -30,13 +30,13 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.settings import DATABASE, stat_logger, IS_STANDALONE
 from fate_flow.utils.object_utils import from_dict_hook
 
-
 LOGGER = getLogger()
 
 
 class JsonSerializedField(SerializedField):
     def __init__(self, object_hook=from_dict_hook, object_pairs_hook=None, **kwargs):
-        super(JsonSerializedField, self).__init__(serialized_type=SerializedType.JSON, object_hook=object_hook, object_pairs_hook=object_pairs_hook, **kwargs)
+        super(JsonSerializedField, self).__init__(serialized_type=SerializedType.JSON, object_hook=object_hook,
+                                                  object_pairs_hook=object_pairs_hook, **kwargs)
 
 
 def singleton(cls, *args, **kw):
@@ -292,7 +292,8 @@ class TrackingOutputDataInfo(DataBaseModel):
         if ModelClass is None:
             class Meta:
                 db_table = '%s_%s' % ('t_tracking_output_data_info', table_index)
-                primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_data_name', 'f_role', 'f_party_id')
+                primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_data_name', 'f_role',
+                                           'f_party_id')
 
             attrs = {'__module__': cls.__module__, 'Meta': Meta}
             ModelClass = type("%s_%s" % (cls.__name__, table_index), (cls,),
@@ -445,7 +446,7 @@ class EngineRegistry(DataBaseModel):
     f_cores = IntegerField()
     f_memory = IntegerField()  # MB
     f_remaining_cores = IntegerField()
-    f_remaining_memory = IntegerField() # MB
+    f_remaining_memory = IntegerField()  # MB
     f_nodes = IntegerField()
 
     class Meta:
@@ -524,3 +525,14 @@ class DependenciesStorageMeta(DataBaseModel):
     class Meta:
         db_table = "t_dependencies_storage_meta"
         primary_key = CompositeKey('f_storage_engine', 'f_type', 'f_version')
+
+
+class PermissionStorage(DataBaseModel):
+    f_source_role = CharField(max_length=30)
+    f_source_party_id = CharField(max_length=10)
+    f_type = IntegerField()
+    f_value = CharField(max_length=1000)
+    f_expire_time = BigIntegerField(null=True)
+
+    class Meta:
+        db_table = "t_permission_storage"

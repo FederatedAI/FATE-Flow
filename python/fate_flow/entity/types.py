@@ -87,6 +87,13 @@ class ResourceOperation(CustomEnum):
     RETURN = "return"
 
 
+class PermissionType(CustomEnum):
+    ROLE = "role"
+    COMMAND = "command"
+    COMPONENT = "component"
+    DATASET = "dataset"
+
+
 class KillProcessRetCode(IntEnum, CustomEnum):
     KILLED = 0
     NOT_FOUND = 1

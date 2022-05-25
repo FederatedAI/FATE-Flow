@@ -121,7 +121,7 @@ def check_config(config: typing.Dict, required_parameters: typing.List):
         return True, 'ok'
 
 
-def check_job_runtime_conf(runtime_conf: typing.Dict):
+def check_job_conf(runtime_conf, job_dsl):
     detect_utils.check_config(runtime_conf, ['initiator', 'role'])
     detect_utils.check_config(runtime_conf['initiator'], ['role', 'party_id'])
     # deal party id
@@ -129,6 +129,7 @@ def check_job_runtime_conf(runtime_conf: typing.Dict):
     for r in runtime_conf['role'].keys():
         for i in range(len(runtime_conf['role'][r])):
             runtime_conf['role'][r][i] = int(runtime_conf['role'][r][i])
+    constraint_check(runtime_conf, job_dsl)
 
 
 def runtime_conf_basic(if_local=False):
@@ -409,3 +410,20 @@ def check_job_inheritance_parameters(job, inheritance_jobs, inheritance_tasks):
     dsl_parser = get_dsl_parser_by_version()
     dsl_parser.verify_conf_reusability(inheritance_job.f_runtime_conf, job.f_runtime_conf, job.f_inheritance_info.get('component_list'))
     dsl_parser.verify_dsl_reusability(inheritance_job.f_dsl, job.f_dsl, job.f_inheritance_info.get('component_list', []))
+
+
+def get_job_all_components(dsl):
+    return [dsl['components'][component_name]['module'].lower() for component_name in dsl['components'].keys()]
+
+
+def constraint_check(job_runtime_conf, job_dsl):
+    if job_dsl:
+        all_components = get_job_all_components(job_dsl)
+        glm = ['heterolr', 'heterolinr', 'heteropoisson']
+        for cpn in glm:
+            if cpn in all_components:
+                roles = job_runtime_conf.get('role')
+                if 'guest' in roles.keys() and 'arbiter' in roles.keys() and 'host' in roles.keys():
+                    for party_id in set(roles['guest']) & set(roles['arbiter']):
+                        if party_id not in roles['host'] or len(set(roles['guest']) & set(roles['arbiter'])) != len(roles['host']):
+                            raise Exception("{} component constraint party id, please check role config:{}".format(cpn, job_runtime_conf.get('role')))

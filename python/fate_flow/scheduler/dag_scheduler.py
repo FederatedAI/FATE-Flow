@@ -52,8 +52,7 @@ class DAGScheduler(Cron):
         try:
             dsl = submit_job_conf.dsl
             runtime_conf = deepcopy(submit_job_conf.runtime_conf)
-            job_utils.check_job_runtime_conf(runtime_conf)
-            authentication_utils.check_constraint(runtime_conf, dsl)
+            job_utils.check_job_conf(runtime_conf, dsl)
             job_initiator = runtime_conf["initiator"]
             conf_adapter = JobRuntimeConfigAdapter(runtime_conf)
             common_job_parameters = conf_adapter.get_common_parameters()
