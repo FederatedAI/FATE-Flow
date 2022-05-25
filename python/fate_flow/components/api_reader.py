@@ -37,9 +37,20 @@ api_reader_cpn_meta = ComponentMeta("ApiReader")
 
 @api_reader_cpn_meta.bind_param
 class ApiReaderParam(BaseParam):
-    def __init__(self, service_name=None, parameters=None, timeout=60*60*8):
+    def __init__(
+            self,
+            service_name=None,
+            parameters=None,
+            id_delimiter=",",
+            head=True,
+            extend_sid=False,
+            timeout=60 * 60 * 8
+    ):
         self.service_name = service_name
         self.parameters = parameters
+        self.id_delimiter = id_delimiter
+        self.head = head
+        self.extend_sid = extend_sid
         self.time_out = timeout
 
     def check(self):
@@ -85,10 +96,10 @@ class ApiReader(ComponentBase):
                     table, output_name, output_namespace = self.output_feature_table()
                     count = UploadFile.upload(
                         download_path,
-                        head=self.parameters.get("head", True),
+                        head=self.parameters.get("head"),
                         table=table,
-                        id_delimiter=self.parameters.get("id_delimiter", ","),
-                        extend_sid=self.parameters.get("extend_sid", False)
+                        id_delimiter=self.parameters.get("id_delimiter"),
+                        extend_sid=self.parameters.get("extend_sid")
                     )
                     table.meta.update_metas(count=count)
                     self.tracker.log_output_data_info(
