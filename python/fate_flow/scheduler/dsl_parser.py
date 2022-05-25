@@ -171,8 +171,8 @@ class BaseDSLParser(object):
                     raise NamingFormatError(component=name)
 
     def _find_dependencies(self, mode="train", version=1):
-        self.component_downstream = [[] for i in range(len(self.components))]
-        self.component_upstream = [[] for i in range(len(self.components))]
+        self.component_downstream = [[] for _ in range(len(self.components))]
+        self.component_upstream = [[] for _ in range(len(self.components))]
 
         components_details = self.dsl.get("components")
         components_output = self._find_outputs(self.dsl)
@@ -253,7 +253,7 @@ class BaseDSLParser(object):
                             self.component_downstream[idx_dependency].append(name)
                             self.component_upstream[idx].append(input_component)
 
-        self.in_degree = [0 for i in range(len(self.components))]
+        self.in_degree = [0 for _ in range(len(self.components))]
         for i in range(len(self.components)):
             if self.component_downstream[i]:
                 self.component_downstream[i] = list(set(self.component_downstream[i]))
@@ -464,7 +464,7 @@ class BaseDSLParser(object):
 
         if tot_nodes != len(self.components):
             stack = []
-            vis = [False for i in range(len(self.components))]
+            vis = [False for _ in range(len(self.components))]
             for i in range(len(self.components)):
                 if vis[i]:
                     continue
@@ -551,7 +551,7 @@ class BaseDSLParser(object):
             if not dependence_dict[name]:
                 del dependence_dict[name]
 
-        component_list = [None for i in range(len(self.components))]
+        component_list = [None for _ in range(len(self.components))]
         topo_rank_reverse_mapping = {}
         for i in range(len(self.topo_rank)):
             topo_rank_reverse_mapping[self.topo_rank[i]] = i
@@ -576,7 +576,7 @@ class BaseDSLParser(object):
                 max_depth[down_vertex] = max(max_depth[down_vertex], max_depth[vertex] + 1)
 
         max_dep = max(max_depth)
-        hierarchical_structure = [[] for i in range(max_dep + 1)]
+        hierarchical_structure = [[] for _ in range(max_dep + 1)]
         name_component_maps = {}
 
         for component in self.components:

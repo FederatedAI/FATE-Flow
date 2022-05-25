@@ -31,7 +31,6 @@ class TestJobController(unittest.TestCase):
                 "auto_retry_delay": 1
             }
         }
-        input_job_parameters = {}
         input_component_parameters = {
             "common": {
                 "hetero_lr_0": {
@@ -63,11 +62,6 @@ class TestJobController(unittest.TestCase):
                 }
             }
         }
-        job_configuration = job_utils.get_job_configuration(job_id=job_id,
-                                                            role=initiator_role,
-                                                            party_id=initiator_party_id)
-        origin_job_parameters = job_configuration.runtime_conf["job_parameters"]
-        origin_component_parameters = job_configuration.runtime_conf["component_parameters"]
 
         updated_job_parameters, updated_component_parameters, updated_components = JobController.gen_updated_parameters(
             job_id=job_id,

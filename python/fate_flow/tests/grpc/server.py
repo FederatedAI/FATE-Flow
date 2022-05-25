@@ -66,15 +66,11 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
             source_routing_header.append((key, value))
         stat_logger.info(f"grpc request routing header: {source_routing_header}")
 
-        param = bytes.decode(bytes(json_dumps(param_dict), 'utf-8'))
-
         action = getattr(requests, method.lower(), None)
         if action:
             print(_suffix)
-            #resp = action(url=get_url(_suffix), data=param, headers=HEADERS)
         else:
             pass
-        #resp_json = resp.json()
         resp_json = {"status": "test"}
         import time
         print("sleep")

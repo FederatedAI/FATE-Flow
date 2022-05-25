@@ -31,7 +31,6 @@ class SessionStop(object):
         args = parser.parse_args()
         session_id = args.session
         fate_job_id = session_id.split('_')[0]
-        command = args.command
         with session.Session(session_id=session_id,
                              options={"logger": schedule_logger(fate_job_id)}) as sess:
             sess.destroy_all_sessions()

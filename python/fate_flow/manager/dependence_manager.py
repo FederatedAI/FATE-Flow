@@ -86,7 +86,7 @@ class DependenceManager:
             '--party_id', job.f_party_id,
         ]
         log_dir = os.path.join(job_utils.get_job_log_directory(job_id=job.f_job_id), "job_inheritance")
-        p = process_utils.run_subprocess(job_id=job.f_job_id, config_dir=conf_dir, process_cmd=process_cmd,
+        process_utils.run_subprocess(job_id=job.f_job_id, config_dir=conf_dir, process_cmd=process_cmd,
                                          log_dir=log_dir, process_name="job_inheritance")
 
     @classmethod
