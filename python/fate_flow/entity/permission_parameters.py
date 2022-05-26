@@ -61,3 +61,10 @@ class DataSet(BaseEntity):
     def check(self):
         if not self.name or not self.namespace:
             raise ValueError(f"name {self.name} or namespace {self.namespace} is null")
+
+
+class CheckReturn:
+    SUCCESS = 0
+    NO_ROLE_PERMISSION = 1
+    NO_COMPONENT_PERMISSION = 2
+    NO_DATASET_PERMISSION = 3

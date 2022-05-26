@@ -32,7 +32,7 @@ from fate_flow.entity.run_status import SchedulingStatusCode
 from fate_flow.entity import JobConfigurationBase
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.controller.job_controller import JobController
-from fate_flow.utils import detect_utils, job_utils, schedule_utils, authentication_utils
+from fate_flow.utils import detect_utils, job_utils, schedule_utils
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils import model_utils
 from fate_flow.utils.cron import Cron

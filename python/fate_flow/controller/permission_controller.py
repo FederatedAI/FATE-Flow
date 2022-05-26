@@ -2,8 +2,9 @@ import time
 
 from common.log import getLogger
 from fate_flow.db.db_models import PermissionStorage
-from fate_flow.entity.permission_parameters import PermissionParameters, DataSet
+from fate_flow.entity.permission_parameters import PermissionParameters, DataSet, CheckReturn
 from fate_flow.entity.types import PermissionType, ComponentProviderName
+from fate_flow.hook.parameters import PermissionReturn
 from fate_flow.settings import DATASET_PERMISSION, ROLE_PERMISSION, COMPONENT_PERMISSION
 from metastore.db_models import DB
 
@@ -17,7 +18,7 @@ class PermissionController:
 
     def check(self, permission_type, value):
         logger.info(f"check source role {self.src_role} party id {self.src_party_id} {permission_type} {value}")
-        result = self._query(permission_type=permission_type, value=value)
+        result = self.query(permission_type=permission_type, value=value)
         logger.info(f"result: {result}")
         if result:
             expire_time = result[permission_type][0][1]
@@ -27,16 +28,14 @@ class PermissionController:
         return False
 
     def grant_or_delete(self, permission_parameters: PermissionParameters):
-        operate = "grant" if not permission_parameters.is_delete else "delete"
-        logger.info(f"{operate} parameters: {permission_parameters.to_dict()}")
+        logger.info(f"{'grant' if not permission_parameters.is_delete else 'delete'} parameters:"
+                    f" {permission_parameters.to_dict()}")
         self.check_parameters(permission_parameters)
         for permission_type in PermissionType.values():
             permission_value = getattr(permission_parameters, permission_type)
             if permission_value:
                 if permission_value != "*":
                     if permission_type in [PermissionType.ROLE, PermissionType.COMMAND, PermissionType.COMPONENT]:
-                        # role: 1. all(*); 2. one(guest); 3. more (guest, host)
-                        # component: 1. all(*); 2. one(dataio); 3. more (dataio, homonn)
                         value_list = [value.strip() for value in permission_value.split(self.value_delimiter)]
                     elif permission_type in [PermissionType.DATASET]:
                         if isinstance(permission_value, list):
@@ -84,7 +83,7 @@ class PermissionController:
             self._grant(permission_type, value, valid_period)
 
     @DB.connection_context()
-    def _query(self, **kwargs):
+    def query(self, **kwargs):
         logger.info(f"query {self.src_role} {self.src_party_id} {kwargs}")
         permission_list = PermissionStorage.query(
             source_role=self.src_role,
@@ -195,26 +194,16 @@ class PermissionCheck(object):
         self.roles = roles
         self.controller = PermissionController(src_role, src_party_id)
 
-    def check_all(self):
-        if ROLE_PERMISSION:
-            self.check_role()
-
-        if COMPONENT_PERMISSION:
-            self.check_component()
-
-        if DATASET_PERMISSION:
-            self.check_dataset()
-
-    def check_role(self):
+    def check_role(self) -> PermissionReturn:
         if not self.controller.check(PermissionType.ROLE, self.role):
-            raise PermissionError()
+            return PermissionReturn(CheckReturn.NO_ROLE_PERMISSION, f"check role permission failed: {self.role}")
 
-    def check_component(self):
+    def check_component(self) -> PermissionReturn:
         for component_name in self.component_list:
             if not self.controller.check(PermissionType.COMPONENT, component_name):
-                raise PermissionError()
+                return PermissionReturn(CheckReturn.NO_COMPONENT_PERMISSION, f"check component permission failed: {component_name}")
 
-    def check_dataset(self):
+    def check_dataset(self) -> PermissionReturn:
         for dataset in self.dataset_list:
             if not self.controller.check(PermissionType.DATASET, dataset):
-                raise PermissionError()
+                return PermissionReturn(CheckReturn.NO_DATASET_PERMISSION, f"check dataset permission failed: {dataset}")

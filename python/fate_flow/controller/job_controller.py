@@ -20,12 +20,10 @@ from fate_arch.common import EngineType
 from fate_arch.common import engine_utils
 from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_arch.computing import ComputingEngine
-from fate_flow.controller.permission_controller import PermissionCheck
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RunParameters
-from fate_flow.entity.permission_parameters import DataSet
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.entity.run_status import JobStatus, EndStatus, JobInheritanceStatus
 from fate_flow.entity.types import InputSearchType, WorkerName
@@ -55,23 +53,6 @@ class JobController(object):
             runtime_conf=runtime_conf,
             train_runtime_conf=train_runtime_conf
         )
-        dataset_dict = cls.get_dataset(False, role, party_id, runtime_conf.get("role"), dsl_parser.get_args_input())
-        dataset_list = []
-        if dataset_dict.get(role, {}).get(party_id):
-            for _, v in dataset_dict[role][party_id].items():
-                dataset_list.append(DataSet(namespace=v.split('.')[0], name=v.split('.')[1]).value)
-        component_list = job_utils.get_job_all_components(dsl)
-        PermissionCheck(
-            src_role=job_info.get('src_role', None),
-            src_party_id=job_info.get('src_party_id', None),
-            initiator=runtime_conf['initiator'],
-            roles=runtime_conf['role'],
-            role=role,
-            party_id=party_id,
-            component_list=component_list,
-            dataset_list=dataset_list
-        ).check_all()
-
         job_parameters = dsl_parser.get_job_parameters(runtime_conf)
         schedule_logger(job_id).info('job parameters:{}'.format(job_parameters))
         dest_user = job_parameters.get(role, {}).get(party_id, {}).get('user', '')

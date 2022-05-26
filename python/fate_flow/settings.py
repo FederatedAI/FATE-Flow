@@ -121,10 +121,12 @@ database_logger = getLogger("fate_flow_database")
 # upload
 UPLOAD_DATA_FROM_CLIENT = True
 
+
+AUTHENTICATION = False
+
 # permission switch
 ROLE_PERMISSION = False
 COMPONENT_PERMISSION = False
 DATASET_PERMISSION = False
 
-
-CHECK_NODES_IDENTITY = False
+HOOK_MODULE = "fate_flow.hook.flow"

@@ -23,18 +23,12 @@ from fate_flow.entity.types import TaskCleanResourceType
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.utils.api_utils import get_json_result
-from fate_flow.utils.model_utils import compare_version
-
+from fate_flow.utils.api_utils import get_json_result, create_job_request_check
 
 # execute command on every party
 @manager.route('/<job_id>/<role>/<party_id>/create', methods=['POST'])
+@create_job_request_check
 def create_job(job_id, role, party_id):
-    src_fate_ver = request.json.get('src_fate_ver')
-    if src_fate_ver is not None and compare_version(src_fate_ver, '1.7.0') == 'lt':
-        return get_json_result(retcode=RetCode.INCOMPATIBLE_FATE_VER, retmsg='Incompatible FATE versions',
-                               data={'src_fate_ver': src_fate_ver, "current_fate_ver": RuntimeConfig.get_env('FATE')})
-
     try:
         result = JobController.create_job(job_id=job_id, role=role, party_id=int(party_id), job_info=request.json)
         return get_json_result(retcode=0, retmsg='success', data=result)

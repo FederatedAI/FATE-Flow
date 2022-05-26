@@ -21,7 +21,6 @@ from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HEADERS, HOST
 from fate_flow.utils.log_utils import audit_logger
-from fate_flow.utils.node_check_utils import nodes_check
 from fate_flow.utils.proto_compatibility import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
 from fate_flow.utils.requests_utils import request
 
@@ -79,16 +78,6 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
 
         _routing_metadata = gen_routing_metadata(src_party_id=src.partyId, dest_party_id=dst.partyId)
         context.set_trailing_metadata(trailing_metadata=_routing_metadata)
-        try:
-            nodes_check(param_dict.get('src_party_id'), param_dict.get('_src_role'), param_dict.get('appKey'),
-                        param_dict.get('appSecret'), str(dst.partyId))
-        except Exception as e:
-            resp_json = {
-                "retcode": 100,
-                "retmsg": str(e)
-            }
-            return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)
-        # param = bytes.decode(bytes(json_dumps(param_dict), 'utf-8'))
 
         audit_logger(job_id).info('rpc receive: {}'.format(packet))
         audit_logger(job_id).info("rpc receive: {} {}".format(get_url(_suffix), param))
