@@ -43,9 +43,9 @@ class JobIdGenerator(object):
         self._max = 99999
 
     def next_id(self):
-        '''
+        """
         generate next job id with locking
-        '''
+        """
         #todo: there is duplication in the case of multiple instances deployment
         now = datetime.datetime.now()
         with JobIdGenerator._lock:
