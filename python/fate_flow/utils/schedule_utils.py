@@ -90,15 +90,13 @@ def get_dsl_parser_by_version(version: typing.Union[str, int] = 2):
     return mapping[version]
 
 
-def fill_inference_dsl(dsl_parser: typing.Union[DSLParserV1, DSLParserV2], origin_inference_dsl, components_parameters: dict = None):
+def fill_inference_dsl(dsl_parser: DSLParserV2, origin_inference_dsl, components_parameters: dict = None):
     # must fill dsl for fate serving
     if isinstance(dsl_parser, DSLParserV2):
         components_module_name = {}
         for component, param in components_parameters.items():
             components_module_name[component] = param["CodePath"]
         return dsl_parser.get_predict_dsl(predict_dsl=origin_inference_dsl, module_object_dict=components_module_name)
-    elif isinstance(dsl_parser, DSLParserV1):
-        return dsl_parser.get_predict_dsl(component_parameters=components_parameters)
     else:
         raise Exception(f"not support dsl parser {type(dsl_parser)}")
 
