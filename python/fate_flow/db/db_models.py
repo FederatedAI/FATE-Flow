@@ -536,3 +536,16 @@ class PermissionStorage(DataBaseModel):
 
     class Meta:
         db_table = "t_permission_storage"
+
+
+class ServiceRegistryInfo(DataBaseModel):
+    f_service_name = CharField(max_length=30)
+    f_url_name = CharField(max_length=30)
+    f_url = CharField(max_length=100)
+    f_method = CharField(max_length=10)
+    f_parameters = JSONField(null=True)
+
+    class Meta:
+        db_table = "t_service_registry_info"
+        primary_key = CompositeKey('f_service_name', 'f_url_name')
+
