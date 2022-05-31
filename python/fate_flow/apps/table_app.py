@@ -23,10 +23,9 @@ from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.utils.data_utils import get_extend_id_name
 from fate_flow.worker.task_executor import TaskExecutor
-from fate_flow.utils.api_utils import get_json_result, error_response
+from fate_flow.utils.api_utils import get_json_result, error_response, validate_request
 from fate_flow.utils import job_utils, schedule_utils
 from flask import request
-from fate_flow.utils.detect_utils import validate_request
 
 
 @manager.route('/connector/create', methods=['POST'])

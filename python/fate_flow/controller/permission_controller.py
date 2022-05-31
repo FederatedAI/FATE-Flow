@@ -1,12 +1,11 @@
 import time
 
-from common.log import getLogger
-from fate_flow.db.db_models import PermissionStorage
+from fate_flow.utils.log_utils import getLogger
+from fate_flow.db.db_models import PermissionStorage, DB
 from fate_flow.entity.permission_parameters import PermissionParameters, DataSet, CheckReturn
 from fate_flow.entity.types import PermissionType, ComponentProviderName
 from fate_flow.hook.parameters import PermissionReturn
 from fate_flow.settings import DATASET_PERMISSION, ROLE_PERMISSION, COMPONENT_PERMISSION
-from metastore.db_models import DB
 
 logger = getLogger("permission")
 
@@ -35,9 +34,9 @@ class PermissionController:
             permission_value = getattr(permission_parameters, permission_type)
             if permission_value:
                 if permission_value != "*":
-                    if permission_type in [PermissionType.ROLE, PermissionType.COMMAND, PermissionType.COMPONENT]:
+                    if permission_type in [PermissionType.ROLE.value, PermissionType.COMMAND.value, PermissionType.COMPONENT.value]:
                         value_list = [value.strip() for value in permission_value.split(self.value_delimiter)]
-                    elif permission_type in [PermissionType.DATASET]:
+                    elif permission_type in [PermissionType.DATASET.value]:
                         if isinstance(permission_value, list):
                             value_list = [DataSet(**value).value for value in permission_value]
                         else:
@@ -61,13 +60,9 @@ class PermissionController:
                                                   type=permission_type, value=value)
         if permission_list:
             if valid_period:
-                PermissionStorage.update(
-                    source_role=self.src_role,
-                    source_party_id=self.src_party_id,
-                    type=permission_type,
-                    value=value,
-                    valid_period=valid_period
-                )
+                for permission in permission_list:
+                    permission.f_expire_time = self.make_expire_time(valid_period)
+                    permission.save()
         else:
             permission = PermissionStorage()
             permission.f_source_role = self.src_role
@@ -115,17 +110,17 @@ class PermissionController:
         for permission_type in PermissionType.values():
             permission_value = getattr(permission_parameters, permission_type)
             if permission_value:
-                if permission_type == PermissionType.ROLE and not ROLE_PERMISSION:
+                if permission_type == PermissionType.ROLE.value and not ROLE_PERMISSION:
                     raise ValueError(f"role permission switch is {ROLE_PERMISSION}")
-                if permission_type == PermissionType.COMMAND and not COMPONENT_PERMISSION:
+                if permission_type == PermissionType.COMMAND.value and not COMPONENT_PERMISSION:
                     raise ValueError(f"component permission switch is {COMPONENT_PERMISSION}")
-                if permission_type == PermissionType.DATASET and not DATASET_PERMISSION:
+                if permission_type == PermissionType.DATASET.value and not DATASET_PERMISSION:
                     raise ValueError(f"dataset permission switch is {DATASET_PERMISSION}")
-                if permission_type in [PermissionType.ROLE, PermissionType.COMMAND, PermissionType.COMPONENT]:
+                if permission_type in [PermissionType.ROLE.value, PermissionType.COMMAND.value, PermissionType.COMPONENT.value]:
                     if permission_value != "*":
                         value_list = [value.strip() for value in permission_value.split(self.value_delimiter)]
                         self.check_values(permission_type, value_list)
-                if permission_type in [PermissionType.DATASET]:
+                if permission_type in [PermissionType.DATASET.value]:
                     if isinstance(permission_value, list):
                         for dataset in permission_value:
                             DataSet(**dataset).check()
@@ -151,11 +146,11 @@ class PermissionController:
             return None
 
     def all_value(self, permission_type):
-        if permission_type == PermissionType.ROLE:
+        if permission_type == PermissionType.ROLE.value:
             value_list = self.all_role
-        elif permission_type == PermissionType.COMMAND:
+        elif permission_type == PermissionType.COMMAND.value:
             value_list = self.all_command
-        elif permission_type == PermissionType.COMPONENT:
+        elif permission_type == PermissionType.COMPONENT.value:
             value_list = self.all_component
         else:
             raise Exception(f"permission type {permission_type} not support grant all")
@@ -169,7 +164,7 @@ class PermissionController:
     def all_component(self):
         from fate_flow.db.db_models import ComponentInfo
         component_list = []
-        for component in ComponentInfo.select().where(f_component_name=ComponentProviderName.FATE):
+        for component in ComponentInfo.select():
             component_list.append(component.f_component_name.lower())
         return component_list
 
@@ -195,15 +190,15 @@ class PermissionCheck(object):
         self.controller = PermissionController(src_role, src_party_id)
 
     def check_role(self) -> PermissionReturn:
-        if not self.controller.check(PermissionType.ROLE, self.role):
+        if not self.controller.check(PermissionType.ROLE.value, self.role):
             return PermissionReturn(CheckReturn.NO_ROLE_PERMISSION, f"check role permission failed: {self.role}")
 
     def check_component(self) -> PermissionReturn:
         for component_name in self.component_list:
-            if not self.controller.check(PermissionType.COMPONENT, component_name):
+            if not self.controller.check(PermissionType.COMPONENT.value, component_name):
                 return PermissionReturn(CheckReturn.NO_COMPONENT_PERMISSION, f"check component permission failed: {component_name}")
 
     def check_dataset(self) -> PermissionReturn:
         for dataset in self.dataset_list:
-            if not self.controller.check(PermissionType.DATASET, dataset):
+            if not self.controller.check(PermissionType.DATASET.value, dataset):
                 return PermissionReturn(CheckReturn.NO_DATASET_PERMISSION, f"check dataset permission failed: {dataset}")

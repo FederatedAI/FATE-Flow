@@ -30,7 +30,7 @@ from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger
-from fate_flow.utils import detect_utils, job_utils, log_utils, schedule_utils
+from fate_flow.utils import job_utils, log_utils, schedule_utils, api_utils
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.log_utils import schedule_logger
@@ -152,7 +152,7 @@ def update_job():
 
 
 @manager.route('/parameter/update', methods=['POST'])
-@detect_utils.validate_request("job_id")
+@api_utils.validate_request("job_id")
 def update_parameters():
     job_info = request.json
     component_parameters = job_info.pop("component_parameters", None)
@@ -197,7 +197,7 @@ def check_job_log_dir():
 
 
 @manager.route('/log/download', methods=['POST'])
-@detect_utils.validate_request('job_id')
+@api_utils.validate_request('job_id')
 def job_log_download():
     job_id, job_log_dir = check_job_log_dir()
 
@@ -215,7 +215,7 @@ def job_log_download():
 
 
 @manager.route('/log/path', methods=['POST'])
-@detect_utils.validate_request('job_id')
+@api_utils.validate_request('job_id')
 def job_log_path():
     job_id, job_log_dir = check_job_log_dir()
 
@@ -310,7 +310,7 @@ def dsl_generator():
 
 
 @manager.route('/url/get', methods=['POST'])
-@detect_utils.validate_request('job_id', 'role', 'party_id')
+@api_utils.validate_request('job_id', 'role', 'party_id')
 def get_url():
     request_data = request.json
     jobs = JobSaver.query_job(job_id=request_data.get('job_id'), role=request_data.get('role'),

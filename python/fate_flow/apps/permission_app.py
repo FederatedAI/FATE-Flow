@@ -17,12 +17,12 @@ from flask import request
 
 from fate_flow.controller.permission_controller import PermissionController
 from fate_flow.entity.permission_parameters import PermissionParameters
-from fate_flow.utils import detect_utils
+from fate_flow.utils import api_utils
 from fate_flow.utils.api_utils import get_json_result
 
 
 @manager.route('/grant', methods=['post'])
-@detect_utils.validate_request('src_role', 'src_party_id')
+@api_utils.validate_request('src_role', 'src_party_id')
 def grant_permission():
     parameters = PermissionParameters(**request.json)
     PermissionController(parameters.src_role, parameters.src_party_id).grant_or_delete(parameters)
@@ -30,7 +30,7 @@ def grant_permission():
 
 
 @manager.route('/delete', methods=['post'])
-@detect_utils.validate_request('src_role', 'src_party_id')
+@api_utils.validate_request('src_role', 'src_party_id')
 def delete_permission():
     parameters = PermissionParameters(is_delete=True, **request.json)
     PermissionController(parameters.src_role, parameters.src_party_id).grant_or_delete(parameters)
@@ -38,7 +38,7 @@ def delete_permission():
 
 
 @manager.route('/query', methods=['post'])
-@detect_utils.validate_request('src_role', 'src_party_id')
+@api_utils.validate_request('src_role', 'src_party_id')
 def query_privilege():
     parameters = PermissionParameters(**request.json)
     data = PermissionController(parameters.src_role, parameters.src_party_id).query()

@@ -123,6 +123,7 @@ UPLOAD_DATA_FROM_CLIENT = True
 
 
 AUTHENTICATION = False
+AUTHENTICATION_SERVER = "fate_manager"
 
 # permission switch
 ROLE_PERMISSION = False

@@ -25,14 +25,14 @@ from fate_flow.entity.types import KillProcessRetCode, WorkerName, FateDependenc
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.utils import job_utils, process_utils
-from fate_flow.db.service_registry import ServiceRegistry
+from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.settings import DEPENDENT_DISTRIBUTION
 from fate_flow.utils.log_utils import schedule_logger
 
 
 class SparkEngine(EngineABC):
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
-        spark_home = ServiceRegistry.FATE_ON_SPARK.get("spark", {}).get("home")
+        spark_home = ServerRegistry.FATE_ON_SPARK.get("spark", {}).get("home")
         if not spark_home:
             try:
                 import pyspark

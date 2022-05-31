@@ -16,6 +16,8 @@
 import functools
 import json
 import time
+from functools import wraps
+import flask
 
 import requests
 from flask import Response, jsonify, request as flask_request
@@ -25,7 +27,7 @@ from fate_arch.common import CoordinationCommunicationProtocol, CoordinationProx
 from fate_arch.common.base_utils import json_loads
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.db.service_registry import ServiceRegistry
+from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import RetCode
 from fate_flow.hook.parameters import AuthenticationParameters, SignatureParameters, StatusCode
 from fate_flow.settings import API_VERSION, FATE_MANAGER_GET_NODE_INFO_ENDPOINT, HEADERS, HOST, \
@@ -34,7 +36,6 @@ from fate_flow.utils.grpc_utils import forward_grpc_packet, gen_routing_metadata
     wrap_grpc_packet
 from fate_flow.hook.manager import HookManager
 from fate_flow.utils.log_utils import audit_logger, schedule_logger
-from fate_flow.utils.model_utils import compare_version
 from fate_flow.utils.permission_utils import get_permission_parameters
 
 from fate_flow.utils.requests_utils import request
@@ -98,10 +99,10 @@ def local_api(job_id, method, endpoint, json_body, api_version=API_VERSION, try_
 def get_federated_proxy_address(src_party_id, dest_party_id):
     if isinstance(PROXY, str):
         if PROXY == CoordinationProxyService.ROLLSITE:
-            proxy_address = ServiceRegistry.FATE_ON_EGGROLL.get(PROXY)
+            proxy_address = ServerRegistry.FATE_ON_EGGROLL.get(PROXY)
             return proxy_address["host"], proxy_address.get("grpc_port", proxy_address["port"]), CoordinationCommunicationProtocol.GRPC
         elif PROXY == CoordinationProxyService.NGINX:
-            proxy_address = ServiceRegistry.FATE_ON_SPARK.get(PROXY)
+            proxy_address = ServerRegistry.FATE_ON_SPARK.get(PROXY)
             protocol = CoordinationCommunicationProtocol.HTTP if PROXY_PROTOCOL == "default" else PROXY_PROTOCOL
             return proxy_address["host"], proxy_address[f"{protocol}_port"], protocol
         else:
@@ -200,8 +201,8 @@ def proxy_api(role, _job_id, request_config):
 def forward_api(role, request_config):
     method = request_config.get('header', {}).get('method', 'post')
     endpoint = request_config.get('header', {}).get('endpoint')
-    ip = getattr(ServiceRegistry, role.upper()).get("host")
-    port = getattr(ServiceRegistry, role.upper()).get("port")
+    ip = getattr(ServerRegistry, role.upper()).get("host")
+    port = getattr(ServerRegistry, role.upper()).get("port")
     url = "http://{}:{}{}".format(ip, port, endpoint)
     audit_logger().info('api request: {}'.format(url))
 
@@ -217,12 +218,12 @@ def forward_api(role, request_config):
 def get_node_identity(json_body, src_party_id):
     params = {
         'partyId': int(src_party_id),
-        'federatedId': ServiceRegistry.FATEMANAGER.get("federatedId"),
+        'federatedId': ServerRegistry.FATEMANAGER.get("federatedId"),
     }
     try:
         response = requests.post(url="http://{}:{}{}".format(
-            ServiceRegistry.FATEMANAGER.get("host"),
-            ServiceRegistry.FATEMANAGER.get("port"),
+            ServerRegistry.FATEMANAGER.get("host"),
+            ServerRegistry.FATEMANAGER.get("port"),
             FATE_MANAGER_GET_NODE_INFO_ENDPOINT), json=params)
         json_body['appKey'] = response.json().get('data').get('appKey')
         json_body['appSecret'] = response.json().get('data').get('appSecret')
@@ -262,7 +263,7 @@ def create_job_request_check(func):
         sign = body.pop("sign")
 
         # sign authentication
-        authentication_result = HookManager.authentication(AuthenticationParameters(sign, body))
+        authentication_result = HookManager.authentication(AuthenticationParameters(sign, role, party_id, body))
         if authentication_result.code != StatusCode.SUCCESS:
             return get_json_result(
                 retcode=RetCode.SERVER_ERROR,
@@ -278,19 +279,37 @@ def create_job_request_check(func):
                 retmsg='permission check failed',
                 data=permission_return.to_dict()
             )
-
-        # version check
-        src_fate_ver = body.get('src_fate_ver')
-        if src_fate_ver is not None and compare_version(src_fate_ver, '1.7.0') == 'lt':
-            return get_json_result(
-                retcode=RetCode.INCOMPATIBLE_FATE_VER,
-                retmsg='Incompatible FATE versions',
-                data={
-                    'src_fate_ver': src_fate_ver,
-                    "current_fate_ver": RuntimeConfig.get_env('FATE')
-                }
-            )
-
         return func(*args, **kwargs)
 
     return _wrapper
+
+
+def validate_request(*args, **kwargs):
+    def wrapper(func):
+        @wraps(func)
+        def decorated_function(*_args, **_kwargs):
+            input_arguments = flask.request.json or flask.request.form.to_dict()
+            no_arguments = []
+            error_arguments = []
+            for arg in args:
+                if arg not in input_arguments:
+                    no_arguments.append(arg)
+            for k, v in kwargs.items():
+                config_value = input_arguments.get(k, None)
+                if config_value is None:
+                    no_arguments.append(k)
+                elif isinstance(v, (tuple, list)):
+                    if config_value not in v:
+                        error_arguments.append((k, set(v)))
+                elif config_value != v:
+                    error_arguments.append((k, v))
+            if no_arguments or error_arguments:
+                error_string = ""
+                if no_arguments:
+                    error_string += "required argument are missing: {}; ".format(",".join(no_arguments))
+                if error_arguments:
+                    error_string += "required argument values: {}".format(",".join(["{}={}".format(a[0], a[1]) for a in error_arguments]))
+                return get_json_result(retcode=RetCode.ARGUMENT_ERROR, retmsg=error_string)
+            return func(*_args, **_kwargs)
+        return decorated_function
+    return wrapper

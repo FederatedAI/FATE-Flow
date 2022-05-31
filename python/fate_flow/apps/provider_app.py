@@ -23,7 +23,7 @@ from fate_flow.entity import ComponentProvider, RetCode
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.utils.api_utils import error_response, get_json_result
-from fate_flow.utils.detect_utils import validate_request
+from fate_flow.utils.api_utils import validate_request
 
 
 @manager.route('/register', methods=['POST'])

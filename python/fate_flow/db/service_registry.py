@@ -17,11 +17,48 @@ import socket
 from pathlib import Path
 from fate_arch.common import file_utils, conf_utils
 from fate_arch.common.conf_utils import SERVICE_CONF
-from .db_models import DB, ServiceRegistryInfo
+from .db_models import DB, ServiceRegistryInfo, ServerRegistryInfo
 from .reload_config_base import ReloadConfigBase
 
 
 class ServiceRegistry(ReloadConfigBase):
+    @classmethod
+    @DB.connection_context()
+    def load_service(cls, **kwargs) -> [ServiceRegistryInfo]:
+        service_registry_list = ServiceRegistryInfo.query(**kwargs)
+        return [service for service in service_registry_list]
+
+    @classmethod
+    @DB.connection_context()
+    def save_service_info(cls, server_name, service_name, uri, method="POST", server_info=None, params=None, data=None, headers=None):
+        if not server_info:
+            server_list = ServerRegistry.query_server_info_from_db(server_name=server_name)
+            if not server_info:
+                raise Exception(f"no found server {server_name}")
+            server_info = server_list[0]
+            url = f"{method}://{server_info.host}:{server_info.port}{uri}"
+        else:
+            url = f"{method}://{server_info.get('host')}:{server_info.get('port')}{uri}"
+        service_info = {
+            "f_server_name": server_name,
+            "f_service_name": service_name,
+            "f_url": url,
+            "f_method": method,
+            "f_params": params if params else {},
+            "f_data": data if data else {},
+            "f_headers": headers if headers else {}
+        }
+        entity_model, status = ServiceRegistryInfo.get_or_create(
+            f_server_name=server_name,
+            f_service_name=service_name,
+            defaults=service_info)
+        if status is False:
+            for key in service_info:
+                setattr(entity_model, key, service_info[key])
+            entity_model.save(force_insert=False)
+
+
+class ServerRegistry(ReloadConfigBase):
     FATEBOARD = None
     FATE_ON_STANDALONE = None
     FATE_ON_EGGROLL = None
@@ -33,6 +70,11 @@ class ServiceRegistry(ReloadConfigBase):
 
     @classmethod
     def load(cls):
+        cls.load_server_info_from_conf()
+        cls.load_server_info_from_db()
+
+    @classmethod
+    def load_server_info_from_conf(cls):
         path = Path(file_utils.get_project_base_directory()) / 'conf' / SERVICE_CONF
         conf = file_utils.load_yaml_conf(path)
         if not isinstance(conf, dict):
@@ -44,54 +86,33 @@ class ServiceRegistry(ReloadConfigBase):
             if not isinstance(local_conf, dict):
                 raise ValueError('invalid local config file')
             conf.update(local_conf)
-
-        cls.LINKIS_SPARK_CONFIG = conf.get('fate_on_spark', {}).get('linkis_spark')
-
         for k, v in conf.items():
             if isinstance(v, dict):
                 setattr(cls, k.upper(), v)
 
     @classmethod
-    def register(cls, service_name, service_config):
-        setattr(cls, service_name, service_config)
-
+    def register(cls, server_name, server_info):
+        cls.save_server_info_to_db(server_name, server_info.get("host"), server_info.get("port"), protocol="http")
+        setattr(cls, server_name, server_info)
 
     @classmethod
     def save(cls, service_config):
         update_server = {}
-        for service_name, service_info in service_config.items():
-            cls.parameter_verification(service_name, service_info)
-            if "api" in service_info:
-                for url_name, info in service_info.get("api").items():
-                    cls.save_api_info({
-                        "f_service_name": service_name,
-                        "f_url_name": url_name,
-                        "f_url": f"{service_info.get('protocol_type', 'http')}://{service_info.get('host')}:{service_info.get('port')}{info.get('uri')}",
-                        "f_method": info.get("method", "POST"),
-                    })
-            if "api" in service_info:
-                del service_info["api"]
-            manager_conf = conf_utils.get_base_config(service_name, {})
-            if not manager_conf:
-                manager_conf = service_info
-            else:
-                manager_conf.update(service_info)
-            conf_utils.update_config(service_name, manager_conf)
-            update_server[service_name] = manager_conf
-            setattr(cls, service_name.upper(), manager_conf)
+        for server_name, server_info in service_config.items():
+            cls.parameter_check(server_info)
+            if "api" in server_info:
+                for service_name, info in server_info.get("api").items():
+                    ServiceRegistry.save_service_info(server_name, service_name, uri=info.get('uri'), method="POST", server_info=info)
+            if "api" in server_info:
+                del server_info["api"]
+            cls.save_server_info_to_db(server_name, server_info.get("host"), server_info.get("port"), protocol="http")
+            setattr(cls, server_name.upper(), server_info)
         return update_server
 
     @classmethod
-    def parameter_verification(cls, service_name, service_info):
-        registry_service_info = {
-            "fatemanager": ["host", "port", "federatedId"],
-            "studio": ["host", "port"]
-        }
-        if service_name not in registry_service_info.keys():
-            raise Exception(f"service {service_name} cannot be registered")
+    def parameter_check(cls, service_info):
         if "host" in service_info and "port" in service_info:
             cls.connection_test(service_info.get("host"), service_info.get("port"))
-
 
     @classmethod
     def connection_test(cls, ip, port):
@@ -109,18 +130,35 @@ class ServiceRegistry(ReloadConfigBase):
 
     @classmethod
     @DB.connection_context()
-    def load_api_info(cls, service_name) -> [ServiceRegistryInfo]:
-        service_registry_info_list = ServiceRegistryInfo.query(**{"service_name": service_name})
-        return [service_registry_info for service_registry_info in service_registry_info_list]
+    def query_server_info_from_db(cls, **kwargs) -> [ServerRegistryInfo]:
+        server_list = ServerRegistryInfo.query(**kwargs)
+        return [server for server in server_list]
 
     @classmethod
     @DB.connection_context()
-    def save_api_info(cls, service_info):
-        entity_model, status = ServiceRegistryInfo.get_or_create(
-            f_service_name=service_info.get("f_service_name"),
-            f_url_name=service_info.get("f_url_name"),
-            defaults=service_info)
+    def load_server_info_from_db(cls):
+        for server in cls.query_server_info_from_db():
+            server_info = {
+                "host": server.f_host,
+                "port": server.f_port,
+                "protocol": server.f_protocol
+            }
+            setattr(cls, server.f_server_name.upper(), server_info)
+
+
+    @classmethod
+    @DB.connection_context()
+    def save_server_info_to_db(cls, server_name, host, port, protocol="http"):
+        server_info = {
+            "f_server_name": server_name,
+            "f_host": host,
+            "f_port": port,
+            "f_protocol": protocol
+        }
+        entity_model, status = ServerRegistryInfo.get_or_create(
+            f_server_name=server_name,
+            defaults=server_info)
         if status is False:
-            for key in service_info:
-                setattr(entity_model, key, service_info[key])
+            for key in server_info:
+                setattr(entity_model, key, server_info[key])
             entity_model.save(force_insert=False)
