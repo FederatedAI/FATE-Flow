@@ -39,14 +39,14 @@ api_reader_cpn_meta = ComponentMeta("ApiReader")
 class ApiReaderParam(BaseParam):
     def __init__(
             self,
-            service_name=None,
+            server_name=None,
             parameters=None,
             id_delimiter=",",
             head=True,
             extend_sid=False,
             timeout=60 * 60 * 8
     ):
-        self.service_name = service_name
+        self.server_name = server_name
         self.parameters = parameters
         self.id_delimiter = id_delimiter
         self.head = head
@@ -73,7 +73,7 @@ class ApiReader(ComponentBase):
             for data_name, table_list in data.items():
                 self.input_table = table_list[0]
         logger.info(f"parameters: {self.parameters}")
-        if not self.parameters.get("service_name"):
+        if not self.parameters.get("server_name"):
             self._run_guest()
         else:
             self._run_host()
@@ -192,8 +192,8 @@ class ApiReader(ComponentBase):
         return response
 
     def set_service_registry_info(self):
-        for info in ServiceRegistry().load_api_info(service_name=self.parameters.get("service_name")):
+        for info in ServiceRegistry().load_service(server_name=self.parameters.get("server_name")):
             for key in self.required_url_key_list:
-                if key == info.f_url_name:
+                if key == info.f_service_name:
                     self.service_info[key] = info
         logger.info(f"set service registry info:{self.service_info}")
