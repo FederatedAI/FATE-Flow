@@ -18,14 +18,14 @@ import socket
 from fate_arch.common import CoordinationProxyService
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.settings import PROXY, IS_STANDALONE
-from fate_flow.db.service_registry import ServiceRegistry
+from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.db.db_models import DB
 
 
 @manager.route('/fateboard', methods=['POST'])
 def get_fateboard_info():
-    host = ServiceRegistry.FATEBOARD.get('host')
-    port = ServiceRegistry.FATEBOARD.get('port')
+    host = ServerRegistry.FATEBOARD.get('host')
+    port = ServerRegistry.FATEBOARD.get('port')
     if not host or not port:
         return error_response(404, 'fateboard is not configured')
     return get_json_result(data={
@@ -57,7 +57,7 @@ def get_eggroll_info():
     if PROXY != CoordinationProxyService.ROLLSITE:
         return error_response(404, 'coordination communication protocol is not rollsite')
 
-    conf = ServiceRegistry.FATE_ON_EGGROLL['rollsite']
+    conf = ServerRegistry.FATE_ON_EGGROLL['rollsite']
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         r = s.connect_ex((conf['host'], conf['port']))
         if r != 0:

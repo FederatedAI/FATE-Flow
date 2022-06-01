@@ -27,6 +27,7 @@ from werkzeug.serving import run_simple
 from fate_flow import set_env
 from fate_arch.common import file_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.hook.manager import HookManager
 from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
 from fate_flow.apps import app
 from fate_flow.db.db_models import init_database_tables as init_flow_db
@@ -37,7 +38,6 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.types import ProcessRole
 from fate_flow.settings import (HOST, HTTP_PORT, GRPC_PORT, _ONE_DAY_IN_SECONDS, GRPC_SERVER_MAX_WORKERS,
                                 stat_logger, detect_logger, access_logger, database_logger)
-from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.db.db_services import service_db
 from fate_flow.utils.xthread import ThreadPoolExecutor
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     default_algorithm_provider = ProviderManager.register_default_providers()
     RuntimeConfig.set_component_provider(default_algorithm_provider)
     ComponentRegistry.load()
-    PrivilegeAuth.init()
+    HookManager.init()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
 

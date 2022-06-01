@@ -39,6 +39,7 @@ def get_fate_flow_directory(*args):
 def get_fate_flow_python_directory(*args):
     return get_fate_flow_directory("python", *args)
 
+
 def new_unique_id():
     #todo: may be using snowflake?
     return uuid.uuid1().hex
@@ -46,3 +47,21 @@ def new_unique_id():
 
 def jprint(src: dict, indent: int = 4):
     print(json_dumps(src, indent=indent))
+
+
+def compare_version(version: str, target_version: str):
+    ver_list = version.split('.')
+    tar_ver_list = target_version.split('.')
+    if int(ver_list[0]) >= int(tar_ver_list[0]):
+        if int(ver_list[1]) > int(tar_ver_list[1]):
+            return 'gt'
+        elif int(ver_list[1]) < int(tar_ver_list[1]):
+            return 'lt'
+        else:
+            if int(ver_list[2]) > int(tar_ver_list[2]):
+                return 'gt'
+            elif int(ver_list[2]) == int(tar_ver_list[2]):
+                return 'eq'
+            else:
+                return 'lt'
+    return 'lt'

@@ -26,9 +26,8 @@ from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import stat_logger, TEMP_DIRECTORY
 from fate_flow.utils import job_utils, schedule_utils, model_utils
-from fate_flow.utils.api_utils import get_json_result, error_response
+from fate_flow.utils.api_utils import get_json_result, error_response, validate_request
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.utils.detect_utils import validate_request
 from fate_flow.component_env_utils import feature_utils
 
 

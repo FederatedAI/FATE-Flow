@@ -8,19 +8,18 @@ Query information about the fate table (real storage address, number, schema, et
 flow table info [options]
 ```
 
-**Options**
+**options** 
 
-| parameter name | required | type | description
-| :-------- | :--- | :----- | -------------- |
-| table-name | yes | string | fate table name |
-| namespace | yes | string | fate table namespace |
+| parameters    | short-format  | long-format | required  | type   | description    |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| table_name | `-t`   |`--table-name`   |yes   | string | fate table name     |
+| namespace | `-n`   |`--namespace`   | yes |string   | fate table namespace |
 
-**return parameters** 
-
+**returns**
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | return code |
-| retmsg | string | return message |
+| retmsg | string | return information |
 | data | object | return data |
 
 Sample
@@ -56,14 +55,14 @@ You can delete table data with table delete
 flow table delete [options]
 ```
 
-**Options**
+**Options** 
 
-| parameter name | required | type | description |
-| :-------- | :--- | :----- | -------------- |
-| table-name | yes | string | fate table name |
-| namespace | yes | string | fate table namespace |
+| parameters    | short-format  | long-format | required  | type   | description    |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| table_name | `-t`   |`--table-name`   |yes   | string | fate table name     |
+| namespace | `-n`   |`--namespace`   | yes |string   | fate table namespace |
 
-**return parameters** 
+**returns**
 
 | parameter name | type | description |
 | :------ | :----- | -------- |
@@ -92,13 +91,17 @@ Real storage addresses can be mapped to fate storage tables via table bind
 flow table bind [options]
 ```
 
+**options** 
+
+| parameters | short format | long format | required | type | description |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| conf_path | `-c` | `--conf-path` | yes | string | configuration-path |
+
 Note: conf_path is the parameter path, the specific parameters are as follows
 
-**Options**
-
-| parameter name | required | type | description |
+| parameter_name | required | type | description |
 | :------------- | :--- | :----- | ------------------------------------- |
-| table-name | yes | string | fate table name |
+| name | yes | string | fate table name |
 | namespace | yes | string | fate table namespace |
 | engine | yes | string | storage engine, supports "HDFS", "MYSQL", "PATH" |
 | yes | object | real storage address |
@@ -108,7 +111,7 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 | id_column | no | string | id field |
 | feature_column | no | array | feature_field |
 
-**Example** 
+**Sample** 
 
 - hdfs
 
@@ -162,12 +165,12 @@ Note: conf_path is the parameter path, the specific parameters are as follows
     }
 }
 ```
-**return parameters** 
+**return**
 
 | parameter name | type | description |
 | :------ | :----- | -------- |
 | retcode | int | return code |
-| retmsg | string | return message |
+| retmsg | string | return information |
 | data | object | return data |
 
 Sample
@@ -182,3 +185,116 @@ Sample
     "retmsg": "success"
 }
 ```
+
+
+### disable
+
+Tables can be made unavailable by table disable
+
+```bash
+flow table disable [options]
+```
+
+**Options** 
+
+| parameters | short-format | long-format | required | type | description |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| table_name | `-t` | `--table-name` | yes | string | fate table name |
+| namespace | `-n` |`--namespace` | yes |string | fate table namespace |
+
+**returns**
+
+| parameter name | type | description |
+| :------ | :----- | -------- |
+| retcode | int | return code |
+| retmsg | string | return information |
+| data | object | return data |
+
+Sample
+
+```json
+{
+    "data": {
+        "namespace": "xxx",
+        "table_name": "xxx"
+    },
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### enable
+
+Tables can be made available with table enable
+
+```bash
+flow table enable [options]
+```
+
+**Options** 
+
+| parameters | short-format | long-format | required | type | description |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| table_name | `-t` | `--table-name` | yes | string | fate table name |
+| namespace | `-n` |`--namespace` | yes |string | fate table namespace |
+
+
+**returns**
+
+| parameter name | type | description |
+| :------ | :----- | -------- |
+| retcode | int | return code |
+| retmsg | string | return information |
+| data | object | return data |
+
+Sample
+
+```json
+{
+    "data": [{
+        "namespace": "xxx",
+        "table_name": "xxx"
+    }],
+    "retcode": 0,
+    "retmsg": "success"
+}
+```
+
+### disable-delete
+
+Tables that are currently unavailable can be deleted with disable-delete
+
+```bash
+flow table disable-delete 
+```
+
+
+**return**
+
+| parameter name | type | description |
+| :------ | :----- | -------- |
+| retcode | int | return-code |
+| retmsg | string | return information |
+| data | object | return data |
+
+Sample
+
+```json
+{
+  "data": [
+    {
+      "namespace": "xxx",
+      "table_name": "xxx"
+    },
+    {
+      "namespace": "xxx",
+      "table_name": "xxx"
+    }
+  ],
+  "retcode": 0,
+  "retmsg": "success"
+}
+```
+
+
+    

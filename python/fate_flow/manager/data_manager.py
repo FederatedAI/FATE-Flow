@@ -32,7 +32,7 @@ from fate_flow.settings import stat_logger
 from fate_flow.db.db_models import DB, TrackingMetric, DataTableTracking
 from fate_flow.utils import data_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
-from fate_flow.utils.data_utils import get_header_schema
+from fate_flow.utils.data_utils import get_header_schema, line_extend_uuid
 
 
 class DataTableTracker(object):
@@ -118,13 +118,13 @@ class TableStorage:
         src_table_meta = src_table.meta
         schema = {}
         update_schema = False
+        line_index = 0
+        fate_uuid = uuid.uuid1().hex
         if not src_table_meta.get_in_serialized():
             if src_table_meta.get_have_head():
                 get_head = False
             else:
                 get_head = True
-            line_index = 0
-            fate_uuid = uuid.uuid1().hex
             if not src_table.meta.get_extend_sid():
                 get_line = data_utils.get_data_line
             elif not src_table_meta.get_auto_increasing_sid():
@@ -160,6 +160,11 @@ class TableStorage:
                 )
         else:
             for k, v in src_table.collect():
+                if src_table.meta.get_extend_sid():
+                    # extend id
+                    v = src_table.meta.get_id_delimiter().join([k, v])
+                    k = line_extend_uuid(fate_uuid, line_index)
+                    line_index += 1
                 if deserialize_value:
                     # writer component: deserialize value
                     v, extend_header = feature_utils.get_deserialize_value(v, dest_table.meta.get_id_delimiter())
@@ -180,6 +185,8 @@ class TableStorage:
             schema = src_table.meta.get_schema()
         if data_temp:
             dest_table.put_all(data_temp)
+        if schema.get("extend_tag"):
+            schema.update({"extend_tag": False})
         dest_table.meta.update_metas(schema=schema if not update_schema else None, part_of_data=part_of_data)
         return dest_table.count()
 
@@ -290,7 +297,9 @@ def get_component_output_data_schema(output_table_meta, extend_header, is_str=Fa
     schema = output_table_meta.get_schema()
     if not schema:
         return []
-    header = [schema.get('sid_name', 'sid')]
+    header = [schema.get('sid_name') or schema.get('sid', 'sid')]
+    if schema.get("extend_tag"):
+        header = []
     if "label" in extend_header and schema.get("label_name"):
         extend_header[extend_header.index("label")] = schema.get("label_name")
     header.extend(extend_header)

@@ -27,19 +27,19 @@ from flask import Response, request, send_file
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.conf_utils import get_base_config
-from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
 
 from fate_flow.db.db_models import (DB, ModelTag, Tag,
                                     MachineLearningModelInfo as MLModel,
                                     ModelOperationLog as OperLog)
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.db.service_registry import ServiceRegistry
+from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfigurationBase
 from fate_flow.entity.types import ModelOperation, TagOperation
 from fate_flow.pipelined_model import deploy_model, migrate_model, pipelined_model, publish_model
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger, IS_STANDALONE
-from fate_flow.utils import detect_utils, job_utils, model_utils, schedule_utils
+from fate_flow.utils import job_utils, model_utils, schedule_utils, api_utils, detect_utils
 from fate_flow.utils.api_utils import error_response, federated_api, get_json_result
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.components.model_operation import get_model_storage
@@ -116,7 +116,7 @@ def load_model():
 
 
 @manager.route('/migrate', methods=['POST'])
-@detect_utils.validate_request("migrate_initiator", "role", "migrate_role", "model_id",
+@api_utils.validate_request("migrate_initiator", "role", "migrate_role", "model_id",
                                "model_version", "execute_party", "job_parameters")
 def migrate_model_process():
     request_config = request.json
@@ -209,7 +209,7 @@ def do_load_model():
         component_parameters = {
             'model_id': party_model_id,
             'model_version': model_version,
-            'store_address': ServiceRegistry.MODEL_STORE_ADDRESS,
+            'store_address': ServerRegistry.MODEL_STORE_ADDRESS,
         }
         model_storage = get_model_storage(component_parameters)
 
@@ -304,7 +304,7 @@ def download_model(party_model_id, model_version):
 
 
 @manager.route('/<model_operation>', methods=['post', 'get'])
-@detect_utils.validate_request("model_id", "model_version", "role", "party_id")
+@api_utils.validate_request("model_id", "model_version", "role", "party_id")
 def operate_model(model_operation):
     request_config = request.json or request.form.to_dict()
     job_id = job_utils.generate_job_id()
@@ -355,7 +355,7 @@ def operate_model(model_operation):
                         model_info['size'] = model.calculate_model_file_size()
                         model_info['role'] = request_config["model_id"].split('#')[0]
                         model_info['party_id'] = request_config["model_id"].split('#')[1]
-                        if model_utils.compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
+                        if compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
                             model_info['roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
                             model_info['initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
                             model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get( 'initiator', {}).get('party_id')
@@ -552,7 +552,7 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
     component_parameters = {
         "model_id": config_data["model_id"],
         "model_version": config_data["model_version"],
-        "store_address": ServiceRegistry.MODEL_STORE_ADDRESS,
+        "store_address": ServerRegistry.MODEL_STORE_ADDRESS,
     }
     if model_operation == ModelOperation.STORE:
         component_parameters["force_update"] = config_data.get("force_update", False)
@@ -615,7 +615,7 @@ def query_model():
 
 
 @manager.route('/deploy', methods=['POST'])
-@detect_utils.validate_request('model_id', 'model_version')
+@api_utils.validate_request('model_id', 'model_version')
 def deploy():
     request_data = request.json
 
@@ -630,7 +630,7 @@ def deploy():
         raise Exception(f'Deploy model failed, no model {model_id} {model_version} found.')
 
     for key, value in model_info.items():
-        version_check = model_utils.compare_version(value.get('f_fate_version'), '1.5.0')
+        version_check = compare_version(value.get('f_fate_version'), '1.5.0')
         if version_check == 'lt':
             continue
 
@@ -727,7 +727,7 @@ def get_predict_dsl():
 
 
 @manager.route('/get/predict/conf', methods=['POST'])
-@detect_utils.validate_request('model_id', 'model_version')
+@api_utils.validate_request('model_id', 'model_version')
 def get_predict_conf():
     request_data = request.json
     model_dir = os.path.join(get_fate_flow_directory(), 'model_local_cache')
@@ -760,7 +760,7 @@ def get_predict_conf():
 
 
 @manager.route('/homo/convert', methods=['POST'])
-@detect_utils.validate_request("model_id", "model_version", "role", "party_id")
+@api_utils.validate_request("model_id", "model_version", "role", "party_id")
 def homo_convert():
     request_config = request.json or request.form.to_dict()
     retcode, retmsg, res_data = publish_model.convert_homo_model(request_config)
@@ -769,7 +769,7 @@ def homo_convert():
 
 
 @manager.route('/homo/deploy', methods=['POST'])
-@detect_utils.validate_request("service_id", "model_id", "model_version", "role", "party_id",
+@api_utils.validate_request("service_id", "model_id", "model_version", "role", "party_id",
                                "component_name", "deployment_type", "deployment_parameters")
 def homo_deploy():
     request_config = request.json or request.form.to_dict()

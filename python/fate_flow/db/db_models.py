@@ -30,13 +30,13 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.settings import DATABASE, stat_logger, IS_STANDALONE
 from fate_flow.utils.object_utils import from_dict_hook
 
-
 LOGGER = getLogger()
 
 
 class JsonSerializedField(SerializedField):
     def __init__(self, object_hook=from_dict_hook, object_pairs_hook=None, **kwargs):
-        super(JsonSerializedField, self).__init__(serialized_type=SerializedType.JSON, object_hook=object_hook, object_pairs_hook=object_pairs_hook, **kwargs)
+        super(JsonSerializedField, self).__init__(serialized_type=SerializedType.JSON, object_hook=object_hook,
+                                                  object_pairs_hook=object_pairs_hook, **kwargs)
 
 
 def singleton(cls, *args, **kw):
@@ -292,7 +292,8 @@ class TrackingOutputDataInfo(DataBaseModel):
         if ModelClass is None:
             class Meta:
                 db_table = '%s_%s' % ('t_tracking_output_data_info', table_index)
-                primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_data_name', 'f_role', 'f_party_id')
+                primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_data_name', 'f_role',
+                                           'f_party_id')
 
             attrs = {'__module__': cls.__module__, 'Meta': Meta}
             ModelClass = type("%s_%s" % (cls.__name__, table_index), (cls,),
@@ -445,7 +446,7 @@ class EngineRegistry(DataBaseModel):
     f_cores = IntegerField()
     f_memory = IntegerField()  # MB
     f_remaining_cores = IntegerField()
-    f_remaining_memory = IntegerField() # MB
+    f_remaining_memory = IntegerField()  # MB
     f_nodes = IntegerField()
 
     class Meta:
@@ -524,3 +525,38 @@ class DependenciesStorageMeta(DataBaseModel):
     class Meta:
         db_table = "t_dependencies_storage_meta"
         primary_key = CompositeKey('f_storage_engine', 'f_type', 'f_version')
+
+
+class PermissionStorage(DataBaseModel):
+    f_party_id = CharField(max_length=20)
+    f_type = CharField(max_length=20)
+    f_value = CharField(max_length=1000)
+    f_expire_time = BigIntegerField(null=True)
+
+    class Meta:
+        db_table = "t_permission_storage"
+
+
+class ServerRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30, index=True)
+    f_host = CharField(max_length=30)
+    f_port = IntegerField()
+    f_protocol = CharField(max_length=10)
+
+    class Meta:
+        db_table = "t_server_registry_info"
+
+
+class ServiceRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30)
+    f_service_name = CharField(max_length=30)
+    f_url = CharField(max_length=100)
+    f_method = CharField(max_length=10)
+    f_params = JSONField(null=True)
+    f_data = JSONField(null=True)
+    f_headers = JSONField(null=True)
+
+    class Meta:
+        db_table = "t_service_registry_info"
+        primary_key = CompositeKey('f_server_name', 'f_service_name')
+

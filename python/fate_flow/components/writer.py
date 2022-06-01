@@ -88,6 +88,8 @@ class Writer(ComponentBase):
                 "address": self._create_save_address(engine, address_dict, output_name, output_namespace),
             })
             src_table.save_as(**table_meta)
+            table = src_table.save_as(**table_meta)
+            table.meta.update_metas(**table_meta)
             # output table track
             DataTableTracker.create_table_tracker(
                 name,

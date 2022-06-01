@@ -79,13 +79,14 @@ class DependenceUpload(BaseWorker):
                 "conf": file_utils.get_project_base_directory("conf")
             }
             fate_flow_snapshot_time = DependenceRegistry.get_modify_time(fate_code_dependencies["fate_flow"])
-            fate_code_base_dir = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "fate_code", "python")
-            if os.path.exists(os.path.dirname(fate_code_base_dir)):
-                shutil.rmtree(os.path.dirname(fate_code_base_dir))
+            fate_code_base_dir = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "fate_code", "fate")
+            python_base_dir = os.path.join(fate_code_base_dir, "python")
+            if os.path.exists(os.path.dirname(python_base_dir)):
+                shutil.rmtree(os.path.dirname(python_base_dir))
             for key, path in fate_code_dependencies.items():
-                cls.copy_dir(path, os.path.join(fate_code_base_dir, key))
+                cls.copy_dir(path, os.path.join(python_base_dir, key))
                 if key == "conf":
-                    cls.move_dir(os.path.join(fate_code_base_dir, key), os.path.dirname(fate_code_base_dir))
+                    cls.move_dir(os.path.join(python_base_dir, key), os.path.dirname(fate_code_base_dir))
             if provider.name == ComponentProviderName.FATE.value:
                 source_path = provider.path
             else:
@@ -93,10 +94,10 @@ class DependenceUpload(BaseWorker):
                     ComponentProviderInfo.f_version == provider.version,
                     ComponentProviderInfo.f_provider_name == ComponentProviderName.FATE.value
                 ).f_path
-            cls.copy_dir(source_path, os.path.join(fate_code_base_dir, "federatedml"))
-            target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python.zip")
+            cls.copy_dir(source_path, os.path.join(python_base_dir, "federatedml"))
+            target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "fate.zip")
             cls.zip_dir(os.path.dirname(fate_code_base_dir), target_file)
-            dependencies_conf = {"executor_env_pythonpath": f"./{dependence_type}/python:$PYTHONPATH"}
+            dependencies_conf = {"executor_env_pythonpath": f"./{dependence_type}/fate/python:$PYTHONPATH"}
         LOGGER.info(f'dependencies loading success')
 
         LOGGER.info(f'start upload')

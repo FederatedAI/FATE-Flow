@@ -18,12 +18,7 @@ from flask import request
 from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.detect_utils import check_config
-from fate_flow.utils.detect_utils import validate_request
 from fate_flow.db.component_registry import ComponentRegistry
-from fate_flow.entity import ComponentProvider
-from fate_flow.entity import RetCode
-from fate_flow.manager.worker_manager import WorkerManager
-from fate_flow.entity.types import WorkerName
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 

@@ -32,7 +32,7 @@ from fate_flow.entity.run_status import SchedulingStatusCode
 from fate_flow.entity import JobConfigurationBase
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.controller.job_controller import JobController
-from fate_flow.utils import detect_utils, job_utils, schedule_utils, authentication_utils
+from fate_flow.utils import detect_utils, job_utils, schedule_utils
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils import model_utils
 from fate_flow.utils.cron import Cron
@@ -50,8 +50,7 @@ class DAGScheduler(Cron):
         try:
             dsl = submit_job_conf.dsl
             runtime_conf = deepcopy(submit_job_conf.runtime_conf)
-            job_utils.check_job_runtime_conf(runtime_conf)
-            authentication_utils.check_constraint(runtime_conf, dsl)
+            job_utils.check_job_conf(runtime_conf, dsl)
             job_initiator = runtime_conf["initiator"]
             conf_adapter = JobRuntimeConfigAdapter(runtime_conf)
             common_job_parameters = conf_adapter.get_common_parameters()

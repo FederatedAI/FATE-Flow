@@ -15,13 +15,10 @@
 #
 from flask import request
 
-from fate_arch.common import conf_utils
-
 from fate_flow.settings import API_VERSION, FATE_ENV_KEY_LIST
 from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.db.service_registry import ServiceRegistry
-from fate_flow.utils.detect_utils import validate_request
+
 
 
 @manager.route('/get', methods=['POST'])
@@ -34,12 +31,3 @@ def get_fate_version_info():
         module: version,
         'API': API_VERSION,
     })
-
-
-@manager.route('/set', methods=['POST'])
-@validate_request("federatedId")
-def set_fate_server_info():
-    federated_id = request.json["federatedId"]
-    ServiceRegistry.FATEMANAGER["federatedId"] = federated_id
-    conf_utils.update_config("fatemanager", ServiceRegistry.FATEMANAGER)
-    return get_json_result(data={"federatedId": federated_id})
