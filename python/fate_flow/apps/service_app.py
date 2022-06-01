@@ -16,16 +16,18 @@
 from flask import request
 
 from fate_flow.db.service_registry import ServiceRegistry
-from fate_flow.utils.api_utils import get_json_result
+from fate_flow.utils.api_utils import get_json_result, validate_request
 
 
-@manager.route('/registry', methods=['POST'])
-def register_service():
-    update_server = ServiceRegistry.save(request.json)
-    return get_json_result(data={"update_server": update_server})
+@manager.route("/registry", methods=['POST'])
+@validate_request("server_name", "service_name", "uri")
+def create_service():
+    ServiceRegistry.save_service_info(**request.json)
+    return get_json_result()
 
 
 @manager.route('/query', methods=['POST'])
+@validate_request("service_name")
 def get_service():
-    service_info = ServiceRegistry.query(request.json.get("service_name"))
-    return get_json_result(data={"service_info": service_info})
+    service_info = ServiceRegistry.load_service(**request.json)
+    return get_json_result(data={"service_info": [service.to_json() for service in service_info]})

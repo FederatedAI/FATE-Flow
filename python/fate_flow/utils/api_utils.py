@@ -13,24 +13,30 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import functools
 import json
 import time
+from functools import wraps
+import flask
 
 import requests
-from flask import Response, jsonify
+from flask import Response, jsonify, request as flask_request
 from werkzeug.http import HTTP_STATUS_CODES
 
 from fate_arch.common import CoordinationCommunicationProtocol, CoordinationProxyService, FederatedMode
 from fate_arch.common.base_utils import json_loads
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.db.service_registry import ServiceRegistry
+from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import RetCode
-from fate_flow.settings import API_VERSION, CHECK_NODES_IDENTITY, FATE_MANAGER_GET_NODE_INFO_ENDPOINT, HEADERS, HOST, \
-    HTTP_PORT, PROXY, PROXY_PROTOCOL, stat_logger
+from fate_flow.hook.parameters import AuthenticationParameters, SignatureParameters, StatusCode
+from fate_flow.settings import API_VERSION, HEADERS, PROXY, PROXY_PROTOCOL, stat_logger, PERMISSION_SWITCH
+from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.grpc_utils import forward_grpc_packet, gen_routing_metadata, get_command_federation_channel, \
     wrap_grpc_packet
+from fate_flow.hook.manager import HookManager
 from fate_flow.utils.log_utils import audit_logger, schedule_logger
+from fate_flow.utils.permission_utils import get_permission_parameters
 from fate_flow.utils.requests_utils import request
 
 
@@ -62,6 +68,7 @@ def error_response(response_code, retmsg=None):
 def federated_api(job_id, method, endpoint, src_party_id, dest_party_id, src_role, json_body, federated_mode, api_version=API_VERSION,
                   overall_timeout=None):
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
+    update_body(json_body, endpoint, src_party_id, src_role)
     if int(dest_party_id) == 0:
         federated_mode = FederatedMode.SINGLE
     if federated_mode == FederatedMode.SINGLE:
@@ -91,10 +98,10 @@ def local_api(job_id, method, endpoint, json_body, api_version=API_VERSION, try_
 def get_federated_proxy_address(src_party_id, dest_party_id):
     if isinstance(PROXY, str):
         if PROXY == CoordinationProxyService.ROLLSITE:
-            proxy_address = ServiceRegistry.FATE_ON_EGGROLL.get(PROXY)
+            proxy_address = ServerRegistry.FATE_ON_EGGROLL.get(PROXY)
             return proxy_address["host"], proxy_address.get("grpc_port", proxy_address["port"]), CoordinationCommunicationProtocol.GRPC
         elif PROXY == CoordinationProxyService.NGINX:
-            proxy_address = ServiceRegistry.FATE_ON_SPARK.get(PROXY)
+            proxy_address = ServerRegistry.FATE_ON_SPARK.get(PROXY)
             protocol = CoordinationCommunicationProtocol.HTTP if PROXY_PROTOCOL == "default" else PROXY_PROTOCOL
             return proxy_address["host"], proxy_address[f"{protocol}_port"], protocol
         else:
@@ -118,11 +125,6 @@ def federated_coordination_on_http(job_id, method, host, port, endpoint, src_par
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
     endpoint = f"/{api_version}{endpoint}"
     exception = None
-
-    json_body['src_fate_ver'] = RuntimeConfig.get_env('FATE')
-    json_body['src_role'] = src_role
-    json_body['src_party_id'] = src_party_id
-
     for t in range(try_times):
         try:
             url = "http://{}:{}{}".format(host, port, endpoint)
@@ -151,13 +153,6 @@ def federated_coordination_on_grpc(job_id, method, host, port, endpoint, src_par
                                    overall_timeout=None, try_times=3):
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
     endpoint = f"/{api_version}{endpoint}"
-
-    json_body['src_fate_ver'] = RuntimeConfig.get_env('FATE')
-    json_body['src_role'] = src_role
-    json_body['src_party_id'] = src_party_id
-
-    if CHECK_NODES_IDENTITY:
-        get_node_identity(json_body, src_party_id)
     _packet = wrap_grpc_packet(json_body, method, endpoint, src_party_id, dest_party_id, job_id,
                                overall_timeout=overall_timeout)
     _routing_metadata = gen_routing_metadata(src_party_id=src_party_id, dest_party_id=dest_party_id)
@@ -205,8 +200,8 @@ def proxy_api(role, _job_id, request_config):
 def forward_api(role, request_config):
     method = request_config.get('header', {}).get('method', 'post')
     endpoint = request_config.get('header', {}).get('endpoint')
-    ip = getattr(ServiceRegistry, role.upper()).get("host")
-    port = getattr(ServiceRegistry, role.upper()).get("port")
+    ip = getattr(ServerRegistry, role.upper()).get("host")
+    port = getattr(ServerRegistry, role.upper()).get("port")
     url = "http://{}:{}{}".format(ip, port, endpoint)
     audit_logger().info('api request: {}'.format(url))
 
@@ -219,18 +214,94 @@ def forward_api(role, request_config):
     return response
 
 
-def get_node_identity(json_body, src_party_id):
-    params = {
-        'partyId': int(src_party_id),
-        'federatedId': ServiceRegistry.FATEMANAGER.get("federatedId"),
-    }
-    try:
-        response = requests.post(url="http://{}:{}{}".format(
-            ServiceRegistry.FATEMANAGER.get("host"),
-            ServiceRegistry.FATEMANAGER.get("port"),
-            FATE_MANAGER_GET_NODE_INFO_ENDPOINT), json=params)
-        json_body['appKey'] = response.json().get('data').get('appKey')
-        json_body['appSecret'] = response.json().get('data').get('appSecret')
-        json_body['_src_role'] = response.json().get('data').get('role')
-    except Exception as e:
-        raise Exception('get appkey and secret failed: {}'.format(str(e)))
+def update_body(body, endpoint, src_party_id, src_role):
+    """
+    create job endpoint: /party/<job_id>/<role>/<party_id>/create
+    """
+    if endpoint.endswith("create") and len(endpoint.split("/")) == 6:
+        body.update(common_parm())
+        body.update(src_parm(role=src_role, party_id=src_party_id))
+        body.update(sign_parm(src_party_id, src_role, body))
+
+
+def common_parm():
+    return {"src_fate_ver": RuntimeConfig.get_env('FATE')}
+
+
+def src_parm(role, party_id):
+    return {"src_role": role, "src_party_id": party_id}
+
+
+def sign_parm(party_id, role, body):
+    # generate signature
+    sign_obj = HookManager.signature(SignatureParameters(role, party_id, body))
+    return {"sign": sign_obj.signature}
+
+
+def create_job_request_check(party_id_index, role_index):
+    def _out(func):
+        @functools.wraps(func)
+        def _wrapper(*_args, **_kwargs):
+            party_id = flask_request.path.split('/')[party_id_index]
+            role = flask_request.path.split('/')[role_index]
+            body = flask_request.json
+            sign = body.pop("sign")
+
+            # sign authentication
+            authentication_result = HookManager.authentication(AuthenticationParameters(sign, role, party_id, body))
+            if authentication_result.code != StatusCode.SUCCESS:
+                return get_json_result(
+                    retcode=RetCode.AUTHENTICATION_ERROR,
+                    retmsg='authentication failed',
+                    data=authentication_result.to_dict()
+                )
+
+            # permission check
+            if PERMISSION_SWITCH:
+                permission_return = HookManager.permission_check(get_permission_parameters(role, party_id, body))
+                if permission_return.code != StatusCode.SUCCESS:
+                    return get_json_result(
+                        retcode=RetCode.PERMISSION_ERROR,
+                        retmsg='permission check failed',
+                        data=permission_return.to_dict()
+                    )
+
+            src_fate_ver =body.get('src_fate_ver')
+            if src_fate_ver is not None and compare_version(src_fate_ver, '1.7.0') == 'lt':
+                return get_json_result(retcode=RetCode.INCOMPATIBLE_FATE_VER, retmsg='Incompatible FATE versions',
+                                       data={'src_fate_ver': src_fate_ver,
+                                             "current_fate_ver": RuntimeConfig.get_env('FATE')})
+            return func(*_args, **_kwargs)
+        return _wrapper
+    return _out
+
+
+def validate_request(*args, **kwargs):
+    def wrapper(func):
+        @wraps(func)
+        def decorated_function(*_args, **_kwargs):
+            input_arguments = flask.request.json or flask.request.form.to_dict()
+            no_arguments = []
+            error_arguments = []
+            for arg in args:
+                if arg not in input_arguments:
+                    no_arguments.append(arg)
+            for k, v in kwargs.items():
+                config_value = input_arguments.get(k, None)
+                if config_value is None:
+                    no_arguments.append(k)
+                elif isinstance(v, (tuple, list)):
+                    if config_value not in v:
+                        error_arguments.append((k, set(v)))
+                elif config_value != v:
+                    error_arguments.append((k, v))
+            if no_arguments or error_arguments:
+                error_string = ""
+                if no_arguments:
+                    error_string += "required argument are missing: {}; ".format(",".join(no_arguments))
+                if error_arguments:
+                    error_string += "required argument values: {}".format(",".join(["{}={}".format(a[0], a[1]) for a in error_arguments]))
+                return get_json_result(retcode=RetCode.ARGUMENT_ERROR, retmsg=error_string)
+            return func(*_args, **_kwargs)
+        return decorated_function
+    return wrapper

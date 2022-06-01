@@ -24,11 +24,12 @@ from fate_arch.common.base_utils import current_timestamp, fate_uuid, json_dumps
 from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.db.db_utils import query_db
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.db.service_registry import ServiceRegistry
+from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfiguration, RunParameters
 from fate_flow.entity.run_status import JobStatus, TaskStatus
+from fate_flow.entity.types import InputSearchType
 from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
-from fate_flow.utils import detect_utils, process_utils, session_utils
+from fate_flow.utils import detect_utils, process_utils, session_utils, data_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
@@ -121,7 +122,7 @@ def check_config(config: typing.Dict, required_parameters: typing.List):
         return True, 'ok'
 
 
-def check_job_runtime_conf(runtime_conf: typing.Dict):
+def check_job_conf(runtime_conf, job_dsl):
     detect_utils.check_config(runtime_conf, ['initiator', 'role'])
     detect_utils.check_config(runtime_conf['initiator'], ['role', 'party_id'])
     # deal party id
@@ -129,6 +130,7 @@ def check_job_runtime_conf(runtime_conf: typing.Dict):
     for r in runtime_conf['role'].keys():
         for i in range(len(runtime_conf['role'][r])):
             runtime_conf['role'][r][i] = int(runtime_conf['role'][r][i])
+    constraint_check(runtime_conf, job_dsl)
 
 
 def runtime_conf_basic(if_local=False):
@@ -387,8 +389,8 @@ def job_default_timeout(runtime_conf, dsl):
 
 def get_board_url(job_id, role, party_id):
     board_url = "http://{}:{}{}".format(
-        ServiceRegistry.FATEBOARD.get("host"),
-        ServiceRegistry.FATEBOARD.get("port"),
+        ServerRegistry.FATEBOARD.get("host"),
+        ServerRegistry.FATEBOARD.get("port"),
         FATE_BOARD_DASHBOARD_ENDPOINT).format(job_id, role, party_id)
     return board_url
 
@@ -409,3 +411,53 @@ def check_job_inheritance_parameters(job, inheritance_jobs, inheritance_tasks):
     dsl_parser = get_dsl_parser_by_version()
     dsl_parser.verify_conf_reusability(inheritance_job.f_runtime_conf, job.f_runtime_conf, job.f_inheritance_info.get('component_list'))
     dsl_parser.verify_dsl_reusability(inheritance_job.f_dsl, job.f_dsl, job.f_inheritance_info.get('component_list', []))
+
+
+def get_job_all_components(dsl):
+    return [dsl['components'][component_name]['module'].lower() for component_name in dsl['components'].keys()]
+
+
+def constraint_check(job_runtime_conf, job_dsl):
+    if job_dsl:
+        all_components = get_job_all_components(job_dsl)
+        glm = ['heterolr', 'heterolinr', 'heteropoisson']
+        for cpn in glm:
+            if cpn in all_components:
+                roles = job_runtime_conf.get('role')
+                if 'guest' in roles.keys() and 'arbiter' in roles.keys() and 'host' in roles.keys():
+                    for party_id in set(roles['guest']) & set(roles['arbiter']):
+                        if party_id not in roles['host'] or len(set(roles['guest']) & set(roles['arbiter'])) != len(roles['host']):
+                            raise Exception("{} component constraint party id, please check role config:{}".format(cpn, job_runtime_conf.get('role')))
+
+
+def get_job_dataset(is_initiator, role, party_id, roles, job_args):
+        dataset = {}
+        dsl_version = 1
+        if job_args.get('dsl_version'):
+            if job_args.get('dsl_version') == 2:
+                dsl_version = 2
+        for _role, _role_party_args in job_args.items():
+            if _role == "dsl_version":
+                continue
+            if is_initiator or _role == role:
+                for _party_index in range(len(_role_party_args)):
+                    _party_id = roles[_role][_party_index]
+                    if is_initiator or _party_id == party_id:
+                        dataset[_role] = dataset.get(_role, {})
+                        dataset[_role][_party_id] = dataset[_role].get(
+                            _party_id, {})
+                        if dsl_version == 1:
+                            for _data_type, _data_location in _role_party_args[_party_index]['args']['data'].items():
+                                dataset[_role][_party_id][_data_type] = '{}.{}'.format(
+                                    _data_location['namespace'], _data_location['name'])
+                        else:
+                            for key in _role_party_args[_party_index].keys():
+                                for _data_type, _data_location in _role_party_args[_party_index][key].items():
+                                    search_type = data_utils.get_input_search_type(parameters=_data_location)
+                                    if search_type is InputSearchType.TABLE_INFO:
+                                        dataset[_role][_party_id][key] = '{}.{}'.format(_data_location['namespace'], _data_location['name'])
+                                    elif search_type is InputSearchType.JOB_COMPONENT_OUTPUT:
+                                        dataset[_role][_party_id][key] = '{}.{}.{}'.format(_data_location['job_id'], _data_location['component_name'], _data_location['data_name'])
+                                    else:
+                                        dataset[_role][_party_id][key] = "unknown"
+        return dataset
