@@ -26,7 +26,7 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RunParameters
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.entity.run_status import JobStatus, EndStatus, JobInheritanceStatus
-from fate_flow.entity.types import InputSearchType, WorkerName
+from fate_flow.entity.types import WorkerName
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
@@ -37,6 +37,7 @@ from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.protobuf.python import pipeline_pb2
 from fate_flow.settings import ENGINES
 from fate_flow.utils import job_utils, schedule_utils, data_utils, log_utils, model_utils
+from fate_flow.utils.job_utils import get_job_dataset
 from fate_flow.utils.log_utils import schedule_logger
 
 
@@ -337,41 +338,8 @@ class JobController(object):
                         partner[_role].append(_party_id)
 
         job_args = dsl_parser.get_args_input()
-        dataset = cls.get_dataset(is_initiator, role, party_id, roles, job_args)
+        dataset = get_job_dataset(is_initiator, role, party_id, roles, job_args)
         tracker.log_job_view({'partner': partner, 'dataset': dataset, 'roles': show_role})
-
-    @classmethod
-    def get_dataset(cls, is_initiator, role, party_id, roles, job_args):
-        dataset = {}
-        dsl_version = 1
-        if job_args.get('dsl_version'):
-            if job_args.get('dsl_version') == 2:
-                dsl_version = 2
-        for _role, _role_party_args in job_args.items():
-            if _role == "dsl_version":
-                continue
-            if is_initiator or _role == role:
-                for _party_index in range(len(_role_party_args)):
-                    _party_id = roles[_role][_party_index]
-                    if is_initiator or _party_id == party_id:
-                        dataset[_role] = dataset.get(_role, {})
-                        dataset[_role][_party_id] = dataset[_role].get(
-                            _party_id, {})
-                        if dsl_version == 1:
-                            for _data_type, _data_location in _role_party_args[_party_index]['args']['data'].items():
-                                dataset[_role][_party_id][_data_type] = '{}.{}'.format(
-                                    _data_location['namespace'], _data_location['name'])
-                        else:
-                            for key in _role_party_args[_party_index].keys():
-                                for _data_type, _data_location in _role_party_args[_party_index][key].items():
-                                    search_type = data_utils.get_input_search_type(parameters=_data_location)
-                                    if search_type is InputSearchType.TABLE_INFO:
-                                        dataset[_role][_party_id][key] = '{}.{}'.format(_data_location['namespace'], _data_location['name'])
-                                    elif search_type is InputSearchType.JOB_COMPONENT_OUTPUT:
-                                        dataset[_role][_party_id][key] = '{}.{}.{}'.format(_data_location['job_id'], _data_location['component_name'], _data_location['data_name'])
-                                    else:
-                                        dataset[_role][_party_id][key] = "unknown"
-        return dataset
 
     @classmethod
     def query_job_input_args(cls, input_data, role, party_id):

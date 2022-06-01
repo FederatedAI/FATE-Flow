@@ -68,9 +68,14 @@ def download_upload(access_module):
     # compatibility
     if "table_name" in job_config:
         job_config["name"] = job_config["table_name"]
-    for _ in ["head", "partition", "drop"]:
+    for _ in ["head", "partition", "drop", "extend_sid", "auto_increasing_sid"]:
         if _ in job_config:
-            job_config[_] = int(job_config[_])
+            if _ == "false":
+                job_config[_] = False
+            elif _ == "true":
+                job_config[_] = True
+            else:
+                job_config[_] = int(job_config[_])
     if access_module == "upload":
         if job_config.get('drop', 0) == 1:
             job_config["destroy"] = True
@@ -162,7 +167,8 @@ def gen_data_access_job_config(config_data, access_module):
                 "destroy",
                 "extend_sid",
                 "auto_increasing_sid",
-                "block_size"
+                "block_size",
+                "schema"
             }
         update_config(job_runtime_conf, job_dsl, initiator_role, parameters, access_module, config_data)
 

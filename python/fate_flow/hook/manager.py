@@ -15,16 +15,16 @@ class HookManager:
         importlib.import_module(HOOK_MODULE)
 
     @staticmethod
-    def register_signature_hook(fun):
-        HookManager.SIGNATURE = fun
+    def register_signature_hook(func):
+        HookManager.SIGNATURE = func
 
     @staticmethod
-    def register_authentication_hook(fun):
-        HookManager.AUTHENTICATION = fun
+    def register_authentication_hook(func):
+        HookManager.AUTHENTICATION = func
 
     @staticmethod
-    def register_permission_check_hook(fun):
-        HookManager.PERMISSION_CHECK = fun
+    def register_permission_check_hook(func):
+        HookManager.PERMISSION_CHECK = func
 
     @staticmethod
     def signature(parm: SignatureParameters) -> SignatureReturn:

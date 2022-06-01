@@ -20,8 +20,7 @@ from ._base import BaseEntity
 
 class PermissionParameters(BaseEntity):
     def __init__(self, **kwargs):
-        self.src_role = None
-        self.src_party_id = None
+        self.party_id = None
         self.role = None
         self.command = None
         self.component = None

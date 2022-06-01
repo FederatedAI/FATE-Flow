@@ -528,11 +528,35 @@ class DependenciesStorageMeta(DataBaseModel):
 
 
 class PermissionStorage(DataBaseModel):
-    f_source_role = CharField(max_length=30)
-    f_source_party_id = CharField(max_length=10)
-    f_type = IntegerField()
+    f_party_id = CharField(max_length=20)
+    f_type = CharField(max_length=20)
     f_value = CharField(max_length=1000)
     f_expire_time = BigIntegerField(null=True)
 
     class Meta:
         db_table = "t_permission_storage"
+
+
+class ServerRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30, index=True)
+    f_host = CharField(max_length=30)
+    f_port = IntegerField()
+    f_protocol = CharField(max_length=10)
+
+    class Meta:
+        db_table = "t_server_registry_info"
+
+
+class ServiceRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30)
+    f_service_name = CharField(max_length=30)
+    f_url = CharField(max_length=100)
+    f_method = CharField(max_length=10)
+    f_params = JSONField(null=True)
+    f_data = JSONField(null=True)
+    f_headers = JSONField(null=True)
+
+    class Meta:
+        db_table = "t_service_registry_info"
+        primary_key = CompositeKey('f_server_name', 'f_service_name')
+

@@ -89,7 +89,6 @@ class ResourceOperation(CustomEnum):
 
 class PermissionType(CustomEnum):
     ROLE = "role"
-    COMMAND = "command"
     COMPONENT = "component"
     DATASET = "dataset"
 
@@ -117,6 +116,8 @@ class RetCode(IntEnum, CustomEnum):
     CONNECTION_ERROR = 105
     RUNNING = 106
     INCOMPATIBLE_FATE_VER = 107
+    PERMISSION_ERROR = 108
+    AUTHENTICATION_ERROR = 109
     SERVER_ERROR = 500
 
 
