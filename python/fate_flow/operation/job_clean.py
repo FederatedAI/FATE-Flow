@@ -45,7 +45,7 @@ class JobClean(object):
                     stat_logger.info('stop {} {} {} {} session success'.format(task.f_job_id, task.f_role,
                                                                                task.f_party_id, task.f_component_name))
                 except Exception as e:
-                    pass
+                    stat_logger.info(f'start_session_stop occur exception: {e}')
                 try:
                     # clean data table
                     JobClean.clean_table(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id,

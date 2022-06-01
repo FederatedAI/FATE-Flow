@@ -13,12 +13,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import typing
 from enum import Enum
 from fate_flow.entity import BaseEntity
 
 
 class MetricType(Enum):
     LOSS = 'LOSS'
+    DOWNLOAD = 'DOWNLOAD'
+    CACHE_INFO = 'cache_info'
+    CHECKPOINT_INFO = 'checkpoint_info'
+    UPLOAD = 'UPLOAD'
+    COMPONENT_MODEL_INFO = 'component_model_info'
 
 
 class Metric(BaseEntity):
@@ -33,7 +39,7 @@ class Metric(BaseEntity):
 
 
 class MetricMeta(BaseEntity):
-    def __init__(self, name: str, metric_type: MetricType, extra_metas: dict = None):
+    def __init__(self, name: str, metric_type: typing.Union[MetricType, str], extra_metas: dict = None):
         self.name = name
         self.metric_type = metric_type
         self.metas = {}

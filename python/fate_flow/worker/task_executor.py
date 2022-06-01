@@ -74,7 +74,6 @@ class TaskExecutor(BaseTaskWorker):
             job_parameters = dsl_parser.get_job_parameters(job_configuration.runtime_conf)
             user_name = job_parameters.get(args.role, {}).get(args.party_id, {}).get("user", '')
             LOGGER.info(f"user name:{user_name}")
-            src_user = task_parameters_conf.get("src_user")
             task_parameters = RunParameters(**task_parameters_conf)
             job_parameters = task_parameters
             if job_parameters.assistant_role:

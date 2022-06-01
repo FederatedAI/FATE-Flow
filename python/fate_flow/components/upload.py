@@ -30,7 +30,7 @@ from fate_flow.components._base import (
     ComponentMeta,
     ComponentInputProtocol,
 )
-from fate_flow.entity import Metric, MetricMeta
+from fate_flow.entity import Metric, MetricMeta, MetricType
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.db.job_default_config import JobDefaultConfig
@@ -248,10 +248,11 @@ class Upload(ComponentBase):
         )
         return table_count
 
-    def get_count(self, input_file):
+    @staticmethod
+    def get_count(input_file):
         with open(input_file, "r", encoding="utf-8") as fp:
             count = 0
-            for line in fp:
+            for _ in fp:
                 count += 1
         return count
 
@@ -262,7 +263,7 @@ class Upload(ComponentBase):
         block_size = self.parameters.get("block_size", 1)
         if storage_engine not in {StorageEngine.EGGROLL, StorageEngine.STANDALONE} or block_size == 1:
             return data_head, [file_path], None
-        if isinstance(block_size, int) and block_size> 1:
+        if isinstance(block_size, int) and block_size > 1:
             block_line = int(input_feature_count / self.parameters.get("block_size", 5)) + 1
         else:
             raise ValueError(f"block size value error:{block_size}")
@@ -396,12 +397,13 @@ class Upload(ComponentBase):
             partitions=self.parameters.get("partitions"))
         return computing_table
 
-    def check_upload_process(self, upload_process):
+    @staticmethod
+    def check_upload_process(upload_process):
         while True:
             for p in upload_process:
                 LOGGER.info(f"pid {p.pid} poll status: {p.poll()}")
-                if p.poll() != None:
-                    if p.poll() !=0:
+                if p.poll() is not None:
+                    if p.poll() != 0:
                         raise Exception(p.stderr)
                     upload_process.remove(p)
             LOGGER.info(f"running pid:{[p.pid for p in upload_process]}")
@@ -433,7 +435,8 @@ class Upload(ComponentBase):
             line = data_utils.get_auto_increasing_sid_data_line
         return line
 
-    def generate_table_name(self, input_file_path):
+    @staticmethod
+    def generate_table_name(input_file_path):
         str_time = time.strftime("%Y%m%d%H%M%S", time.localtime())
         file_name = input_file_path.split(".")[0]
         file_name = file_name.split("/")[-1]
@@ -453,7 +456,7 @@ class Upload(ComponentBase):
         self.tracker.set_metric_meta(
             metric_namespace="upload",
             metric_name="data_access",
-            metric_meta=MetricMeta(name="upload", metric_type="UPLOAD"),
+            metric_meta=MetricMeta(name="upload", metric_type=MetricType.UPLOAD),
         )
 
     def get_data_table_count(self, path, name, namespace):

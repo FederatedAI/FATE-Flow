@@ -21,7 +21,7 @@ from fate_flow.components._base import (
     ComponentInputProtocol,
 )
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.entity import MetricMeta
+from fate_flow.entity import MetricMeta, MetricType
 
 LOGGER = getLogger()
 
@@ -76,4 +76,4 @@ class CacheLoader(ComponentBase):
             metric_meta = cache.to_dict()
             metric_meta.pop("data")
             metric_meta["component_name"] = self.component_name
-            self.tracker.set_metric_meta(metric_namespace="cache_loader", metric_name=cache.name, metric_meta=MetricMeta(name="cache", metric_type="cache_info", extra_metas=metric_meta))
+            self.tracker.set_metric_meta(metric_namespace="cache_loader", metric_name=cache.name, metric_meta=MetricMeta(name="cache", metric_type=MetricType.CACHE_INFO, extra_metas=metric_meta))

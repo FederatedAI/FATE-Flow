@@ -30,7 +30,7 @@ class MysqldbHelper(object):
 
     def execute(self, sql):
         self.cur.execute(sql)
-        results = self.cur.fetchall()
+        self.cur.fetchall()
 
 
 def create_db(namespace):

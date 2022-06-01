@@ -237,10 +237,12 @@ class PipelinedModel(Locker):
                         model_buffers["{}.{}:{}".format(component_name, model_alias, model_name)] = serialized_string
         return model_buffers
 
-    def get_model_migrate_tool(self):
+    @staticmethod
+    def get_model_migrate_tool():
         return provider_utils.get_provider_class_object(RuntimeConfig.COMPONENT_PROVIDER, "model_migrate", True)
 
-    def get_homo_model_convert_tool(self):
+    @staticmethod
+    def get_homo_model_convert_tool():
         return provider_utils.get_provider_class_object(RuntimeConfig.COMPONENT_PROVIDER, "homo_model_convert", True)
 
     def exists(self):

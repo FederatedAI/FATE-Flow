@@ -251,7 +251,8 @@ class Reader(ComponentBase):
         }
         dest_table.meta.update_metas(schema=schema)
 
-    def convert_join(self, x, delimitor=","):
+    @staticmethod
+    def convert_join(x, delimitor=","):
         import pickle
 
         x = [str(i) for i in x]

@@ -328,7 +328,7 @@ def get_component_output_tables_meta(task_data):
 
 @DB.connection_context()
 def check_request_parameters(request_data):
-    if 'role' not in request_data and 'party_id' not in request_data:
+    if 'role' not in request_data or 'party_id' not in request_data:
         jobs = Job.select(Job.f_runtime_conf_on_party).where(Job.f_job_id == request_data.get('job_id', ''),
                                                              Job.f_is_initiator == True)
         if jobs:
@@ -337,5 +337,5 @@ def check_request_parameters(request_data):
             job_initiator = job_runtime_conf.get('initiator', {})
             role = job_initiator.get('role', '')
             party_id = job_initiator.get('party_id', 0)
-            request_data['role'] = role
-            request_data['party_id'] = party_id
+            request_data['role'] = role if 'role' not in request_data else request_data['role']
+            request_data['party_id'] = party_id if 'party_id' not in request_data else request_data['party_id']
