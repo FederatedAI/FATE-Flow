@@ -21,8 +21,9 @@ from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_flow.settings import stat_logger
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.model.checkpoint import CheckpointManager
+from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.utils.model_utils import (gen_party_model_id, check_before_deploy, compare_version,
+from fate_flow.utils.model_utils import (gen_party_model_id, check_before_deploy,
                                          gather_model_info_data, save_model_info)
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 from fate_flow.operation.job_saver import JobSaver

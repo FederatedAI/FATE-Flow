@@ -19,7 +19,6 @@ from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.utils.api_utils import get_json_result, validate_request
 
 
-
 @manager.route("/registry", methods=['POST'])
 @validate_request("server_name", "service_name", "uri")
 def create_service():

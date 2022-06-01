@@ -17,7 +17,7 @@ def signature(parm: SignatureParameters):
             raise Exception(f"signature error: no found server {AUTHENTICATION_SERVER} service {signature}")
         service = service_list[0]
         json_body = service.f_data
-        response = getattr(requests, service.f_method, None)(
+        response = getattr(requests, service.f_method.lower(), None)(
             url=service.f_url,
             json=json_body
         )
@@ -39,7 +39,7 @@ def authentication(parm: AuthenticationParameters):
         service = service_list[0]
         json_body = service.f_data
         json_body.update(parm.sign)
-        response = getattr(requests, service.f_method, None)(
+        response = getattr(requests, service.f_method.lower(), None)(
             url=service.f_url,
             json=json_body
         )
@@ -52,6 +52,9 @@ def authentication(parm: AuthenticationParameters):
 
 @HookManager.register_permission_check_hook
 def permission_check(parm: PermissionCheckParameters) -> PermissionReturn:
+    if check_pass(parm):
+        return PermissionReturn()
+
     checker = PermissionCheck(**parm.to_dict())
     if ROLE_PERMISSION:
         role_result = checker.check_role()
@@ -68,3 +71,12 @@ def permission_check(parm: PermissionCheckParameters) -> PermissionReturn:
         if dataset_result.code != StatusCode.SUCCESS:
             return dataset_result
     return PermissionReturn()
+
+
+def check_pass(parm: PermissionCheckParameters):
+    if parm.role == "local" or str(parm.party_id) == "0":
+        return True
+    elif parm.src_party_id == parm.party_id:
+        return True
+    else:
+        return False

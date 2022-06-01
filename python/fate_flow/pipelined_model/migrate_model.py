@@ -24,7 +24,7 @@ from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_flow.settings import stat_logger
 from fate_flow.utils import model_utils
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
 
 
 def gen_model_file_path(model_id, model_version):
@@ -107,7 +107,7 @@ def migration(config_data: dict):
         pipeline.model_id = bytes(adapter.get_common_parameters().to_dict().get("model_id"), "utf-8")
         pipeline.model_version = bytes(adapter.get_common_parameters().to_dict().get("model_version"), "utf-8")
 
-        if model_utils.compare_version(pipeline.fate_version, '1.5.0') == 'gt':
+        if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
             pipeline.initiator_role = config_data["migrate_initiator"]['role']
             pipeline.initiator_party_id = config_data["migrate_initiator"]['party_id']
 

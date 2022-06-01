@@ -27,7 +27,7 @@ from flask import Response, request, send_file
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.conf_utils import get_base_config
-from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
 
 from fate_flow.db.db_models import (DB, ModelTag, Tag,
                                     MachineLearningModelInfo as MLModel,
@@ -355,7 +355,7 @@ def operate_model(model_operation):
                         model_info['size'] = model.calculate_model_file_size()
                         model_info['role'] = request_config["model_id"].split('#')[0]
                         model_info['party_id'] = request_config["model_id"].split('#')[1]
-                        if model_utils.compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
+                        if compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
                             model_info['roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
                             model_info['initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
                             model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get( 'initiator', {}).get('party_id')
@@ -630,7 +630,7 @@ def deploy():
         raise Exception(f'Deploy model failed, no model {model_id} {model_version} found.')
 
     for key, value in model_info.items():
-        version_check = model_utils.compare_version(value.get('f_fate_version'), '1.5.0')
+        version_check = compare_version(value.get('f_fate_version'), '1.5.0')
         if version_check == 'lt':
             continue
 

@@ -17,7 +17,6 @@ from flask import request
 
 from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RetCode
 from fate_flow.entity.types import TaskCleanResourceType
 from fate_flow.manager.dependence_manager import DependenceManager
@@ -25,9 +24,9 @@ from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import get_json_result, create_job_request_check
 
-# execute command on every party
+
 @manager.route('/<job_id>/<role>/<party_id>/create', methods=['POST'])
-@create_job_request_check
+@create_job_request_check(party_id_index=-2, role_index=-3)
 def create_job(job_id, role, party_id):
     try:
         result = JobController.create_job(job_id=job_id, role=role, party_id=int(party_id), job_info=request.json)

@@ -26,7 +26,7 @@ from fate_flow.settings import stat_logger
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
-from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
 from fate_flow.utils.log_utils import sql_logger
 
 
@@ -204,24 +204,6 @@ def save_model_info(model_info):
     ), model.f_model_version)
 
     return model
-
-
-def compare_version(version: str, target_version: str):
-    ver_list = version.split('.')
-    tar_ver_list = target_version.split('.')
-    if int(ver_list[0]) >= int(tar_ver_list[0]):
-        if int(ver_list[1]) > int(tar_ver_list[1]):
-            return 'gt'
-        elif int(ver_list[1]) < int(tar_ver_list[1]):
-            return 'lt'
-        else:
-            if int(ver_list[2]) > int(tar_ver_list[2]):
-                return 'gt'
-            elif int(ver_list[2]) == int(tar_ver_list[2]):
-                return 'eq'
-            else:
-                return 'lt'
-    return 'lt'
 
 
 def check_if_parent_model(pipeline):

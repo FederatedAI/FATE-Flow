@@ -11,12 +11,11 @@ logger = getLogger("permission")
 
 
 class PermissionController:
-    def __init__(self, src_role, src_party_id):
-        self.src_role = src_role
+    def __init__(self, src_party_id):
         self.src_party_id = src_party_id
 
     def check(self, permission_type, value):
-        logger.info(f"check source role {self.src_role} party id {self.src_party_id} {permission_type} {value}")
+        logger.info(f"check source party id {self.src_party_id} {permission_type} {value}")
         result = self.query(permission_type=permission_type, value=value)
         logger.info(f"result: {result}")
         if result:
@@ -34,7 +33,7 @@ class PermissionController:
             permission_value = getattr(permission_parameters, permission_type)
             if permission_value:
                 if permission_value != "*":
-                    if permission_type in [PermissionType.ROLE.value, PermissionType.COMMAND.value, PermissionType.COMPONENT.value]:
+                    if permission_type in [PermissionType.ROLE.value, PermissionType.COMPONENT.value]:
                         value_list = [value.strip() for value in permission_value.split(self.value_delimiter)]
                     elif permission_type in [PermissionType.DATASET.value]:
                         if isinstance(permission_value, list):
@@ -56,17 +55,15 @@ class PermissionController:
 
     @DB.connection_context()
     def _grant(self, permission_type, value, valid_period=None):
-        permission_list = PermissionStorage.query(source_role=self.src_role, source_party_id=self.src_party_id,
+        permission_list = PermissionStorage.query(party_id=self.src_party_id,
                                                   type=permission_type, value=value)
         if permission_list:
-            if valid_period:
-                for permission in permission_list:
-                    permission.f_expire_time = self.make_expire_time(valid_period)
-                    permission.save()
+            for permission in permission_list:
+                permission.f_expire_time = self.make_expire_time(valid_period)
+                permission.save()
         else:
             permission = PermissionStorage()
-            permission.f_source_role = self.src_role
-            permission.f_source_party_id = self.src_party_id
+            permission.f_party_id = self.src_party_id
             permission.f_type = permission_type
             permission.f_value = value
             permission.f_expire_time = self.make_expire_time(valid_period)
@@ -79,10 +76,9 @@ class PermissionController:
 
     @DB.connection_context()
     def query(self, **kwargs):
-        logger.info(f"query {self.src_role} {self.src_party_id} {kwargs}")
+        logger.info(f"query {self.src_party_id} {kwargs}")
         permission_list = PermissionStorage.query(
-            source_role=self.src_role,
-            source_party_id=self.src_party_id,
+            party_id=self.src_party_id,
             **kwargs
         )
         _result = {}
@@ -97,8 +93,7 @@ class PermissionController:
     @DB.connection_context()
     def _delete(self, permission_type, value=None):
         update_filters = [
-            PermissionStorage.f_source_role == self.src_role,
-            PermissionStorage.f_source_party_id == self.src_party_id,
+            PermissionStorage.f_party_id == self.src_party_id,
             PermissionStorage.f_type == permission_type
         ]
         if value:
@@ -112,11 +107,11 @@ class PermissionController:
             if permission_value:
                 if permission_type == PermissionType.ROLE.value and not ROLE_PERMISSION:
                     raise ValueError(f"role permission switch is {ROLE_PERMISSION}")
-                if permission_type == PermissionType.COMMAND.value and not COMPONENT_PERMISSION:
+                if permission_type == PermissionType.COMPONENT.value and not COMPONENT_PERMISSION:
                     raise ValueError(f"component permission switch is {COMPONENT_PERMISSION}")
                 if permission_type == PermissionType.DATASET.value and not DATASET_PERMISSION:
                     raise ValueError(f"dataset permission switch is {DATASET_PERMISSION}")
-                if permission_type in [PermissionType.ROLE.value, PermissionType.COMMAND.value, PermissionType.COMPONENT.value]:
+                if permission_type in [PermissionType.ROLE.value, PermissionType.COMPONENT.value]:
                     if permission_value != "*":
                         value_list = [value.strip() for value in permission_value.split(self.value_delimiter)]
                         self.check_values(permission_type, value_list)
@@ -148,8 +143,6 @@ class PermissionController:
     def all_value(self, permission_type):
         if permission_type == PermissionType.ROLE.value:
             value_list = self.all_role
-        elif permission_type == PermissionType.COMMAND.value:
-            value_list = self.all_command
         elif permission_type == PermissionType.COMPONENT.value:
             value_list = self.all_component
         else:
@@ -169,10 +162,6 @@ class PermissionController:
         return component_list
 
     @property
-    def all_command(self):
-        return ["create", "stop"]
-
-    @property
     def value_delimiter(self):
         return ","
 
@@ -187,18 +176,21 @@ class PermissionCheck(object):
         self.dataset_list = dataset_list
         self.initiator = initiator
         self.roles = roles
-        self.controller = PermissionController(src_role, src_party_id)
+        self.controller = PermissionController(src_party_id)
 
     def check_role(self) -> PermissionReturn:
         if not self.controller.check(PermissionType.ROLE.value, self.role):
             return PermissionReturn(CheckReturn.NO_ROLE_PERMISSION, f"check role permission failed: {self.role}")
+        return PermissionReturn()
 
     def check_component(self) -> PermissionReturn:
         for component_name in self.component_list:
             if not self.controller.check(PermissionType.COMPONENT.value, component_name):
                 return PermissionReturn(CheckReturn.NO_COMPONENT_PERMISSION, f"check component permission failed: {component_name}")
+        return PermissionReturn()
 
     def check_dataset(self) -> PermissionReturn:
         for dataset in self.dataset_list:
             if not self.controller.check(PermissionType.DATASET.value, dataset):
                 return PermissionReturn(CheckReturn.NO_DATASET_PERMISSION, f"check dataset permission failed: {dataset}")
+        return PermissionReturn()

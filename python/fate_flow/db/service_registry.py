@@ -30,15 +30,15 @@ class ServiceRegistry(ReloadConfigBase):
 
     @classmethod
     @DB.connection_context()
-    def save_service_info(cls, server_name, service_name, uri, method="POST", server_info=None, params=None, data=None, headers=None):
+    def save_service_info(cls, server_name, service_name, uri, method="POST", server_info=None, params=None, data=None, headers=None, protocol="http"):
         if not server_info:
             server_list = ServerRegistry.query_server_info_from_db(server_name=server_name)
-            if not server_info:
+            if not server_list:
                 raise Exception(f"no found server {server_name}")
             server_info = server_list[0]
-            url = f"{method}://{server_info.host}:{server_info.port}{uri}"
+            url = f"{server_info.f_protocol}://{server_info.f_host}:{server_info.f_port}{uri}"
         else:
-            url = f"{method}://{server_info.get('host')}:{server_info.get('port')}{uri}"
+            url = f"{server_info.get('protocol', protocol)}://{server_info.get('host')}:{server_info.get('port')}{uri}"
         service_info = {
             "f_server_name": server_name,
             "f_service_name": service_name,
@@ -92,7 +92,7 @@ class ServerRegistry(ReloadConfigBase):
 
     @classmethod
     def register(cls, server_name, server_info):
-        cls.save_server_info_to_db(server_name, server_info.get("host"), server_info.get("port"), protocol="http")
+        cls.save_server_info_to_db(server_name, server_info.get("host"), server_info.get("port"), protocol=server_info.get("protocol", "http"))
         setattr(cls, server_name, server_info)
 
     @classmethod
@@ -106,7 +106,7 @@ class ServerRegistry(ReloadConfigBase):
             if "api" in server_info:
                 del server_info["api"]
             cls.save_server_info_to_db(server_name, server_info.get("host"), server_info.get("port"), protocol="http")
-            setattr(cls, server_name.upper(), server_info)
+            setattr(cls, server_name, server_info)
         return update_server
 
     @classmethod
@@ -130,8 +130,11 @@ class ServerRegistry(ReloadConfigBase):
 
     @classmethod
     @DB.connection_context()
-    def query_server_info_from_db(cls, **kwargs) -> [ServerRegistryInfo]:
-        server_list = ServerRegistryInfo.query(**kwargs)
+    def query_server_info_from_db(cls, server_name=None) -> [ServerRegistryInfo]:
+        if server_name:
+            server_list = ServerRegistryInfo.select().where(ServerRegistryInfo.f_server_name==server_name.upper())
+        else:
+            server_list = ServerRegistryInfo.select()
         return [server for server in server_list]
 
     @classmethod
@@ -150,7 +153,7 @@ class ServerRegistry(ReloadConfigBase):
     @DB.connection_context()
     def save_server_info_to_db(cls, server_name, host, port, protocol="http"):
         server_info = {
-            "f_server_name": server_name,
+            "f_server_name": server_name.upper(),
             "f_host": host,
             "f_port": port,
             "f_protocol": protocol

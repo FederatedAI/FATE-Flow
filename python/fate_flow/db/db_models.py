@@ -528,8 +528,7 @@ class DependenciesStorageMeta(DataBaseModel):
 
 
 class PermissionStorage(DataBaseModel):
-    f_source_role = CharField(max_length=30)
-    f_source_party_id = CharField(max_length=20)
+    f_party_id = CharField(max_length=20)
     f_type = CharField(max_length=20)
     f_value = CharField(max_length=1000)
     f_expire_time = BigIntegerField(null=True)

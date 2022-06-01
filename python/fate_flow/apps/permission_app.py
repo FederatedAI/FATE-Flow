@@ -22,24 +22,24 @@ from fate_flow.utils.api_utils import get_json_result
 
 
 @manager.route('/grant', methods=['post'])
-@api_utils.validate_request('src_role', 'src_party_id')
+@api_utils.validate_request('party_id')
 def grant_permission():
     parameters = PermissionParameters(**request.json)
-    PermissionController(parameters.src_role, parameters.src_party_id).grant_or_delete(parameters)
+    PermissionController(parameters.party_id).grant_or_delete(parameters)
     return get_json_result(retcode=0, retmsg='success')
 
 
 @manager.route('/delete', methods=['post'])
-@api_utils.validate_request('src_role', 'src_party_id')
+@api_utils.validate_request('party_id')
 def delete_permission():
     parameters = PermissionParameters(is_delete=True, **request.json)
-    PermissionController(parameters.src_role, parameters.src_party_id).grant_or_delete(parameters)
+    PermissionController(parameters.party_id).grant_or_delete(parameters)
     return get_json_result(retcode=0, retmsg='success')
 
 
 @manager.route('/query', methods=['post'])
-@api_utils.validate_request('src_role', 'src_party_id')
+@api_utils.validate_request('party_id')
 def query_privilege():
     parameters = PermissionParameters(**request.json)
-    data = PermissionController(parameters.src_role, parameters.src_party_id).query()
+    data = PermissionController(parameters.party_id).query()
     return get_json_result(retcode=0, retmsg='success', data=data)
