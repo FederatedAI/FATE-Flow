@@ -55,8 +55,6 @@ FATE_FLOW_UPDATE_CHECK = False
 HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")
 GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("grpc_port")
-HTTP_APP_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_app_key")
-HTTP_SECRET_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_secret_key")
 PROXY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol")
 ENGINES = engine_utils.get_engines()
@@ -122,9 +120,14 @@ database_logger = getLogger("fate_flow_database")
 # upload
 UPLOAD_DATA_FROM_CLIENT = True
 
+# client authentication
+CLIENT_AUTHENTICATION = False
+HTTP_APP_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_app_key")
+HTTP_SECRET_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_secret_key")
 
-AUTHENTICATION = False
-AUTHENTICATION_SERVER = "fate_manager"
+# site authentication
+SITE_AUTHENTICATION = False
+SITE_AUTHENTICATION_SERVER = "fate_manager"
 
 # permission switch
 PERMISSION_SWITCH = False

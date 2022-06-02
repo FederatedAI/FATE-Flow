@@ -20,7 +20,6 @@ from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.db.runtime_config import RuntimeConfig
 
 
-
 @manager.route('/get', methods=['POST'])
 def get_fate_version_info():
     module = request.json['module'] if isinstance(request.json, dict) and request.json.get('module') else 'FATE'
