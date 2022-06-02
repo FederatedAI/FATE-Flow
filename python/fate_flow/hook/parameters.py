@@ -1,13 +1,12 @@
+from fate_flow.entity import RetCode
+
+
 class ParametersBase:
     def to_dict(self):
         d = {}
         for k, v in self.__dict__.items():
             d[k] = v
         return d
-
-
-class StatusCode:
-    SUCCESS = 0
 
 
 class SignatureParameters(ParametersBase):
@@ -31,7 +30,7 @@ class AuthenticationParameters(ParametersBase):
 
 
 class AuthenticationReturn(ParametersBase):
-    def __init__(self, code=StatusCode.SUCCESS, message="success"):
+    def __init__(self, code=RetCode.SUCCESS, message="success"):
         self.code = code
         self.message = message
 
@@ -49,7 +48,7 @@ class PermissionCheckParameters(ParametersBase):
 
 
 class PermissionReturn(ParametersBase):
-    def __init__(self, code=StatusCode.SUCCESS, message="success"):
+    def __init__(self, code=RetCode.SUCCESS, message="success"):
         self.code = code
         self.message = message
 

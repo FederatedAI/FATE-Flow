@@ -29,8 +29,9 @@ from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import RetCode
-from fate_flow.hook.parameters import AuthenticationParameters, SignatureParameters, StatusCode
-from fate_flow.settings import API_VERSION, HEADERS, PROXY, PROXY_PROTOCOL, stat_logger, PERMISSION_SWITCH
+from fate_flow.hook.parameters import AuthenticationParameters, SignatureParameters
+from fate_flow.settings import API_VERSION, HEADERS, PROXY, PROXY_PROTOCOL, stat_logger, PERMISSION_SWITCH, \
+    SITE_AUTHENTICATION
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.grpc_utils import forward_grpc_packet, gen_routing_metadata, get_command_federation_channel, \
     wrap_grpc_packet
@@ -136,7 +137,7 @@ def federated_coordination_on_http(job_id, method, host, port, endpoint, src_par
             headers["src-party-id"] = str(src_party_id)
             headers["src-role"] = str(src_role)
 
-            response = request(method=method, url=url, json=json_body, headers=headers, overall_timeout=(overall_timeout/1000))
+            response = request(method=method, url=url, json=json_body, headers=headers)
             audit_logger(job_id).info(response.text)
             audit_logger(job_id).info('remote http api response: {} {}'.format(endpoint, response.json()))
 
@@ -234,8 +235,11 @@ def src_parm(role, party_id):
 
 def sign_parm(party_id, role, body):
     # generate signature
-    sign_obj = HookManager.signature(SignatureParameters(role, party_id, body))
-    return {"sign": sign_obj.signature}
+
+    if SITE_AUTHENTICATION:
+        sign_obj = HookManager.site_signature(SignatureParameters(role, party_id, body))
+        return {"sign": sign_obj.signature}
+    return {"sign": None}
 
 
 def create_job_request_check(party_id_index, role_index):
@@ -248,18 +252,19 @@ def create_job_request_check(party_id_index, role_index):
             sign = body.pop("sign")
 
             # sign authentication
-            authentication_result = HookManager.authentication(AuthenticationParameters(sign, role, party_id, body))
-            if authentication_result.code != StatusCode.SUCCESS:
-                return get_json_result(
-                    retcode=RetCode.AUTHENTICATION_ERROR,
-                    retmsg='authentication failed',
-                    data=authentication_result.to_dict()
-                )
+            if SITE_AUTHENTICATION:
+                authentication_result = HookManager.site_authentication(AuthenticationParameters(sign, role, party_id, body))
+                if authentication_result.code != RetCode.SUCCESS:
+                    return get_json_result(
+                        retcode=RetCode.AUTHENTICATION_ERROR,
+                        retmsg='authentication failed',
+                        data=authentication_result.to_dict()
+                    )
 
             # permission check
             if PERMISSION_SWITCH:
                 permission_return = HookManager.permission_check(get_permission_parameters(role, party_id, body))
-                if permission_return.code != StatusCode.SUCCESS:
+                if permission_return.code != RetCode.SUCCESS:
                     return get_json_result(
                         retcode=RetCode.PERMISSION_ERROR,
                         retmsg='permission check failed',

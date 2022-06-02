@@ -6,8 +6,9 @@ from fate_flow.settings import HOOK_MODULE
 
 
 class HookManager:
-    SIGNATURE = None
-    AUTHENTICATION = None
+    SITE_SIGNATURE = None
+    SITE_AUTHENTICATION = None
+    CLIENT_AUTHENTICATION = None
     PERMISSION_CHECK = None
 
     @staticmethod
@@ -15,27 +16,31 @@ class HookManager:
         importlib.import_module(HOOK_MODULE)
 
     @staticmethod
-    def register_signature_hook(func):
-        HookManager.SIGNATURE = func
+    def register_site_signature_hook(func):
+        HookManager.SITE_SIGNATURE = func
 
     @staticmethod
-    def register_authentication_hook(func):
-        HookManager.AUTHENTICATION = func
+    def register_site_authentication_hook(func):
+        HookManager.SITE_AUTHENTICATION = func
+
+    @staticmethod
+    def register_client_authentication_hook(func):
+        HookManager.CLIENT_AUTHENTICATION = func
 
     @staticmethod
     def register_permission_check_hook(func):
         HookManager.PERMISSION_CHECK = func
 
     @staticmethod
-    def signature(parm: SignatureParameters) -> SignatureReturn:
-        if HookManager.SIGNATURE is not None:
-            return HookManager.SIGNATURE(parm)
+    def site_signature(parm: SignatureParameters) -> SignatureReturn:
+        if HookManager.SITE_SIGNATURE is not None:
+            return HookManager.SITE_SIGNATURE(parm)
         return SignatureReturn()
 
     @staticmethod
-    def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
-        if HookManager.AUTHENTICATION is not None:
-            return HookManager.AUTHENTICATION(parm)
+    def site_authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
+        if HookManager.SITE_AUTHENTICATION is not None:
+            return HookManager.SITE_AUTHENTICATION(parm)
         return AuthenticationReturn()
 
     @staticmethod
@@ -43,3 +48,9 @@ class HookManager:
         if HookManager.PERMISSION_CHECK is not None:
             return HookManager.PERMISSION_CHECK(parm)
         return PermissionReturn()
+
+    @staticmethod
+    def client_authentication() -> AuthenticationReturn:
+        if HookManager.CLIENT_AUTHENTICATION is not None:
+            return HookManager.CLIENT_AUTHENTICATION()
+        return AuthenticationReturn()
