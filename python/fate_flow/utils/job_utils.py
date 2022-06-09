@@ -18,6 +18,7 @@ import os
 import sys
 import threading
 import typing
+from functools import wraps
 
 from fate_arch.common import FederatedMode, file_utils
 from fate_arch.common.base_utils import current_timestamp, fate_uuid, json_dumps
@@ -461,3 +462,19 @@ def get_job_dataset(is_initiator, role, party_id, roles, job_args):
                                     else:
                                         dataset[_role][_party_id][key] = "unknown"
         return dataset
+
+
+def asynchronous_function(func):
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        is_asynchronous = False
+        if "is_asynchronous" in kwargs.keys():
+            is_asynchronous = kwargs.pop("is_asynchronous")
+            if is_asynchronous:
+                thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+                thread.start()
+                is_asynchronous = True
+                return is_asynchronous
+        if not is_asynchronous:
+            return func(*args, **kwargs)
+    return _wrapper

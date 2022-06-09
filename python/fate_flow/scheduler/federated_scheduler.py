@@ -207,10 +207,10 @@ class FederatedScheduler(object):
         return status_code, response
 
     @classmethod
-    def stop_task(cls, job, task, stop_status):
+    def stop_task(cls, job, task, stop_status, command_body=None):
         schedule_logger(task.f_job_id).info("try to stop task {} {}".format(task.f_task_id, task.f_task_version))
         task.f_status = stop_status
-        status_code, response = cls.task_command(job=job, task=task, command="stop/{}".format(stop_status))
+        status_code, response = cls.task_command(job=job, task=task, command="stop/{}".format(stop_status), command_body=command_body)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
             schedule_logger(job.f_job_id).info("stop task {} {} success".format(task.f_task_id, task.f_task_version))
         else:

@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.utils import job_utils
 from fate_flow.utils.log_utils import getLogger
 
 from fate_flow.components._base import BaseParam, ComponentBase, ComponentInputProtocol, ComponentMeta
@@ -20,7 +21,6 @@ from fate_flow.entity import JobConfiguration, MetricType
 from fate_flow.entity import MetricMeta
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.scheduling_apps.client.operation_client import OperationClient
 from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.utils.schedule_utils import get_job_dsl_parser
 
@@ -51,11 +51,13 @@ class ModelLoader(ComponentBase):
         self.step_name = None
 
     def get_model_alias(self):
-        job_configuration = OperationClient().get_job_conf(self.model_version, self.tracker.role, self.tracker.party_id)
+        job_configuration = job_utils.get_job_configuration(
+            job_id=self.args.job_id,
+            role=self.args.role,
+            party_id=self.args.party_id
+        )
         if not job_configuration:
             raise ValueError('The job was not found.')
-        job_configuration = JobConfiguration(**job_configuration)
-
         dsl_parser = get_job_dsl_parser(job_configuration.dsl, job_configuration.runtime_conf,
                                         train_runtime_conf=job_configuration.train_runtime_conf)
         component = dsl_parser.get_component_info(self.component_name)

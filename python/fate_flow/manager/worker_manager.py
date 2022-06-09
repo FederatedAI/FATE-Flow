@@ -67,20 +67,10 @@ class WorkerManager:
             if not initialized_config:
                 raise ValueError("no initialized_config argument")
             config = initialized_config
-            job_conf = job_utils.save_using_job_conf(job_id=job_id,
-                                                     role=role,
-                                                     party_id=party_id,
-                                                     config_dir=config_dir)
-
             from fate_flow.worker.task_initializer import TaskInitializer
             module = TaskInitializer
             module_file_path = sys.modules[TaskInitializer.__module__].__file__
-            specific_cmd = [
-                '--dsl', job_conf["dsl_path"],
-                '--runtime_conf', job_conf["runtime_conf_path"],
-                '--train_runtime_conf', job_conf["train_runtime_conf_path"],
-                '--pipeline_dsl', job_conf["pipeline_dsl_path"],
-            ]
+            specific_cmd = []
             provider_info = initialized_config["provider"]
         else:
             raise Exception(f"not support {worker_name} worker")

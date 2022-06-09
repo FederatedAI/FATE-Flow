@@ -19,11 +19,10 @@ import traceback
 
 from fate_arch import session, storage
 from fate_arch.computing import ComputingEngine
-from fate_arch.common import file_utils, EngineType, profile
+from fate_arch.common import EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
 from fate_flow.utils.log_utils import getLogger
 
-from fate_flow.entity import JobConfiguration
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.errors import PassError
 from fate_flow.entity import RunParameters
@@ -34,7 +33,6 @@ from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.model.checkpoint import CheckpointManager
-from fate_flow.scheduling_apps.client.operation_client import OperationClient
 from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
@@ -63,8 +61,11 @@ class TaskExecutor(BaseTaskWorker):
                 "run_ip": args.run_ip,
                 "run_pid": self.run_pid
             })
-            operation_client = OperationClient()
-            job_configuration = JobConfiguration(**operation_client.get_job_conf(args.job_id, args.role, args.party_id, args.component_name, args.task_id, args.task_version))
+            job_configuration = job_utils.get_job_configuration(
+                job_id=self.args.job_id,
+                role=self.args.role,
+                party_id=self.args.party_id
+            )
             task_parameters_conf = args.config
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
                                                            runtime_conf=job_configuration.runtime_conf,

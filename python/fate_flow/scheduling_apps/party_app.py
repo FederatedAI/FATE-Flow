@@ -223,7 +223,7 @@ def stop_task(job_id, component_name, task_id, task_version, role, party_id, sto
     tasks = JobSaver.query_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id))
     kill_status = True
     for task in tasks:
-        kill_status = kill_status & TaskController.stop_task(task=task, stop_status=stop_status)
+        kill_status = kill_status & TaskController.stop_task(task=task, stop_status=stop_status, is_asynchronous=request.json.get("is_asynchronous"))
     return get_json_result(retcode=RetCode.SUCCESS if kill_status else RetCode.EXCEPTION_ERROR,
                            retmsg='success' if kill_status else 'failed')
 
