@@ -16,13 +16,10 @@
 from fate_flow.utils.log_utils import getLogger
 
 from fate_flow.components._base import BaseParam, ComponentBase, ComponentInputProtocol, ComponentMeta
-from fate_flow.entity import JobConfiguration, MetricType
-from fate_flow.entity import MetricMeta
+from fate_flow.entity import MetricMeta, MetricType
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.scheduling_apps.client.operation_client import OperationClient
 from fate_flow.utils.model_utils import gen_party_model_id
-from fate_flow.utils.schedule_utils import get_job_dsl_parser
 
 
 LOGGER = getLogger()
@@ -50,23 +47,13 @@ class ModelLoader(ComponentBase):
         self.step_index = None
         self.step_name = None
 
-    def get_model_alias(self):
-        job_configuration = OperationClient().get_job_conf(self.model_version, self.tracker.role, self.tracker.party_id)
-        if not job_configuration:
-            raise ValueError('The job was not found.')
-        job_configuration = JobConfiguration(**job_configuration)
-
-        dsl_parser = get_job_dsl_parser(job_configuration.dsl, job_configuration.runtime_conf,
-                                        train_runtime_conf=job_configuration.train_runtime_conf)
-        component = dsl_parser.get_component_info(self.component_name)
-        task_output_dsl = component.get_output()
-
-        self.model_alias = task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default'
-
     def read_component_model(self):
         pipelined_model = PipelinedModel(gen_party_model_id(
             self.model_id, self.tracker.role, self.tracker.party_id
         ), self.model_version)
+
+        if self.model_alias is None:
+            self.model_alias = pipelined_model.get_model_alias(self.component_name)
 
         component_model = pipelined_model._read_component_model(self.component_name, self.model_alias)
         if not component_model:
@@ -117,7 +104,7 @@ class ModelLoader(ComponentBase):
         for k in ('model_id', 'model_version', 'component_name'):
             v = cpn_input.parameters.get(k)
             if v is None:
-                raise KeyError(f"The component ModelLoader needs '{k}'")
+                raise KeyError(f'The component ModelLoader needs "{k}"')
             setattr(self, k, v)
 
         for k in ('model_alias', 'step_index', 'step_name'):
@@ -125,27 +112,21 @@ class ModelLoader(ComponentBase):
             if v is not None:
                 setattr(self, k, v)
                 break
-        else:
-            try:
-                self.get_model_alias()
-            except Exception:
-                # This should not have happened. But give me a chance to find a checkpoint.
-                LOGGER.exception("Get 'model_alias' failed. Trying to find a checkpoint...")
 
         if self.model_alias is not None:
-            try:
-                return self.read_component_model()
-            except Exception:
-                LOGGER.exception('Read component model error. Trying to find a checkpoint...')
+            return self.read_component_model()
+
+        if self.step_index is not None or self.step_name is not None:
+            return self.read_checkpoint()
 
         try:
-            return self.read_checkpoint()
+            return self.read_component_model()
         except Exception:
-            LOGGER.exception('Read checkpoint error.')
-            raise EnvironmentError('No component model or checkpoint was found.'
-                                   if self.model_alias is not None
-                                   else 'No checkpoint was found.')
-
+            try:
+                return self.read_checkpoint()
+            except Exception:
+                raise EnvironmentError('Unable to find component model and checkpoint. '
+                                       'Try specifying "model_alias", "step_index" or "step_name".')
 
 @model_loader_cpn_meta.bind_param
 class ModelLoaderParam(BaseParam):
