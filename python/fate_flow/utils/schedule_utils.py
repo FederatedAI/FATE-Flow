@@ -16,7 +16,7 @@
 import typing
 from functools import wraps
 
-from common.base_utils import current_timestamp
+from fate_arch.common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, Job
 from fate_flow.scheduler.dsl_parser import DSLParserV1, DSLParserV2
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
