@@ -224,11 +224,13 @@ class Task(DataBaseModel):
     f_worker_id = CharField(null=True, max_length=100)
     f_cmd = JSONField(null=True)
     f_run_ip = CharField(max_length=100, null=True)
+    f_run_port = IntegerField(null=True)
     f_run_pid = IntegerField(null=True)
     f_party_status = CharField(max_length=50)
     f_provider_info = JSONField()
     f_component_parameters = JSONField()
     f_engine_conf = JSONField(null=True)
+    f_kill_status = BooleanField(default=False)
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)

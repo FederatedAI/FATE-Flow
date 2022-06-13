@@ -54,7 +54,7 @@ class TaskScheduler(object):
             if initiator_task.f_status == TaskStatus.WAITING:
                 waiting_tasks.append(initiator_task)
             elif task_status_have_update and EndStatus.contains(initiator_task.f_status):
-                command_body = {"is_asynchronous": True} if initiator_task.f_status in [EndStatus.SUCCESS, EndStatus.PASS] else {}
+                command_body = {"is_asynchronous": True}
                 schedule_logger(initiator_task.f_job_id).info(f"stop task body: {command_body}, task status: {initiator_task.f_status}")
                 FederatedScheduler.stop_task(job=job, task=initiator_task, stop_status=initiator_task.f_status, command_body=command_body)
                 if not canceled and AutoRerunStatus.contains(initiator_task.f_status):

@@ -17,6 +17,7 @@ import time
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.controller.engine_adapt import build_engine
+from fate_flow.controller.task_controller import TaskController
 from fate_flow.db.db_models import DB, Job, DependenciesStorageMeta
 from fate_arch.session import Session
 from fate_flow.utils.log_utils import detect_logger
@@ -28,12 +29,12 @@ from fate_flow.utils import cron, job_utils, process_utils
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.manager.resource_manager import ResourceManager
-from fate_arch.common import EngineType
 
 
 class Detector(cron.Cron):
     def run_do(self):
         self.detect_running_task()
+        self.detect_end_task()
         self.detect_running_job()
         self.detect_resource_record()
         self.detect_expired_session()
@@ -79,6 +80,32 @@ class Detector(cron.Cron):
             detect_logger().exception(e)
         finally:
             detect_logger().info(f"finish detect {count} running task")
+
+    @classmethod
+    def detect_end_task(cls):
+        detect_logger().info('start to detect end status task..')
+        count = 0
+        try:
+            tasks = JobSaver.query_task(
+                run_ip=RuntimeConfig.JOB_SERVER_HOST,
+                run_port=RuntimeConfig.HTTP_PORT,
+                status=set(EndStatus.status_list()),
+                end_time=[0, current_timestamp() - 60 * 60 * 1000],
+                kill_status=False
+            )
+            for task in tasks:
+                try:
+                    detect_logger().info(f'start to stop task {task.f_role} {task.f_party_id} {task.f_task_id}'
+                                         f' {task.f_task_version}')
+                    kill_task_status = TaskController.stop_task(task=task, stop_status=TaskStatus.FAILED)
+                    detect_logger().info( f'kill task status: {kill_task_status}')
+                    count += 1
+                except Exception as e:
+                    detect_logger().exception(e)
+        except Exception as e:
+            detect_logger().exception(e)
+        finally:
+            detect_logger().info(f"finish detect {count} end task")
 
     @classmethod
     def detect_running_job(cls):

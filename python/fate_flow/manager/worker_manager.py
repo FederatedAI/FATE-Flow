@@ -194,6 +194,7 @@ class WorkerManager:
             "--parent_log_dir", os.path.dirname(log_dir),
             "--worker_id", worker_id,
             "--run_ip", RuntimeConfig.JOB_SERVER_HOST,
+            "--run_port", RuntimeConfig.HTTP_PORT,
             "--job_server", f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
             "--session_id", session_id,
             "--federation_session_id", federation_session_id,

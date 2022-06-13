@@ -59,6 +59,7 @@ class TaskExecutor(BaseTaskWorker):
                 "role": args.role,
                 "party_id": args.party_id,
                 "run_ip": args.run_ip,
+                "run_port": args.run_port,
                 "run_pid": self.run_pid
             })
             job_configuration = job_utils.get_job_configuration(

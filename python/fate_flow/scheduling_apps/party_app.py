@@ -23,6 +23,7 @@ from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import get_json_result, create_job_request_check
+from fate_flow.utils.task_utils import task_request_proxy
 
 
 @manager.route('/<job_id>/<role>/<party_id>/create', methods=['POST'])
@@ -219,6 +220,7 @@ def task_status(job_id, component_name, task_id, task_version, role, party_id, s
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/stop/<stop_status>', methods=['POST'])
+@task_request_proxy(party_id_index=-3, role_index=-4, task_id_index=3, task_version_index=4)
 def stop_task(job_id, component_name, task_id, task_version, role, party_id, stop_status):
     tasks = JobSaver.query_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id))
     kill_status = True
@@ -229,6 +231,7 @@ def stop_task(job_id, component_name, task_id, task_version, role, party_id, sto
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/clean/<content_type>', methods=['POST'])
+@task_request_proxy(party_id_index=-3, role_index=-4, task_id_index=3, task_version_index=4)
 def clean_task(job_id, component_name, task_id, task_version, role, party_id, content_type):
     TaskController.clean_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id), content_type=TaskCleanResourceType(content_type))
     return get_json_result(retcode=0, retmsg='success')

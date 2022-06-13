@@ -16,6 +16,7 @@ LOGMapping = {
     "componentInfo": "INFO.log"
 }
 
+
 def parameters_check(log_type, job_id, role, party_id, component_name):
     if log_type in JOB:
         if not job_id:
@@ -51,19 +52,20 @@ class LogCollector():
             "componentInfo": os.path.join(self.job_id, self.role, self.party_id, self.component_name, "INFO.log")
         }
         if self.log_type not in type_dict.keys():
-            raise Exception(f"no found log  type {self.log_type}")
+            raise Exception(f"no found log type {self.log_type}")
         return os.path.join(get_fate_flow_directory('logs'), type_dict[self.log_type])
 
     def cat_log(self, begin, end):
         line_list = []
+        log_path = self.get_log_file_path()
         if begin and end:
-            cmd = f"cat {self.get_log_file_path()} | tail -n +{begin}| head -n {end-begin+1}"
+            cmd = f"cat {log_path} | tail -n +{begin}| head -n {end-begin+1}"
         elif begin:
-            cmd = f"cat {self.get_log_file_path()} | tail -n +{begin}"
+            cmd = f"cat {log_path} | tail -n +{begin}"
         elif end:
-            cmd = f"cat {self.get_log_file_path()} | head -n {end}"
+            cmd = f"cat {log_path} | head -n {end}"
         else:
-            cmd = f"cat {self.get_log_file_path()}"
+            cmd = f"cat {log_path}"
         lines = self.execute(cmd)
         if lines:
             line_list = []

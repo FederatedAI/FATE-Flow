@@ -180,7 +180,8 @@ class TaskController(object):
             "task_version": task.f_task_version,
             "role": task.f_role,
             "party_id": task.f_party_id,
-            "party_status": stop_status
+            "party_status": stop_status,
+            "kill_status": True
         }
         cls.update_task_status(task_info=task_info)
         cls.update_task(task_info=task_info)
