@@ -321,10 +321,20 @@ class PipelinedModel(Locker):
     def get_model_proto_index(self, component_name, model_alias=None):
         with open(self.define_meta_path, "r", encoding="utf-8") as fr:
             define_index = yaml.safe_load(fr)
-        if model_alias is not None:
-            return define_index.get("model_proto", {}).get(component_name, {}).get(model_alias, {})
-        else:
-            return define_index.get("model_proto", {}).get(component_name, {})
+
+        model_proto_index = define_index.get("model_proto", {}).get(component_name, {})
+
+        if model_alias is None:
+            return model_proto_index
+        return model_proto_index.get(model_alias, {})
+
+    def get_model_alias(self, component_name):
+        model_proto_index = self.get_model_proto_index(component_name)
+
+        if len(model_proto_index.keys()) != 1:
+            raise KeyError('Failed to detect "model_alias", please specify it manually.')
+
+        return list(model_proto_index.keys())[0]
 
     @local_cache_required
     def get_component_define(self, component_name=None):
