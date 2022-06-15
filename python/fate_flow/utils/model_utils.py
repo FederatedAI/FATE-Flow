@@ -158,16 +158,21 @@ def gather_model_info_data(model: PipelinedModel, query_filters=None):
 
 def query_model_info(model_version, role=None, party_id=None, model_id=None, query_filters=None, **kwargs):
     arguments = locals()
-    retcode, retmsg, data = query_model_info_from_db(**arguments)
-    if not retcode:
-        return retcode, retmsg, data
-    else:
-        arguments['save'] = True
-        retcode, retmsg, data = query_model_info_from_file(**arguments)
+
+    file_only = kwargs.pop('file_only', False)
+    if not file_only:
+        retcode, retmsg, data = query_model_info_from_db(**arguments)
         if not retcode:
             return retcode, retmsg, data
-        return 100, 'Query model info failed, cannot find model from db. ' \
-                    'Try use both model id and model version to query model info from local models', []
+
+        arguments['save'] = True
+
+    retcode, retmsg, data = query_model_info_from_file(**arguments)
+    if not retcode:
+        return retcode, retmsg, data
+
+    return 100, 'Query model info failed, cannot find model from db. ' \
+                'Try use both model id and model version to query model info from local models', []
 
 
 @DB.connection_context()
