@@ -17,7 +17,6 @@ import socket
 from pathlib import Path
 from fate_arch.common import file_utils, conf_utils
 from fate_arch.common.conf_utils import SERVICE_CONF
-from fate_flow.settings import FATE_FLOW_SERVER_START_CONFIG_ITEMS, stat_logger
 from .db_models import DB, ServiceRegistryInfo
 from .reload_config_base import ReloadConfigBase
 
@@ -84,14 +83,10 @@ class ServiceRegistry(ReloadConfigBase):
 
     @classmethod
     def parameter_verification(cls, service_name, service_info):
-        registry_service_info = {
-            "fatemanager": ["host", "port", "federatedId"],
-            "studio": ["host", "port"]
-        }
-        if service_name not in registry_service_info.keys():
-            raise Exception(f"service {service_name} cannot be registered")
         if "host" in service_info and "port" in service_info:
             cls.connection_test(service_info.get("host"), service_info.get("port"))
+        else:
+            raise Exception(f"service {service_name} cannot be registered")
 
 
     @classmethod
