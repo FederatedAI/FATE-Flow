@@ -22,7 +22,7 @@ from playhouse.pool import PooledMySQLDatabase
 
 from fate_arch.common.conf_utils import decrypt_database_config
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.pipelined_model.model_storage_base import ModelStorageBase
+from fate_flow.model.model_storage_base import ModelStorageBase
 from fate_flow.utils.log_utils import getLogger
 from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64
 from fate_arch.metastore.base_model import LongTextField
@@ -72,9 +72,10 @@ class MysqlModelStorage(ModelStorageBase):
 
         try:
             DB.create_tables([MachineLearningModel])
+            hash = model.packaging_model()
 
             LOGGER.info(f"Starting store model {model_id} {model_version}.")
-            with open(model.packaging_model(), "rb") as fr, DB.connection_context():
+            with open(model.archive_model_file_path, "rb") as fr, DB.connection_context():
                 slice_index = 0
                 while True:
                     content = fr.read(SLICE_MAX_SIZE)
@@ -107,10 +108,11 @@ class MysqlModelStorage(ModelStorageBase):
             raise Exception(f"Store model {model_id} {model_version} to mysql failed.")
         else:
             LOGGER.info(f"Store model {model_id} {model_version} to mysql successfully.")
+            return hash
         finally:
             self.close_connection()
 
-    def restore(self, model_id: str, model_version: str, store_address: dict):
+    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash: str = None):
         """
         Restore model from mysql to local cache
         :param model_id:
@@ -137,7 +139,7 @@ class MysqlModelStorage(ModelStorageBase):
 
             with open(model.archive_model_file_path, "wb") as fw:
                 fw.write(model_archive_data)
-            model.unpack_model(model.archive_model_file_path)
+            model.unpack_model(model.archive_model_file_path, force_update, hash)
         except Exception as e:
             LOGGER.exception(e)
             raise Exception(f"Restore model {model_id} {model_version} from mysql failed.")

@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.model import redis_model_storage, tencent_cos_model_storage
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.components._base import (
     BaseParam,
@@ -21,7 +22,7 @@ from fate_flow.components._base import (
     ComponentInputProtocol,
 )
 from fate_flow.entity.types import ModelStorage
-from fate_flow.pipelined_model import mysql_model_storage, redis_model_storage, tencent_cos_model_storage
+from fate_flow.model import mysql_model_storage
 
 
 LOGGER = getLogger()

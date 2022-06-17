@@ -27,7 +27,7 @@ class ModelStorageBase(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def store(self, model_id: str, model_version: str, store_address: dict):
+    def store(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False):
         """
         Store the model from local cache to a reliable system
         :param model_id:
@@ -38,7 +38,7 @@ class ModelStorageBase(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def restore(self, model_id: str, model_version: str, store_address: dict):
+    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash: str = None):
         """
         Restore model from storage system to local cache
         :param model_id:

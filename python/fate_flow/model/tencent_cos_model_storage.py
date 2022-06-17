@@ -19,7 +19,7 @@ from qcloud_cos import CosConfig, CosS3Client
 from qcloud_cos.cos_exception import CosServiceError
 
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.pipelined_model.model_storage_base import ModelStorageBase
+from fate_flow.model.model_storage_base import ModelStorageBase
 from fate_flow.utils.log_utils import getLogger
 
 LOGGER = getLogger()
@@ -60,7 +60,7 @@ class TencentCOSModelStorage(ModelStorageBase):
         cos = self.get_connection(store_address)
 
         try:
-            model.packaging_model()
+            hash = model.packaging_model()
 
             response = cos.upload_file(
                 Bucket=store_address["Bucket"],
@@ -74,8 +74,9 @@ class TencentCOSModelStorage(ModelStorageBase):
         else:
             LOGGER.info(f"Store model {model_id} {model_version} to Tencent COS successfully. "
                         f"Archive path: {model.archive_model_file_path} Key: {store_key} ETag: {response['ETag']}")
+            return hash
 
-    def restore(self, model_id: str, model_version: str, store_address: dict):
+    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash: str = None):
         """
         Restore model from cos to local cache
         :param model_id:
@@ -95,7 +96,7 @@ class TencentCOSModelStorage(ModelStorageBase):
                 EnableCRC=True,
             )
 
-            model.unpack_model(model.archive_model_file_path)
+            model.unpack_model(model.archive_model_file_path, force_update, hash)
         except Exception as e:
             LOGGER.exception(e)
             raise Exception(f"Restore model {model_id} {model_version} from Tencent COS failed.")

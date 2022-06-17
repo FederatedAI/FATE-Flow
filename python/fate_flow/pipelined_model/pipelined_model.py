@@ -25,13 +25,14 @@ from functools import wraps
 from google.protobuf import json_format
 from ruamel import yaml
 
-from fate_arch.common import base_utils
+from fate_arch.common.base_utils import json_dumps, json_loads
+
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.model import Locker, parse_proto_object, serialize_buffer_object
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger
-from fate_flow.utils import job_utils
+from fate_flow.utils.job_utils import job_pipeline_component_name, job_pipeline_component_module_name
 from fate_flow.utils.base_utils import get_fate_flow_directory, get_fate_flow_python_directory
 
 
@@ -53,7 +54,8 @@ class PipelinedModel(Locker):
         """
         os.makedirs(TEMP_DIRECTORY, exist_ok=True)
 
-        self.model_id = model_id
+        self.role, self.party_id, self._model_id = model_id.split('#', 2)
+        self.party_model_id = self.model_id = model_id
         self.model_version = model_version
         self.model_path = get_fate_flow_directory("model_local_cache", model_id, model_version)
         self.define_proto_path = os.path.join(self.model_path, "define", "proto")
@@ -84,8 +86,8 @@ class PipelinedModel(Locker):
 
     def save_pipeline_model(self, pipeline_buffer_object):
         model_buffers = {self.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString(), json_format.MessageToDict(pipeline_buffer_object, including_default_value_fields=True))}
-        self.save_component_model(component_name=job_utils.job_pipeline_component_name(),
-                                  component_module_name=job_utils.job_pipeline_component_module_name(),
+        self.save_component_model(component_name=job_pipeline_component_name(),
+                                  component_module_name=job_pipeline_component_module_name(),
                                   model_alias=self.pipeline_model_alias,
                                   model_buffers=model_buffers)
 
@@ -119,12 +121,12 @@ class PipelinedModel(Locker):
             with self.lock, open(storage_path, "wb") as fw:
                 fw.write(base64.b64decode(object_serialized_encoded.encode()))
             with self.lock, open(f"{storage_path}.json", "w", encoding="utf8") as fw:
-                fw.write(base_utils.json_dumps(object_json))
+                fw.write(json_dumps(object_json))
         run_parameters = component_model.get("run_parameters", {}) or {}
         p = self.component_run_parameters_path(component_model["component_name"])
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with self.lock, open(p, "w", encoding="utf8") as fw:
-            fw.write(base_utils.json_dumps(run_parameters))
+            fw.write(json_dumps(run_parameters))
         self.update_component_meta(component_name=component_model["component_name"],
                                    component_module_name=component_model["component_module_name"],
                                    model_alias=component_model["model_alias"],
@@ -146,7 +148,7 @@ class PipelinedModel(Locker):
 
             try:
                 with open(f"{storage_path}.json", encoding="utf8") as f:
-                    buffer_object_json_format = base_utils.json_loads(f.read())
+                    buffer_object_json_format = json_loads(f.read())
             except FileNotFoundError:
                 buffer_object_json_format = ""
                 # todo: should be running in worker
@@ -156,7 +158,7 @@ class PipelinedModel(Locker):
                     including_default_value_fields=True
                 )
                 with self.lock, open(f"{storage_path}.json", "w", encoding="utf8") as f:
-                    f.write(base_utils.json_dumps(buffer_object_json_format))
+                    f.write(json_dumps(buffer_object_json_format))
                 """
 
             model_buffers[model_name] = (
@@ -191,7 +193,7 @@ class PipelinedModel(Locker):
 
     def read_pipeline_model(self, parse=True):
         # todo: integration with read_component_model
-        component_name = job_utils.job_pipeline_component_name()
+        component_name = job_pipeline_component_name()
         model_alias = self.pipeline_model_alias
         component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
         model_proto_index = self.get_model_proto_index(component_name=component_name,
@@ -215,7 +217,7 @@ class PipelinedModel(Locker):
         for component_name in os.listdir(self.run_parameters_path):
             p = self.component_run_parameters_path(component_name)
             with open(p, encoding="utf8") as fr:
-                components_run_parameters[component_name] = base_utils.json_loads(fr.read())
+                components_run_parameters[component_name] = json_loads(fr.read())
         return components_run_parameters
 
     @local_cache_required
@@ -259,34 +261,33 @@ class PipelinedModel(Locker):
 
     @local_cache_required
     def packaging_model(self):
-        archive_file_path = shutil.make_archive(base_name=self.archive_model_base_path, format=self.default_archive_format, root_dir=self.model_path)
-
-        with open(archive_file_path, 'rb') as f:
-            sha1 = hashlib.sha1(f.read()).hexdigest()
-        with open(archive_file_path + '.sha1', 'w', encoding='utf8') as f:
-            f.write(sha1)
-
-        stat_logger.info("Make model {} {} archive on {} successfully. sha1: {}".format(
-            self.model_id, self.model_version, archive_file_path, sha1))
-        return archive_file_path
-
-    def unpack_model(self, archive_file_path: str):
-        if self.exists():
-            raise FileExistsError("Model {} {} local cache already existed".format(self.model_id, self.model_version))
-
-        if os.path.isfile(archive_file_path + '.sha1'):
-            with open(archive_file_path + '.sha1', encoding='utf8') as f:
-                sha1_orig = f.read().strip()
-            with open(archive_file_path, 'rb') as f:
-                sha1 = hashlib.sha1(f.read()).hexdigest()
-            if sha1 != sha1_orig:
-                raise ValueError('Hash not match. path: {} expected: {} actual: {}'.format(
-                    archive_file_path, sha1_orig, sha1))
-
-        os.makedirs(self.model_path)
         with self.lock:
+            # self.archive_model_file_path
+            shutil.make_archive(base_name=self.archive_model_base_path, format=self.default_archive_format, root_dir=self.model_path)
+
+            with open(self.archive_model_file_path, 'rb') as f:
+                sha256 = hashlib.sha256(f.read()).hexdigest()
+
+        stat_logger.info(f'Make model {self.model_id} {self.model_version} archive successfully. path: {self.archive_model_file_path} hash: {sha256}')
+        return sha256
+
+    def unpack_model(self, archive_file_path: str, force_update: bool = False, hash: str = None):
+        os.makedirs(self.model_path)
+
+        with self.lock:
+            if self.exists() and not force_update:
+                raise FileExistsError(f'Model {self.model_id} {self.model_version} local cache already existed.')
+
+            if hash is not None:
+                with open(archive_file_path, 'rb') as f:
+                    sha256 = hashlib.sha256(f.read()).hexdigest()
+
+                if hash != sha256:
+                    raise ValueError(f'Model archive hash mismatch. path: {archive_file_path} expected: {hash} actual: {sha256}')
+
             shutil.unpack_archive(archive_file_path, self.model_path)
-        stat_logger.info("Unpack model archive to {}".format(self.model_path))
+
+        stat_logger.info(f'Unpack model {self.model_id} {self.model_version} archive successfully. path: {self.model_path}')
 
     @local_cache_required
     def update_component_meta(self, component_name, component_module_name, model_alias, model_proto_index):
@@ -378,11 +379,10 @@ class PipelinedModel(Locker):
                 self.update_component_meta(component_name, component_define.get("module_name"), model_alias, model_proto_index)
 
     def gen_model_import_config(self):
-        role, party_id, model_id = self.model_id.split('#', 2)
         config = {
-            'role': role,
-            'party_id': int(party_id),
-            'model_id': model_id,
+            'role': self.role,
+            'party_id': int(self.party_id),
+            'model_id': self._model_id,
             'model_version': self.model_version,
             'file': self.archive_model_file_path,
         }
