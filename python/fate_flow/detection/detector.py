@@ -48,7 +48,7 @@ class Detector(cron.Cron):
             running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, only_latest=False)
             stop_job_ids = set()
             for task in running_tasks:
-                if not task.f_engine_conf and task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST and not task.f_run_on_this_party:
+                if not task.f_engine_conf or task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST or task.f_run_on_this_party:
                     continue
                 count += 1
                 try:
@@ -90,11 +90,12 @@ class Detector(cron.Cron):
                 run_ip=RuntimeConfig.JOB_SERVER_HOST,
                 run_port=RuntimeConfig.HTTP_PORT,
                 status=set(EndStatus.status_list()),
-                end_time=[0, current_timestamp() - 60 * 60 * 1000],
                 kill_status=False
             )
             for task in tasks:
                 try:
+                    if task.f_end_time and task.f_end_time -  current_timestamp() < 5 * 60 * 1000:
+                        continue
                     detect_logger().info(f'start to stop task {task.f_role} {task.f_party_id} {task.f_task_id}'
                                          f' {task.f_task_version}')
                     kill_task_status = TaskController.stop_task(task=task, stop_status=TaskStatus.FAILED)

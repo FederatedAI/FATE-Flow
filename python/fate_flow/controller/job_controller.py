@@ -26,7 +26,7 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RunParameters
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.entity.run_status import JobStatus, EndStatus, JobInheritanceStatus
-from fate_flow.entity.types import WorkerName
+from fate_flow.entity.types import WorkerName, RetCode
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
@@ -35,6 +35,7 @@ from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.protobuf.python import pipeline_pb2
+from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import ENGINES
 from fate_flow.utils import job_utils, schedule_utils, data_utils, log_utils, model_utils
 from fate_flow.utils.job_utils import get_job_dataset
@@ -415,8 +416,10 @@ class JobController(object):
         for task in tasks:
             if task.f_status in [TaskStatus.SUCCESS, TaskStatus.WAITING, TaskStatus.PASS]:
                 continue
-            kill_task_status = TaskController.stop_task(
-                task=task, stop_status=stop_status)
+            kill_task_status = False
+            status, response = FederatedScheduler.stop_task(job=job, task=task, stop_status=stop_status)
+            if status == RetCode.SUCCESS:
+                kill_task_status = True
             kill_status = kill_status & kill_task_status
             kill_details[task.f_task_id] = 'success' if kill_task_status else 'failed'
         if kill_status:

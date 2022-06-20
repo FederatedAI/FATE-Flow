@@ -31,7 +31,7 @@ from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import RetCode
 from fate_flow.hook.parameters import AuthenticationParameters, SignatureParameters
 from fate_flow.settings import API_VERSION, HEADERS, PROXY, PROXY_PROTOCOL, stat_logger, PERMISSION_SWITCH, \
-    SITE_AUTHENTICATION
+    SITE_AUTHENTICATION, HOST, HTTP_PORT
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.grpc_utils import forward_grpc_packet, gen_routing_metadata, get_command_federation_channel, \
     wrap_grpc_packet
@@ -242,43 +242,41 @@ def sign_parm(party_id, role, body):
     return {"sign": None}
 
 
-def create_job_request_check(party_id_index, role_index):
-    def _out(func):
-        @functools.wraps(func)
-        def _wrapper(*_args, **_kwargs):
-            party_id = flask_request.path.split('/')[party_id_index]
-            role = flask_request.path.split('/')[role_index]
-            body = flask_request.json
-            sign = body.pop("sign")
+def create_job_request_check(func):
+    @functools.wraps(func)
+    def _wrapper(*_args, **_kwargs):
+        party_id = _kwargs.get("party_id")
+        role = _kwargs.get("role")
+        body = flask_request.json
+        sign = body.pop("sign")
 
-            # sign authentication
-            if SITE_AUTHENTICATION:
-                authentication_result = HookManager.site_authentication(AuthenticationParameters(sign, role, party_id, body))
-                if authentication_result.code != RetCode.SUCCESS:
-                    return get_json_result(
-                        retcode=RetCode.AUTHENTICATION_ERROR,
-                        retmsg='authentication failed',
-                        data=authentication_result.to_dict()
-                    )
+        # sign authentication
+        if SITE_AUTHENTICATION:
+            authentication_result = HookManager.site_authentication(AuthenticationParameters(sign, role, party_id, body))
+            if authentication_result.code != RetCode.SUCCESS:
+                return get_json_result(
+                    retcode=RetCode.AUTHENTICATION_ERROR,
+                    retmsg='authentication failed',
+                    data=authentication_result.to_dict()
+                )
 
-            # permission check
-            if PERMISSION_SWITCH:
-                permission_return = HookManager.permission_check(get_permission_parameters(role, party_id, body))
-                if permission_return.code != RetCode.SUCCESS:
-                    return get_json_result(
-                        retcode=RetCode.PERMISSION_ERROR,
-                        retmsg='permission check failed',
-                        data=permission_return.to_dict()
-                    )
+        # permission check
+        if PERMISSION_SWITCH:
+            permission_return = HookManager.permission_check(get_permission_parameters(role, party_id, body))
+            if permission_return.code != RetCode.SUCCESS:
+                return get_json_result(
+                    retcode=RetCode.PERMISSION_ERROR,
+                    retmsg='permission check failed',
+                    data=permission_return.to_dict()
+                )
 
-            src_fate_ver =body.get('src_fate_ver')
-            if src_fate_ver is not None and compare_version(src_fate_ver, '1.7.0') == 'lt':
-                return get_json_result(retcode=RetCode.INCOMPATIBLE_FATE_VER, retmsg='Incompatible FATE versions',
-                                       data={'src_fate_ver': src_fate_ver,
-                                             "current_fate_ver": RuntimeConfig.get_env('FATE')})
-            return func(*_args, **_kwargs)
-        return _wrapper
-    return _out
+        src_fate_ver =body.get('src_fate_ver')
+        if src_fate_ver is not None and compare_version(src_fate_ver, '1.7.0') == 'lt':
+            return get_json_result(retcode=RetCode.INCOMPATIBLE_FATE_VER, retmsg='Incompatible FATE versions',
+                                   data={'src_fate_ver': src_fate_ver,
+                                         "current_fate_ver": RuntimeConfig.get_env('FATE')})
+        return func(*_args, **_kwargs)
+    return _wrapper
 
 
 def validate_request(*args, **kwargs):
@@ -310,3 +308,28 @@ def validate_request(*args, **kwargs):
             return func(*_args, **_kwargs)
         return decorated_function
     return wrapper
+
+
+def cluster_route(func):
+    @functools.wraps(func)
+    def _route(*args, **kwargs):
+        instance_id = flask_request.json.get("instance_id")
+        if instance_id:
+            instance_list = RuntimeConfig.SERVICE_DB.get_servers()
+            for instance in instance_list:
+                if instance.get("instance_id") == instance_id:
+                    dest_address = instance.get("http_address")
+                    if f"{HOST}:{HTTP_PORT}" == dest_address:
+                        break
+                    dest_url = flask_request.url.replace(f"{HOST}:{HTTP_PORT}", dest_address)
+
+                    response = request(method=flask_request.method, url=dest_url, json=flask_request.json,
+                                       headers=flask_request.headers)
+                    if response.status_code == 200:
+                        response = response.json()
+                        return get_json_result(**response)
+                    else:
+                        return get_json_result(retcode=response.status_code, retmsg=response.text)
+        return func(*args, **kwargs)
+    return _route
+

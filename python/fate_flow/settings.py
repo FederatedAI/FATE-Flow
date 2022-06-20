@@ -64,11 +64,12 @@ DATABASE = decrypt_database_config()
 ZOOKEEPER = get_base_config("zookeeper", {})
 
 # Registry
-FATE_SERVICES_REGISTRY = {
-    'zookeeper': {
-        'fateflow': "/FATE-SERVICES/flow/online/transfer/providers",
-        'servings': "/FATE-SERVICES/serving/online/publishLoad/providers",
-    },
+ZOOKEEPER_REGISTRY = {
+    # server
+    'flow-server': "/FATE-COMPONENTS/fate-flow",
+    # model service
+    'fateflow': "/FATE-SERVICES/flow/online/transfer/providers",
+    'servings': "/FATE-SERVICES/serving/online/publishLoad/providers",
 }
 
 # Engine
