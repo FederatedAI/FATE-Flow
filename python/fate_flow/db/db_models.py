@@ -20,6 +20,7 @@ import sys
 
 from peewee import (CharField, IntegerField, BigIntegerField,
                     TextField, CompositeKey, BigAutoField, BooleanField)
+from playhouse.hybrid import hybrid_property
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_arch.common import file_utils
@@ -339,6 +340,12 @@ class MachineLearningModelInfo(DataBaseModel):
     f_parent = BooleanField(null=True, default=None)
     f_parent_info = JSONField(default={})
     f_inference_dsl = JSONField(default={})
+    f_archive_sha256 = CharField(max_length=100, null=True)
+    f_archive_from_ip = CharField(max_length=100, null=True)
+
+    @hybrid_property
+    def f_party_model_id(self):
+        return '#'.join([self.f_role, self.f_party_id, self.f_model_id])
 
     class Meta:
         db_table = "t_machine_learning_model_info"

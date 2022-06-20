@@ -15,7 +15,6 @@
 #
 import os
 import glob
-import operator
 from collections import OrderedDict
 
 import peewee
@@ -28,17 +27,10 @@ from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
 from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
 from fate_flow.utils.log_utils import sql_logger
+from fate_flow.settings import HOST
 
 
 gen_key_string_separator = '#'
-
-
-def gen_party_model_id(model_id, role, party_id):
-    return gen_key_string_separator.join([role, str(party_id), model_id]) if model_id else None
-
-
-def gen_model_id(all_party):
-    return gen_key_string_separator.join([all_party_key(all_party), "model"])
 
 
 def all_party_key(all_party):
@@ -67,36 +59,40 @@ def all_party_key(all_party):
     return all_party_key
 
 
+def gen_party_model_id(model_id, role, party_id):
+    return gen_key_string_separator.join([role, str(party_id), model_id]) if model_id else None
+
+
+def gen_model_id(all_party):
+    return gen_key_string_separator.join([all_party_key(all_party), "model"])
+
+
 @DB.connection_context()
-def query_model_info_from_db(model_version, role=None, party_id=None, model_id=None, query_filters=None, **kwargs):
+def query_model_info_from_db(query_filters=None, **kwargs):
     conditions = []
     filters = []
-    aruments = locals()
-    cond_attrs = [attr for attr in ['model_version', 'model_id', 'role', 'party_id'] if aruments[attr]]
-    for f_n in cond_attrs:
-        conditions.append(operator.attrgetter('f_%s' % f_n)(MLModel) == aruments[f_n])
-    for f_n in kwargs:
-        if hasattr(MLModel, 'f_%s' % f_n):
-            conditions.append(operator.attrgetter('f_%s' % f_n)(MLModel))
+
+    for key, val in kwargs.items():
+        key = f'f_{key}'
+        if hasattr(MLModel, key):
+            conditions.append(getattr(MLModel, key) == val)
 
     if query_filters and isinstance(query_filters, list):
-        for attr in query_filters:
-            attr_name = 'f_%s' % attr
-            if hasattr(MLModel, attr_name):
-                filters.append(operator.attrgetter(attr_name)(MLModel))
+        for key in query_filters:
+            key = f'f_{key}'
+            if hasattr(MLModel, key):
+                filters.append(getattr(MLModel, key))
 
-    if filters:
-        models = MLModel.select(*filters).where(*conditions)
-    else:
-        models = MLModel.select().where(*conditions)
+    models = MLModel.select(*filters)
+    if conditions:
+        models = models.where(*conditions)
 
-    if models:
-        return 0, 'Query model info from db success.', [model.to_dict() for model in models]
-    else:
-        return 100, 'Query model info failed, cannot find model from db. ', []
+    if not models:
+        return 100, 'Query model info failed, cannot find model from db.', []
+    return 0, 'Query model info from db success.', [model.to_dict() for model in models]
 
 
-def query_model_info_from_file(model_id=None, model_version=None, role=None, party_id=None, query_filters=None, to_dict=False, **kwargs):
+def query_model_info_from_file(model_id=None, model_version=None, role=None, party_id=None, query_filters=None, to_dict=False, save_to_db=False):
     res = {} if to_dict else []
     model_dir = os.path.join(get_fate_flow_directory(), 'model_local_cache')
     glob_dir = f"{model_dir}{os.sep}{role if role else '*'}#{party_id if party_id else '*'}#{model_id if model_id else '*'}{os.sep}{model_version if model_version else '*'}"
@@ -116,7 +112,7 @@ def query_model_info_from_file(model_id=None, model_version=None, role=None, par
                 else:
                     res.append(model_info)
 
-                if kwargs.get('save'):
+                if save_to_db:
                     try:
                         insert_info = gather_model_info_data(pipeline_model).copy()
                         insert_info['role'] = _role
@@ -130,9 +126,10 @@ def query_model_info_from_file(model_id=None, model_version=None, role=None, par
                         save_model_info(insert_info)
                     except Exception as e:
                         stat_logger.exception(e)
-    if res:
-        return 0, 'Query model info from local model success.', res
-    return 100, 'Query model info failed, cannot find model from local model files.', res
+
+    if not res:
+        return 100, 'Query model info failed, cannot find model from local model files.', res
+    return 0, 'Query model info from local model success.', res
 
 
 def gather_model_info_data(model: PipelinedModel, query_filters=None):
@@ -156,22 +153,21 @@ def gather_model_info_data(model: PipelinedModel, query_filters=None):
     return []
 
 
-def query_model_info(model_version, role=None, party_id=None, model_id=None, query_filters=None, **kwargs):
-    arguments = locals()
-
+def query_model_info(**kwargs):
     file_only = kwargs.pop('file_only', False)
+
     if not file_only:
-        retcode, retmsg, data = query_model_info_from_db(**arguments)
+        retcode, retmsg, data = query_model_info_from_db(**kwargs)
         if not retcode:
             return retcode, retmsg, data
 
-        arguments['save'] = True
+        kwargs['save_to_db'] = True
 
-    retcode, retmsg, data = query_model_info_from_file(**arguments)
+    retcode, retmsg, data = query_model_info_from_file(**kwargs)
     if not retcode:
         return retcode, retmsg, data
 
-    return 100, 'Query model info failed, cannot find model from db. ' \
+    return 100, 'Query model info failed, cannot find model from db and local model files. ' \
                 'Try use both model id and model version to query model info from local models', []
 
 
@@ -247,12 +243,7 @@ def models_group_by_party_model_id_and_model_version():
         MLModel.f_model_id,
         MLModel.f_model_version,
     ]
-    models = MLModel.select(*args).group_by(*args)
-    for model in models:
-        model.f_party_model_id = gen_party_model_id(role=model.f_role,
-                                                    party_id=model.f_party_id,
-                                                    model_id=model.f_model_id)
-    return models
+    return MLModel.select(*args).where(MLModel.f_archive_from_ip == HOST).group_by(*args)
 
 
 @DB.connection_context()

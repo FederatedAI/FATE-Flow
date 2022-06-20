@@ -27,7 +27,6 @@ from flask import Response, request, send_file
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.conf_utils import get_base_config
-from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
 
 from fate_flow.db.db_models import (DB, ModelTag, Tag,
                                     MachineLearningModelInfo as MLModel,
@@ -40,6 +39,7 @@ from fate_flow.pipelined_model import deploy_model, migrate_model, pipelined_mod
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger, IS_STANDALONE
 from fate_flow.utils import job_utils, model_utils, schedule_utils, api_utils, detect_utils
+from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
 from fate_flow.utils.api_utils import error_response, federated_api, get_json_result
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.components.model_operation import get_model_storage
@@ -49,7 +49,7 @@ from fate_flow.components.model_operation import get_model_storage
 def load_model():
     request_config = request.json
     if request_config.get('job_id', None):
-        retcode, retmsg, res_data = model_utils.query_model_info(request_config['job_id'], 'guest')
+        retcode, retmsg, res_data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
         if res_data:
             model_info = res_data[0]
             request_config['initiator'] = {}
@@ -247,7 +247,7 @@ def do_load_model():
 def bind_model_service():
     request_config = request.json
     if request_config.get('job_id', None):
-        retcode, retmsg, res_data = model_utils.query_model_info(request_config['job_id'], 'guest')
+        retcode, retmsg, res_data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
         if res_data:
             model_info = res_data[0]
             request_config['initiator'] = {}
@@ -375,9 +375,9 @@ def operate_model(model_operation):
             try:
                 model = pipelined_model.PipelinedModel(request_config["model_id"], request_config["model_version"])
                 if model.exists():
-                    archive_file_path = model.packaging_model()
+                    model.packaging_model()
                     operation_record(request_config, "export", "success")
-                    return send_file(archive_file_path, attachment_filename=os.path.basename(archive_file_path), as_attachment=True)
+                    return send_file(model.archive_model_file_path, attachment_filename=os.path.basename(model.archive_model_file_path), as_attachment=True)
 
                 operation_record(request_config, "export", "failed")
                 return error_response(210, f"Model {request_config['model_id']} {request_config['model_version']} is not exist.")
@@ -625,7 +625,7 @@ def deploy():
     if not isinstance(request_data.get('components_checkpoint'), dict):
         request_data['components_checkpoint'] = {}
 
-    retcode, retmsg, model_info = model_utils.query_model_info_from_file(model_id, model_version, to_dict=True)
+    retcode, retmsg, model_info = model_utils.query_model_info_from_file(model_id=model_id, model_version=model_version, to_dict=True)
     if not model_info:
         raise Exception(f'Deploy model failed, no model {model_id} {model_version} found.')
 
