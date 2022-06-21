@@ -724,6 +724,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#upload-history" class="md-nav__link">
+    upload-history
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#download" class="md-nav__link">
     download
   </a>
@@ -950,6 +957,42 @@
     <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
 <span class="o">}</span>
 </code></pre></div>
+<h3 id="upload-history">upload-history<a class="headerlink" href="#upload-history" title="Permanent link">&para;</a></h3>
+<p>Used to query upload table history.</p>
+<div class="highlight"><pre><span></span><code>flow data upload-history -l 20
+flow data upload-history --job-id $JOB_ID
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">parameter name</th>
+<th align="left">required</th>
+<th align="left">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">-l --limit</td>
+<td align="left">no</td>
+<td align="left">int</td>
+<td>Number of records to return. (default: 10)</td>
+</tr>
+<tr>
+<td align="left">-j --job_id</td>
+<td align="left">no</td>
+<td align="left">string</td>
+<td>Job ID</td>
+</tr>
+<tr>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <h3 id="download">download<a class="headerlink" href="#download" title="Permanent link">&para;</a></h3>
 <p><strong>Brief description:</strong> </p>
 <p>Used to download data from within the fate storage engine to file format data</p>
