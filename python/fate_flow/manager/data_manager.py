@@ -201,14 +201,15 @@ class TableStorage:
         return count + 1
 
     @staticmethod
-    def send_table(output_tables_meta, tar_file_name, limit=-1, need_head=True):
+    def send_table(output_tables_meta, tar_file_name="", limit=-1, need_head=True, local_download=False, output_data_file_path=None):
         output_data_file_list = []
         output_data_meta_file_list = []
         output_tmp_dir = os.path.join(get_fate_flow_directory(), 'tmp/{}/{}'.format(datetime.datetime.now().strftime("%Y%m%d"), fate_uuid()))
         for output_name, output_table_meta in output_tables_meta.items():
             output_data_count = 0
-            output_data_file_path = "{}/{}.csv".format(output_tmp_dir, output_name)
-            output_data_meta_file_path = "{}/{}.meta".format(output_tmp_dir, output_name)
+            if not local_download:
+                output_data_file_path = "{}/{}.csv".format(output_tmp_dir, output_name)
+                output_data_meta_file_path = "{}/{}.meta".format(output_tmp_dir, output_name)
             os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
             with open(output_data_file_path, 'w') as fw:
                 with Session() as sess:
@@ -225,16 +226,19 @@ class TableStorage:
                                 header = get_component_output_data_schema(output_table_meta=output_table_meta,
                                                                           is_str=is_str,
                                                                           extend_header=extend_header)
-                                output_data_meta_file_list.append(output_data_meta_file_path)
-                                with open(output_data_meta_file_path, 'w') as f:
-                                    json.dump({'header': header}, f, indent=4)
+                                if not local_download:
+                                    output_data_meta_file_list.append(output_data_meta_file_path)
+                                    with open(output_data_meta_file_path, 'w') as f:
+                                        json.dump({'header': header}, f, indent=4)
                                 if need_head and header and output_table_meta.get_have_head():
                                     fw.write('{}\n'.format(','.join(header)))
                             fw.write('{}\n'.format(','.join(map(lambda x: str(x), data_line))))
                             output_data_count += 1
                             if output_data_count == limit:
                                 break
-            # tar
+        if local_download:
+            return
+        # tar
         output_data_tarfile = "{}/{}".format(output_tmp_dir, tar_file_name)
         tar = tarfile.open(output_data_tarfile, mode='w:gz')
         for index in range(0, len(output_data_file_list)):
@@ -247,6 +251,7 @@ class TableStorage:
                 os.remove(path)
                 os.remove(output_data_meta_file_list[key])
             except Exception as e:
+                # warning
                 stat_logger.warning(e)
         return send_file(output_data_tarfile, attachment_filename=tar_file_name)
 
