@@ -10,8 +10,7 @@ class ParametersBase:
 
 
 class SignatureParameters(ParametersBase):
-    def __init__(self, role, party_id, body):
-        self.role = role
+    def __init__(self, party_id, body):
         self.party_id = party_id
         self.body = body
 
@@ -22,10 +21,8 @@ class SignatureReturn(ParametersBase):
 
 
 class AuthenticationParameters(ParametersBase):
-    def __init__(self, sign, role, party_id, body):
+    def __init__(self, sign, body):
         self.sign = sign
-        self.role = role
-        self.party_id = party_id
         self.body = body
 
 

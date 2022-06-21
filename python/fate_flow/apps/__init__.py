@@ -23,7 +23,8 @@ from flask import Blueprint, Flask, request
 from fate_arch.common.base_utils import CustomJSONEncoder
 from fate_flow.entity import RetCode
 from fate_flow.hook.manager import HookManager
-from fate_flow.settings import (API_VERSION, access_logger, stat_logger, CLIENT_AUTHENTICATION)
+from fate_flow.hook.parameters import AuthenticationParameters
+from fate_flow.settings import (API_VERSION, access_logger, stat_logger, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION)
 from fate_flow.utils.api_utils import server_error_response, get_json_result
 
 __all__ = ['app']
@@ -43,6 +44,7 @@ pages_dir = [
 ]
 pages_path = [j for i in pages_dir for j in i.glob('*_app.py')]
 scheduling_url_prefix = []
+client_url_prefix = []
 for path in pages_path:
     page_name = path.stem.rstrip('_app')
     module_name = '.'.join(path.parts[path.parts.index('fate_flow'):-1] + (page_name, ))
@@ -63,17 +65,41 @@ for path in pages_path:
     app.register_blueprint(page.manager, url_prefix=f'/{api_version}/{page_name}')
     if 'scheduling_apps' in path.parts:
         scheduling_url_prefix.append(f'/{api_version}/{page_name}')
+    else:
+        client_url_prefix.append(f'/{api_version}/{page_name}')
 
 
 stat_logger.info('imported pages: %s', ' '.join(str(path) for path in pages_path))
 
 
 @app.before_request
-def client_authentication_before_request():
+def authentication_before_request():
     if CLIENT_AUTHENTICATION:
-        for url_prefix in scheduling_url_prefix:
-            if request.path.startswith(url_prefix):
-                return
-        result = HookManager.client_authentication()
-        if result.code != RetCode.SUCCESS:
-            return get_json_result(result.code, result.message)
+        _result = client_authentication_before_request()
+        if _result:
+            return _result
+    if SITE_AUTHENTICATION:
+        _result = site_authentication_before_request()
+        if _result:
+            return _result
+
+
+def client_authentication_before_request():
+    for url_prefix in scheduling_url_prefix:
+        if request.path.startswith(url_prefix):
+            return
+    result = HookManager.client_authentication()
+    if result.code != RetCode.SUCCESS:
+        return get_json_result(result.code, result.message)
+
+
+def site_authentication_before_request():
+    from flask import request
+    for url_prefix in client_url_prefix:
+        if request.path.startswith(url_prefix):
+            return
+    body = request.json
+    sign = body.get("sign", "")
+    result = HookManager.site_authentication(AuthenticationParameters(sign, body))
+    if result.code != RetCode.SUCCESS:
+        return get_json_result(result.code, result.message)

@@ -121,19 +121,25 @@ database_logger = getLogger("fate_flow_database")
 # upload
 UPLOAD_DATA_FROM_CLIENT = True
 
-# client authentication
-CLIENT_AUTHENTICATION = False
-HTTP_APP_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_app_key")
-HTTP_SECRET_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_secret_key")
+# authentication
+AUTHENTICATION_CONF = get_base_config("authentication", {})
 
-# site authentication
-SITE_AUTHENTICATION = False
-SITE_AUTHENTICATION_SERVER = "fate_manager"
+# client
+CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", {}).get("switch", False)
+HTTP_APP_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_app_key")
+HTTP_SECRET_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_secret_key")
 
-# permission switch
-PERMISSION_SWITCH = False
-ROLE_PERMISSION = False
-COMPONENT_PERMISSION = False
-DATASET_PERMISSION = False
+# site
+SITE_AUTHENTICATION = AUTHENTICATION_CONF.get("site", {}).get("switch", False)
+PARTY_ID = AUTHENTICATION_CONF.get("site", {}).get("party_id")
+SITE_AUTHENTICATION_SERVER = AUTHENTICATION_CONF.get("site", {}).get("server_name")
 
-HOOK_MODULE = "fate_flow.hook.flow"
+# permission
+PERMISSION_CONF = get_base_config("permission", {})
+PERMISSION_SWITCH = PERMISSION_CONF.get("switch")
+ROLE_PERMISSION = PERMISSION_CONF.get("role")
+COMPONENT_PERMISSION = PERMISSION_CONF.get("component")
+DATASET_PERMISSION = PERMISSION_CONF.get("dataset")
+
+
+HOOK_MODULE =  get_base_config("hook_module")

@@ -21,6 +21,7 @@ from fate_arch import session, storage
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
+from fate_flow.hook.manager import HookManager
 from fate_flow.utils.log_utils import getLogger
 
 from fate_flow.entity.run_status import TaskStatus
@@ -51,6 +52,7 @@ class TaskExecutor(BaseTaskWorker):
         start_time = current_timestamp()
         try:
             LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
+            HookManager.init()
             self.report_info.update({
                 "job_id": args.job_id,
                 "component_name": args.component_name,

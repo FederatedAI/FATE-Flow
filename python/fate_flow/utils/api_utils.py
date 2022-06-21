@@ -19,7 +19,6 @@ import time
 from functools import wraps
 import flask
 
-import requests
 from flask import Response, jsonify, request as flask_request
 from werkzeug.http import HTTP_STATUS_CODES
 
@@ -29,9 +28,9 @@ from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import RetCode
-from fate_flow.hook.parameters import AuthenticationParameters, SignatureParameters
+from fate_flow.hook.parameters import SignatureParameters
 from fate_flow.settings import API_VERSION, HEADERS, PROXY, PROXY_PROTOCOL, stat_logger, PERMISSION_SWITCH, \
-    SITE_AUTHENTICATION, HOST, HTTP_PORT
+    SITE_AUTHENTICATION, HOST, HTTP_PORT, PARTY_ID
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.grpc_utils import forward_grpc_packet, gen_routing_metadata, get_command_federation_channel, \
     wrap_grpc_packet
@@ -123,6 +122,7 @@ def get_federated_proxy_address(src_party_id, dest_party_id):
 
 
 def federated_coordination_on_http(job_id, method, host, port, endpoint, src_party_id, src_role, dest_party_id, json_body, api_version=API_VERSION, overall_timeout=None, try_times=3):
+    update_body(json_body, endpoint, src_party_id, src_role)
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
     endpoint = f"/{api_version}{endpoint}"
     exception = None
@@ -216,13 +216,10 @@ def forward_api(role, request_config):
 
 
 def update_body(body, endpoint, src_party_id, src_role):
-    """
-    create job endpoint: /party/<job_id>/<role>/<party_id>/create
-    """
     if endpoint.endswith("create") and len(endpoint.split("/")) == 6:
         body.update(common_parm())
         body.update(src_parm(role=src_role, party_id=src_party_id))
-        body.update(sign_parm(src_party_id, src_role, body))
+    body.update(sign_parm(src_party_id, body))
 
 
 def common_parm():
@@ -233,11 +230,10 @@ def src_parm(role, party_id):
     return {"src_role": role, "src_party_id": party_id}
 
 
-def sign_parm(party_id, role, body):
+def sign_parm(party_id, body):
     # generate signature
-
     if SITE_AUTHENTICATION:
-        sign_obj = HookManager.site_signature(SignatureParameters(role, party_id, body))
+        sign_obj = HookManager.site_signature(SignatureParameters(PARTY_ID, body))
         return {"sign": sign_obj.signature}
     return {"sign": None}
 
@@ -248,17 +244,6 @@ def create_job_request_check(func):
         party_id = _kwargs.get("party_id")
         role = _kwargs.get("role")
         body = flask_request.json
-        sign = body.pop("sign")
-
-        # sign authentication
-        if SITE_AUTHENTICATION:
-            authentication_result = HookManager.site_authentication(AuthenticationParameters(sign, role, party_id, body))
-            if authentication_result.code != RetCode.SUCCESS:
-                return get_json_result(
-                    retcode=RetCode.AUTHENTICATION_ERROR,
-                    retmsg='authentication failed',
-                    data=authentication_result.to_dict()
-                )
 
         # permission check
         if PERMISSION_SWITCH:
@@ -270,6 +255,7 @@ def create_job_request_check(func):
                     data=permission_return.to_dict()
                 )
 
+        # version check
         src_fate_ver =body.get('src_fate_ver')
         if src_fate_ver is not None and compare_version(src_fate_ver, '1.7.0') == 'lt':
             return get_json_result(retcode=RetCode.INCOMPATIBLE_FATE_VER, retmsg='Incompatible FATE versions',

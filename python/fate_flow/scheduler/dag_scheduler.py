@@ -155,7 +155,7 @@ class DAGScheduler(Cron):
                 job.f_status = JobStatus.WAITING
                 status_code, response = FederatedScheduler.sync_job_status(job=job)
                 if status_code != FederatedSchedulingStatusCode.SUCCESS:
-                    raise Exception("set job to waiting status failed")
+                    raise Exception(f"set job to waiting status failed: {response}")
 
             schedule_logger(job_id).info(f"submit job successfully, job id is {job.f_job_id}, model id is {common_job_parameters.model_id}")
             logs_directory = job_utils.get_job_log_directory(job_id)
