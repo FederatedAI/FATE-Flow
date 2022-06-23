@@ -27,7 +27,7 @@ from fate_flow.db.db_utils import query_db
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfiguration, RunParameters
-from fate_flow.entity.run_status import JobStatus, TaskStatus
+from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
 from fate_flow.entity.types import InputSearchType
 from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.utils import detect_utils, process_utils, session_utils, data_utils
@@ -478,3 +478,12 @@ def asynchronous_function(func):
         if not is_asynchronous:
             return func(*args, **kwargs)
     return _wrapper
+
+
+def task_report(tasks):
+    now_time = current_timestamp()
+    repost_list = [{"component_name": task.f_component_name, "start_time": task.f_start_time,
+                    "end_time": task.f_end_time, "elapsed": task.f_elapsed, "status": task.f_status}
+                   for task in tasks]
+    repost_list.sort(key=lambda x: (x["start_time"] if x["start_time"] else now_time, x["status"]))
+    return repost_list
