@@ -568,3 +568,16 @@ class SiteKeyInfo(DataBaseModel):
     class Meta:
         db_table = "t_site_key_info"
         primary_key = CompositeKey('f_party_id', 'f_key_name')
+
+class PipelineComponentMeta(DataBaseModel):
+    f_model_id = CharField(max_length=100, index=True)
+    f_model_version = CharField(max_length=100, index=True)
+    f_role = CharField(max_length=50, index=True)
+    f_party_id = CharField(max_length=10, index=True)
+    f_component_name = CharField(max_length=100)
+    f_component_module_name = CharField(max_length=100)
+    f_model_alias = CharField(max_length=100)
+    f_model_proto_index = JSONField(null=True)
+
+    class Meta:
+        db_table = 't_pipeline_component_meta'

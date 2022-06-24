@@ -30,6 +30,7 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.model import Locker, parse_proto_object, serialize_buffer_object
+from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger
 from fate_flow.utils.job_utils import job_pipeline_component_name, job_pipeline_component_module_name
@@ -68,6 +69,8 @@ class PipelinedModel(Locker):
         self.pipeline_model_name = "Pipeline"
         self.pipeline_model_alias = "pipeline"
 
+        self.pipelined_component = PipelinedComponent(self._model_id, self.model_version, self.role, self.party_id)
+
         super().__init__(self.model_path)
 
     def create_pipelined_model(self):
@@ -81,8 +84,6 @@ class PipelinedModel(Locker):
                 os.makedirs(path)
             shutil.copytree(get_fate_flow_python_directory("fate_flow", "protobuf", "proto"), self.define_proto_path)
             shutil.copytree(get_fate_flow_python_directory("fate_flow", "protobuf", "python"), self.define_proto_generated_path)
-            with open(self.define_meta_path, "x", encoding="utf-8") as fw:
-                yaml.dump({"describe": "This is the model definition meta"}, fw, Dumper=yaml.RoundTripDumper)
 
     def save_pipeline_model(self, pipeline_buffer_object):
         model_buffers = {self.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString(), json_format.MessageToDict(pipeline_buffer_object, including_default_value_fields=True))}
@@ -90,6 +91,10 @@ class PipelinedModel(Locker):
                                   component_module_name=job_pipeline_component_module_name(),
                                   model_alias=self.pipeline_model_alias,
                                   model_buffers=model_buffers)
+
+        with self.lock, open(self.define_meta_path, 'w', encoding="utf-8") as f:
+            define_meta = self.pipelined_component.read_define_meta()
+            yaml.dump(define_meta, f, Dumper=yaml.RoundTripDumper)
 
     def save_component_model(self, component_name, component_module_name, model_alias, model_buffers: typing.Dict[str, typing.Tuple[str, bytes, dict]]):
         component_model = self.create_component_model(component_name=component_name,
@@ -222,11 +227,11 @@ class PipelinedModel(Locker):
 
     @local_cache_required
     def collect_models(self, in_bytes=False, b64encode=True):
+        define_meta = self.pipelined_component.read_define_meta()
         model_buffers = {}
-        with open(self.define_meta_path, "r", encoding="utf-8") as fr:
-            define_index = yaml.safe_load(fr)
-        for component_name in define_index.get("model_proto", {}).keys():
-            for model_alias, model_proto_index in define_index["model_proto"][component_name].items():
+
+        for component_name in define_meta.get("model_proto", {}).keys():
+            for model_alias, model_proto_index in define_meta["model_proto"][component_name].items():
                 component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
                 for model_name, buffer_name in model_proto_index.items():
                     with open(os.path.join(component_model_storage_path, model_name), "rb") as fr:
@@ -236,7 +241,8 @@ class PipelinedModel(Locker):
                     else:
                         if b64encode:
                             serialized_string = base64.b64encode(serialized_string).decode()
-                        model_buffers["{}.{}:{}".format(component_name, model_alias, model_name)] = serialized_string
+                        model_buffers[f"{component_name}.{model_alias}:{model_name}"] = serialized_string
+
         return model_buffers
 
     @staticmethod
@@ -299,35 +305,22 @@ class PipelinedModel(Locker):
         :param model_proto_index:
         :return:
         """
-        with self.lock, open(self.define_meta_path, "r+", encoding="utf-8") as f:
-            _define_index = yaml.safe_load(f)
-            if not isinstance(_define_index, dict):
-                raise ValueError('Invalid meta file')
-            define_index = deepcopy(_define_index)
+        return self.pipelined_component.write_define_meta(component_name, component_module_name, model_alias, model_proto_index)
 
-            define_index["component_define"] = define_index.get("component_define", {})
-            define_index["component_define"][component_name] = define_index["component_define"].get(component_name, {})
-            define_index["component_define"][component_name].update({"module_name": component_module_name})
-            define_index["model_proto"] = define_index.get("model_proto", {})
-            define_index["model_proto"][component_name] = define_index["model_proto"].get(component_name, {})
-            define_index["model_proto"][component_name][model_alias] = define_index["model_proto"][component_name].get(model_alias, {})
-            define_index["model_proto"][component_name][model_alias].update(model_proto_index)
+    def get_component_define(self, component_name=None):
+        component_define = self.pipelined_component.read_define_meta()['component_define']
+        if component_name is None:
+            return component_define
+        return component_define.get(component_name, {})
 
-            if define_index != _define_index:
-                f.seek(0)
-                yaml.dump(define_index, f, Dumper=yaml.RoundTripDumper)
-                f.truncate()
-
-    @local_cache_required
-    def get_model_proto_index(self, component_name, model_alias=None):
-        with open(self.define_meta_path, "r", encoding="utf-8") as fr:
-            define_index = yaml.safe_load(fr)
-
-        model_proto_index = define_index.get("model_proto", {}).get(component_name, {})
-
+    def get_model_proto_index(self, component_name=None, model_alias=None):
+        model_proto = self.pipelined_component.read_define_meta()['model_proto']
+        if component_name is None:
+            return model_proto
+        model_proto = model_proto.get(component_name, {})
         if model_alias is None:
-            return model_proto_index
-        return model_proto_index.get(model_alias, {})
+            return model_proto
+        return model_proto.get(model_alias, {})
 
     def get_model_alias(self, component_name):
         model_proto_index = self.get_model_proto_index(component_name)
@@ -336,15 +329,6 @@ class PipelinedModel(Locker):
             raise KeyError('Failed to detect "model_alias", please specify it manually.')
 
         return list(model_proto_index.keys())[0]
-
-    @local_cache_required
-    def get_component_define(self, component_name=None):
-        with open(self.define_meta_path, "r", encoding="utf-8") as fr:
-            define_index = yaml.safe_load(fr)
-
-        if component_name is not None:
-            return define_index.get("component_define", {}).get(component_name, {})
-        return define_index.get("component_define", {})
 
     @property
     def archive_model_base_path(self):
