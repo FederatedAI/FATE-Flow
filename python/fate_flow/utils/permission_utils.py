@@ -18,7 +18,7 @@ def get_permission_parameters(role, party_id, job_info)-> PermissionCheckParamet
     dataset_list = []
     if dataset_dict.get(role, {}).get(int(party_id)):
         for _, v in dataset_dict[role][int(party_id)].items():
-            dataset_list.append(DataSet(namespace=v.split('.')[0], name=v.split('.')[1]).value)
+            dataset_list.append(DataSet(namespace=v.split('.')[0], name=v.split('.')[1]))
     component_list = job_utils.get_job_all_components(dsl)
     return PermissionCheckParameters(
         src_role=job_info.get('src_role', None),

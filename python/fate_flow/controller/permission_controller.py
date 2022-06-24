@@ -1,4 +1,4 @@
-from fate_flow.db.fate_casbin import CasbinCache
+from fate_flow.db.fate_casbin import CB
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.entity.permission_parameters import PermissionParameters, DataSet, CheckReturn
 from fate_flow.entity.types import PermissionType
@@ -11,7 +11,7 @@ logger = getLogger("permission")
 class PermissionController:
     def __init__(self, src_party_id):
         self.src_party_id = str(src_party_id)
-        self.casbin_controller = CasbinCache.CASBIN
+        self.casbin_controller = CB
 
     def check(self, permission_type, value):
         logger.info(f"check source party id {self.src_party_id} {permission_type} {value}")
@@ -31,9 +31,9 @@ class PermissionController:
                         value_list = [value.strip() for value in permission_value.split(self.value_delimiter)]
                     elif permission_type in [PermissionType.DATASET.value]:
                         if isinstance(permission_value, list):
-                            value_list = [DataSet(**value).value for value in permission_value]
+                            value_list = [DataSet(**value).casbin_value for value in permission_value]
                         else:
-                            value_list = [DataSet(**permission_value).value]
+                            value_list = [DataSet(**permission_value).casbin_value]
                     else:
                         raise ValueError(f"permission type {permission_type} is not supported")
                     for value in value_list:
@@ -69,6 +69,8 @@ class PermissionController:
                             DataSet(**dataset).check()
                     elif isinstance(permission_value, dict):
                         DataSet(**permission_value).check()
+                    elif permission_value == "*":
+                        pass
                     else:
                         raise ValueError(f"permission type {permission_type} value {permission_value} error")
 
@@ -115,6 +117,6 @@ class PermissionCheck(object):
 
     def check_dataset(self) -> PermissionReturn:
         for dataset in self.dataset_list:
-            if not self.controller.check(PermissionType.DATASET.value, dataset):
-                return PermissionReturn(CheckReturn.NO_DATASET_PERMISSION, f"check dataset permission failed: {dataset}")
+            if not self.controller.check(PermissionType.DATASET.value, dataset.casbin_value):
+                return PermissionReturn(CheckReturn.NO_DATASET_PERMISSION, f"check dataset permission failed: {dataset.value}")
         return PermissionReturn()

@@ -2,6 +2,7 @@ import casbin
 import casbin_sqlalchemy_adapter
 import pymysql
 
+from fate_flow.db.db_models import singleton
 from fate_flow.settings import CASBIN_MODEL_CONF, DATABASE, CASBIN_TABLE_NAME, PERMISSION_SWITCH
 from sqlalchemy import Column, Integer, String, TEXT, create_engine
 
@@ -31,10 +32,11 @@ class FateCasbinRule(casbin_sqlalchemy_adapter.Base):
         return '<FateCasbinRule {}: "{}">'.format(self.id, str(self))
 
 
+@singleton
 class FateCasbin():
-    def __init__(self, db):
+    def __init__(self):
         self.engine = create_engine(
-            f"mysql://{db.get('user')}:{db.get('passwd')}@{db.get('host')}:{db.get('port')}/{db.get('name')}")
+            f"mysql://{DATABASE.get('user')}:{DATABASE.get('passwd')}@{DATABASE.get('host')}:{DATABASE.get('port')}/{DATABASE.get('name')}")
         self.adapter = casbin_sqlalchemy_adapter.Adapter(self.engine, FateCasbinRule)
         self.e = casbin.Enforcer(CASBIN_MODEL_CONF, self.adapter)
 
@@ -52,12 +54,10 @@ class FateCasbin():
 
     def enforce(self, party_id, type, value):
         self.e.load_policy()
-        return self.e.enforce(party_id, type, value)
+        try:
+            return self.e.enforce(party_id, type, str(value))
+        except Exception as e:
+            raise Exception(f"{party_id}, {type}, {value} {e}")
 
 
-class CasbinCache:
-    CASBIN = None
-    @classmethod
-    def init(cls):
-        if PERMISSION_SWITCH:
-            cls.CASBIN = FateCasbin(DATABASE)
+CB = FateCasbin() if PERMISSION_SWITCH else None
