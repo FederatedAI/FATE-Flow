@@ -6,7 +6,7 @@ from fate_flow.entity import RetCode
 from fate_flow.hook.manager import HookManager
 from fate_flow.hook.parameters import SignatureParameters, AuthenticationParameters, PermissionCheckParameters, \
     AuthenticationReturn, SignatureReturn, PermissionReturn
-from fate_flow.settings import ROLE_PERMISSION, COMPONENT_PERMISSION, DATASET_PERMISSION, SITE_AUTHENTICATION_SERVER
+from fate_flow.settings import COMPONENT_PERMISSION, DATASET_PERMISSION, SITE_AUTHENTICATION_SERVER
 
 
 @HookManager.register_site_signature_hook
@@ -57,10 +57,6 @@ def permission_check(parm: PermissionCheckParameters) -> PermissionReturn:
         return PermissionReturn()
 
     checker = PermissionCheck(**parm.to_dict())
-    if ROLE_PERMISSION:
-        role_result = checker.check_role()
-        if role_result.code != RetCode.SUCCESS:
-            return role_result
 
     if COMPONENT_PERMISSION:
         component_result = checker.check_component()

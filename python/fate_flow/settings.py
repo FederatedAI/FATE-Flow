@@ -27,6 +27,7 @@ API_VERSION = "v1"
 FATE_ENV_KEY_LIST = ['FATE', 'FATEFlow', 'FATEBoard', 'EGGROLL', 'CENTOS', 'UBUNTU', 'PYTHON', 'MAVEN', 'JDK', 'SPARK']
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
+CASBIN_TABLE_NAME = "fate_casbin"
 TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
 FATE_FLOW_CONF_PATH = os.path.join(get_fate_flow_directory(), "conf")
 
@@ -34,6 +35,7 @@ FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_CONF_PATH, "job_defau
 FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH = os.path.join(FATE_FLOW_CONF_PATH, "component_registry.json")
 TEMPLATE_INFO_PATH = os.path.join(FATE_FLOW_CONF_PATH, "template_info.yaml")
 FATE_VERSION_DEPENDENCIES_PATH = os.path.join(get_fate_flow_directory(), "version_dependencies")
+CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
 SUBPROCESS_STD_LOG_NAME = "std.log"
 HEADERS = {
     "Content-Type": "application/json",
@@ -140,6 +142,5 @@ PERMISSION_SWITCH = PERMISSION_CONF.get("switch")
 ROLE_PERMISSION = PERMISSION_CONF.get("role")
 COMPONENT_PERMISSION = PERMISSION_CONF.get("component")
 DATASET_PERMISSION = PERMISSION_CONF.get("dataset")
-
 
 HOOK_MODULE =  get_base_config("hook_module")

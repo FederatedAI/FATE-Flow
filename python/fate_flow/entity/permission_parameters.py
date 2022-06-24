@@ -25,7 +25,6 @@ class PermissionParameters(BaseEntity):
         self.command = None
         self.component = None
         self.dataset = {}
-        self.valid_period = None
         self.is_delete = False
         for k, v in kwargs.items():
             if hasattr(self, k):

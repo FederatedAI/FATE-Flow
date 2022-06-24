@@ -536,16 +536,6 @@ class DependenciesStorageMeta(DataBaseModel):
         primary_key = CompositeKey('f_storage_engine', 'f_type', 'f_version')
 
 
-class PermissionStorage(DataBaseModel):
-    f_party_id = CharField(max_length=20)
-    f_type = CharField(max_length=20)
-    f_value = CharField(max_length=1000)
-    f_expire_time = BigIntegerField(null=True)
-
-    class Meta:
-        db_table = "t_permission_storage"
-
-
 class ServerRegistryInfo(DataBaseModel):
     f_server_name = CharField(max_length=30, index=True)
     f_host = CharField(max_length=30)
