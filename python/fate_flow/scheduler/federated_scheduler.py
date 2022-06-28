@@ -77,6 +77,10 @@ class FederatedScheduler(object):
         return status_code, response
 
     @classmethod
+    def connect(cls, job, command_body=None):
+        return cls.job_command(job=job, command="connect", command_body=command_body)
+
+    @classmethod
     def start_job(cls, job, command_body=None):
         return cls.job_command(job=job, command="start", command_body=command_body)
 

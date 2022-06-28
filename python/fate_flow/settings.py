@@ -48,6 +48,8 @@ MAX_TIMESTAMP_INTERVAL = 60
 
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
 
+REQUEST_TRY_TIMES = 3
+
 USE_REGISTRY = get_base_config("use_registry")
 
 # distribution

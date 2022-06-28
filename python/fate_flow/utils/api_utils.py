@@ -30,7 +30,7 @@ from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import RetCode
 from fate_flow.hook.common.parameters import SignatureParameters
 from fate_flow.settings import API_VERSION, HEADERS, PROXY, PROXY_PROTOCOL, stat_logger, PERMISSION_SWITCH, \
-    SITE_AUTHENTICATION, HOST, HTTP_PORT, PARTY_ID
+    SITE_AUTHENTICATION, HOST, HTTP_PORT, PARTY_ID, REQUEST_TRY_TIMES
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.grpc_utils import forward_grpc_packet, gen_routing_metadata, get_command_federation_channel, \
     wrap_grpc_packet
@@ -121,7 +121,7 @@ def get_federated_proxy_address(src_party_id, dest_party_id):
         raise RuntimeError(f"can not support coordinate proxy config {PROXY}")
 
 
-def federated_coordination_on_http(job_id, method, host, port, endpoint, src_party_id, src_role, dest_party_id, json_body, api_version=API_VERSION, overall_timeout=None, try_times=3):
+def federated_coordination_on_http(job_id, method, host, port, endpoint, src_party_id, src_role, dest_party_id, json_body, api_version=API_VERSION, overall_timeout=None, try_times=REQUEST_TRY_TIMES):
     update_body(json_body, endpoint, src_party_id, src_role)
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
     endpoint = f"/{api_version}{endpoint}"
@@ -151,7 +151,7 @@ def federated_coordination_on_http(job_id, method, host, port, endpoint, src_par
 
 
 def federated_coordination_on_grpc(job_id, method, host, port, endpoint, src_party_id, src_role, dest_party_id, json_body, api_version=API_VERSION,
-                                   overall_timeout=None, try_times=3):
+                                   overall_timeout=None, try_times=REQUEST_TRY_TIMES):
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
     endpoint = f"/{api_version}{endpoint}"
     _packet = wrap_grpc_packet(json_body, method, endpoint, src_party_id, dest_party_id, job_id,

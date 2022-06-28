@@ -23,7 +23,7 @@ from fate_arch.session import Session
 from fate_flow.utils.log_utils import detect_logger
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
+from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus, FederatedSchedulingStatusCode
 from fate_flow.settings import SESSION_VALID_PERIOD
 from fate_flow.utils import cron, job_utils, process_utils
 from fate_flow.db.runtime_config import RuntimeConfig
@@ -118,6 +118,11 @@ class Detector(cron.Cron):
                 try:
                     if job_utils.check_job_is_timeout(job):
                         stop_jobs.add(job)
+                    else:
+                        status_code, response = FederatedScheduler.connect(job)
+                        if status_code != FederatedSchedulingStatusCode.SUCCESS:
+                            detect_logger(job.f_job_id).info(f"job connect failed: {response}")
+                            stop_jobs.add(job)
                 except Exception as e:
                     detect_logger(job_id=job.f_job_id).exception(e)
             cls.request_stop_jobs(jobs=stop_jobs, stop_msg="running timeout", stop_status=JobStatus.TIMEOUT)
