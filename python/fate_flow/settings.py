@@ -126,6 +126,8 @@ UPLOAD_DATA_FROM_CLIENT = True
 # authentication
 AUTHENTICATION_CONF = get_base_config("authentication", {})
 
+PARTY_ID = get_base_config("party_id", {})
+
 # client
 CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", {}).get("switch", False)
 HTTP_APP_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_app_key")
@@ -133,14 +135,12 @@ HTTP_SECRET_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_secret_key")
 
 # site
 SITE_AUTHENTICATION = AUTHENTICATION_CONF.get("site", {}).get("switch", False)
-PARTY_ID = AUTHENTICATION_CONF.get("site", {}).get("party_id")
-SITE_AUTHENTICATION_SERVER = AUTHENTICATION_CONF.get("site", {}).get("server_name")
 
 # permission
 PERMISSION_CONF = get_base_config("permission", {})
 PERMISSION_SWITCH = PERMISSION_CONF.get("switch")
-ROLE_PERMISSION = PERMISSION_CONF.get("role")
 COMPONENT_PERMISSION = PERMISSION_CONF.get("component")
 DATASET_PERMISSION = PERMISSION_CONF.get("dataset")
 
 HOOK_MODULE =  get_base_config("hook_module")
+HOOK_SERVER_NAME = get_base_config("hook_server_name")

@@ -26,8 +26,9 @@ from werkzeug.serving import run_simple
 # be sure to import environment variable before importing fate_arch
 from fate_flow import set_env
 from fate_arch.common import file_utils
+from fate_flow.db.key_manager import RsaKeyManager
 from fate_flow.utils.base_utils import get_fate_flow_directory
-from fate_flow.hook.manager import HookManager
+from fate_flow.hook import HookManager
 from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
 from fate_flow.apps import app
 from fate_flow.db.db_models import init_database_tables as init_flow_db
@@ -83,6 +84,7 @@ if __name__ == '__main__':
     RuntimeConfig.set_component_provider(default_algorithm_provider)
     ComponentRegistry.load()
     HookManager.init()
+    RsaKeyManager.init()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
 

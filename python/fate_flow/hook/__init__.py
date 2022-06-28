@@ -1,7 +1,7 @@
 import importlib
 
-from fate_flow.hook.parameters import SignatureParameters, AuthenticationParameters, PermissionCheckParameters, \
-    SignatureReturn, AuthenticationReturn, PermissionReturn
+from fate_flow.hook.common.parameters import SignatureParameters, AuthenticationParameters, PermissionCheckParameters, \
+    SignatureReturn, AuthenticationReturn, PermissionReturn, ClientAuthenticationReturn, ClientAuthenticationParameters
 from fate_flow.settings import HOOK_MODULE
 
 
@@ -32,6 +32,12 @@ class HookManager:
         HookManager.PERMISSION_CHECK = func
 
     @staticmethod
+    def client_authentication(parm: ClientAuthenticationParameters) -> ClientAuthenticationReturn:
+        if HookManager.CLIENT_AUTHENTICATION is not None:
+            return HookManager.CLIENT_AUTHENTICATION(parm)
+        return ClientAuthenticationReturn()
+
+    @staticmethod
     def site_signature(parm: SignatureParameters) -> SignatureReturn:
         if HookManager.SITE_SIGNATURE is not None:
             return HookManager.SITE_SIGNATURE(parm)
@@ -48,9 +54,3 @@ class HookManager:
         if HookManager.PERMISSION_CHECK is not None:
             return HookManager.PERMISSION_CHECK(parm)
         return PermissionReturn()
-
-    @staticmethod
-    def client_authentication() -> AuthenticationReturn:
-        if HookManager.CLIENT_AUTHENTICATION is not None:
-            return HookManager.CLIENT_AUTHENTICATION()
-        return AuthenticationReturn()

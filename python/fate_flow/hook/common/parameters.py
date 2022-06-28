@@ -9,6 +9,21 @@ class ParametersBase:
         return d
 
 
+class ClientAuthenticationParameters(ParametersBase):
+    def __init__(self, full_path, headers, form, data, json):
+        self.full_path = full_path
+        self.headers = headers
+        self.form = form
+        self.data = data
+        self.json = json
+
+
+class ClientAuthenticationReturn(ParametersBase):
+    def __init__(self, code=RetCode.SUCCESS, message="success"):
+        self.code = code
+        self.message = message
+
+
 class SignatureParameters(ParametersBase):
     def __init__(self, party_id, body):
         self.party_id = party_id
@@ -21,7 +36,8 @@ class SignatureReturn(ParametersBase):
 
 
 class AuthenticationParameters(ParametersBase):
-    def __init__(self, sign, body):
+    def __init__(self, src_party_id, sign, body):
+        self.src_party_id = src_party_id
         self.sign = sign
         self.body = body
 
@@ -33,7 +49,7 @@ class AuthenticationReturn(ParametersBase):
 
 
 class PermissionCheckParameters(ParametersBase):
-    def __init__(self, src_role, src_party_id, role, party_id, initiator, roles, component_list, dataset_list):
+    def __init__(self, src_role, src_party_id, role, party_id, initiator, roles, component_list, dataset_list, runtime_conf, dsl):
         self.src_role = src_role
         self.src_party_id = src_party_id
         self.role = role
@@ -42,6 +58,8 @@ class PermissionCheckParameters(ParametersBase):
         self.roles = roles
         self.component_list = component_list
         self.dataset_list = dataset_list
+        self.run_time_conf = runtime_conf
+        self.dsl = dsl
 
 
 class PermissionReturn(ParametersBase):

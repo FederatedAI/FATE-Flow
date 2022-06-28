@@ -28,13 +28,13 @@ from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import RetCode
-from fate_flow.hook.parameters import SignatureParameters
+from fate_flow.hook.common.parameters import SignatureParameters
 from fate_flow.settings import API_VERSION, HEADERS, PROXY, PROXY_PROTOCOL, stat_logger, PERMISSION_SWITCH, \
     SITE_AUTHENTICATION, HOST, HTTP_PORT, PARTY_ID
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.grpc_utils import forward_grpc_packet, gen_routing_metadata, get_command_federation_channel, \
     wrap_grpc_packet
-from fate_flow.hook.manager import HookManager
+from fate_flow.hook import HookManager
 from fate_flow.utils.log_utils import audit_logger, schedule_logger
 from fate_flow.utils.permission_utils import get_permission_parameters
 from fate_flow.utils.requests_utils import request
@@ -218,8 +218,9 @@ def forward_api(role, request_config):
 def update_body(body, endpoint, src_party_id, src_role):
     if endpoint.endswith("create") and len(endpoint.split("/")) == 6:
         body.update(common_parm())
-        body.update(src_parm(role=src_role, party_id=src_party_id))
-    body.update(sign_parm(src_party_id, body))
+    body.update(src_parm(role=src_role, party_id=src_party_id))
+    sign_dict = sign_parm(src_party_id, body)
+    body.update(sign_dict)
 
 
 def common_parm():
@@ -227,12 +228,14 @@ def common_parm():
 
 
 def src_parm(role, party_id):
-    return {"src_role": role, "src_party_id": party_id}
+    return {"src_role": role, "src_party_id": str(party_id)}
 
 
-def sign_parm(party_id, body):
+def sign_parm(dest_party_id, body):
     # generate signature
     if SITE_AUTHENTICATION:
+        if "sign" in body:
+            body.pop("sign")
         sign_obj = HookManager.site_signature(SignatureParameters(PARTY_ID, body))
         return {"sign": sign_obj.signature}
     return {"sign": None}

@@ -22,8 +22,8 @@ from flask import Blueprint, Flask, request
 
 from fate_arch.common.base_utils import CustomJSONEncoder
 from fate_flow.entity import RetCode
-from fate_flow.hook.manager import HookManager
-from fate_flow.hook.parameters import AuthenticationParameters
+from fate_flow.hook import HookManager
+from fate_flow.hook.common.parameters import AuthenticationParameters, ClientAuthenticationParameters
 from fate_flow.settings import (API_VERSION, access_logger, stat_logger, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION)
 from fate_flow.utils.api_utils import server_error_response, get_json_result
 
@@ -88,7 +88,9 @@ def client_authentication_before_request():
     for url_prefix in scheduling_url_prefix:
         if request.path.startswith(url_prefix):
             return
-    result = HookManager.client_authentication()
+    parm = ClientAuthenticationParameters(full_path=request.full_path, headers=request.headers, form=request.form,
+                                          data=request.data, json=request.json)
+    result = HookManager.client_authentication(parm)
     if result.code != RetCode.SUCCESS:
         return get_json_result(result.code, result.message)
 
@@ -99,7 +101,8 @@ def site_authentication_before_request():
         if request.path.startswith(url_prefix):
             return
     body = request.json
-    sign = body.get("sign") if body else None
-    result = HookManager.site_authentication(AuthenticationParameters(sign, body))
+    sign = body.pop("sign") if body and "sign" in body else None
+    result = HookManager.site_authentication(
+        AuthenticationParameters(sign=sign, src_party_id=body.get("src_party_id"), body=body))
     if result.code != RetCode.SUCCESS:
         return get_json_result(result.code, result.message)

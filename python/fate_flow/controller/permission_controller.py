@@ -2,7 +2,7 @@ from fate_flow.db.fate_casbin import CB
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.entity.permission_parameters import PermissionParameters, DataSet, CheckReturn
 from fate_flow.entity.types import PermissionType
-from fate_flow.hook.parameters import PermissionReturn
+from fate_flow.hook.common.parameters import PermissionReturn
 from fate_flow.settings import DATASET_PERMISSION, COMPONENT_PERMISSION, CASBIN_MODEL_CONF
 
 logger = getLogger("permission")

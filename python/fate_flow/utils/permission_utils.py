@@ -1,5 +1,5 @@
 from fate_flow.entity.permission_parameters import DataSet
-from fate_flow.hook.parameters import PermissionCheckParameters
+from fate_flow.hook.common.parameters import PermissionCheckParameters
 from fate_flow.utils import schedule_utils, job_utils
 
 
@@ -28,5 +28,7 @@ def get_permission_parameters(role, party_id, job_info)-> PermissionCheckParamet
         initiator=runtime_conf['initiator'],
         roles=runtime_conf['role'],
         component_list=component_list,
-        dataset_list=dataset_list
+        dataset_list=dataset_list,
+        runtime_conf=runtime_conf,
+        dsl=dsl
     )
