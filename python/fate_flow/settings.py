@@ -128,7 +128,7 @@ UPLOAD_DATA_FROM_CLIENT = True
 # authentication
 AUTHENTICATION_CONF = get_base_config("authentication", {})
 
-PARTY_ID = get_base_config("party_id", {})
+PARTY_ID = get_base_config("party_id", "")
 
 # client
 CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", {}).get("switch", False)

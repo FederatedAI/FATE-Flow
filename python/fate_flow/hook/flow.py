@@ -90,7 +90,7 @@ def site_authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
     party_id = parm.src_party_id if parm.src_party_id and str(parm.src_party_id) != "0" else PARTY_ID
     public_key = RsaKeyManager.get_key(party_id=party_id, key_name=SiteKeyName.PUBLIC.value)
     if not public_key:
-        raise Exception(f"signature error: no found party id {PARTY_ID} public key")
+        raise Exception(f"signature error: no found party id {party_id} public key")
     verifier = PKCS1_v1_5.new(RSA.importKey(public_key))
     if verifier.verify(MD5.new(json.dumps(parm.body).encode()), base64.b64decode(parm.sign)) is True:
         return AuthenticationReturn()
