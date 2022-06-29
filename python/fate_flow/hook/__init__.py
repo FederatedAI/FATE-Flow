@@ -13,7 +13,8 @@ class HookManager:
 
     @staticmethod
     def init():
-        importlib.import_module(HOOK_MODULE)
+        if HOOK_MODULE is not None:
+            importlib.import_module(HOOK_MODULE)
 
     @staticmethod
     def register_site_signature_hook(func):

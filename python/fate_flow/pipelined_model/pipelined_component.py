@@ -26,25 +26,25 @@ class PipelinedComponent:
 
     @DB.connection_context()
     def read_define_meta(self):
-        raw_define_meta = PipelineComponentMeta.get(
+        define_meta = {
+            'component_define': {},
+            'model_proto': {},
+        }
+
+        query = PipelineComponentMeta.select().where(
             PipelineComponentMeta.f_model_id == self.model_id,
             PipelineComponentMeta.f_model_version == self.model_version,
             PipelineComponentMeta.f_role == self.role,
             PipelineComponentMeta.f_party_id == self.party_id,
         )
 
-        define_meta = {
-            'component_define': {},
-            'model_proto': {},
-        }
-
-        for raw in raw_define_meta:
-            define_meta['component_define'][raw.f_component_name] = {
-                'module_name': raw.f_component_module_name,
+        for row in query:
+            define_meta['component_define'][row.f_component_name] = {
+                'module_name': row.f_component_module_name,
             }
-            define_meta['model_proto'][raw.f_component_name] = {
-                raw.f_model_alias: {
-                    raw.f_component_name: raw.f_model_proto_index,
+            define_meta['model_proto'][row.f_component_name] = {
+                row.f_model_alias: {
+                    row.f_component_name: row.f_model_proto_index,
                 },
             }
 

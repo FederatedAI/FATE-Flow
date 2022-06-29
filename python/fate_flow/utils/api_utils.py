@@ -125,29 +125,31 @@ def get_federated_proxy_address(src_party_id, dest_party_id):
 
 
 def federated_coordination_on_http(job_id, method, host, port, endpoint, src_party_id, src_role, dest_party_id, json_body, api_version=API_VERSION, overall_timeout=None, try_times=REQUEST_TRY_TIMES, headers=None):
+    try_times = max(try_times, 1)
+
     if not headers:
         headers = generate_headers(src_party_id, src_role, json_body)
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
     endpoint = f"/{api_version}{endpoint}"
-    exception = None
+
+    url = "http://{}:{}{}".format(host, port, endpoint)
+    audit_logger(job_id).info(f'remote http api request: {url}')
+    headers.update(HEADERS)
+    headers["dest-party-id"] = str(dest_party_id)
+
     for t in range(try_times):
         try:
-            url = "http://{}:{}{}".format(host, port, endpoint)
-            audit_logger(job_id).info('remote http api request: {}'.format(url))
-            headers.update(HEADERS)
-            headers["dest-party-id"] = str(dest_party_id)
-
             response = request(method=method, url=url, json=json_body, headers=headers)
-            audit_logger(job_id).info(response.text)
-            audit_logger(job_id).info('remote http api response: {} {}'.format(endpoint, response.json()))
-
-            return response.json()
         except Exception as e:
-            exception = e
-            schedule_logger(job_id).warning(f"remote http request {endpoint} error, sleep and try again")
-            time.sleep(2 * (t+1))
-    else:
-        raise exception
+            if t == try_times - 1:
+                raise e
+
+            schedule_logger(job_id).warning(f'remote http request {endpoint} error, sleep and try again')
+            time.sleep(2 * (t + 1))
+            continue
+        else:
+            audit_logger(job_id).info(f'remote http api response: {endpoint} {response.text}')
+            return response.json()
 
 
 def federated_coordination_on_grpc(job_id, method, host, port, endpoint, src_party_id, src_role, dest_party_id, json_body, api_version=API_VERSION,
@@ -219,7 +221,8 @@ def generate_headers(src_party_id, src_role, body):
     headers = common_headers()
     headers.update(src_parm(role=src_role, party_id=src_party_id))
     sign_dict = sign_parm(src_party_id, body)
-    headers.update(sign_dict)
+    if sign_dict is not None:
+        headers.update(sign_dict)
     return headers
 
 
@@ -236,7 +239,6 @@ def sign_parm(dest_party_id, body):
     if SITE_AUTHENTICATION:
         sign_obj = HookManager.site_signature(SignatureParameters(PARTY_ID, body))
         return {"signature": sign_obj.signature}
-    return {"signature": None}
 
 
 def create_job_request_check(func):
