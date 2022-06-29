@@ -62,7 +62,7 @@ class ApiReader(ComponentBase):
     def __init__(self):
         super(ApiReader, self).__init__()
         self.parameters = {}
-        self.required_url_key_list = ["upload", "status", "download"]
+        self.required_url_key_list = ["upload", "query", "download"]
         self.service_info = {}
 
     def _run(self, cpn_input: ComponentInputProtocol):
@@ -72,6 +72,7 @@ class ApiReader(ComponentBase):
         for cpn_name, data in cpn_input.datasets.items():
             for data_name, table_list in data.items():
                 self.input_table = table_list[0]
+        logger.info(f"schema: {self.input_table.schema}")
         logger.info(f"parameters: {self.parameters}")
         if not self.parameters.get("server_name"):
             self._run_guest()
@@ -143,16 +144,20 @@ class ApiReader(ComponentBase):
         return table, output_name, output_namespace
 
     def check_status(self, job_id):
-        query_registry_info = self.service_info.get("status")
+        query_registry_info = self.service_info.get("query")
         for i in range(0, self.parameters.get("timeout", 60 * 5)):
             status_response = getattr(requests, query_registry_info.f_method.lower(), None)(
             url=query_registry_info.f_url,
             json={"jobId": job_id}
             )
             logger.info(f"status: {status_response.text}")
-            if status_response.status_code == 200 and status_response.json().get("data").get("status") == "success":
-                logger.info(f"job id {job_id} status success, start download")
-                return True
+            if status_response.status_code == 200:
+                if status_response.json().get("data").get("status").lower() == "success":
+                    logger.info(f"job id {job_id} status success, start download")
+                    return True
+                if status_response.json().get("data").get("status").lower() != "running":
+                    logger.error(f"job id {job_id} status: {status_response.json().get('data').get('status')}")
+                    raise Exception(status_response.json().get("data"))
             logger.info(f"job id {job_id} status: {status_response.json().get('data').get('status')}")
             time.sleep(30)
         raise TimeoutError("check status timeout")
@@ -176,16 +181,22 @@ class ApiReader(ComponentBase):
         logger.info(f"save to: {id_path}")
         os.makedirs(os.path.dirname(id_path), exist_ok=True)
         with open(id_path, "w") as f:
+            if self.input_table.schema:
+                id_name = self.input_table.schema.get("sid_name") or self.input_table.schema.get("sid", "sid")
+                f.write(f"{id_name}\n")
             for k, _ in self.input_table.collect():
                 f.write(f"{k}\n")
+        with open(id_path, "rb") as f:
             data = MultipartEncoder(
                 fields={'file': (id_path, f, 'application/octet-stream')}
             )
             upload_registry_info = self.service_info.get("upload")
             logger.info(f"upload info:{upload_registry_info.to_dict()}")
+            params = self.parameters.get("parameters", {})
+            params.update({"job_id": self.tracker.job_id})
             response = getattr(requests, upload_registry_info.f_method.lower(), None)(
                 url=upload_registry_info.f_url,
-                params={"requestBody": json.dumps(self.parameters.get("parameters", {}))},
+                params={"requestBody": json.dumps(params)},
                 data=data,
                 headers={'Content-Type': data.content_type}
             )
