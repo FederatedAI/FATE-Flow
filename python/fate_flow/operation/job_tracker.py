@@ -440,25 +440,11 @@ class Tracker(object):
                                                                              self.role,
                                                                              self.party_id))
         with session.Session(options={"logger": schedule_logger(self.job_id)}) as sess:
-            computing_temp_namespace = job_utils.generate_session_id(
-                task_id=self.task_id,
-                task_version=self.task_version,
-                role=self.role,
-                party_id=self.party_id
-            )
-            federation_temp_namespace = job_utils.generate_task_version_id(self.task_id, self.task_version)
-            computing_engine = self.job_parameters.computing_engine
-            federation_engine = self.job_parameters.federation_engine
             federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
             service_conf = self.job_parameters.engines_address.get(EngineType.FEDERATION, {})
-
             return sess.clean(
                 role=self.role,
                 party_id=self.party_id,
-                computing_namespace=computing_temp_namespace,
-                federation_namespace=federation_temp_namespace,
-                computing_engine=computing_engine,
-                federation_engine=federation_engine,
                 federation_session_id=federation_session_id,
                 runtime_conf=runtime_conf,
                 service_conf=service_conf
