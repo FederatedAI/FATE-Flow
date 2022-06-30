@@ -455,10 +455,10 @@ class Tracker(object):
             return sess.clean(
                 role=self.role,
                 party_id=self.party_id,
-                computing_namespace=computing_temp_namespace,
-                federation_namespace=federation_temp_namespace,
-                computing_engine=computing_engine,
-                federation_engine=federation_engine,
+                # computing_namespace=computing_temp_namespace,
+                # federation_namespace=federation_temp_namespace,
+                # computing_engine=computing_engine,
+                # federation_engine=federation_engine,
                 federation_session_id=federation_session_id,
                 runtime_conf=runtime_conf,
                 service_conf=service_conf

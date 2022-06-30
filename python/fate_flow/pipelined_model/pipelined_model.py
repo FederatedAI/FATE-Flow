@@ -148,7 +148,7 @@ class PipelinedModel(Locker):
         for model_name, buffer_name in model_proto_index.items():
             storage_path = os.path.join(component_model_storage_path, model_name)
 
-            with open(os.path.join(component_model_storage_path, model_name), "rb") as f:
+            with open(storage_path, "rb") as f:
                 buffer_object_serialized_string = f.read()
 
             try:
@@ -205,7 +205,8 @@ class PipelinedModel(Locker):
                                                        model_alias=model_alias)
         model_buffers = {}
         for model_name, buffer_name in model_proto_index.items():
-            with open(os.path.join(component_model_storage_path, model_name), "rb") as fr:
+            storage_path = os.path.join(component_model_storage_path, model_name)
+            with open(storage_path, "rb") as fr:
                 buffer_object_serialized_string = fr.read()
                 if parse:
                     model_buffers[model_name] = parse_proto_object(buffer_name=buffer_name,
@@ -234,7 +235,8 @@ class PipelinedModel(Locker):
             for model_alias, model_proto_index in define_meta["model_proto"][component_name].items():
                 component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
                 for model_name, buffer_name in model_proto_index.items():
-                    with open(os.path.join(component_model_storage_path, model_name), "rb") as fr:
+                    storage_path = os.path.join(component_model_storage_path, model_name)
+                    with open(storage_path, "rb") as fr:
                         serialized_string = fr.read()
                     if not in_bytes:
                         model_buffers[model_name] = parse_proto_object(buffer_name, serialized_string)

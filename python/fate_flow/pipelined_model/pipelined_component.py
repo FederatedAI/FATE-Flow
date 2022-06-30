@@ -43,9 +43,7 @@ class PipelinedComponent:
                 'module_name': row.f_component_module_name,
             }
             define_meta['model_proto'][row.f_component_name] = {
-                row.f_model_alias: {
-                    row.f_component_name: row.f_model_proto_index,
-                },
+                row.f_model_alias: row.f_model_proto_index,
             }
 
         return define_meta
