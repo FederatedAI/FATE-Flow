@@ -435,18 +435,12 @@ class Tracker(object):
         return task_id + data_name
 
     def clean_task(self):
-        schedule_logger(self.job_id).info('clean task {} {} on {} {}'.format(self.task_id,
-                                                                             self.task_version,
-                                                                             self.role,
-                                                                             self.party_id))
-        computing_namespace = job_utils.generate_session_id(task_id=self.task_id,
-                                                                 task_version=self.task_version,
-                                                                 role=self.role,
-                                                                 party_id=self.party_id)
-        federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
+        schedule_logger(self.job_id).info(
+            'clean task {} {} on {} {}'.format(self.task_id, self.task_version, self.role, self.party_id))
         session_id = job_utils.generate_session_id(self.task_id, self.task_version, self.role, self.party_id)
-        with session.Session(session_id=session_id, options={"logger": schedule_logger(self.job_id)}) as sess:
-            return sess.clean(federation_namespace=federation_session_id, computing_namespace=computing_namespace)
+        sess = session.Session(session_id=session_id, options={"logger": schedule_logger(self.job_id)})
+        sess.destroy_all_sessions()
+        return True
 
 
     @DB.connection_context()
