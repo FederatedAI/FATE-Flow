@@ -434,21 +434,19 @@ class Tracker(object):
     def get_output_data_group_key(cls, task_id, data_name):
         return task_id + data_name
 
-    def clean_task(self, runtime_conf):
+    def clean_task(self):
         schedule_logger(self.job_id).info('clean task {} {} on {} {}'.format(self.task_id,
                                                                              self.task_version,
                                                                              self.role,
                                                                              self.party_id))
-        with session.Session(options={"logger": schedule_logger(self.job_id)}) as sess:
-            federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
-            service_conf = self.job_parameters.engines_address.get(EngineType.FEDERATION, {})
-            return sess.clean(
-                role=self.role,
-                party_id=self.party_id,
-                federation_session_id=federation_session_id,
-                runtime_conf=runtime_conf,
-                service_conf=service_conf
-            )
+        computing_namespace = job_utils.generate_session_id(task_id=self.task_id,
+                                                                 task_version=self.task_version,
+                                                                 role=self.role,
+                                                                 party_id=self.party_id)
+        federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
+        session_id = job_utils.generate_session_id(self.task_id, self.task_version, self.role, self.party_id)
+        with session.Session(session_id=session_id, options={"logger": schedule_logger(self.job_id)}) as sess:
+            return sess.clean(federation_namespace=federation_session_id, computing_namespace=computing_namespace)
 
 
     @DB.connection_context()

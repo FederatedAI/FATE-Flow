@@ -223,7 +223,7 @@ class TaskController(object):
                 job = jobs[0]
                 job_parameters = RunParameters(**job.f_runtime_conf_on_party["job_parameters"])
                 tracker = Tracker(job_id=job_id, role=role, party_id=party_id, task_id=task_id, task_version=task_version, job_parameters=job_parameters)
-                status.add(tracker.clean_task(job.f_runtime_conf_on_party))
+                status.add(tracker.clean_task())
         if len(status) == 1 and True in status:
             return True
         else:
