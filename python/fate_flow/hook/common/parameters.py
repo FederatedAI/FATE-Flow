@@ -31,14 +31,15 @@ class SignatureParameters(ParametersBase):
 
 
 class SignatureReturn(ParametersBase):
-    def __init__(self, signature=None):
+    def __init__(self, code=RetCode.SUCCESS, signature=None):
+        self.code = code
         self.signature = signature
 
 
 class AuthenticationParameters(ParametersBase):
-    def __init__(self, src_party_id, sign, body):
+    def __init__(self, src_party_id, signature, body):
         self.src_party_id = src_party_id
-        self.sign = sign
+        self.signature = signature
         self.body = body
 
 
@@ -49,7 +50,7 @@ class AuthenticationReturn(ParametersBase):
 
 
 class PermissionCheckParameters(ParametersBase):
-    def __init__(self, src_role, src_party_id, role, party_id, initiator, roles, component_list, dataset_list, runtime_conf, dsl):
+    def __init__(self, src_role, src_party_id, role, party_id, initiator, roles, component_list, dataset_list, runtime_conf, dsl, component_parameters):
         self.src_role = src_role
         self.src_party_id = src_party_id
         self.role = role
@@ -60,6 +61,7 @@ class PermissionCheckParameters(ParametersBase):
         self.dataset_list = dataset_list
         self.run_time_conf = runtime_conf
         self.dsl = dsl
+        self.component_parameters = component_parameters
 
 
 class PermissionReturn(ParametersBase):

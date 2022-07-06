@@ -144,5 +144,5 @@ PERMISSION_SWITCH = PERMISSION_CONF.get("switch")
 COMPONENT_PERMISSION = PERMISSION_CONF.get("component")
 DATASET_PERMISSION = PERMISSION_CONF.get("dataset")
 
-HOOK_MODULE =  get_base_config("hook_module")
+HOOK_MODULE = get_base_config("hook_module")
 HOOK_SERVER_NAME = get_base_config("hook_server_name")

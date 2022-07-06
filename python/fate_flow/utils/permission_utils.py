@@ -1,3 +1,4 @@
+from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.entity.permission_parameters import DataSet
 from fate_flow.hook.common.parameters import PermissionCheckParameters
 from fate_flow.utils import schedule_utils, job_utils
@@ -13,6 +14,9 @@ def get_permission_parameters(role, party_id, job_info)-> PermissionCheckParamet
         runtime_conf=runtime_conf,
         train_runtime_conf=train_runtime_conf
     )
+    provider_detail = ComponentRegistry.REGISTRY
+    job_providers =  dsl_parser.get_job_providers(provider_detail=provider_detail)
+    component_parameters = job_utils.get_component_parameters(job_providers, dsl_parser, provider_detail, role, int(party_id))
     dataset_dict = job_utils.get_job_dataset(False, role, int(party_id), runtime_conf.get("role"), dsl_parser.get_args_input())
 
     dataset_list = []
@@ -30,5 +34,6 @@ def get_permission_parameters(role, party_id, job_info)-> PermissionCheckParamet
         component_list=component_list,
         dataset_list=dataset_list,
         runtime_conf=runtime_conf,
-        dsl=dsl
+        dsl=dsl,
+        component_parameters=component_parameters
     )

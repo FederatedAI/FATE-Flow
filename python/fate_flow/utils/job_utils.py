@@ -482,8 +482,24 @@ def asynchronous_function(func):
 
 def task_report(tasks):
     now_time = current_timestamp()
-    repost_list = [{"component_name": task.f_component_name, "start_time": task.f_start_time,
+    report_list = [{"component_name": task.f_component_name, "start_time": task.f_start_time,
                     "end_time": task.f_end_time, "elapsed": task.f_elapsed, "status": task.f_status}
                    for task in tasks]
-    repost_list.sort(key=lambda x: (x["start_time"] if x["start_time"] else now_time, x["status"]))
-    return repost_list
+    report_list.sort(key=lambda x: (x["start_time"] if x["start_time"] else now_time, x["status"]))
+    return report_list
+
+
+def get_component_parameters(job_providers, dsl_parser, provider_detail, role, party_id):
+    component_parameters = dict()
+    for component in job_providers.keys():
+        provider_info = job_providers[component]["provider"]
+        provider_name = provider_info["name"]
+        provider_version = provider_info["version"]
+        parameter = dsl_parser.parse_component_parameters(component,
+                                                             provider_detail,
+                                                             provider_name,
+                                                             provider_version,
+                                                             local_role=role,
+                                                             local_party_id=party_id)
+        component_parameters[component] = parameter.get("ComponentParam", {})
+    return component_parameters

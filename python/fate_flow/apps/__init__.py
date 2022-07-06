@@ -102,8 +102,8 @@ def site_authentication_before_request():
             return
     body = request.json
     headers = request.headers
-    sign = headers.get("signature")
+    signature = headers.get("signature")
     result = HookManager.site_authentication(
-        AuthenticationParameters(sign=sign, src_party_id=headers.get("src_party_id"), body=body))
+        AuthenticationParameters(signature=signature, src_party_id=headers.get("src_party_id"), body=body))
     if result.code != RetCode.SUCCESS:
         return get_json_result(result.code, result.message)
