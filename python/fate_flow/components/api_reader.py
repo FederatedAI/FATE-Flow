@@ -147,8 +147,8 @@ class ApiReader(ComponentBase):
         query_registry_info = self.service_info.get("query")
         for i in range(0, self.parameters.get("timeout", 60 * 5)):
             status_response = getattr(requests, query_registry_info.f_method.lower(), None)(
-            url=query_registry_info.f_url,
-            json={"jobId": job_id}
+                url=query_registry_info.f_url,
+                json={"jobId": job_id}
             )
             logger.info(f"status: {status_response.text}")
             if status_response.status_code == 200:
@@ -166,7 +166,13 @@ class ApiReader(ComponentBase):
         download_registry_info = self.service_info.get("download")
         download_path = os.path.join(self.task_dir, "features")
         logger.info(f"start download feature, url: {download_registry_info.f_url}")
-        with closing(getattr(requests, download_registry_info.f_method.lower(), None)(url=download_registry_info.f_url, params={"jobId": job_id}, stream=True)) as response:
+        params = {"jobId": job_id}
+        en_content = self.encrypt_content(job_id)
+        if en_content:
+            params.update({"sign": en_content})
+        with closing(getattr(requests, download_registry_info.f_method.lower(), None)(url=download_registry_info.f_url,
+                                                                                      params={"requestBody": json.dumps(params)},
+                                                                                      stream=True)) as response:
             if response.status_code == 200:
                 with open(download_path, 'wb') as fw:
                     for chunk in response.iter_content(1024):
@@ -188,12 +194,15 @@ class ApiReader(ComponentBase):
                 f.write(f"{k}\n")
         with open(id_path, "rb") as f:
             data = MultipartEncoder(
-                fields={'file': (id_path, f, 'application/octet-stream')}
+                fields={'file': ("id", f, 'application/octet-stream')}
             )
             upload_registry_info = self.service_info.get("upload")
             logger.info(f"upload info:{upload_registry_info.to_dict()}")
             params = self.parameters.get("parameters", {})
             params.update({"job_id": self.tracker.job_id})
+            en_content = self.encrypt_content()
+            if en_content:
+                params.update({"sign": en_content})
             response = getattr(requests, upload_registry_info.f_method.lower(), None)(
                 url=upload_registry_info.f_url,
                 params={"requestBody": json.dumps(params)},
@@ -208,3 +217,12 @@ class ApiReader(ComponentBase):
                 if key == info.f_url_name:
                     self.service_info[key] = info
         logger.info(f"set service registry info:{self.service_info}")
+
+    def encrypt_content(self, job_id=None):
+        if not job_id:
+            job_id = self.tracker.job_id
+        import hashlib
+        md5 = hashlib.md5()
+        md5.update(job_id.encode())
+        return md5.hexdigest()
+
