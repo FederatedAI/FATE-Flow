@@ -96,11 +96,12 @@ class PipelinedModel(Locker):
             define_meta = self.pipelined_component.read_define_meta()
             yaml.dump(define_meta, f, Dumper=yaml.RoundTripDumper)
 
-    def save_component_model(self, component_name, component_module_name, model_alias, model_buffers: typing.Dict[str, typing.Tuple[str, bytes, dict]]):
+    def save_component_model(self, component_name, component_module_name, model_alias, model_buffers, user_specified_run_parameters):
         component_model = self.create_component_model(component_name=component_name,
                                                       component_module_name=component_module_name,
                                                       model_alias=model_alias,
-                                                      model_buffers=model_buffers)
+                                                      model_buffers=model_buffers,
+                                                      user_specified_run_parameters=user_specified_run_parameters)
         self.write_component_model(component_model)
 
     def create_component_model(self, component_name, component_module_name, model_alias, model_buffers: typing.Dict[str, typing.Tuple[str, bytes, dict]], user_specified_run_parameters: dict = None):

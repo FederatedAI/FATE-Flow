@@ -21,28 +21,26 @@ import traceback
 from copy import deepcopy
 from datetime import date, datetime
 
-import peewee
 from flask import Response, request, send_file
+import peewee
 
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.conf_utils import get_base_config
 
-from fate_flow.db.db_models import (DB, ModelTag, Tag,
-                                    MachineLearningModelInfo as MLModel,
-                                    ModelOperationLog as OperLog)
+from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, ModelOperationLog as OperLog, ModelTag, Tag
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfigurationBase
 from fate_flow.entity.types import ModelOperation, TagOperation
+from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model import deploy_model, migrate_model, pipelined_model, publish_model
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
-from fate_flow.settings import TEMP_DIRECTORY, stat_logger, IS_STANDALONE
-from fate_flow.utils import job_utils, model_utils, schedule_utils, api_utils, detect_utils
-from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
-from fate_flow.utils.api_utils import error_response, federated_api, get_json_result
+from fate_flow.settings import IS_STANDALONE, TEMP_DIRECTORY, stat_logger
+from fate_flow.utils import detect_utils, job_utils, model_utils, schedule_utils
+from fate_flow.utils.api_utils import error_response, federated_api, get_json_result, validate_request
+from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.components.model_operation import get_model_storage
 
 
 @manager.route('/load', methods=['POST'])
@@ -116,8 +114,8 @@ def load_model():
 
 
 @manager.route('/migrate', methods=['POST'])
-@api_utils.validate_request("migrate_initiator", "role", "migrate_role", "model_id",
-                               "model_version", "execute_party", "job_parameters")
+@validate_request("migrate_initiator", "role", "migrate_role", "model_id",
+                  "model_version", "execute_party", "job_parameters")
 def migrate_model_process():
     request_config = request.json
     _job_id = job_utils.generate_job_id()
@@ -204,21 +202,14 @@ def do_load_model():
     party_model_id = model_utils.gen_party_model_id(model_id, role, party_id)
 
     if get_base_config('enable_model_store', False):
-        pipeline_model = pipelined_model.PipelinedModel(party_model_id, model_version)
+        sync_model = SyncModel(party_model_id, model_version)
 
-        component_parameters = {
-            'model_id': party_model_id,
-            'model_version': model_version,
-            'store_address': ServerRegistry.MODEL_STORE_ADDRESS,
-        }
-        model_storage = get_model_storage(component_parameters)
-
-        if pipeline_model.exists() and not model_storage.exists(**component_parameters):
-            stat_logger.info(f'Uploading {pipeline_model.model_path} to model storage.')
-            model_storage.store(**component_parameters)
-        elif not pipeline_model.exists() and model_storage.exists(**component_parameters):
-            stat_logger.info(f'Downloading {pipeline_model.model_path} from model storage.')
-            model_storage.restore(**component_parameters)
+        if sync_model.local_exits() and not sync_model.remote_exits():
+            stat_logger.info(f'Uploading {sync_model.pipeline_model.model_path} to model storage.')
+            sync_model.upload()
+        elif not sync_model.local_exits() and sync_model.remote_exits():
+            stat_logger.info(f'Downloading {sync_model.pipeline_model.model_path} from model storage.')
+            sync_model.download()
 
     if not model_utils.check_if_deployed(role, party_id, model_id, model_version):
         return get_json_result(retcode=100,
@@ -304,7 +295,7 @@ def download_model(party_model_id, model_version):
 
 
 @manager.route('/<model_operation>', methods=['post', 'get'])
-@api_utils.validate_request("model_id", "model_version", "role", "party_id")
+@validate_request("model_id", "model_version", "role", "party_id")
 def operate_model(model_operation):
     request_config = request.json or request.form.to_dict()
     job_id = job_utils.generate_job_id()
@@ -615,7 +606,7 @@ def query_model():
 
 
 @manager.route('/deploy', methods=['POST'])
-@api_utils.validate_request('model_id', 'model_version')
+@validate_request('model_id', 'model_version')
 def deploy():
     request_data = request.json
 
@@ -727,7 +718,7 @@ def get_predict_dsl():
 
 
 @manager.route('/get/predict/conf', methods=['POST'])
-@api_utils.validate_request('model_id', 'model_version')
+@validate_request('model_id', 'model_version')
 def get_predict_conf():
     request_data = request.json
     model_dir = os.path.join(get_fate_flow_directory(), 'model_local_cache')
@@ -760,7 +751,7 @@ def get_predict_conf():
 
 
 @manager.route('/homo/convert', methods=['POST'])
-@api_utils.validate_request("model_id", "model_version", "role", "party_id")
+@validate_request("model_id", "model_version", "role", "party_id")
 def homo_convert():
     request_config = request.json or request.form.to_dict()
     retcode, retmsg, res_data = publish_model.convert_homo_model(request_config)
@@ -769,8 +760,8 @@ def homo_convert():
 
 
 @manager.route('/homo/deploy', methods=['POST'])
-@api_utils.validate_request("service_id", "model_id", "model_version", "role", "party_id",
-                               "component_name", "deployment_type", "deployment_parameters")
+@validate_request("service_id", "model_id", "model_version", "role", "party_id",
+                  "component_name", "deployment_type", "deployment_parameters")
 def homo_deploy():
     request_config = request.json or request.form.to_dict()
     retcode, retmsg, res_data = publish_model.deploy_homo_model(request_config)

@@ -34,30 +34,38 @@ class SyncModel:
 
         self.lock = DB.lock(f'sync_model_{self.pipeline_model.party_model_id}_{self.pipeline_model.model_version}', -1)
 
+    def local_exits(self):
+        return self.pipeline_model.exists()
+
+    def remote_exits(self):
+        return self.model_storage.exists(**self.component_parameters)
+
     def _get_model(self):
         return MLModel.get(
-            MLModel.f_role == self.role,
-            MLModel.f_party_id == self.party_id,
-            MLModel.f_model_id == self._model_id,
-            MLModel.f_model_version == self.model_version,
+            MLModel.f_role == self.pipeline_model.role,
+            MLModel.f_party_id == self.pipeline_model.party_id,
+            MLModel.f_model_id == self.pipeline_model._model_id,
+            MLModel.f_model_version == self.pipeline_model.model_version,
         )
 
     @DB.connection_context()
-    def upload(self):
+    def upload(self, force_update=False):
         with self.lock:
             model = self._get_model()
-
-            hash = self.model_storage.store(force_update=True, **self.model_storage_parameters)
+            hash = self.model_storage.store(force_update=force_update, **self.model_storage_parameters)
 
             model.f_archive_sha256 = hash
             model.f_archive_from_ip = HOST
             model.save()
 
+            return model
+
     @DB.connection_context()
-    def download(self):
+    def download(self, force_update=False):
         with self.lock:
             model = self._get_model()
-            if model.f_archive_from_ip == HOST:
-                return
 
-            self.model_storage.restore(hash=model.f_archive_sha256 **self.model_storage_parameters)
+            if model.f_archive_from_ip != HOST:
+                self.model_storage.restore(force_update=force_update, hash=model.f_archive_sha256, **self.model_storage_parameters)
+
+            return model

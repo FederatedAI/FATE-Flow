@@ -192,36 +192,8 @@ class Tracker(object):
                 output_tables_meta[output_data_info.f_data_name] = data_table_meta
         return output_tables_meta
 
-    def init_pipeline_model(self):
-        self.pipelined_model.create_pipelined_model()
-
-    def save_output_model(self, model_buffers: dict, model_alias: str):
-        if model_buffers:
-            self.pipelined_model.save_component_model(component_name=self.component_name,
-                                                      component_module_name=self.module_name,
-                                                      model_alias=model_alias,
-                                                      model_buffers=model_buffers)
-
-    def get_output_model(self, model_alias, parse=True, output_json=False):
-        return self.read_output_model(model_alias=model_alias,
-                                      parse=parse,
-                                      output_json=output_json)
-
-    def write_output_model(self, component_model):
-        self.pipelined_model.write_component_model(component_model)
-
-    def read_output_model(self, model_alias, parse=True, output_json=False):
-        return self.pipelined_model.read_component_model(component_name=self.component_name,
-                                                         model_alias=model_alias,
-                                                         parse=parse,
-                                                         output_json=output_json)
-
-    def collect_model(self):
-        model_buffers = self.pipelined_model.collect_models()
-        return model_buffers
-
     def save_pipeline_model(self, pipeline_buffer_object):
-        self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
+        return self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
 
     def get_pipeline_model(self):
         return self.pipelined_model.read_pipeline_model()

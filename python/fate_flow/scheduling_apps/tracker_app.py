@@ -53,6 +53,7 @@ def create_table_meta(job_id, component_name, task_version, task_id, role, party
     tracker.save_table_meta(request_data)
     return get_json_result()
 
+
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/table_meta/get',
                methods=['POST'])
 def get_table_meta(job_id, component_name, task_version, task_id, role, party_id):
@@ -61,34 +62,6 @@ def get_table_meta(job_id, component_name, task_version, task_id, role, party_id
                       role=role, party_id=party_id)
     table_meta_dict = tracker.get_table_meta(request_data)
     return get_json_result(data=table_meta_dict)
-
-
-@manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/model/save',
-               methods=['POST'])
-@manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/component_model/save',
-               methods=['POST'])
-def save_component_model(job_id, component_name, task_version, task_id, role, party_id):
-    request_data = request.json
-    model_id = request_data.get("model_id")
-    model_version = request_data.get("model_version")
-    tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
-                      role=role, party_id=party_id, model_id=model_id, model_version=model_version)
-    tracker.write_output_model(request_data.get("component_model"))
-    return get_json_result()
-
-
-@manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/model/get',
-               methods=['POST'])
-@manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/component_model/get',
-               methods=['POST'])
-def get_component_model(job_id, component_name, task_version, task_id, role, party_id):
-    request_data = request.json
-    model_id = request_data.get("model_id")
-    model_version = request_data.get("model_version")
-    tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
-                      role=role, party_id=party_id, model_id=model_id, model_version=model_version)
-    data = tracker.read_output_model(model_alias=request_data.get("search_model_alias"), parse=False)
-    return get_json_result(data=data)
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/model/run_parameters/get',

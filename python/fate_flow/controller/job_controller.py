@@ -319,7 +319,7 @@ class JobController(object):
                           model_version=job_parameters.model_version,
                           job_parameters=job_parameters)
         if job_parameters.job_type != "predict":
-            tracker.init_pipeline_model()
+            tracker.pipelined_model.create_pipelined_model()
         partner = {}
         show_role = {}
         for _role, _role_party in roles.items():
@@ -469,8 +469,7 @@ class JobController(object):
         pipeline.roles = json_dumps(roles, byte=True)
         pipeline.initiator_role = initiator_role
         pipeline.initiator_party_id = initiator_party_id
-        pipeline.runtime_conf_on_party = json_dumps(
-            runtime_conf_on_party, byte=True)
+        pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
         pipeline.parent_info = json_dumps({}, byte=True)
 
         tracker = Tracker(job_id=job_id, role=role, party_id=party_id,

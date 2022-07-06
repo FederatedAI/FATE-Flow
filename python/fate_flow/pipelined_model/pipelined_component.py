@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_arch.common.base_utils import current_timestamp
+
 from fate_flow.db.db_models import DB, PipelineComponentMeta
 
 
@@ -51,6 +53,7 @@ class PipelinedComponent:
     @DB.connection_context()
     def write_define_meta(self, component_name, component_module_name, model_alias, model_proto_index):
         return PipelineComponentMeta.create(
+            f_create_time=current_timestamp(),
             f_model_id=self.model_id,
             f_model_version=self.model_version,
             f_role=self.role,
