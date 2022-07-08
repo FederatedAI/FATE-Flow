@@ -108,9 +108,9 @@ flow table bind [options]
 | adress         | 是   | object | 真实存储地址                          |
 | drop           | 否   | int    | 覆盖以前的信息                        |
 | head           | 否   | int    | 是否有数据表头                        |
-| id_delimiter   | 否   | string | 数据分隔符                            |
-| id_column      | 否   | string | id字段                                |
-| feature_column | 否   | array  | 特征字段                              |
+| id_delimiter   | 是   | string | 数据分隔符                            |
+| id_column      | 是   | string | id字段                                |
+| feature_column | 是   | array  | 特征字段                              |
 
 **样例** 
 

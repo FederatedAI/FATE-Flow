@@ -104,12 +104,12 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 | name | yes | string | fate table name |
 | namespace | yes | string | fate table namespace |
 | engine | yes | string | storage engine, supports "HDFS", "MYSQL", "PATH" |
-| yes | object | real storage address |
+| yes | object | real storage address ||
 | drop | no | int | Overwrite previous information |
 | head | no | int | Whether there is a data table header |
-| id_delimiter | no | string | Data separator |
-| id_column | no | string | id field |
-| feature_column | no | array | feature_field |
+| id_delimiter | yes | string | Data separator |
+| id_column | yes | string | id field |
+| feature_column | yes | array | feature_field |
 
 **Sample** 
 
@@ -297,4 +297,4 @@ Sample
 ```
 
 
-    
+​    
