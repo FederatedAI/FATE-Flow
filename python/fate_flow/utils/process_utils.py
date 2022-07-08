@@ -50,7 +50,10 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
     if added_env:
         for name, value in added_env.items():
             if name.endswith("PATH"):
-                subprocess_env[name] = f"{value}:{subprocess_env.get(name, '')}".rstrip(':')
+                if "PYTHONPATH" == name:
+                    subprocess_env[name] = f"{os.path.dirname(value)}:{subprocess_env.get(name, '')}".rstrip(':')
+                else:
+                    subprocess_env[name] = f"{value}:{subprocess_env.get(name, '')}".rstrip(':')
             else:
                 subprocess_env[name] = value
     subprocess_env.pop("CLASSPATH", None)
