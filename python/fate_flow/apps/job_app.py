@@ -362,6 +362,6 @@ def parse_order_by(default=None):
 valid_query_parameters = {
     'role': {'guest', 'host', 'arbiter', 'local'},
     'status': {'success', 'running', 'waiting', 'failed', 'canceled'},
-    'order_by': {'job_id', 'create_time', 'start_time', 'end_time', 'elapsed'},
+    'order_by': {'job_id', 'task_version', 'create_time', 'start_time', 'end_time', 'elapsed'},
     'order': {'asc', 'desc'},
 }
