@@ -50,12 +50,12 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
     if added_env:
         for name, value in added_env.items():
             if name.endswith("PATH"):
-                if "PYTHONPATH" == name:
-                    subprocess_env[name] = f"{os.path.dirname(value)}:{subprocess_env.get(name, '')}".rstrip(':')
-                else:
-                    subprocess_env[name] = f"{value}:{subprocess_env.get(name, '')}".rstrip(':')
-            else:
-                subprocess_env[name] = value
+                if name == "PYTHONPATH" and value.endswith("/federatedml"):
+                    value = value[:-12]
+                if subprocess_env.get(name) is not None:
+                    value += ':' + subprocess_env[name]
+
+            subprocess_env[name] = value
     subprocess_env.pop("CLASSPATH", None)
 
     p = subprocess.Popen(process_cmd,
