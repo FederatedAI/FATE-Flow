@@ -20,21 +20,21 @@ from fate_flow.entity.types import SiteKeyName
 from fate_flow.utils.api_utils import get_json_result
 
 
-@manager.route('/site/public/save', methods=['POST'])
+@manager.route('/public/save', methods=['POST'])
 def save_public_key():
     request_conf = request.json
     result = RsaKeyManager.create_or_update(request_conf.get("party_id"), request_conf.get("key"))
     return get_json_result(data=result)
 
 
-@manager.route('/site/public/query', methods=['POST'])
+@manager.route('/query', methods=['POST'])
 def query_public_key():
     request_conf = request.json
     data = RsaKeyManager.get_key(request_conf.get("party_id"), key_name=request_conf.get("key_name", SiteKeyName.PUBLIC.value))
     return get_json_result(data=data)
 
 
-@manager.route('/site/public/delete', methods=['POST'])
+@manager.route('/public/delete', methods=['POST'])
 def delete_public_key():
     request_conf = request.json
     RsaKeyManager.delete(request_conf.get("party_id"))

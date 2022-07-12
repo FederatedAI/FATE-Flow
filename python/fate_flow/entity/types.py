@@ -104,7 +104,7 @@ class RegistryServiceName(CustomEnum):
     CLIENT_AUTHENTICATION = "client_authentication"
     SIGNATURE = "signature"
     SITE_AUTHENTICATION = "site_authentication"
-    PERMISSION_CHECK = "permission_check"
+    PERMISSION_CHECK = "permission"
 
 
 class KillProcessRetCode(IntEnum, CustomEnum):
