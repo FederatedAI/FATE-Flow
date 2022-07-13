@@ -72,7 +72,7 @@ class MysqlModelStorage(ModelStorageBase):
 
         try:
             DB.create_tables([MachineLearningModel])
-            hash = model.packaging_model()
+            hash_ = model.packaging_model()
 
             LOGGER.info(f"Starting store model {model_id} {model_version}.")
             with open(model.archive_model_file_path, "rb") as fr, DB.connection_context():
@@ -108,11 +108,11 @@ class MysqlModelStorage(ModelStorageBase):
             raise Exception(f"Store model {model_id} {model_version} to mysql failed.")
         else:
             LOGGER.info(f"Store model {model_id} {model_version} to mysql successfully.")
-            return hash
+            return hash_
         finally:
             self.close_connection()
 
-    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash: str = None):
+    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash_: str = None):
         """
         Restore model from mysql to local cache
         :param model_id:
@@ -139,7 +139,7 @@ class MysqlModelStorage(ModelStorageBase):
 
             with open(model.archive_model_file_path, "wb") as fw:
                 fw.write(model_archive_data)
-            model.unpack_model(model.archive_model_file_path, force_update, hash)
+            model.unpack_model(model.archive_model_file_path, force_update, hash_)
         except Exception as e:
             LOGGER.exception(e)
             raise Exception(f"Restore model {model_id} {model_version} from mysql failed.")
@@ -151,9 +151,10 @@ class MysqlModelStorage(ModelStorageBase):
     @staticmethod
     def get_connection(store_address: dict):
         store_address = deepcopy(store_address)
+        store_address.pop('storage', None)
         db_name = store_address.pop('database')
+
         store_address = decrypt_database_config(store_address, passwd_key="password")
-        del store_address['storage']
         DB.init(db_name, **store_address)
 
     @staticmethod

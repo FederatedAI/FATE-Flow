@@ -1,30 +1,43 @@
 #
 #  Copyright 2022 The FATE Authors. All Rights Reserved.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
+#  Licensed under the Apache License, Version 2.0 (the 'License');
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
 #
 #      http://www.apache.org/licenses/LICENSE-2.0
 #
 #  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
+#  distributed under the License is distributed on an 'AS IS' BASIS,
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import shutil
+from pathlib import Path
+
 from fate_arch.common.base_utils import current_timestamp
 
 from fate_flow.db.db_models import DB, PipelineComponentMeta
+from fate_flow.model import Locker
+from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.model_utils import gen_party_model_id
 
 
-class PipelinedComponent:
+class PipelinedComponent(Locker):
 
-    def __init__(self, model_id, model_version, role, party_id):
-        self.model_id = model_id
-        self.model_version = model_version
+    def __init__(self, role, party_id, model_id, model_version):
         self.role = role
         self.party_id = party_id
+        self.model_id = model_id
+        self.party_model_id = gen_party_model_id(model_id, role, party_id)
+        self.model_version = model_version
+
+        self.model_path = get_fate_flow_directory('model_local_cache', model_id, model_version)
+        self.variables_index_path = Path(self.model_path, 'variables', 'index')
+        self.variables_data_path = Path(self.model_path, 'variables', 'data')
+        self.run_parameters_path = Path(self.model_path, 'run_parameters')
+        self.checkpoint_path = Path(self.model_path, 'checkpoint')
 
     @DB.connection_context()
     def read_define_meta(self):
@@ -63,3 +76,7 @@ class PipelinedComponent:
             f_model_alias=model_alias,
             f_model_proto_index=model_proto_index,
         )
+
+    def pack_component(self):
+        shutil.copy2
+        return define_meta['component_define']

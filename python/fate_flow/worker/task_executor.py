@@ -34,7 +34,7 @@ from fate_flow.hook import HookManager
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.model.checkpoint import CheckpointManager
-from fate_flow.model.sync_model import SyncModel
+from fate_flow.model.sync_model import SyncComponent
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.utils import job_utils, schedule_utils
@@ -220,9 +220,11 @@ class TaskExecutor(BaseTaskWorker):
             tracker_client.save_component_output_model(model_buffers=cpn_output.model,
                                                        model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
                                                        user_specified_run_parameters=user_specified_parameters)
-            # if get_base_config('enable_model_store', False):
-            #     sync_model = SyncModel(gen_party_model_id(job_parameters.model_id, args.role, args.party_id), job_parameters.model_version)
-            #     sync_model.upload(True)
+            if get_base_config('enable_model_store', False):
+                party_model_id = gen_party_model_id(job_parameters.model_id, args.role, args.party_id)
+                sync_component = SyncComponent(party_model_id, job_parameters.model_version, args.component_name)
+                LOGGER.info(f'Uploading {sync_component.component_name} to component storage.')
+                sync_component.upload(True)
 
             if cpn_output.cache is not None:
                 for i, cache in enumerate(cpn_output.cache):

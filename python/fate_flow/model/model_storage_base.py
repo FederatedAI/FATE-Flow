@@ -13,20 +13,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import abc
+from abc import ABC, abstractmethod
 
 
-class ModelStorageBase(metaclass=abc.ABCMeta):
+class ModelStorageBase(ABC):
     key_separator = "/"
 
     def store_key(self, model_id: str, model_version: str):
         return self.key_separator.join(["FATEFlow", "PipelinedModel", model_id, model_version])
 
-    @abc.abstractmethod
+    @abstractmethod
     def exists(self, model_id: str, model_version: str, store_address: dict):
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def store(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False):
         """
         Store the model from local cache to a reliable system
@@ -37,8 +37,8 @@ class ModelStorageBase(metaclass=abc.ABCMeta):
         """
         pass
 
-    @abc.abstractmethod
-    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash: str = None):
+    @abstractmethod
+    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash_: str = None):
         """
         Restore model from storage system to local cache
         :param model_id:
@@ -46,4 +46,16 @@ class ModelStorageBase(metaclass=abc.ABCMeta):
         :param store_address:
         :return:
         """
+        pass
+
+
+class ComponentStorageBase(ABC):
+    prefix = 'FATEFlow/PipelinedComponent'
+
+    @abstractmethod
+    def upload(self):
+        pass
+
+    @abstractmethod
+    def download(self):
         pass

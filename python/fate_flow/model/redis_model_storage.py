@@ -52,7 +52,7 @@ class RedisModelStorage(ModelStorageBase):
         red = self.get_connection(store_address)
 
         try:
-            hash = model.packaging_model()
+            hash_ = model.packaging_model()
 
             with open(model.archive_model_file_path, "rb") as fr:
                 res = red.set(store_key, fr.read(), nx=not force_update, ex=store_address.get("ex", None))
@@ -66,9 +66,9 @@ class RedisModelStorage(ModelStorageBase):
         else:
             LOGGER.info(f"Store model {model_id} {model_version} to redis successfully."
                         f"Archive path: {model.archive_model_file_path} Key: {store_key}")
-            return hash
+            return hash_
 
-    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash: str = None):
+    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash_: str = None):
         """
         Restore model from redis to local cache
         :param model_id:
@@ -87,7 +87,7 @@ class RedisModelStorage(ModelStorageBase):
 
             with open(model.archive_model_file_path, "wb") as fw:
                 fw.write(archive_data)
-            model.unpack_model(model.archive_model_file_path, force_update, hash)
+            model.unpack_model(model.archive_model_file_path, force_update, hash_)
         except Exception as e:
             LOGGER.exception(e)
             raise Exception(f"Restore model {model_id} {model_version} from redis failed.")
@@ -98,6 +98,7 @@ class RedisModelStorage(ModelStorageBase):
     @staticmethod
     def get_connection(store_address: dict):
         store_address = deepcopy(store_address)
-        del store_address['storage']
+        store_address.pop('storage', None)
         store_address.pop('ex', None)
+
         return redis.Redis(**store_address)

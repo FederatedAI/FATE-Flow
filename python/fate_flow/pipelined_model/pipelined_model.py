@@ -19,7 +19,6 @@ import json
 import os
 import shutil
 import typing
-from copy import deepcopy
 from functools import wraps
 
 from google.protobuf import json_format
@@ -69,7 +68,7 @@ class PipelinedModel(Locker):
         self.pipeline_model_name = "Pipeline"
         self.pipeline_model_alias = "pipeline"
 
-        self.pipelined_component = PipelinedComponent(self._model_id, self.model_version, self.role, self.party_id)
+        self.pipelined_component = PipelinedComponent(self.role, self.party_id, self._model_id, self.model_version)
 
         super().__init__(self.model_path)
 
@@ -280,19 +279,19 @@ class PipelinedModel(Locker):
         stat_logger.info(f'Make model {self.model_id} {self.model_version} archive successfully. path: {self.archive_model_file_path} hash: {sha256}')
         return sha256
 
-    def unpack_model(self, archive_file_path: str, force_update: bool = False, hash: str = None):
+    def unpack_model(self, archive_file_path: str, force_update: bool = False, hash_: str = None):
         os.makedirs(self.model_path)
 
         with self.lock:
             if self.exists() and not force_update:
                 raise FileExistsError(f'Model {self.model_id} {self.model_version} local cache already existed.')
 
-            if hash is not None:
+            if hash_ is not None:
                 with open(archive_file_path, 'rb') as f:
                     sha256 = hashlib.sha256(f.read()).hexdigest()
 
-                if hash != sha256:
-                    raise ValueError(f'Model archive hash mismatch. path: {archive_file_path} expected: {hash} actual: {sha256}')
+                if hash_ != sha256:
+                    raise ValueError(f'Model archive hash mismatch. path: {archive_file_path} expected: {hash_} actual: {sha256}')
 
             shutil.unpack_archive(archive_file_path, self.model_path)
 
