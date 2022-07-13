@@ -28,10 +28,6 @@ class ComponentProvider(BaseEntity):
         self._path = path
         self._class_path = class_path
         self._env = {}
-        self.init_env()
-
-    def init_env(self):
-        self._env["PYTHONPATH"] = os.path.join("/", *self._path.split("/")[:-1])
 
     @property
     def name(self):
