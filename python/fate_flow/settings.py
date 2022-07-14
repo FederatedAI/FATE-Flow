@@ -26,6 +26,7 @@ from fate_flow.utils.log_utils import LoggerFactory, getLogger
 API_VERSION = "v1"
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
+CASBIN_TABLE_NAME = "fate_casbin"
 TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
 FATE_FLOW_CONF_PATH = os.path.join(get_fate_flow_directory(), "conf")
 
@@ -33,6 +34,7 @@ FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_CONF_PATH, "job_defau
 FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH = os.path.join(FATE_FLOW_CONF_PATH, "component_registry.json")
 TEMPLATE_INFO_PATH = os.path.join(FATE_FLOW_CONF_PATH, "template_info.yaml")
 FATE_VERSION_DEPENDENCIES_PATH = os.path.join(get_fate_flow_directory(), "version_dependencies")
+CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
 SUBPROCESS_STD_LOG_NAME = "std.log"
 HEADERS = {
     "Content-Type": "application/json",
@@ -45,6 +47,8 @@ MAX_TIMESTAMP_INTERVAL = 60
 
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
 
+REQUEST_TRY_TIMES = 3
+
 USE_REGISTRY = get_base_config("use_registry")
 
 # distribution
@@ -54,8 +58,6 @@ FATE_FLOW_UPDATE_CHECK = False
 HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")
 GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("grpc_port")
-HTTP_APP_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_app_key")
-HTTP_SECRET_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_secret_key")
 PROXY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol")
 ENGINES = engine_utils.get_engines()
@@ -122,10 +124,23 @@ database_logger = getLogger("fate_flow_database")
 UPLOAD_DATA_FROM_CLIENT = True
 
 # authentication
-USE_AUTHENTICATION = False
-USE_DATA_AUTHENTICATION = False
-AUTOMATIC_AUTHORIZATION_OUTPUT_DATA = True
-USE_DEFAULT_TIMEOUT = False
-AUTHENTICATION_DEFAULT_TIMEOUT = 30 * 24 * 60 * 60 # s
-PRIVILEGE_COMMAND_WHITELIST = []
-CHECK_NODES_IDENTITY = False
+AUTHENTICATION_CONF = get_base_config("authentication", {})
+
+PARTY_ID = get_base_config("party_id", "")
+
+# client
+CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", {}).get("switch", False)
+HTTP_APP_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_app_key")
+HTTP_SECRET_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_secret_key")
+
+# site
+SITE_AUTHENTICATION = AUTHENTICATION_CONF.get("site", {}).get("switch", False)
+
+# permission
+PERMISSION_CONF = get_base_config("permission", {})
+PERMISSION_SWITCH = PERMISSION_CONF.get("switch")
+COMPONENT_PERMISSION = PERMISSION_CONF.get("component")
+DATASET_PERMISSION = PERMISSION_CONF.get("dataset")
+
+HOOK_MODULE = get_base_config("hook_module")
+HOOK_SERVER_NAME = get_base_config("hook_server_name")

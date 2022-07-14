@@ -15,34 +15,27 @@
 #
 from flask import request
 
+from fate_flow.controller.permission_controller import PermissionController
+from fate_flow.entity.permission_parameters import PermissionParameters
 from fate_flow.utils.api_utils import get_json_result
-from fate_flow.utils.authentication_utils import modify_permission, PrivilegeAuth
 
 
-@manager.route('/grant/privilege', methods=['post'])
+@manager.route('/grant', methods=['post'])
 def grant_permission():
-    modify_permission(request.json)
+    parameters = PermissionParameters(**request.json)
+    PermissionController(parameters.party_id).grant_or_delete(parameters)
     return get_json_result(retcode=0, retmsg='success')
 
 
-@manager.route('/delete/privilege', methods=['post'])
+@manager.route('/delete', methods=['post'])
 def delete_permission():
-    modify_permission(request.json, delete=True)
+    parameters = PermissionParameters(is_delete=True, **request.json)
+    PermissionController(parameters.party_id).grant_or_delete(parameters)
     return get_json_result(retcode=0, retmsg='success')
 
 
-@manager.route('/query/privilege', methods=['post'])
+@manager.route('/query', methods=['post'])
 def query_privilege():
-    privilege_dict = PrivilegeAuth.get_permission_config(request.json.get('src_party_id', "*"), request.json.get('src_role', "*"))
-    data = {'src_party_id': request.json.get('src_party_id', "*"),
-            'role': request.json.get('src_role', "*"),
-            'privilege_role': privilege_dict.get('privilege_role', []),
-            'privilege_command': privilege_dict.get('privilege_command', []),
-            'privilege_component': privilege_dict.get('privilege_component', [])}
-    if request.json.get("src_user") and request.json.get("dest_user"):
-        data = {
-            "src_user": request.json.get("src_user"),
-            "dest_user": request.json.get("dest_user"),
-            "privilege_dataset": privilege_dict.get('privilege_dataset', {}).get(request.json.get("src_user"), {}).get(request.json.get("dest_user"), [])
-        }
+    parameters = PermissionParameters(**request.json)
+    data = PermissionController(parameters.party_id).query()
     return get_json_result(retcode=0, retmsg='success', data=data)

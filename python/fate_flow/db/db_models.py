@@ -537,3 +537,13 @@ class ServiceRegistryInfo(DataBaseModel):
         db_table = "t_service_registry_info"
         primary_key = CompositeKey('f_service_name', 'f_url_name')
 
+
+class SiteKeyInfo(DataBaseModel):
+    f_party_id = CharField(max_length=10, index=True)
+    f_key_name = CharField(max_length=10, index=True)
+    f_key = LongTextField()
+
+    class Meta:
+        db_table = "t_site_key_info"
+        primary_key = CompositeKey('f_party_id', 'f_key_name')
+

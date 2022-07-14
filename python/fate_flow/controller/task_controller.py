@@ -28,7 +28,6 @@ from fate_flow.entity import RunParameters
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.utils.authentication_utils import PrivilegeAuth
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import TaskCleanResourceType
 
@@ -65,10 +64,6 @@ class TaskController(object):
         :param party_id:
         :return:
         """
-        job_dsl = job_utils.get_job_dsl(job_id, role, party_id)
-        PrivilegeAuth.authentication_component(job_dsl, src_party_id=kwargs.get('src_party_id'), src_role=kwargs.get('src_role'),
-                                               party_id=party_id, component_name=component_name)
-
         schedule_logger(job_id).info(
             f"try to start task {task_id} {task_version} on {role} {party_id} executor subprocess")
         task_executor_process_start_status = False

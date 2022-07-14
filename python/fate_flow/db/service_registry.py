@@ -105,8 +105,11 @@ class ServiceRegistry(ReloadConfigBase):
 
     @classmethod
     @DB.connection_context()
-    def load_api_info(cls, service_name) -> [ServiceRegistryInfo]:
-        service_registry_info_list = ServiceRegistryInfo.query(**{"service_name": service_name})
+    def load_api_info(cls, service_name, url_name=None) -> [ServiceRegistryInfo]:
+        query_item = {"service_name": service_name}
+        if url_name:
+            query_item["url_name"] = url_name
+        service_registry_info_list = ServiceRegistryInfo.query(**query_item)
         return [service_registry_info for service_registry_info in service_registry_info_list]
 
     @classmethod
