@@ -17,11 +17,11 @@ from copy import deepcopy
 
 from peewee import DoesNotExist
 
-from fate_flow.db.db_models import DB
-from fate_flow.db.db_models import MachineLearningModelInfo as MLModel
+from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.model import model_storage_base, mysql_model_storage, redis_model_storage, tencent_cos_model_storage
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
 from fate_flow.settings import HOST
 
 
@@ -44,7 +44,7 @@ class SyncModel:
         if store_type not in model_storages_map:
             raise ValueError(f"Model storage '{store_type}' is not supported.")
 
-        self.pipeline_model = PipelinedModel(party_model_id, model_version)
+        self.pipelined_model = PipelinedModel(party_model_id, model_version)
 
         self.model_storage: model_storage_base.ModelStorageBase = model_storages_map[store_type]()
         self.model_storage_parameters = {
@@ -56,7 +56,7 @@ class SyncModel:
         self.lock = DB.lock(f'sync_model_{party_model_id}_{model_version}', -1)
 
     def local_exits(self):
-        return self.pipeline_model.exists()
+        return self.pipelined_model.exists()
 
     def remote_exits(self):
         return self.model_storage.exists(**self.model_storage_parameters)
@@ -71,10 +71,10 @@ class SyncModel:
 
     def get_model(self):
         return MLModel.get(
-            MLModel.f_role == self.pipeline_model.role,
-            MLModel.f_party_id == self.pipeline_model.party_id,
-            MLModel.f_model_id == self.pipeline_model._model_id,
-            MLModel.f_model_version == self.pipeline_model.model_version,
+            MLModel.f_role == self.pipelined_model.role,
+            MLModel.f_party_id == self.pipelined_model.party_id,
+            MLModel.f_model_id == self.pipelined_model._model_id,
+            MLModel.f_model_version == self.pipelined_model.model_version,
         )
 
     @DB.connection_context()
@@ -114,10 +114,16 @@ class SyncComponent:
         if store_type not in model_storages_map:
             raise ValueError(f"Model storage '{store_type}' is not supported.")
 
-        self.pipeline_model = PipelinedModel(party_model_id, model_version)
+        self.pipelined_component = PipelinedComponent(party_model_id, model_version)
         self.component_name = component_name
 
         self.component_storage: model_storage_base.ComponentStorageBase = model_storages_map[store_type](
             party_model_id, model_version, component_name)
 
-        self.lock = DB.lock(f'sync_component_{self.pipeline_model.party_model_id}_{self.pipeline_model.model_version}_{self.component_name}', -1)
+        self.lock = DB.lock(f'sync_component_{self.pipelined_component.party_model_id}_{self.pipelined_component.model_version}_{self.component_name}', -1)
+
+    def upload(self):
+        pass
+
+    def download(self):
+        pass

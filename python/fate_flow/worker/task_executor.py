@@ -224,7 +224,7 @@ class TaskExecutor(BaseTaskWorker):
                 party_model_id = gen_party_model_id(job_parameters.model_id, args.role, args.party_id)
                 sync_component = SyncComponent(party_model_id, job_parameters.model_version, args.component_name)
                 LOGGER.info(f'Uploading {sync_component.component_name} to component storage.')
-                sync_component.upload(True)
+                sync_component.upload()
 
             if cpn_output.cache is not None:
                 for i, cache in enumerate(cpn_output.cache):

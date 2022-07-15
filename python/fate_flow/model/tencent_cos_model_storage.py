@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os
 from copy import deepcopy
 
 from qcloud_cos import CosConfig, CosS3Client
@@ -120,5 +121,38 @@ class TencentCOSComponentStorage(ComponentStorageBase):
         self.client = CosS3Client(CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key))
         self.bucket = bucket
 
-    def upload(self, dir_):
-        pass
+    def upload(self, filename, key):
+        key = self.prefix + key
+
+        try:
+            response = self.client.upload_file(
+                Bucket=self.bucket,
+                LocalFilePath=filename,
+                Key=key,
+                EnableMD5=True,
+            )
+        except Exception as e:
+            LOGGER.exception(e)
+            raise Exception(f"Upload {filename} to Tencent COS failed.")
+        else:
+            LOGGER.info(f"Upload {filename} to Tencent COS successfully. "
+                        f"Key: {key} ETag: {response['ETag']}")
+            return response
+
+    def download(self, key, filename):
+        key = self.prefix + key
+
+        try:
+            response = self.client.download_file(
+                Bucket=self.bucket,
+                Key=key,
+                DestFilePath=filename,
+                EnableCRC=True,
+            )
+        except Exception as e:
+            LOGGER.exception(e)
+            raise Exception(f"Download {key} from Tencent COS failed.")
+        else:
+            LOGGER.info(f"Download {key} from Tencent COS successfully. "
+                        f"Filename: {filename}")
+            return response

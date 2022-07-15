@@ -13,7 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import shutil
 from pathlib import Path
 
 from fate_arch.common.base_utils import current_timestamp
@@ -77,6 +76,5 @@ class PipelinedComponent(Locker):
             f_model_proto_index=model_proto_index,
         )
 
-    def pack_component(self):
-        shutil.copy2
-        return define_meta['component_define']
+    def pack_component(self, component_name):
+        pass

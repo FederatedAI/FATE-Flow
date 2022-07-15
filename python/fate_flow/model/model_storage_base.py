@@ -50,12 +50,12 @@ class ModelStorageBase(ABC):
 
 
 class ComponentStorageBase(ABC):
-    prefix = 'FATEFlow/PipelinedComponent'
+    prefix = 'FATEFlow/PipelinedComponent/'
 
     @abstractmethod
-    def upload(self):
+    def upload(self, filename, key):
         pass
 
     @abstractmethod
-    def download(self):
+    def download(self, key, filename):
         pass
