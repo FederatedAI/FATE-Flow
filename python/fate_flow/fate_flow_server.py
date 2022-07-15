@@ -13,39 +13,42 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+# init env. must be the first import
+import fate_flow as _
+
+import logging
 import os
 import signal
 import sys
 import time
 import traceback
-import logging
 
 import grpc
 from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
-# be sure to import environment variable before importing fate_arch
-from fate_flow import set_env
+
+from eggroll.core.proto import proxy_pb2_grpc
 from fate_arch.common import file_utils
-from fate_flow.utils.base_utils import get_fate_flow_directory
-from fate_flow.hook.manager import HookManager
-from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
-from fate_flow.apps import app
-from fate_flow.db.db_models import init_database_tables as init_flow_db
-from fate_arch.metastore.db_models import init_database_tables as init_arch_db
-from fate_flow.detection.detector import Detector
-from fate_flow.scheduler.dag_scheduler import DAGScheduler
-from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.entity.types import ProcessRole
-from fate_flow.settings import (HOST, HTTP_PORT, GRPC_PORT, _ONE_DAY_IN_SECONDS, GRPC_SERVER_MAX_WORKERS,
-                                stat_logger, detect_logger, access_logger, database_logger)
-from fate_flow.utils.grpc_utils import UnaryService
-from fate_flow.db.db_services import service_db
-from fate_flow.utils.xthread import ThreadPoolExecutor
-from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.common.versions import get_versions
-from fate_flow.db.config_manager import ConfigManager
+from fate_arch.metastore.db_models import init_database_tables as init_arch_db
+
+from fate_flow.apps import app
 from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.db.config_manager import ConfigManager
+from fate_flow.db.db_models import init_database_tables as init_flow_db
+from fate_flow.db.db_services import service_db
+from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.detection.detector import Detector
+from fate_flow.entity.types import ProcessRole
+from fate_flow.hook.manager import HookManager
 from fate_flow.manager.provider_manager import ProviderManager
+from fate_flow.scheduler.dag_scheduler import DAGScheduler
+from fate_flow.settings import (_ONE_DAY_IN_SECONDS, GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT,
+                                access_logger, database_logger, detect_logger, stat_logger)
+from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.grpc_utils import UnaryService
+from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.utils.xthread import ThreadPoolExecutor
 
 
 if __name__ == '__main__':
