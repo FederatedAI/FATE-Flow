@@ -245,7 +245,7 @@ def sign_parm(dest_party_id, body):
     # generate signature
     if SITE_AUTHENTICATION:
         sign_obj = HookManager.site_signature(SignatureParameters(PARTY_ID, body))
-        return {"signature": sign_obj.signature if sign_obj.signature else ""}
+        return {"site_signature": sign_obj.site_signature if sign_obj.site_signature else ""}
 
 
 def create_job_request_check(func):

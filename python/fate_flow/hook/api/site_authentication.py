@@ -21,7 +21,7 @@ def signature(parm: SignatureParameters) -> SignatureReturn:
     )
     if response.status_code == 200:
         if response.json().get("code") == 0:
-            return SignatureReturn(signature=response.json().get("data"))
+            return SignatureReturn(site_signature=response.json().get("data"))
         else:
             raise Exception(f"signature error: request signature url failed, result: {response.json()}")
     else:
