@@ -98,6 +98,13 @@ def local_api(job_id, method, endpoint, json_body, api_version=API_VERSION, try_
                                           try_times=try_times, headers=headers)
 
 
+def cluster_api(endpoint, method, http_address, json_body):
+    url = "http://{}{}".format(http_address, endpoint)
+    audit_logger().info(f"request url {url}")
+    response = request(method=method, url=url, json=json_body)
+    audit_logger().info(f"request url {url}, result {response.text}")
+
+
 def get_federated_proxy_address(src_party_id, dest_party_id):
     if isinstance(PROXY, str):
         if PROXY == CoordinationProxyService.ROLLSITE:
@@ -238,7 +245,7 @@ def sign_parm(dest_party_id, body):
     # generate signature
     if SITE_AUTHENTICATION:
         sign_obj = HookManager.site_signature(SignatureParameters(PARTY_ID, body))
-        return {"signature": sign_obj.signature if sign_obj.signature else ""}
+        return {"site_signature": sign_obj.site_signature if sign_obj.site_signature else ""}
 
 
 def create_job_request_check(func):
@@ -248,10 +255,13 @@ def create_job_request_check(func):
         role = _kwargs.get("role")
         body = flask_request.json
         headers = flask_request.headers
+        src_role = headers.get("scr_role")
+        src_party_id = headers.get("src_party_id")
 
         # permission check
         if PERMISSION_SWITCH:
-            permission_return = HookManager.permission_check(get_permission_parameters(role, party_id, body))
+            permission_return = HookManager.permission_check(get_permission_parameters(role, party_id, src_role,
+                                                                                       src_party_id, body))
             if permission_return.code != RetCode.SUCCESS:
                 return get_json_result(
                     retcode=RetCode.PERMISSION_ERROR,
@@ -307,8 +317,8 @@ def cluster_route(func):
         if instance_id:
             instance_list = RuntimeConfig.SERVICE_DB.get_servers()
             for instance in instance_list:
-                if instance.get("instance_id") == instance_id:
-                    dest_address = instance.get("http_address")
+                if instance.instance_id == instance_id:
+                    dest_address = instance.http_address
                     if f"{HOST}:{HTTP_PORT}" == dest_address:
                         break
                     dest_url = flask_request.url.replace(f"{HOST}:{HTTP_PORT}", dest_address)

@@ -4,7 +4,7 @@ from fate_flow.hook.common.parameters import PermissionCheckParameters
 from fate_flow.utils import schedule_utils, job_utils
 
 
-def get_permission_parameters(role, party_id, job_info)-> PermissionCheckParameters:
+def get_permission_parameters(role, party_id, src_role, src_party_id, job_info) -> PermissionCheckParameters:
     dsl = job_info['dsl']
     runtime_conf = job_info['runtime_conf']
     train_runtime_conf = job_info['train_runtime_conf']
@@ -15,7 +15,7 @@ def get_permission_parameters(role, party_id, job_info)-> PermissionCheckParamet
         train_runtime_conf=train_runtime_conf
     )
     provider_detail = ComponentRegistry.REGISTRY
-    job_providers =  dsl_parser.get_job_providers(provider_detail=provider_detail)
+    job_providers = dsl_parser.get_job_providers(provider_detail=provider_detail)
     component_parameters = job_utils.get_component_parameters(job_providers, dsl_parser, provider_detail, role, int(party_id))
     dataset_dict = job_utils.get_job_dataset(False, role, int(party_id), runtime_conf.get("role"), dsl_parser.get_args_input())
 
@@ -25,8 +25,8 @@ def get_permission_parameters(role, party_id, job_info)-> PermissionCheckParamet
             dataset_list.append(DataSet(namespace=v.split('.')[0], name=v.split('.')[1]))
     component_list = job_utils.get_job_all_components(dsl)
     return PermissionCheckParameters(
-        src_role=job_info.get('src_role', None),
-        src_party_id=job_info.get('src_party_id', None),
+        src_role=src_role,
+        src_party_id=src_party_id,
         role=role,
         party_id=party_id,
         initiator=runtime_conf['initiator'],
