@@ -15,13 +15,13 @@
 #
 import grpc
 
+from eggroll.core.proto import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
 from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HEADERS, HOST
 from fate_flow.utils.log_utils import audit_logger
-from fate_flow.utils.proto_compatibility import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
 from fate_flow.utils.requests_utils import request
 
 
