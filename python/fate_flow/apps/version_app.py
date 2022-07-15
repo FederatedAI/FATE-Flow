@@ -18,10 +18,9 @@ from flask import request
 from fate_arch.common import conf_utils
 
 from fate_flow.settings import API_VERSION
-from fate_flow.utils.api_utils import get_json_result, error_response
+from fate_flow.utils.api_utils import get_json_result, validate_request
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServiceRegistry
-from fate_flow.utils.detect_utils import validate_request
 
 
 @manager.route('/get', methods=['POST'])

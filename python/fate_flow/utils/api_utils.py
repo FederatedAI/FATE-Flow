@@ -255,10 +255,12 @@ def create_job_request_check(func):
         role = _kwargs.get("role")
         body = flask_request.json
         headers = flask_request.headers
-
+        src_role = headers.get("scr_role")
+        src_party_id = headers.get("src_party_id")
         # permission check
         if PERMISSION_SWITCH:
-            permission_return = HookManager.permission_check(get_permission_parameters(role, party_id, body))
+            permission_return = HookManager.permission_check(get_permission_parameters(role, party_id, src_role,
+                                                                                       src_party_id, body))
             if permission_return.code != RetCode.SUCCESS:
                 return get_json_result(
                     retcode=RetCode.PERMISSION_ERROR,

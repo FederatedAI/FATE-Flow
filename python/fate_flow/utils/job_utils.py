@@ -24,7 +24,7 @@ from fate_arch.common.base_utils import current_timestamp, fate_uuid, json_dumps
 from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.db.db_utils import query_db
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.db.service_registry import ServerRegistry
+from fate_flow.db.service_registry import ServiceRegistry
 from fate_flow.entity import JobConfiguration, RunParameters
 from fate_flow.entity.run_status import JobStatus, TaskStatus
 from fate_flow.entity.types import InputSearchType
@@ -389,8 +389,8 @@ def job_default_timeout(runtime_conf, dsl):
 
 def get_board_url(job_id, role, party_id):
     board_url = "http://{}:{}{}".format(
-        ServerRegistry.FATEBOARD.get("host"),
-        ServerRegistry.FATEBOARD.get("port"),
+        ServiceRegistry.FATEBOARD.get("host"),
+        ServiceRegistry.FATEBOARD.get("port"),
         FATE_BOARD_DASHBOARD_ENDPOINT).format(job_id, role, party_id)
     return board_url
 

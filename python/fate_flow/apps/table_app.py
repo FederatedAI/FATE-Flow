@@ -26,7 +26,7 @@ from fate_flow.worker.task_executor import TaskExecutor
 from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.utils import job_utils, schedule_utils
 from flask import request
-from fate_flow.utils.detect_utils import validate_request
+from fate_flow.utils.api_utils import validate_request
 
 
 @manager.route('/connector/create', methods=['POST'])
