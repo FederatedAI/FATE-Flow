@@ -27,6 +27,7 @@ from kazoo.security import make_digest_acl
 
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
+from fate_flow.entity.instance import FlowInstance
 from fate_flow.errors.error_services import *
 from fate_flow.settings import (FATE_FLOW_MODEL_TRANSFER_ENDPOINT, ZOOKEEPER_REGISTRY,
                                 HOST, HTTP_PORT, USE_REGISTRY, ZOOKEEPER, stat_logger, GRPC_PORT)
@@ -133,15 +134,16 @@ class ServicesDB(abc.ABC):
         pass
 
     @property
-    def _server_content(self):
-        _content = {
+    def _server_instance(self) -> FlowInstance:
+        instance_info = {
             "instance_id": f"flow-{HOST.split('.')[-1]}-{HTTP_PORT}",
             "timestamp": int(time.time() * 1000),
             "version": RuntimeConfig.get_env("FATEFlow"),
             "grpc_address": f"{HOST}:{GRPC_PORT}",
             "http_address": f"{HOST}:{HTTP_PORT}"
         }
-        return _content
+        instance = FlowInstance(**instance_info)
+        return instance
 
     @check_service_supported
     def delete(self, service_name, service_url):
@@ -191,7 +193,7 @@ class ServicesDB(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def _get_servers(self, server_name):
+    def _get_servers(self, server_name) -> [FlowInstance]:
         pass
 
     @check_service_supported
@@ -281,7 +283,7 @@ class ZooKeeperDB(ServicesDB):
         try:
             server_path = '/'.join([self.znodes[server_name], server_address])
             self.client.create(server_path, ephemeral=True, makepath=True)
-            self.client.set(server_path, json.dumps(self._server_content).encode())
+            self.client.set(server_path, json.dumps(self._server_instance.to_dict()).encode())
         except NodeExistsError as e:
             stat_logger.exception(e)
         except ZookeeperError as e:
@@ -328,7 +330,7 @@ class ZooKeeperDB(ServicesDB):
             server_list = self.client.get_children(self.znodes[server_name])
         except ZookeeperError as e:
             raise ZooKeeperBackendError(error_message=repr(e))
-        return [json.loads(self.client.get("/".join([self.znodes[server_name], server]))[0].decode()) for server in server_list]
+        return [FlowInstance(**json.loads(self.client.get("/".join([self.znodes[server_name], server]))[0].decode())) for server in server_list]
 
 
 class FallbackDB(ServicesDB):
@@ -360,7 +362,7 @@ class FallbackDB(ServicesDB):
         return urls
 
     def _get_servers(self, server_name):
-        return [self._server_content]
+        return [self._server_instance]
 
 
 def service_db():

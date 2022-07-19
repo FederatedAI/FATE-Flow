@@ -15,6 +15,7 @@
 #
 
 from fate_arch.common import base_utils
+from fate_flow.scheduler import SchedulerBase
 from fate_flow.utils.api_utils import federated_api
 from fate_flow.utils.log_utils import start_log, failed_log, successful_log, warning_log
 from fate_flow.utils.log_utils import schedule_logger
@@ -28,7 +29,7 @@ import threading
 from fate_flow.entity.types import TaskCleanResourceType
 
 
-class FederatedScheduler(object):
+class FederatedScheduler(SchedulerBase):
     """
     Send commands to party,
     Report info to initiator
@@ -346,22 +347,3 @@ class FederatedScheduler(object):
                                  json_body=json_body if json_body else {},
                                  federated_mode=job_parameters["federated_mode"])
         return response
-
-    # Utils
-    @classmethod
-    def return_federated_response(cls, federated_response):
-        retcode_set = set()
-        for dest_role in federated_response.keys():
-            for party_id in federated_response[dest_role].keys():
-                retcode_set.add(federated_response[dest_role][party_id]["retcode"])
-        if len(retcode_set) == 1 and RetCode.SUCCESS in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.SUCCESS
-        elif RetCode.EXCEPTION_ERROR in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.ERROR
-        elif RetCode.NOT_EFFECTIVE in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.NOT_EFFECTIVE
-        elif RetCode.SUCCESS in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.PARTIAL
-        else:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.FAILED
-        return federated_scheduling_status_code, federated_response

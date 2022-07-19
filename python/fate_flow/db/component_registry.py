@@ -69,17 +69,17 @@ class ComponentRegistry:
         return components
 
     @classmethod
-    def register_components(cls, provider: ComponentProvider, components: dict):
+    def register_components(cls, provider_name, components: dict):
         for component_name, info in components.items():
             if component_name not in cls.REGISTRY["components"]:
                 cls.REGISTRY["components"][component_name] = {
-                    "default_provider": provider.name,
+                    "default_provider": provider_name,
                     "support_provider": [],
                     "alias": info["alias"]
                 }
-            if provider.name not in cls.REGISTRY["components"][component_name]["support_provider"]:
+            if provider_name not in cls.REGISTRY["components"][component_name]["support_provider"]:
                 # do not use set because the json format is not supported
-                cls.REGISTRY["components"][component_name]["support_provider"].append(provider.name)
+                cls.REGISTRY["components"][component_name]["support_provider"].append(provider_name)
                 for component_alias in info["alias"]:
                     cls.REGISTRY["components"][component_alias] = cls.REGISTRY["components"][component_name]
 
