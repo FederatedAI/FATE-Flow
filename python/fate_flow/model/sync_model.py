@@ -114,7 +114,7 @@ class SyncComponent:
         if store_type not in model_storages_map:
             raise ValueError(f"Model storage '{store_type}' is not supported.")
 
-        self.pipelined_component = PipelinedComponent(party_model_id, model_version)
+        self.pipelined_component = PipelinedComponent(party_model_id=party_model_id, model_version=model_version)
         self.component_name = component_name
 
         self.component_storage: model_storage_base.ComponentStorageBase = model_storages_map[store_type](

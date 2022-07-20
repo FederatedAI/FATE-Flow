@@ -13,30 +13,38 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import hashlib
 from pathlib import Path
+from zipfile import ZipFile
 
 from fate_arch.common.base_utils import current_timestamp
 
 from fate_flow.db.db_models import DB, PipelineComponentMeta
 from fate_flow.model import Locker
+from fate_flow.settings import TEMP_DIRECTORY
 from fate_flow.utils.base_utils import get_fate_flow_directory
-from fate_flow.utils.model_utils import gen_party_model_id
 
 
 class PipelinedComponent(Locker):
 
-    def __init__(self, role, party_id, model_id, model_version):
-        self.role = role
-        self.party_id = party_id
-        self.model_id = model_id
-        self.party_model_id = gen_party_model_id(model_id, role, party_id)
+    def __init__(self, *, role=None, party_id=None, model_id=None, party_model_id=None, model_version):
+        if party_model_id is None:
+            self.role = role
+            self.party_id = party_id
+            self.model_id = model_id
+            self.party_model_id = f'{role}#{party_id}#{model_id}'
+        else:
+            self.role, self.party_id, self.model_id = party_model_id.split('#', 2)
+            self.party_model_id = party_model_id
+
         self.model_version = model_version
 
-        self.model_path = get_fate_flow_directory('model_local_cache', model_id, model_version)
+        self.model_path = get_fate_flow_directory('model_local_cache', self.model_id, self.model_version)
         self.variables_index_path = Path(self.model_path, 'variables', 'index')
         self.variables_data_path = Path(self.model_path, 'variables', 'data')
         self.run_parameters_path = Path(self.model_path, 'run_parameters')
         self.checkpoint_path = Path(self.model_path, 'checkpoint')
+
 
     @DB.connection_context()
     def read_define_meta(self):
@@ -76,5 +84,39 @@ class PipelinedComponent(Locker):
             f_model_proto_index=model_proto_index,
         )
 
+    def walk_component(self, zip_file, dir_path: Path):
+        for path in dir_path.iterdir():
+            if path.is_dir():
+                self.walk_component(zip_file, path)
+            else:
+                zip_file.write(path, path.relative_to(self.model_path))
+
     def pack_component(self, component_name):
-        pass
+        filename = Path(TEMP_DIRECTORY, f'{self.party_model_id}_{self.model_version}_{component_name}.zip')
+
+        with self.lock:
+            with ZipFile(filename, 'w') as zip_file:
+                self.walk_component(zip_file, self.variables_index_path / component_name)
+                self.walk_component(zip_file, self.variables_data_path / component_name)
+                self.walk_component(zip_file, self.run_parameters_path / component_name)
+                self.walk_component(zip_file, self.checkpoint_path / component_name)
+
+            with open(filename, 'rb') as f:
+                hash_ = hashlib.sha256(f.read()).hexdigest()
+
+        return filename, hash_
+
+    def unpack_component(self, component_name, hash_=None):
+        filename = Path(TEMP_DIRECTORY, f'{self.party_model_id}_{self.model_version}_{component_name}.zip')
+
+        with self.lock:
+            if hash_ is not None:
+                with open(filename, 'rb') as f:
+                    sha256 = hashlib.sha256(f.read()).hexdigest()
+
+                if hash_ != sha256:
+                    raise ValueError(f'Model archive hash mismatch. path: {filename} expected: {hash_} actual: {sha256}')
+
+            with ZipFile(filename, 'r') as zip_file:
+                zip_file.extractall(self.model_path)
+

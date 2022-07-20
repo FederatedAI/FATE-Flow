@@ -68,7 +68,7 @@ class PipelinedModel(Locker):
         self.pipeline_model_name = "Pipeline"
         self.pipeline_model_alias = "pipeline"
 
-        self.pipelined_component = PipelinedComponent(self.role, self.party_id, self._model_id, self.model_version)
+        self.pipelined_component = PipelinedComponent(role=self.role, party_id=self.party_id, model_id=self._model_id, model_version=self.model_version)
 
         super().__init__(self.model_path)
 
@@ -274,10 +274,10 @@ class PipelinedModel(Locker):
             shutil.make_archive(base_name=self.archive_model_base_path, format=self.default_archive_format, root_dir=self.model_path)
 
             with open(self.archive_model_file_path, 'rb') as f:
-                sha256 = hashlib.sha256(f.read()).hexdigest()
+                hash_ = hashlib.sha256(f.read()).hexdigest()
 
-        stat_logger.info(f'Make model {self.model_id} {self.model_version} archive successfully. path: {self.archive_model_file_path} hash: {sha256}')
-        return sha256
+        stat_logger.info(f'Make model {self.model_id} {self.model_version} archive successfully. path: {self.archive_model_file_path} hash: {hash_}')
+        return hash_
 
     def unpack_model(self, archive_file_path: str, force_update: bool = False, hash_: str = None):
         os.makedirs(self.model_path)

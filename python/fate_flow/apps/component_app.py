@@ -81,8 +81,6 @@ def sync():
 
     party_model_id = gen_party_model_id(request.json['model_id'], request.json['role'], request.json['party_id'])
     pipelined_model = PipelinedModel(party_model_id, request.json['model_version'])
-    pipelined_component = PipelinedComponent(request.json['role'], request.json['party_id'],
-                                             request.json['model_id'], request.json['model_version'])
 
     if not pipelined_model.exists():
         pipelined_model.create_pipelined_model()
