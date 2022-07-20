@@ -15,6 +15,7 @@
 #
 import os
 from fate_arch.common import FederatedCommunicationType
+from fate_flow.utils.job_utils import asynchronous_function
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.db.db_models import Task
@@ -48,8 +49,6 @@ class TaskController(object):
             task_info["task_version"] = 0
 
         task = JobSaver.create_task(task_info=task_info)
-        if task and run_on_this_party:
-            job_utils.save_task_using_job_conf(task)
 
     @classmethod
     def start_task(cls, job_id, component_name, task_id, task_version, role, party_id, **kwargs):
@@ -143,7 +142,8 @@ class TaskController(object):
                            task_version=task_info["task_version"],
                            role=task_info["role"],
                            party_id=task_info["party_id"],
-                           content_type=TaskCleanResourceType.TABLE)
+                           content_type=TaskCleanResourceType.TABLE,
+                           is_asynchronous=True)
         cls.report_task_to_initiator(task_info=task_info)
         return update_status
 
@@ -165,6 +165,7 @@ class TaskController(object):
             return None
 
     @classmethod
+    @asynchronous_function
     def stop_task(cls, task, stop_status):
         """
         Try to stop the task, but the status depends on the final operation result
@@ -179,7 +180,8 @@ class TaskController(object):
             "task_version": task.f_task_version,
             "role": task.f_role,
             "party_id": task.f_party_id,
-            "party_status": stop_status
+            "party_status": stop_status,
+            "kill_status": True
         }
         cls.update_task_status(task_info=task_info)
         cls.update_task(task_info=task_info)
@@ -209,6 +211,7 @@ class TaskController(object):
             return kill_status
 
     @classmethod
+    @asynchronous_function
     def clean_task(cls, job_id, task_id, task_version, role, party_id, content_type: TaskCleanResourceType):
         status = set()
         if content_type == TaskCleanResourceType.METRICS:
@@ -220,7 +223,7 @@ class TaskController(object):
                 job = jobs[0]
                 job_parameters = RunParameters(**job.f_runtime_conf_on_party["job_parameters"])
                 tracker = Tracker(job_id=job_id, role=role, party_id=party_id, task_id=task_id, task_version=task_version, job_parameters=job_parameters)
-                status.add(tracker.clean_task(job.f_runtime_conf_on_party))
+                status.add(tracker.clean_task())
         if len(status) == 1 and True in status:
             return True
         else:

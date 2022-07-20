@@ -18,7 +18,7 @@ from copy import deepcopy
 import redis
 
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.pipelined_model.model_storage_base import ModelStorageBase
+from fate_flow.model.model_storage_base import ModelStorageBase
 from fate_flow.utils.log_utils import getLogger
 
 
@@ -52,7 +52,7 @@ class RedisModelStorage(ModelStorageBase):
         red = self.get_connection(store_address)
 
         try:
-            model.packaging_model()
+            hash_ = model.packaging_model()
 
             with open(model.archive_model_file_path, "rb") as fr:
                 res = red.set(store_key, fr.read(), nx=not force_update, ex=store_address.get("ex", None))
@@ -66,8 +66,9 @@ class RedisModelStorage(ModelStorageBase):
         else:
             LOGGER.info(f"Store model {model_id} {model_version} to redis successfully."
                         f"Archive path: {model.archive_model_file_path} Key: {store_key}")
+            return hash_
 
-    def restore(self, model_id: str, model_version: str, store_address: dict):
+    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash_: str = None):
         """
         Restore model from redis to local cache
         :param model_id:
@@ -86,7 +87,7 @@ class RedisModelStorage(ModelStorageBase):
 
             with open(model.archive_model_file_path, "wb") as fw:
                 fw.write(archive_data)
-            model.unpack_model(model.archive_model_file_path)
+            model.unpack_model(model.archive_model_file_path, force_update, hash_)
         except Exception as e:
             LOGGER.exception(e)
             raise Exception(f"Restore model {model_id} {model_version} from redis failed.")
@@ -97,6 +98,7 @@ class RedisModelStorage(ModelStorageBase):
     @staticmethod
     def get_connection(store_address: dict):
         store_address = deepcopy(store_address)
-        del store_address['storage']
+        store_address.pop('storage', None)
         store_address.pop('ex', None)
+
         return redis.Redis(**store_address)

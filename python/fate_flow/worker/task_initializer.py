@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.utils.job_utils import get_job_configuration
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity import ComponentProvider
@@ -27,10 +28,16 @@ LOGGER = getLogger()
 class TaskInitializer(BaseWorker):
     def _run(self):
         result = {}
-        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=self.args.dsl,
-                                                       runtime_conf=self.args.runtime_conf,
-                                                       train_runtime_conf=self.args.train_runtime_conf,
-                                                       pipeline_dsl=self.args.pipeline_dsl)
+        job_configuration = get_job_configuration(
+            job_id=self.args.job_id,
+            role=self.args.role,
+            party_id=self.args.party_id
+        )
+        dsl_parser = schedule_utils.get_job_dsl_parser(
+            dsl=job_configuration.dsl,
+            runtime_conf=job_configuration.runtime_conf,
+            train_runtime_conf=job_configuration.train_runtime_conf
+        )
 
         provider = ComponentProvider(**self.args.config["provider"])
         common_task_info = self.args.config["common_task_info"]

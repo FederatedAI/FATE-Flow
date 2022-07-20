@@ -35,7 +35,7 @@
                     ]
                 }
             },
-            "dataio_0": {
+            "data_transform_0": {
                 "with_label": [
                     true
                 ],
@@ -81,7 +81,7 @@
                     ]
                 }
             },
-            "dataio_0": {
+            "data_transform_0": {
                 "with_label": [
                     false
                 ],

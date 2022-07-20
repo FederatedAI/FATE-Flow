@@ -171,9 +171,14 @@ def component_output_model():
     dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_dsl, runtime_conf=job_runtime_conf,
                                                    train_runtime_conf=train_runtime_conf)
     component = dsl_parser.get_component_info(request_data['component_name'])
-    output_model_json = {}
     # There is only one model output at the current dsl version.
-    output_model = tracker.get_output_model(component.get_output()['model'][0] if component.get_output().get('model') else 'default', output_json=True)
+    output_model = tracker.pipelined_model.read_component_model(
+        component_name=request_data['component_name'],
+        model_alias=component.get_output()['model'][0] if component.get_output().get('model') else 'default',
+        output_json=True,
+    )
+
+    output_model_json = {}
     for buffer_name, buffer_object_json_format in output_model.items():
         if buffer_name.endswith('Param'):
             output_model_json = buffer_object_json_format
@@ -306,24 +311,6 @@ def get_component_output_tables_meta(task_data):
     output_data_table_infos = tracker.get_output_data_info()
     output_tables_meta = tracker.get_output_data_table(output_data_infos=output_data_table_infos)
     return output_tables_meta
-
-
-# def get_component_output_data_line(src_key, src_value):
-#     data_line = [src_key]
-#     is_str = False
-#     extend_header = []
-#     if hasattr(src_value, "is_instance"):
-#         for inst in ["inst_id", "label", "weight"]:
-#             if getattr(src_value, inst) is not None:
-#                 data_line.append(getattr(src_value, inst))
-#                 extend_header.append(inst)
-#         data_line.extend(feature_utils.dataset_to_list(src_value.features))
-#     elif isinstance(src_value, str):
-#         data_line.extend([value for value in src_value.split(',')])
-#         is_str = True
-#     else:
-#         data_line.extend(feature_utils.dataset_to_list(src_value))
-#     return data_line, is_str, extend_header
 
 
 @DB.connection_context()

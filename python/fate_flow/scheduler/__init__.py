@@ -13,3 +13,25 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.entity import RetCode
+from fate_flow.entity.run_status import FederatedSchedulingStatusCode
+
+
+class SchedulerBase():
+    @classmethod
+    def return_federated_response(cls, federated_response):
+        retcode_set = set()
+        for dest_role in federated_response.keys():
+            for party_id in federated_response[dest_role].keys():
+                retcode_set.add(federated_response[dest_role][party_id]["retcode"])
+        if len(retcode_set) == 1 and RetCode.SUCCESS in retcode_set:
+            federated_scheduling_status_code = FederatedSchedulingStatusCode.SUCCESS
+        elif RetCode.EXCEPTION_ERROR in retcode_set:
+            federated_scheduling_status_code = FederatedSchedulingStatusCode.ERROR
+        elif RetCode.NOT_EFFECTIVE in retcode_set:
+            federated_scheduling_status_code = FederatedSchedulingStatusCode.NOT_EFFECTIVE
+        elif RetCode.SUCCESS in retcode_set:
+            federated_scheduling_status_code = FederatedSchedulingStatusCode.PARTIAL
+        else:
+            federated_scheduling_status_code = FederatedSchedulingStatusCode.FAILED
+        return federated_scheduling_status_code, federated_response

@@ -19,7 +19,7 @@ import typing
 
 from fate_arch.abc import CTableABC
 from fate_arch.common import EngineType, Party
-from fate_arch.common.data_utils import default_output_fs_path, default_output_info
+from fate_arch.common.data_utils import default_output_info
 from fate_arch.computing import ComputingEngine
 from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
@@ -35,7 +35,7 @@ from fate_flow.pipelined_model import pipelined_model
 from fate_flow.manager.cache_manager import CacheManager
 from fate_flow.manager.metric_manager import MetricManager
 from fate_arch import storage, session
-from fate_flow.utils import model_utils, job_utils, data_utils
+from fate_flow.utils import model_utils, job_utils
 from fate_flow.entity import RunParameters
 
 
@@ -192,36 +192,8 @@ class Tracker(object):
                 output_tables_meta[output_data_info.f_data_name] = data_table_meta
         return output_tables_meta
 
-    def init_pipeline_model(self):
-        self.pipelined_model.create_pipelined_model()
-
-    def save_output_model(self, model_buffers: dict, model_alias: str):
-        if model_buffers:
-            self.pipelined_model.save_component_model(component_name=self.component_name,
-                                                      component_module_name=self.module_name,
-                                                      model_alias=model_alias,
-                                                      model_buffers=model_buffers)
-
-    def get_output_model(self, model_alias, parse=True, output_json=False):
-        return self.read_output_model(model_alias=model_alias,
-                                      parse=parse,
-                                      output_json=output_json)
-
-    def write_output_model(self, component_model):
-        self.pipelined_model.write_component_model(component_model)
-
-    def read_output_model(self, model_alias, parse=True, output_json=False):
-        return self.pipelined_model.read_component_model(component_name=self.component_name,
-                                                         model_alias=model_alias,
-                                                         parse=parse,
-                                                         output_json=output_json)
-
-    def collect_model(self):
-        model_buffers = self.pipelined_model.collect_models()
-        return model_buffers
-
     def save_pipeline_model(self, pipeline_buffer_object):
-        self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
+        return self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
 
     def get_pipeline_model(self):
         return self.pipelined_model.read_pipeline_model()
@@ -434,67 +406,14 @@ class Tracker(object):
     def get_output_data_group_key(cls, task_id, data_name):
         return task_id + data_name
 
-    def clean_task(self, runtime_conf):
-        schedule_logger(self.job_id).info('clean task {} {} on {} {}'.format(self.task_id,
-                                                                             self.task_version,
-                                                                             self.role,
-                                                                             self.party_id))
-        try:
-            with session.Session() as sess:
-                # clean up temporary tables
-                computing_temp_namespace = job_utils.generate_session_id(task_id=self.task_id,
-                                                                         task_version=self.task_version,
-                                                                         role=self.role,
-                                                                         party_id=self.party_id)
-                if self.job_parameters.computing_engine == ComputingEngine.EGGROLL:
-                    session_options = {"eggroll.session.processors.per.node": 1}
-                else:
-                    session_options = {}
-                try:
-                    if self.job_parameters.computing_engine != ComputingEngine.LINKIS_SPARK:
-                        sess.init_computing(computing_session_id=f"{computing_temp_namespace}_clean", options=session_options)
-                        sess.computing.cleanup(namespace=computing_temp_namespace, name="*")
-                        schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(computing_temp_namespace,
-                                                                                                             self.role,
-                                                                                                             self.party_id))
-                        # clean up the last tables of the federation
-                        federation_temp_namespace = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                        sess.computing.cleanup(namespace=federation_temp_namespace, name="*")
-                        schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(federation_temp_namespace,
-                                                                                                             self.role,
-                                                                                                             self.party_id))
-                    if self.job_parameters.federation_engine == FederationEngine.RABBITMQ and self.role != "local":
-                        schedule_logger(self.job_id).info('rabbitmq start clean up')
-                        parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]
-                        federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                        component_parameters_on_party = copy.deepcopy(runtime_conf)
-                        component_parameters_on_party["local"] = {"role": self.role, "party_id": self.party_id}
-                        sess.init_federation(federation_session_id=federation_session_id,
-                                             runtime_conf=component_parameters_on_party,
-                                             service_conf=self.job_parameters.engines_address.get(EngineType.FEDERATION, {}))
-                        sess._federation_session.cleanup(parties)
-                        schedule_logger(self.job_id).info('rabbitmq clean up success')
+    def clean_task(self):
+        schedule_logger(self.job_id).info(
+            'clean task {} {} on {} {}'.format(self.task_id, self.task_version, self.role, self.party_id))
+        session_id = job_utils.generate_session_id(self.task_id, self.task_version, self.role, self.party_id)
+        sess = session.Session(session_id=session_id, options={"logger": schedule_logger(self.job_id)})
+        sess.destroy_all_sessions()
+        return True
 
-                    #TODO optimize the clean process
-                    if self.job_parameters.federation_engine == FederationEngine.PULSAR and self.role != "local":
-                        schedule_logger(self.job_id).info('start to clean up pulsar topics')
-                        parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]
-                        federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                        component_parameters_on_party = copy.deepcopy(runtime_conf)
-                        component_parameters_on_party["local"] = {"role": self.role, "party_id": self.party_id}
-                        sess.init_federation(federation_session_id=federation_session_id,
-                                             runtime_conf=component_parameters_on_party,
-                                             service_conf=self.job_parameters.engines_address.get(EngineType.FEDERATION, {}))
-                        sess._federation_session.cleanup(parties)
-                        schedule_logger(self.job_id).info('pulsar topic clean up success')
-                except Exception as e:
-                    schedule_logger(self.job_id).exception("cleanup error")
-                finally:
-                    sess.destroy_all_sessions()
-                return True
-        except Exception as e:
-            schedule_logger(self.job_id).exception(e)
-            return False
 
     @DB.connection_context()
     def save_machine_learning_model_info(self):

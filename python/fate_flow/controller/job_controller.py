@@ -26,7 +26,7 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RunParameters
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.entity.run_status import JobStatus, EndStatus, JobInheritanceStatus
-from fate_flow.entity.types import WorkerName
+from fate_flow.entity.types import WorkerName, RetCode
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
@@ -35,6 +35,7 @@ from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.protobuf.python import pipeline_pb2
+from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import ENGINES
 from fate_flow.utils import job_utils, schedule_utils, data_utils, log_utils, model_utils
 from fate_flow.utils.job_utils import get_job_dataset
@@ -86,8 +87,15 @@ class JobController(object):
         job_info["runtime_conf_on_party"]["job_parameters"] = job_parameters.to_dict()
         JobSaver.create_job(job_info=job_info)
         schedule_logger(job_id).info("start initialize tasks")
-        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
-                                                                  initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
+        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id,
+                                                                  role=role,
+                                                                  party_id=party_id,
+                                                                  run_on_this_party=True,
+                                                                  initiator_role=job_info["initiator_role"],
+                                                                  initiator_party_id=job_info["initiator_party_id"],
+                                                                  job_parameters=job_parameters,
+                                                                  dsl_parser=dsl_parser,
+                                                                  runtime_conf=runtime_conf)
         schedule_logger(job_id).info("initialize tasks success")
         for provider_key, group_info in provider_group.items():
             for cpn in group_info["components"]:
@@ -260,7 +268,9 @@ class JobController(object):
         return initialized_result
 
     @classmethod
-    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id, job_parameters: RunParameters = None, dsl_parser=None, components: list = None, **kwargs):
+    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id,
+                         job_parameters: RunParameters = None, dsl_parser=None, components: list = None,
+                         runtime_conf=None, **kwargs):
         common_task_info = {}
         common_task_info["job_id"] = job_id
         common_task_info["initiator_role"] = initiator_role
@@ -276,7 +286,10 @@ class JobController(object):
         if dsl_parser is None:
             dsl_parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id)
         provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser,
-                                                                components=components)
+                                                                runtime_conf=runtime_conf,
+                                                                components=components,
+                                                                role=role,
+                                                                party_id=party_id)
         initialized_result = {}
         for group_key, group_info in provider_group.items():
             initialized_config = {}
@@ -318,7 +331,7 @@ class JobController(object):
                           model_version=job_parameters.model_version,
                           job_parameters=job_parameters)
         if job_parameters.job_type != "predict":
-            tracker.init_pipeline_model()
+            tracker.pipelined_model.create_pipelined_model()
         partner = {}
         show_role = {}
         for _role, _role_party in roles.items():
@@ -415,8 +428,10 @@ class JobController(object):
         for task in tasks:
             if task.f_status in [TaskStatus.SUCCESS, TaskStatus.WAITING, TaskStatus.PASS]:
                 continue
-            kill_task_status = TaskController.stop_task(
-                task=task, stop_status=stop_status)
+            kill_task_status = False
+            status, response = FederatedScheduler.stop_task(job=job, task=task, stop_status=stop_status)
+            if status == RetCode.SUCCESS:
+                kill_task_status = True
             kill_status = kill_status & kill_task_status
             kill_details[task.f_task_id] = 'success' if kill_task_status else 'failed'
         if kill_status:
@@ -466,8 +481,7 @@ class JobController(object):
         pipeline.roles = json_dumps(roles, byte=True)
         pipeline.initiator_role = initiator_role
         pipeline.initiator_party_id = initiator_party_id
-        pipeline.runtime_conf_on_party = json_dumps(
-            runtime_conf_on_party, byte=True)
+        pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
         pipeline.parent_info = json_dumps({}, byte=True)
 
         tracker = Tracker(job_id=job_id, role=role, party_id=party_id,

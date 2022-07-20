@@ -54,7 +54,9 @@ class TaskScheduler(object):
             if initiator_task.f_status == TaskStatus.WAITING:
                 waiting_tasks.append(initiator_task)
             elif task_status_have_update and EndStatus.contains(initiator_task.f_status):
-                FederatedScheduler.stop_task(job=job, task=initiator_task, stop_status=initiator_task.f_status)
+                command_body = {"is_asynchronous": True}
+                schedule_logger(initiator_task.f_job_id).info(f"stop task body: {command_body}, task status: {initiator_task.f_status}")
+                FederatedScheduler.stop_task(job=job, task=initiator_task, stop_status=initiator_task.f_status, command_body=command_body)
                 if not canceled and AutoRerunStatus.contains(initiator_task.f_status):
                     if initiator_task.f_auto_retries > 0:
                         auto_rerun_tasks.append(initiator_task)
@@ -168,7 +170,8 @@ class TaskScheduler(object):
                                                dsl_parser=dsl_parser,
                                                components=[task.f_component_name],
                                                task_version=task.f_task_version,
-                                               auto_retries=task.f_auto_retries)
+                                               auto_retries=task.f_auto_retries,
+                                               runtime_conf=job.f_runtime_conf)
         schedule_logger(job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
 
     @classmethod

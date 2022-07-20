@@ -131,19 +131,18 @@ def convert_homo_model(request_data):
     if not model.exists():
         return 100, 'Model {} {} does not exist'.format(party_model_id, model_version), None
 
-    with open(model.define_meta_path, "r", encoding="utf-8") as fr:
-        define_index = yaml.safe_load(fr)
+    define_meta = pipelined_model.pipelined_component.read_define_meta()
 
     framework_name = request_data.get("framework_name")
     detail = []
     # todo: use subprocess?
     convert_tool = model.get_homo_model_convert_tool()
-    for key, value in define_index.get("model_proto", {}).items():
+    for key, value in define_meta.get("model_proto", {}).items():
         if key == 'pipeline':
             continue
         for model_alias in value.keys():
             buffer_obj = model.read_component_model(key, model_alias)
-            module_name = define_index.get("component_define", {}).get(key, {}).get('module_name')
+            module_name = define_meta.get("component_define", {}).get(key, {}).get('module_name')
             converted_framework, converted_model = convert_tool.model_convert(model_contents=buffer_obj,
                                                                               module_name=module_name,
                                                                               framework_name=framework_name)

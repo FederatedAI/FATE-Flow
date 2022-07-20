@@ -14,10 +14,72 @@
 #  limitations under the License.
 #
 import typing
+from functools import wraps
 
+from fate_arch.common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, Job
 from fate_flow.scheduler.dsl_parser import DSLParserV1, DSLParserV2
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
+from fate_flow.utils.log_utils import schedule_logger
+
+
+@DB.connection_context()
+def ready_signal(job_id, set_or_reset: bool, ready_timeout_ttl=None):
+    filters = [Job.f_job_id == job_id]
+    if set_or_reset:
+        update_fields = {Job.f_ready_signal: True, Job.f_ready_time: current_timestamp()}
+        filters.append(Job.f_ready_signal == False)
+    else:
+        update_fields = {Job.f_ready_signal: False, Job.f_ready_time: None}
+        filters.append(Job.f_ready_signal == True)
+        if ready_timeout_ttl:
+            filters.append(current_timestamp() - Job.f_ready_time > ready_timeout_ttl)
+    update_status = Job.update(update_fields).where(*filters).execute() > 0
+    return update_status
+
+
+@DB.connection_context()
+def cancel_signal(job_id, set_or_reset: bool):
+    update_status = Job.update({Job.f_cancel_signal: set_or_reset, Job.f_cancel_time: current_timestamp()}).where(Job.f_job_id == job_id).execute() > 0
+    return update_status
+
+
+@DB.connection_context()
+def rerun_signal(job_id, set_or_reset: bool):
+    if set_or_reset is True:
+        update_fields = {Job.f_rerun_signal: True, Job.f_cancel_signal: False, Job.f_end_scheduling_updates: 0}
+    elif set_or_reset is False:
+        update_fields = {Job.f_rerun_signal: False}
+    else:
+        raise RuntimeError(f"can not support rereun signal {set_or_reset}")
+    update_status = Job.update(update_fields).where(Job.f_job_id == job_id).execute() > 0
+    return update_status
+
+
+def schedule_lock(func):
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        _lock = False
+        if "lock" in kwargs.keys():
+            _lock = kwargs.pop("lock")
+            if _lock:
+                job = kwargs.get("job")
+                schedule_logger(job.f_job_id).info(f"get job {job.f_job_id} schedule lock")
+                _result = None
+                if not ready_signal(job_id=job.f_job_id, set_or_reset=True):
+                    schedule_logger(job.f_job_id).info(f"get job {job.f_job_id} schedule lock failed, job may be handled by another scheduler")
+                    return
+                try:
+                    _result = func(*args, **kwargs)
+                except Exception as e:
+                    raise e
+                finally:
+                    ready_signal(job_id=job.f_job_id, set_or_reset=False)
+                    schedule_logger(job.f_job_id).info(f"release job {job.f_job_id} schedule lock")
+                    return _result
+        if not _lock:
+            return func(*args, **kwargs)
+    return _wrapper
 
 
 @DB.connection_context()

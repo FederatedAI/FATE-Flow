@@ -27,6 +27,7 @@ API_VERSION = "v1"
 FATE_ENV_KEY_LIST = ['FATE', 'FATEFlow', 'FATEBoard', 'EGGROLL', 'CENTOS', 'UBUNTU', 'PYTHON', 'MAVEN', 'JDK', 'SPARK']
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
+CASBIN_TABLE_NAME = "fate_casbin"
 TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
 FATE_FLOW_CONF_PATH = os.path.join(get_fate_flow_directory(), "conf")
 
@@ -34,6 +35,7 @@ FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_CONF_PATH, "job_defau
 FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH = os.path.join(FATE_FLOW_CONF_PATH, "component_registry.json")
 TEMPLATE_INFO_PATH = os.path.join(FATE_FLOW_CONF_PATH, "template_info.yaml")
 FATE_VERSION_DEPENDENCIES_PATH = os.path.join(get_fate_flow_directory(), "version_dependencies")
+CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
 SUBPROCESS_STD_LOG_NAME = "std.log"
 HEADERS = {
     "Content-Type": "application/json",
@@ -45,6 +47,8 @@ GRPC_SERVER_MAX_WORKERS = None
 MAX_TIMESTAMP_INTERVAL = 60
 
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
+
+REQUEST_TRY_TIMES = 3
 
 USE_REGISTRY = get_base_config("use_registry")
 
@@ -64,11 +68,12 @@ DATABASE = decrypt_database_config()
 ZOOKEEPER = get_base_config("zookeeper", {})
 
 # Registry
-FATE_SERVICES_REGISTRY = {
-    'zookeeper': {
-        'fateflow': "/FATE-SERVICES/flow/online/transfer/providers",
-        'servings': "/FATE-SERVICES/serving/online/publishLoad/providers",
-    },
+ZOOKEEPER_REGISTRY = {
+    # server
+    'flow-server': "/FATE-COMPONENTS/fate-flow",
+    # model service
+    'fateflow': "/FATE-SERVICES/flow/online/transfer/providers",
+    'servings': "/FATE-SERVICES/serving/online/publishLoad/providers",
 }
 
 # Engine
@@ -120,19 +125,24 @@ database_logger = getLogger("fate_flow_database")
 # upload
 UPLOAD_DATA_FROM_CLIENT = True
 
-# client authentication
-CLIENT_AUTHENTICATION = False
-HTTP_APP_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_app_key")
-HTTP_SECRET_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_secret_key")
+# authentication
+AUTHENTICATION_CONF = get_base_config("authentication", {})
 
-# site authentication
-SITE_AUTHENTICATION = False
-SITE_AUTHENTICATION_SERVER = "fate_manager"
+PARTY_ID = get_base_config("party_id", "")
 
-# permission switch
-PERMISSION_SWITCH = False
-ROLE_PERMISSION = False
-COMPONENT_PERMISSION = False
-DATASET_PERMISSION = False
+# client
+CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", {}).get("switch", False)
+HTTP_APP_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_app_key")
+HTTP_SECRET_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_secret_key")
 
-HOOK_MODULE = "fate_flow.hook.flow"
+# site
+SITE_AUTHENTICATION = AUTHENTICATION_CONF.get("site", {}).get("switch", False)
+
+# permission
+PERMISSION_CONF = get_base_config("permission", {})
+PERMISSION_SWITCH = PERMISSION_CONF.get("switch")
+COMPONENT_PERMISSION = PERMISSION_CONF.get("component")
+DATASET_PERMISSION = PERMISSION_CONF.get("dataset")
+
+HOOK_MODULE = get_base_config("hook_module")
+HOOK_SERVER_NAME = get_base_config("hook_server_name")

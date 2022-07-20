@@ -21,11 +21,8 @@ from ._base import BaseEntity
 class PermissionParameters(BaseEntity):
     def __init__(self, **kwargs):
         self.party_id = None
-        self.role = None
-        self.command = None
         self.component = None
         self.dataset = {}
-        self.valid_period = None
         self.is_delete = False
         for k, v in kwargs.items():
             if hasattr(self, k):
@@ -56,6 +53,10 @@ class DataSet(BaseEntity):
     @property
     def value(self):
         return json.dumps(self.to_dict(), sort_keys=True)
+
+    @property
+    def casbin_value(self):
+        return json.dumps(self.to_dict(), sort_keys=True, separators=(';', '-'))
 
     def check(self):
         if not self.name or not self.namespace:

@@ -21,35 +21,33 @@ import traceback
 from copy import deepcopy
 from datetime import date, datetime
 
-import peewee
 from flask import Response, request, send_file
+import peewee
 
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.conf_utils import get_base_config
-from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
 
-from fate_flow.db.db_models import (DB, ModelTag, Tag,
-                                    MachineLearningModelInfo as MLModel,
-                                    ModelOperationLog as OperLog)
+from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, ModelOperationLog as OperLog, ModelTag, Tag
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfigurationBase
 from fate_flow.entity.types import ModelOperation, TagOperation
+from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model import deploy_model, migrate_model, pipelined_model, publish_model
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
-from fate_flow.settings import TEMP_DIRECTORY, stat_logger, IS_STANDALONE
-from fate_flow.utils import job_utils, model_utils, schedule_utils, api_utils, detect_utils
-from fate_flow.utils.api_utils import error_response, federated_api, get_json_result
+from fate_flow.settings import IS_STANDALONE, TEMP_DIRECTORY, stat_logger
+from fate_flow.utils import detect_utils, job_utils, model_utils, schedule_utils
+from fate_flow.utils.api_utils import error_response, federated_api, get_json_result, validate_request
+from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.components.model_operation import get_model_storage
 
 
 @manager.route('/load', methods=['POST'])
 def load_model():
     request_config = request.json
     if request_config.get('job_id', None):
-        retcode, retmsg, res_data = model_utils.query_model_info(request_config['job_id'], 'guest')
+        retcode, retmsg, res_data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
         if res_data:
             model_info = res_data[0]
             request_config['initiator'] = {}
@@ -116,8 +114,8 @@ def load_model():
 
 
 @manager.route('/migrate', methods=['POST'])
-@api_utils.validate_request("migrate_initiator", "role", "migrate_role", "model_id",
-                               "model_version", "execute_party", "job_parameters")
+@validate_request("migrate_initiator", "role", "migrate_role", "model_id",
+                  "model_version", "execute_party", "job_parameters")
 def migrate_model_process():
     request_config = request.json
     _job_id = job_utils.generate_job_id()
@@ -204,21 +202,17 @@ def do_load_model():
     party_model_id = model_utils.gen_party_model_id(model_id, role, party_id)
 
     if get_base_config('enable_model_store', False):
-        pipeline_model = pipelined_model.PipelinedModel(party_model_id, model_version)
+        sync_model = SyncModel(party_model_id, model_version)
 
-        component_parameters = {
-            'model_id': party_model_id,
-            'model_version': model_version,
-            'store_address': ServerRegistry.MODEL_STORE_ADDRESS,
-        }
-        model_storage = get_model_storage(component_parameters)
+        if not sync_model.db_exits():
+            return error_response(retcode=404, retmsg='Model not found.')
 
-        if pipeline_model.exists() and not model_storage.exists(**component_parameters):
-            stat_logger.info(f'Uploading {pipeline_model.model_path} to model storage.')
-            model_storage.store(**component_parameters)
-        elif not pipeline_model.exists() and model_storage.exists(**component_parameters):
-            stat_logger.info(f'Downloading {pipeline_model.model_path} from model storage.')
-            model_storage.restore(**component_parameters)
+        if sync_model.local_exits() and not sync_model.remote_exits():
+            stat_logger.info(f'Uploading {sync_model.pipeline_model.model_path} to model storage.')
+            sync_model.upload()
+        elif not sync_model.local_exits() and sync_model.remote_exits():
+            stat_logger.info(f'Downloading {sync_model.pipeline_model.model_path} from model storage.')
+            sync_model.download()
 
     if not model_utils.check_if_deployed(role, party_id, model_id, model_version):
         return get_json_result(retcode=100,
@@ -247,7 +241,7 @@ def do_load_model():
 def bind_model_service():
     request_config = request.json
     if request_config.get('job_id', None):
-        retcode, retmsg, res_data = model_utils.query_model_info(request_config['job_id'], 'guest')
+        retcode, retmsg, res_data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
         if res_data:
             model_info = res_data[0]
             request_config['initiator'] = {}
@@ -304,10 +298,11 @@ def download_model(party_model_id, model_version):
 
 
 @manager.route('/<model_operation>', methods=['post', 'get'])
-@api_utils.validate_request("model_id", "model_version", "role", "party_id")
+@validate_request("model_id", "model_version", "role", "party_id")
 def operate_model(model_operation):
     request_config = request.json or request.form.to_dict()
     job_id = job_utils.generate_job_id()
+    # TODO: export, import, store, restore should NOT be in the same function
     if not ModelOperation.valid(model_operation):
         raise Exception('Can not support this operating now: {}'.format(model_operation))
     model_operation = ModelOperation(model_operation)
@@ -371,13 +366,14 @@ def operate_model(model_operation):
             except Exception:
                 operation_record(request_config, "import", "failed")
                 raise
+        # export
         else:
             try:
                 model = pipelined_model.PipelinedModel(request_config["model_id"], request_config["model_version"])
                 if model.exists():
-                    archive_file_path = model.packaging_model()
+                    model.packaging_model()
                     operation_record(request_config, "export", "success")
-                    return send_file(archive_file_path, attachment_filename=os.path.basename(archive_file_path), as_attachment=True)
+                    return send_file(model.archive_model_file_path, attachment_filename=os.path.basename(model.archive_model_file_path), as_attachment=True)
 
                 operation_record(request_config, "export", "failed")
                 return error_response(210, f"Model {request_config['model_id']} {request_config['model_version']} is not exist.")
@@ -385,6 +381,7 @@ def operate_model(model_operation):
                 operation_record(request_config, "export", "failed")
                 stat_logger.exception(e)
                 return error_response(210, str(e))
+    # store and restore
     else:
         data = {}
         job_dsl, job_runtime_conf = gen_model_operation_job_config(request_config, model_operation)
@@ -556,6 +553,8 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
     }
     if model_operation == ModelOperation.STORE:
         component_parameters["force_update"] = config_data.get("force_update", False)
+    elif model_operation == ModelOperation.RESTORE:
+        component_parameters["hash_"] = config_data.get("sha256", None)
 
     job_runtime_conf["component_parameters"]["role"] = {
         "local": {
@@ -615,7 +614,7 @@ def query_model():
 
 
 @manager.route('/deploy', methods=['POST'])
-@api_utils.validate_request('model_id', 'model_version')
+@validate_request('model_id', 'model_version')
 def deploy():
     request_data = request.json
 
@@ -625,7 +624,7 @@ def deploy():
     if not isinstance(request_data.get('components_checkpoint'), dict):
         request_data['components_checkpoint'] = {}
 
-    retcode, retmsg, model_info = model_utils.query_model_info_from_file(model_id, model_version, to_dict=True)
+    retcode, retmsg, model_info = model_utils.query_model_info_from_file(model_id=model_id, model_version=model_version, to_dict=True)
     if not model_info:
         raise Exception(f'Deploy model failed, no model {model_id} {model_version} found.')
 
@@ -727,7 +726,7 @@ def get_predict_dsl():
 
 
 @manager.route('/get/predict/conf', methods=['POST'])
-@api_utils.validate_request('model_id', 'model_version')
+@validate_request('model_id', 'model_version')
 def get_predict_conf():
     request_data = request.json
     model_dir = os.path.join(get_fate_flow_directory(), 'model_local_cache')
@@ -760,7 +759,7 @@ def get_predict_conf():
 
 
 @manager.route('/homo/convert', methods=['POST'])
-@api_utils.validate_request("model_id", "model_version", "role", "party_id")
+@validate_request("model_id", "model_version", "role", "party_id")
 def homo_convert():
     request_config = request.json or request.form.to_dict()
     retcode, retmsg, res_data = publish_model.convert_homo_model(request_config)
@@ -769,8 +768,8 @@ def homo_convert():
 
 
 @manager.route('/homo/deploy', methods=['POST'])
-@api_utils.validate_request("service_id", "model_id", "model_version", "role", "party_id",
-                               "component_name", "deployment_type", "deployment_parameters")
+@validate_request("service_id", "model_id", "model_version", "role", "party_id",
+                  "component_name", "deployment_type", "deployment_parameters")
 def homo_deploy():
     request_config = request.json or request.form.to_dict()
     retcode, retmsg, res_data = publish_model.deploy_homo_model(request_config)

@@ -106,9 +106,11 @@ class ProviderManager:
         return ComponentProvider(name=name, version=version, path=path, class_path=class_path)
 
     @classmethod
-    def get_job_provider_group(cls, dsl_parser, components: list = None, check_registration=True):
-        providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY)
+    def get_job_provider_group(cls, dsl_parser, role, party_id, components: list = None, check_registration=True, runtime_conf=None):
+        providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY, conf=runtime_conf)
         group = {}
+        providers_info = providers_info.get(role, {}).get(party_id, {}) if providers_info.get(role, {}).get(party_id, {}) else providers_info
+
         if components is not None:
             _providers_info = {}
             for component_name in components:

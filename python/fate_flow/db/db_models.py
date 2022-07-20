@@ -20,6 +20,7 @@ import sys
 
 from peewee import (CharField, IntegerField, BigIntegerField,
                     TextField, CompositeKey, BigAutoField, BooleanField)
+from playhouse.hybrid import hybrid_property
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_arch.common import file_utils
@@ -224,11 +225,13 @@ class Task(DataBaseModel):
     f_worker_id = CharField(null=True, max_length=100)
     f_cmd = JSONField(null=True)
     f_run_ip = CharField(max_length=100, null=True)
+    f_run_port = IntegerField(null=True)
     f_run_pid = IntegerField(null=True)
     f_party_status = CharField(max_length=50)
     f_provider_info = JSONField()
     f_component_parameters = JSONField()
     f_engine_conf = JSONField(null=True)
+    f_kill_status = BooleanField(default=False)
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)
@@ -265,13 +268,13 @@ class TrackingMetric(DataBaseModel):
 
     f_id = BigAutoField(primary_key=True)
     f_job_id = CharField(max_length=25, index=True)
-    f_component_name = TextField()
-    f_task_id = CharField(max_length=100, null=True, index=True)
-    f_task_version = BigIntegerField(null=True, index=True)
-    f_role = CharField(max_length=50, index=True)
-    f_party_id = CharField(max_length=10, index=True)
-    f_metric_namespace = CharField(max_length=180)
-    f_metric_name = CharField(max_length=180)
+    f_component_name = CharField(max_length=30, index=True)
+    f_task_id = CharField(max_length=100, null=True)
+    f_task_version = BigIntegerField(null=True)
+    f_role = CharField(max_length=10, index=True)
+    f_party_id = CharField(max_length=10)
+    f_metric_namespace = CharField(max_length=80, index=True)
+    f_metric_name = CharField(max_length=80, index=True)
     f_key = CharField(max_length=200)
     f_value = LongTextField()
     f_type = IntegerField()  # 0 is data, 1 is meta
@@ -337,6 +340,12 @@ class MachineLearningModelInfo(DataBaseModel):
     f_parent = BooleanField(null=True, default=None)
     f_parent_info = JSONField(default={})
     f_inference_dsl = JSONField(default={})
+    f_archive_sha256 = CharField(max_length=100, null=True)
+    f_archive_from_ip = CharField(max_length=100, null=True)
+
+    @hybrid_property
+    def f_party_model_id(self):
+        return '#'.join([self.f_role, self.f_party_id, self.f_model_id])
 
     class Meta:
         db_table = "t_machine_learning_model_info"
@@ -419,7 +428,7 @@ class ComponentSummary(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
     f_role = CharField(max_length=25, index=True)
     f_party_id = CharField(max_length=10, index=True)
-    f_component_name = TextField()
+    f_component_name = CharField(max_length=50)
     f_task_id = CharField(max_length=50, null=True, index=True)
     f_task_version = CharField(max_length=50, null=True)
     f_summary = LongTextField()
@@ -527,16 +536,6 @@ class DependenciesStorageMeta(DataBaseModel):
         primary_key = CompositeKey('f_storage_engine', 'f_type', 'f_version')
 
 
-class PermissionStorage(DataBaseModel):
-    f_party_id = CharField(max_length=20)
-    f_type = CharField(max_length=20)
-    f_value = CharField(max_length=1000)
-    f_expire_time = BigIntegerField(null=True)
-
-    class Meta:
-        db_table = "t_permission_storage"
-
-
 class ServerRegistryInfo(DataBaseModel):
     f_server_name = CharField(max_length=30, index=True)
     f_host = CharField(max_length=30)
@@ -560,3 +559,25 @@ class ServiceRegistryInfo(DataBaseModel):
         db_table = "t_service_registry_info"
         primary_key = CompositeKey('f_server_name', 'f_service_name')
 
+
+class SiteKeyInfo(DataBaseModel):
+    f_party_id = CharField(max_length=10, index=True)
+    f_key_name = CharField(max_length=10, index=True)
+    f_key = LongTextField()
+
+    class Meta:
+        db_table = "t_site_key_info"
+        primary_key = CompositeKey('f_party_id', 'f_key_name')
+
+class PipelineComponentMeta(DataBaseModel):
+    f_model_id = CharField(max_length=100, index=True)
+    f_model_version = CharField(max_length=100, index=True)
+    f_role = CharField(max_length=50, index=True)
+    f_party_id = CharField(max_length=10, index=True)
+    f_component_name = CharField(max_length=100)
+    f_component_module_name = CharField(max_length=100)
+    f_model_alias = CharField(max_length=100)
+    f_model_proto_index = JSONField(null=True)
+
+    class Meta:
+        db_table = 't_pipeline_component_meta'
