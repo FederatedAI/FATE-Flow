@@ -27,10 +27,11 @@ import grpc
 from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
 
-from eggroll.core.proto import proxy_pb2_grpc
+
 from fate_arch.common import file_utils
 from fate_arch.common.versions import get_versions
 from fate_arch.metastore.db_models import init_database_tables as init_arch_db
+from fate_arch.protobuf.python import proxy_pb2_grpc
 
 from fate_flow.apps import app
 from fate_flow.db.component_registry import ComponentRegistry

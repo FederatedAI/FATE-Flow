@@ -15,7 +15,7 @@
 #
 import grpc
 
-from eggroll.core.proto import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
+from fate_arch.protobuf.python import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
 from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.db.job_default_config import JobDefaultConfig
