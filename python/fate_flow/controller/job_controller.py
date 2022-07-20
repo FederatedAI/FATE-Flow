@@ -87,8 +87,15 @@ class JobController(object):
         job_info["runtime_conf_on_party"]["job_parameters"] = job_parameters.to_dict()
         JobSaver.create_job(job_info=job_info)
         schedule_logger(job_id).info("start initialize tasks")
-        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
-                                                                  initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
+        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id,
+                                                                  role=role,
+                                                                  party_id=party_id,
+                                                                  run_on_this_party=True,
+                                                                  initiator_role=job_info["initiator_role"],
+                                                                  initiator_party_id=job_info["initiator_party_id"],
+                                                                  job_parameters=job_parameters,
+                                                                  dsl_parser=dsl_parser,
+                                                                  runtime_conf=runtime_conf)
         schedule_logger(job_id).info("initialize tasks success")
         for provider_key, group_info in provider_group.items():
             for cpn in group_info["components"]:
@@ -261,7 +268,9 @@ class JobController(object):
         return initialized_result
 
     @classmethod
-    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id, job_parameters: RunParameters = None, dsl_parser=None, components: list = None, **kwargs):
+    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id,
+                         job_parameters: RunParameters = None, dsl_parser=None, components: list = None,
+                         runtime_conf=None, **kwargs):
         common_task_info = {}
         common_task_info["job_id"] = job_id
         common_task_info["initiator_role"] = initiator_role
@@ -277,7 +286,10 @@ class JobController(object):
         if dsl_parser is None:
             dsl_parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id)
         provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser,
-                                                                components=components)
+                                                                runtime_conf=runtime_conf,
+                                                                components=components,
+                                                                role=role,
+                                                                party_id=party_id)
         initialized_result = {}
         for group_key, group_info in provider_group.items():
             initialized_config = {}

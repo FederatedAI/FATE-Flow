@@ -672,11 +672,14 @@ class BaseDSLParser(object):
         dsl_parser._find_dependencies(version=2)
         dsl_parser._auto_deduction(deploy_cpns=deploy_cpns, version=2, erase_top_data_input=True)
 
+        """
         dsl_parser.update_predict_dsl_provider(train_dsl)
         if provider_update_dsl:
             dsl_parser.update_predict_dsl_provider(provider_update_dsl)
+        """
         return dsl_parser.predict_dsl
 
+    """
     def update_predict_dsl_provider(self, dsl):
         for component in dsl["components"]:
             provider = dsl["components"][component].get("provider")
@@ -685,6 +688,7 @@ class BaseDSLParser(object):
 
         if "provider" in dsl:
             self.predict_dsl["provider"] = dsl["provider"]
+    """
 
     def _auto_deduction(self, deploy_cpns=None, version=1, erase_top_data_input=False):
         self.predict_dsl = {"components": {}}
@@ -839,14 +843,14 @@ class BaseDSLParser(object):
     def get_job_parameters(self, *args, **kwargs):
         return self.job_parameters
 
-    def get_job_providers(self, provider_detail=None, dsl=None):
+    def get_job_providers(self, provider_detail=None, dsl=None, conf=None):
         if self.job_providers:
             return self.job_providers
         else:
             if dsl is None:
-                self.job_providers = RuntimeConfParserUtil.get_job_providers(self.dsl, provider_detail)
+                self.job_providers = RuntimeConfParserUtil.get_job_providers(self.dsl, provider_detail, conf)
             else:
-                self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail)
+                self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail, conf)
             return self.job_providers
 
     @staticmethod
@@ -1100,6 +1104,11 @@ class DSLParserV2(BaseDSLParser):
                                                                            conf_version=2)
 
         else:
+            """training provider will be delete first"""
+            pipeline_runtime_conf = copy.deepcopy(pipeline_runtime_conf)
+            if "provider" in pipeline_runtime_conf:
+                del pipeline_runtime_conf["provider"]
+
             predict_runtime_conf = RuntimeConfParserUtil.merge_predict_runtime_conf(pipeline_runtime_conf,
                                                                                     runtime_conf)
             self.predict_runtime_conf = predict_runtime_conf
@@ -1227,6 +1236,4 @@ class DSLParserV2(BaseDSLParser):
                                              f"!= new: {r}-{party_idx}-{cpn_second_role_params}")
 
             first_role_params, second_role_params = cur_role_params, pre_role_params
-
-
 

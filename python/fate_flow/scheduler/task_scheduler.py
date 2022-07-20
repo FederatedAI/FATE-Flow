@@ -170,7 +170,8 @@ class TaskScheduler(object):
                                                dsl_parser=dsl_parser,
                                                components=[task.f_component_name],
                                                task_version=task.f_task_version,
-                                               auto_retries=task.f_auto_retries)
+                                               auto_retries=task.f_auto_retries,
+                                               runtime_conf=job.f_runtime_conf)
         schedule_logger(job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
 
     @classmethod
