@@ -20,10 +20,21 @@ from flask import request
 
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.entity import ComponentProvider, RetCode
+from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.scheduler.cluster_scheduler import ClusterScheduler
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.api_utils import validate_request
+
+
+@manager.route('/update', methods=['POST'])
+def provider_update():
+    request_data = request.json
+    ComponentRegistry.load()
+    if ComponentRegistry.get_providers().get(request_data.get("name"), {}).get(request_data.get("version"), None) is None:
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"not load into memory")
+    return get_json_result()
 
 
 @manager.route('/register', methods=['POST'])
@@ -45,11 +56,11 @@ def register():
                                  class_path=info.get("class_path", ComponentRegistry.get_default_class_path()))
     code, std = WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
     if code == 0:
-        ComponentRegistry.load()
-        if ComponentRegistry.get_providers().get(provider.name, {}).get(provider.version, None) is None:
-            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"not load into memory")
-        else:
+        status_code, response = ClusterScheduler.update_provider()
+        if status_code == FederatedSchedulingStatusCode.SUCCESS:
             return get_json_result()
+        else:
+            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=response)
     else:
         return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"register failed:\n{std}")
 

@@ -174,11 +174,11 @@ class WorkerManager:
         config = task_parameters.to_dict()
         config["src_user"] = kwargs.get("src_user")
         config_path, result_path = cls.get_config(config_dir=config_dir, config=config, log_dir=log_dir)
-
+        env = cls.get_env(task.f_job_id, task.f_provider_info)
         if executable:
             process_cmd = executable
         else:
-            process_cmd = [sys.executable or "python3"]
+            process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
 
         common_cmd = [
             module_file_path,
@@ -201,7 +201,6 @@ class WorkerManager:
         ]
         process_cmd.extend(common_cmd)
         process_cmd.extend(specific_cmd)
-        env = cls.get_env(task.f_job_id, task.f_provider_info)
         if extra_env:
             env.update(extra_env)
         schedule_logger(task.f_job_id).info(

@@ -20,16 +20,20 @@ from fate_flow.entity import BaseEntity
 
 
 class ComponentProvider(BaseEntity):
-    def __init__(self, name: str, version: str, path: str, class_path: dict, **kwargs):
+    def __init__(self, name: str, version: str, path: str, class_path: dict, _python_env="",**kwargs):
         if not ComponentProviderName.valid(name):
             raise ValueError(f"not support {name} provider")
         self._name = name
         self._version = version
         self._path = os.path.abspath(path)
         self._class_path = class_path
-        self._env = {
-            "PYTHONPATH": os.path.dirname(self._path),
-        }
+        self._python_env = _python_env
+        self._env = {}
+        self.init_env()
+
+    def init_env(self):
+        self._env["PYTHONPATH"] = os.path.dirname(self._path)
+        self._env["PYTHON_ENV"] = self.python_env
 
     @property
     def name(self):
@@ -50,6 +54,10 @@ class ComponentProvider(BaseEntity):
     @property
     def env(self):
         return self._env
+
+    @property
+    def python_env(self):
+        return self._python_env
 
     def __eq__(self, other):
         return self.name == other.name and self.version == other.version

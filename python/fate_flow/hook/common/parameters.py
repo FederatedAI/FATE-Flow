@@ -31,15 +31,15 @@ class SignatureParameters(ParametersBase):
 
 
 class SignatureReturn(ParametersBase):
-    def __init__(self, code=RetCode.SUCCESS, signature=None):
+    def __init__(self, code=RetCode.SUCCESS, site_signature=None):
         self.code = code
-        self.signature = signature
+        self.site_signature = site_signature
 
 
 class AuthenticationParameters(ParametersBase):
-    def __init__(self, src_party_id, signature, body):
+    def __init__(self, src_party_id, site_signature, body):
         self.src_party_id = src_party_id
-        self.signature = signature
+        self.site_signature = site_signature
         self.body = body
 
 

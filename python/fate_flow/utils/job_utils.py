@@ -501,5 +501,9 @@ def get_component_parameters(job_providers, dsl_parser, provider_detail, role, p
                                                              provider_version,
                                                              local_role=role,
                                                              local_party_id=party_id)
-        component_parameters[component] = parameter.get("ComponentParam", {})
+        module_name = dsl_parser.get_component_info(component_name=component).get_module().lower()
+        if module_name not in component_parameters.keys():
+            component_parameters[module_name] = [parameter.get("ComponentParam", {})]
+        else:
+            component_parameters[module_name].append(parameter.get("ComponentParam", {}))
     return component_parameters
