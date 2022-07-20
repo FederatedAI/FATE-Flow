@@ -15,10 +15,15 @@
 #
 from flask import request
 
+from fate_arch.common.conf_utils import get_base_config
 from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
-from fate_flow.utils.api_utils import error_response, get_json_result
-from fate_flow.utils.detect_utils import check_config
+
 from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.utils.api_utils import error_response, get_json_result, validate_request
+from fate_flow.utils.detect_utils import check_config
+from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 
@@ -26,9 +31,11 @@ from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 def get_components():
     return get_json_result(data=ComponentRegistry.get_components())
 
+
 @manager.route('/<component_name>/get', methods=['POST'])
 def get_component(component_name):
     return get_json_result(data=ComponentRegistry.get_components().get(component_name))
+
 
 @manager.route('/validate', methods=['POST'])
 def validate_component_param():
@@ -64,3 +71,16 @@ def validate_component_param():
         return error_response(400, str(e))
 
     return get_json_result()
+
+
+@manager.route('/sync', methods=['POST'])
+@validate_request('model_id', 'role', 'party_id', 'model_version', 'component_name')
+def sync():
+    if not get_base_config('enable_model_store', False):
+        return error_response(400, 'model store is disabled')
+
+    party_model_id = gen_party_model_id(request.json['model_id'], request.json['role'], request.json['party_id'])
+    pipelined_model = PipelinedModel(party_model_id, request.json['model_version'])
+
+    if not pipelined_model.exists():
+        pipelined_model.create_pipelined_model()

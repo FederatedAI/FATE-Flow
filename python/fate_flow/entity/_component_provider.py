@@ -25,14 +25,14 @@ class ComponentProvider(BaseEntity):
             raise ValueError(f"not support {name} provider")
         self._name = name
         self._version = version
-        self._path = path
+        self._path = os.path.abspath(path)
         self._class_path = class_path
         self._python_env = _python_env
         self._env = {}
         self.init_env()
 
     def init_env(self):
-        self._env["PYTHONPATH"] = os.path.join("/", *self._path.split("/")[:-1])
+        self._env["PYTHONPATH"] = os.path.dirname(self._path)
         self._env["PYTHON_ENV"] = self.python_env
 
     @property

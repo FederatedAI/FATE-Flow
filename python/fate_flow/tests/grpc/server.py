@@ -13,21 +13,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import time
+import sys
 
 import grpc
 import requests
 from grpc._cython import cygrpc
 
+from eggroll.core.proto import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
 from fate_arch.common.base_utils import json_dumps, json_loads
+
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.settings import FATE_FLOW_SERVICE_NAME
-from fate_flow.settings import stat_logger, HOST, GRPC_PORT
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.utils.proto_compatibility import basic_meta_pb2
-from fate_flow.utils.proto_compatibility import proxy_pb2
-from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
-import time
-import sys
+from fate_flow.settings import FATE_FLOW_SERVICE_NAME, stat_logger, HOST, GRPC_PORT
+
 from fate_flow.tests.grpc.xthread import ThreadPoolExecutor
 
 

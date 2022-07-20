@@ -41,8 +41,14 @@ def provider_update():
 @validate_request("name", "version", "path")
 def register():
     info = request.json or request.form.to_dict()
-    if not Path(info["path"]).is_dir():
-        return error_response(400, "invalid path")
+
+    path = Path(info["path"]).absolute()
+    if not path.is_dir():
+        return error_response(400, f"path '{path}' is not a directory")
+    if not (path / "__init__.py").is_file() or not (path.parent / "__init__.py").is_file():
+        return error_response(400, f"'__init__.py' is not found in '{path}' or '{path.parent}'")
+    if set(path.parent.iterdir()) - {path, (path.parent / "__init__.py")}:
+        return error_response(400, f"there are other directories or files in '{path.parent}' besides '{path.name}' and '__init__.py'")
 
     provider = ComponentProvider(name=info["name"],
                                  version=info["version"],

@@ -204,6 +204,9 @@ def do_load_model():
     if get_base_config('enable_model_store', False):
         sync_model = SyncModel(party_model_id, model_version)
 
+        if not sync_model.db_exits():
+            return error_response(retcode=404, retmsg='Model not found.')
+
         if sync_model.local_exits() and not sync_model.remote_exits():
             stat_logger.info(f'Uploading {sync_model.pipeline_model.model_path} to model storage.')
             sync_model.upload()
@@ -299,6 +302,7 @@ def download_model(party_model_id, model_version):
 def operate_model(model_operation):
     request_config = request.json or request.form.to_dict()
     job_id = job_utils.generate_job_id()
+    # TODO: export, import, store, restore should NOT be in the same function
     if not ModelOperation.valid(model_operation):
         raise Exception('Can not support this operating now: {}'.format(model_operation))
     model_operation = ModelOperation(model_operation)
@@ -362,6 +366,7 @@ def operate_model(model_operation):
             except Exception:
                 operation_record(request_config, "import", "failed")
                 raise
+        # export
         else:
             try:
                 model = pipelined_model.PipelinedModel(request_config["model_id"], request_config["model_version"])
@@ -376,6 +381,7 @@ def operate_model(model_operation):
                 operation_record(request_config, "export", "failed")
                 stat_logger.exception(e)
                 return error_response(210, str(e))
+    # store and restore
     else:
         data = {}
         job_dsl, job_runtime_conf = gen_model_operation_job_config(request_config, model_operation)
@@ -547,6 +553,8 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
     }
     if model_operation == ModelOperation.STORE:
         component_parameters["force_update"] = config_data.get("force_update", False)
+    elif model_operation == ModelOperation.RESTORE:
+        component_parameters["hash_"] = config_data.get("sha256", None)
 
     job_runtime_conf["component_parameters"]["role"] = {
         "local": {

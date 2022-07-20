@@ -13,14 +13,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os
 from copy import deepcopy
 
 from qcloud_cos import CosConfig, CosS3Client
 from qcloud_cos.cos_exception import CosServiceError
 
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.model.model_storage_base import ModelStorageBase
+from fate_flow.model.model_storage_base import ComponentStorageBase, ModelStorageBase
 from fate_flow.utils.log_utils import getLogger
+
 
 LOGGER = getLogger()
 
@@ -60,7 +62,7 @@ class TencentCOSModelStorage(ModelStorageBase):
         cos = self.get_connection(store_address)
 
         try:
-            hash = model.packaging_model()
+            hash_ = model.packaging_model()
 
             response = cos.upload_file(
                 Bucket=store_address["Bucket"],
@@ -74,9 +76,9 @@ class TencentCOSModelStorage(ModelStorageBase):
         else:
             LOGGER.info(f"Store model {model_id} {model_version} to Tencent COS successfully. "
                         f"Archive path: {model.archive_model_file_path} Key: {store_key} ETag: {response['ETag']}")
-            return hash
+            return hash_
 
-    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash: str = None):
+    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash_: str = None):
         """
         Restore model from cos to local cache
         :param model_id:
@@ -96,7 +98,7 @@ class TencentCOSModelStorage(ModelStorageBase):
                 EnableCRC=True,
             )
 
-            model.unpack_model(model.archive_model_file_path, force_update, hash)
+            model.unpack_model(model.archive_model_file_path, force_update, hash_)
         except Exception as e:
             LOGGER.exception(e)
             raise Exception(f"Restore model {model_id} {model_version} from Tencent COS failed.")
@@ -107,5 +109,50 @@ class TencentCOSModelStorage(ModelStorageBase):
     @staticmethod
     def get_connection(store_address: dict):
         store_address = deepcopy(store_address)
-        del store_address['storage'], store_address['Bucket']
+        store_address.pop('storage', None)
+        store_address.pop('Bucket')
+
         return CosS3Client(CosConfig(**store_address))
+
+
+class TencentCOSComponentStorage(ComponentStorageBase):
+
+    def __init__(self, region, secret_id, secret_key, bucket):
+        self.client = CosS3Client(CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key))
+        self.bucket = bucket
+
+    def upload(self, filename, key):
+        key = self.prefix + key
+
+        try:
+            response = self.client.upload_file(
+                Bucket=self.bucket,
+                LocalFilePath=filename,
+                Key=key,
+                EnableMD5=True,
+            )
+        except Exception as e:
+            LOGGER.exception(e)
+            raise Exception(f"Upload {filename} to Tencent COS failed.")
+        else:
+            LOGGER.info(f"Upload {filename} to Tencent COS successfully. "
+                        f"Key: {key} ETag: {response['ETag']}")
+            return response
+
+    def download(self, key, filename):
+        key = self.prefix + key
+
+        try:
+            response = self.client.download_file(
+                Bucket=self.bucket,
+                Key=key,
+                DestFilePath=filename,
+                EnableCRC=True,
+            )
+        except Exception as e:
+            LOGGER.exception(e)
+            raise Exception(f"Download {key} from Tencent COS failed.")
+        else:
+            LOGGER.info(f"Download {key} from Tencent COS successfully. "
+                        f"Filename: {filename}")
+            return response
