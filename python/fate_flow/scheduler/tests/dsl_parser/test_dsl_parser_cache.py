@@ -70,11 +70,11 @@ pprint.pprint(dsl_parser_v2.get_dependency_with_parameters(component_parameters)
 print ("\n\n\n")
 
 
-pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "dataio_0", "intersection_0"], dsl))
+pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "data_transform_0", "intersection_0"], dsl))
 print ("\n\n\n")
 
-pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "dataio_0", "intersection_1"], dsl))
+pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "data_transform_0", "intersection_1"], dsl))
 print ("\n\n\n")
 
-pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "dataio_0", "intersection_0", "intersection_1"], dsl))
+pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "data_transform_0", "intersection_0", "intersection_1"], dsl))
 print ("\n\n\n")
