@@ -95,7 +95,7 @@ class PipelinedModel(Locker):
             define_meta = self.pipelined_component.read_define_meta()
             yaml.dump(define_meta, f, Dumper=yaml.RoundTripDumper)
 
-    def save_component_model(self, component_name, component_module_name, model_alias, model_buffers, user_specified_run_parameters):
+    def save_component_model(self, component_name, component_module_name, model_alias, model_buffers, user_specified_run_parameters=None):
         component_model = self.create_component_model(component_name=component_name,
                                                       component_module_name=component_module_name,
                                                       model_alias=model_alias,
@@ -127,7 +127,7 @@ class PipelinedModel(Locker):
                 fw.write(base64.b64decode(object_serialized_encoded.encode()))
             with self.lock, open(f"{storage_path}.json", "w", encoding="utf8") as fw:
                 fw.write(json_dumps(object_json))
-        run_parameters = component_model.get("run_parameters", {}) or {}
+        run_parameters = component_model.get("run_parameters") or {}
         p = self.component_run_parameters_path(component_model["component_name"])
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with self.lock, open(p, "w", encoding="utf8") as fw:
