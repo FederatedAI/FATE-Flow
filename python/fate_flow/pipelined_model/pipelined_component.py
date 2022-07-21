@@ -17,12 +17,15 @@ import hashlib
 from pathlib import Path
 from zipfile import ZipFile
 
-from fate_arch.common.base_utils import current_timestamp
-
 from fate_flow.db.db_models import DB, PipelineComponentMeta
+from fate_flow.db.db_utils import bulk_insert_into_db
 from fate_flow.model import Locker
 from fate_flow.settings import TEMP_DIRECTORY
 from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.log_utils import getLogger
+
+
+LOGGER = getLogger()
 
 
 class PipelinedComponent(Locker):
@@ -45,9 +48,8 @@ class PipelinedComponent(Locker):
         self.run_parameters_path = Path(self.model_path, 'run_parameters')
         self.checkpoint_path = Path(self.model_path, 'checkpoint')
 
-
     @DB.connection_context()
-    def read_define_meta(self):
+    def read_define_meta(self, reorganize=True):
         define_meta = {
             'component_define': {},
             'model_proto': {},
@@ -59,6 +61,8 @@ class PipelinedComponent(Locker):
             PipelineComponentMeta.f_role == self.role,
             PipelineComponentMeta.f_party_id == self.party_id,
         )
+        if not reorganize:
+            return list(query)
 
         for row in query:
             define_meta['component_define'][row.f_component_name] = {
@@ -72,8 +76,7 @@ class PipelinedComponent(Locker):
 
     @DB.connection_context()
     def write_define_meta(self, component_name, component_module_name, model_alias, model_proto_index):
-        return PipelineComponentMeta.create(
-            f_create_time=current_timestamp(),
+        PipelineComponentMeta.insert(
             f_model_id=self.model_id,
             f_model_version=self.model_version,
             f_role=self.role,
@@ -82,7 +85,22 @@ class PipelinedComponent(Locker):
             f_component_module_name=component_module_name,
             f_model_alias=model_alias,
             f_model_proto_index=model_proto_index,
-        )
+        ).execute()
+
+    def replicate_define_meta(self, modification):
+        query = self.read_define_meta(False)
+
+        insert = []
+        for row in query:
+            row = row.to_dict()
+            del row['id']
+
+            for key, val in modification.items():
+                row[key] = val
+
+            insert.append(row)
+
+        bulk_insert_into_db(PipelineComponentMeta, insert, LOGGER)
 
     def walk_component(self, zip_file, dir_path: Path):
         for path in dir_path.iterdir():

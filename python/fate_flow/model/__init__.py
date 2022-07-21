@@ -98,7 +98,8 @@ class Locker:
     # https://docs.python.org/3/library/pickle.html#handling-stateful-objects
     def __getstate__(self):
         state = self.__dict__.copy()
-        state.pop('lock')
+        # TODO: why no state['lock']?
+        state.pop('lock', None)
         return state
 
     def __setstate__(self, state):

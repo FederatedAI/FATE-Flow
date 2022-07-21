@@ -53,6 +53,7 @@ def deploy(config_data):
         deploy_model = PipelinedModel(model_id=party_model_id, model_version=child_model_version)
         shutil.copytree(src=model.model_path, dst=deploy_model.model_path,
                         ignore=lambda src, names: {'checkpoint'} if src == model.model_path else {})
+        model.pipelined_component.replicate_define_meta({'f_model_version': child_model_version})
         pipeline_model = deploy_model.read_pipeline_model()
 
         train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
