@@ -26,11 +26,6 @@ from fate_flow.utils.api_utils import get_json_result, create_job_request_check
 from fate_flow.utils.task_utils import task_request_proxy
 
 
-@manager.route('/<job_id>/<role>/<party_id>/connect', methods=['POST'])
-def connect_test(job_id, role, party_id):
-    return get_json_result()
-
-
 @manager.route('/<job_id>/<role>/<party_id>/create', methods=['POST'])
 @create_job_request_check
 def create_job(job_id, role, party_id):

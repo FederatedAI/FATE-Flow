@@ -40,7 +40,7 @@ from fate_flow.db.db_models import init_database_tables as init_flow_db
 from fate_flow.db.db_services import service_db
 from fate_flow.db.key_manager import RsaKeyManager
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.detection.detector import Detector
+from fate_flow.detection.detector import Detector, FederatedDetector
 from fate_flow.entity.types import ProcessRole
 from fate_flow.hook import HookManager
 from fate_flow.manager.provider_manager import ProviderManager
@@ -90,6 +90,7 @@ if __name__ == '__main__':
     HookManager.init()
     RsaKeyManager.init()
     Detector(interval=5 * 1000, logger=detect_logger).start()
+    FederatedDetector(interval=10 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
 
     peewee_logger = logging.getLogger('peewee')

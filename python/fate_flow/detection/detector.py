@@ -118,11 +118,6 @@ class Detector(cron.Cron):
                 try:
                     if job_utils.check_job_is_timeout(job):
                         stop_jobs.add(job)
-                    else:
-                        status_code, response = FederatedScheduler.connect(job)
-                        if status_code != FederatedSchedulingStatusCode.SUCCESS:
-                            detect_logger(job.f_job_id).info(f"job connect failed: {response}")
-                            stop_jobs.add(job)
                 except Exception as e:
                     detect_logger(job_id=job.f_job_id).exception(e)
             cls.request_stop_jobs(jobs=stop_jobs, stop_msg="running timeout", stop_status=JobStatus.TIMEOUT)
@@ -217,3 +212,45 @@ class Detector(cron.Cron):
                 detect_logger(job_id=job.f_job_id).info(f"detector request stop job {job.f_job_id} successfully")
             except Exception as e:
                 detect_logger(job_id=job.f_job_id).exception(e)
+
+
+class FederatedDetector(Detector):
+    def run_do(self):
+        self.detect_running_job_federated()
+
+    @classmethod
+    def detect_running_job_federated(cls):
+        detect_logger().info('start federated detect running job')
+        try:
+            running_jobs = JobSaver.query_job(status=JobStatus.RUNNING, is_initiator=True)
+            stop_jobs = set()
+            for job in running_jobs:
+                cur_retry = 0
+                max_retry_cnt = 3
+                long_retry_cnt = 2
+                exception = None
+                while cur_retry < max_retry_cnt:
+                    detect_logger().info(f"start federated detect running job {job.f_job_id} cur_retry={cur_retry}")
+                    try:
+                        status_code, response = FederatedScheduler.connect(job)
+                        if status_code != FederatedSchedulingStatusCode.SUCCESS:
+                            exception = f"connect code: {status_code}"
+                        else:
+                            exception = None
+                            detect_logger().info(f"federated detect running job {job.f_job_id} success")
+                            break
+                    except Exception as e:
+                        exception = e
+                        detect_logger(job_id=job.f_job_id).debug(e)
+                        retry_interval = job_utils.generate_retry_interval(cur_retry, max_retry_cnt, long_retry_cnt)
+                        time.sleep(retry_interval)
+                    finally:
+                        cur_retry += 1
+                if exception is not None:
+                    detect_logger(job.f_job_id).info(f"job {job.f_job_id} connect failed: {exception}")
+                    stop_jobs.add(job)
+            cls.request_stop_jobs(jobs=stop_jobs, stop_msg="federated error", stop_status=JobStatus.FAILED)
+        except Exception as e:
+            detect_logger().exception(e)
+        finally:
+            detect_logger().info('finish federated detect running job')
