@@ -238,6 +238,10 @@ def common_headers():
 
 
 def src_parm(role, party_id):
+    if not role:
+        role = ""
+    if not party_id:
+        party_id = ""
     return {"src_role": role, "src_party_id": str(party_id)}
 
 

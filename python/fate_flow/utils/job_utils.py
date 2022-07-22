@@ -486,3 +486,12 @@ def constraint_check(job_runtime_conf, job_dsl):
                         if party_id not in roles['host'] or len(set(roles['guest']) & set(roles['arbiter'])) != len(roles['host']):
                             raise Exception("{} component constraint party id, please check role config:{}".format(cpn, job_runtime_conf.get('role')))
 
+
+def task_report(tasks):
+    now_time = current_timestamp()
+    report_list = [{"component_name": task.f_component_name, "start_time": task.f_start_time,
+                    "end_time": task.f_end_time, "elapsed": task.f_elapsed, "status": task.f_status}
+                   for task in tasks]
+    report_list.sort(key=lambda x: (x["start_time"] if x["start_time"] else now_time, x["status"]))
+    return report_list
+

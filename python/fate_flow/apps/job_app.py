@@ -151,6 +151,14 @@ def update_job():
         return get_json_result(retcode=0, retmsg='success')
 
 
+@manager.route('/report', methods=['POST'])
+def job_report():
+    tasks = JobSaver.query_task(**request.json)
+    if not tasks:
+        return get_json_result(retcode=101, retmsg='find task failed')
+    return get_json_result(retcode=0, retmsg='success', data=job_utils.task_report(tasks))
+
+
 @manager.route('/parameter/update', methods=['POST'])
 @validate_request("job_id")
 def update_parameters():
