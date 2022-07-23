@@ -121,17 +121,18 @@
     },
     "provider": {
         "common": {
-            "hetero_feature_binning_0": "fate@1.7.0"
+            "hetero_feature_binning_0": "fate@1.8.0"
         },
         "role": {
             "guest": {
                 "0": {
-                    "data_transform_0": "fate@1.7.2"
+                    "data_transform_0": "fate@1.8.0"
                 }
             },
             "host": {
                 "0": {
-                    "data_transform_0": "fate@1.7.3"
+                    "data_transform_0": "fate@1.7.3",
+                    "one_hot_encoder_0": "fate@1.7.3"
                 },
                 "1|2": {
                     "data_transform_0": "fate@1.7.4"
