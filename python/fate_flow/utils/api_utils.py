@@ -103,6 +103,7 @@ def cluster_api(endpoint, method, http_address, json_body):
     audit_logger().info(f"request url {url}")
     response = request(method=method, url=url, json=json_body)
     audit_logger().info(f"request url {url}, result {response.text}")
+    return response.json()
 
 
 def get_federated_proxy_address(src_party_id, dest_party_id):

@@ -99,8 +99,10 @@ class DependenceManager:
             return True
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job.f_dsl, runtime_conf=job.f_runtime_conf,
                                                        train_runtime_conf=job.f_train_runtime_conf)
-        provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser, runtime_conf=job.f_runtime_conf,
-                                                                role=job.f_role, party_id=job.f_party_id)
+        provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser,
+                                                                runtime_conf=job.f_runtime_conf_on_party,
+                                                                role=job.f_role,
+                                                                party_id=job.f_party_id)
         version_provider_info = {}
         fate_flow_version_provider_info = {}
         schedule_logger(job.f_job_id).info(f'group_info:{provider_group}')

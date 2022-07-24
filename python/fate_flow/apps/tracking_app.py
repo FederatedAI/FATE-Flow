@@ -297,7 +297,7 @@ def get_component_summary():
 @manager.route('/component/list', methods=['POST'])
 def component_list():
     request_data = request.json
-    parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id=request_data.get('job_id'))
+    parser, _, _ = schedule_utils.get_job_dsl_parser_by_job_id(job_id=request_data.get('job_id'))
     if parser:
         return get_json_result(data={'components': list(parser.get_dsl().get('components').keys())})
     else:

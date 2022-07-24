@@ -34,6 +34,7 @@ from fate_arch.metastore.db_models import init_database_tables as init_arch_db
 from fate_arch.protobuf.python import proxy_pb2_grpc
 
 from fate_flow.apps import app
+from fate_flow.controller.version_controller import VersionController
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.db.config_manager import ConfigManager
 from fate_flow.db.db_models import init_database_tables as init_flow_db
@@ -89,6 +90,7 @@ if __name__ == '__main__':
     ComponentRegistry.load()
     HookManager.init()
     RsaKeyManager.init()
+    VersionController.init()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     FederatedDetector(interval=10 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()

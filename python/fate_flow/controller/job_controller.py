@@ -284,7 +284,7 @@ class JobController(object):
         common_task_info["auto_retry_delay"] = kwargs.get("auto_retry_delay", job_parameters.auto_retry_delay if job_parameters else None)
         common_task_info["task_version"] = kwargs.get("task_version")
         if dsl_parser is None:
-            dsl_parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id)
+            dsl_parser, runtime_conf, dsl = schedule_utils.get_job_dsl_parser_by_job_id(job_id)
         provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser,
                                                                 runtime_conf=runtime_conf,
                                                                 components=components,
