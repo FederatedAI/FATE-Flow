@@ -155,6 +155,7 @@ def create_task(job_id, component_name, task_id, task_version, role, party_id):
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/start', methods=['POST'])
+@task_request_proxy(filter_local=True)
 def start_task(job_id, component_name, task_id, task_version, role, party_id):
     TaskController.start_task(job_id, component_name, task_id, task_version, role, party_id, **request.json)
     return get_json_result(retcode=0, retmsg='success')
@@ -220,7 +221,7 @@ def task_status(job_id, component_name, task_id, task_version, role, party_id, s
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/stop/<stop_status>', methods=['POST'])
-@task_request_proxy
+@task_request_proxy()
 def stop_task(job_id, component_name, task_id, task_version, role, party_id, stop_status):
     tasks = JobSaver.query_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id))
     kill_status = True
@@ -231,7 +232,7 @@ def stop_task(job_id, component_name, task_id, task_version, role, party_id, sto
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/clean/<content_type>', methods=['POST'])
-@task_request_proxy
+@task_request_proxy()
 def clean_task(job_id, component_name, task_id, task_version, role, party_id, content_type):
     TaskController.clean_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id), content_type=TaskCleanResourceType(content_type))
     return get_json_result(retcode=0, retmsg='success')

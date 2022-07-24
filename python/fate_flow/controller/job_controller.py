@@ -283,6 +283,9 @@ class JobController(object):
         common_task_info["auto_retries"] = kwargs.get("auto_retries", job_parameters.auto_retries if job_parameters else None)
         common_task_info["auto_retry_delay"] = kwargs.get("auto_retry_delay", job_parameters.auto_retry_delay if job_parameters else None)
         common_task_info["task_version"] = kwargs.get("task_version")
+        if role == "local":
+            common_task_info["run_ip"] = RuntimeConfig.JOB_SERVER_HOST
+            common_task_info["run_port"] = RuntimeConfig.HTTP_PORT
         if dsl_parser is None:
             dsl_parser, runtime_conf, dsl = schedule_utils.get_job_dsl_parser_by_job_id(job_id)
         provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser,
