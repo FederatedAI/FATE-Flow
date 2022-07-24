@@ -12,6 +12,9 @@ class PermissionController:
     def __init__(self, src_party_id):
         self.src_party_id = str(src_party_id)
         self.casbin_controller = CB
+        if not self.casbin_controller:
+            raise Exception("No permission controller is found, please check whether the switch of permission control"
+                            " is turned on")
 
     def check(self, permission_type, value):
         logger.info(f"check source party id {self.src_party_id} {permission_type} {value}")
@@ -49,7 +52,12 @@ class PermissionController:
                         self.casbin_controller.delete_all(self.src_party_id, permission_type)
 
     def query(self):
-        return self.casbin_controller.query(self.src_party_id)
+        result = {PermissionType.DATASET.value: [], PermissionType.COMPONENT.value: []}
+        for casbin_result in self.casbin_controller.query(self.src_party_id):
+            if casbin_result[1] == PermissionType.DATASET.value:
+                casbin_result[2] = DataSet.load_casbin_value(casbin_result[2])
+            result[casbin_result[1]].append(casbin_result[2])
+        return result
 
     def check_parameters(self, permission_parameters):
         for permission_type in PermissionType.values():
