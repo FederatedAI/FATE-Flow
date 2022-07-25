@@ -213,15 +213,17 @@ def component_output_data():
     for output_name, output_table_meta in output_tables_meta.items():
         output_data = []
         is_str = False
+        all_extend_header = {}
         if output_table_meta:
             for k, v in output_table_meta.get_part_of_data():
-                data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k, src_value=v, schema=output_table_meta.get_schema())
+                data_line, is_str, all_extend_header = feature_utils.get_component_output_data_line(src_key=k, src_value=v, schema=output_table_meta.get_schema(), all_extend_header=all_extend_header)
                 output_data.append(data_line)
             total = output_table_meta.get_count()
             output_data_list.append(output_data)
             data_names.append(output_name)
             totals.append(total)
         if output_data:
+            extend_header = feature_utils.generate_header(all_extend_header, schema=output_table_meta.get_schema())
             header = get_component_output_data_schema(output_table_meta=output_table_meta, is_str=is_str,
                                                       extend_header=extend_header)
             headers.append(header)
@@ -297,7 +299,7 @@ def get_component_summary():
 @manager.route('/component/list', methods=['POST'])
 def component_list():
     request_data = request.json
-    parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id=request_data.get('job_id'))
+    parser, _, _ = schedule_utils.get_job_dsl_parser_by_job_id(job_id=request_data.get('job_id'))
     if parser:
         return get_json_result(data={'components': list(parser.get_dsl().get('components').keys())})
     else:

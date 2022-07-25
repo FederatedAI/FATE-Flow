@@ -41,8 +41,10 @@ dsl_parser_v2.run(dsl=dsl_v2,
 
 pprint.pprint(dsl_parser_v2.get_job_parameters())
 print("\n\n\n")
-# pprint.pprint(dsl_parser_v2.get_job_providers(provider_detail=provider_detail, conf=conf_v2))
+pprint.pprint(dsl_parser_v2.get_job_providers(provider_detail=provider_detail, conf=conf_v2,
+                                              local_role="guest", local_party_id=10000))
 
+exit(0)
 print("\n\n\n")
 pprint.pprint(dsl_parser_v2.get_dependency())
 pprint.pprint(dsl_parser_v2.get_dsl_hierarchical_structure())

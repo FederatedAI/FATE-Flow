@@ -20,7 +20,6 @@ from flask import request
 
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.entity import ComponentProvider, RetCode
-from fate_flow.entity.run_status import FederatedSchedulingStatusCode
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.scheduler.cluster_scheduler import ClusterScheduler
@@ -45,8 +44,6 @@ def register():
     path = Path(info["path"]).absolute()
     if not path.is_dir():
         return error_response(400, f"path '{path}' is not a directory")
-    if not (path / "__init__.py").is_file() or not (path.parent / "__init__.py").is_file():
-        return error_response(400, f"'__init__.py' is not found in '{path}' or '{path.parent}'")
     if set(path.parent.iterdir()) - {path, (path.parent / "__init__.py")}:
         return error_response(400, f"there are other directories or files in '{path.parent}' besides '{path.name}' and '__init__.py'")
 
@@ -56,11 +53,8 @@ def register():
                                  class_path=info.get("class_path", ComponentRegistry.get_default_class_path()))
     code, std = WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
     if code == 0:
-        status_code, response = ClusterScheduler.update_provider()
-        if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            return get_json_result()
-        else:
-            return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=response)
+        federated_response = ClusterScheduler.update_provider({"name": info["name"], "version": info["version"]})
+        return get_json_result(federated_response)
     else:
         return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"register failed:\n{std}")
 

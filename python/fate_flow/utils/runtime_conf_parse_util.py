@@ -240,24 +240,32 @@ class RuntimeConfParserUtil(object):
         return provider_info
 
     @classmethod
-    def get_job_providers(cls, dsl, provider_detail, submit_dict=None):
+    def get_job_providers(cls, dsl, provider_detail, submit_dict=None, local_role=None, local_party_id=None):
         provider_info = cls.get_job_providers_by_dsl(dsl, provider_detail)
         if submit_dict is None:
             return provider_info
         else:
+            if local_party_id is None or local_role is None or local_role not in submit_dict["role"] or str(
+                    local_party_id) not in [str(party_id) for party_id in submit_dict["role"][local_role]]:
+                raise ValueError("when parse provider from conf, local role & party_id should should be None")
+
             provider_info_all_party = {}
             dsl_version = submit_dict.get("dsl_version", 1)
             if dsl_version == 1 or "provider" not in submit_dict:
                 for role in submit_dict["role"]:
                     party_id_list = submit_dict["role"][role]
-                    provider_info_all_party[role] = {party_id: copy.deepcopy(provider_info) for party_id in party_id_list}
+                    provider_info_all_party[role] = {party_id: dict() for party_id in party_id_list}
+
+                provider_info_all_party[local_role][local_party_id] = provider_info
             else:
                 provider_config = submit_dict["provider"]
                 common_provider_config = provider_config.get("common", {})
+                other_party_provider_config = dict()
                 if common_provider_config:
                     for component, provider_msg in common_provider_config.items():
                         if component not in provider_info:
-                            continue
+                            raise ValueError(f"Redundant omponent {component} is not found in dsl")
+
                         module = provider_info[component]["module"]
                         name, version = cls.get_component_provider_by_user_conf(component,
                                                                                 module,
@@ -266,21 +274,41 @@ class RuntimeConfParserUtil(object):
 
                         provider_info[component]["provider"] = dict(name=name, version=version)
 
+                        other_name, other_version = cls.get_component_provider_by_user_conf(component,
+                                                                                            module,
+                                                                                            provider_msg)
+                        other_party_provider_config[component] = {
+                            "module": module,
+                            "provider": {
+                                "name": other_name,
+                                "version": other_version
+                            }
+                        }
+
+                provider_info_all_party[local_role]= {local_party_id : copy.deepcopy(provider_info)}
+
                 for role in submit_dict["role"]:
-                    provider_info_all_party[role] = {}
+                    if role not in provider_info_all_party:
+                        provider_info_all_party[role] = {}
                     role_provider_config = provider_config.get("role", {}).get(role, {})
                     for idx, party_id in enumerate(submit_dict["role"][role]):
-                        provider_info_party = copy.deepcopy(provider_info)
+                        if role == local_role and party_id == local_party_id:
+                            provider_info_party = copy.deepcopy(provider_info)
+                        else:
+                            provider_info_party = copy.deepcopy(other_party_provider_config)
+
                         for role_id, role_id_provider_config in role_provider_config.items():
                             if role_id == "all" or str(idx) in role_id.split("|", -1):
                                 for component, provider_msg in role_id_provider_config.items():
-                                    if component not in provider_info:
-                                        continue
-                                    module = provider_info[component]["module"]
+                                    module = dsl["components"][component]["module"]
+                                    detail_info = provider_detail if role == role and party_id == local_party_id else None
                                     name, version = cls.get_component_provider_by_user_conf(component,
                                                                                             module,
                                                                                             provider_msg,
-                                                                                            provider_detail)
+                                                                                            provider_detail=detail_info)
+                                    if component not in provider_info_party:
+                                        provider_info_party[component] = dict(module=module)
+
                                     provider_info_party[component]["provider"] = dict(name=name, version=version)
 
                         provider_info_all_party[role][party_id] = provider_info_party
@@ -288,7 +316,7 @@ class RuntimeConfParserUtil(object):
             return provider_info_all_party
 
     @staticmethod
-    def get_component_provider_by_user_conf(component, module, provider_config, provider_detail,
+    def get_component_provider_by_user_conf(component, module, provider_config, provider_detail=None,
                                             default_name=None, default_version=None):
         name, version = None, None
         if provider_config:
@@ -305,6 +333,9 @@ class RuntimeConfParserUtil(object):
             if default_name:
                 name = default_name
                 version = default_version
+
+        if provider_detail is None:
+            return name, version
 
         if name and name not in provider_detail["components"][module]["support_provider"]:
             raise ValueError(f"Provider: {name} does not support in {module}, please register")

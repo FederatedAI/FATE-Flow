@@ -25,7 +25,7 @@
                     "model"
                 ]
             },
-			"provider": "fate@1.7.0"
+			"provider": "fate@1.8.0"
         },
         "intersection_0": {
             "module": "Intersection",
@@ -41,7 +41,7 @@
                     "data"
                 ]
             },
-			"provider": "fate_federated_algorithm"
+			"provider": "fate"
         },
         "feature_scale_0": {
             "module": "FeatureScale",

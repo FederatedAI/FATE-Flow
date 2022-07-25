@@ -15,6 +15,7 @@
 import datetime
 import errno
 import os
+import random
 import sys
 import threading
 import typing
@@ -507,3 +508,12 @@ def get_component_parameters(job_providers, dsl_parser, provider_detail, role, p
         else:
             component_parameters[module_name].append(parameter.get("ComponentParam", {}))
     return component_parameters
+
+
+def generate_retry_interval(cur_retry, max_retry_cnt, long_retry_cnt):
+
+    if cur_retry < max_retry_cnt - long_retry_cnt:
+        retry_interval = random.random() * 10 + 5
+    else:
+        retry_interval = round(300 + random.random() * 10, 3)
+    return retry_interval

@@ -89,9 +89,9 @@ def get_job_dsl_parser_by_job_id(job_id):
         job = jobs[0]
         job_dsl_parser = get_job_dsl_parser(dsl=job.f_dsl, runtime_conf=job.f_runtime_conf_on_party,
                                             train_runtime_conf=job.f_train_runtime_conf)
-        return job_dsl_parser
+        return job_dsl_parser, job.f_runtime_conf_on_party, job.f_dsl
     else:
-        return None
+        return None, None, None
 
 
 def get_conf_version(conf: dict):

@@ -58,6 +58,10 @@ class DataSet(BaseEntity):
     def casbin_value(self):
         return json.dumps(self.to_dict(), sort_keys=True, separators=(';', '-'))
 
+    @staticmethod
+    def load_casbin_value(value):
+        return json.loads(value.replace(";", ",").replace("-", ":"))
+
     def check(self):
         if not self.name or not self.namespace:
             raise ValueError(f"name {self.name} or namespace {self.namespace} is null")

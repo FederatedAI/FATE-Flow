@@ -103,6 +103,7 @@ def cluster_api(endpoint, method, http_address, json_body):
     audit_logger().info(f"request url {url}")
     response = request(method=method, url=url, json=json_body)
     audit_logger().info(f"request url {url}, result {response.text}")
+    return response.json()
 
 
 def get_federated_proxy_address(src_party_id, dest_party_id):
@@ -238,6 +239,10 @@ def common_headers():
 
 
 def src_parm(role, party_id):
+    if not role:
+        role = ""
+    if not party_id:
+        party_id = ""
     return {"src_role": role, "src_party_id": str(party_id)}
 
 

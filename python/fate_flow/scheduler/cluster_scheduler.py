@@ -8,13 +8,13 @@ from fate_flow.utils.log_utils import schedule_logger, start_log, failed_log
 
 class ClusterScheduler(SchedulerBase):
     @classmethod
-    def update_provider(cls):
+    def update_provider(cls, info):
         federated_response = {}
         instance_list = RuntimeConfig.SERVICE_DB.get_servers()
         for instance in instance_list:
-            cls.cluster_command(http_address=instance.http_address, endpoint="/provider/update", body={},
+            cls.cluster_command(http_address=instance.http_address, endpoint="/provider/update", body=info,
                                 federated_response=federated_response)
-        return cls.return_federated_response(federated_response)
+        return federated_response
 
     @classmethod
     def cluster_command(cls, http_address, endpoint, body, federated_response, api_version=API_VERSION):
@@ -34,5 +34,5 @@ class ClusterScheduler(SchedulerBase):
                 "retmsg": "Federated schedule error, {}".format(e)
             }
         if response["retcode"] != RetCode.SUCCESS:
-            schedule_logger().error(failed_log(msg=log_msg, detail=response["retmsg"]))
+            schedule_logger().error(failed_log(msg=log_msg, detail=response))
         federated_response[http_address] = response
