@@ -215,14 +215,19 @@ class TableStorage:
                 with Session() as sess:
                     output_table = sess.get_table(name=output_table_meta.get_name(),
                                                   namespace=output_table_meta.get_namespace())
+                    all_extend_header = {}
                     if output_table:
                         for k, v in output_table.collect():
-                            data_line, is_str, extend_header = feature_utils.get_component_output_data_line(src_key=k,
-                                                                                                            src_value=v,
-                                                                                                            schema=output_table_meta.get_schema())
+                            data_line, is_str, all_extend_header = feature_utils.get_component_output_data_line(
+                                src_key=k,
+                                src_value=v,
+                                schema=output_table_meta.get_schema(),
+                                all_extend_header=all_extend_header)
                             # save meta
                             if output_data_count == 0:
                                 output_data_file_list.append(output_data_file_path)
+                                extend_header = feature_utils.generate_header(all_extend_header,
+                                                                              schema=output_table_meta.get_schema())
                                 header = get_component_output_data_schema(output_table_meta=output_table_meta,
                                                                           is_str=is_str,
                                                                           extend_header=extend_header)
