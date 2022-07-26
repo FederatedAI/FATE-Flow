@@ -156,7 +156,7 @@ class PipelinedModel(Locker):
                     buffer_object_json_format = json_loads(f.read())
             except FileNotFoundError:
                 buffer_object_json_format = ""
-                # todo: should be running in worker
+                # TODO: should be running in worker
                 """
                 buffer_object_json_format = json_format.MessageToDict(
                     parse_proto_object(buffer_name, buffer_object_serialized_string),
@@ -196,8 +196,8 @@ class PipelinedModel(Locker):
 
         return model_buffers
 
+    # TODO: integration with read_component_model
     def read_pipeline_model(self, parse=True):
-        # todo: integration with read_component_model
         component_name = job_pipeline_component_name()
         model_alias = self.pipeline_model_alias
         component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)

@@ -17,40 +17,45 @@ from copy import deepcopy
 
 from peewee import DoesNotExist
 
-from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
+from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, PipelineComponentMeta
 from fate_flow.db.service_registry import ServerRegistry
-from fate_flow.model import model_storage_base, mysql_model_storage, redis_model_storage, tencent_cos_model_storage
+from fate_flow.model import model_storage_base, mysql_model_storage, tencent_cos_model_storage
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
 from fate_flow.settings import HOST
 
 
-model_storages_map = {
+model_storage_map = {
     'mysql': mysql_model_storage.MysqlModelStorage,
-    'redis': redis_model_storage.RedisModelStorage,
     'tencent_cos': tencent_cos_model_storage.TencentCOSModelStorage,
 }
 
-component_storages_map = {
+component_storage_map = {
+    'mysql': mysql_model_storage.MysqlComponentStorage,
     'tencent_cos': tencent_cos_model_storage.TencentCOSComponentStorage,
 }
+
+
+def get_storage(storage_map: dict) -> tuple(model_storage_base.ModelStorageBase, dict):
+    store_address = deepcopy(ServerRegistry.MODEL_STORE_ADDRESS)
+
+    store_type = store_address.pop('storage')
+    if store_type not in storage_map:
+        raise KeyError(f"Model storage '{store_type}' is not supported.")
+
+    return storage_map[store_type], store_address
 
 
 class SyncModel:
 
     def __init__(self, party_model_id, model_version):
-        store_address = deepcopy(ServerRegistry.MODEL_STORE_ADDRESS)
-        store_type = store_address.pop('storage')
-        if store_type not in model_storages_map:
-            raise ValueError(f"Model storage '{store_type}' is not supported.")
-
         self.pipelined_model = PipelinedModel(party_model_id, model_version)
 
-        self.model_storage: model_storage_base.ModelStorageBase = model_storages_map[store_type]()
+        storage, storage_address = get_storage(model_storage_map)
+        self.model_storage = storage()
         self.model_storage_parameters = {
             'model_id': party_model_id,
             'model_version': model_version,
-            'store_address': store_address,
+            'store_address': storage_address,
         }
 
         self.lock = DB.lock(f'sync_model_{party_model_id}_{model_version}', -1)
@@ -110,20 +115,50 @@ class SyncModel:
 class SyncComponent:
 
     def __init__(self, party_model_id, model_version, component_name):
-        store_type = ServerRegistry.MODEL_STORE_ADDRESS['storage']
-        if store_type not in model_storages_map:
-            raise ValueError(f"Model storage '{store_type}' is not supported.")
+        storage, storage_address = get_storage(model_storage_map)
+        self.component_storage = storage(**storage_address)
 
-        self.pipelined_component = PipelinedComponent(party_model_id=party_model_id, model_version=model_version)
+        self.pipelined_model = PipelinedModel(party_model_id, model_version)
         self.component_name = component_name
 
-        self.component_storage: model_storage_base.ComponentStorageBase = model_storages_map[store_type](
-            party_model_id, model_version, component_name)
+        self.lock = DB.lock(f'sync_component_{self.pipelined_model.party_model_id}_'
+                            f'{self.pipelined_model.model_version}_{self.component_name}', -1)
 
-        self.lock = DB.lock(f'sync_component_{self.pipelined_component.party_model_id}_{self.pipelined_component.model_version}_{self.component_name}', -1)
+    def get_component(self):
+        return PipelineComponentMeta.get(
+            PipelineComponentMeta.f_role == self.pipelined_model.role,
+            PipelineComponentMeta.f_party_id == self.pipelined_model.party_id,
+            PipelineComponentMeta.f_model_id == self.pipelined_model._model_id,
+            PipelineComponentMeta.f_model_version == self.pipelined_model.model_version,
+            PipelineComponentMeta.f_component_name == self.component_name,
+        )
 
+    @DB.connection_context()
     def upload(self):
-        pass
+        with self.lock:
+            component = self.get_component()
 
+            hash_ = self.component_storage.upload(self.pipelined_model.party_model_id,
+                                                  self.pipelined_model.model_version,
+                                                  self.component_name)
+
+            component.f_archive_sha256 = hash_
+            component.f_archive_from_ip = HOST
+            component.save()
+
+        return component
+
+    @DB.connection_context()
     def download(self):
-        pass
+        if not self.pipelined_model.exists():
+            self.pipelined_model.create_pipelined_model()
+
+        with self.lock:
+            component = self.get_component()
+
+            self.component_storage.download(self.pipelined_model.party_model_id,
+                                            self.pipelined_model.model_version,
+                                            self.component_name,
+                                            component.f_archive_sha256)
+
+        return component

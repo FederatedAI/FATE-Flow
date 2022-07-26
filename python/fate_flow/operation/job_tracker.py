@@ -192,8 +192,20 @@ class Tracker(object):
                 output_tables_meta[output_data_info.f_data_name] = data_table_meta
         return output_tables_meta
 
+    def write_component_model(self, component_model):
+        if not component_model:
+            return
+
+        self.pipelined_model.write_component_model(component_model)
+
+    def read_component_model(self, model_alias, parse=True, output_json=False):
+        return self.pipelined_model.read_component_model(component_name=self.component_name,
+                                                         model_alias=model_alias,
+                                                         parse=parse,
+                                                         output_json=output_json)
+
     def save_pipeline_model(self, pipeline_buffer_object):
-        return self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
+        self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
 
     def get_pipeline_model(self):
         return self.pipelined_model.read_pipeline_model()
@@ -413,7 +425,6 @@ class Tracker(object):
         sess = session.Session(session_id=session_id, options={"logger": schedule_logger(self.job_id)})
         sess.destroy_all_sessions()
         return True
-
 
     @DB.connection_context()
     def save_machine_learning_model_info(self):

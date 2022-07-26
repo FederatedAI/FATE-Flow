@@ -42,11 +42,13 @@ class PipelinedComponent(Locker):
 
         self.model_version = model_version
 
-        self.model_path = get_fate_flow_directory('model_local_cache', self.model_id, self.model_version)
+        self.model_path = get_fate_flow_directory('model_local_cache', self.party_model_id, self.model_version)
         self.variables_index_path = Path(self.model_path, 'variables', 'index')
         self.variables_data_path = Path(self.model_path, 'variables', 'data')
         self.run_parameters_path = Path(self.model_path, 'run_parameters')
         self.checkpoint_path = Path(self.model_path, 'checkpoint')
+
+        super().__init__(self.model_path)
 
     @DB.connection_context()
     def read_define_meta(self, reorganize=True):
@@ -102,6 +104,9 @@ class PipelinedComponent(Locker):
 
         bulk_insert_into_db(PipelineComponentMeta, insert, LOGGER)
 
+    def get_archive_path(self, component_name):
+        return Path(TEMP_DIRECTORY, f'{self.party_model_id}_{self.model_version}_{component_name}.zip')
+
     def walk_component(self, zip_file, dir_path: Path):
         for path in dir_path.iterdir():
             if path.is_dir():
@@ -110,7 +115,7 @@ class PipelinedComponent(Locker):
                 zip_file.write(path, path.relative_to(self.model_path))
 
     def pack_component(self, component_name):
-        filename = Path(TEMP_DIRECTORY, f'{self.party_model_id}_{self.model_version}_{component_name}.zip')
+        filename = self.get_archive_path(component_name)
 
         with self.lock:
             with ZipFile(filename, 'w') as zip_file:
@@ -125,7 +130,7 @@ class PipelinedComponent(Locker):
         return filename, hash_
 
     def unpack_component(self, component_name, hash_=None):
-        filename = Path(TEMP_DIRECTORY, f'{self.party_model_id}_{self.model_version}_{component_name}.zip')
+        filename = self.get_archive_path(component_name)
 
         with self.lock:
             if hash_ is not None:

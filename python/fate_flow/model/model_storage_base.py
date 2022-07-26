@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 from abc import ABC, abstractmethod
+from contextlib import AbstractContextManager
 
 
 class ModelStorageBase(ABC):
@@ -49,13 +50,12 @@ class ModelStorageBase(ABC):
         pass
 
 
-class ComponentStorageBase(ABC):
-    prefix = 'FATEFlow/PipelinedComponent/'
+class ComponentStorageBase(AbstractContextManager):
 
     @abstractmethod
-    def upload(self, filename, key):
+    def upload(self, party_model_id, model_version, component_name):
         pass
 
     @abstractmethod
-    def download(self, key, filename):
+    def download(self, party_model_id, model_version, component_name, hash_=None):
         pass

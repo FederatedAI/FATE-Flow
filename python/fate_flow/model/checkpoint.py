@@ -232,6 +232,9 @@ class CheckpointManager:
             return self.latest_checkpoint.step_name
 
     def new_checkpoint(self, step_index: int, step_name: str):
+        if self.job_parameters is not None and self.job_parameters.job_type == 'predict':
+            raise ValueError('Cannot create checkpoint in predict job.')
+
         popped_checkpoint = None
         if self.max_checkpoints_number and self.checkpoints_number >= self.max_checkpoints_number:
             popped_checkpoint = self.checkpoints[0]

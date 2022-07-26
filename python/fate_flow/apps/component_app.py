@@ -71,16 +71,3 @@ def validate_component_param():
         return error_response(400, str(e))
 
     return get_json_result()
-
-
-@manager.route('/sync', methods=['POST'])
-@validate_request('model_id', 'role', 'party_id', 'model_version', 'component_name')
-def sync():
-    if not get_base_config('enable_model_store', False):
-        return error_response(400, 'model store is disabled')
-
-    party_model_id = gen_party_model_id(request.json['model_id'], request.json['role'], request.json['party_id'])
-    pipelined_model = PipelinedModel(party_model_id, request.json['model_version'])
-
-    if not pipelined_model.exists():
-        pipelined_model.create_pipelined_model()

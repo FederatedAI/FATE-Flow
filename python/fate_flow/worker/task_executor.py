@@ -91,6 +91,9 @@ class TaskExecutor(BaseTaskWorker):
             task_input_dsl = component.get_input()
             task_output_dsl = component.get_output()
 
+            party_model_id = gen_party_model_id(job_parameters.model_id, args.role, args.party_id)
+            model_version = job_parameters.model_version if job_parameters.job_type != 'predict' else args.job_id
+
             kwargs = {
                 'job_id': args.job_id,
                 'role': args.role,
@@ -99,6 +102,8 @@ class TaskExecutor(BaseTaskWorker):
                 'task_id': args.task_id,
                 'task_version': args.task_version,
                 'model_id': job_parameters.model_id,
+                # in the prediction job, job_parameters.model_version comes from the training job
+                # TODO: prediction job should not affect training job
                 'model_version': job_parameters.model_version,
                 'component_module_name': module_name,
                 'job_parameters': job_parameters,
@@ -106,6 +111,11 @@ class TaskExecutor(BaseTaskWorker):
             tracker = Tracker(**kwargs)
             tracker_client = TrackerClient(**kwargs)
             checkpoint_manager = CheckpointManager(**kwargs)
+
+            predict_tracker_client = None
+            if job_parameters.job_type == 'predict':
+                kwargs['model_version'] = model_version
+                predict_tracker_client = TrackerClient(**kwargs)
 
             self.report_info["party_status"] = TaskStatus.RUNNING
             self.report_task_info_to_driver()
@@ -200,8 +210,10 @@ class TaskExecutor(BaseTaskWorker):
                 cpn_output = run_object.run(cpn_input)
                 sess.wait_remote_all_done()
 
-            output_table_list = []
+            LOGGER.info(f"task output dsl {task_output_dsl}")
             LOGGER.info(f"task output data {cpn_output.data}")
+
+            output_table_list = []
             for index, data in enumerate(cpn_output.data):
                 data_name = task_output_dsl.get('data')[index] if task_output_dsl.get('data') else '{}'.format(index)
                 #todo: the token depends on the engine type, maybe in job parameters
@@ -216,13 +228,15 @@ class TaskExecutor(BaseTaskWorker):
                     output_table_list.append({"namespace": persistent_table_namespace, "name": persistent_table_name})
             self.log_output_data_table_tracker(args.job_id, input_table_list, output_table_list)
 
-            # There is only one model output at the current dsl version.
-            tracker_client.save_component_output_model(model_buffers=cpn_output.model,
-                                                       model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
-                                                       user_specified_run_parameters=user_specified_parameters)
+            getattr(tracker_client if predict_tracker_client is None else predict_tracker_client, 'save_component_output_model')(
+                model_buffers=cpn_output.model,
+                # There is only one model output at the current dsl version
+                model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
+                user_specified_run_parameters=user_specified_parameters,
+            )
+
             if get_base_config('enable_model_store', False):
-                party_model_id = gen_party_model_id(job_parameters.model_id, args.role, args.party_id)
-                sync_component = SyncComponent(party_model_id, job_parameters.model_version, args.component_name)
+                sync_component = SyncComponent(party_model_id, model_version, args.component_name)
                 LOGGER.info(f'Uploading {sync_component.component_name} to component storage.')
                 sync_component.upload()
 

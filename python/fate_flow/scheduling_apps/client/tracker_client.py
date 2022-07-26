@@ -176,22 +176,44 @@ class TrackerClient(object):
     def save_component_output_model(self, model_buffers: dict, model_alias: str, user_specified_run_parameters: dict = None):
         if not model_buffers:
             return
-
-        return self.job_tracker.pipelined_model.save_component_model(component_name=self.component_name,
-                                                                     component_module_name=self.module_name,
-                                                                     model_alias=model_alias,
-                                                                     model_buffers=model_buffers,
-                                                                     user_specified_run_parameters=user_specified_run_parameters)
+        component_model = self.job_tracker.pipelined_model.create_component_model(component_name=self.component_name,
+                                                                                  component_module_name=self.module_name,
+                                                                                  model_alias=model_alias,
+                                                                                  model_buffers=model_buffers,
+                                                                                  user_specified_run_parameters=user_specified_run_parameters)
+        json_body = {"model_id": self.model_id, "model_version": self.model_version, "component_model": component_model}
+        response = api_utils.local_api(job_id=self.job_id,
+                                       method='POST',
+                                       endpoint='/tracker/{}/{}/{}/{}/{}/{}/model/save'.format(
+                                           self.job_id,
+                                           self.component_name,
+                                           self.task_id,
+                                           self.task_version,
+                                           self.role,
+                                           self.party_id),
+                                       json_body=json_body)
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"save component output model failed:{response['retmsg']}")
 
     def read_component_output_model(self, search_model_alias):
-        component_model = self.job_tracker.pipelined_model.read_component_model(component_name=self.component_name,
-                                                                                model_alias=search_model_alias,
-                                                                                parse=False)
-
-        model_buffers = {}
-        for model_name, v in component_model.items():
-            model_buffers[model_name] = (v[0], base64.b64decode(v[1].encode()))
-        return model_buffers
+        json_body = {"search_model_alias": search_model_alias, "model_id": self.model_id, "model_version": self.model_version}
+        response = api_utils.local_api(job_id=self.job_id,
+                                       method='POST',
+                                       endpoint='/tracker/{}/{}/{}/{}/{}/{}/model/get'.format(
+                                           self.job_id,
+                                           self.component_name,
+                                           self.task_id,
+                                           self.task_version,
+                                           self.role,
+                                           self.party_id),
+                                       json_body=json_body)
+        if response['retcode'] != RetCode.SUCCESS:
+            raise Exception(f"get output model failed:{response['retmsg']}")
+        else:
+            model_buffers = {}
+            for model_name, v in response['data'].items():
+                model_buffers[model_name] = (v[0], base64.b64decode(v[1].encode()))
+            return model_buffers
 
     def get_model_run_parameters(self):
         json_body = {"model_id": self.model_id, "model_version": self.model_version}

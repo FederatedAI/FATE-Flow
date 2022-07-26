@@ -451,16 +451,17 @@ class JobController(object):
                                                             party_id=party_id)
         runtime_conf_on_party = job_configuration.runtime_conf_on_party
         job_parameters = runtime_conf_on_party.get('job_parameters', {})
-        if role in job_parameters.get("assistant_role", []):
-            return
+
         model_id = job_parameters['model_id']
         model_version = job_parameters['model_version']
         job_type = job_parameters.get('job_type', '')
         roles = runtime_conf_on_party['role']
         initiator_role = runtime_conf_on_party['initiator']['role']
         initiator_party_id = runtime_conf_on_party['initiator']['party_id']
-        if job_type == 'predict':
+
+        if role in job_parameters.get("assistant_role", []) or job_type == 'predict':
             return
+
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
                                                        runtime_conf=job_configuration.runtime_conf,
                                                        train_runtime_conf=job_configuration.train_runtime_conf)
