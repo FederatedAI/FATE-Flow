@@ -123,11 +123,10 @@ class TaskExecutor(BaseTaskWorker):
             previous_components_parameters = tracker_client.get_model_run_parameters()
             LOGGER.info(f"previous_components_parameters:\n{json_dumps(previous_components_parameters, indent=4)}")
 
-            component_provider, component_parameters_on_party, user_specified_parameters = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
-                                                                                                                                  component_name=args.component_name,
-                                                                                                                                  role=args.role,
-                                                                                                                                  party_id=args.party_id,
-                                                                                                                                  previous_components_parameters=previous_components_parameters)
+            component_provider, component_parameters_on_party, user_specified_parameters = \
+                ProviderManager.get_component_run_info(dsl_parser=dsl_parser, component_name=args.component_name,
+                                                       role=args.role, party_id=args.party_id,
+                                                       previous_components_parameters=previous_components_parameters)
             RuntimeConfig.set_component_provider(component_provider)
             LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
             flow_feeded_parameters = {"output_data_name": task_output_dsl.get("data")}

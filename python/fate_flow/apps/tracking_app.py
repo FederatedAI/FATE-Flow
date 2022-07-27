@@ -183,7 +183,7 @@ def component_output_model():
         if buffer_name.endswith('Param'):
             output_model_json = buffer_object_json_format
     if output_model_json:
-        component_define = tracker.get_component_define()
+        component_define = tracker.pipelined_model.get_component_define(request_data['component_name'])
         this_component_model_meta = {}
         for buffer_name, buffer_object_json_format in output_model.items():
             if buffer_name.endswith('Meta'):

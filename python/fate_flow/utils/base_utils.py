@@ -14,8 +14,9 @@
 #  limitations under the License.
 #
 import os
-import uuid
+
 from fate_arch.common.base_utils import json_dumps
+
 
 FATE_FLOW_BASE = os.getenv("FATE_FLOW_BASE")
 
@@ -38,11 +39,6 @@ def get_fate_flow_directory(*args):
 
 def get_fate_flow_python_directory(*args):
     return get_fate_flow_directory("python", *args)
-
-
-def new_unique_id():
-    #todo: may be using snowflake?
-    return uuid.uuid1().hex
 
 
 def jprint(src: dict, indent: int = 4):

@@ -33,7 +33,7 @@ from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger
 from fate_flow.utils.job_utils import job_pipeline_component_name, job_pipeline_component_module_name
-from fate_flow.utils.base_utils import get_fate_flow_directory, get_fate_flow_python_directory
+from fate_flow.utils.base_utils import get_fate_flow_directory
 
 
 def local_cache_required(method):
@@ -58,42 +58,32 @@ class PipelinedModel(Locker):
         self.party_model_id = self.model_id = model_id
         self.model_version = model_version
         self.model_path = get_fate_flow_directory("model_local_cache", model_id, model_version)
-        self.define_proto_path = os.path.join(self.model_path, "define", "proto")
-        self.define_proto_generated_path = os.path.join(self.model_path, "define", "proto_generated_python")
         self.define_meta_path = os.path.join(self.model_path, "define", "define_meta.yaml")
-        self.variables_index_path = os.path.join(self.model_path, "variables", "index")
         self.variables_data_path = os.path.join(self.model_path, "variables", "data")
         self.run_parameters_path = os.path.join(self.model_path, "run_parameters")
         self.default_archive_format = "zip"
         self.pipeline_model_name = "Pipeline"
         self.pipeline_model_alias = "pipeline"
 
-        self.pipelined_component = PipelinedComponent(role=self.role, party_id=self.party_id, model_id=self._model_id, model_version=self.model_version)
+        self.pipelined_component = PipelinedComponent(role=self.role, party_id=self.party_id,
+                                                      model_id=self._model_id, model_version=self.model_version)
 
         super().__init__(self.model_path)
 
-    def create_pipelined_model(self):
-        if self.exists():
-            raise FileExistsError("Model creation failed because it has already been created, model cache path is {}".
-                                  format(self.model_path))
-        os.makedirs(self.model_path)
-
-        with self.lock:
-            for path in [self.variables_index_path, self.variables_data_path]:
-                os.makedirs(path)
-            shutil.copytree(get_fate_flow_python_directory("fate_flow", "protobuf", "proto"), self.define_proto_path)
-            shutil.copytree(get_fate_flow_python_directory("fate_flow", "protobuf", "python"), self.define_proto_generated_path)
-
     def save_pipeline_model(self, pipeline_buffer_object):
-        model_buffers = {self.pipeline_model_name: (type(pipeline_buffer_object).__name__, pipeline_buffer_object.SerializeToString(), json_format.MessageToDict(pipeline_buffer_object, including_default_value_fields=True))}
+        model_buffers = {
+            self.pipeline_model_name: (
+                type(pipeline_buffer_object).__name__,
+                pipeline_buffer_object.SerializeToString(),
+                json_format.MessageToDict(pipeline_buffer_object, including_default_value_fields=True),
+            ),
+        }
         self.save_component_model(component_name=job_pipeline_component_name(),
                                   component_module_name=job_pipeline_component_module_name(),
                                   model_alias=self.pipeline_model_alias,
                                   model_buffers=model_buffers)
 
-        with self.lock, open(self.define_meta_path, 'w', encoding="utf-8") as f:
-            define_meta = self.pipelined_component.read_define_meta()
-            yaml.dump(define_meta, f, Dumper=yaml.RoundTripDumper)
+        self.pipelined_component.save_define_meta_from_db_to_file()
 
     def save_component_model(self, component_name, component_module_name, model_alias, model_buffers, user_specified_run_parameters=None):
         component_model = self.create_component_model(component_name=component_name,
@@ -257,15 +247,6 @@ class PipelinedModel(Locker):
 
     def exists(self):
         return os.path.isdir(self.model_path) and set(os.listdir(self.model_path)) - {'.lock'}
-
-    def save_protobuf(self, buffer_object, filepath):
-        serialized_string = serialize_buffer_object(buffer_object)
-        with self.lock, open(filepath, "wb") as fw:
-            fw.write(serialized_string)
-        return filepath
-
-    def save_pipeline(self, buffer_object):
-        return self.save_protobuf(buffer_object, os.path.join(self.model_path, "pipeline.pb"))
 
     @local_cache_required
     def packaging_model(self):

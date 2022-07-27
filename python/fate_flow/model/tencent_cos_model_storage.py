@@ -128,6 +128,21 @@ class TencentCOSComponentStorage(ComponentStorageBase):
     def get_key(self, party_model_id, model_version, component_name):
         return f'FATEFlow/PipelinedComponent/{party_model_id}/{model_version}/{component_name}'
 
+    def exists(self, party_model_id, model_version, component_name):
+        key = self.get_key(party_model_id, model_version) + '.zip'
+
+        try:
+            self.client.head_object(
+                Bucket=self.bucket,
+                Key=key,
+            )
+        except CosServiceError as e:
+            if e.get_error_code() != 'NoSuchResource':
+                raise e
+            return False
+        else:
+            return True
+
     def upload(self, party_model_id, model_version, component_name):
         pipelined_component = PipelinedComponent(party_model_id=party_model_id, model_version=model_version)
         filename, hash_ = pipelined_component.pack_component(component_name)

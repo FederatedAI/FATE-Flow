@@ -54,6 +54,7 @@ def deploy(config_data):
         shutil.copytree(src=model.model_path, dst=deploy_model.model_path,
                         ignore=lambda src, names: {'checkpoint'} if src == model.model_path else {})
         model.pipelined_component.replicate_define_meta({'f_model_version': child_model_version})
+
         pipeline_model = deploy_model.read_pipeline_model()
 
         train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
@@ -116,9 +117,7 @@ def deploy(config_data):
             pipeline_model.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
 
         # save model file
-        deploy_model.save_pipeline(pipeline_model)
-        shutil.copyfile(os.path.join(deploy_model.model_path, "pipeline.pb"),
-                        os.path.join(deploy_model.model_path, "variables", "data", "pipeline", "pipeline", "Pipeline"))
+        deploy_model.save_pipeline_model(pipeline_model)
 
         model_info = gather_model_info_data(deploy_model)
         model_info['job_id'] = model_info['f_model_version']
@@ -145,7 +144,6 @@ def deploy(config_data):
                 role=local_role, party_id=local_party_id,
                 model_id=model_id, model_version=model_version,
                 component_name=component_name,
-                mkdir=False,
             )
             checkpoint_manager.load_checkpoints_from_disk()
             if checkpoint_manager.latest_checkpoint is not None:

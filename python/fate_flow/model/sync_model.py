@@ -150,9 +150,6 @@ class SyncComponent:
 
     @DB.connection_context()
     def download(self):
-        if not self.pipelined_model.exists():
-            self.pipelined_model.create_pipelined_model()
-
         with self.lock:
             component = self.get_component()
 

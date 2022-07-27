@@ -73,7 +73,6 @@ class ModelLoader(ComponentBase):
             role=self.tracker.role, party_id=self.tracker.party_id,
             model_id=self.model_id, model_version=self.model_version,
             component_name=self.component_name,
-            mkdir=False,
         )
         checkpoint_manager.load_checkpoints_from_disk()
 

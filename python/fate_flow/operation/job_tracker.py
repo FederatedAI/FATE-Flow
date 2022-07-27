@@ -14,29 +14,26 @@
 #  limitations under the License.
 #
 import operator
-import copy
 import typing
 
+from fate_arch import session, storage
 from fate_arch.abc import CTableABC
-from fate_arch.common import EngineType, Party
+from fate_arch.common import EngineType
+from fate_arch.common.base_utils import current_timestamp, deserialize_b64, json_loads, serialize_b64
 from fate_arch.common.data_utils import default_output_info
-from fate_arch.computing import ComputingEngine
-from fate_arch.federation import FederationEngine
 from fate_arch.storage import StorageEngine
-from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64, json_loads
-from fate_flow.utils.log_utils import schedule_logger
-from fate_flow.db.db_models import (DB, Job, TrackingOutputDataInfo,
-                                    ComponentSummary, MachineLearningModelInfo as MLModel)
-from fate_flow.entity import Metric, MetricMeta
-from fate_flow.entity import DataCache
-from fate_flow.db.runtime_config import RuntimeConfig
+
+from fate_flow.db.db_models import DB, ComponentSummary, Job
+from fate_flow.db.db_models import MachineLearningModelInfo as MLModel
+from fate_flow.db.db_models import TrackingOutputDataInfo
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.pipelined_model import pipelined_model
+from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.entity import DataCache, Metric, MetricMeta, RunParameters
 from fate_flow.manager.cache_manager import CacheManager
 from fate_flow.manager.metric_manager import MetricManager
-from fate_arch import storage, session
-from fate_flow.utils import model_utils, job_utils
-from fate_flow.entity import RunParameters
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.utils import job_utils, model_utils
+from fate_flow.utils.log_utils import schedule_logger
 
 
 class Tracker(object):
@@ -70,8 +67,7 @@ class Tracker(object):
         self.model_version = model_version
         self.pipelined_model = None
         if self.party_model_id and self.model_version:
-            self.pipelined_model = pipelined_model.PipelinedModel(model_id=self.party_model_id,
-                                                                  model_version=self.model_version)
+            self.pipelined_model = PipelinedModel(self.party_model_id, self.model_version)
         self.metric_manager = MetricManager(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name, task_id=self.task_id, task_version=self.task_version)
 
     def save_metric_data(self, metric_namespace: str, metric_name: str, metrics: typing.List[Metric], job_level=False):
@@ -191,27 +187,6 @@ class Tracker(object):
 
                 output_tables_meta[output_data_info.f_data_name] = data_table_meta
         return output_tables_meta
-
-    def write_component_model(self, component_model):
-        if not component_model:
-            return
-
-        self.pipelined_model.write_component_model(component_model)
-
-    def read_component_model(self, model_alias, parse=True, output_json=False):
-        return self.pipelined_model.read_component_model(component_name=self.component_name,
-                                                         model_alias=model_alias,
-                                                         parse=parse,
-                                                         output_json=output_json)
-
-    def save_pipeline_model(self, pipeline_buffer_object):
-        self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
-
-    def get_pipeline_model(self):
-        return self.pipelined_model.read_pipeline_model()
-
-    def get_component_define(self):
-        return self.pipelined_model.get_component_define(component_name=self.component_name)
 
     def save_output_cache(self, cache_data: typing.Dict[str, CTableABC], cache_meta: dict, cache_name, output_storage_engine, output_storage_address: dict, token=None):
         output_namespace, output_name = default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="cache")

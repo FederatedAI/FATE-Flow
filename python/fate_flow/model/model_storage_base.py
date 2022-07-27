@@ -53,6 +53,10 @@ class ModelStorageBase(ABC):
 class ComponentStorageBase(AbstractContextManager):
 
     @abstractmethod
+    def exists(self, party_model_id, model_version, component_name):
+        pass
+
+    @abstractmethod
     def upload(self, party_model_id, model_version, component_name):
         pass
 

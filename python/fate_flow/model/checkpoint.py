@@ -34,14 +34,12 @@ from fate_flow.model import Locker
 
 class Checkpoint(Locker):
 
-    def __init__(self, directory: Path, step_index: int, step_name: str, mkdir: bool = True):
+    def __init__(self, directory: Path, step_index: int, step_name: str):
         self.step_index = step_index
         self.step_name = step_name
-        self.mkdir = mkdir
         self.create_time = None
+
         directory = directory / f'{step_index}#{step_name}'
-        if self.mkdir:
-            directory.mkdir(0o755, True, True)
         self.database = directory / 'database.yaml'
 
         super().__init__(directory)
@@ -70,6 +68,8 @@ class Checkpoint(Locker):
                 'sha1': hashlib.sha1(serialized_string).hexdigest(),
                 'buffer_name': pb_name,
             }
+
+        self.directory.mkdir(parents=True, exist_ok=True)
 
         with self.lock:
             for model_name, model in data['models'].items():
@@ -136,8 +136,6 @@ class Checkpoint(Locker):
     def remove(self):
         self.create_time = None
         rmtree(self.directory)
-        if self.mkdir:
-            self.directory.mkdir(0o755)
 
     def to_dict(self, include_models: bool = False):
         if not include_models:
@@ -152,7 +150,7 @@ class CheckpointManager:
                  component_name: str = None, component_module_name: str = None,
                  task_id: str = None, task_version: int = None,
                  job_parameters: RunParameters = None,
-                 max_to_keep: int = None, mkdir: bool = True,
+                 max_to_keep: int = None
                  ):
         self.job_id = job_id
         self.role = role
@@ -165,12 +163,9 @@ class CheckpointManager:
         self.task_id = task_id
         self.task_version = task_version
         self.job_parameters = job_parameters
-        self.mkdir = mkdir
 
         self.directory = (Path(get_fate_flow_directory()) / 'model_local_cache' /
                           self.party_model_id / model_version / 'checkpoint' / self.component_name)
-        if self.mkdir:
-            self.directory.mkdir(0o755, True, True)
 
         if isinstance(max_to_keep, int):
             if max_to_keep <= 0:
@@ -250,9 +245,8 @@ class CheckpointManager:
     def clean(self):
         self.checkpoints = deque(maxlen=self.max_checkpoints_number)
         rmtree(self.directory)
-        if self.mkdir:
-            self.directory.mkdir(0o755)
 
+    # copy the checkpoint as a component model to the new model version
     def deploy(self, new_model_version: str, model_alias: str, step_index: int = None, step_name: str = None):
         if step_index is not None:
             checkpoint = self.get_checkpoint_by_index(step_index)

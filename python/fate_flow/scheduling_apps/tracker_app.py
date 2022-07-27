@@ -16,8 +16,11 @@
 from flask import request
 
 from fate_arch.common.base_utils import deserialize_b64
+
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.utils.api_utils import get_json_result
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.utils.api_utils import get_json_result, validate_request
+from fate_flow.utils.model_utils import gen_party_model_id
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/metric_data/save',
@@ -68,13 +71,11 @@ def get_table_meta(job_id, component_name, task_version, task_id, role, party_id
                methods=['POST'])
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/component_model/save',
                methods=['POST'])
+@validate_request('model_id', 'model_version', 'component_model')
 def save_component_model(job_id, component_name, task_version, task_id, role, party_id):
-    request_data = request.json
-    model_id = request_data.get("model_id")
-    model_version = request_data.get("model_version")
-    tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
-                      role=role, party_id=party_id, model_id=model_id, model_version=model_version)
-    tracker.write_component_model(request_data.get("component_model"))
+    pipelined_model = PipelinedModel(gen_party_model_id(request.json['model_id'], role, party_id), request.json['model_version'])
+    pipelined_model.write_component_model(request.json['component_model'])
+
     return get_json_result()
 
 
@@ -82,13 +83,11 @@ def save_component_model(job_id, component_name, task_version, task_id, role, pa
                methods=['POST'])
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/component_model/get',
                methods=['POST'])
+@validate_request('model_id', 'model_version', 'search_model_alias')
 def get_component_model(job_id, component_name, task_version, task_id, role, party_id):
-    request_data = request.json
-    model_id = request_data.get("model_id")
-    model_version = request_data.get("model_version")
-    tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
-                      role=role, party_id=party_id, model_id=model_id, model_version=model_version)
-    data = tracker.read_component_model(model_alias=request_data.get("search_model_alias"), parse=False)
+    pipelined_model = PipelinedModel(gen_party_model_id(request.json['model_id'], role, party_id), request.json['model_version'])
+    data = pipelined_model.read_component_model(component_name, request.json['search_model_alias'], False)
+
     return get_json_result(data=data)
 
 

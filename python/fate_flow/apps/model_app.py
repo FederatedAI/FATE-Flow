@@ -18,11 +18,12 @@ import json
 import os
 import shutil
 import traceback
+from uuid import uuid1
 from copy import deepcopy
 from datetime import date, datetime
 
-from flask import Response, request, send_file
 import peewee
+from flask import Response, request, send_file
 
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
@@ -308,33 +309,42 @@ def operate_model(model_operation):
     model_operation = ModelOperation(model_operation)
     request_config["model_id"] = model_utils.gen_party_model_id(
         request_config["model_id"], request_config["role"], request_config["party_id"])
+
     if model_operation in [ModelOperation.EXPORT, ModelOperation.IMPORT]:
         if model_operation is ModelOperation.IMPORT:
             try:
                 file = request.files.get('file')
-                file_path = os.path.join(TEMP_DIRECTORY, file.filename)
-                # if not os.path.exists(file_path):
-                #     raise Exception('The file is obtained from the fate flow client machine, but it does not exist, '
-                #                     'please check the path: {}'.format(file_path))
+                filename = os.path.join(TEMP_DIRECTORY, uuid1().hex)
+                os.makedirs(os.path.dirname(filename), exist_ok=True)
+
                 try:
-                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-                    file.save(file_path)
+                    file.save(filename)
                 except Exception as e:
-                    shutil.rmtree(file_path)
-                    raise e
-                request_config['file'] = file_path
+                    try:
+                        filename.unlink()
+                    except FileNotFoundError:
+                        pass
+
+                    return error_response(500, f'Save file error: {e}')
+
+                request_config['file'] = filename
                 model = pipelined_model.PipelinedModel(request_config["model_id"], request_config["model_version"])
-                model.unpack_model(file_path)
+                model.unpack_model(filename, hash_=request_config.get('hash'))
 
                 pipeline = model.read_pipeline_model()
                 train_runtime_conf = json_loads(pipeline.train_runtime_conf)
+
                 permitted_party_id = []
                 for key, value in train_runtime_conf.get('role', {}).items():
                     for v in value:
                         permitted_party_id.extend([v, str(v)])
                 if request_config["party_id"] not in permitted_party_id:
-                    shutil.rmtree(model.model_path)
-                    raise Exception("party id {} is not in model roles, please check if the party id is valid.")
+                    shutil.rmtree(model.model_path, ignore_errors=True)
+                    return error_response(400, f'Party id {request_config["party_id"]} is not in model roles, '
+                                               f'please check if the party id is valid.')
+
+                model.pipelined_component.save_define_meta_from_file_to_db()
+
                 try:
                     adapter = JobRuntimeConfigAdapter(train_runtime_conf)
                     job_parameters = adapter.get_common_parameters().to_dict()
@@ -343,29 +353,33 @@ def operate_model(model_operation):
                             MLModel.f_job_id == job_parameters.get("model_version"),
                             MLModel.f_role == request_config["role"]
                         )
-                    if not db_model:
+
+                    if db_model:
+                        stat_logger.info(f'job id: {job_parameters.get("model_version")}, '
+                                         f'role: {request_config["role"]} model info already existed in database.')
+                    else:
                         model_info = model_utils.gather_model_info_data(model)
                         model_info['imported'] = 1
                         model_info['job_id'] = model_info['f_model_version']
                         model_info['size'] = model.calculate_model_file_size()
                         model_info['role'] = request_config["model_id"].split('#')[0]
                         model_info['party_id'] = request_config["model_id"].split('#')[1]
+
                         if compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
                             model_info['roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
                             model_info['initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
                             model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get( 'initiator', {}).get('party_id')
                             model_info['parent'] = False if model_info.get('f_inference_dsl') else True
+
                         model_utils.save_model_info(model_info)
-                    else:
-                        stat_logger.info(f'job id: {job_parameters.get("model_version")}, '
-                                         f'role: {request_config["role"]} model info already existed in database.')
                 except peewee.IntegrityError as e:
                     stat_logger.exception(e)
+
                 operation_record(request_config, "import", "success")
                 return get_json_result()
-            except Exception:
+            except Exception as e:
                 operation_record(request_config, "import", "failed")
-                raise
+                return error_response(500, f'Import model error: {e}')
         # export
         else:
             try:
@@ -715,11 +729,11 @@ def get_predict_dsl():
             return error_response(210, "can not found guest or host model, please get predict dsl on guest or host.")
         if request_data.get("filename"):
             os.makedirs(TEMP_DIRECTORY, exist_ok=True)
-            temp_filepath = os.path.join(TEMP_DIRECTORY, request_data.get("filename"))
+            temp_filepath = os.path.join(TEMP_DIRECTORY, uuid1().hex)
             with open(temp_filepath, "w") as fout:
                 fout.write(json_dumps(_data['f_inference_dsl'], indent=4))
             return send_file(open(temp_filepath, "rb"), as_attachment=True,
-                             attachment_filename=request_data.get("filename"))
+                             attachment_filename=request_data["filename"])
         else:
             return get_json_result(data=_data['f_inference_dsl'])
     return error_response(210, "No model found, please check if arguments are specified correctly.")
@@ -747,12 +761,11 @@ def get_predict_conf():
     if predict_conf:
         if request_data.get("filename"):
             os.makedirs(TEMP_DIRECTORY, exist_ok=True)
-            temp_filepath = os.path.join(TEMP_DIRECTORY, request_data.get("filename"))
+            temp_filepath = os.path.join(TEMP_DIRECTORY, uuid1().hex)
             with open(temp_filepath, "w") as fout:
-
                 fout.write(json_dumps(predict_conf, indent=4))
             return send_file(open(temp_filepath, "rb"), as_attachment=True,
-                             attachment_filename=request_data.get("filename"))
+                             attachment_filename=request_data["filename"])
         else:
             return get_json_result(data=predict_conf)
     return error_response(210, "No model found, please check if arguments are specified correctly.")

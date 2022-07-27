@@ -182,6 +182,22 @@ class MysqlComponentStorage(ComponentStorageBase):
     def __exit__(self, *exc):
         DB.close()
 
+    def exists(self, party_model_id, model_version, component_name):
+        try:
+            with DB.connection_context():
+                counts = MachineLearningComponent.select().where(
+                    MachineLearningComponent.f_party_model_id == party_model_id,
+                    MachineLearningComponent.f_model_version == model_version,
+                    MachineLearningComponent.f_component_name == component_name,
+                ).count()
+            return counts > 0
+        except PeeweeException as e:
+            # Table doesn't exist
+            if e.args and e.args[0] == 1146:
+                return False
+
+            raise e
+
     def upload(self, party_model_id, model_version, component_name):
         DB.create_tables([MachineLearningComponent])
 
@@ -190,7 +206,7 @@ class MysqlComponentStorage(ComponentStorageBase):
 
         with open(filename, 'rb') as fr, DB.connection_context():
             MachineLearningComponent.delete().where(
-                MachineLearningComponent.f_model_id == party_model_id,
+                MachineLearningComponent.f_party_model_id == party_model_id,
                 MachineLearningComponent.f_model_version == model_version,
                 MachineLearningComponent.f_component_name == component_name,
             ).execute()
@@ -220,7 +236,7 @@ class MysqlComponentStorage(ComponentStorageBase):
     def download(self, party_model_id, model_version, component_name, hash_=None):
         with DB.connection_context():
             models_in_tables = MachineLearningComponent.select().where(
-                MachineLearningComponent.f_model_id == party_model_id,
+                MachineLearningComponent.f_party_model_id == party_model_id,
                 MachineLearningComponent.f_model_version == model_version,
                 MachineLearningComponent.f_component_name == component_name,
             ).order_by(MachineLearningComponent.f_slice_index)

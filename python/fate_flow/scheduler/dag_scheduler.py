@@ -70,7 +70,7 @@ class DAGScheduler(Cron):
                 # get inference dsl from pipeline model as job dsl
                 tracker = Tracker(job_id=job_id, role=job_initiator["role"], party_id=job_initiator["party_id"],
                                   model_id=common_job_parameters.model_id, model_version=common_job_parameters.model_version)
-                pipeline_model = tracker.get_pipeline_model()
+                pipeline_model = tracker.pipelined_model.read_pipeline_model()
                 train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
                 if not model_utils.check_if_deployed(role=job_initiator["role"],
                                                      party_id=job_initiator["party_id"],

@@ -333,8 +333,7 @@ class JobController(object):
                           model_id=job_parameters.model_id,
                           model_version=job_parameters.model_version,
                           job_parameters=job_parameters)
-        if job_parameters.job_type != "predict":
-            tracker.pipelined_model.create_pipelined_model()
+
         partner = {}
         show_role = {}
         for _role, _role_party in roles.items():
@@ -490,7 +489,7 @@ class JobController(object):
 
         tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
                           model_id=model_id, model_version=model_version, job_parameters=RunParameters(**job_parameters))
-        tracker.save_pipeline_model(pipeline_buffer_object=pipeline)
+        tracker.pipelined_model.save_pipeline_model(pipeline_buffer_object=pipeline)
         if role != 'local':
             tracker.save_machine_learning_model_info()
         schedule_logger(job_id).info(f"save pipeline on {role} {party_id} successfully")
