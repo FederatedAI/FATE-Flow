@@ -38,7 +38,8 @@ class VersionController:
         incompatible_info = {}
         incompatible = False
         if local_role in providers_info:
-            local_provider = providers_info[local_role].get(int(local_party_id)) or providers_info[local_role].get(str(local_party_id))
+            local_provider = providers_info[local_role].get(int(local_party_id), {}) \
+                             or providers_info[local_role].get(str(local_party_id), {})
             for role, role_provider in providers_info.items():
                 incompatible_info[role] = {}
                 for party_id, provider in role_provider.items():
