@@ -13,6 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import json
+import time
+
 import abc
 import atexit
 from functools import wraps
@@ -22,10 +25,12 @@ from kazoo.client import KazooClient
 from kazoo.exceptions import NoNodeError, NodeExistsError, ZookeeperError
 from kazoo.security import make_digest_acl
 
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
+from fate_flow.entity.instance import FlowInstance
 from fate_flow.errors.error_services import *
-from fate_flow.settings import (FATE_FLOW_MODEL_TRANSFER_ENDPOINT, FATE_SERVICES_REGISTRY,
-                                HOST, HTTP_PORT, USE_REGISTRY, ZOOKEEPER, stat_logger)
+from fate_flow.settings import (FATE_FLOW_MODEL_TRANSFER_ENDPOINT, ZOOKEEPER_REGISTRY,
+                                HOST, HTTP_PORT, USE_REGISTRY, ZOOKEEPER, stat_logger, GRPC_PORT)
 from fate_flow.utils.model_utils import models_group_by_party_model_id_and_model_version
 
 
@@ -44,6 +49,10 @@ def check_service_supported(method):
             raise ServiceNotSupported(service_name=service_name)
         return method(self, service_name, *args, **kwargs)
     return magic
+
+
+def get_server_address():
+    return f'{HOST}:{GRPC_PORT}'
 
 
 def get_model_download_endpoint():
@@ -91,6 +100,10 @@ class ServicesDB(abc.ABC):
     def _insert(self, service_name, service_url):
         pass
 
+    @abc.abstractmethod
+    def _insert_server(self, server_name, server_address):
+        pass
+
     @check_service_supported
     def insert(self, service_name, service_url):
         """Insert a service url to database.
@@ -104,9 +117,33 @@ class ServicesDB(abc.ABC):
         except ServicesError as e:
             stat_logger.exception(e)
 
+    def insert_server(self, server_name, server_address):
+        """Insert a server to database.
+
+        :param str service_name: The server name.
+        :param str server_address: The server address.
+        :return: None
+        """
+        try:
+            self._insert_server(server_name, server_address)
+        except ServicesError as e:
+            stat_logger.exception(e)
+
     @abc.abstractmethod
     def _delete(self, service_name, service_url):
         pass
+
+    @property
+    def _server_instance(self) -> FlowInstance:
+        instance_info = {
+            "instance_id": f"flow-{HOST.split('.')[-1]}-{HTTP_PORT}",
+            "timestamp": int(time.time() * 1000),
+            "version": RuntimeConfig.get_env("FATEFlow"),
+            "grpc_address": f"{HOST}:{GRPC_PORT}",
+            "http_address": f"{HOST}:{HTTP_PORT}"
+        }
+        instance = FlowInstance(**instance_info)
+        return instance
 
     @check_service_supported
     def delete(self, service_name, service_url):
@@ -123,10 +160,12 @@ class ServicesDB(abc.ABC):
 
     def register_flow(self):
         """Call `self.insert` for insert the model transfer url to database.
+        `self.insert_server` for insert fate flow server address to databae
         Backward compatible with FATE-Serving versions before 2.1.0.
 
         :return: None
         """
+        self.insert_server('flow-server', get_server_address())
         self.insert('fateflow', get_model_download_endpoint())
 
     def register_model(self, party_model_id, model_version):
@@ -153,6 +192,10 @@ class ServicesDB(abc.ABC):
     def _get_urls(self, service_name):
         pass
 
+    @abc.abstractmethod
+    def _get_servers(self, server_name) -> [FlowInstance]:
+        pass
+
     @check_service_supported
     def get_urls(self, service_name):
         """Query service urls from database. The urls may belong to other nodes.
@@ -166,6 +209,13 @@ class ServicesDB(abc.ABC):
         """
         try:
             return self._get_urls(service_name)
+        except ServicesError as e:
+            stat_logger.exception(e)
+            return []
+
+    def get_servers(self, server_name="flow-server"):
+        try:
+            return self._get_servers(server_name)
         except ServicesError as e:
             stat_logger.exception(e)
             return []
@@ -191,7 +241,7 @@ class ZooKeeperDB(ServicesDB):
     """ZooKeeper Database
 
     """
-    znodes = FATE_SERVICES_REGISTRY['zookeeper']
+    znodes = ZOOKEEPER_REGISTRY
     supported_services = znodes.keys()
 
     def __init__(self):
@@ -224,16 +274,26 @@ class ZooKeeperDB(ServicesDB):
     def _insert(self, service_name, service_url):
         try:
             self.client.create(self._get_znode_path(service_name, service_url), ephemeral=True, makepath=True)
-        except NodeExistsError:
-            pass
+        except NodeExistsError as e:
+            stat_logger.exception(e)
+        except ZookeeperError as e:
+            raise ZooKeeperBackendError(error_message=repr(e))
+
+    def _insert_server(self, server_name, server_address):
+        try:
+            server_path = '/'.join([self.znodes[server_name], server_address])
+            self.client.create(server_path, ephemeral=True, makepath=True)
+            self.client.set(server_path, json.dumps(self._server_instance.to_dict()).encode())
+        except NodeExistsError as e:
+            stat_logger.exception(e)
         except ZookeeperError as e:
             raise ZooKeeperBackendError(error_message=repr(e))
 
     def _delete(self, service_name, service_url):
         try:
             self.client.delete(self._get_znode_path(service_name, service_url))
-        except NoNodeError:
-            pass
+        except NoNodeError as e:
+            stat_logger.exception(e)
         except ZookeeperError as e:
             raise ZooKeeperBackendError(error_message=repr(e))
 
@@ -265,6 +325,13 @@ class ZooKeeperDB(ServicesDB):
             urls = [parse.urlparse(url).netloc or url for url in urls]
         return urls
 
+    def _get_servers(self, server_name):
+        try:
+            server_list = self.client.get_children(self.znodes[server_name])
+        except ZookeeperError as e:
+            raise ZooKeeperBackendError(error_message=repr(e))
+        return [FlowInstance(**json.loads(self.client.get("/".join([self.znodes[server_name], server]))[0].decode())) for server in server_list]
+
 
 class FallbackDB(ServicesDB):
     """Fallback Database.
@@ -280,6 +347,9 @@ class FallbackDB(ServicesDB):
     def _delete(self, *args, **kwargs):
         pass
 
+    def _insert_server(self, *args, **kwargs):
+        pass
+
     def _get_urls(self, service_name):
         if service_name == 'fateflow':
             return [get_model_download_endpoint()]
@@ -290,6 +360,9 @@ class FallbackDB(ServicesDB):
         if not isinstance(urls, list):
             urls = [urls]
         return urls
+
+    def _get_servers(self, server_name):
+        return [self._server_instance]
 
 
 def service_db():

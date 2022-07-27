@@ -46,6 +46,7 @@ class WorkerArgs(BaseEntity):
 
         self.worker_id = kwargs.get("worker_id")
         self.run_ip = kwargs.get("run_ip")
+        self.run_port = kwargs.get("run_port")
         self.job_server = kwargs.get("job_server")
 
         # TaskInitializer

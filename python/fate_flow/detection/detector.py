@@ -17,23 +17,24 @@ import time
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.controller.engine_adapt import build_engine
+from fate_flow.controller.task_controller import TaskController
 from fate_flow.db.db_models import DB, Job, DependenciesStorageMeta
 from fate_arch.session import Session
 from fate_flow.utils.log_utils import detect_logger
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
+from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus, FederatedSchedulingStatusCode
 from fate_flow.settings import SESSION_VALID_PERIOD
 from fate_flow.utils import cron, job_utils, process_utils
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.manager.resource_manager import ResourceManager
-from fate_arch.common import EngineType
 
 
 class Detector(cron.Cron):
     def run_do(self):
         self.detect_running_task()
+        self.detect_end_task()
         self.detect_running_job()
         self.detect_resource_record()
         self.detect_expired_session()
@@ -47,7 +48,7 @@ class Detector(cron.Cron):
             running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, only_latest=False)
             stop_job_ids = set()
             for task in running_tasks:
-                if not task.f_engine_conf and task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST and not task.f_run_on_this_party:
+                if not task.f_engine_conf or task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST or task.f_run_on_this_party:
                     continue
                 count += 1
                 try:
@@ -79,6 +80,33 @@ class Detector(cron.Cron):
             detect_logger().exception(e)
         finally:
             detect_logger().info(f"finish detect {count} running task")
+
+    @classmethod
+    def detect_end_task(cls):
+        detect_logger().info('start to detect end status task..')
+        count = 0
+        try:
+            tasks = JobSaver.query_task(
+                run_ip=RuntimeConfig.JOB_SERVER_HOST,
+                run_port=RuntimeConfig.HTTP_PORT,
+                status=set(EndStatus.status_list()),
+                kill_status=False
+            )
+            for task in tasks:
+                try:
+                    if task.f_end_time and task.f_end_time -  current_timestamp() < 5 * 60 * 1000:
+                        continue
+                    detect_logger().info(f'start to stop task {task.f_role} {task.f_party_id} {task.f_task_id}'
+                                         f' {task.f_task_version}')
+                    kill_task_status = TaskController.stop_task(task=task, stop_status=TaskStatus.FAILED)
+                    detect_logger().info( f'kill task status: {kill_task_status}')
+                    count += 1
+                except Exception as e:
+                    detect_logger().exception(e)
+        except Exception as e:
+            detect_logger().exception(e)
+        finally:
+            detect_logger().info(f"finish detect {count} end task")
 
     @classmethod
     def detect_running_job(cls):
@@ -184,3 +212,45 @@ class Detector(cron.Cron):
                 detect_logger(job_id=job.f_job_id).info(f"detector request stop job {job.f_job_id} successfully")
             except Exception as e:
                 detect_logger(job_id=job.f_job_id).exception(e)
+
+
+class FederatedDetector(Detector):
+    def run_do(self):
+        self.detect_running_job_federated()
+
+    @classmethod
+    def detect_running_job_federated(cls):
+        detect_logger().info('start federated detect running job')
+        try:
+            running_jobs = JobSaver.query_job(status=JobStatus.RUNNING, is_initiator=True)
+            stop_jobs = set()
+            for job in running_jobs:
+                cur_retry = 0
+                max_retry_cnt = 3
+                long_retry_cnt = 2
+                exception = None
+                while cur_retry < max_retry_cnt:
+                    detect_logger().info(f"start federated detect running job {job.f_job_id} cur_retry={cur_retry}")
+                    try:
+                        status_code, response = FederatedScheduler.connect(job)
+                        if status_code != FederatedSchedulingStatusCode.SUCCESS:
+                            exception = f"connect code: {status_code}"
+                        else:
+                            exception = None
+                            detect_logger().info(f"federated detect running job {job.f_job_id} success")
+                            break
+                    except Exception as e:
+                        exception = e
+                        detect_logger(job_id=job.f_job_id).debug(e)
+                        retry_interval = job_utils.generate_retry_interval(cur_retry, max_retry_cnt, long_retry_cnt)
+                        time.sleep(retry_interval)
+                    finally:
+                        cur_retry += 1
+                if exception is not None:
+                    detect_logger(job.f_job_id).info(f"job {job.f_job_id} connect failed: {exception}")
+                    stop_jobs.add(job)
+            cls.request_stop_jobs(jobs=stop_jobs, stop_msg="federated error", stop_status=JobStatus.FAILED)
+        except Exception as e:
+            detect_logger().exception(e)
+        finally:
+            detect_logger().info('finish federated detect running job')

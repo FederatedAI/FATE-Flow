@@ -19,8 +19,7 @@ import time
 
 import grpc
 
-from eggroll.core.proto import proxy_pb2_grpc
-
+from fate_arch.protobuf.python import proxy_pb2_grpc
 from fate_flow.utils.log_utils import audit_logger, schedule_logger
 from fate_flow.utils.grpc_utils import wrap_grpc_packet, gen_routing_metadata
 

@@ -15,9 +15,11 @@
 import datetime
 import errno
 import os
+import random
 import sys
 import threading
 import typing
+from functools import wraps
 
 from fate_arch.common import FederatedMode, file_utils
 from fate_arch.common.base_utils import current_timestamp, fate_uuid, json_dumps
@@ -26,7 +28,7 @@ from fate_flow.db.db_utils import query_db
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfiguration, RunParameters
-from fate_flow.entity.run_status import JobStatus, TaskStatus
+from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
 from fate_flow.entity.types import InputSearchType
 from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
 from fate_flow.utils import detect_utils, process_utils, session_utils, data_utils
@@ -461,3 +463,57 @@ def get_job_dataset(is_initiator, role, party_id, roles, job_args):
                                     else:
                                         dataset[_role][_party_id][key] = "unknown"
         return dataset
+
+
+def asynchronous_function(func):
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        is_asynchronous = False
+        if "is_asynchronous" in kwargs.keys():
+            is_asynchronous = kwargs.pop("is_asynchronous")
+            if is_asynchronous:
+                thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+                thread.start()
+                is_asynchronous = True
+                return is_asynchronous
+        if not is_asynchronous:
+            return func(*args, **kwargs)
+    return _wrapper
+
+
+def task_report(tasks):
+    now_time = current_timestamp()
+    report_list = [{"component_name": task.f_component_name, "start_time": task.f_start_time,
+                    "end_time": task.f_end_time, "elapsed": task.f_elapsed, "status": task.f_status}
+                   for task in tasks]
+    report_list.sort(key=lambda x: (x["start_time"] if x["start_time"] else now_time, x["status"]))
+    return report_list
+
+
+def get_component_parameters(job_providers, dsl_parser, provider_detail, role, party_id):
+    component_parameters = dict()
+    for component in job_providers.keys():
+        provider_info = job_providers[component]["provider"]
+        provider_name = provider_info["name"]
+        provider_version = provider_info["version"]
+        parameter = dsl_parser.parse_component_parameters(component,
+                                                             provider_detail,
+                                                             provider_name,
+                                                             provider_version,
+                                                             local_role=role,
+                                                             local_party_id=party_id)
+        module_name = dsl_parser.get_component_info(component_name=component).get_module().lower()
+        if module_name not in component_parameters.keys():
+            component_parameters[module_name] = [parameter.get("ComponentParam", {})]
+        else:
+            component_parameters[module_name].append(parameter.get("ComponentParam", {}))
+    return component_parameters
+
+
+def generate_retry_interval(cur_retry, max_retry_cnt, long_retry_cnt):
+
+    if cur_retry < max_retry_cnt - long_retry_cnt:
+        retry_interval = random.random() * 10 + 5
+    else:
+        retry_interval = round(300 + random.random() * 10, 3)
+    return retry_interval

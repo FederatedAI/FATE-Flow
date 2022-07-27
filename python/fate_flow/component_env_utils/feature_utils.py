@@ -16,25 +16,40 @@
 import numpy
 
 
-def get_component_output_data_line(src_key, src_value, schema=None):
+def get_component_output_data_line(src_key, src_value, schema=None, all_extend_header=None):
+    if not all_extend_header:
+        for inst in ["inst_id", "label", "weight"]:
+            all_extend_header[inst] = ""
     data_line = [src_key]
     is_str = False
-    extend_header = []
     if hasattr(src_value, "is_instance"):
         for inst in ["inst_id", "label", "weight"]:
             if getattr(src_value, inst) is not None:
                 data_line.append(getattr(src_value, inst))
                 if inst == "inst_id" and schema:
-                    extend_header.append(schema.get("match_id_name"))
+                    all_extend_header[inst] = schema.get("match_id_name")
                 else:
-                    extend_header.append(inst)
+                    if not all_extend_header[inst]:
+                        all_extend_header[inst] = inst
         data_line.extend(dataset_to_list(src_value.features))
     elif isinstance(src_value, str):
         data_line.extend([value for value in src_value.split(',')])
         is_str = True
     else:
         data_line.extend(dataset_to_list(src_value))
-    return data_line, is_str, extend_header
+    return data_line, is_str, all_extend_header
+
+
+def generate_header(all_extend_header, schema):
+    extend_header = []
+    for inst in ["inst_id", "label", "weight"]:
+        if all_extend_header.get(inst):
+            extend_header.append(all_extend_header[inst])
+        if not all_extend_header.get(inst) and inst == "inst_id" and schema.get("match_id_name"):
+            extend_header.append(schema.get("match_id_name"))
+        if not all_extend_header.get(inst) and inst == "label" and schema.get("label_name"):
+            extend_header.append(inst)
+    return extend_header
 
 
 def get_deserialize_value(src_value, id_delimiter):

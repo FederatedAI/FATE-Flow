@@ -23,6 +23,12 @@ from fate_flow.db.config_manager import ConfigManager
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.entity import RetCode
 
+
+@manager.route('/fateflow/info', methods=['POST'])
+def fate_flow_server_info():
+    data = RuntimeConfig.SERVICE_DB.get_servers()
+    return get_json_result(data=data)
+
 @manager.route('/version/get', methods=['POST'])
 def get_fate_version_info():
     module = request.json.get('module', None)

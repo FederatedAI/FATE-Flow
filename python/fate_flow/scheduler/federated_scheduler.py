@@ -15,6 +15,7 @@
 #
 
 from fate_arch.common import base_utils
+from fate_flow.scheduler import SchedulerBase
 from fate_flow.utils.api_utils import federated_api
 from fate_flow.utils.log_utils import start_log, failed_log, successful_log, warning_log
 from fate_flow.utils.log_utils import schedule_logger
@@ -28,7 +29,7 @@ import threading
 from fate_flow.entity.types import TaskCleanResourceType
 
 
-class FederatedScheduler(object):
+class FederatedScheduler(SchedulerBase):
     """
     Send commands to party,
     Report info to initiator
@@ -75,6 +76,11 @@ class FederatedScheduler(object):
         else:
             schedule_logger(job.f_job_id).info(f"check job dependence failed")
         return status_code, response
+
+    @classmethod
+    def connect(cls, job):
+        return cls.job_command(job=job, command="align", command_body={"job_id": job.f_job_id, "role": job.f_role,
+                                                                       "party_id": job.f_party_id})
 
     @classmethod
     def start_job(cls, job, command_body=None):
@@ -207,10 +213,10 @@ class FederatedScheduler(object):
         return status_code, response
 
     @classmethod
-    def stop_task(cls, job, task, stop_status):
+    def stop_task(cls, job, task, stop_status, command_body=None):
         schedule_logger(task.f_job_id).info("try to stop task {} {}".format(task.f_task_id, task.f_task_version))
         task.f_status = stop_status
-        status_code, response = cls.task_command(job=job, task=task, command="stop/{}".format(stop_status))
+        status_code, response = cls.task_command(job=job, task=task, command="stop/{}".format(stop_status), command_body=command_body)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
             schedule_logger(job.f_job_id).info("stop task {} {} success".format(task.f_task_id, task.f_task_version))
         else:
@@ -342,22 +348,3 @@ class FederatedScheduler(object):
                                  json_body=json_body if json_body else {},
                                  federated_mode=job_parameters["federated_mode"])
         return response
-
-    # Utils
-    @classmethod
-    def return_federated_response(cls, federated_response):
-        retcode_set = set()
-        for dest_role in federated_response.keys():
-            for party_id in federated_response[dest_role].keys():
-                retcode_set.add(federated_response[dest_role][party_id]["retcode"])
-        if len(retcode_set) == 1 and RetCode.SUCCESS in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.SUCCESS
-        elif RetCode.EXCEPTION_ERROR in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.ERROR
-        elif RetCode.NOT_EFFECTIVE in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.NOT_EFFECTIVE
-        elif RetCode.SUCCESS in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.PARTIAL
-        else:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.FAILED
-        return federated_scheduling_status_code, federated_response

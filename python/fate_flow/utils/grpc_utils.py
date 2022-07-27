@@ -15,7 +15,7 @@
 #
 import grpc
 
-from eggroll.core.proto import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
+from fate_arch.protobuf.python import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
 from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.db.job_default_config import JobDefaultConfig
@@ -42,12 +42,13 @@ def gen_routing_metadata(src_party_id, dest_party_id):
     return routing_head
 
 
-def wrap_grpc_packet(json_body, http_method, url, src_party_id, dst_party_id, job_id=None, overall_timeout=None):
+def wrap_grpc_packet(json_body, http_method, url, src_party_id, dst_party_id, job_id=None, headers=None, overall_timeout=None):
     overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
     _src_end_point = basic_meta_pb2.Endpoint(ip=HOST, port=GRPC_PORT)
     _src = proxy_pb2.Topic(name=job_id, partyId="{}".format(src_party_id), role=FATE_FLOW_SERVICE_NAME, callback=_src_end_point)
     _dst = proxy_pb2.Topic(name=job_id, partyId="{}".format(dst_party_id), role=FATE_FLOW_SERVICE_NAME, callback=None)
-    _task = proxy_pb2.Task(taskId=job_id)
+    _model = proxy_pb2.Model(name="headers", dataKey=json_dumps(headers))
+    _task = proxy_pb2.Task(taskId=job_id, model=_model)
     _command = proxy_pb2.Command(name=url)
     _conf = proxy_pb2.Conf(overallTimeout=overall_timeout)
     _meta = proxy_pb2.Metadata(src=_src, dst=_dst, task=_task, command=_command, operator=http_method, conf=_conf)
@@ -70,20 +71,21 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
         job_id = header.task.taskId
         src = header.src
         dst = header.dst
+        headers_str = header.task.model.dataKey if header.task.model.dataKey else "{}"
+        headers = json_loads(headers_str)
+        headers.update(HEADERS)
         method = header.operator
         param_dict = json_loads(param)
-        param_dict['src_party_id'] = str(src.partyId)
         source_routing_header = []
         for key, value in context.invocation_metadata():
             source_routing_header.append((key, value))
 
         _routing_metadata = gen_routing_metadata(src_party_id=src.partyId, dest_party_id=dst.partyId)
         context.set_trailing_metadata(trailing_metadata=_routing_metadata)
-
+        audit_logger(job_id).info("rpc receive headers: {}".format(headers))
         audit_logger(job_id).info('rpc receive: {}'.format(packet))
         audit_logger(job_id).info("rpc receive: {} {}".format(get_url(_suffix), param))
-
-        resp = request(method=method, url=get_url(_suffix), json=param_dict, headers=HEADERS)
+        resp = request(method=method, url=get_url(_suffix), json=param_dict, headers=headers)
         resp_json = resp.json()
 
         return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)

@@ -245,8 +245,8 @@ class RuntimeConfParserUtil(object):
         if submit_dict is None:
             return provider_info
         else:
-            if local_party_id is None or local_role is None \
-                    or local_role not in submit_dict["role"] or local_party_id not in submit_dict["role"][local_role]:
+            if local_party_id is None or local_role is None or local_role not in submit_dict["role"] or str(
+                    local_party_id) not in [str(party_id) for party_id in submit_dict["role"][local_role]]:
                 raise ValueError("when parse provider from conf, local role & party_id should should be None")
 
             provider_info_all_party = {}

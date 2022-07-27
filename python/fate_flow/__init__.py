@@ -13,12 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import sys
 import os
+import sys
+
 from fate_flow.entity.types import ProcessRole
+
 
 if sys.version_info < (3, 7):
     from backports.datetime_fromisoformat import MonkeyPatch
+
     MonkeyPatch.patch_fromisoformat()
 
 

@@ -67,20 +67,10 @@ class WorkerManager:
             if not initialized_config:
                 raise ValueError("no initialized_config argument")
             config = initialized_config
-            job_conf = job_utils.save_using_job_conf(job_id=job_id,
-                                                     role=role,
-                                                     party_id=party_id,
-                                                     config_dir=config_dir)
-
             from fate_flow.worker.task_initializer import TaskInitializer
             module = TaskInitializer
             module_file_path = sys.modules[TaskInitializer.__module__].__file__
-            specific_cmd = [
-                '--dsl', job_conf["dsl_path"],
-                '--runtime_conf', job_conf["runtime_conf_path"],
-                '--train_runtime_conf', job_conf["train_runtime_conf_path"],
-                '--pipeline_dsl', job_conf["pipeline_dsl_path"],
-            ]
+            specific_cmd = []
             provider_info = initialized_config["provider"]
         else:
             raise Exception(f"not support {worker_name} worker")
@@ -184,11 +174,11 @@ class WorkerManager:
         config = task_parameters.to_dict()
         config["src_user"] = kwargs.get("src_user")
         config_path, result_path = cls.get_config(config_dir=config_dir, config=config, log_dir=log_dir)
-
+        env = cls.get_env(task.f_job_id, task.f_provider_info)
         if executable:
             process_cmd = executable
         else:
-            process_cmd = [sys.executable or "python3"]
+            process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
 
         common_cmd = [
             module_file_path,
@@ -204,13 +194,13 @@ class WorkerManager:
             "--parent_log_dir", os.path.dirname(log_dir),
             "--worker_id", worker_id,
             "--run_ip", RuntimeConfig.JOB_SERVER_HOST,
+            "--run_port", RuntimeConfig.HTTP_PORT,
             "--job_server", f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
             "--session_id", session_id,
             "--federation_session_id", federation_session_id,
         ]
         process_cmd.extend(common_cmd)
         process_cmd.extend(specific_cmd)
-        env = cls.get_env(task.f_job_id, task.f_provider_info)
         if extra_env:
             env.update(extra_env)
         schedule_logger(task.f_job_id).info(

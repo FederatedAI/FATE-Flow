@@ -88,9 +88,23 @@ class ResourceOperation(CustomEnum):
 
 
 class PermissionType(CustomEnum):
-    ROLE = "role"
     COMPONENT = "component"
     DATASET = "dataset"
+
+
+class SiteKeyName(CustomEnum):
+    PRIVATE = "private"
+    PUBLIC = "public"
+
+
+class RegistryServiceName(CustomEnum):
+    UPLOAD = "upload"
+    DOWNLOAD = "download"
+    QUERY = "query"
+    CLIENT_AUTHENTICATION = "client_authentication"
+    SIGNATURE = "signature"
+    SITE_AUTHENTICATION = "site_authentication"
+    PERMISSION_CHECK = "permission"
 
 
 class KillProcessRetCode(IntEnum, CustomEnum):

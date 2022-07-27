@@ -140,7 +140,7 @@ def migration(config_data: dict):
                                                    model_alias=v, model_buffers=modified_buffer)
 
         migrate_model.gen_model_import_config()
-        archive_path = migrate_model.packaging_model()
+        migrate_model.packaging_model()
         shutil.rmtree(os.path.abspath(migrate_model.model_path))
 
         return (0, f"Migrating model successfully. " \
@@ -148,10 +148,10 @@ def migration(config_data: dict):
                   "New model id is: {}, model version is: {}. " \
                   "Model files can be found at '{}'.".format(adapter.get_common_parameters().to_dict().get("model_id"),
                                                              migrate_model.model_version,
-                                                             os.path.abspath(archive_path)),
+                                                             os.path.abspath(migrate_model.archive_model_file_path)),
                 {"model_id": migrate_model.model_id,
                  "model_version": migrate_model.model_version,
-                 "path": os.path.abspath(archive_path)})
+                 "path": os.path.abspath(migrate_model.archive_model_file_path)})
 
     except Exception as e:
         stat_logger.exception(e)

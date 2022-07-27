@@ -15,11 +15,12 @@
 #
 from flask import request
 
-from fate_flow.utils.api_utils import get_json_result
+from fate_flow.utils.api_utils import get_json_result, cluster_route
 from fate_flow.utils.log_sharing_utils import LogCollector
 
 
 @manager.route('/size', methods=['POST'])
+@cluster_route
 def get_log_size():
     request_data = request.json
     data = LogCollector(**request_data).get_size()
@@ -27,6 +28,7 @@ def get_log_size():
 
 
 @manager.route('/cat', methods=['POST'])
+@cluster_route
 def get_log():
     request_data = request.json
     data = LogCollector(**request_data).cat_log(request_data.get("begin"), request_data.get("end"))

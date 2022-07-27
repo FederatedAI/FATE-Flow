@@ -13,34 +13,35 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
 import importlib
+import os
 import traceback
 
 from fate_arch import session, storage
-from fate_arch.computing import ComputingEngine
-from fate_arch.common import file_utils, EngineType, profile
+from fate_arch.common import EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
-from fate_flow.utils.log_utils import getLogger
+from fate_arch.common.conf_utils import get_base_config
+from fate_arch.computing import ComputingEngine
 
-from fate_flow.entity import JobConfiguration
+from fate_flow.component_env_utils import provider_utils
+from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
+from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.entity import DataCache, RunParameters
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.errors import PassError
-from fate_flow.entity import RunParameters
-from fate_flow.entity import DataCache
-from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.hook import HookManager
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.manager.provider_manager import ProviderManager
-from fate_flow.operation.job_tracker import Tracker
 from fate_flow.model.checkpoint import CheckpointManager
-from fate_flow.scheduling_apps.client.operation_client import OperationClient
-from fate_flow.utils import job_utils, schedule_utils
+from fate_flow.model.sync_model import SyncComponent
+from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduling_apps.client import TrackerClient
-from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
-from fate_flow.component_env_utils import provider_utils
-from fate_flow.worker.task_base_worker import BaseTaskWorker, ComponentInput
+from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.utils.base_utils import get_fate_flow_python_directory
+from fate_flow.utils.log_utils import getLogger
+from fate_flow.utils.model_utils import gen_party_model_id
+from fate_flow.worker.task_base_worker import BaseTaskWorker, ComponentInput
 
 
 LOGGER = getLogger()
@@ -53,6 +54,7 @@ class TaskExecutor(BaseTaskWorker):
         start_time = current_timestamp()
         try:
             LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
+            HookManager.init()
             self.report_info.update({
                 "job_id": args.job_id,
                 "component_name": args.component_name,
@@ -61,10 +63,14 @@ class TaskExecutor(BaseTaskWorker):
                 "role": args.role,
                 "party_id": args.party_id,
                 "run_ip": args.run_ip,
+                "run_port": args.run_port,
                 "run_pid": self.run_pid
             })
-            operation_client = OperationClient()
-            job_configuration = JobConfiguration(**operation_client.get_job_conf(args.job_id, args.role, args.party_id, args.component_name, args.task_id, args.task_version))
+            job_configuration = job_utils.get_job_configuration(
+                job_id=self.args.job_id,
+                role=self.args.role,
+                party_id=self.args.party_id
+            )
             task_parameters_conf = args.config
             dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
                                                            runtime_conf=job_configuration.runtime_conf,
@@ -214,6 +220,12 @@ class TaskExecutor(BaseTaskWorker):
             tracker_client.save_component_output_model(model_buffers=cpn_output.model,
                                                        model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
                                                        user_specified_run_parameters=user_specified_parameters)
+            if get_base_config('enable_model_store', False):
+                party_model_id = gen_party_model_id(job_parameters.model_id, args.role, args.party_id)
+                sync_component = SyncComponent(party_model_id, job_parameters.model_version, args.component_name)
+                LOGGER.info(f'Uploading {sync_component.component_name} to component storage.')
+                sync_component.upload()
+
             if cpn_output.cache is not None:
                 for i, cache in enumerate(cpn_output.cache):
                     if cache is None:
