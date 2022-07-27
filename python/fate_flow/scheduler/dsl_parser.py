@@ -844,16 +844,13 @@ class BaseDSLParser(object):
         return self.job_parameters
 
     def get_job_providers(self, provider_detail=None, dsl=None, conf=None, local_role=None, local_party_id=None):
-        if self.job_providers:
-            return self.job_providers
+        if dsl is None:
+            self.job_providers = RuntimeConfParserUtil.get_job_providers(self.dsl, provider_detail, conf,
+                                                                         local_role, local_party_id)
         else:
-            if dsl is None:
-                self.job_providers = RuntimeConfParserUtil.get_job_providers(self.dsl, provider_detail, conf,
-                                                                             local_role, local_party_id)
-            else:
-                self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail, conf,
-                                                                             local_role, local_party_id)
-            return self.job_providers
+            self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail, conf,
+                                                                         local_role, local_party_id)
+        return self.job_providers
 
     @staticmethod
     def _gen_predict_data_mapping():
