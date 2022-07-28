@@ -152,7 +152,8 @@ class DAGScheduler(Cron):
                                                            job_parameters=common_job_parameters,
                                                            dsl_parser=dsl_parser,
                                                            components=need_run_components[role][party_id],
-                                                           runtime_conf=runtime_conf)
+                                                           runtime_conf=runtime_conf,
+                                                           is_scheduler=True)
                 job.f_status = JobStatus.WAITING
                 status_code, response = FederatedScheduler.sync_job_status(job=job)
                 if status_code != FederatedSchedulingStatusCode.SUCCESS:
