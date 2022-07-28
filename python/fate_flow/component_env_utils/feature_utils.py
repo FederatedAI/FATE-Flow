@@ -31,6 +31,10 @@ def get_component_output_data_line(src_key, src_value, schema=None, all_extend_h
                 else:
                     if not all_extend_header[inst]:
                         all_extend_header[inst] = inst
+            elif inst == "inst_id" and schema.get("match_id_name"):
+                data_line.append(None)
+            elif inst == "label" and schema.get("label_name"):
+                data_line.append(None)
         data_line.extend(dataset_to_list(src_value.features))
     elif isinstance(src_value, str):
         data_line.extend([value for value in src_value.split(',')])
