@@ -70,7 +70,7 @@ class PipelinedComponent(Locker):
         )
         return list(query)
 
-    def read_define_meta(self, db_only=False):
+    def get_define_meta(self, db_only=False):
         query = self.get_define_meta_from_db()
         if not query and not db_only:
             return self.get_define_meta_from_file()
@@ -89,7 +89,7 @@ class PipelinedComponent(Locker):
         return define_meta
 
     @DB.connection_context()
-    def write_define_meta(self, component_name, component_module_name, model_alias, model_proto_index):
+    def save_define_meta(self, component_name, component_module_name, model_alias, model_proto_index):
         PipelineComponentMeta.insert(
             f_model_id=self.model_id,
             f_model_version=self.model_version,
@@ -102,7 +102,7 @@ class PipelinedComponent(Locker):
         ).execute()
 
     def save_define_meta_from_db_to_file(self):
-        define_meta = self.read_define_meta(True)
+        define_meta = self.get_define_meta(True)
 
         with self.lock, open(self.define_meta_path, 'w', encoding='utf-8') as f:
             yaml.dump(define_meta, f, Dumper=yaml.RoundTripDumper)

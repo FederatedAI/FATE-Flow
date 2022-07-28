@@ -218,7 +218,7 @@ class PipelinedModel(Locker):
 
     @local_cache_required
     def collect_models(self, in_bytes=False, b64encode=True):
-        define_meta = self.pipelined_component.read_define_meta()
+        define_meta = self.pipelined_component.get_define_meta()
         model_buffers = {}
 
         for component_name in define_meta.get("model_proto", {}).keys():
@@ -288,30 +288,32 @@ class PipelinedModel(Locker):
         :param model_proto_index:
         :return:
         """
-        return self.pipelined_component.write_define_meta(component_name, component_module_name, model_alias, model_proto_index)
+        return self.pipelined_component.save_define_meta(component_name, component_module_name, model_alias, model_proto_index)
 
     def get_component_define(self, component_name=None):
-        component_define = self.pipelined_component.read_define_meta()['component_define']
+        component_define = self.pipelined_component.get_define_meta()['component_define']
         if component_name is None:
             return component_define
+
         return component_define.get(component_name, {})
 
     def get_model_proto_index(self, component_name=None, model_alias=None):
-        model_proto = self.pipelined_component.read_define_meta()['model_proto']
+        model_proto = self.pipelined_component.get_define_meta()['model_proto']
         if component_name is None:
             return model_proto
+
         model_proto = model_proto.get(component_name, {})
         if model_alias is None:
             return model_proto
+
         return model_proto.get(model_alias, {})
 
     def get_model_alias(self, component_name):
         model_proto_index = self.get_model_proto_index(component_name)
-
-        if len(model_proto_index.keys()) != 1:
+        if len(model_proto_index) != 1:
             raise KeyError('Failed to detect "model_alias", please specify it manually.')
 
-        return list(model_proto_index.keys())[0]
+        return next(iter(model_proto_index.keys()))
 
     @property
     def archive_model_base_path(self):

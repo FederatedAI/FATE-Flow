@@ -415,6 +415,8 @@ class TaskExecutor(BaseTaskWorker):
             patch_module.patch_all()
 
 
+# this file may not be running on the same machine as fate_flow,
+# so we need to use the tracker to get the input and save the output
 if __name__ == '__main__':
     worker = TaskExecutor()
     worker.run()
