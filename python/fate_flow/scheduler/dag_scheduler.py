@@ -445,7 +445,7 @@ class DAGScheduler(Cron):
                 'party_id': initiator_party_id,
             }
 
-            if not component_name or component_name == job_utils.job_pipeline_component_name():
+            if not component_name or component_name == job_utils.PIPELINE_COMPONENT_NAME:
                 # rerun all tasks
                 schedule_logger(job_id).info("require all component of pipeline to rerun")
             else:
@@ -477,7 +477,7 @@ class DAGScheduler(Cron):
 
     @classmethod
     def get_rerun_component(cls, component_name, job, dsl_parser, force):
-        if not component_name or component_name == job_utils.job_pipeline_component_name():
+        if not component_name or component_name == job_utils.PIPELINE_COMPONENT_NAME:
             pass
         else:
             dependence_status_code, response = FederatedScheduler.check_component(job=job, check_type="rerun")

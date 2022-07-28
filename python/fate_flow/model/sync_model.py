@@ -117,15 +117,16 @@ class SyncComponent:
     def __init__(self, party_model_id, model_version, component_name):
         storage, storage_address = get_storage(model_storage_map)
         self.component_storage = storage(**storage_address)
+        self.component_storage_parameters = (
+            self.pipelined_model.party_model_id,
+            self.pipelined_model.model_version,
+            self.component_name,
+        )
 
         self.pipelined_model = PipelinedModel(party_model_id, model_version)
         self.component_name = component_name
 
-        self.lock = DB.lock(f'sync_component_{self.pipelined_model.party_model_id}_'
-                            f'{self.pipelined_model.model_version}_{self.component_name}', -1)
-
-    def get_component(self):
-        return PipelineComponentMeta.get(
+        self.query_args = (
             PipelineComponentMeta.f_role == self.pipelined_model.role,
             PipelineComponentMeta.f_party_id == self.pipelined_model.party_id,
             PipelineComponentMeta.f_model_id == self.pipelined_model._model_id,
@@ -133,29 +134,46 @@ class SyncComponent:
             PipelineComponentMeta.f_component_name == self.component_name,
         )
 
+        self.lock = DB.lock(
+            '_'.join((
+                'sync_component',
+                *self.component_storage_parameters,
+            )),
+            -1
+        )
+
+    def local_exits(self):
+        return self.pipelined_model.pipelined_component.exists(self.component_name)
+
+    def remote_exits(self):
+        return self.component_storage.exists(*self.component_storage_parameters)
+
+    def get_archive_hash(self):
+        query = tuple(PipelineComponentMeta.select().where(*self.query_args).group_by(
+            PipelineComponentMeta.f_archive_sha256, PipelineComponentMeta.f_archive_from_ip))
+        if len(query) != 1:
+            raise ValueError(f'The define_meta data of {self.component_name} in database is invalid.')
+
+        return query[0].f_archive_sha256
+
+    def update_archive_hash(self, hash_):
+        PipelineComponentMeta.update(
+            f_archive_sha256=hash_,
+            f_archive_from_ip=HOST,
+        ).where(*self.query_args).execute()
+
     @DB.connection_context()
     def upload(self):
         with self.lock:
-            component = self.get_component()
+            self.get_archive_hash()
 
-            hash_ = self.component_storage.upload(self.pipelined_model.party_model_id,
-                                                  self.pipelined_model.model_version,
-                                                  self.component_name)
+            hash_ = self.component_storage.upload(*self.component_storage_parameters)
 
-            component.f_archive_sha256 = hash_
-            component.f_archive_from_ip = HOST
-            component.save()
-
-        return component
+            self.update_archive_hash(hash_)
 
     @DB.connection_context()
     def download(self):
         with self.lock:
-            component = self.get_component()
+            hash_ = self.get_archive_hash()
 
-            self.component_storage.download(self.pipelined_model.party_model_id,
-                                            self.pipelined_model.model_version,
-                                            self.component_name,
-                                            component.f_archive_sha256)
-
-        return component
+            self.component_storage.download(*self.component_storage_parameters, hash_)

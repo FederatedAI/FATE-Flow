@@ -20,7 +20,6 @@ import traceback
 from fate_arch import session, storage
 from fate_arch.common import EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
-from fate_arch.common.conf_utils import get_base_config
 from fate_arch.computing import ComputingEngine
 
 from fate_flow.component_env_utils import provider_utils
@@ -34,7 +33,6 @@ from fate_flow.hook import HookManager
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.model.checkpoint import CheckpointManager
-from fate_flow.model.sync_model import SyncComponent
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.utils import job_utils, schedule_utils
@@ -227,17 +225,15 @@ class TaskExecutor(BaseTaskWorker):
                     output_table_list.append({"namespace": persistent_table_namespace, "name": persistent_table_name})
             self.log_output_data_table_tracker(args.job_id, input_table_list, output_table_list)
 
-            getattr(tracker_client if predict_tracker_client is None else predict_tracker_client, 'save_component_output_model')(
+            getattr(
+                tracker_client if predict_tracker_client is None else predict_tracker_client,
+                'save_component_output_model',
+            )(
                 model_buffers=cpn_output.model,
                 # There is only one model output at the current dsl version
                 model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
                 user_specified_run_parameters=user_specified_parameters,
             )
-
-            if get_base_config('enable_model_store', False):
-                sync_component = SyncComponent(party_model_id, model_version, args.component_name)
-                LOGGER.info(f'Uploading {sync_component.component_name} to component storage.')
-                sync_component.upload()
 
             if cpn_output.cache is not None:
                 for i, cache in enumerate(cpn_output.cache):

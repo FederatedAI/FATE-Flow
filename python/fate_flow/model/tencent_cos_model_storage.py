@@ -30,6 +30,9 @@ LOGGER = getLogger()
 
 class TencentCOSModelStorage(ModelStorageBase):
 
+    def store_key(self, model_id: str, model_version: str):
+        return f'FATEFlow/PipelinedModel/{model_id}/{model_version}.zip'
+
     def exists(self, model_id: str, model_version: str, store_address: dict):
         store_key = self.store_key(model_id, model_version) + '.zip'
         cos = self.get_connection(store_address)
@@ -126,10 +129,10 @@ class TencentCOSComponentStorage(ComponentStorageBase):
         pass
 
     def get_key(self, party_model_id, model_version, component_name):
-        return f'FATEFlow/PipelinedComponent/{party_model_id}/{model_version}/{component_name}'
+        return f'FATEFlow/PipelinedComponent/{party_model_id}/{model_version}/{component_name}.zip'
 
     def exists(self, party_model_id, model_version, component_name):
-        key = self.get_key(party_model_id, model_version) + '.zip'
+        key = self.get_key(party_model_id, model_version, component_name)
 
         try:
             self.client.head_object(

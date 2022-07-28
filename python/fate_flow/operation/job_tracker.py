@@ -57,8 +57,8 @@ class Tracker(object):
         self.job_parameters = job_parameters
         self.role = role
         self.party_id = party_id
-        self.component_name = component_name if component_name else job_utils.job_pipeline_component_name()
-        self.module_name = component_module_name if component_module_name else job_utils.job_pipeline_component_module_name()
+        self.component_name = component_name if component_name else job_utils.PIPELINE_COMPONENT_NAME
+        self.module_name = component_module_name if component_module_name else job_utils.PIPELINE_COMPONENT_MODULE_NAME
         self.task_id = task_id
         self.task_version = task_version
 

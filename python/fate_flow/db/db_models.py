@@ -578,12 +578,13 @@ class PipelineComponentMeta(DataBaseModel):
     f_component_module_name = CharField(max_length=100)
     f_model_alias = CharField(max_length=100, index=True)
     f_model_proto_index = JSONField(null=True)
+    f_run_parameters = JSONField(null=True)
     f_archive_sha256 = CharField(max_length=100, null=True)
     f_archive_from_ip = CharField(max_length=100, null=True)
 
     class Meta:
         db_table = 't_pipeline_component_meta'
         indexes = (
-            (('f_model_id', 'f_model_version', 'f_role', 'f_party_id', 'f_component_name'), False),
+            (('f_model_id', 'f_model_version', 'f_role', 'f_party_id', 'f_component_name'), True),
             (('f_model_id', 'f_model_version', 'f_role', 'f_party_id', 'f_model_alias'), True),
         )
