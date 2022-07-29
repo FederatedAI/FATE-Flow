@@ -200,19 +200,19 @@ def do_load_model():
     party_id = request_data['local']['party_id']
     model_id = request_data['job_parameters']['model_id']
     model_version = request_data['job_parameters']['model_version']
-    party_model_id = model_utils.gen_party_model_id(model_id, role, party_id)
 
     if get_base_config('enable_model_store', False):
-        sync_model = SyncModel(party_model_id, model_version)
+        sync_model = SyncModel(
+            role=role, party_id=party_id,
+            model_id=model_id, model_version=model_version,
+        )
 
-        if not sync_model.db_exits():
+        if not sync_model.db_exists():
             return error_response(retcode=404, retmsg='Model not found.')
 
-        if sync_model.local_exits() and not sync_model.remote_exits():
-            stat_logger.info(f'Uploading {sync_model.pipeline_model.model_path} to model storage.')
+        if sync_model.local_exists() and not sync_model.remote_exists():
             sync_model.upload()
-        elif not sync_model.local_exits() and sync_model.remote_exits():
-            stat_logger.info(f'Downloading {sync_model.pipeline_model.model_path} from model storage.')
+        elif not sync_model.local_exists() and sync_model.remote_exists():
             sync_model.download()
 
     if not model_utils.check_if_deployed(role, party_id, model_id, model_version):
@@ -224,10 +224,12 @@ def do_load_model():
     try:
         if not retcode:
             with DB.connection_context():
-                model = MLModel.get_or_none(MLModel.f_role == request_data["local"]["role"],
-                                            MLModel.f_party_id == request_data["local"]["party_id"],
-                                            MLModel.f_model_id == request_data["job_parameters"]["model_id"],
-                                            MLModel.f_model_version == request_data["job_parameters"]["model_version"])
+                model = MLModel.get_or_none(
+                    MLModel.f_role == role,
+                    MLModel.f_party_id == party_id,
+                    MLModel.f_model_id == model_id,
+                    MLModel.f_model_version == model_version,
+                )
                 if model:
                     model.f_loaded_times += 1
                     model.save()

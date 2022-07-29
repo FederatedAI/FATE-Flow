@@ -83,7 +83,11 @@ def save_component_model(job_id, component_name, task_version, task_id, role, pa
     pipelined_model.write_component_model(request.json['component_model'])
 
     if get_base_config('enable_model_store', False):
-        sync_component = SyncComponent(party_model_id, model_version, component_name)
+        sync_component = SyncComponent(
+            party_model_id=party_model_id,
+            model_version=model_version,
+            component_name=component_name,
+        )
         # no need to test sync_component.remote_exists()
         sync_component.upload()
 
@@ -100,8 +104,12 @@ def get_component_model(job_id, component_name, task_version, task_id, role, par
     model_version = request.json['model_version']
 
     if get_base_config('enable_model_store', False):
-        sync_component = SyncComponent(party_model_id, model_version, component_name)
-        if not sync_component.local_exits():
+        sync_component = SyncComponent(
+            party_model_id=party_model_id,
+            model_version=model_version,
+            component_name=component_name,
+        )
+        if not sync_component.local_exists() and sync_component.remote_exists():
             sync_component.download()
 
     pipelined_model = PipelinedModel(party_model_id, model_version)

@@ -17,10 +17,12 @@ import os
 import shutil
 
 from fate_arch.common.base_utils import json_loads, json_dumps
+from fate_arch.common.conf_utils import get_base_config
 
 from fate_flow.settings import stat_logger
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.model.checkpoint import CheckpointManager
+from fate_flow.model.sync_model import SyncModel
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.model_utils import (gen_party_model_id, check_before_deploy,
@@ -37,6 +39,14 @@ def deploy(config_data):
     child_model_version = config_data.get('child_model_version')
     components_checkpoint = config_data.get('components_checkpoint', {})
     warning_msg = ""
+
+    if get_base_config('enable_model_store', False):
+        sync_model = SyncModel(
+            role=local_role, party_id=local_party_id,
+            model_id=model_id, model_version=model_version,
+        )
+        if sync_model.remote_exists():
+            sync_model.download(True)
 
     try:
         party_model_id = gen_party_model_id(model_id=model_id, role=local_role, party_id=local_party_id)

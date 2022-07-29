@@ -74,8 +74,7 @@ class DatabaseLock:
         self.db = db if db else DB
 
     def lock(self):
-        sql = "SELECT GET_LOCK('%s', %s)" % (self.lock_name, self.timeout)
-        cursor = self.db.execute_sql(sql)
+        cursor = self.db.execute_sql("SELECT GET_LOCK('%s', %d)", (self.lock_name, self.timeout))
         ret = cursor.fetchone()
         if ret[0] == 0:
             raise Exception('mysql lock {} is already used'.format(self.lock_name))
@@ -85,8 +84,7 @@ class DatabaseLock:
             raise Exception('mysql lock {} error occurred!')
 
     def unlock(self):
-        sql = "SELECT RELEASE_LOCK('%s')" % (self.lock_name)
-        cursor = self.db.execute_sql(sql)
+        cursor = self.db.execute_sql("SELECT RELEASE_LOCK('%s')", (self.lock_name, ))
         ret = cursor.fetchone()
         if ret[0] == 0:
             raise Exception('mysql lock {} is not released'.format(self.lock_name))

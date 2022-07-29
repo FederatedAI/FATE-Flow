@@ -18,6 +18,7 @@ import shutil
 
 from fate_arch.common import EngineType, engine_utils
 from fate_arch.common.base_utils import current_timestamp, json_dumps
+from fate_arch.common.conf_utils import get_base_config
 from fate_arch.computing import ComputingEngine
 
 from fate_flow.controller.task_controller import TaskController
@@ -31,6 +32,7 @@ from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.model.checkpoint import CheckpointManager
+from fate_flow.model.sync_model import SyncComponent, SyncModel
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.pipelined_model.pipelined_model import PipelinedComponent
@@ -487,18 +489,42 @@ class JobController(object):
         pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
         pipeline.parent_info = json_dumps({}, byte=True)
 
-        tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
-                          model_id=model_id, model_version=model_version, job_parameters=RunParameters(**job_parameters))
+        if get_base_config('enable_model_store', False):
+            query = tracker.pipelined_model.pipelined_component.get_define_meta_from_db()
+            for row in query:
+                sync_component = SyncComponent(
+                    role=role, party_id=party_id,
+                    model_id=model_id, model_version=model_version,
+                    component_name=row.f_component_name,
+                )
+                if not sync_component.local_exists() and sync_component.remote_exists():
+                    sync_component.download()
+
+        tracker = Tracker(
+            job_id=job_id, role=role, party_id=party_id,
+            model_id=model_id, model_version=model_version,
+            job_parameters=RunParameters(**job_parameters),
+        )
         tracker.pipelined_model.save_pipeline_model(pipeline_buffer_object=pipeline)
+
         if role != 'local':
             tracker.save_machine_learning_model_info()
+
+            if get_base_config('enable_model_store', False):
+                sync_model = SyncModel(
+                    role=role, party_id=party_id,
+                    model_id=model_id, model_version=model_version,
+                )
+                sync_model.upload(True)
+
         schedule_logger(job_id).info(f"save pipeline on {role} {party_id} successfully")
 
     @classmethod
     def clean_job(cls, job_id, role, party_id, roles):
-        schedule_logger(job_id).info(f"start to clean job on {role} {party_id}")
-        # todo
-        schedule_logger(job_id).info(f"job on {role} {party_id} clean done")
+        pass
+        # schedule_logger(job_id).info(f"start to clean job on {role} {party_id}")
+        # TODO: clean job
+        # schedule_logger(job_id).info(f"job on {role} {party_id} clean done")
 
     @classmethod
     def job_reload(cls, job):

@@ -89,6 +89,8 @@ class PipelinedComponent(Locker):
 
         for row in data:
             define_meta['component_define'][row.f_component_name] = {'module_name': row.f_component_module_name}
+
+            # there is only one model_alias in a component
             if row.f_component_name not in define_meta['model_proto']:
                 define_meta['model_proto'][row.f_component_name] = {}
             define_meta['model_proto'][row.f_component_name][row.f_model_alias] = row.f_model_proto_index
