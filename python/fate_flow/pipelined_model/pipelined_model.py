@@ -60,11 +60,9 @@ class PipelinedModel(Locker):
         self.party_model_id = self.model_id = model_id
         self.model_version = model_version
 
-        self.model_path = get_fate_flow_directory("model_local_cache", model_id, model_version)
-        self.variables_data_path = os.path.join(self.model_path, "variables", "data")
-
         self.pipelined_component = PipelinedComponent(role=self.role, party_id=self.party_id,
                                                       model_id=self._model_id, model_version=self.model_version)
+        self.model_path = self.pipelined_component.model_path
 
         super().__init__(self.model_path)
 
@@ -89,7 +87,7 @@ class PipelinedModel(Locker):
                                user_specified_run_parameters: dict = None):
         component_model = {"buffer": {}}
 
-        component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
+        component_model_storage_path = os.path.join(self.pipelined_component.variables_data_path, component_name, model_alias)
         model_proto_index = {}
 
         for model_name, (proto_index, object_serialized, object_json) in model_buffers.items():
@@ -128,7 +126,7 @@ class PipelinedModel(Locker):
 
     @local_cache_required
     def _read_component_model(self, component_name, model_alias):
-        component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
+        component_model_storage_path = os.path.join(self.pipelined_component.variables_data_path, component_name, model_alias)
         model_proto_index = self.get_model_proto_index(component_name=component_name, model_alias=model_alias)
 
         model_buffers = {}
@@ -186,7 +184,7 @@ class PipelinedModel(Locker):
     # TODO: integration with read_component_model
     @local_cache_required
     def read_pipeline_model(self, parse=True):
-        component_model_storage_path = os.path.join(self.variables_data_path, PIPELINE_COMPONENT_NAME, PIPELINE_MODEL_ALIAS)
+        component_model_storage_path = os.path.join(self.pipelined_component.variables_data_path, PIPELINE_COMPONENT_NAME, PIPELINE_MODEL_ALIAS)
         model_proto_index = self.get_model_proto_index(PIPELINE_COMPONENT_NAME, PIPELINE_MODEL_ALIAS)
 
         model_buffers = {}
@@ -206,7 +204,7 @@ class PipelinedModel(Locker):
 
         for component_name in define_meta.get("model_proto", {}).keys():
             for model_alias, model_proto_index in define_meta["model_proto"][component_name].items():
-                component_model_storage_path = os.path.join(self.variables_data_path, component_name, model_alias)
+                component_model_storage_path = os.path.join(self.pipelined_component.variables_data_path, component_name, model_alias)
 
                 for model_name, buffer_name in model_proto_index.items():
                     with open(os.path.join(component_model_storage_path, model_name), "rb") as fr:
@@ -303,20 +301,6 @@ class PipelinedModel(Locker):
         for root, dirs, files in os.walk(self.model_path):
             size += sum([os.path.getsize(os.path.join(root, name)) for name in files])
         return round(size/1024)
-
-    def reload_component_model(self, model_id, model_version, component_list):
-        for component_name in component_list:
-            target_path = os.path.join(self.variables_data_path, component_name)
-            source_pipeline_model = PipelinedModel(model_id, model_version)
-            source_path = os.path.join(source_pipeline_model.variables_data_path, component_name)
-            if not os.path.exists(source_path):
-                continue
-            shutil.copytree(source_path, target_path)
-
-            component_model_proto = source_pipeline_model.get_model_proto_index(component_name)
-            component_define = source_pipeline_model.get_component_define(component_name)
-            for model_alias, model_proto_index in component_model_proto.items():
-                self.pipelined_component.save_define_meta(component_name, component_define.get("module_name"), model_alias, model_proto_index, run_parameters)
 
     def gen_model_import_config(self):
         config = {

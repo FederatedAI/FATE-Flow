@@ -21,6 +21,7 @@ from fate_arch.common.conf_utils import get_base_config
 
 from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.settings import stat_logger
+from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.model.sync_model import SyncModel
@@ -52,30 +53,33 @@ def deploy(config_data):
 
     try:
         party_model_id = gen_party_model_id(model_id=model_id, role=local_role, party_id=local_party_id)
-        model = PipelinedModel(model_id=party_model_id, model_version=model_version)
-        model_data = model.collect_models(in_bytes=True)
+        source_model = PipelinedModel(model_id=party_model_id, model_version=model_version)
+        model_data = source_model.collect_models(in_bytes=True)
         if "pipeline.pipeline:Pipeline" not in model_data:
             raise Exception("Can not found pipeline file in model.")
 
         # check if the model could be executed the deploy process (parent/child)
-        if not check_before_deploy(model):
+        if not check_before_deploy(source_model):
             raise Exception('Child model could not be deployed.')
 
-        # copy proto content from parent model and generate a child model
         deploy_model = PipelinedModel(model_id=party_model_id, model_version=child_model_version)
 
-        shutil.copytree(src=model.model_path, dst=deploy_model.model_path,
-                        ignore=lambda src, names: {'checkpoint'} if src == model.model_path else {})
-        shutil.rmtree(os.path.join(deploy_model.pipelined_component.variables_data_path, PIPELINE_COMPONENT_NAME))
-        shutil.rmtree(os.path.join(deploy_model.pipelined_component.run_parameters_path, PIPELINE_COMPONENT_NAME))
+        query = source_model.pipelined_component.get_define_meta_from_db(
+            PipelineComponentMeta.f_component_name != PIPELINE_COMPONENT_NAME,
+        )
+        for row in query:
+            shutil.copytree(
+                source_model.pipelined_component.variables_data_path / row.f_component_name,
+                deploy_model.pipelined_component.variables_data_path / row.f_component_name,
+            )
 
-        model.pipelined_component.replicate_define_meta({
+        source_model.pipelined_component.replicate_define_meta({
             'f_model_version': child_model_version,
         }, (
             PipelineComponentMeta.f_component_name != PIPELINE_COMPONENT_NAME,
         ))
 
-        pipeline_model = deploy_model.read_pipeline_model()
+        pipeline_model = source_model.read_pipeline_model()
 
         train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
         runtime_conf_on_party = json_loads(pipeline_model.runtime_conf_on_party)
