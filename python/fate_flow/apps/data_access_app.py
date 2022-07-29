@@ -168,7 +168,9 @@ def gen_data_access_job_config(config_data, access_module):
                 "extend_sid",
                 "auto_increasing_sid",
                 "block_size",
-                "schema"
+                "schema",
+                "with_meta",
+                "meta"
             }
         update_config(job_runtime_conf, job_dsl, initiator_role, parameters, access_module, config_data)
 

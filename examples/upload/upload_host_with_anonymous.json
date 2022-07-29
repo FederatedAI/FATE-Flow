@@ -1,0 +1,12 @@
+{
+  "file": "examples/data/breast_hetero_host.csv",
+  "id_delimiter": ",",
+  "head": 1,
+  "partition": 4,
+  "namespace": "experiment",
+  "table_name": "breast_hetero_anonymous_host",
+  "with_meta": true,
+  "meta": {
+    "with_label": false
+  }
+}

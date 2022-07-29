@@ -1,0 +1,22 @@
+{
+  "file": "xxx",
+  "id_delimiter": ",",
+  "head": 1,
+  "partition": 4,
+  "namespace": "experiment",
+  "table_name": "xxx",
+  "with_meta": true,
+  "meta": {
+    "input_format": "dense",
+    "tag_with_value": false,
+    "tag_value_delimiter": ":",
+    "with_match_id": false,
+    "id_list": null,
+    "id_range": 0,
+    "exclusive_data_type": null,
+    "data_type": "float64",
+    "with_label": false,
+    "label_name": "y",
+    "label_type": "int"
+  }
+}

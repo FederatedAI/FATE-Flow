@@ -27,12 +27,71 @@ from flask import send_file
 from fate_arch.abc import StorageTableABC
 from fate_arch.common.base_utils import fate_uuid
 from fate_arch.session import Session
-from fate_flow.component_env_utils import feature_utils
+from fate_flow.component_env_utils import feature_utils, env_utils
 from fate_flow.settings import stat_logger
 from fate_flow.db.db_models import DB, TrackingMetric, DataTableTracking
 from fate_flow.utils import data_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.data_utils import get_header_schema, line_extend_uuid
+
+
+class SchemaMetaParam:
+    def __init__(self,
+                 delimiter,
+                 input_format="dense",
+                 tag_with_value=False,
+                 tag_value_delimiter=":",
+                 with_match_id=False,
+                 id_list=None,
+                 id_range=0,
+                 exclusive_data_type=None,
+                 data_type="float64",
+                 with_label=False,
+                 label_name="y",
+                 label_type="int"):
+        self.input_format = input_format
+        self.delimiter = delimiter
+        self.tag_with_value = tag_with_value
+        self.tag_value_delimiter = tag_value_delimiter
+        self.with_match_id = with_match_id
+        self.id_list = id_list
+        self.id_range = id_range
+        self.exclusive_data_type = exclusive_data_type
+        self.data_type = data_type
+        self.with_label = with_label
+        self.label_name = label_name
+        self.label_type = label_type
+        self.adapter_param()
+
+    def to_dict(self):
+        d = {}
+        for k, v in self.__dict__.items():
+            if v is None:
+                continue
+            d[k] = v
+        return d
+
+    def adapter_param(self):
+        if not self.with_label:
+            self.label_name = None
+            self.label_type = None
+
+
+class AnonymousGenerator(object):
+    @staticmethod
+    def update_anonymous_header_with_role(schema, role, party_id):
+        obj = env_utils.get_class_object("anonymous_generator")
+        return obj.update_anonymous_header_with_role(schema, role, party_id)
+
+    @staticmethod
+    def generate_anonymous_header(schema):
+        obj = env_utils.get_class_object("anonymous_generator")()
+        return obj.generate_anonymous_header(schema)
+
+    @staticmethod
+    def generate_header(computing_table, schema):
+        obj = env_utils.get_class_object("data_format")
+        return obj.generate_header(computing_table, schema)
 
 
 class DataTableTracker(object):
@@ -187,7 +246,7 @@ class TableStorage:
             dest_table.put_all(data_temp)
         if schema.get("extend_tag"):
             schema.update({"extend_tag": False})
-        dest_table.meta.update_metas(schema=schema if not update_schema else None, part_of_data=part_of_data)
+        _, dest_table.meta = dest_table.meta.update_metas(schema=schema if not update_schema else None, part_of_data=part_of_data)
         return dest_table.count()
 
     @staticmethod
@@ -319,7 +378,13 @@ def get_component_output_data_schema(output_table_meta, extend_header, is_str=Fa
                 return [schema.get('sid')]
             else:
                 return []
-        header.extend([feature for feature in schema.get('header').split(',')])
+        if isinstance(schema.get('header'), str):
+            schema_header = schema.get('header').split(',')
+        elif isinstance(schema.get('header'), list):
+            schema_header = schema.get('header')
+        else:
+            raise ValueError("header type error")
+        header.extend([feature for feature in schema_header])
     else:
         header.extend(schema.get('header', []))
     return header

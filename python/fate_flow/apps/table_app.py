@@ -18,7 +18,7 @@ from fate_arch.metastore.db_utils import StorageConnector
 from fate_arch.session import Session
 from fate_arch.storage import StorageTableMeta, StorageTableOrigin
 from fate_flow.entity import RunParameters
-from fate_flow.manager.data_manager import DataTableTracker, TableStorage
+from fate_flow.manager.data_manager import DataTableTracker, TableStorage, SchemaMetaParam
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.utils.data_utils import get_extend_id_name
@@ -72,6 +72,9 @@ def table_bind():
     feature_column = request_data.get("feature_column") or request_data.get("feature_name")
     schema = get_bind_table_schema(id_column, feature_column)
     schema.update(extra_schema)
+    if request_data.get("with_meta", False):
+        schema.update({"meta": SchemaMetaParam(delimiter=request_data.get("id_delimiter"),
+                                               **request_data.get("meta", {})).to_dict()})
     sess = Session()
     storage_session = sess.storage(storage_engine=engine, options=request_data.get("options"))
     table = storage_session.create_table(address=address, name=name, namespace=namespace,
@@ -97,6 +100,16 @@ def table_bind():
         )
     sess.destroy_all_sessions()
     return response
+
+
+@manager.route('/meta/update', methods=['post'])
+@validate_request("schema", "namespace", "name")
+def meta_update():
+    request_data = request.json
+    data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
+    schema = data_table_meta.get_schema().update(request_data.get("schema"), {})
+    data_table_meta.update_metas(schema=schema)
+    return get_json_result(data=schema)
 
 
 @manager.route('/download', methods=['get'])
