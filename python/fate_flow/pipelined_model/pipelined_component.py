@@ -195,12 +195,12 @@ class PipelinedComponent(Locker):
     def get_archive_path(self, component_name):
         return Path(TEMP_DIRECTORY, f'{self.party_model_id}_{self.model_version}_{component_name}.zip')
 
-    def walk_component(self, zip_file, dir_path: Path):
-        for path in dir_path.iterdir():
-            if path.is_dir():
-                self.walk_component(zip_file, path)
-            else:
-                zip_file.write(path, path.relative_to(self.model_path))
+    def walk_component(self, zip_file, path: Path):
+        if path.is_dir():
+            for subpath in path.iterdir():
+                self.walk_component(zip_file, subpath)
+        elif path.is_file():
+            zip_file.write(path, path.relative_to(self.model_path))
 
     def pack_component(self, component_name):
         filename = self.get_archive_path(component_name)

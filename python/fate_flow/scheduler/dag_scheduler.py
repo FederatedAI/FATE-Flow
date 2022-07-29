@@ -16,27 +16,27 @@
 import typing
 from copy import deepcopy
 
-from fate_arch.common.base_utils import json_loads, json_dumps, current_timestamp
-from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
 from fate_arch.common import FederatedMode
+from fate_arch.common.base_utils import current_timestamp, get_base_config, json_dumps, json_loads
+
+from fate_flow.controller.job_controller import JobController
 from fate_flow.db.db_models import DB, Job, Task
+from fate_flow.db.job_default_config import JobDefaultConfig
+from fate_flow.entity import JobConfigurationBase, RetCode
+from fate_flow.entity.run_status import (
+    EndStatus, FederatedSchedulingStatusCode, InterruptStatus, JobInheritanceStatus,
+    JobStatus, SchedulingStatusCode, StatusSet, TaskStatus,
+)
+from fate_flow.entity.types import ResourceOperation
+from fate_flow.model.sync_model import SyncModel
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.scheduler.task_scheduler import TaskScheduler
-from fate_flow.operation.job_saver import JobSaver
-from fate_flow.entity.types import ResourceOperation
-from fate_flow.entity import RetCode
-from fate_flow.entity.run_status import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, \
-    JobInheritanceStatus
-from fate_flow.entity.run_status import FederatedSchedulingStatusCode
-from fate_flow.entity.run_status import SchedulingStatusCode
-from fate_flow.entity import JobConfigurationBase
-from fate_flow.operation.job_tracker import Tracker
-from fate_flow.controller.job_controller import JobController
-from fate_flow.utils import detect_utils, job_utils, schedule_utils
+from fate_flow.utils import detect_utils, job_utils, model_utils, schedule_utils
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.utils import model_utils
 from fate_flow.utils.cron import Cron
-from fate_flow.db.job_default_config import JobDefaultConfig
+from fate_flow.utils.log_utils import exception_to_trace_string, schedule_logger
 
 
 class DAGScheduler(Cron):
@@ -67,9 +67,19 @@ class DAGScheduler(Cron):
             else:
                 # check predict job parameters
                 detect_utils.check_config(common_job_parameters.to_dict(), ["model_id", "model_version"])
+
                 # get inference dsl from pipeline model as job dsl
                 tracker = Tracker(job_id=job_id, role=job_initiator["role"], party_id=job_initiator["party_id"],
                                   model_id=common_job_parameters.model_id, model_version=common_job_parameters.model_version)
+
+                if get_base_config('enable_model_store', False):
+                    sync_model = SyncModel(
+                        role=tracker.role, party_id=tracker.party_id,
+                        model_id=tracker.model_id, model_version=tracker.model_version,
+                    )
+                    if sync_model.remote_exists():
+                        sync_model.download(True)
+
                 pipeline_model = tracker.pipelined_model.read_pipeline_model()
                 train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
                 if not model_utils.check_if_deployed(role=job_initiator["role"],

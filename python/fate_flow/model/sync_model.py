@@ -138,9 +138,9 @@ class SyncComponent:
 
         self.model_version = model_version
         self.component_name = component_name
-        self.pipelined_model = PipelinedModel(party_model_id, model_version)
+        self.pipelined_model = PipelinedModel(self.party_model_id, self.model_version)
 
-        storage, storage_address = get_storage(model_storage_map)
+        storage, storage_address = get_storage(component_storage_map)
         self.component_storage = storage(**storage_address)
         self.component_storage_parameters = (
             self.party_model_id,

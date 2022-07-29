@@ -34,7 +34,7 @@ class TencentCOSModelStorage(ModelStorageBase):
         return f'FATEFlow/PipelinedModel/{model_id}/{model_version}.zip'
 
     def exists(self, model_id: str, model_version: str, store_address: dict):
-        store_key = self.store_key(model_id, model_version) + '.zip'
+        store_key = self.store_key(model_id, model_version)
         cos = self.get_connection(store_address)
 
         try:
@@ -58,7 +58,7 @@ class TencentCOSModelStorage(ModelStorageBase):
         :param force_update:
         :return:
         """
-        store_key = self.store_key(model_id, model_version) + '.zip'
+        store_key = self.store_key(model_id, model_version)
         if not force_update and self.exists(model_id, model_version, store_address):
             raise FileExistsError(f"The object {store_key} already exists.")
 
@@ -90,7 +90,7 @@ class TencentCOSModelStorage(ModelStorageBase):
         :param store_address:
         :return:
         """
-        store_key = self.store_key(model_id, model_version) + '.zip'
+        store_key = self.store_key(model_id, model_version)
         model = PipelinedModel(model_id, model_version)
         cos = self.get_connection(store_address)
 

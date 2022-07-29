@@ -13,21 +13,23 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
 import glob
+import os
 from collections import OrderedDict
 
 import peewee
 
-from fate_arch.common.base_utils import json_loads, current_timestamp
+from fate_arch.common.base_utils import current_timestamp, json_loads
+from fate_arch.common.conf_utils import get_base_config
 
-from fate_flow.settings import stat_logger
+from fate_flow.db.db_models import DB
+from fate_flow.db.db_models import MachineLearningModelInfo as MLModel
 from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
-from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
+from fate_flow.settings import HOST, stat_logger
+from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
 from fate_flow.utils.log_utils import sql_logger
-from fate_flow.settings import HOST
 
 
 gen_key_string_separator = '#'
@@ -194,6 +196,13 @@ def save_model_info(model_info):
         return
     except Exception as e:
         raise Exception("Create {} failed:\n{}".format(MLModel, e))
+
+    if get_base_config('enable_model_store', False):
+        sync_model = SyncModel(
+            role=model.f_role, party_id=model.f_party_id,
+            model_id=model.f_model_id, model_version=model.f_model_version,
+        )
+        sync_model.upload(True)
 
     RuntimeConfig.SERVICE_DB.register_model(gen_party_model_id(
         role=model.f_role, party_id=model.f_party_id, model_id=model.f_model_id

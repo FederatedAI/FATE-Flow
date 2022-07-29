@@ -245,7 +245,7 @@ class PipelinedModel(Locker):
         return hash_
 
     def unpack_model(self, archive_file_path: str, force_update: bool = False, hash_: str = None):
-        os.makedirs(self.model_path)
+        os.makedirs(self.model_path, exist_ok=True)
 
         with self.lock:
             if self.exists() and not force_update:
