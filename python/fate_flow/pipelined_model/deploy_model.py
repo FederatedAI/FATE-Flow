@@ -19,12 +19,14 @@ import shutil
 from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_arch.common.conf_utils import get_base_config
 
+from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.settings import stat_logger
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
+from fate_flow.utils.job_utils import PIPELINE_COMPONENT_NAME
 from fate_flow.utils.model_utils import (gen_party_model_id, check_before_deploy,
                                          gather_model_info_data, save_model_info)
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
@@ -61,9 +63,17 @@ def deploy(config_data):
 
         # copy proto content from parent model and generate a child model
         deploy_model = PipelinedModel(model_id=party_model_id, model_version=child_model_version)
+
         shutil.copytree(src=model.model_path, dst=deploy_model.model_path,
                         ignore=lambda src, names: {'checkpoint'} if src == model.model_path else {})
-        model.pipelined_component.replicate_define_meta({'model_version': child_model_version})
+        shutil.rmtree(os.path.join(deploy_model.pipelined_component.variables_data_path, PIPELINE_COMPONENT_NAME))
+        shutil.rmtree(os.path.join(deploy_model.pipelined_component.run_parameters_path, PIPELINE_COMPONENT_NAME))
+
+        model.pipelined_component.replicate_define_meta({
+            'f_model_version': child_model_version,
+        }, (
+            PipelineComponentMeta.f_component_name != PIPELINE_COMPONENT_NAME,
+        ))
 
         pipeline_model = deploy_model.read_pipeline_model()
 

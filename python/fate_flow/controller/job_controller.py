@@ -653,8 +653,8 @@ class JobController(object):
             )
 
         source_pipelined_component.replicate_define_meta({
-            'model_id': target_pipelined_component.model_id,
-            'model_version': target_pipelined_component.model_version,
+            'f_model_id': target_pipelined_component.model_id,
+            'f_model_version': target_pipelined_component.model_version,
         }, PipelineComponentMeta.f_component_name.in_(
             job.f_inheritance_info['component_list'],
         ))

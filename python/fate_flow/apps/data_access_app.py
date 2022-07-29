@@ -43,7 +43,7 @@ def download_upload(access_module):
         filename.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            file.save(filename)
+            file.save(str(filename))
         except Exception as e:
             try:
                 filename.unlink()
@@ -52,12 +52,12 @@ def download_upload(access_module):
 
             return error_response(500, f'Save file error: {e}')
 
-        job_config = request.args.to_dict()
+        job_config = request.args.to_dict() or request.form.to_dict()
         if "namespace" not in job_config or "table_name" not in job_config:
             # higher than version 1.5.1, support eggroll run parameters
             job_config = json_loads(list(job_config.keys())[0])
 
-        job_config['file'] = filename
+        job_config['file'] = str(filename)
     else:
         job_config = request.json
 
@@ -85,7 +85,7 @@ def download_upload(access_module):
             else:
                 job_config[_] = int(job_config[_])
     if access_module == "upload":
-        if job_config.get('drop', 0) == 1:
+        if int(job_config.get('drop', 0)) > 0:
             job_config["destroy"] = True
         else:
             job_config["destroy"] = False

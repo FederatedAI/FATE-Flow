@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 from copy import deepcopy
+from typing import Tuple
 
 from peewee import DoesNotExist
 
@@ -35,7 +36,7 @@ component_storage_map = {
 }
 
 
-def get_storage(storage_map: dict) -> tuple(model_storage_base.ModelStorageBase, dict):
+def get_storage(storage_map: dict) -> Tuple[model_storage_base.ModelStorageBase, dict]:
     store_address = deepcopy(ServerRegistry.MODEL_STORE_ADDRESS)
 
     store_type = store_address.pop('storage')

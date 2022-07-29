@@ -125,7 +125,7 @@ class PipelinedComponent(Locker):
             run_parameters_path.parent.mkdir(parents=True, exist_ok=True)
 
             with run_parameters_path.open('x', encoding='utf-8') as f:
-                f.write(json_dumps(row.run_parameters))
+                f.write(json_dumps(row.f_run_parameters))
 
         self.define_meta_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -159,7 +159,7 @@ class PipelinedComponent(Locker):
 
         bulk_insert_into_db(PipelineComponentMeta, insert, LOGGER)
 
-    def replicate_define_meta(self, modification, query_args=None):
+    def replicate_define_meta(self, modification, query_args=()):
         query = self.get_define_meta_from_db(*query_args)
         if not query:
             raise ValueError(f'Filtered define_meta data not found.')
@@ -168,12 +168,6 @@ class PipelinedComponent(Locker):
         for row in query:
             row = row.to_dict()
             del row['id']
-            row = {
-                key[2:] if key.startswith('f_') else key: value
-                for key, value in row.items()
-                if key != 'id'
-            }
-
             row.update(modification)
             insert.append(row)
 

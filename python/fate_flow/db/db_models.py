@@ -584,5 +584,4 @@ class PipelineComponentMeta(DataBaseModel):
         db_table = 't_pipeline_component_meta'
         indexes = (
             (('f_model_id', 'f_model_version', 'f_role', 'f_party_id', 'f_component_name'), True),
-            (('f_model_id', 'f_model_version', 'f_role', 'f_party_id', 'f_model_alias'), True),
         )
