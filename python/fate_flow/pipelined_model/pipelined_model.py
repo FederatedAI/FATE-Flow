@@ -259,7 +259,7 @@ class PipelinedModel(Locker):
                     raise ValueError(f'Model archive hash mismatch. '
                                      f'path: {archive_file_path} expected: {hash_} actual: {sha256}')
 
-            shutil.unpack_archive(archive_file_path, self.model_path)
+            shutil.unpack_archive(archive_file_path, self.model_path, 'zip')
 
         stat_logger.info(f'Unpack model {self.model_id} {self.model_version} archive successfully. path: {self.model_path}')
 

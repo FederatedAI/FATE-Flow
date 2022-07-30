@@ -75,7 +75,7 @@ class DatabaseLock:
 
     def lock(self):
         # SQL parameters only support %s format placeholders
-        cursor = self.db.execute_sql("SELECT GET_LOCK('%s', %s)", (self.lock_name, self.timeout))
+        cursor = self.db.execute_sql("SELECT GET_LOCK(%s, %s)", (self.lock_name, self.timeout))
         ret = cursor.fetchone()
         if ret[0] == 0:
             raise Exception(f'mysql lock {self.lock_name} is already in use')
@@ -85,7 +85,7 @@ class DatabaseLock:
             raise Exception(f'failed to acquire lock {self.lock_name}')
 
     def unlock(self):
-        cursor = self.db.execute_sql("SELECT RELEASE_LOCK('%s')", (self.lock_name, ))
+        cursor = self.db.execute_sql("SELECT RELEASE_LOCK(%s)", (self.lock_name, ))
         ret = cursor.fetchone()
         if ret[0] == 0:
             raise Exception(f'mysql lock {self.lock_name} not released')
