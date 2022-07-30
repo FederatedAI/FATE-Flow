@@ -163,7 +163,7 @@ class SyncComponent:
                 self.model_version,
                 self.component_name,
             )),
-            -1
+            -1,
         )
 
     @DB.connection_context()
