@@ -225,17 +225,18 @@ class TaskExecutor(BaseTaskWorker):
                     output_table_list.append({"namespace": persistent_table_namespace, "name": persistent_table_name})
             self.log_output_data_table_tracker(args.job_id, input_table_list, output_table_list)
 
-            getattr(
-                tracker_client if predict_tracker_client is None else predict_tracker_client,
-                'save_component_output_model',
-            )(
-                model_buffers=cpn_output.model,
-                # There is only one model output at the current dsl version
-                model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
-                user_specified_run_parameters=user_specified_parameters,
-            )
+            if cpn_output.model:
+                getattr(
+                    tracker_client if predict_tracker_client is None else predict_tracker_client,
+                    'save_component_output_model',
+                )(
+                    model_buffers=cpn_output.model,
+                    # There is only one model output at the current dsl version
+                    model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
+                    user_specified_run_parameters=user_specified_parameters,
+                )
 
-            if cpn_output.cache is not None:
+            if cpn_output.cache:
                 for i, cache in enumerate(cpn_output.cache):
                     if cache is None:
                         continue
@@ -251,10 +252,8 @@ class TaskExecutor(BaseTaskWorker):
                                                   token={"username": user_name})
                     else:
                         raise RuntimeError(f"can not support type {type(cache)} module run object output cache")
-            if need_run:
-                self.report_info["party_status"] = TaskStatus.SUCCESS
-            else:
-                self.report_info["party_status"] = TaskStatus.PASS
+
+            self.report_info["party_status"] = TaskStatus.SUCCESS if need_run else TaskStatus.PASS
         except PassError as e:
             self.report_info["party_status"] = TaskStatus.PASS
         except Exception as e:

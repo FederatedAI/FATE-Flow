@@ -447,6 +447,10 @@ class JobController(object):
 
     @classmethod
     def save_pipelined_model(cls, job_id, role, party_id):
+        if role == 'local':
+            schedule_logger(job_id).info("A job of local role does not need to save pipeline model")
+            return
+
         schedule_logger(job_id).info(f"start to save pipeline model on {role} {party_id}")
         job_configuration = job_utils.get_job_configuration(job_id=job_id, role=role,
                                                             party_id=party_id)
@@ -507,9 +511,7 @@ class JobController(object):
                     sync_component.download()
 
         tracker.pipelined_model.save_pipeline_model(pipeline_buffer_object=pipeline)
-
-        if role != 'local':
-            tracker.save_machine_learning_model_info()
+        tracker.save_machine_learning_model_info()
 
         schedule_logger(job_id).info(f"save pipeline on {role} {party_id} successfully")
 

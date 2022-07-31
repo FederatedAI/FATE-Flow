@@ -174,8 +174,6 @@ class TrackerClient(object):
             return data_table_meta
 
     def save_component_output_model(self, model_buffers: dict, model_alias: str, user_specified_run_parameters: dict = None):
-        if not model_buffers:
-            return
         component_model = self.job_tracker.pipelined_model.create_component_model(component_name=self.component_name,
                                                                                   component_module_name=self.module_name,
                                                                                   model_alias=model_alias,
