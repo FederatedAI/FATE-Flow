@@ -292,6 +292,8 @@ class Upload(ComponentBase):
                 data_head = fin.readline()
                 input_feature_count -= 1
                 self.update_table_schema(data_head)
+            else:
+                self.update_table_schema()
             n = 0
             fate_uuid = uuid.uuid1().hex
             get_line = self.get_line()
@@ -348,7 +350,7 @@ class Upload(ComponentBase):
             LOGGER.info(f"extra schema: {schema}")
         return schema
 
-    def update_table_schema(self, data_head):
+    def update_table_schema(self, data_head=""):
         LOGGER.info(f"data head: {data_head}")
         schema = data_utils.get_header_schema(
             header_line=data_head,
