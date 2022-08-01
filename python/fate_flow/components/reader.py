@@ -138,26 +138,35 @@ class Reader(ComponentBase):
                 "job_id": self.tracker.job_id,
             },
         )
-        headers_str = output_table_meta.get_schema().get("header")
+        headers = output_table_meta.get_schema().get("header")
+        schema = output_table_meta.get_schema()
         table_info = {}
-        if output_table_meta.get_schema() and headers_str:
-            if isinstance(headers_str, str):
-                data_list = [headers_str.split(",")]
-                is_display = True
+        if schema and headers:
+            if isinstance(headers, str):
+                data_list = [headers.split(",")]
             else:
-                data_list = [headers_str]
-                is_display = False
-            if is_display:
+                data_list = [[schema.get("label_name")] if schema.get("label_name") else []]
+                data_list[0].extend(headers)
+            try:
                 for data in output_table_meta.get_part_of_data():
                     data_list.append(data[1].split(","))
                 data = np.array(data_list)
                 Tdata = data.transpose()
                 for data in Tdata:
                     table_info[data[0]] = ",".join(list(set(data[1:]))[:5])
+            except Exception as e:
+                LOGGER.exception(e)
+        anonymous_info = {}
+
+        if schema and schema.get("anonymous_header"):
+            anonymous_info = dict(zip(schema.get("header"), schema.get("anonymous_header")))
+            if schema.get("label_name"):
+                anonymous_info[schema.get("label_name")] = schema.get("anonymous_label")
         data_info = {
             "table_name": input_table_name,
             "namespace": input_table_namespace,
             "table_info": table_info,
+            "anonymous_info": anonymous_info,
             "partitions": output_table_meta.get_partitions(),
             "storage_engine": output_table_meta.get_engine(),
         }
@@ -283,5 +292,5 @@ class Reader(ComponentBase):
             dest_schema = AnonymousGenerator.update_anonymous_header_with_role(dest_schema, self.tracker.role,
                                                                                self.tracker.party_id)
             LOGGER.info(f"update src schema {src_schema} and dest schema {dest_schema}")
-            src_meta.update_metas(schema=src_schema)
+            src_meta = src_meta.update_metas(schema=src_schema)
             dest_meta.update_metas(schema=dest_schema)
