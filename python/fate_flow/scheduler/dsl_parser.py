@@ -329,7 +329,7 @@ class BaseDSLParser(object):
 
         if self.mode == "predict" and pre_parameters:
             source_component = previous_parameters.get(component, {}).get(ComponentParameterSource)
-            if source_component != cur_component:
+            if source_component and source_component != cur_component:
                 runtime_conf = self.runtime_conf
 
         role_parameters = RuntimeConfParserUtil.get_component_parameters(provider,
@@ -342,7 +342,8 @@ class BaseDSLParser(object):
                                                                          parse_user_specified_only=parse_user_specified_only,
                                                                          pre_parameters=pre_parameters)
 
-        role_parameters[ComponentParameterSource] = cur_component
+        if role_parameters:
+            role_parameters[ComponentParameterSource] = cur_component
         for component in parent_path:
             idx = self.component_name_index.get(component)
             self.components[idx].set_component_provider(provider)
