@@ -39,6 +39,8 @@ from fate_flow.utils.dsl_exception import DSLNotExistError, ComponentFieldNotExi
 from fate_flow.utils.runtime_conf_parse_util import RuntimeConfParserUtil
 
 
+ComponentParameterSource = "ComponentParameterSource"
+
 class Component(object):
     def __init__(self):
         self.module = None
@@ -310,7 +312,12 @@ class BaseDSLParser(object):
                     cur_component = self.train_input_model.get(cur_component)
                     parent_path.append(cur_component)
                 else:
-                    isometric_component = input_component
+                    if is_warm_start and self.components[input_pos].get_module().lower() == "modelloader":
+                        model_load_alias = RuntimeConfParserUtil.get_model_loader_alias(input_component, runtime_conf,
+                                                                                        local_role, local_party_id)
+                        isometric_component = model_load_alias
+                    else:
+                        isometric_component = input_component
                     break
 
         pre_parameters = {}
@@ -319,6 +326,11 @@ class BaseDSLParser(object):
                 pre_parameters = previous_parameters.get(cur_component, {})
             else:
                 pre_parameters = previous_parameters.get(isometric_component, {})
+
+        if self.mode == "predict" and pre_parameters:
+            source_component = previous_parameters.get(component, {}).get(ComponentParameterSource)
+            if source_component != cur_component:
+                runtime_conf = self.runtime_conf
 
         role_parameters = RuntimeConfParserUtil.get_component_parameters(provider,
                                                                          runtime_conf,
@@ -330,17 +342,7 @@ class BaseDSLParser(object):
                                                                          parse_user_specified_only=parse_user_specified_only,
                                                                          pre_parameters=pre_parameters)
 
-        """
-        if previous_parameters is not None:
-            if not isometric_component:
-                pre_parameters = previous_parameters.get(cur_component, {})
-            else:
-                pre_parameters = previous_parameters.get(isometric_component, {})
-
-            if pre_parameters:
-                role_parameters = RuntimeConfParserUtil.merge_dict(pre_parameters, role_parameters)
-        """
-
+        role_parameters[ComponentParameterSource] = cur_component
         for component in parent_path:
             idx = self.component_name_index.get(component)
             self.components[idx].set_component_provider(provider)

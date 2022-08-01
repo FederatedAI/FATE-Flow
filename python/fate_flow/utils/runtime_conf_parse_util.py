@@ -245,8 +245,8 @@ class RuntimeConfParserUtil(object):
         if submit_dict is None:
             return provider_info
         else:
-            if local_party_id is None or local_role is None or local_role not in submit_dict["role"] or str(
-                    local_party_id) not in [str(party_id) for party_id in submit_dict["role"][local_role]]:
+            if local_party_id is None or local_role is None \
+                    or local_role not in submit_dict["role"] or local_party_id not in submit_dict["role"][local_role]:
                 raise ValueError("when parse provider from conf, local role & party_id should should be None")
 
             provider_info_all_party = {}
@@ -465,6 +465,23 @@ class RuntimeConfParserUtil(object):
 
         return runtime_conf
 
+    @staticmethod
+    def get_model_loader_alias(component_name, runtime_conf, local_role, local_party_id):
+        role_params = runtime_conf.get("component_parameters", {}).get("role", {}).get("local_role")
+        if not role_params:
+            return runtime_conf.get("component_parameters", {}).\
+                get("common", {}).get(component_name, {}).get("component_name")
+
+        party_idx = runtime_conf.get("role").get(local_role).index(local_party_id)
+        for id_list, params in role_params.times():
+            ids = id_list.split("|", -1)
+            if ids == "all" or str(party_idx) in ids:
+                if params.get(component_name, {}).get("component_name"):
+                    model_load_alias = params.get(component_name, {}).get("component_name")
+                    return model_load_alias
+
+        return runtime_conf.get("component_parameters", {}). \
+            get("common", {}).get(component_name, {}).get("component_name")
 
 class RuntimeConfParserV1(object):
     @staticmethod
