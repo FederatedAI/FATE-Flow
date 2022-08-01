@@ -167,7 +167,7 @@ class PipelinedModel(Locker):
             PipelineComponentMeta.f_model_alias == model_alias,
         )
         if not query:
-            return
+            return {}
 
         _model_buffers = self._read_component_model(component_name, model_alias)
 
