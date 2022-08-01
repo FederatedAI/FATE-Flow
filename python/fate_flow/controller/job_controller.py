@@ -16,28 +16,30 @@
 import os
 import shutil
 
-from fate_arch.common import EngineType
-from fate_arch.common import engine_utils
-from fate_arch.common.base_utils import json_dumps, current_timestamp
+from fate_arch.common import EngineType, engine_utils
+from fate_arch.common.base_utils import current_timestamp, json_dumps
+from fate_arch.common.conf_utils import get_base_config
 from fate_arch.computing import ComputingEngine
+
 from fate_flow.controller.task_controller import TaskController
+from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RunParameters
-from fate_flow.entity.run_status import TaskStatus
-from fate_flow.entity.run_status import JobStatus, EndStatus, JobInheritanceStatus
-from fate_flow.entity.types import WorkerName, RetCode
+from fate_flow.entity.run_status import EndStatus, JobInheritanceStatus, JobStatus, TaskStatus
+from fate_flow.entity.types import RetCode, WorkerName
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.model.checkpoint import CheckpointManager
+from fate_flow.model.sync_model import SyncComponent
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.pipelined_model.pipelined_model import PipelinedComponent
 from fate_flow.protobuf.python import pipeline_pb2
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import ENGINES
-from fate_flow.utils import job_utils, schedule_utils, data_utils, log_utils, model_utils
+from fate_flow.utils import data_utils, job_utils, log_utils, schedule_utils
 from fate_flow.utils.job_utils import get_job_dataset
 from fate_flow.utils.log_utils import schedule_logger
 
@@ -333,8 +335,7 @@ class JobController(object):
                           model_id=job_parameters.model_id,
                           model_version=job_parameters.model_version,
                           job_parameters=job_parameters)
-        if job_parameters.job_type != "predict":
-            tracker.pipelined_model.create_pipelined_model()
+
         partner = {}
         show_role = {}
         for _role, _role_party in roles.items():
@@ -446,21 +447,26 @@ class JobController(object):
 
     @classmethod
     def save_pipelined_model(cls, job_id, role, party_id):
+        if role == 'local':
+            schedule_logger(job_id).info("A job of local role does not need to save pipeline model")
+            return
+
         schedule_logger(job_id).info(f"start to save pipeline model on {role} {party_id}")
         job_configuration = job_utils.get_job_configuration(job_id=job_id, role=role,
                                                             party_id=party_id)
         runtime_conf_on_party = job_configuration.runtime_conf_on_party
         job_parameters = runtime_conf_on_party.get('job_parameters', {})
-        if role in job_parameters.get("assistant_role", []):
-            return
+
         model_id = job_parameters['model_id']
         model_version = job_parameters['model_version']
         job_type = job_parameters.get('job_type', '')
         roles = runtime_conf_on_party['role']
         initiator_role = runtime_conf_on_party['initiator']['role']
         initiator_party_id = runtime_conf_on_party['initiator']['party_id']
-        if job_type == 'predict':
+
+        if role in job_parameters.get("assistant_role", []) or job_type == 'predict':
             return
+
         dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
                                                        runtime_conf=job_configuration.runtime_conf,
                                                        train_runtime_conf=job_configuration.train_runtime_conf)
@@ -487,18 +493,34 @@ class JobController(object):
         pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
         pipeline.parent_info = json_dumps({}, byte=True)
 
-        tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
-                          model_id=model_id, model_version=model_version, job_parameters=RunParameters(**job_parameters))
-        tracker.save_pipeline_model(pipeline_buffer_object=pipeline)
-        if role != 'local':
-            tracker.save_machine_learning_model_info()
+        tracker = Tracker(
+            job_id=job_id, role=role, party_id=party_id,
+            model_id=model_id, model_version=model_version,
+            job_parameters=RunParameters(**job_parameters),
+        )
+
+        if get_base_config('enable_model_store', False):
+            query = tracker.pipelined_model.pipelined_component.get_define_meta_from_db()
+            for row in query:
+                sync_component = SyncComponent(
+                    role=role, party_id=party_id,
+                    model_id=model_id, model_version=model_version,
+                    component_name=row.f_component_name,
+                )
+                if not sync_component.local_exists() and sync_component.remote_exists():
+                    sync_component.download()
+
+        tracker.pipelined_model.save_pipeline_model(pipeline_buffer_object=pipeline)
+        tracker.save_machine_learning_model_info()
+
         schedule_logger(job_id).info(f"save pipeline on {role} {party_id} successfully")
 
     @classmethod
     def clean_job(cls, job_id, role, party_id, roles):
-        schedule_logger(job_id).info(f"start to clean job on {role} {party_id}")
-        # todo
-        schedule_logger(job_id).info(f"job on {role} {party_id} clean done")
+        pass
+        # schedule_logger(job_id).info(f"start to clean job on {role} {party_id}")
+        # TODO: clean job
+        # schedule_logger(job_id).info(f"job on {role} {party_id} clean done")
 
     @classmethod
     def job_reload(cls, job):
@@ -599,48 +621,53 @@ class JobController(object):
             JobSaver.reload_task(source_task, target_tasks[key])
 
         # update job status
-        JobSaver.update_job(job_info={"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id, "inheritance_status": JobInheritanceStatus.SUCCESS})
+        JobSaver.update_job(job_info={
+            "job_id": job.f_job_id,
+            "role": job.f_role,
+            "party_id": job.f_party_id,
+            "inheritance_status": JobInheritanceStatus.SUCCESS,
+        })
         schedule_logger(job.f_job_id).info("reload status success")
 
     @classmethod
     def output_model_reload(cls, job, source_job):
-        source_model_id = model_utils.gen_party_model_id(
-            source_job.f_runtime_conf.get("job_parameters").get("common").get("model_id"),
-            job.f_role,
-            job.f_party_id
+        source_pipelined_component = PipelinedComponent(
+            role=source_job.f_role, party_id=source_job.f_party_id,
+            model_id=source_job.f_runtime_conf['job_parameters']['common']['model_id'],
+            model_version=source_job.f_job_id,
         )
-        model_id = model_utils.gen_party_model_id(
-            job.f_runtime_conf.get("job_parameters").get("common").get("model_id"),
-            job.f_role,
-            job.f_party_id
+        target_pipelined_component = PipelinedComponent(
+            role=job.f_role, party_id=job.f_party_id,
+            model_id=job.f_runtime_conf['job_parameters']['common']['model_id'],
+            model_version=job.f_job_id,
         )
-        PipelinedModel(
-            model_id=model_id,
-            model_version=job.f_job_id
-        ).reload_component_model(
-            model_id=source_model_id,
-            model_version=job.f_inheritance_info.get("job_id"),
-            component_list=job.f_inheritance_info.get("component_list")
-        )
+
+        for component_name in job.f_inheritance_info['component_list']:
+            shutil.copytree(
+                source_pipelined_component.variables_data_path / component_name,
+                target_pipelined_component.variables_data_path / component_name,
+            )
+
+        source_pipelined_component.replicate_define_meta({
+            'f_model_id': target_pipelined_component.model_id,
+            'f_model_version': target_pipelined_component.model_version,
+        }, PipelineComponentMeta.f_component_name.in_(
+            job.f_inheritance_info['component_list'],
+        ))
 
     @classmethod
     def checkpoint_reload(cls, job, source_job):
-        for component_name in job.f_inheritance_info.get("component_list"):
-            path = CheckpointManager(
-                role=job.f_role,
-                party_id=job.f_party_id,
-                component_name=component_name,
-                model_version=job.f_inheritance_info.get("job_id"),
-                model_id=source_job.f_runtime_conf.get("job_parameters").get("common").get("model_id")
+        for component_name in job.f_inheritance_info['component_list']:
+            source_path = CheckpointManager(
+                role=source_job.f_role, party_id=source_job.f_party_id,
+                model_id=source_job.f_runtime_conf['job_parameters']['common']['model_id'],
+                model_version=source_job.f_job_id, component_name=component_name,
             ).directory
             target_path = CheckpointManager(
-                role=job.f_role,
-                party_id=job.f_party_id,
-                component_name=component_name,
-                model_version=job.f_job_id,
-                model_id=job.f_runtime_conf.get("job_parameters").get("common").get("model_id")
+                role=job.f_role, party_id=job.f_party_id,
+                model_id=job.f_runtime_conf['job_parameters']['common']['model_id'],
+                model_version=job.f_job_id, component_name=component_name,
             ).directory
-            if os.path.exists(path):
-                if os.path.exists(target_path):
-                    shutil.rmtree(target_path)
-                shutil.copytree(path, target_path)
+
+            if os.path.exists(source_path):
+                shutil.copytree(source_path, target_path)

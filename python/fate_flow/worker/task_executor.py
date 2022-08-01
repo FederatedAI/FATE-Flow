@@ -20,7 +20,6 @@ import traceback
 from fate_arch import session, storage
 from fate_arch.common import EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
-from fate_arch.common.conf_utils import get_base_config
 from fate_arch.computing import ComputingEngine
 
 from fate_flow.component_env_utils import provider_utils
@@ -34,7 +33,6 @@ from fate_flow.hook import HookManager
 from fate_flow.manager.data_manager import DataTableTracker
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.model.checkpoint import CheckpointManager
-from fate_flow.model.sync_model import SyncComponent
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.utils import job_utils, schedule_utils
@@ -91,6 +89,9 @@ class TaskExecutor(BaseTaskWorker):
             task_input_dsl = component.get_input()
             task_output_dsl = component.get_output()
 
+            party_model_id = gen_party_model_id(job_parameters.model_id, args.role, args.party_id)
+            model_version = job_parameters.model_version if job_parameters.job_type != 'predict' else args.job_id
+
             kwargs = {
                 'job_id': args.job_id,
                 'role': args.role,
@@ -99,6 +100,8 @@ class TaskExecutor(BaseTaskWorker):
                 'task_id': args.task_id,
                 'task_version': args.task_version,
                 'model_id': job_parameters.model_id,
+                # in the prediction job, job_parameters.model_version comes from the training job
+                # TODO: prediction job should not affect training job
                 'model_version': job_parameters.model_version,
                 'component_module_name': module_name,
                 'job_parameters': job_parameters,
@@ -107,17 +110,21 @@ class TaskExecutor(BaseTaskWorker):
             tracker_client = TrackerClient(**kwargs)
             checkpoint_manager = CheckpointManager(**kwargs)
 
+            predict_tracker_client = None
+            if job_parameters.job_type == 'predict':
+                kwargs['model_version'] = model_version
+                predict_tracker_client = TrackerClient(**kwargs)
+
             self.report_info["party_status"] = TaskStatus.RUNNING
             self.report_task_info_to_driver()
 
             previous_components_parameters = tracker_client.get_model_run_parameters()
             LOGGER.info(f"previous_components_parameters:\n{json_dumps(previous_components_parameters, indent=4)}")
 
-            component_provider, component_parameters_on_party, user_specified_parameters = ProviderManager.get_component_run_info(dsl_parser=dsl_parser,
-                                                                                                                                  component_name=args.component_name,
-                                                                                                                                  role=args.role,
-                                                                                                                                  party_id=args.party_id,
-                                                                                                                                  previous_components_parameters=previous_components_parameters)
+            component_provider, component_parameters_on_party, user_specified_parameters = \
+                ProviderManager.get_component_run_info(dsl_parser=dsl_parser, component_name=args.component_name,
+                                                       role=args.role, party_id=args.party_id,
+                                                       previous_components_parameters=previous_components_parameters)
             RuntimeConfig.set_component_provider(component_provider)
             LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
             flow_feeded_parameters = {"output_data_name": task_output_dsl.get("data")}
@@ -200,8 +207,10 @@ class TaskExecutor(BaseTaskWorker):
                 cpn_output = run_object.run(cpn_input)
                 sess.wait_remote_all_done()
 
-            output_table_list = []
+            LOGGER.info(f"task output dsl {task_output_dsl}")
             LOGGER.info(f"task output data {cpn_output.data}")
+
+            output_table_list = []
             for index, data in enumerate(cpn_output.data):
                 data_name = task_output_dsl.get('data')[index] if task_output_dsl.get('data') else '{}'.format(index)
                 #todo: the token depends on the engine type, maybe in job parameters
@@ -216,17 +225,18 @@ class TaskExecutor(BaseTaskWorker):
                     output_table_list.append({"namespace": persistent_table_namespace, "name": persistent_table_name})
             self.log_output_data_table_tracker(args.job_id, input_table_list, output_table_list)
 
-            # There is only one model output at the current dsl version.
-            tracker_client.save_component_output_model(model_buffers=cpn_output.model,
-                                                       model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
-                                                       user_specified_run_parameters=user_specified_parameters)
-            if get_base_config('enable_model_store', False):
-                party_model_id = gen_party_model_id(job_parameters.model_id, args.role, args.party_id)
-                sync_component = SyncComponent(party_model_id, job_parameters.model_version, args.component_name)
-                LOGGER.info(f'Uploading {sync_component.component_name} to component storage.')
-                sync_component.upload()
+            if cpn_output.model:
+                getattr(
+                    tracker_client if predict_tracker_client is None else predict_tracker_client,
+                    'save_component_output_model',
+                )(
+                    model_buffers=cpn_output.model,
+                    # There is only one model output at the current dsl version
+                    model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
+                    user_specified_run_parameters=user_specified_parameters,
+                )
 
-            if cpn_output.cache is not None:
+            if cpn_output.cache:
                 for i, cache in enumerate(cpn_output.cache):
                     if cache is None:
                         continue
@@ -242,10 +252,8 @@ class TaskExecutor(BaseTaskWorker):
                                                   token={"username": user_name})
                     else:
                         raise RuntimeError(f"can not support type {type(cache)} module run object output cache")
-            if need_run:
-                self.report_info["party_status"] = TaskStatus.SUCCESS
-            else:
-                self.report_info["party_status"] = TaskStatus.PASS
+
+            self.report_info["party_status"] = TaskStatus.SUCCESS if need_run else TaskStatus.PASS
         except PassError as e:
             self.report_info["party_status"] = TaskStatus.PASS
         except Exception as e:
@@ -402,6 +410,8 @@ class TaskExecutor(BaseTaskWorker):
             patch_module.patch_all()
 
 
+# this file may not be running on the same machine as fate_flow,
+# so we need to use the tracker to get the input and save the output
 if __name__ == '__main__':
     worker = TaskExecutor()
     worker.run()

@@ -83,12 +83,15 @@ def migration(config_data: dict):
         if "pipeline.pipeline:Pipeline" not in model_data:
             raise Exception("Can not found pipeline file in model.")
 
-        migrate_model = pipelined_model.PipelinedModel(model_id=model_utils.gen_party_model_id(model_id=model_utils.gen_model_id(config_data["migrate_role"]),
-                                                                                               role=config_data["local"]["role"],
-                                                                                               party_id=config_data["local"]["migrate_party_id"]),
-                                                       model_version=config_data["unify_model_version"])
+        migrate_model = pipelined_model.PipelinedModel(
+            model_utils.gen_party_model_id(
+                model_id=model_utils.gen_model_id(config_data["migrate_role"]),
+                role=config_data["local"]["role"],
+                party_id=config_data["local"]["migrate_party_id"]
+            ),
+            config_data["unify_model_version"],
+        )
 
-        # migrate_model.create_pipelined_model()
         shutil.copytree(src=model.model_path, dst=migrate_model.model_path)
 
         pipeline = migrate_model.read_pipeline_model()
@@ -112,32 +115,33 @@ def migration(config_data: dict):
             pipeline.initiator_party_id = config_data["migrate_initiator"]['party_id']
 
         # save updated pipeline.pb file
-        migrate_model.save_pipeline(pipeline)
-        shutil.copyfile(os.path.join(migrate_model.model_path, "pipeline.pb"),
-                        os.path.join(migrate_model.model_path, "variables", "data", "pipeline", "pipeline", "Pipeline"))
+        migrate_model.save_pipeline_model(pipeline)
 
-        # modify proto
-        with open(os.path.join(migrate_model.model_path, 'define', 'define_meta.yaml'), 'r') as fin:
-            define_yaml = yaml.safe_load(fin)
+        define_meta = migrate_model.pipelined_component.get_define_meta_from_file()
 
         # todo: use subprocess?
         migrate_tool = migrate_model.get_model_migrate_tool()
-        for key, value in define_yaml['model_proto'].items():
-            if key == 'pipeline':
+        for component_name, component_define in define_meta['component_define'].items():
+            if component_name == 'pipeline':
                 continue
-            for v in value.keys():
-                buffer_obj = migrate_model.read_component_model(key, v)
-                module_name = define_yaml['component_define'].get(key, {}).get('module_name')
-                modified_buffer = migrate_tool.model_migration(model_contents=buffer_obj,
-                                                               module_name=module_name,
-                                                               old_guest_list=config_data['role']['guest'],
-                                                               new_guest_list=config_data['migrate_role']['guest'],
-                                                               old_host_list=config_data['role']['host'],
-                                                               new_host_list=config_data['migrate_role']['host'],
-                                                               old_arbiter_list=config_data.get('role', {}).get('arbiter', None),
-                                                               new_arbiter_list=config_data.get('migrate_role', {}).get('arbiter', None))
-                migrate_model.save_component_model(component_name=key, component_module_name=module_name,
-                                                   model_alias=v, model_buffers=modified_buffer)
+
+            module_name = component_define['module_name']
+
+            for model_alias in define_meta['model_proto'][component_name].keys():
+                buffer_obj = migrate_model.read_component_model(component_name, model_alias)
+                modified_buffer = migrate_tool.model_migration(
+                    model_contents=buffer_obj,
+                    module_name=module_name,
+                    old_guest_list=config_data['role']['guest'],
+                    new_guest_list=config_data['migrate_role']['guest'],
+                    old_host_list=config_data['role']['host'],
+                    new_host_list=config_data['migrate_role']['host'],
+                    old_arbiter_list=config_data.get('role', {}).get('arbiter', None),
+                    new_arbiter_list=config_data.get('migrate_role', {}).get('arbiter', None),
+                )
+
+                migrate_model.save_component_model(component_name=component_name, component_module_name=module_name,
+                                                   model_alias=model_alias, model_buffers=modified_buffer)
 
         migrate_model.gen_model_import_config()
         migrate_model.packaging_model()

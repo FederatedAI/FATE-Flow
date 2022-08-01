@@ -19,8 +19,9 @@ from copy import deepcopy
 from qcloud_cos import CosConfig, CosS3Client
 from qcloud_cos.cos_exception import CosServiceError
 
-from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.model.model_storage_base import ComponentStorageBase, ModelStorageBase
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
 from fate_flow.utils.log_utils import getLogger
 
 
@@ -29,8 +30,11 @@ LOGGER = getLogger()
 
 class TencentCOSModelStorage(ModelStorageBase):
 
+    def store_key(self, model_id: str, model_version: str):
+        return f'FATEFlow/PipelinedModel/{model_id}/{model_version}.zip'
+
     def exists(self, model_id: str, model_version: str, store_address: dict):
-        store_key = self.store_key(model_id, model_version) + '.zip'
+        store_key = self.store_key(model_id, model_version)
         cos = self.get_connection(store_address)
 
         try:
@@ -54,7 +58,7 @@ class TencentCOSModelStorage(ModelStorageBase):
         :param force_update:
         :return:
         """
-        store_key = self.store_key(model_id, model_version) + '.zip'
+        store_key = self.store_key(model_id, model_version)
         if not force_update and self.exists(model_id, model_version, store_address):
             raise FileExistsError(f"The object {store_key} already exists.")
 
@@ -86,7 +90,7 @@ class TencentCOSModelStorage(ModelStorageBase):
         :param store_address:
         :return:
         """
-        store_key = self.store_key(model_id, model_version) + '.zip'
+        store_key = self.store_key(model_id, model_version)
         model = PipelinedModel(model_id, model_version)
         cos = self.get_connection(store_address)
 
@@ -117,42 +121,50 @@ class TencentCOSModelStorage(ModelStorageBase):
 
 class TencentCOSComponentStorage(ComponentStorageBase):
 
-    def __init__(self, region, secret_id, secret_key, bucket):
-        self.client = CosS3Client(CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key))
-        self.bucket = bucket
+    def __init__(self, Region, SecretId, SecretKey, Bucket):
+        self.client = CosS3Client(CosConfig(Region=Region, SecretId=SecretId, SecretKey=SecretKey))
+        self.bucket = Bucket
 
-    def upload(self, filename, key):
-        key = self.prefix + key
+    def __exit__(self, *exc):
+        pass
 
-        try:
-            response = self.client.upload_file(
-                Bucket=self.bucket,
-                LocalFilePath=filename,
-                Key=key,
-                EnableMD5=True,
-            )
-        except Exception as e:
-            LOGGER.exception(e)
-            raise Exception(f"Upload {filename} to Tencent COS failed.")
-        else:
-            LOGGER.info(f"Upload {filename} to Tencent COS successfully. "
-                        f"Key: {key} ETag: {response['ETag']}")
-            return response
+    def get_key(self, party_model_id, model_version, component_name):
+        return f'FATEFlow/PipelinedComponent/{party_model_id}/{model_version}/{component_name}.zip'
 
-    def download(self, key, filename):
-        key = self.prefix + key
+    def exists(self, party_model_id, model_version, component_name):
+        key = self.get_key(party_model_id, model_version, component_name)
 
         try:
-            response = self.client.download_file(
+            self.client.head_object(
                 Bucket=self.bucket,
                 Key=key,
-                DestFilePath=filename,
-                EnableCRC=True,
             )
-        except Exception as e:
-            LOGGER.exception(e)
-            raise Exception(f"Download {key} from Tencent COS failed.")
+        except CosServiceError as e:
+            if e.get_error_code() != 'NoSuchResource':
+                raise e
+            return False
         else:
-            LOGGER.info(f"Download {key} from Tencent COS successfully. "
-                        f"Filename: {filename}")
-            return response
+            return True
+
+    def upload(self, party_model_id, model_version, component_name):
+        pipelined_component = PipelinedComponent(party_model_id=party_model_id, model_version=model_version)
+        filename, hash_ = pipelined_component.pack_component(component_name)
+
+        self.client.upload_file(
+            Bucket=self.bucket,
+            LocalFilePath=filename,
+            Key=self.get_key(party_model_id, model_version, component_name),
+            EnableMD5=True,
+        )
+        return hash_
+
+    def download(self, party_model_id, model_version, component_name, hash_=None):
+        pipelined_component = PipelinedComponent(party_model_id=party_model_id, model_version=model_version)
+
+        self.client.download_file(
+            Bucket=self.bucket,
+            Key=self.get_key(party_model_id, model_version, component_name),
+            DestFilePath=pipelined_component.get_archive_path(component_name),
+            EnableCRC=True,
+        )
+        pipelined_component.unpack_component(component_name, hash_)

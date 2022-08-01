@@ -149,7 +149,8 @@ class ProviderManager:
                                                            provider.name,
                                                            provider.version,
                                                            local_role=role,
-                                                           local_party_id=int(party_id))
+                                                           local_party_id=int(party_id),
+                                                           previous_parameters=previous_components_parameters)
         user_specified_parameters = dsl_parser.parse_user_specified_component_parameters(component_name,
                                                                                          ComponentRegistry.REGISTRY,
                                                                                          provider.name,

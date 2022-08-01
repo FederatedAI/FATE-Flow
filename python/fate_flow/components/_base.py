@@ -142,11 +142,18 @@ class ComponentBase(metaclass=abc.ABCMeta):
         self.tracker = cpn_input.tracker
         self.checkpoint_manager = cpn_input.checkpoint_manager
 
-        method = (self._retry if retry and
-                  self.checkpoint_manager is not None and
-                  self.checkpoint_manager.latest_checkpoint is not None
-                  else self._run)
-        method(cpn_input)
+        # retry
+        if (
+            retry
+            and hasattr(self, '_retry')
+            and callable(self._retry)
+            and self.checkpoint_manager is not None
+            and self.checkpoint_manager.latest_checkpoint is not None
+        ):
+            self._retry(cpn_input=cpn_input)
+        # normal
+        else:
+            self._run(cpn_input=cpn_input)
 
         return ComponentOutput(data=self.save_data(), models=self.export_model(), cache=self.save_cache(), serialize=self.serialize)
 

@@ -70,30 +70,29 @@ class BaseDataBase:
 class DatabaseLock:
     def __init__(self, lock_name, timeout=10, db=None):
         self.lock_name = lock_name
-        self.timeout = timeout
+        self.timeout = int(timeout)
         self.db = db if db else DB
 
     def lock(self):
-        sql = "SELECT GET_LOCK('%s', %s)" % (self.lock_name, self.timeout)
-        cursor = self.db.execute_sql(sql)
+        # SQL parameters only support %s format placeholders
+        cursor = self.db.execute_sql("SELECT GET_LOCK(%s, %s)", (self.lock_name, self.timeout))
         ret = cursor.fetchone()
         if ret[0] == 0:
-            raise Exception('mysql lock {} is already used'.format(self.lock_name))
+            raise Exception(f'mysql lock {self.lock_name} is already in use')
         elif ret[0] == 1:
             return True
         else:
-            raise Exception('mysql lock {} error occurred!')
+            raise Exception(f'failed to acquire lock {self.lock_name}')
 
     def unlock(self):
-        sql = "SELECT RELEASE_LOCK('%s')" % (self.lock_name)
-        cursor = self.db.execute_sql(sql)
+        cursor = self.db.execute_sql("SELECT RELEASE_LOCK(%s)", (self.lock_name, ))
         ret = cursor.fetchone()
         if ret[0] == 0:
-            raise Exception('mysql lock {} is not released'.format(self.lock_name))
+            raise Exception(f'mysql lock {self.lock_name} not released')
         elif ret[0] == 1:
             return True
         else:
-            raise Exception('mysql lock {} did not exist.'.format(self.lock_name))
+            raise Exception(f'mysql lock {self.lock_name} does not exist')
 
     def __enter__(self):
         if isinstance(self.db, PooledMySQLDatabase):
@@ -574,10 +573,16 @@ class PipelineComponentMeta(DataBaseModel):
     f_model_version = CharField(max_length=100, index=True)
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=10, index=True)
-    f_component_name = CharField(max_length=100)
+    f_component_name = CharField(max_length=100, index=True)
     f_component_module_name = CharField(max_length=100)
-    f_model_alias = CharField(max_length=100)
+    f_model_alias = CharField(max_length=100, index=True)
     f_model_proto_index = JSONField(null=True)
+    f_run_parameters = JSONField(null=True)
+    f_archive_sha256 = CharField(max_length=100, null=True)
+    f_archive_from_ip = CharField(max_length=100, null=True)
 
     class Meta:
         db_table = 't_pipeline_component_meta'
+        indexes = (
+            (('f_model_id', 'f_model_version', 'f_role', 'f_party_id', 'f_component_name'), True),
+        )
