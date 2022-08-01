@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 from copy import deepcopy
+from hashlib import sha256
 from typing import Tuple
 
 from peewee import DoesNotExist
@@ -69,7 +70,16 @@ class SyncModel:
             'store_address': storage_address,
         }
 
-        self.lock = DB.lock(f'sync_model_{self.party_model_id}_{self.model_version}', -1)
+        self.lock = DB.lock(
+            sha256(
+                '_'.join((
+                    'sync_model',
+                    self.party_model_id,
+                    self.model_version,
+                )).encode('utf-8')
+            ).hexdigest(),
+            -1,
+        )
 
     def db_exists(self):
         try:
@@ -157,12 +167,14 @@ class SyncComponent:
         )
 
         self.lock = DB.lock(
-            '_'.join((
-                'sync_component',
-                self.party_model_id,
-                self.model_version,
-                self.component_name,
-            )),
+            sha256(
+                '_'.join((
+                    'sync_component',
+                    self.party_model_id,
+                    self.model_version,
+                    self.component_name,
+                )).encode('utf-8')
+            ).hexdigest(),
             -1,
         )
 
