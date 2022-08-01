@@ -78,7 +78,7 @@ class DatabaseLock:
         cursor = self.db.execute_sql("SELECT GET_LOCK(%s, %s)", (self.lock_name, self.timeout))
         ret = cursor.fetchone()
         if ret[0] == 0:
-            raise Exception(f'mysql lock {self.lock_name} is already in use')
+            raise Exception(f'acquire mysql lock {self.lock_name} timeout')
         elif ret[0] == 1:
             return True
         else:
