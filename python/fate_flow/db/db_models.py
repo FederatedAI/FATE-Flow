@@ -88,7 +88,7 @@ class DatabaseLock:
         cursor = self.db.execute_sql("SELECT RELEASE_LOCK(%s)", (self.lock_name, ))
         ret = cursor.fetchone()
         if ret[0] == 0:
-            raise Exception(f'mysql lock {self.lock_name} not released')
+            raise Exception(f'mysql lock {self.lock_name} was not established by this thread')
         elif ret[0] == 1:
             return True
         else:

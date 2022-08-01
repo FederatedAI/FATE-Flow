@@ -81,6 +81,7 @@ class SyncModel:
             -1,
         )
 
+    @DB.connection_context()
     def db_exists(self):
         try:
             self.get_model()
@@ -95,7 +96,6 @@ class SyncModel:
     def remote_exists(self):
         return self.model_storage.exists(**self.model_storage_parameters)
 
-    @DB.connection_context()
     def get_model(self):
         return MLModel.get(
             MLModel.f_role == self.role,
@@ -188,7 +188,6 @@ class SyncComponent:
     def remote_exists(self):
         return self.component_storage.exists(*self.component_storage_parameters)
 
-    @DB.connection_context()
     def get_archive_hash(self):
         query = tuple(PipelineComponentMeta.select().where(*self.query_args).group_by(
             PipelineComponentMeta.f_archive_sha256, PipelineComponentMeta.f_archive_from_ip))
@@ -197,7 +196,6 @@ class SyncComponent:
 
         return query[0].f_archive_sha256
 
-    @DB.connection_context()
     def update_archive_hash(self, hash_):
         PipelineComponentMeta.update(
             f_archive_sha256=hash_,
