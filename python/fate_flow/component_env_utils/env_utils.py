@@ -13,9 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
 import sys
 
+from fate_flow.component_env_utils.provider_utils import get_provider_class_object
+from fate_flow.entity import ComponentProvider
 from fate_flow.manager.provider_manager import ProviderManager
 
 
@@ -39,14 +40,15 @@ def import_python_path(provider_info):
     import_path(get_python_path(provider_info))
 
 
-def import_class_path(provider_info, name):
-    path = os.path.join(get_fate_algorithm_path(provider_info), get_class_path(provider_info, name))
-    import_path(path)
-
-
 def import_component_output_depend(provider_info=None):
     if not provider_info:
         provider_info = ProviderManager.get_default_fate_provider().to_dict()
     import_python_path(provider_info)
-    import_class_path(provider_info, "feature_instance")
-    import_class_path(provider_info, "feature_vector")
+
+
+def get_class_object(class_name):
+    provider_info = ProviderManager.get_default_fate_provider().to_dict()
+    import_python_path(provider_info)
+    provider = ComponentProvider(**provider_info)
+    class_obj = get_provider_class_object(provider, class_name)
+    return class_obj

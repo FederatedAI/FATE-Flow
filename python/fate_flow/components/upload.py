@@ -20,7 +20,7 @@ import time
 import uuid
 
 from fate_arch import storage, session
-from fate_arch.common import EngineType, file_utils, log, path_utils
+from fate_arch.common import EngineType, log, path_utils
 from fate_arch.common.data_utils import default_input_fs_path
 from fate_arch.session import Session
 from fate_arch.storage import DEFAULT_ID_DELIMITER, EggRollStoreType, StorageEngine, StorageTableOrigin
@@ -30,11 +30,12 @@ from fate_flow.components._base import (
     ComponentMeta,
     ComponentInputProtocol,
 )
+from fate_flow.components.param_extract import ParamExtract
 from fate_flow.entity import Metric, MetricMeta, MetricType
-from fate_flow.manager.data_manager import DataTableTracker
+from fate_flow.manager.data_manager import DataTableTracker, AnonymousGenerator, SchemaMetaParam
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.utils import data_utils, job_utils, process_utils, session_utils, upload_utils
+from fate_flow.utils import data_utils, job_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
 
 LOGGER = log.getLogger()
@@ -58,7 +59,10 @@ class UploadParam(BaseParam):
             extend_sid=False,
             auto_increasing_sid=False,
             block_size=1,
-            schema=None
+            schema=None,
+            # extra param
+            with_meta=False,
+            meta={}
     ):
         self.file = file
         self.head = head
@@ -73,9 +77,36 @@ class UploadParam(BaseParam):
         self.auto_increasing_sid = auto_increasing_sid
         self.block_size = block_size
         self.schema = schema if schema else {}
+        # extra param
+        self.with_meta = with_meta
+        self.meta = meta
 
     def check(self):
         return True
+
+    def update(self, conf, allow_redundant=False):
+        LOGGER.info(f"update:{conf}")
+        params = ParamExtract().recursive_parse_param_from_config(
+            param=self,
+            config_json=conf,
+            param_parse_depth=0,
+            valid_check=not allow_redundant,
+            name=self._name,
+        )
+        params.update_meta(params)
+        LOGGER.info(f"update result:{params.__dict__}")
+        return params
+
+    @staticmethod
+    def update_meta(params):
+        if params.with_meta:
+            _meta = SchemaMetaParam(params.id_delimiter, **params.meta).to_dict()
+            if params.extend_sid:
+                _meta["with_match_id"] = True
+        else:
+            _meta = {}
+        params.meta = _meta
+        return params
 
 
 @upload_cpn_meta.bind_runner.on_local
@@ -202,7 +233,7 @@ class Upload(ComponentBase):
         self.parameters["name"] = name
         self.table = storage_session.create_table(address=address, origin=StorageTableOrigin.UPLOAD, **self.parameters)
         if storage_engine not in [StorageEngine.PATH]:
-            data_table_count = self.save_data_table(job_id, name, namespace, storage_engine, head)
+            data_table_count = self.save_data_table(job_id, name, namespace, head)
         else:
             data_table_count = self.get_data_table_count(
                 self.parameters["file"], name, namespace
@@ -226,21 +257,19 @@ class Upload(ComponentBase):
         LOGGER.info("total data_count: {}".format(data_table_count))
         LOGGER.info("table name: {}, table namespace: {}".format(name, namespace))
 
-    def save_data_table(self, job_id, dst_table_name, dst_table_namespace, storage_engine, head=True):
+    def save_data_table(self, job_id, dst_table_name, dst_table_namespace, head=True):
         input_file = self.parameters["file"]
         input_feature_count = self.get_count(input_file)
-        data_head, file_list, table_list = self.split_file(input_file, head, input_feature_count, dst_table_name,
-                                                           dst_table_namespace, storage_engine)
-        if len(file_list) == 1:
-            self.upload_file(input_file, head, job_id, input_feature_count)
-        else:
-            self.upload_file_block(file_list, data_head, table_list)
+        self.upload_file(input_file, head, job_id, input_feature_count)
         table_count = self.table.count()
-        self.table.meta.update_metas(
-            count=table_count,
-            partitions=self.parameters["partition"],
-            extend_sid=self.parameters["extend_sid"],
-        )
+        metas_info = {
+            "count": table_count,
+            "partitions": self.parameters["partition"],
+            "extend_sid": self.parameters["extend_sid"]
+        }
+        if self.parameters.get("with_meta"):
+            metas_info.update({"schema": self.generate_anonymous_schema()})
+        self.table.meta.update_metas(**metas_info)
         self.save_meta(
             dst_table_namespace=dst_table_namespace,
             dst_table_name=dst_table_name,
@@ -256,49 +285,7 @@ class Upload(ComponentBase):
                 count += 1
         return count
 
-    def split_file(self, file_path, head, input_feature_count, table_name, namespace, storage_engine):
-        data_head = None
-        file_list = []
-        table_list = []
-        block_size = self.parameters.get("block_size", 1)
-        if storage_engine not in {StorageEngine.EGGROLL, StorageEngine.STANDALONE} or block_size == 1:
-            return data_head, [file_path], None
-        if isinstance(block_size, int) and block_size > 1:
-            block_line = int(input_feature_count / self.parameters.get("block_size", 5)) + 1
-        else:
-            raise ValueError(f"block size value error:{block_size}")
-
-        LOGGER.info('start to split file {}'.format(file_path))
-
-        file_dir, name = os.path.split(file_path)
-        partno = 0
-        name_uuid = uuid.uuid1().hex
-        with open(file_path, 'r') as stream:
-            if head:
-                data_head = stream.readline()
-            while True:
-                part_file_name = os.path.join(file_dir, name + '_' + str(partno))
-                LOGGER.debug('write start %s' % part_file_name)
-                part_stream = open(part_file_name, 'w')
-                read_count = 0
-                while read_count < block_line:
-                    read_content = stream.readline()
-                    if read_content:
-                        part_stream.write(read_content)
-                    else:
-                        break
-                    read_count += 1
-                part_stream.close()
-                if read_count > 0:
-                    file_list.append(part_file_name)
-                    table_list.append({"name": table_name + '_' + name_uuid + str(partno), "namespace": namespace})
-                if (read_count < block_line):
-                    break
-                partno += 1
-        LOGGER.debug('finish split file {}: {}, {}, {}'.format(file_path, data_head, file_list, table_list))
-        return data_head, file_list, table_list
-
-    def upload_file(self, input_file, head, job_id=None, input_feature_count=None, table=None, without_block=True):
+    def upload_file(self, input_file, head, job_id=None, input_feature_count=None, table=None):
         if not table:
             table = self.table
         with open(input_file, "r") as fin:
@@ -306,14 +293,17 @@ class Upload(ComponentBase):
             if head is True:
                 data_head = fin.readline()
                 input_feature_count -= 1
-                self.update_table_meta(data_head)
+                self.update_table_schema(data_head)
+            else:
+                self.update_table_schema()
             n = 0
             fate_uuid = uuid.uuid1().hex
             get_line = self.get_line()
             line_index = 0
             while True:
                 data = list()
-                lines = fin.readlines(JobDefaultConfig.upload_max_bytes)
+                lines = fin.readlines(JobDefaultConfig.upload_block_max_bytes)
+                LOGGER.info(JobDefaultConfig.upload_block_max_bytes)
                 if lines:
                     # self.append_data_line(lines, data, n)
                     for line in lines:
@@ -328,66 +318,21 @@ class Upload(ComponentBase):
                         )
                         data.append((k, v))
                         line_index += 1
-                    if without_block:
-                        lines_count += len(data)
-                        save_progress = lines_count / input_feature_count * 100 // 1
-                        job_info = {
-                            "progress": save_progress,
-                            "job_id": job_id,
-                            "role": self.parameters["local"]["role"],
-                            "party_id": self.parameters["local"]["party_id"],
-                        }
-                        ControllerClient.update_job(job_info=job_info)
+                    lines_count += len(data)
+                    save_progress = lines_count / input_feature_count * 100 // 1
+                    job_info = {
+                        "progress": save_progress,
+                        "job_id": job_id,
+                        "role": self.parameters["local"]["role"],
+                        "party_id": self.parameters["local"]["party_id"],
+                    }
+                    ControllerClient.update_job(job_info=job_info)
                     table.put_all(data)
-                    if n == 0 and without_block:
+                    if n == 0:
                         table.meta.update_metas(part_of_data=data)
                 else:
                     return
                 n += 1
-
-    def upload_file_block(self, file_list, data_head, table_list):
-        if data_head:
-            self.update_table_meta(data_head)
-        upload_process = []
-        for block_index, block_file in enumerate(file_list):
-            task_dir = os.path.join(job_utils.get_job_directory(job_id=self.tracker.job_id),
-                                    self.tracker.role,
-                                    str(self.tracker.party_id),
-                                    self.tracker.component_name, 'upload')
-            os.makedirs(task_dir, exist_ok=True)
-            process_cmd = [
-                sys.executable or 'python3',
-                sys.modules[upload_utils.UploadFile.__module__].__file__,
-                '--session_id', self.session_id,
-                '--storage', self.storage_engine,
-                '--file', block_file,
-                '--namespace', table_list[block_index].get("namespace"),
-                '--name', table_list[block_index].get("name"),
-                '--partitions', self.parameters.get('partition')
-            ]
-            LOGGER.info(process_cmd)
-            job_log_dir = os.path.join(job_utils.get_job_log_directory(job_id=self.tracker.job_id), self.tracker.role,
-                                       str(self.tracker.party_id))
-            task_log_dir = os.path.join(job_log_dir, self.tracker.component_name, f'block_{block_index}')
-            p = process_utils.run_subprocess(job_id=self.tracker.job_id, config_dir=task_dir, process_cmd=process_cmd,
-                                             log_dir=task_log_dir)
-            upload_process.append(p)
-        self.check_upload_process(upload_process)
-        self.union_table(table_list)
-
-    def union_table(self, table_list):
-        combined_table = self.get_computing_table(self.table.name, self.table.namespace)
-        for table_info in table_list:
-            table = self.get_computing_table(table_info.get("name"), table_info.get("namespace"))
-            combined_table = combined_table.union(table)
-            LOGGER.info(combined_table.count())
-        session.Session.persistent(computing_table=combined_table,
-                                   namespace=self.table.namespace,
-                                   name=self.table.name,
-                                   schema={},
-                                   engine=self.table.engine,
-                                   engine_address=self.table.address.__dict__,
-                                   token=None)
 
     def get_computing_table(self, name, namespace, schema=None):
         storage_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
@@ -397,28 +342,27 @@ class Upload(ComponentBase):
             partitions=self.parameters.get("partitions"))
         return computing_table
 
-    @staticmethod
-    def check_upload_process(upload_process):
-        while True:
-            for p in upload_process:
-                LOGGER.info(f"pid {p.pid} poll status: {p.poll()}")
-                if p.poll() is not None:
-                    if p.poll() != 0:
-                        raise Exception(p.stderr)
-                    upload_process.remove(p)
-            LOGGER.info(f"running pid:{[p.pid for p in upload_process]}")
-            time.sleep(5)
-            if not len(upload_process):
-                break
+    def generate_anonymous_schema(self):
+        computing_table = self.get_computing_table(self.table.name, self.table.namespace)
+        LOGGER.info(f"computing table schema: {computing_table.schema}")
+        schema = computing_table.schema
+        if schema.get("meta"):
+            schema.update(AnonymousGenerator.generate_header(computing_table, schema))
+            schema = AnonymousGenerator.generate_anonymous_header(schema=schema)
+            LOGGER.info(f"extra schema: {schema}")
+        return schema
 
-    def update_table_meta(self, data_head):
+    def update_table_schema(self, data_head=""):
         LOGGER.info(f"data head: {data_head}")
         schema = data_utils.get_header_schema(
             header_line=data_head,
             id_delimiter=self.parameters["id_delimiter"],
             extend_sid=self.parameters["extend_sid"],
         )
+        # update extra schema and meta info
         schema.update(self.parameters.get("schema", {}))
+        schema.update({"meta": self.parameters.get("meta", {})})
+
         _, meta = self.table.meta.update_metas(
             schema=schema,
             auto_increasing_sid=self.parameters["auto_increasing_sid"],

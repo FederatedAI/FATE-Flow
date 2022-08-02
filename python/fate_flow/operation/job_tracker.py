@@ -128,8 +128,6 @@ class Tracker(object):
             part_of_limit = JobDefaultConfig.output_data_summary_count_limit
             part_of_data = []
             if need_read:
-                match_id_name = computing_table.schema.get("match_id_name")
-                schedule_logger(self.job_id).info(f'match id name:{match_id_name}')
                 for k, v in computing_table.collect():
                     part_of_data.append((k, v))
                     part_of_limit -= 1

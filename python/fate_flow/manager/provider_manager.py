@@ -108,12 +108,17 @@ class ProviderManager:
 
     @classmethod
     def get_job_provider_group(cls, dsl_parser, role, party_id, components: list = None, check_registration=True,
-                               runtime_conf=None):
-        providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY, conf=runtime_conf,
-                                                      local_role=role, local_party_id=party_id)
-        VersionController.job_provider_version_check(providers_info, local_role=role, local_party_id=party_id)
+                               runtime_conf=None, check_version=False, is_scheduler=False):
+        if is_scheduler:
+            # local provider
+            providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY)
+        else:
+            providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY, conf=runtime_conf,
+                                                          local_role=role, local_party_id=party_id)
+        if check_version:
+            VersionController.job_provider_version_check(providers_info, local_role=role, local_party_id=party_id)
         group = {}
-        if role in providers_info:
+        if role in providers_info and not is_scheduler:
             providers_info = providers_info.get(role, {}).get(int(party_id), {}) or\
                              providers_info.get(role, {}).get(str(party_id), {})
         if components is not None:

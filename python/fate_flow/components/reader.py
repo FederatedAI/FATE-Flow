@@ -32,7 +32,7 @@ from fate_flow.components._base import (
 from fate_flow.errors import ParameterError
 from fate_flow.entity import MetricMeta
 from fate_flow.entity.types import InputSearchType
-from fate_flow.manager.data_manager import DataTableTracker, TableStorage
+from fate_flow.manager.data_manager import DataTableTracker, TableStorage, AnonymousGenerator
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.utils import data_utils
 
@@ -138,26 +138,12 @@ class Reader(ComponentBase):
                 "job_id": self.tracker.job_id,
             },
         )
-        headers_str = output_table_meta.get_schema().get("header")
-        table_info = {}
-        if output_table_meta.get_schema() and headers_str:
-            if isinstance(headers_str, str):
-                data_list = [headers_str.split(",")]
-                is_display = True
-            else:
-                data_list = [headers_str]
-                is_display = False
-            if is_display:
-                for data in output_table_meta.get_part_of_data():
-                    data_list.append(data[1].split(","))
-                data = np.array(data_list)
-                Tdata = data.transpose()
-                for data in Tdata:
-                    table_info[data[0]] = ",".join(list(set(data[1:]))[:5])
+        table_info, anonymous_info = self.data_info_display(output_table_meta)
         data_info = {
             "table_name": input_table_name,
             "namespace": input_table_namespace,
             "table_info": table_info,
+            "anonymous_info": anonymous_info,
             "partitions": output_table_meta.get_partitions(),
             "storage_engine": output_table_meta.get_engine(),
         }
@@ -214,50 +200,6 @@ class Reader(ComponentBase):
         return data_utils.convert_output(input_name, input_namespace, output_name, output_namespace, computing_engine,
                                          output_storage_address)
 
-    def deal_linkis_hive(self, src_table: StorageTableABC, dest_table: StorageTableABC):
-        import functools
-
-        from pyspark.sql import SparkSession
-
-        session = SparkSession.builder.enableHiveSupport().getOrCreate()
-        src_data = session.sql(
-            f"select * from {src_table.address.database}.{src_table.address.name}"
-        )
-        LOGGER.info(
-            f"database:{src_table.address.database}, name:{src_table.address.name}"
-        )
-        LOGGER.info(f"src data: {src_data}")
-        # src_data = src_table.collect(is_spark=1)
-        src_data = src_data.toPandas().astype(str)
-        LOGGER.info(f"columns: {src_data.columns}")
-        header_source_item = list(src_data.columns)
-
-        id_delimiter = src_table.meta.get_id_delimiter()
-        LOGGER.info(f"id_delimiter: {id_delimiter}")
-        LOGGER.info(f"src_data: {src_data}")
-        src_data.applymap(lambda x: str(x))
-        f = functools.partial(self.convert_join, delimitor=id_delimiter)
-        src_data["result"] = src_data.agg(f, axis=1)
-        dest_data = src_data.iloc[:, [0, -1]]
-        dest_data.columns = ["key", "value"]
-        LOGGER.info(f"dest_data: {dest_data}")
-        LOGGER.info(
-            f"database:{dest_table.address.database}, name:{dest_table.address.name}"
-        )
-        dest_table.put_all(dest_data)
-        schema = {
-            "header": id_delimiter.join(header_source_item[1:]).strip(),
-            "sid": header_source_item[0].strip(),
-        }
-        dest_table.meta.update_metas(schema=schema)
-
-    @staticmethod
-    def convert_join(x, delimitor=","):
-        import pickle
-
-        x = [str(i) for i in x]
-        return pickle.dumps(delimitor.join(x[1:])).hex()
-
     def save_table(self, src_table: StorageTableABC, dest_table: StorageTableABC):
         LOGGER.info(f"start copying table")
         LOGGER.info(
@@ -270,6 +212,8 @@ class Reader(ComponentBase):
             self.to_save(src_table, dest_table)
         else:
             TableStorage.copy_table(src_table, dest_table)
+            # update anonymous
+            self.create_anonymous(src_meta=src_table.meta, dest_meta=dest_table.meta)
 
     def to_save(self, src_table, dest_table):
         src_table_meta = src_table.meta
@@ -280,7 +224,6 @@ class Reader(ComponentBase):
             id_delimiter=src_table_meta.get_id_delimiter(),
             in_serialized=src_table_meta.get_in_serialized(),
         )
-        LOGGER.info(f"schema: {src_table_meta.get_schema()}")
         schema = src_table_meta.get_schema()
         self.tracker.job_tracker.save_output_data(
             src_computing_table,
@@ -291,7 +234,73 @@ class Reader(ComponentBase):
             schema=schema,
             need_read=False
         )
-        dest_table.meta.update_metas(schema=schema, part_of_data=src_table_meta.get_part_of_data(), count=src_table_meta.get_count())
+        schema = self.update_anonymous(schema=schema)
+        LOGGER.info(f"dest schema: {schema}")
+        dest_table.meta.update_metas(
+            schema=schema,
+            part_of_data=src_table_meta.get_part_of_data(),
+            count=src_table_meta.get_count())
         LOGGER.info(
             f"save {dest_table.namespace} {dest_table.name} success"
         )
+
+    def update_anonymous(self, schema):
+        if schema.get("meta") and schema.get("anonymous_header"):
+            schema = AnonymousGenerator.update_anonymous_header_with_role(schema, self.tracker.role, self.tracker.party_id)
+        return schema
+
+    def create_anonymous(self, src_meta, dest_meta):
+        src_schema = src_meta.get_schema()
+        dest_schema = dest_meta.get_schema()
+        LOGGER.info(f"src schema: {src_schema}, dest schema {dest_schema}")
+        if src_schema.get("meta"):
+            if not src_schema.get("anonymous_header"):
+                LOGGER.info("start to create anonymous")
+                dest_computing_table = session.get_computing_session().load(
+                    dest_meta.get_address(),
+                    schema=dest_meta.get_schema(),
+                    partitions=dest_meta.get_partitions(),
+                    id_delimiter=dest_meta.get_id_delimiter(),
+                    in_serialized=dest_meta.get_in_serialized(),
+                )
+                src_schema.update(AnonymousGenerator.generate_header(dest_computing_table, src_schema))
+                dest_schema.update(AnonymousGenerator.generate_header(dest_computing_table, dest_schema))
+                src_schema = AnonymousGenerator.generate_anonymous_header(schema=src_schema)
+                dest_schema = AnonymousGenerator.generate_anonymous_header(schema=dest_schema)
+                dest_schema = AnonymousGenerator.update_anonymous_header_with_role(dest_schema, self.tracker.role,
+                                                                                   self.tracker.party_id)
+                LOGGER.info(f"update src schema {src_schema} and dest schema {dest_schema}")
+                src_meta.update_metas(schema=src_schema)
+                dest_meta.update_metas(schema=dest_schema)
+            else:
+                dest_schema = AnonymousGenerator.update_anonymous_header_with_role(dest_schema, self.tracker.role,
+                                                                                   self.tracker.party_id)
+                LOGGER.info(f"update dest schema {dest_schema}")
+                dest_meta.update_metas(schema=dest_schema)
+
+    @staticmethod
+    def data_info_display(output_table_meta):
+        headers = output_table_meta.get_schema().get("header")
+        schema = output_table_meta.get_schema()
+        table_info = {}
+        anonymous_info = {}
+        try:
+            if schema and headers:
+                if isinstance(headers, str):
+                    data_list = [headers.split(",")]
+                else:
+                    data_list = [[schema.get("label_name")] if schema.get("label_name") else []]
+                    data_list[0].extend(headers)
+                for data in output_table_meta.get_part_of_data():
+                    data_list.append(data[1].split(","))
+                data = np.array(data_list)
+                Tdata = data.transpose()
+                for data in Tdata:
+                    table_info[data[0]] = ",".join(list(set(data[1:]))[:5])
+            if schema and schema.get("anonymous_header"):
+                anonymous_info = dict(zip(schema.get("header"), schema.get("anonymous_header")))
+                if schema.get("label_name"):
+                    anonymous_info[schema.get("label_name")] = schema.get("anonymous_label")
+        except Exception as e:
+            LOGGER.exception(e)
+        return table_info, anonymous_info

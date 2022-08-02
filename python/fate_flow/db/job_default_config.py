@@ -41,7 +41,7 @@ class JobDefaultConfig(ReloadConfigBase):
     federated_status_collect_type = None
 
     # upload
-    upload_max_bytes = None  # bytes
+    upload_block_max_bytes = None  # bytes
 
     # component output
     output_data_summary_count_limit = None

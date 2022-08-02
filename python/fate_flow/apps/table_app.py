@@ -18,7 +18,7 @@ from fate_arch.metastore.db_utils import StorageConnector
 from fate_arch.session import Session
 from fate_arch.storage import StorageTableMeta, StorageTableOrigin
 from fate_flow.entity import RunParameters
-from fate_flow.manager.data_manager import DataTableTracker, TableStorage
+from fate_flow.manager.data_manager import DataTableTracker, TableStorage, SchemaMetaParam, AnonymousGenerator
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.utils.data_utils import get_extend_id_name
@@ -72,6 +72,11 @@ def table_bind():
     feature_column = request_data.get("feature_column") or request_data.get("feature_name")
     schema = get_bind_table_schema(id_column, feature_column)
     schema.update(extra_schema)
+    if request_data.get("with_meta", False):
+        meta = SchemaMetaParam(delimiter=request_data.get("id_delimiter"), **request_data.get("meta", {}))
+        if request_data.get("extend_sid", False):
+            meta.with_match_id = True
+        schema.update({"meta": meta.to_dict()})
     sess = Session()
     storage_session = sess.storage(storage_engine=engine, options=request_data.get("options"))
     table = storage_session.create_table(address=address, name=name, namespace=namespace,
@@ -97,6 +102,36 @@ def table_bind():
         )
     sess.destroy_all_sessions()
     return response
+
+
+@manager.route('/schema/update', methods=['post'])
+@validate_request("schema", "namespace", "name")
+def schema_update():
+    request_data = request.json
+    data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
+    schema = data_table_meta.get_schema()
+    schema.update(request_data.get("schema", {}))
+    data_table_meta.update_metas(schema=schema)
+    return get_json_result(data=schema)
+
+
+@manager.route('/schema/anonymous/migrate', methods=['post'])
+@validate_request("namespace", "name", "role", "party_id", "migrate_mapping")
+def meta_update():
+    request_data = request.json
+    data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
+    schema = data_table_meta.get_schema()
+    update_schema = AnonymousGenerator.migrate_schema_anonymous(
+        anonymous_schema=schema,
+        role=request_data.get("role"),
+        party_id=request_data.get("party_id"),
+        migrate_mapping=request_data.get("migrate_mapping"))
+    if update_schema:
+        schema.update(update_schema)
+        data_table_meta.update_metas(schema=schema)
+        return get_json_result(data=schema)
+    else:
+        return get_json_result(retcode=101, retmsg="update failed")
 
 
 @manager.route('/download', methods=['get'])

@@ -97,7 +97,8 @@ class JobController(object):
                                                                   initiator_party_id=job_info["initiator_party_id"],
                                                                   job_parameters=job_parameters,
                                                                   dsl_parser=dsl_parser,
-                                                                  runtime_conf=runtime_conf)
+                                                                  runtime_conf=runtime_conf,
+                                                                  check_version=True)
         schedule_logger(job_id).info("initialize tasks success")
         for provider_key, group_info in provider_group.items():
             for cpn in group_info["components"]:
@@ -272,7 +273,7 @@ class JobController(object):
     @classmethod
     def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id,
                          job_parameters: RunParameters = None, dsl_parser=None, components: list = None,
-                         runtime_conf=None, **kwargs):
+                         runtime_conf=None, check_version=False, is_scheduler=False, **kwargs):
         common_task_info = {}
         common_task_info["job_id"] = job_id
         common_task_info["initiator_role"] = initiator_role
@@ -294,7 +295,9 @@ class JobController(object):
                                                                 runtime_conf=runtime_conf,
                                                                 components=components,
                                                                 role=role,
-                                                                party_id=party_id)
+                                                                party_id=party_id,
+                                                                check_version=check_version,
+                                                                is_scheduler=is_scheduler)
         initialized_result = {}
         for group_key, group_info in provider_group.items():
             initialized_config = {}

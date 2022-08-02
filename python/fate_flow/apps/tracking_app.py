@@ -224,8 +224,11 @@ def component_output_data():
             totals.append(total)
         if output_data:
             extend_header = feature_utils.generate_header(all_extend_header, schema=output_table_meta.get_schema())
-            header = get_component_output_data_schema(output_table_meta=output_table_meta, is_str=is_str,
-                                                      extend_header=extend_header)
+            if output_table_meta.schema.get("is_display", True):
+                header = get_component_output_data_schema(output_table_meta=output_table_meta, is_str=is_str,
+                                                          extend_header=extend_header)
+            else:
+                header = []
             headers.append(header)
         else:
             headers.append(None)
