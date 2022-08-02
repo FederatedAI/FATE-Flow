@@ -13,12 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import copy
 import datetime
-import io
 import json
 import operator
 import os
-import shutil
 import tarfile
 import uuid
 
@@ -92,6 +91,11 @@ class AnonymousGenerator(object):
     def generate_header(computing_table, schema):
         obj = env_utils.get_class_object("data_format")
         return obj.generate_header(computing_table, schema)
+
+    @staticmethod
+    def reconstruct_header(schema):
+        obj = env_utils.get_class_object("data_format")
+        return obj.reconstruct_header(schema)
 
 
 class DataTableTracker(object):
@@ -218,6 +222,8 @@ class TableStorage:
                     part_of_data=part_of_data,
                 )
         else:
+            source_header = copy.deepcopy(src_table_meta.get_schema().get("header"))
+            TableStorage.update_full_header(src_table_meta)
             for k, v in src_table.collect():
                 if src_table.meta.get_extend_sid():
                     # extend id
@@ -242,12 +248,21 @@ class TableStorage:
                     part_of_data=part_of_data,
                 )
             schema = src_table.meta.get_schema()
+            schema["header"] = source_header
         if data_temp:
             dest_table.put_all(data_temp)
         if schema.get("extend_tag"):
             schema.update({"extend_tag": False})
         _, dest_table.meta = dest_table.meta.update_metas(schema=schema if not update_schema else None, part_of_data=part_of_data)
         return dest_table.count()
+
+    @staticmethod
+    def update_full_header(table_meta):
+        schema = table_meta.get_schema()
+        if schema.get("anonymous_header"):
+            header = AnonymousGenerator.reconstruct_header(schema)
+            schema["header"] = header
+            table_meta.set_metas(schema=schema)
 
     @staticmethod
     def put_in_table(table: StorageTableABC, k, v, temp, count, part_of_data, max_num=10000):
@@ -294,7 +309,8 @@ class TableStorage:
                                     output_data_meta_file_list.append(output_data_meta_file_path)
                                     with open(output_data_meta_file_path, 'w') as f:
                                         json.dump({'header': header}, f, indent=4)
-                                if need_head and header and output_table_meta.get_have_head():
+                                if need_head and header and output_table_meta.get_have_head() and \
+                                        output_table_meta.get_schema().get("is_display", False):
                                     fw.write('{}\n'.format(','.join(header)))
                             fw.write('{}\n'.format(','.join(map(lambda x: str(x), data_line))))
                             output_data_count += 1
@@ -373,11 +389,18 @@ def get_component_output_data_schema(output_table_meta, extend_header, is_str=Fa
         extend_header[extend_header.index("label")] = schema.get("label_name")
     header.extend(extend_header)
     if is_str or isinstance(schema.get('header'), str):
+
+        if schema.get("original_index_info"):
+            header = [schema.get('sid_name') or schema.get('sid', 'sid')]
+            header.extend(AnonymousGenerator.reconstruct_header(schema))
+            return header
+
         if not schema.get('header'):
             if schema.get('sid'):
                 return [schema.get('sid')]
             else:
                 return []
+
         if isinstance(schema.get('header'), str):
             schema_header = schema.get('header').split(',')
         elif isinstance(schema.get('header'), list):
@@ -385,6 +408,8 @@ def get_component_output_data_schema(output_table_meta, extend_header, is_str=Fa
         else:
             raise ValueError("header type error")
         header.extend([feature for feature in schema_header])
+
     else:
         header.extend(schema.get('header', []))
+
     return header

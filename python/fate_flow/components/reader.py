@@ -138,7 +138,7 @@ class Reader(ComponentBase):
                 "job_id": self.tracker.job_id,
             },
         )
-        table_info, anonymous_info = self.data_display(output_table_meta)
+        table_info, anonymous_info = self.data_info_display(output_table_meta)
         data_info = {
             "table_name": input_table_name,
             "namespace": input_table_namespace,
@@ -254,32 +254,38 @@ class Reader(ComponentBase):
         dest_schema = dest_meta.get_schema()
         LOGGER.info(f"src schema: {src_schema}, dest schema {dest_schema}")
         if src_schema.get("meta"):
-            LOGGER.info("start to create anonymous")
-            dest_computing_table = session.get_computing_session().load(
-                dest_meta.get_address(),
-                schema=dest_meta.get_schema(),
-                partitions=dest_meta.get_partitions(),
-                id_delimiter=dest_meta.get_id_delimiter(),
-                in_serialized=dest_meta.get_in_serialized(),
-            )
-            src_schema.update(AnonymousGenerator.generate_header(dest_computing_table, src_schema))
-            dest_schema.update(AnonymousGenerator.generate_header(dest_computing_table, dest_schema))
-            src_schema = AnonymousGenerator.generate_anonymous_header(schema=src_schema)
-            dest_schema = AnonymousGenerator.generate_anonymous_header(schema=dest_schema)
-            dest_schema = AnonymousGenerator.update_anonymous_header_with_role(dest_schema, self.tracker.role,
-                                                                               self.tracker.party_id)
-            LOGGER.info(f"update src schema {src_schema} and dest schema {dest_schema}")
-            src_meta.update_metas(schema=src_schema)
-            dest_meta.update_metas(schema=dest_schema)
+            if not src_schema.get("anonymous_header"):
+                LOGGER.info("start to create anonymous")
+                dest_computing_table = session.get_computing_session().load(
+                    dest_meta.get_address(),
+                    schema=dest_meta.get_schema(),
+                    partitions=dest_meta.get_partitions(),
+                    id_delimiter=dest_meta.get_id_delimiter(),
+                    in_serialized=dest_meta.get_in_serialized(),
+                )
+                src_schema.update(AnonymousGenerator.generate_header(dest_computing_table, src_schema))
+                dest_schema.update(AnonymousGenerator.generate_header(dest_computing_table, dest_schema))
+                src_schema = AnonymousGenerator.generate_anonymous_header(schema=src_schema)
+                dest_schema = AnonymousGenerator.generate_anonymous_header(schema=dest_schema)
+                dest_schema = AnonymousGenerator.update_anonymous_header_with_role(dest_schema, self.tracker.role,
+                                                                                   self.tracker.party_id)
+                LOGGER.info(f"update src schema {src_schema} and dest schema {dest_schema}")
+                src_meta.update_metas(schema=src_schema)
+                dest_meta.update_metas(schema=dest_schema)
+            else:
+                dest_schema = AnonymousGenerator.update_anonymous_header_with_role(dest_schema, self.tracker.role,
+                                                                                   self.tracker.party_id)
+                LOGGER.info(f"update dest schema {dest_schema}")
+                dest_meta.update_metas(schema=dest_schema)
 
     @staticmethod
-    def data_display(output_table_meta):
+    def data_info_display(output_table_meta):
         headers = output_table_meta.get_schema().get("header")
         schema = output_table_meta.get_schema()
         table_info = {}
         anonymous_info = {}
-        if schema and headers:
-            try:
+        try:
+            if schema and headers:
                 if isinstance(headers, str):
                     data_list = [headers.split(",")]
                 else:
@@ -291,10 +297,10 @@ class Reader(ComponentBase):
                 Tdata = data.transpose()
                 for data in Tdata:
                     table_info[data[0]] = ",".join(list(set(data[1:]))[:5])
-            except Exception as e:
-                LOGGER.exception(e)
-        if schema and schema.get("anonymous_header"):
-            anonymous_info = dict(zip(schema.get("header"), schema.get("anonymous_header")))
-            if schema.get("label_name"):
-                anonymous_info[schema.get("label_name")] = schema.get("anonymous_label")
+            if schema and schema.get("anonymous_header"):
+                anonymous_info = dict(zip(schema.get("header"), schema.get("anonymous_header")))
+                if schema.get("label_name"):
+                    anonymous_info[schema.get("label_name")] = schema.get("anonymous_label")
+        except Exception as e:
+            LOGGER.exception(e)
         return table_info, anonymous_info
