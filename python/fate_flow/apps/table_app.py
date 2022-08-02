@@ -73,8 +73,10 @@ def table_bind():
     schema = get_bind_table_schema(id_column, feature_column)
     schema.update(extra_schema)
     if request_data.get("with_meta", False):
-        schema.update({"meta": SchemaMetaParam(delimiter=request_data.get("id_delimiter"),
-                                               **request_data.get("meta", {})).to_dict()})
+        meta = SchemaMetaParam(delimiter=request_data.get("id_delimiter"), **request_data.get("meta", {}))
+        if request_data.get("extend_sid", False):
+            meta.with_match_id = True
+        schema.update({"meta": meta.to_dict()})
     sess = Session()
     storage_session = sess.storage(storage_engine=engine, options=request_data.get("options"))
     table = storage_session.create_table(address=address, name=name, namespace=namespace,

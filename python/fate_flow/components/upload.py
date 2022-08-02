@@ -101,6 +101,8 @@ class UploadParam(BaseParam):
     def update_meta(params):
         if params.with_meta:
             _meta = SchemaMetaParam(params.id_delimiter, **params.meta).to_dict()
+            if params.extend_sid:
+                _meta["with_match_id"] = True
         else:
             _meta = {}
         params.meta = _meta
