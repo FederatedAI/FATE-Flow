@@ -360,20 +360,7 @@ def operate_model(model_operation):
                         stat_logger.info(f'job id: {job_parameters.get("model_version")}, '
                                          f'role: {request_config["role"]} model info already existed in database.')
                     else:
-                        model_info = model_utils.gather_model_info_data(model)
-                        model_info['imported'] = 1
-                        model_info['job_id'] = model_info['f_model_version']
-                        model_info['size'] = model.calculate_model_file_size()
-                        model_info['role'] = request_config["model_id"].split('#')[0]
-                        model_info['party_id'] = request_config["model_id"].split('#')[1]
-
-                        if compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
-                            model_info['roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
-                            model_info['initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
-                            model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get( 'initiator', {}).get('party_id')
-                            model_info['parent'] = False if model_info.get('f_inference_dsl') else True
-
-                        model_utils.save_model_info(model_info)
+                        model_utils.gather_and_save_model_info(model, request_config["role"], request_config["party_id"], imported=1)
                 except peewee.IntegrityError as e:
                     stat_logger.exception(e)
 
