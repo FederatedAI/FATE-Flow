@@ -109,7 +109,8 @@ def table_bind():
 def schema_update():
     request_data = request.json
     data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
-    schema = data_table_meta.get_schema().update(request_data.get("schema"), {})
+    schema = data_table_meta.get_schema()
+    schema.update(request_data.get("schema", {}))
     data_table_meta.update_metas(schema=schema)
     return get_json_result(data=schema)
 
@@ -120,13 +121,13 @@ def meta_update():
     request_data = request.json
     data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
     schema = data_table_meta.get_schema()
-    migrate_anonymous_header = AnonymousGenerator.migrate_anonymous(
-        anonymous_header=schema.get("anonymous_header"),
+    update_schema = AnonymousGenerator.migrate_schema_anonymous(
+        anonymous_schema=schema,
         role=request_data.get("role"),
         party_id=request_data.get("party_id"),
         migrate_mapping=request_data.get("migrate_mapping"))
-    if migrate_anonymous_header:
-        schema.update({"anonymous_header": migrate_anonymous_header})
+    if update_schema:
+        schema.update(update_schema)
         data_table_meta.update_metas(schema=schema)
         return get_json_result(data=schema)
     else:

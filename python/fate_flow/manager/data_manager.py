@@ -88,9 +88,9 @@ class AnonymousGenerator(object):
         return obj.generate_anonymous_header(schema)
 
     @staticmethod
-    def migrate_anonymous(anonymous_header, role, party_id, migrate_mapping):
+    def migrate_schema_anonymous(anonymous_schema, role, party_id, migrate_mapping):
         obj = env_utils.get_class_object("anonymous_generator")(role, party_id, migrate_mapping)
-        return obj.migrate_anonymous(anonymous_header)
+        return obj.migrate_schema_anonymous(anonymous_schema)
 
     @staticmethod
     def generate_header(computing_table, schema):
