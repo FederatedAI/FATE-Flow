@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import os
+import re
 import typing
 import traceback
 import logging
@@ -139,3 +140,11 @@ def detect_logger(job_id='', log_type='detect'):
     if key in LoggerFactory.schedule_logger_dict.keys():
         return LoggerFactory.schedule_logger_dict[key]
     return get_job_logger(job_id=job_id, log_type=log_type)
+
+
+def replace_ip(line):
+    match_ip = re.findall('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}', line)
+    if match_ip:
+        for ip in match_ip:
+            line = re.sub(ip, "xxx.xxx.xxx.xxx", line)
+    return line

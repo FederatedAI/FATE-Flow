@@ -1,7 +1,7 @@
 import os
-import re
 
 from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.log_utils import replace_ip
 
 JOB = ["jobSchedule", "jobScheduleError"]
 PARTY = ["partyError", "partyWarning", "partyInfo", "partyDebug"]
@@ -71,10 +71,7 @@ class LogCollector():
             line_list = []
             line_num = begin if begin else 1
             for line in lines.strip().split("\n"):
-                match_ip = re.findall('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}', line)
-                if match_ip:
-                    for ip in match_ip:
-                        line = re.sub(ip, "xxx.xxx.xxx.xxx", line)
+                line = replace_ip(line)
                 line_list.append({"line_num": line_num, "content": line})
                 line_num += 1
         return line_list
