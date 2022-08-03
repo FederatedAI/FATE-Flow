@@ -175,6 +175,7 @@ case "$1" in
 
     restart)
         stop
+        sleep 10
         start
         status
         ;;

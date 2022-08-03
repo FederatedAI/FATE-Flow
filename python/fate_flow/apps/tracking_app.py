@@ -150,6 +150,21 @@ def component_output_model():
     model_id = job_configuration.runtime_conf_on_party['job_parameters']['model_id']
     model_version = request_data['job_id']
 
+    tracker = Tracker(
+        job_id=request_data['job_id'],
+        role=request_data['role'], party_id=request_data['party_id'],
+        model_id=model_id, model_version=model_version,
+        component_name=request_data['component_name'],
+    )
+
+    define_meta = tracker.pipelined_model.pipelined_component.get_define_meta()
+    if request_data['component_name'] not in define_meta['component_define']:
+        return get_json_result(retcode=0, retmsg='no define_meta', data={})
+
+    component_define = define_meta['component_define'][request_data['component_name']]
+    # There is only one model output at the current dsl version.
+    model_alias = next(iter(define_meta['model_proto'][request_data['component_name']].keys()))
+
     if get_base_config('enable_model_store', False):
         sync_component = SyncComponent(
             role=request_data['role'],
@@ -160,18 +175,6 @@ def component_output_model():
         )
         if not sync_component.local_exists() and sync_component.remote_exists():
             sync_component.download()
-
-    tracker = Tracker(
-        job_id=request_data['job_id'],
-        role=request_data['role'], party_id=request_data['party_id'],
-        model_id=model_id, model_version=model_version,
-        component_name=request_data['component_name'],
-    )
-
-    define_meta = tracker.pipelined_model.pipelined_component.get_define_meta()
-    component_define = define_meta['component_define'][request_data['component_name']]
-    # There is only one model output at the current dsl version.
-    model_alias = next(iter(define_meta['model_proto'][request_data['component_name']].keys()))
 
     output_model = tracker.pipelined_model.read_component_model(
         component_name=request_data['component_name'],
