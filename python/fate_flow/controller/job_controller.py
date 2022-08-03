@@ -18,7 +18,6 @@ import shutil
 
 from fate_arch.common import EngineType, engine_utils
 from fate_arch.common.base_utils import current_timestamp, json_dumps
-from fate_arch.common.conf_utils import get_base_config
 from fate_arch.computing import ComputingEngine
 
 from fate_flow.controller.task_controller import TaskController
@@ -38,7 +37,7 @@ from fate_flow.operation.job_tracker import Tracker
 from fate_flow.pipelined_model.pipelined_model import PipelinedComponent
 from fate_flow.protobuf.python import pipeline_pb2
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.settings import ENGINES
+from fate_flow.settings import ENGINES, ENABLE_MODEL_STORE
 from fate_flow.utils import data_utils, job_utils, log_utils, schedule_utils
 from fate_flow.utils.job_utils import get_job_dataset
 from fate_flow.utils.log_utils import schedule_logger
@@ -502,7 +501,7 @@ class JobController(object):
             job_parameters=RunParameters(**job_parameters),
         )
 
-        if get_base_config('enable_model_store', False):
+        if ENABLE_MODEL_STORE:
             query = tracker.pipelined_model.pipelined_component.get_define_meta_from_db()
             for row in query:
                 sync_component = SyncComponent(

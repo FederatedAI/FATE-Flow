@@ -20,14 +20,13 @@ from collections import OrderedDict
 import peewee
 
 from fate_arch.common.base_utils import current_timestamp, json_loads
-from fate_arch.common.conf_utils import get_base_config
 
 from fate_flow.db.db_models import DB
 from fate_flow.db.db_models import MachineLearningModelInfo as MLModel
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.settings import HOST, stat_logger
+from fate_flow.settings import HOST, stat_logger, ENABLE_MODEL_STORE
 from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
 from fate_flow.utils.log_utils import sql_logger
 
@@ -188,7 +187,7 @@ def save_model_info(model_info):
     except Exception as e:
         raise Exception("Create {} failed:\n{}".format(MLModel, e))
 
-    if get_base_config('enable_model_store', False):
+    if ENABLE_MODEL_STORE:
         sync_model = SyncModel(
             role=model.f_role, party_id=model.f_party_id,
             model_id=model.f_model_id, model_version=model.f_model_version,

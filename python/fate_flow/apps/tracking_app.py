@@ -18,8 +18,6 @@ import os
 
 from flask import jsonify, request, send_file
 
-from fate_arch.common.conf_utils import get_base_config
-
 from fate_flow.component_env_utils import feature_utils
 from fate_flow.component_env_utils.env_utils import import_component_output_depend
 from fate_flow.db.db_models import DB, Job
@@ -28,7 +26,7 @@ from fate_flow.model.sync_model import SyncComponent
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.settings import TEMP_DIRECTORY, stat_logger
+from fate_flow.settings import TEMP_DIRECTORY, stat_logger, ENABLE_MODEL_STORE
 from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.utils.api_utils import error_response, get_json_result, validate_request
 
@@ -150,7 +148,7 @@ def component_output_model():
     model_id = job_configuration.runtime_conf_on_party['job_parameters']['model_id']
     model_version = request_data['job_id']
 
-    if get_base_config('enable_model_store', False):
+    if ENABLE_MODEL_STORE:
         sync_component = SyncComponent(
             role=request_data['role'],
             party_id=request_data['party_id'],

@@ -16,12 +16,12 @@
 from flask import request
 
 from fate_arch.common.base_utils import deserialize_b64
-from fate_arch.common.conf_utils import get_base_config
 
 from fate_flow.model.sync_model import SyncComponent
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
+from fate_flow.settings import ENABLE_MODEL_STORE
 from fate_flow.utils.api_utils import get_json_result, validate_request
 from fate_flow.utils.model_utils import gen_party_model_id
 
@@ -82,7 +82,7 @@ def save_component_model(job_id, component_name, task_version, task_id, role, pa
     pipelined_model = PipelinedModel(party_model_id, model_version)
     pipelined_model.write_component_model(request.json['component_model'])
 
-    if get_base_config('enable_model_store', False):
+    if ENABLE_MODEL_STORE:
         sync_component = SyncComponent(
             party_model_id=party_model_id,
             model_version=model_version,
@@ -103,7 +103,7 @@ def get_component_model(job_id, component_name, task_version, task_id, role, par
     party_model_id = gen_party_model_id(request.json['model_id'], role, party_id)
     model_version = request.json['model_version']
 
-    if get_base_config('enable_model_store', False):
+    if ENABLE_MODEL_STORE:
         sync_component = SyncComponent(
             party_model_id=party_model_id,
             model_version=model_version,

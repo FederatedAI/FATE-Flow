@@ -16,12 +16,11 @@
 import os
 
 from fate_arch.common.base_utils import json_dumps, json_loads
-from fate_arch.common.conf_utils import get_base_config
 
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, PipelineComponentMeta
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model import pipelined_model
-from fate_flow.settings import stat_logger
+from fate_flow.settings import stat_logger, ENABLE_MODEL_STORE
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.model_utils import gather_and_save_model_info, gen_model_id, gen_party_model_id
@@ -58,7 +57,7 @@ def migration(config_data: dict):
     unify_model_version = config_data['unify_model_version']
 
     try:
-        if get_base_config('enable_model_store', False):
+        if ENABLE_MODEL_STORE:
             sync_model = SyncModel(
                 role=local_role, party_id=local_party_id,
                 model_id=model_id, model_version=model_version,
