@@ -232,6 +232,7 @@ class Task(DataBaseModel):
     f_component_parameters = JSONField()
     f_engine_conf = JSONField(null=True)
     f_kill_status = BooleanField(default=False)
+    f_error_report = TextField(default="")
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)

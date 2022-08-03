@@ -28,7 +28,7 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import ComponentProvider
 from fate_flow.entity import RunParameters
 from fate_flow.entity.types import WorkerName
-from fate_flow.settings import stat_logger
+from fate_flow.settings import stat_logger, ENABLE_MODEL_STORE
 from fate_flow.utils import job_utils, process_utils, base_utils
 from fate_flow.utils.log_utils import ready_log, start_log, successful_log, failed_log
 
@@ -198,6 +198,7 @@ class WorkerManager:
             "--job_server", f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
             "--session_id", session_id,
             "--federation_session_id", federation_session_id,
+            "--enable_model_store", ENABLE_MODEL_STORE
         ]
         process_cmd.extend(common_cmd)
         process_cmd.extend(specific_cmd)

@@ -47,6 +47,9 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 GRPC_SERVER_MAX_WORKERS = None
 MAX_TIMESTAMP_INTERVAL = 60
 
+ERROR_REPORT = True
+ERROR_REPORT_WITH_PATH = False
+
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
 
 REQUEST_TRY_TIMES = 3
@@ -147,3 +150,5 @@ DATASET_PERMISSION = PERMISSION_CONF.get("dataset")
 
 HOOK_MODULE = get_base_config("hook_module")
 HOOK_SERVER_NAME = get_base_config("hook_server_name")
+
+ENABLE_MODEL_STORE = get_base_config('enable_model_store', False)

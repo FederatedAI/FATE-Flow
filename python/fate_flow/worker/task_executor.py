@@ -15,12 +15,12 @@
 #
 import importlib
 import os
+import sys
 import traceback
 
 from fate_arch import session, storage
 from fate_arch.common import EngineType, profile
 from fate_arch.common.base_utils import current_timestamp, json_dumps
-from fate_arch.common.conf_utils import get_base_config
 from fate_arch.computing import ComputingEngine
 
 from fate_flow.component_env_utils import provider_utils
@@ -37,6 +37,7 @@ from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.model.sync_model import SyncComponent
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduling_apps.client import TrackerClient
+from fate_flow.settings import ERROR_REPORT, ERROR_REPORT_WITH_PATH
 from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.utils.base_utils import get_fate_flow_python_directory
 from fate_flow.utils.log_utils import getLogger
@@ -220,7 +221,7 @@ class TaskExecutor(BaseTaskWorker):
             tracker_client.save_component_output_model(model_buffers=cpn_output.model,
                                                        model_alias=task_output_dsl['model'][0] if task_output_dsl.get('model') else 'default',
                                                        user_specified_run_parameters=user_specified_parameters)
-            if get_base_config('enable_model_store', False):
+            if self.args.enable_model_store == str(True):
                 party_model_id = gen_party_model_id(job_parameters.model_id, args.role, args.party_id)
                 sync_component = SyncComponent(party_model_id, job_parameters.model_version, args.component_name)
                 LOGGER.info(f'Uploading {sync_component.component_name} to component storage.')
@@ -251,6 +252,7 @@ class TaskExecutor(BaseTaskWorker):
         except Exception as e:
             traceback.print_exc()
             self.report_info["party_status"] = TaskStatus.FAILED
+            self.generate_error_report()
             LOGGER.exception(e)
         finally:
             try:
@@ -400,6 +402,18 @@ class TaskExecutor(BaseTaskWorker):
                 continue
             patch_module = importlib.import_module("fate_flow." + package_name + '.' + f + '.monkey_patch')
             patch_module.patch_all()
+
+    def generate_error_report(self):
+        if ERROR_REPORT:
+            _error = ""
+            etype, value, tb = sys.exc_info()
+            path_list = os.getenv("PYTHONPATH").split(":")
+            for line in traceback.TracebackException(type(value), value, tb).format(chain=True):
+                if not ERROR_REPORT_WITH_PATH:
+                    for path in path_list:
+                        line = line.replace(path, "xxx")
+                _error += line
+            self.report_info["error_report"] = _error.rstrip("\n")
 
 
 if __name__ == '__main__':
