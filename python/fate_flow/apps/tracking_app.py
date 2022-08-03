@@ -148,17 +148,6 @@ def component_output_model():
     model_id = job_configuration.runtime_conf_on_party['job_parameters']['model_id']
     model_version = request_data['job_id']
 
-    if ENABLE_MODEL_STORE:
-        sync_component = SyncComponent(
-            role=request_data['role'],
-            party_id=request_data['party_id'],
-            model_id=model_id,
-            model_version=model_version,
-            component_name=request_data['component_name'],
-        )
-        if not sync_component.local_exists() and sync_component.remote_exists():
-            sync_component.download()
-
     tracker = Tracker(
         job_id=request_data['job_id'],
         role=request_data['role'], party_id=request_data['party_id'],
