@@ -39,7 +39,7 @@ from fate_flow.scheduling_apps.client import TrackerClient
 from fate_flow.settings import ERROR_REPORT, ERROR_REPORT_WITH_PATH
 from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.utils.base_utils import get_fate_flow_python_directory
-from fate_flow.utils.log_utils import getLogger
+from fate_flow.utils.log_utils import getLogger, replace_ip
 from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.worker.task_base_worker import BaseTaskWorker, ComponentInput
 
@@ -421,6 +421,7 @@ class TaskExecutor(BaseTaskWorker):
                 if not ERROR_REPORT_WITH_PATH:
                     for path in path_list:
                         line = line.replace(path, "xxx")
+                line = replace_ip(line)
                 _error += line
             self.report_info["error_report"] = _error.rstrip("\n")
 
