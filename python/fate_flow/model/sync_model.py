@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 from copy import deepcopy
+from hashlib import sha256
 from typing import Tuple
 
 from peewee import DoesNotExist
@@ -69,8 +70,18 @@ class SyncModel:
             'store_address': storage_address,
         }
 
-        self.lock = DB.lock(f'sync_model_{self.party_model_id}_{self.model_version}', -1)
+        self.lock = DB.lock(
+            sha256(
+                '_'.join((
+                    'sync_model',
+                    self.party_model_id,
+                    self.model_version,
+                )).encode('utf-8')
+            ).hexdigest(),
+            -1,
+        )
 
+    @DB.connection_context()
     def db_exists(self):
         try:
             self.get_model()
@@ -85,7 +96,6 @@ class SyncModel:
     def remote_exists(self):
         return self.model_storage.exists(**self.model_storage_parameters)
 
-    @DB.connection_context()
     def get_model(self):
         return MLModel.get(
             MLModel.f_role == self.role,
@@ -157,12 +167,14 @@ class SyncComponent:
         )
 
         self.lock = DB.lock(
-            '_'.join((
-                'sync_component',
-                self.party_model_id,
-                self.model_version,
-                self.component_name,
-            )),
+            sha256(
+                '_'.join((
+                    'sync_component',
+                    self.party_model_id,
+                    self.model_version,
+                    self.component_name,
+                )).encode('utf-8')
+            ).hexdigest(),
             -1,
         )
 
@@ -176,7 +188,6 @@ class SyncComponent:
     def remote_exists(self):
         return self.component_storage.exists(*self.component_storage_parameters)
 
-    @DB.connection_context()
     def get_archive_hash(self):
         query = tuple(PipelineComponentMeta.select().where(*self.query_args).group_by(
             PipelineComponentMeta.f_archive_sha256, PipelineComponentMeta.f_archive_from_ip))
@@ -185,7 +196,6 @@ class SyncComponent:
 
         return query[0].f_archive_sha256
 
-    @DB.connection_context()
     def update_archive_hash(self, hash_):
         PipelineComponentMeta.update(
             f_archive_sha256=hash_,

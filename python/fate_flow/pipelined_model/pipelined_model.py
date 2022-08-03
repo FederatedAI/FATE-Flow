@@ -138,7 +138,7 @@ class PipelinedModel(Locker):
                 buffer_object_serialized_string = f.read()
 
             try:
-                with open(f"{storage_path}.json", encoding="utf8") as f:
+                with open(f"{storage_path}.json", encoding="utf-8") as f:
                     buffer_object_json_format = json_loads(f.read())
             except FileNotFoundError:
                 buffer_object_json_format = ""
@@ -167,7 +167,7 @@ class PipelinedModel(Locker):
             PipelineComponentMeta.f_model_alias == model_alias,
         )
         if not query:
-            return
+            return {}
 
         _model_buffers = self._read_component_model(component_name, model_alias)
 
@@ -318,5 +318,5 @@ class PipelinedModel(Locker):
             'model_version': self.model_version,
             'file': self.archive_model_file_path,
         }
-        with open(os.path.join(self.model_path, 'import_model.json'), 'w', encoding='utf-8') as f:
+        with open(os.path.join(self.model_path, 'import_model.json'), 'x', encoding='utf-8') as f:
             json.dump(config, f, indent=4)

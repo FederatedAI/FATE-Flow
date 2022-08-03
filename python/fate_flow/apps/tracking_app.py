@@ -16,19 +16,21 @@
 import json
 import os
 
-from flask import request, send_file, jsonify
+from flask import jsonify, request, send_file
 
-from fate_flow.component_env_utils.env_utils import import_component_output_depend
-from fate_flow.db.db_models import Job, DB
-from fate_flow.manager.data_manager import delete_metric_data, TableStorage, get_component_output_data_schema
-from fate_flow.operation.job_tracker import Tracker
-from fate_flow.operation.job_saver import JobSaver
-from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.settings import stat_logger, TEMP_DIRECTORY
-from fate_flow.utils import job_utils, schedule_utils, model_utils
-from fate_flow.utils.api_utils import get_json_result, error_response, validate_request
-from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
+from fate_arch.common.conf_utils import get_base_config
+
 from fate_flow.component_env_utils import feature_utils
+from fate_flow.component_env_utils.env_utils import import_component_output_depend
+from fate_flow.db.db_models import DB, Job
+from fate_flow.manager.data_manager import TableStorage, delete_metric_data, get_component_output_data_schema
+from fate_flow.model.sync_model import SyncComponent
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.operation.job_tracker import Tracker
+from fate_flow.scheduler.federated_scheduler import FederatedScheduler
+from fate_flow.settings import TEMP_DIRECTORY, stat_logger
+from fate_flow.utils import job_utils, schedule_utils
+from fate_flow.utils.api_utils import error_response, get_json_result, validate_request
 
 
 @manager.route('/job/data_view', methods=['post'])
@@ -142,56 +144,58 @@ def component_parameters():
 def component_output_model():
     request_data = request.json
     check_request_parameters(request_data)
-    job_configuration = job_utils.get_job_configuration(job_id=request_data['job_id'],
-                                                        role=request_data['role'],
-                                                        party_id=request_data['party_id'])
-    job_dsl, job_runtime_conf, train_runtime_conf = job_configuration.dsl, job_configuration.runtime_conf, job_configuration.train_runtime_conf
 
-    try:
-        model_id = job_configuration.runtime_conf_on_party['job_parameters']['model_id']
-        model_version = job_configuration.runtime_conf_on_party['job_parameters']['model_version']
-    except Exception as e:
-        job_dsl, job_runtime_conf, train_runtime_conf = model_utils.get_job_configuration_from_model(job_id=request_data['job_id'],
-                                                                                                     role=request_data['role'],
-                                                                                                     party_id=request_data['party_id'])
-        if any([job_dsl, job_runtime_conf, train_runtime_conf]):
-            adapter = JobRuntimeConfigAdapter(job_runtime_conf)
-            model_id = adapter.get_common_parameters().to_dict().get('model_id')
-            model_version = adapter.get_common_parameters().to_dict.get('model_version')
-        else:
-            stat_logger.exception(e)
-            stat_logger.error(f"Can not find model info by filters: job id: {request_data.get('job_id')}, "
-                              f"role: {request_data.get('role')}, party id: {request_data.get('party_id')}")
-            raise Exception(f"Can not find model info by filters: job id: {request_data.get('job_id')}, "
-                            f"role: {request_data.get('role')}, party id: {request_data.get('party_id')}")
+    job_configuration = job_utils.get_job_configuration(request_data['job_id'], request_data['role'], request_data['party_id'])
 
-    tracker = Tracker(job_id=request_data['job_id'], component_name=request_data['component_name'],
-                      role=request_data['role'], party_id=request_data['party_id'], model_id=model_id,
-                      model_version=model_version)
-    dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_dsl, runtime_conf=job_runtime_conf,
-                                                   train_runtime_conf=train_runtime_conf)
-    component = dsl_parser.get_component_info(request_data['component_name'])
+    model_id = job_configuration.runtime_conf_on_party['job_parameters']['model_id']
+    model_version = request_data['job_id']
+
+    if get_base_config('enable_model_store', False):
+        sync_component = SyncComponent(
+            role=request_data['role'],
+            party_id=request_data['party_id'],
+            model_id=model_id,
+            model_version=model_version,
+            component_name=request_data['component_name'],
+        )
+        if not sync_component.local_exists() and sync_component.remote_exists():
+            sync_component.download()
+
+    tracker = Tracker(
+        job_id=request_data['job_id'],
+        role=request_data['role'], party_id=request_data['party_id'],
+        model_id=model_id, model_version=model_version,
+        component_name=request_data['component_name'],
+    )
+
+    define_meta = tracker.pipelined_model.pipelined_component.get_define_meta()
+    component_define = define_meta['component_define'][request_data['component_name']]
     # There is only one model output at the current dsl version.
+    model_alias = next(iter(define_meta['model_proto'][request_data['component_name']].keys()))
+
     output_model = tracker.pipelined_model.read_component_model(
         component_name=request_data['component_name'],
-        model_alias=component.get_output()['model'][0] if component.get_output().get('model') else 'default',
+        model_alias=model_alias,
         output_json=True,
     )
 
     output_model_json = {}
+    component_model_meta = {}
+
     for buffer_name, buffer_object_json_format in output_model.items():
         if buffer_name.endswith('Param'):
             output_model_json = buffer_object_json_format
-    if output_model_json:
-        component_define = tracker.pipelined_model.get_component_define(request_data['component_name'])
-        this_component_model_meta = {}
-        for buffer_name, buffer_object_json_format in output_model.items():
-            if buffer_name.endswith('Meta'):
-                this_component_model_meta['meta_data'] = buffer_object_json_format
-        this_component_model_meta.update(component_define)
-        return get_json_result(retcode=0, retmsg='success', data=output_model_json, meta=this_component_model_meta)
-    else:
+        elif buffer_name.endswith('Meta'):
+            component_model_meta = {
+                'meta_data': buffer_object_json_format,
+            }
+
+    if not output_model_json:
         return get_json_result(retcode=0, retmsg='no data', data={})
+
+    component_model_meta.update(component_define)
+
+    return get_json_result(retcode=0, retmsg='success', data=output_model_json, meta=component_model_meta)
 
 
 @manager.route('/component/output/data', methods=['post'])

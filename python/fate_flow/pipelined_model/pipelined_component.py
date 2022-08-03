@@ -217,6 +217,8 @@ class PipelinedComponent(Locker):
     def unpack_component(self, component_name, hash_=None):
         filename = self.get_archive_path(component_name)
 
+        self.model_path.mkdir(parents=True, exist_ok=True)
+
         with self.lock:
             if hash_ is not None:
                 sha256 = hashlib.sha256(filename.read_bytes()).hexdigest()
