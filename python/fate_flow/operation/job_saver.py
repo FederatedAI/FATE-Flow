@@ -89,6 +89,9 @@ class JobSaver(object):
     def update_task(cls, task_info):
         schedule_logger(task_info["job_id"]).info("try to update task {} {}".format(task_info["task_id"], task_info["task_version"]))
         update_status = cls.update_entity_table(Task, task_info)
+        if task_info.get("error_report"):
+            schedule_logger(task_info["job_id"]).error("role {} party id {} task {} error report: {}".format(
+                task_info["role"], task_info["party_id"], task_info["task_id"], task_info["error_report"]))
         if update_status:
             schedule_logger(task_info["job_id"]).info("task {} {} update successfully".format(task_info["task_id"], task_info["task_version"]))
         else:

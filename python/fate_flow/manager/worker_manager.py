@@ -49,8 +49,7 @@ class WorkerManager:
                 "provider": provider.to_dict()
             }
             if worker_name == WorkerName.PROVIDER_REGISTRAR:
-                from fate_flow.worker.provider_registrar import \
-                    ProviderRegistrar
+                from fate_flow.worker.provider_registrar import ProviderRegistrar
                 module = ProviderRegistrar
                 module_file_path = sys.modules[ProviderRegistrar.__module__].__file__
                 specific_cmd = []
@@ -196,7 +195,7 @@ class WorkerManager:
             "--run_port", RuntimeConfig.HTTP_PORT,
             "--job_server", f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
             "--session_id", session_id,
-            "--federation_session_id", federation_session_id,
+            "--federation_session_id", federation_session_id
         ]
         process_cmd.extend(common_cmd)
         process_cmd.extend(specific_cmd)

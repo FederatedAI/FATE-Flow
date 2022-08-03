@@ -15,6 +15,7 @@
 #
 import importlib
 import os
+import sys
 import traceback
 
 from fate_arch import session, storage
@@ -35,6 +36,7 @@ from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduling_apps.client import TrackerClient
+from fate_flow.settings import ERROR_REPORT, ERROR_REPORT_WITH_PATH
 from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.utils.base_utils import get_fate_flow_python_directory
 from fate_flow.utils.log_utils import getLogger
@@ -259,6 +261,7 @@ class TaskExecutor(BaseTaskWorker):
         except Exception as e:
             traceback.print_exc()
             self.report_info["party_status"] = TaskStatus.FAILED
+            self.generate_error_report()
             LOGGER.exception(e)
         finally:
             try:
@@ -408,6 +411,18 @@ class TaskExecutor(BaseTaskWorker):
                 continue
             patch_module = importlib.import_module("fate_flow." + package_name + '.' + f + '.monkey_patch')
             patch_module.patch_all()
+
+    def generate_error_report(self):
+        if ERROR_REPORT:
+            _error = ""
+            etype, value, tb = sys.exc_info()
+            path_list = os.getenv("PYTHONPATH").split(":")
+            for line in traceback.TracebackException(type(value), value, tb).format(chain=True):
+                if not ERROR_REPORT_WITH_PATH:
+                    for path in path_list:
+                        line = line.replace(path, "xxx")
+                _error += line
+            self.report_info["error_report"] = _error.rstrip("\n")
 
 
 # this file may not be running on the same machine as fate_flow,

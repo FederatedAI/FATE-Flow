@@ -15,15 +15,11 @@
 #
 from flask import request
 
-from fate_arch.common.conf_utils import get_base_config
 from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
 
 from fate_flow.db.component_registry import ComponentRegistry
-from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
-from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.utils.api_utils import error_response, get_json_result, validate_request
+from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.detect_utils import check_config
-from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 

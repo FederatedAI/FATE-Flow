@@ -27,7 +27,6 @@ from flask import Response, request, send_file
 
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
-from fate_arch.common.conf_utils import get_base_config
 
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, ModelOperationLog as OperLog, ModelTag, Tag
 from fate_flow.db.runtime_config import RuntimeConfig
@@ -37,7 +36,7 @@ from fate_flow.entity.types import ModelOperation, TagOperation
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model import deploy_model, migrate_model, pipelined_model, publish_model
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
-from fate_flow.settings import IS_STANDALONE, TEMP_DIRECTORY, stat_logger
+from fate_flow.settings import IS_STANDALONE, TEMP_DIRECTORY, stat_logger, ENABLE_MODEL_STORE
 from fate_flow.utils import detect_utils, job_utils, model_utils, schedule_utils
 from fate_flow.utils.api_utils import error_response, federated_api, get_json_result, validate_request
 from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
@@ -201,7 +200,7 @@ def do_load_model():
     model_id = request_data['job_parameters']['model_id']
     model_version = request_data['job_parameters']['model_version']
 
-    if get_base_config('enable_model_store', False):
+    if ENABLE_MODEL_STORE:
         sync_model = SyncModel(
             role=role, party_id=party_id,
             model_id=model_id, model_version=model_version,

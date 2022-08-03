@@ -16,14 +16,13 @@
 import shutil
 
 from fate_arch.common.base_utils import json_dumps, json_loads
-from fate_arch.common.conf_utils import get_base_config
 
 from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.settings import stat_logger
+from fate_flow.settings import stat_logger, ENABLE_MODEL_STORE
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.job_utils import PIPELINE_COMPONENT_NAME
@@ -41,7 +40,7 @@ def deploy(config_data):
     warning_msg = ""
 
     try:
-        if get_base_config('enable_model_store', False):
+        if ENABLE_MODEL_STORE:
             sync_model = SyncModel(
                 role=local_role, party_id=local_party_id,
                 model_id=model_id, model_version=model_version,
