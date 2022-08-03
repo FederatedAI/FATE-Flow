@@ -286,11 +286,15 @@ class Reader(ComponentBase):
         anonymous_info = {}
         try:
             if schema and headers:
-                if isinstance(headers, str):
-                    data_list = [headers.split(",")]
+                if schema.get("original_index_info"):
+                    data_list = [AnonymousGenerator.reconstruct_header(schema)]
                 else:
-                    data_list = [[schema.get("label_name")] if schema.get("label_name") else []]
-                    data_list[0].extend(headers)
+                    if isinstance(headers, str):
+                        data_list = [headers.split(",")]
+                    else:
+                        data_list = [[schema.get("label_name")] if schema.get("label_name") else []]
+                        data_list[0].extend(headers)
+                LOGGER.info(f"data info header: {data_list[0]}")
                 for data in output_table_meta.get_part_of_data():
                     data_list.append(data[1].split(","))
                 data = np.array(data_list)
