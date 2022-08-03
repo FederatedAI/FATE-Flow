@@ -75,9 +75,16 @@ def migration(config_data: dict):
             raise FileNotFoundError(f"Can not found {model_id} {model_version} model local cache.")
 
         with DB.connection_context():
-            if MLModel.get_or_none(MLModel.f_model_version == unify_model_version):
-                raise Exception(f"Unify model version {unify_model_version} has been occupied in database. "
-                                 "Please choose another unify model version and try again.")
+            if MLModel.get_or_none(
+                MLModel.f_role == local_role,
+                MLModel.f_party_id == local_party_id,
+                MLModel.f_model_id == model_id,
+                MLModel.f_model_version == unify_model_version,
+            ):
+                raise FileExistsError(
+                    f"Unify model version {unify_model_version} has been occupied in database. "
+                     "Please choose another unify model version and try again."
+                )
 
         migrate_tool = source_model.get_model_migrate_tool()
         migrate_model = pipelined_model.PipelinedModel(
