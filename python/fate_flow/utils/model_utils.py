@@ -13,21 +13,23 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
 import glob
+import os
 from collections import OrderedDict
 
 import peewee
 
-from fate_arch.common.base_utils import json_loads, current_timestamp
+from fate_arch.common.base_utils import current_timestamp, json_loads
+from fate_arch.common.conf_utils import get_base_config
 
-from fate_flow.settings import stat_logger
+from fate_flow.db.db_models import DB
+from fate_flow.db.db_models import MachineLearningModelInfo as MLModel
 from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
-from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
+from fate_flow.settings import HOST, stat_logger
+from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
 from fate_flow.utils.log_utils import sql_logger
-from fate_flow.settings import HOST
 
 
 gen_key_string_separator = '#'
@@ -103,10 +105,10 @@ def query_model_info_from_file(model_id=None, model_version=None, role=None, par
             pipeline_model = PipelinedModel(model_id=fp.split(os.path.sep)[-2], model_version=fp.split(os.path.sep)[-1])
             model_info = gather_model_info_data(pipeline_model, query_filters=query_filters)
             if model_info:
-                _role = fp.split('/')[-2].split('#')[0]
-                _party_id = fp.split('/')[-2].split('#')[1]
-                model_info["f_role"] = _role
-                model_info["f_party_id"] = _party_id
+                local_role = fp.split('/')[-2].split('#')[0]
+                local_party_id = fp.split('/')[-2].split('#')[1]
+                model_info["f_role"] = local_role
+                model_info["f_party_id"] = local_party_id
                 if isinstance(res, dict):
                     res[fp] = model_info
                 else:
@@ -114,16 +116,7 @@ def query_model_info_from_file(model_id=None, model_version=None, role=None, par
 
                 if save_to_db:
                     try:
-                        insert_info = gather_model_info_data(pipeline_model).copy()
-                        insert_info['role'] = _role
-                        insert_info['party_id'] = _party_id
-                        insert_info['job_id'] = insert_info.get('f_model_version')
-                        insert_info['size'] = pipeline_model.calculate_model_file_size()
-                        if compare_version(insert_info['f_fate_version'], '1.5.1') == 'lt':
-                            insert_info['roles'] = insert_info.get('f_train_runtime_conf', {}).get('role', {})
-                            insert_info['initiator_role'] = insert_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
-                            insert_info['initiator_party_id'] = insert_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
-                        save_model_info(insert_info)
+                        gather_and_save_model_info(pipeline_model, local_role, local_party_id)
                     except Exception as e:
                         stat_logger.exception(e)
 
@@ -195,6 +188,13 @@ def save_model_info(model_info):
     except Exception as e:
         raise Exception("Create {} failed:\n{}".format(MLModel, e))
 
+    if get_base_config('enable_model_store', False):
+        sync_model = SyncModel(
+            role=model.f_role, party_id=model.f_party_id,
+            model_id=model.f_model_id, model_version=model.f_model_version,
+        )
+        sync_model.upload(True)
+
     RuntimeConfig.SERVICE_DB.register_model(gen_party_model_id(
         role=model.f_role, party_id=model.f_party_id, model_id=model.f_model_id
     ), model.f_model_version)
@@ -256,3 +256,22 @@ def get_job_configuration_from_model(job_id, role, party_id):
         train_runtime_conf = res[0].get('train_runtime_conf')
         return dsl, runtime_conf, train_runtime_conf
     return {}, {}, {}
+
+
+def gather_and_save_model_info(model: PipelinedModel, local_role, local_party_id, **kwargs):
+    model_info = gather_model_info_data(model)
+
+    model_info['job_id'] = model_info['f_model_version']
+    model_info['size'] = model.calculate_model_file_size()
+    model_info['role'] = local_role
+    model_info['party_id'] = local_party_id
+    model_info['parent'] = False if model_info.get('f_inference_dsl') else True
+
+    if compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
+        model_info['roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
+        model_info['initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
+        model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
+
+    model_info.update(kwargs)
+
+    return save_model_info(model_info)

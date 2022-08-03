@@ -131,7 +131,7 @@ def convert_homo_model(request_data):
     if not model.exists():
         return 100, 'Model {} {} does not exist'.format(party_model_id, model_version), None
 
-    define_meta = pipelined_model.pipelined_component.read_define_meta()
+    define_meta = pipelined_model.pipelined_component.get_define_meta()
 
     framework_name = request_data.get("framework_name")
     detail = []
@@ -147,7 +147,7 @@ def convert_homo_model(request_data):
                                                                               module_name=module_name,
                                                                               framework_name=framework_name)
             if converted_model:
-                converted_model_dir = os.path.join(model.variables_data_path, key, model_alias, "converted_model")
+                converted_model_dir = os.path.join(model.pipelined_component.variables_data_path, key, model_alias, "converted_model")
                 os.makedirs(converted_model_dir, exist_ok=True)
 
                 saved_path = convert_tool.save_converted_model(converted_model,
@@ -194,7 +194,7 @@ def deploy_homo_model(request_data):
 
     # currently there is only one model output
     model_alias = model_alias_list[0]
-    converted_model_dir = os.path.join(model.variables_data_path, component_name, model_alias, "converted_model")
+    converted_model_dir = os.path.join(model.pipelined_component.variables_data_path, component_name, model_alias, "converted_model")
     if not os.path.isdir(converted_model_dir):
         return 100, '''Component {} in Model {} {} isn't converted'''.\
             format(component_name, party_model_id, model_version), None

@@ -13,48 +13,73 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
 import shutil
 
-from fate_arch.common.base_utils import json_loads, json_dumps
+from fate_arch.common.base_utils import json_dumps, json_loads
+from fate_arch.common.conf_utils import get_base_config
 
-from fate_flow.settings import stat_logger
-from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.model.checkpoint import CheckpointManager
+from fate_flow.model.sync_model import SyncModel
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.settings import stat_logger
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.utils.model_utils import (gen_party_model_id, check_before_deploy,
-                                         gather_model_info_data, save_model_info)
+from fate_flow.utils.job_utils import PIPELINE_COMPONENT_NAME
+from fate_flow.utils.model_utils import check_before_deploy, gather_and_save_model_info, gen_party_model_id
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
-from fate_flow.operation.job_saver import JobSaver
 
 
 def deploy(config_data):
-    model_id = config_data.get('model_id')
-    model_version = config_data.get('model_version')
-    local_role = config_data.get('local').get('role')
-    local_party_id = config_data.get('local').get('party_id')
-    child_model_version = config_data.get('child_model_version')
+    model_id = config_data['model_id']
+    model_version = config_data['model_version']
+    local_role = config_data['local']['role']
+    local_party_id = config_data['local']['party_id']
+    child_model_version = config_data['child_model_version']
     components_checkpoint = config_data.get('components_checkpoint', {})
     warning_msg = ""
 
     try:
-        party_model_id = gen_party_model_id(model_id=model_id, role=local_role, party_id=local_party_id)
-        model = PipelinedModel(model_id=party_model_id, model_version=model_version)
-        model_data = model.collect_models(in_bytes=True)
-        if "pipeline.pipeline:Pipeline" not in model_data:
-            raise Exception("Can not found pipeline file in model.")
+        if get_base_config('enable_model_store', False):
+            sync_model = SyncModel(
+                role=local_role, party_id=local_party_id,
+                model_id=model_id, model_version=model_version,
+            )
+            if sync_model.remote_exists():
+                sync_model.download(True)
+
+        party_model_id = gen_party_model_id(
+            model_id=model_id,
+            role=local_role,
+            party_id=local_party_id,
+        )
+        source_model = PipelinedModel(party_model_id, model_version)
+        if not source_model.exists():
+            raise FileNotFoundError(f"Can not found {model_id} {model_version} model local cache.")
 
         # check if the model could be executed the deploy process (parent/child)
-        if not check_before_deploy(model):
+        if not check_before_deploy(source_model):
             raise Exception('Child model could not be deployed.')
 
-        # copy proto content from parent model and generate a child model
         deploy_model = PipelinedModel(model_id=party_model_id, model_version=child_model_version)
-        shutil.copytree(src=model.model_path, dst=deploy_model.model_path,
-                        ignore=lambda src, names: {'checkpoint'} if src == model.model_path else {})
-        model.pipelined_component.replicate_define_meta({'f_model_version': child_model_version})
-        pipeline_model = deploy_model.read_pipeline_model()
+
+        query = source_model.pipelined_component.get_define_meta_from_db(
+            PipelineComponentMeta.f_component_name != PIPELINE_COMPONENT_NAME,
+        )
+        for row in query:
+            shutil.copytree(
+                source_model.pipelined_component.variables_data_path / row.f_component_name,
+                deploy_model.pipelined_component.variables_data_path / row.f_component_name,
+            )
+
+        source_model.pipelined_component.replicate_define_meta({
+            'f_model_version': child_model_version,
+        }, (
+            PipelineComponentMeta.f_component_name != PIPELINE_COMPONENT_NAME,
+        ))
+
+        pipeline_model = source_model.read_pipeline_model()
 
         train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
         runtime_conf_on_party = json_loads(pipeline_model.runtime_conf_on_party)
@@ -106,31 +131,23 @@ def deploy(config_data):
         #  save inference dsl into child model file
         parser = get_dsl_parser_by_version(2)
         parser.verify_dsl(inference_dsl, "predict")
-        inference_dsl = JobSaver.fill_job_inference_dsl(job_id=model_version, role=local_role, party_id=local_party_id, dsl_parser=parser, origin_inference_dsl=inference_dsl)
+        inference_dsl = JobSaver.fill_job_inference_dsl(
+            job_id=model_version, role=local_role, party_id=local_party_id,
+            dsl_parser=parser, origin_inference_dsl=inference_dsl,
+        )
         pipeline_model.inference_dsl = json_dumps(inference_dsl, byte=True)
 
         if compare_version(pipeline_model.fate_version, '1.5.0') == 'gt':
-            pipeline_model.parent_info = json_dumps({'parent_model_id': model_id, 'parent_model_version': model_version}, byte=True)
+            pipeline_model.parent_info = json_dumps({
+                'parent_model_id': model_id,
+                'parent_model_version': model_version,
+            }, byte=True)
             pipeline_model.parent = False
             runtime_conf_on_party['job_parameters']['model_version'] = child_model_version
             pipeline_model.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
 
         # save model file
-        deploy_model.save_pipeline(pipeline_model)
-        shutil.copyfile(os.path.join(deploy_model.model_path, "pipeline.pb"),
-                        os.path.join(deploy_model.model_path, "variables", "data", "pipeline", "pipeline", "Pipeline"))
-
-        model_info = gather_model_info_data(deploy_model)
-        model_info['job_id'] = model_info['f_model_version']
-        model_info['size'] = deploy_model.calculate_model_file_size()
-        model_info['role'] = local_role
-        model_info['party_id'] = local_party_id
-        model_info['parent'] = False if model_info.get('f_inference_dsl') else True
-        if compare_version(model_info['f_fate_version'], '1.5.0') == 'eq':
-            model_info['roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
-            model_info['initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
-            model_info['initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
-        save_model_info(model_info)
+        deploy_model.save_pipeline_model(pipeline_model)
 
         for component_name, component in train_dsl.get('components', {}).items():
             step_index = components_checkpoint.get(component_name, {}).get('step_index')
@@ -145,7 +162,6 @@ def deploy(config_data):
                 role=local_role, party_id=local_party_id,
                 model_id=model_id, model_version=model_version,
                 component_name=component_name,
-                mkdir=False,
             )
             checkpoint_manager.load_checkpoints_from_disk()
             if checkpoint_manager.latest_checkpoint is not None:
@@ -156,6 +172,8 @@ def deploy(config_data):
                     step_index,
                     step_name,
                 )
+
+        gather_and_save_model_info(deploy_model, local_role, local_party_id)
     except Exception as e:
         stat_logger.exception(e)
         return 100, f"deploy model of role {local_role} {local_party_id} failed, details: {str(e)}"

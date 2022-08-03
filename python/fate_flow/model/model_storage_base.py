@@ -14,13 +14,10 @@
 #  limitations under the License.
 #
 from abc import ABC, abstractmethod
+from contextlib import AbstractContextManager
 
 
 class ModelStorageBase(ABC):
-    key_separator = "/"
-
-    def store_key(self, model_id: str, model_version: str):
-        return self.key_separator.join(["FATEFlow", "PipelinedModel", model_id, model_version])
 
     @abstractmethod
     def exists(self, model_id: str, model_version: str, store_address: dict):
@@ -49,13 +46,16 @@ class ModelStorageBase(ABC):
         pass
 
 
-class ComponentStorageBase(ABC):
-    prefix = 'FATEFlow/PipelinedComponent/'
+class ComponentStorageBase(AbstractContextManager):
 
     @abstractmethod
-    def upload(self, filename, key):
+    def exists(self, party_model_id, model_version, component_name):
         pass
 
     @abstractmethod
-    def download(self, key, filename):
+    def upload(self, party_model_id, model_version, component_name):
+        pass
+
+    @abstractmethod
+    def download(self, party_model_id, model_version, component_name, hash_=None):
         pass

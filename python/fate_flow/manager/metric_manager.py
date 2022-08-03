@@ -47,8 +47,8 @@ class MetricManager:
             model_class = self.get_model_class()
             tracking_metric = model_class()
             tracking_metric.f_job_id = self.job_id
-            tracking_metric.f_component_name = (
-                self.component_name if not job_level else job_utils.job_pipeline_component_name())
+            tracking_metric.f_component_name = (self.component_name if not job_level
+                                                else job_utils.PIPELINE_COMPONENT_NAME)
             tracking_metric.f_task_id = self.task_id
             tracking_metric.f_task_version = self.task_version
             tracking_metric.f_role = self.role
@@ -81,8 +81,8 @@ class MetricManager:
             tracking_metrics = tracking_metric_model.select(tracking_metric_model.f_key,
                                                             tracking_metric_model.f_value).where(
                 tracking_metric_model.f_job_id == self.job_id,
-                tracking_metric_model.f_component_name == (
-                    self.component_name if not job_level else job_utils.job_pipeline_component_name()),
+                tracking_metric_model.f_component_name == (self.component_name if not job_level
+                                                           else job_utils.PIPELINE_COMPONENT_NAME),
                 tracking_metric_model.f_role == self.role,
                 tracking_metric_model.f_party_id == self.party_id,
                 tracking_metric_model.f_metric_namespace == metric_namespace,

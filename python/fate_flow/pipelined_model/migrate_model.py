@@ -14,21 +14,18 @@
 #  limitations under the License.
 #
 import os
-import shutil
-from ruamel import yaml
-from datetime import datetime
 
-from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
+from fate_arch.common.base_utils import json_dumps, json_loads
+from fate_arch.common.conf_utils import get_base_config
+
+from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, PipelineComponentMeta
+from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model import pipelined_model
-from fate_arch.common.base_utils import json_loads, json_dumps
 from fate_flow.settings import stat_logger
-from fate_flow.utils import model_utils
+from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.utils.base_utils import get_fate_flow_directory, compare_version
-
-
-def gen_model_file_path(model_id, model_version):
-    return os.path.join(get_fate_flow_directory(), "model_local_cache", model_id, model_version)
+from fate_flow.utils.model_utils import gather_and_save_model_info, gen_model_id, gen_party_model_id
+from fate_flow.utils.job_utils import PIPELINE_COMPONENT_NAME
 
 
 def compare_roles(request_conf_roles: dict, run_time_conf_roles: dict):
@@ -36,7 +33,11 @@ def compare_roles(request_conf_roles: dict, run_time_conf_roles: dict):
         verify_format = True
         verify_equality = True
         for key in request_conf_roles.keys():
-            verify_format = verify_format and (len(request_conf_roles[key]) == len(run_time_conf_roles[key])) and (isinstance(request_conf_roles[key], list))
+            verify_format = (
+                verify_format and
+                len(request_conf_roles[key]) == len(run_time_conf_roles[key]) and
+                isinstance(request_conf_roles[key], list)
+            )
             request_conf_roles_set = set(str(item) for item in request_conf_roles[key])
             run_time_conf_roles_set = set(str(item) for item in run_time_conf_roles[key])
             verify_equality = verify_equality and (request_conf_roles_set == run_time_conf_roles_set)
@@ -49,99 +50,94 @@ def compare_roles(request_conf_roles: dict, run_time_conf_roles: dict):
                     "model runtime configuration's. Migration aborting.")
 
 
-def import_from_files(config: dict):
-    model = pipelined_model.PipelinedModel(model_id=config["model_id"],
-                                           model_version=config["model_version"])
-    if config['force']:
-        model.force = True
-    model.unpack_model(config["file"])
-
-
-def import_from_db(config: dict):
-    model_path = gen_model_file_path(config["model_id"], config["model_version"])
-    if config['force']:
-        os.rename(model_path, model_path + '_backup_{}'.format(datetime.now().strftime('%Y%m%d%H%M')))
-
-
 def migration(config_data: dict):
+    model_id = config_data['model_id']
+    model_version = config_data['model_version']
+    local_role = config_data['local']['role']
+    local_party_id = config_data['local']['party_id']
+    unify_model_version = config_data['unify_model_version']
+
     try:
-        party_model_id = model_utils.gen_party_model_id(model_id=config_data["model_id"],
-                                                        role=config_data["local"]["role"],
-                                                        party_id=config_data["local"]["party_id"])
-        model = pipelined_model.PipelinedModel(model_id=party_model_id,
-                                               model_version=config_data["model_version"])
-        if not model.exists():
-            raise Exception("Can not found {} {} model local cache".format(config_data["model_id"],
-                                                                           config_data["model_version"]))
+        if get_base_config('enable_model_store', False):
+            sync_model = SyncModel(
+                role=local_role, party_id=local_party_id,
+                model_id=model_id, model_version=model_version,
+            )
+            if sync_model.remote_exists():
+                sync_model.download(True)
+
+        party_model_id = gen_party_model_id(
+            model_id=model_id,
+            role=local_role,
+            party_id=local_party_id,
+        )
+        source_model = pipelined_model.PipelinedModel(party_model_id, model_version)
+        if not source_model.exists():
+            raise FileNotFoundError(f"Can not found {model_id} {model_version} model local cache.")
+
         with DB.connection_context():
-            if MLModel.get_or_none(MLModel.f_model_version == config_data["unify_model_version"]):
-                raise Exception("Unify model version {} has been occupied in database. "
-                                "Please choose another unify model version and try again.".format(
-                    config_data["unify_model_version"]))
+            if MLModel.get_or_none(MLModel.f_model_version == unify_model_version):
+                raise Exception(f"Unify model version {unify_model_version} has been occupied in database. "
+                                 "Please choose another unify model version and try again.")
 
-        model_data = model.collect_models(in_bytes=True)
-        if "pipeline.pipeline:Pipeline" not in model_data:
-            raise Exception("Can not found pipeline file in model.")
+        migrate_tool = source_model.get_model_migrate_tool()
+        migrate_model = pipelined_model.PipelinedModel(
+            gen_party_model_id(
+                model_id=gen_model_id(config_data["migrate_role"]),
+                role=local_role,
+                party_id=config_data["local"]["migrate_party_id"],
+            ),
+            unify_model_version,
+        )
 
-        migrate_model = pipelined_model.PipelinedModel(model_id=model_utils.gen_party_model_id(model_id=model_utils.gen_model_id(config_data["migrate_role"]),
-                                                                                               role=config_data["local"]["role"],
-                                                                                               party_id=config_data["local"]["migrate_party_id"]),
-                                                       model_version=config_data["unify_model_version"])
+        query = source_model.pipelined_component.get_define_meta_from_db(
+            PipelineComponentMeta.f_component_name != PIPELINE_COMPONENT_NAME,
+        )
+        for row in query:
+            buffer_obj = source_model.read_component_model(row.f_component_name, row.f_model_alias)
 
-        # migrate_model.create_pipelined_model()
-        shutil.copytree(src=model.model_path, dst=migrate_model.model_path)
+            modified_buffer = migrate_tool.model_migration(
+                model_contents=buffer_obj,
+                module_name=row.f_component_module_name,
+                old_guest_list=config_data['role']['guest'],
+                new_guest_list=config_data['migrate_role']['guest'],
+                old_host_list=config_data['role']['host'],
+                new_host_list=config_data['migrate_role']['host'],
+                old_arbiter_list=config_data.get('role', {}).get('arbiter', None),
+                new_arbiter_list=config_data.get('migrate_role', {}).get('arbiter', None),
+            )
 
-        pipeline = migrate_model.read_pipeline_model()
+            migrate_model.save_component_model(
+                row.f_component_name, row.f_component_module_name,
+                row.f_model_alias, modified_buffer, row.f_run_parameters,
+            )
+
+        pipeline_model = source_model.read_pipeline_model()
 
         # Utilize Pipeline_model collect model data. And modify related inner information of model
-        train_runtime_conf = json_loads(pipeline.train_runtime_conf)
+        train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
         train_runtime_conf["role"] = config_data["migrate_role"]
         train_runtime_conf["initiator"] = config_data["migrate_initiator"]
 
         adapter = JobRuntimeConfigAdapter(train_runtime_conf)
-        train_runtime_conf = adapter.update_model_id_version(model_id=model_utils.gen_model_id(train_runtime_conf["role"]),
+        train_runtime_conf = adapter.update_model_id_version(model_id=gen_model_id(train_runtime_conf["role"]),
                                                              model_version=migrate_model.model_version)
 
         # update pipeline.pb file
-        pipeline.train_runtime_conf = json_dumps(train_runtime_conf, byte=True)
-        pipeline.model_id = bytes(adapter.get_common_parameters().to_dict().get("model_id"), "utf-8")
-        pipeline.model_version = bytes(adapter.get_common_parameters().to_dict().get("model_version"), "utf-8")
+        pipeline_model.train_runtime_conf = json_dumps(train_runtime_conf, byte=True)
+        pipeline_model.model_id = bytes(adapter.get_common_parameters().to_dict().get("model_id"), "utf-8")
+        pipeline_model.model_version = bytes(adapter.get_common_parameters().to_dict().get("model_version"), "utf-8")
 
-        if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
-            pipeline.initiator_role = config_data["migrate_initiator"]['role']
-            pipeline.initiator_party_id = config_data["migrate_initiator"]['party_id']
+        if compare_version(pipeline_model.fate_version, '1.5.0') == 'gt':
+            pipeline_model.initiator_role = config_data["migrate_initiator"]['role']
+            pipeline_model.initiator_party_id = config_data["migrate_initiator"]['party_id']
 
         # save updated pipeline.pb file
-        migrate_model.save_pipeline(pipeline)
-        shutil.copyfile(os.path.join(migrate_model.model_path, "pipeline.pb"),
-                        os.path.join(migrate_model.model_path, "variables", "data", "pipeline", "pipeline", "Pipeline"))
-
-        # modify proto
-        with open(os.path.join(migrate_model.model_path, 'define', 'define_meta.yaml'), 'r') as fin:
-            define_yaml = yaml.safe_load(fin)
-
-        # todo: use subprocess?
-        migrate_tool = migrate_model.get_model_migrate_tool()
-        for key, value in define_yaml['model_proto'].items():
-            if key == 'pipeline':
-                continue
-            for v in value.keys():
-                buffer_obj = migrate_model.read_component_model(key, v)
-                module_name = define_yaml['component_define'].get(key, {}).get('module_name')
-                modified_buffer = migrate_tool.model_migration(model_contents=buffer_obj,
-                                                               module_name=module_name,
-                                                               old_guest_list=config_data['role']['guest'],
-                                                               new_guest_list=config_data['migrate_role']['guest'],
-                                                               old_host_list=config_data['role']['host'],
-                                                               new_host_list=config_data['migrate_role']['host'],
-                                                               old_arbiter_list=config_data.get('role', {}).get('arbiter', None),
-                                                               new_arbiter_list=config_data.get('migrate_role', {}).get('arbiter', None))
-                migrate_model.save_component_model(component_name=key, component_module_name=module_name,
-                                                   model_alias=v, model_buffers=modified_buffer)
+        migrate_model.save_pipeline_model(pipeline_model)
 
         migrate_model.gen_model_import_config()
+        gather_and_save_model_info(migrate_model, local_role, local_party_id)
         migrate_model.packaging_model()
-        shutil.rmtree(os.path.abspath(migrate_model.model_path))
 
         return (0, f"Migrating model successfully. " \
                   "The configuration of model has been modified automatically. " \
@@ -152,7 +148,6 @@ def migration(config_data: dict):
                 {"model_id": migrate_model.model_id,
                  "model_version": migrate_model.model_version,
                  "path": os.path.abspath(migrate_model.archive_model_file_path)})
-
     except Exception as e:
         stat_logger.exception(e)
         return 100, str(e), {}

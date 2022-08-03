@@ -23,18 +23,25 @@ from functools import wraps
 
 from fate_arch.common import FederatedMode, file_utils
 from fate_arch.common.base_utils import current_timestamp, fate_uuid, json_dumps
+
 from fate_flow.db.db_models import DB, Job, Task
 from fate_flow.db.db_utils import query_db
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfiguration, RunParameters
-from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
+from fate_flow.entity.run_status import JobStatus, TaskStatus
 from fate_flow.entity.types import InputSearchType
 from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
-from fate_flow.utils import detect_utils, process_utils, session_utils, data_utils
+from fate_flow.utils import data_utils, detect_utils, process_utils, session_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
+
+
+PIPELINE_COMPONENT_NAME = 'pipeline'
+PIPELINE_MODEL_ALIAS = 'pipeline'
+PIPELINE_COMPONENT_MODULE_NAME = 'Pipeline'
+PIPELINE_MODEL_NAME = 'Pipeline'
 
 
 class JobIdGenerator(object):
@@ -289,14 +296,6 @@ def get_job_dsl(job_id, role, party_id):
         return job.f_dsl
     else:
         return {}
-
-
-def job_pipeline_component_name():
-    return "pipeline"
-
-
-def job_pipeline_component_module_name():
-    return "Pipeline"
 
 
 @DB.connection_context()

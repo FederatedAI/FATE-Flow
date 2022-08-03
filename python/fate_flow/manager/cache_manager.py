@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import typing
+from uuid import uuid1
 
 from fate_arch import session, storage
 from fate_arch.abc import CTableABC
@@ -21,7 +22,6 @@ from fate_arch.common import DTable
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.db.db_models import DB, CacheRecord
 from fate_flow.entity import DataCache
-from fate_flow.utils import base_utils
 
 
 class CacheManager:
@@ -63,7 +63,7 @@ class CacheManager:
                 setattr(cache, attr, locals().get(attr))
         record = CacheRecord()
         record.f_create_time = current_timestamp()
-        record.f_cache_key = base_utils.new_unique_id()
+        record.f_cache_key = uuid1().hex
         cache.key = record.f_cache_key
         record.f_cache = cache
         record.f_job_id = job_id

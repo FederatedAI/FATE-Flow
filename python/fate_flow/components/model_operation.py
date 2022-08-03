@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.model import mysql_model_storage, redis_model_storage, tencent_cos_model_storage
+from fate_flow.model import mysql_model_storage, tencent_cos_model_storage
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.components._base import (
     BaseParam,
@@ -28,7 +28,6 @@ LOGGER = getLogger()
 
 
 ModelStorageClassMap = {
-    ModelStorage.REDIS.value: redis_model_storage.RedisModelStorage,
     ModelStorage.MYSQL.value: mysql_model_storage.MysqlModelStorage,
     ModelStorage.TENCENT_COS.value: tencent_cos_model_storage.TencentCOSModelStorage,
 }

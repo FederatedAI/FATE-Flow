@@ -27,7 +27,7 @@ def load_checkpoints():
     except Exception as e:
         abort(error_response(400, str(e)))
 
-    checkpoint_manager = CheckpointManager(**{i: request.json[i] for i in required_args}, mkdir=False)
+    checkpoint_manager = CheckpointManager(**{i: request.json[i] for i in required_args})
     checkpoint_manager.load_checkpoints_from_disk()
     return checkpoint_manager
 
