@@ -315,7 +315,7 @@ class TableStorage:
                                     with open(output_data_meta_file_path, 'w') as f:
                                         json.dump({'header': header}, f, indent=4)
                                 if need_head and header and output_table_meta.get_have_head() and \
-                                        output_table_meta.get_schema().get("is_display", False):
+                                        output_table_meta.get_schema().get("is_display", True):
                                     fw.write('{}\n'.format(','.join(header)))
                             fw.write('{}\n'.format(','.join(map(lambda x: str(x), data_line))))
                             output_data_count += 1
