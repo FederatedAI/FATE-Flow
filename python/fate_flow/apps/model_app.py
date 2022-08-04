@@ -626,7 +626,7 @@ def deploy():
     if not isinstance(request_data.get('components_checkpoint'), dict):
         request_data['components_checkpoint'] = {}
 
-    retcode, retmsg, model_info = model_utils.query_model_info_from_file(model_id=model_id, model_version=model_version, to_dict=True)
+    retcode, retmsg, model_info = model_utils.query_model_info(model_id=model_id, model_version=model_version, to_dict=True)
     if not model_info:
         raise Exception(f'Deploy model failed, no model {model_id} {model_version} found.')
 
@@ -707,7 +707,7 @@ def do_deploy():
 def get_predict_dsl():
     request_data = request.json
     request_data['query_filters'] = ['inference_dsl']
-    retcode, retmsg, data = model_utils.query_model_info_from_file(**request_data)
+    retcode, retmsg, data = model_utils.query_model_info(**request_data)
     if data:
         for d in data:
             if d.get("f_role") in {"guest", "host"}:
