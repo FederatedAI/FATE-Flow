@@ -39,7 +39,7 @@ For more information, please consult the following documentation or use the `flo
 FATE Client will be distributed to `pypi`, you can install the corresponding version directly using tools such as `pip`, e.g.
 
 ```bash
-pip install fatale-client
+pip install fate-client
 ```
 
 or
