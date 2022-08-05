@@ -138,12 +138,13 @@ class Reader(ComponentBase):
                 "job_id": self.tracker.job_id,
             },
         )
-        table_info, anonymous_info = self.data_info_display(output_table_meta)
+        table_info, anonymous_info, attribute_info = self.data_info_display(output_table_meta)
         data_info = {
             "table_name": input_table_name,
             "namespace": input_table_namespace,
             "table_info": table_info,
             "anonymous_info": anonymous_info,
+            "attribute_info": attribute_info,
             "partitions": output_table_meta.get_partitions(),
             "storage_engine": output_table_meta.get_engine(),
         }
@@ -284,6 +285,7 @@ class Reader(ComponentBase):
         schema = output_table_meta.get_schema()
         table_info = {}
         anonymous_info = {}
+        attribute_info = {}
         try:
             if schema and headers:
                 if schema.get("original_index_info"):
@@ -303,8 +305,14 @@ class Reader(ComponentBase):
                     table_info[data[0]] = ",".join(list(set(data[1:]))[:5])
             if schema and schema.get("anonymous_header"):
                 anonymous_info = dict(zip(schema.get("header"), schema.get("anonymous_header")))
+                attribute_info = dict(zip(schema.get("header"), ["feature"] * len(schema.get("header"))))
                 if schema.get("label_name"):
                     anonymous_info[schema.get("label_name")] = schema.get("anonymous_label")
+                    attribute_info[schema.get("label_name")] = "label"
+                if schema.get("meta").get("id_list"):
+                    for id_name in schema.get("meta").get("id_list"):
+                        if id_name in attribute_info:
+                            attribute_info[id_name] = "match_id"
         except Exception as e:
             LOGGER.exception(e)
-        return table_info, anonymous_info
+        return table_info, anonymous_info, attribute_info
