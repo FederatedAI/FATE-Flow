@@ -36,7 +36,7 @@ class FederatedScheduler(SchedulerBase):
     """
 
     # Task
-    REPORT_TO_INITIATOR_FIELDS = ["party_status", "start_time", "update_time", "end_time", "elapsed"]
+    REPORT_TO_INITIATOR_FIELDS = ["party_status", "start_time", "update_time", "end_time", "elapsed", "error_report"]
 
     # Job
     @classmethod

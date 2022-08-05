@@ -153,6 +153,8 @@ class TaskController(object):
                                     task_version=task_info["task_version"],
                                     role=task_info["role"],
                                     party_id=task_info["party_id"])
+        if task_info.get("error_report"):
+            tasks[0].f_error_report = task_info.get("error_report")
         if tasks[0].f_federated_status_collect_type == FederatedCommunicationType.PUSH:
             FederatedScheduler.report_task_to_initiator(task=tasks[0])
 
