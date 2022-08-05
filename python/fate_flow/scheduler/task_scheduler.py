@@ -45,15 +45,17 @@ class TaskScheduler(object):
                 pass
             # get all parties party task status and calculate
             new_task_status = cls.get_federated_task_status(job_id=initiator_task.f_job_id, task_id=initiator_task.f_task_id, task_version=initiator_task.f_task_version)
+            task_interrupt = False
             task_status_have_update = False
             if new_task_status != initiator_task.f_status:
                 task_status_have_update = True
                 initiator_task.f_status = new_task_status
                 FederatedScheduler.sync_task_status(job=job, task=initiator_task)
-
+            if InterruptStatus.contains(new_task_status):
+                task_interrupt = True
             if initiator_task.f_status == TaskStatus.WAITING:
                 waiting_tasks.append(initiator_task)
-            elif task_status_have_update and EndStatus.contains(initiator_task.f_status):
+            elif task_status_have_update and EndStatus.contains(initiator_task.f_status) or task_interrupt:
                 command_body = {"is_asynchronous": True}
                 schedule_logger(initiator_task.f_job_id).info(f"stop task body: {command_body}, task status: {initiator_task.f_status}")
                 FederatedScheduler.stop_task(job=job, task=initiator_task, stop_status=initiator_task.f_status, command_body=command_body)
