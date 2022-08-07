@@ -24,6 +24,7 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_flow.db.db_models import DB, PipelineComponentMeta
 from fate_flow.db.db_utils import bulk_insert_into_db
 from fate_flow.model import Locker
+from fate_flow.pipelined_model import Pipelined
 from fate_flow.settings import TEMP_DIRECTORY
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import getLogger
@@ -32,19 +33,10 @@ from fate_flow.utils.log_utils import getLogger
 LOGGER = getLogger()
 
 
-class PipelinedComponent(Locker):
+class PipelinedComponent(Pipelined, Locker):
 
-    def __init__(self, *, role=None, party_id=None, model_id=None, party_model_id=None, model_version):
-        if party_model_id is None:
-            self.role = role
-            self.party_id = party_id
-            self.model_id = model_id
-            self.party_model_id = f'{role}#{party_id}#{model_id}'
-        else:
-            self.role, self.party_id, self.model_id = party_model_id.split('#', 2)
-            self.party_model_id = party_model_id
-
-        self.model_version = model_version
+    def __init__(self, *, **kwargs):
+        Pipelined.__init__(self, **kwargs)
 
         self.model_path = Path(get_fate_flow_directory('model_local_cache'), self.party_model_id, self.model_version)
         self.define_meta_path = self.model_path / 'define' / 'define_meta.yaml'
@@ -59,7 +51,7 @@ class PipelinedComponent(Locker):
             PipelineComponentMeta.f_party_id == self.party_id,
         )
 
-        super().__init__(self.model_path)
+        Locker.__init__(self.model_path)
 
     def exists(self, component_name):
         query = self.get_define_meta_from_db(PipelineComponentMeta.f_component_name == component_name)
