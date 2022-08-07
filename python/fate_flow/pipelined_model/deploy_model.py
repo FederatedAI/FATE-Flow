@@ -22,11 +22,14 @@ from fate_flow.model.checkpoint import CheckpointManager
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.settings import stat_logger, ENABLE_MODEL_STORE
+from fate_flow.settings import ENABLE_MODEL_STORE, stat_logger
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.job_utils import PIPELINE_COMPONENT_NAME
-from fate_flow.utils.model_utils import check_before_deploy, gather_and_save_model_info, gen_party_model_id
+from fate_flow.utils.model_utils import (
+    check_before_deploy, gather_model_info_data,
+    gen_party_model_id, save_model_info,
+)
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 
@@ -172,7 +175,8 @@ def deploy(config_data):
                     step_name,
                 )
 
-        gather_and_save_model_info(deploy_model, local_role, local_party_id)
+        deploy_model_info = gather_model_info_data(deploy_model, local_role, local_party_id)
+        save_model_info(deploy_model_info)
     except Exception as e:
         stat_logger.exception(e)
         return 100, f"deploy model of role {local_role} {local_party_id} failed, details: {str(e)}"

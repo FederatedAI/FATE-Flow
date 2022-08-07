@@ -46,27 +46,31 @@ from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 @manager.route('/load', methods=['POST'])
 def load_model():
     request_config = request.json
-    if request_config.get('job_id', None):
-        retcode, retmsg, res_data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
-        if res_data:
-            model_info = res_data[0]
-            request_config['initiator'] = {}
-            request_config['initiator']['party_id'] = str(model_info.get('f_initiator_party_id'))
-            request_config['initiator']['role'] = model_info.get('f_initiator_role')
-            runtime_conf = model_info.get('f_runtime_conf', {}) if model_info.get('f_runtime_conf', {}) else model_info.get('f_train_runtime_conf', {})
-            adapter = JobRuntimeConfigAdapter(runtime_conf)
-            job_parameters = adapter.get_common_parameters().to_dict()
-            request_config['job_parameters'] = job_parameters if job_parameters else model_info.get('f_train_runtime_conf', {}).get('job_parameters')
-            roles = runtime_conf.get('role')
-            request_config['role'] = roles if roles else model_info.get('f_train_runtime_conf', {}).get('role')
-            for key, value in request_config['role'].items():
-                for i, v in enumerate(value):
-                    value[i] = str(v)
-            request_config.pop('job_id')
-        else:
-            return get_json_result(retcode=101,
-                                   retmsg="model with version {} can not be found in database. "
-                                          "Please check if the model version is valid.".format(request_config.get('job_id')))
+
+    if request_config.get('job_id'):
+        retcode, retmsg, data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
+        if not data:
+            return get_json_result(
+                retcode=101,
+                retmsg=f"Model with version {request_config.get('job_id')} can not be found in database. "
+                        "Please check if the model version is valid.",
+            )
+
+        model_info = data[0]
+        request_config['initiator'] = {}
+        request_config['initiator']['party_id'] = str(model_info.get('f_initiator_party_id'))
+        request_config['initiator']['role'] = model_info.get('f_initiator_role')
+        runtime_conf = model_info.get('f_runtime_conf', {}) if model_info.get('f_runtime_conf', {}) else model_info.get('f_train_runtime_conf', {})
+        adapter = JobRuntimeConfigAdapter(runtime_conf)
+        job_parameters = adapter.get_common_parameters().to_dict()
+        request_config['job_parameters'] = job_parameters if job_parameters else model_info.get('f_train_runtime_conf', {}).get('job_parameters')
+        roles = runtime_conf.get('role')
+        request_config['role'] = roles if roles else model_info.get('f_train_runtime_conf', {}).get('role')
+        for key, value in request_config['role'].items():
+            for i, v in enumerate(value):
+                value[i] = str(v)
+        request_config.pop('job_id')
+
     _job_id = job_utils.generate_job_id()
     initiator_party_id = request_config['initiator']['party_id']
     initiator_role = request_config['initiator']['role']
@@ -242,30 +246,34 @@ def do_load_model():
 @manager.route('/bind', methods=['POST'])
 def bind_model_service():
     request_config = request.json
-    if request_config.get('job_id', None):
-        retcode, retmsg, res_data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
-        if res_data:
-            model_info = res_data[0]
-            request_config['initiator'] = {}
-            request_config['initiator']['party_id'] = str(model_info.get('f_initiator_party_id'))
-            request_config['initiator']['role'] = model_info.get('f_initiator_role')
 
-            runtime_conf = model_info.get('f_runtime_conf', {}) if model_info.get('f_runtime_conf', {}) else model_info.get('f_train_runtime_conf', {})
-            adapter = JobRuntimeConfigAdapter(runtime_conf)
-            job_parameters = adapter.get_common_parameters().to_dict()
-            request_config['job_parameters'] = job_parameters if job_parameters else model_info.get('f_train_runtime_conf', {}).get('job_parameters')
+    if request_config.get('job_id'):
+        retcode, retmsg, data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
+        if not data:
+            return get_json_result(
+                retcode=101,
+                retmsg=f"Model {request_config.get('job_id')} can not be found in database. "
+                        "Please check if the model version is valid."
+            )
 
-            roles = runtime_conf.get('role')
-            request_config['role'] = roles if roles else model_info.get('f_train_runtime_conf', {}).get('role')
+        model_info = data[0]
+        request_config['initiator'] = {}
+        request_config['initiator']['party_id'] = str(model_info.get('f_initiator_party_id'))
+        request_config['initiator']['role'] = model_info.get('f_initiator_role')
 
-            for key, value in request_config['role'].items():
-                for i, v in enumerate(value):
-                    value[i] = str(v)
-            request_config.pop('job_id')
-        else:
-            return get_json_result(retcode=101,
-                                   retmsg="model {} can not be found in database. "
-                                          "Please check if the model version is valid.".format(request_config.get('job_id')))
+        runtime_conf = model_info.get('f_runtime_conf', {}) if model_info.get('f_runtime_conf', {}) else model_info.get('f_train_runtime_conf', {})
+        adapter = JobRuntimeConfigAdapter(runtime_conf)
+        job_parameters = adapter.get_common_parameters().to_dict()
+        request_config['job_parameters'] = job_parameters if job_parameters else model_info.get('f_train_runtime_conf', {}).get('job_parameters')
+
+        roles = runtime_conf.get('role')
+        request_config['role'] = roles if roles else model_info.get('f_train_runtime_conf', {}).get('role')
+
+        for key, value in request_config['role'].items():
+            for i, v in enumerate(value):
+                value[i] = str(v)
+        request_config.pop('job_id')
+
     if not request_config.get('servings'):
         # get my party all servings
         request_config['servings'] = RuntimeConfig.SERVICE_DB.get_urls('servings')
@@ -359,7 +367,13 @@ def operate_model(model_operation):
                         stat_logger.info(f'job id: {job_parameters.get("model_version")}, '
                                          f'role: {request_config["role"]} model info already existed in database.')
                     else:
-                        model_utils.gather_and_save_model_info(model, request_config["role"], request_config["party_id"], imported=1)
+                        model_info = model_utils.gather_model_info_data(
+                            model,
+                            request_config["role"],
+                            request_config["party_id"],
+                            f_imported=1,
+                        )
+                        model_utils.save_model_info(model_info)
                 except peewee.IntegrityError as e:
                     stat_logger.exception(e)
 
@@ -626,23 +640,21 @@ def deploy():
     if not isinstance(request_data.get('components_checkpoint'), dict):
         request_data['components_checkpoint'] = {}
 
-    retcode, retmsg, model_info = model_utils.query_model_info(model_id=model_id, model_version=model_version, to_dict=True)
-    if not model_info:
+    retcode, retmsg, data = model_utils.query_model_info(model_id=model_id, model_version=model_version, to_dict=True)
+    if not data:
         raise Exception(f'Deploy model failed, no model {model_id} {model_version} found.')
 
-    for key, value in model_info.items():
-        version_check = compare_version(value.get('f_fate_version'), '1.5.0')
+    for model_info in data:
+        version_check = compare_version(model_info.get('f_fate_version'), '1.5.0')
         if version_check == 'lt':
             continue
 
-        init_role = key.split('/')[-2].split('#')[0]
-        init_party_id = key.split('/')[-2].split('#')[1]
-        model_init_role = (value['f_initiator_role'] if value.get('f_initiator_role')
-                           else value.get('f_train_runtime_conf', {}).get('initiator', {}).get('role', ''))
-        model_init_party_id = (value['f_initiator_party_id'] if value.get('f_initiator_party_id')
-                               else value.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id', ''))
+        model_init_role = (model_info['f_initiator_role'] if model_info.get('f_initiator_role')
+                           else model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role', ''))
+        model_init_party_id = (model_info['f_initiator_party_id'] if model_info.get('f_initiator_party_id')
+                               else model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id', ''))
 
-        if init_role == model_init_role and init_party_id == str(model_init_party_id):
+        if model_info['f_role']  == model_init_role and str(model_info['f_party_id']) == str(model_init_party_id):
             break
     else:
         raise Exception("Deploy model failed, can not found model of initiator role or the fate version of model is older than 1.5.0")
@@ -659,7 +671,7 @@ def deploy():
     deploy_status_msg = 'success'
     deploy_status_info['detail'] = {}
 
-    for role_name, role_partys in value.get("f_train_runtime_conf", {}).get('role', {}).items():
+    for role_name, role_partys in data[0].get("f_train_runtime_conf", {}).get('role', {}).items():
         if role_name not in ['arbiter', 'host', 'guest']:
             continue
 
