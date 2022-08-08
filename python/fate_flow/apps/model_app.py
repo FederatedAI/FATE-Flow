@@ -634,78 +634,116 @@ def query_model():
 def deploy():
     request_data = request.json
 
-    model_id = request_data.get("model_id")
-    model_version = request_data.get("model_version")
+    model_id = request_data['model_id']
+    model_version = request_data['model_version']
 
     if not isinstance(request_data.get('components_checkpoint'), dict):
         request_data['components_checkpoint'] = {}
 
-    retcode, retmsg, data = model_utils.query_model_info(model_id=model_id, model_version=model_version, to_dict=True)
+    retcode, retmsg, data = model_utils.query_model_info(model_id=model_id, model_version=model_version)
     if not data:
-        raise Exception(f'Deploy model failed, no model {model_id} {model_version} found.')
+        return error_response(
+            404,
+             'Deploy model failed. '
+            f'Model {model_id} {model_version} not found.'
+        )
 
     for model_info in data:
         version_check = compare_version(model_info.get('f_fate_version'), '1.5.0')
         if version_check == 'lt':
             continue
 
-        model_init_role = (model_info['f_initiator_role'] if model_info.get('f_initiator_role')
-                           else model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role', ''))
-        model_init_party_id = (model_info['f_initiator_party_id'] if model_info.get('f_initiator_party_id')
-                               else model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id', ''))
+        initiator_role = (model_info['f_initiator_role'] if model_info.get('f_initiator_role')
+                          else model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role', ''))
+        initiator_party_id = (model_info['f_initiator_party_id'] if model_info.get('f_initiator_party_id')
+                              else model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id', ''))
 
-        if model_info['f_role']  == model_init_role and str(model_info['f_party_id']) == str(model_init_party_id):
+        if model_info['f_role']  == initiator_role and str(model_info['f_party_id']) == str(initiator_party_id):
             break
     else:
-        raise Exception("Deploy model failed, can not found model of initiator role or the fate version of model is older than 1.5.0")
+        return error_response(
+            404,
+            'Deploy model failed. '
+            'Cannot found model of initiator role or the fate version of model is older than 1.5.0',
+        )
+
+    roles = (
+        data[0].get('f_roles') or
+        data[0].get('f_train_runtime_conf', {}).get('role') or
+        data[0].get('f_runtime_conf', {}).get('role')
+    )
+    if not roles:
+        return error_response(
+            404,
+            'Deploy model failed. '
+            'Cannot found roles of model.'
+        )
 
     # distribute federated deploy task
     _job_id = job_utils.generate_job_id()
     request_data['child_model_version'] = _job_id
+    request_data['initiator'] = {
+        'role': initiator_role,
+        'party_id': initiator_party_id,
+    }
 
-    initiator_party_id = model_init_party_id
-    initiator_role = model_init_role
-    request_data['initiator'] = {'role': initiator_role, 'party_id': initiator_party_id}
     deploy_status = True
-    deploy_status_info = {}
-    deploy_status_msg = 'success'
-    deploy_status_info['detail'] = {}
+    deploy_status_info = {
+        'detail': {},
+        'model_id': model_id,
+        'model_version': _job_id,
+    }
 
-    for role_name, role_partys in data[0].get("f_train_runtime_conf", {}).get('role', {}).items():
-        if role_name not in ['arbiter', 'host', 'guest']:
+    for role_name, role_partys in roles:
+        if role_name not in {'arbiter', 'host', 'guest'}:
             continue
 
-        deploy_status_info[role_name] = deploy_status_info.get(role_name, {})
-        deploy_status_info['detail'][role_name] = {}
+        if role_name not in deploy_status_info:
+            deploy_status_info[role_name] = {}
+        if role_name not in deploy_status_info['detail']:
+            deploy_status_info['detail'][role_name] = {}
+
         for _party_id in role_partys:
-            request_data['local'] = {'role': role_name, 'party_id': _party_id}
+            request_data['local'] = {
+                'role': role_name,
+                'party_id': _party_id,
+            }
+
             try:
-                response = federated_api(job_id=_job_id,
-                                         method='POST',
-                                         endpoint='/model/deploy/do',
-                                         src_party_id=initiator_party_id,
-                                         dest_party_id=_party_id,
-                                         src_role=initiator_role,
-                                         json_body=request_data,
-                                         federated_mode=FederatedMode.MULTIPLE if not IS_STANDALONE else FederatedMode.SINGLE)
-                deploy_status_info[role_name][_party_id] = response['retcode']
-                detail = {_party_id: {}}
-                detail[_party_id]['retcode'] = response['retcode']
-                detail[_party_id]['retmsg'] = response['retmsg']
-                deploy_status_info['detail'][role_name].update(detail)
+                response = federated_api(
+                    job_id=_job_id,
+                    method='POST',
+                    endpoint='/model/deploy/do',
+                    src_party_id=initiator_party_id,
+                    dest_party_id=_party_id,
+                    src_role=initiator_role,
+                    json_body=request_data,
+                    federated_mode=FederatedMode.MULTIPLE if not IS_STANDALONE else FederatedMode.SINGLE
+                )
                 if response['retcode']:
                     deploy_status = False
-                    deploy_status_msg = 'failed'
-            except Exception as e:
-                stat_logger.exception(e)
-                deploy_status = False
-                deploy_status_msg = 'failed'
-                deploy_status_info[role_name][_party_id] = 100
 
-    deploy_status_info['model_id'] = request_data['model_id']
-    deploy_status_info['model_version'] = _job_id
-    return get_json_result(retcode=(0 if deploy_status else 101),
-                           retmsg=deploy_status_msg, data=deploy_status_info)
+                deploy_status_info[role_name][_party_id] = response['retcode']
+                deploy_status_info['detail'][role_name][_party_id] = {
+                    'retcode': response['retcode'],
+                    'retmsg': response['retmsg'],
+                }
+            except Exception as e:
+                deploy_status = False
+
+                deploy_status_info[role_name][_party_id] = 100
+                deploy_status_info['detail'][role_name][_party_id] = {
+                    'retcode': 100,
+                    'retmsg': 'request failed',
+                }
+
+                stat_logger.exception(e)
+
+    return get_json_result(
+        0 if deploy_status else 101,
+        'success' if deploy_status else 'failed',
+        deploy_status_info,
+    )
 
 
 @manager.route('/deploy/do', methods=['POST'])

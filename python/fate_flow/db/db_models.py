@@ -325,21 +325,22 @@ class MachineLearningModelInfo(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
     f_model_id = CharField(max_length=100, index=True)
     f_model_version = CharField(max_length=100, index=True)
-    f_loaded_times = IntegerField(default=0)
     f_size = BigIntegerField(default=0)
-    f_description = TextField(null=True, default='')
     f_initiator_role = CharField(max_length=50)
     f_initiator_party_id = CharField(max_length=50, default=-1)
+    # TODO: deprecated. use f_train_runtime_conf instead
     f_runtime_conf = JSONField(default={})
     f_train_dsl = JSONField(default={})
     f_train_runtime_conf = JSONField(default={})
-    f_imported = IntegerField(default=0)
-    f_job_status = CharField(max_length=50, null=True)
     f_runtime_conf_on_party = JSONField(default={})
+    f_inference_dsl = JSONField(default={})
     f_fate_version = CharField(max_length=10, null=True, default='')
     f_parent = BooleanField(null=True, default=None)
     f_parent_info = JSONField(default={})
-    f_inference_dsl = JSONField(default={})
+    # loaded times in api /model/load/do
+    f_loaded_times = IntegerField(default=0)
+    # imported from api /model/import
+    f_imported = IntegerField(default=0)
     f_archive_sha256 = CharField(max_length=100, null=True)
     f_archive_from_ip = CharField(max_length=100, null=True)
 

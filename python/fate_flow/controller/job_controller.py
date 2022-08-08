@@ -37,10 +37,11 @@ from fate_flow.operation.job_tracker import Tracker
 from fate_flow.pipelined_model.pipelined_model import PipelinedComponent
 from fate_flow.protobuf.python import pipeline_pb2
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.settings import ENGINES, ENABLE_MODEL_STORE
+from fate_flow.settings import ENABLE_MODEL_STORE, ENGINES
 from fate_flow.utils import data_utils, job_utils, log_utils, schedule_utils
 from fate_flow.utils.job_utils import get_job_dataset
 from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.utils.model_utils import gather_model_info_data, save_model_info
 
 
 class JobController(object):
@@ -450,14 +451,15 @@ class JobController(object):
     @classmethod
     def save_pipelined_model(cls, job_id, role, party_id):
         if role == 'local':
-            schedule_logger(job_id).info("A job of local role does not need to save pipeline model")
+            schedule_logger(job_id).info('A job of local role does not need to save pipeline model')
             return
 
-        schedule_logger(job_id).info(f"start to save pipeline model on {role} {party_id}")
-        job_configuration = job_utils.get_job_configuration(job_id=job_id, role=role,
-                                                            party_id=party_id)
+        schedule_logger(job_id).info(f'start to save pipeline model on {role} {party_id}')
+
+        job_configuration = job_utils.get_job_configuration(job_id, role, party_id)
+
         runtime_conf_on_party = job_configuration.runtime_conf_on_party
-        job_parameters = runtime_conf_on_party.get('job_parameters', {})
+        job_parameters = runtime_conf_on_party['job_parameters']
 
         model_id = job_parameters['model_id']
         model_version = job_parameters['model_version']
@@ -465,35 +467,48 @@ class JobController(object):
         roles = runtime_conf_on_party['role']
         initiator_role = runtime_conf_on_party['initiator']['role']
         initiator_party_id = runtime_conf_on_party['initiator']['party_id']
+        assistant_role = job_parameters.get('assistant_role', [])
 
-        if role in job_parameters.get("assistant_role", []) or job_type == 'predict':
+        if role in set(assistant_role) or job_type == 'predict':
             return
 
-        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
-                                                       runtime_conf=job_configuration.runtime_conf,
-                                                       train_runtime_conf=job_configuration.train_runtime_conf)
+        dsl_parser = schedule_utils.get_job_dsl_parser(
+            dsl=job_configuration.dsl,
+            runtime_conf=job_configuration.runtime_conf,
+            train_runtime_conf=job_configuration.train_runtime_conf,
+        )
 
-        components_parameters = {}
-        tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, only_latest=True)
-        for task in tasks:
-            components_parameters[task.f_component_name] = task.f_component_parameters
-        predict_dsl = schedule_utils.fill_inference_dsl(dsl_parser, origin_inference_dsl=job_configuration.dsl, components_parameters=components_parameters)
+        tasks = JobSaver.query_task(
+            job_id=job_id,
+            role=role,
+            party_id=party_id,
+            only_latest=True,
+        )
+        components_parameters = {
+            task.f_component_name: task.f_component_parameters for task in tasks
+        }
+
+        predict_dsl = schedule_utils.fill_inference_dsl(dsl_parser, job_configuration.dsl, components_parameters)
 
         pipeline = pipeline_pb2.Pipeline()
-        pipeline.inference_dsl = json_dumps(predict_dsl, byte=True)
-        pipeline.train_dsl = json_dumps(job_configuration.dsl, byte=True)
-        pipeline.train_runtime_conf = json_dumps(job_configuration.runtime_conf, byte=True)
-        pipeline.fate_version = RuntimeConfig.get_env("FATE")
+
+        pipeline.roles = json_dumps(roles, byte=True)
+
         pipeline.model_id = model_id
         pipeline.model_version = model_version
 
-        pipeline.parent = True
-        pipeline.loaded_times = 0
-        pipeline.roles = json_dumps(roles, byte=True)
         pipeline.initiator_role = initiator_role
         pipeline.initiator_party_id = initiator_party_id
+
+        pipeline.train_dsl = json_dumps(job_configuration.dsl, byte=True)
+        pipeline.train_runtime_conf = json_dumps(job_configuration.runtime_conf, byte=True)
         pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
+        pipeline.inference_dsl = json_dumps(predict_dsl, byte=True)
+
+        pipeline.fate_version = RuntimeConfig.get_env('FATE')
+        pipeline.parent = True
         pipeline.parent_info = json_dumps({}, byte=True)
+        pipeline.loaded_times = 0
 
         tracker = Tracker(
             job_id=job_id, role=role, party_id=party_id,
@@ -512,10 +527,12 @@ class JobController(object):
                 if not sync_component.local_exists() and sync_component.remote_exists():
                     sync_component.download()
 
-        tracker.pipelined_model.save_pipeline_model(pipeline_buffer_object=pipeline)
-        tracker.save_machine_learning_model_info()
+        tracker.pipelined_model.save_pipeline_model(pipeline)
 
-        schedule_logger(job_id).info(f"save pipeline on {role} {party_id} successfully")
+        model_info = gather_model_info_data(tracker.pipelined_model, role, party_id)
+        save_model_info(model_info)
+
+        schedule_logger(job_id).info(f'save pipeline on {role} {party_id} successfully')
 
     @classmethod
     def clean_job(cls, job_id, role, party_id, roles):

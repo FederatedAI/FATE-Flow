@@ -19,13 +19,11 @@ import typing
 from fate_arch import session, storage
 from fate_arch.abc import CTableABC
 from fate_arch.common import EngineType
-from fate_arch.common.base_utils import current_timestamp, deserialize_b64, json_loads, serialize_b64
+from fate_arch.common.base_utils import current_timestamp, deserialize_b64, serialize_b64
 from fate_arch.common.data_utils import default_output_info
 from fate_arch.storage import StorageEngine
 
-from fate_flow.db.db_models import DB, ComponentSummary, Job
-from fate_flow.db.db_models import MachineLearningModelInfo as MLModel
-from fate_flow.db.db_models import TrackingOutputDataInfo
+from fate_flow.db.db_models import DB, ComponentSummary, TrackingOutputDataInfo
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import DataCache, Metric, MetricMeta, RunParameters
@@ -398,56 +396,6 @@ class Tracker(object):
         sess.destroy_all_sessions()
         return True
 
-    @DB.connection_context()
-    def save_machine_learning_model_info(self):
-        try:
-            record = MLModel.get_or_none(MLModel.f_model_version == self.job_id,
-                                         MLModel.f_role == self.role,
-                                         MLModel.f_model_id == self.model_id,
-                                         MLModel.f_party_id == self.party_id)
-            if not record:
-                job = Job.get_or_none(Job.f_job_id == self.job_id)
-                pipeline = self.pipelined_model.read_pipeline_model()
-                if job:
-                    job_data = job.to_dict()
-                    model_info = {
-                        'job_id': job_data.get("f_job_id"),
-                        'role': self.role,
-                        'party_id': self.party_id,
-                        'roles': job_data.get("f_roles"),
-                        'model_id': self.model_id,
-                        'model_version': self.model_version,
-                        'initiator_role': job_data.get('f_initiator_role'),
-                        'initiator_party_id': job_data.get('f_initiator_party_id'),
-                        'runtime_conf': job_data.get('f_runtime_conf'),
-                        'work_mode': job_data.get('f_work_mode'),
-                        'train_dsl': job_data.get('f_dsl'),
-                        'train_runtime_conf': job_data.get('f_train_runtime_conf'),
-                        'size': self.get_model_size(),
-                        'job_status': job_data.get('f_status'),
-                        'parent': pipeline.parent,
-                        'fate_version': pipeline.fate_version,
-                        'runtime_conf_on_party': json_loads(pipeline.runtime_conf_on_party),
-                        'parent_info': json_loads(pipeline.parent_info),
-                        'inference_dsl': json_loads(pipeline.inference_dsl)
-                    }
-                    model_utils.save_model_info(model_info)
-
-                    schedule_logger(self.job_id).info(
-                        'save {} model info done. model id: {}, model version: {}.'.format(self.job_id,
-                                                                                           self.model_id,
-                                                                                           self.model_version))
-                else:
-                    schedule_logger(self.job_id).info(
-                        'save {} model info failed, no job found in db. '
-                        'model id: {}, model version: {}.'.format(self.job_id,
-                                                                  self.model_id,
-                                                                  self.model_version))
-            else:
-                schedule_logger(self.job_id).info('model {} info has already existed in database.'.format(self.job_id))
-        except Exception as e:
-            schedule_logger(self.job_id).exception(e)
-
     @classmethod
     def get_dynamic_db_model(cls, base, job_id):
         return type(base.model(table_index=cls.get_dynamic_tracking_table_index(job_id=job_id)))
@@ -455,6 +403,3 @@ class Tracker(object):
     @classmethod
     def get_dynamic_tracking_table_index(cls, job_id):
         return job_id[:8]
-
-    def get_model_size(self):
-        return self.pipelined_model.calculate_model_file_size()

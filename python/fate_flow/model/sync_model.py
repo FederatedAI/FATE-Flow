@@ -50,7 +50,7 @@ def get_storage(storage_map: dict) -> Tuple[model_storage_base.ModelStorageBase,
 
 class SyncModel(Pipelined):
 
-    def __init__(self, *, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self.pipelined_model = PipelinedModel(self.party_model_id, self.model_version)

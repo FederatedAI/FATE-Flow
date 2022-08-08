@@ -35,7 +35,7 @@ LOGGER = getLogger()
 
 class PipelinedComponent(Pipelined, Locker):
 
-    def __init__(self, *, **kwargs):
+    def __init__(self, **kwargs):
         Pipelined.__init__(self, **kwargs)
 
         self.model_path = Path(get_fate_flow_directory('model_local_cache'), self.party_model_id, self.model_version)
@@ -51,7 +51,7 @@ class PipelinedComponent(Pipelined, Locker):
             PipelineComponentMeta.f_party_id == self.party_id,
         )
 
-        Locker.__init__(self.model_path)
+        Locker.__init__(self, self.model_path)
 
     def exists(self, component_name):
         query = self.get_define_meta_from_db(PipelineComponentMeta.f_component_name == component_name)

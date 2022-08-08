@@ -125,17 +125,18 @@ def gather_model_info_data(model: PipelinedModel, local_role, local_party_id, **
 
     pipeline = model.read_pipeline_model()
 
-    model_info = OrderedDict()
+    model_info = {}
     for attr, field in pipeline.ListFields():
         if isinstance(field, bytes):
-            field = json_loads(field, OrderedDict)
+            field = json_loads(field)
         model_info[f'f_{attr.name}'] = field
 
-    model_info['f_size'] = model.calculate_model_file_size()
     model_info['f_job_id'] = model_info['f_model_version']
     model_info['f_role'] = local_role
     model_info['f_party_id'] = local_party_id
-    model_info['f_parent'] = False if model_info.get('f_inference_dsl') else True
+    # backward compatibility
+    model_info['f_runtime_conf'] = model_info['f_train_runtime_conf']
+    model_info['f_size'] = model.calculate_model_file_size()
 
     if compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
         model_info['f_roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
@@ -225,7 +226,7 @@ def check_if_deployed(role, party_id, model_id, model_version):
     party_model_id = gen_party_model_id(model_id=model_id, role=role, party_id=party_id)
     pipeline_model = PipelinedModel(model_id=party_model_id, model_version=model_version)
     if not pipeline_model.exists():
-        raise Exception(f"Model {party_model_id} {model_version} not exists in model local cache.")
+        raise FileNotFoundError(f"Model {party_model_id} {model_version} not exists in model local cache.")
 
     pipeline = pipeline_model.read_pipeline_model()
     if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
@@ -249,11 +250,14 @@ def models_group_by_party_model_id_and_model_version():
 
 @DB.connection_context()
 def get_job_configuration_from_model(job_id, role, party_id):
-    retcode, retmsg, data = query_model_info(model_version=job_id, role=role, party_id=party_id,
-                                            query_filters=['train_dsl', 'dsl', 'train_runtime_conf', 'runtime_conf'])
-    if data:
-        dsl = data[0].get('train_dsl') if data[0].get('train_dsl') else data[0].get('dsl')
-        runtime_conf = data[0].get('runtime_conf')
-        train_runtime_conf = data[0].get('train_runtime_conf')
-        return dsl, runtime_conf, train_runtime_conf
-    return {}, {}, {}
+    retcode, retmsg, data = query_model_info(
+        model_version=job_id, role=role, party_id=party_id,
+        query_filters=['train_dsl', 'dsl', 'train_runtime_conf', 'runtime_conf'],
+    )
+    if not data:
+        return {}, {}, {}
+
+    dsl = data[0].get('train_dsl') if data[0].get('train_dsl') else data[0].get('dsl')
+    runtime_conf = data[0].get('runtime_conf')
+    train_runtime_conf = data[0].get('train_runtime_conf')
+    return dsl, runtime_conf, train_runtime_conf
