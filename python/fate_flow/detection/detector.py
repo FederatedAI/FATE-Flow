@@ -17,9 +17,11 @@ import time
 
 from fate_arch.common.base_utils import current_timestamp
 from fate_flow.controller.engine_adapt import build_engine
+from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.db.db_models import DB, Job, DependenciesStorageMeta
 from fate_arch.session import Session
+from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.utils.log_utils import detect_logger
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -222,12 +224,12 @@ class FederatedDetector(Detector):
     def detect_running_job_federated(cls):
         detect_logger().info('start federated detect running job')
         try:
-            running_jobs = JobSaver.query_job(status=JobStatus.RUNNING, is_initiator=True)
+            running_jobs = JobSaver.query_job(status=JobStatus.RUNNING)
             stop_jobs = set()
             for job in running_jobs:
                 cur_retry = 0
-                max_retry_cnt = 3
-                long_retry_cnt = 2
+                max_retry_cnt = JobDefaultConfig.detect_connect_max_retry_count
+                long_retry_cnt = JobDefaultConfig.detect_connect_long_retry_count
                 exception = None
                 while cur_retry < max_retry_cnt:
                     detect_logger().info(f"start federated detect running job {job.f_job_id} cur_retry={cur_retry}")
@@ -242,11 +244,15 @@ class FederatedDetector(Detector):
                     except Exception as e:
                         exception = e
                         detect_logger(job_id=job.f_job_id).debug(e)
+                    finally:
                         retry_interval = job_utils.generate_retry_interval(cur_retry, max_retry_cnt, long_retry_cnt)
                         time.sleep(retry_interval)
-                    finally:
                         cur_retry += 1
                 if exception is not None:
+                    try:
+                        JobController.stop_jobs(job_id=job.f_job_id, stop_status=JobStatus.FAILED)
+                    except exception as e:
+                        detect_logger().exception(f"stop job failed: {e}")
                     detect_logger(job.f_job_id).info(f"job {job.f_job_id} connect failed: {exception}")
                     stop_jobs.add(job)
             cls.request_stop_jobs(jobs=stop_jobs, stop_msg="federated error", stop_status=JobStatus.FAILED)
