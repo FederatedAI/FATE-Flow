@@ -36,7 +36,7 @@ from fate_flow.utils.data_utils import get_header_schema, line_extend_uuid
 
 class SchemaMetaParam:
     def __init__(self,
-                 delimiter,
+                 delimiter=",",
                  input_format="dense",
                  tag_with_value=False,
                  tag_value_delimiter=":",
