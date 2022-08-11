@@ -156,7 +156,7 @@ def component_output_model():
     )
 
     define_meta = tracker.pipelined_model.pipelined_component.get_define_meta()
-    if request_data['component_name'] not in define_meta['component_define']:
+    if not define_meta or request_data['component_name'] not in define_meta['component_define']:
         return get_json_result(retcode=0, retmsg='no define_meta', data={})
 
     component_define = define_meta['component_define'][request_data['component_name']]

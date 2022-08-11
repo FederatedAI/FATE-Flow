@@ -75,6 +75,8 @@ class PipelinedComponent(Locker):
         return True
 
     def get_define_meta_from_file(self):
+        if not self.define_meta_path.is_file():
+           return {}
         return yaml.load(self.define_meta_path.read_text('utf-8'))
 
     @DB.connection_context()
