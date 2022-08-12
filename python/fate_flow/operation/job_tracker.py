@@ -263,6 +263,7 @@ class Tracker(object):
 
     @DB.connection_context()
     def read_summary_from_db(self, need_deserialize=True):
+        cpn_summary = ""
         try:
             summary_model = self.get_dynamic_db_model(ComponentSummary, self.job_id)
             summary = summary_model.get_or_none(
@@ -273,17 +274,15 @@ class Tracker(object):
             )
             if summary:
                 cpn_summary = deserialize_b64(summary.f_summary) if need_deserialize else summary.f_summary
-            else:
-                cpn_summary = ""
         except Exception as e:
             schedule_logger(self.job_id).exception(e)
-            raise e
         return cpn_summary
 
     @DB.connection_context()
     def reload_summary(self, source_tracker):
         cpn_summary = source_tracker.read_summary_from_db(need_deserialize=False)
-        self.insert_summary_into_db(cpn_summary, need_serialize=False)
+        if cpn_summary:
+            self.insert_summary_into_db(cpn_summary, need_serialize=False)
 
     def log_output_data_info(self, data_name: str, table_namespace: str, table_name: str):
         self.insert_output_data_info_into_db(data_name=data_name, table_namespace=table_namespace, table_name=table_name)
