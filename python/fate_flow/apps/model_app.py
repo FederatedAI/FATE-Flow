@@ -17,7 +17,6 @@ import glob
 import json
 import os
 import shutil
-import traceback
 from uuid import uuid1
 from copy import deepcopy
 from datetime import date, datetime
@@ -28,7 +27,7 @@ from flask import Response, request, send_file
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
 
-from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, ModelOperationLog as OperLog, ModelTag, Tag
+from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, ModelTag, Tag
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfigurationBase
@@ -46,27 +45,31 @@ from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 @manager.route('/load', methods=['POST'])
 def load_model():
     request_config = request.json
-    if request_config.get('job_id', None):
-        retcode, retmsg, res_data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
-        if res_data:
-            model_info = res_data[0]
-            request_config['initiator'] = {}
-            request_config['initiator']['party_id'] = str(model_info.get('f_initiator_party_id'))
-            request_config['initiator']['role'] = model_info.get('f_initiator_role')
-            runtime_conf = model_info.get('f_runtime_conf', {}) if model_info.get('f_runtime_conf', {}) else model_info.get('f_train_runtime_conf', {})
-            adapter = JobRuntimeConfigAdapter(runtime_conf)
-            job_parameters = adapter.get_common_parameters().to_dict()
-            request_config['job_parameters'] = job_parameters if job_parameters else model_info.get('f_train_runtime_conf', {}).get('job_parameters')
-            roles = runtime_conf.get('role')
-            request_config['role'] = roles if roles else model_info.get('f_train_runtime_conf', {}).get('role')
-            for key, value in request_config['role'].items():
-                for i, v in enumerate(value):
-                    value[i] = str(v)
-            request_config.pop('job_id')
-        else:
-            return get_json_result(retcode=101,
-                                   retmsg="model with version {} can not be found in database. "
-                                          "Please check if the model version is valid.".format(request_config.get('job_id')))
+
+    if request_config.get('job_id'):
+        retcode, retmsg, data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
+        if not data:
+            return get_json_result(
+                retcode=101,
+                retmsg=f"Model with version {request_config.get('job_id')} can not be found in database. "
+                        "Please check if the model version is valid.",
+            )
+
+        model_info = data[0]
+        request_config['initiator'] = {}
+        request_config['initiator']['party_id'] = str(model_info.get('f_initiator_party_id'))
+        request_config['initiator']['role'] = model_info.get('f_initiator_role')
+        runtime_conf = model_info.get('f_runtime_conf', {}) if model_info.get('f_runtime_conf', {}) else model_info.get('f_train_runtime_conf', {})
+        adapter = JobRuntimeConfigAdapter(runtime_conf)
+        job_parameters = adapter.get_common_parameters().to_dict()
+        request_config['job_parameters'] = job_parameters if job_parameters else model_info.get('f_train_runtime_conf', {}).get('job_parameters')
+        roles = runtime_conf.get('role')
+        request_config['role'] = roles if roles else model_info.get('f_train_runtime_conf', {}).get('role')
+        for key, value in request_config['role'].items():
+            for i, v in enumerate(value):
+                value[i] = str(v)
+        request_config.pop('job_id')
+
     _job_id = job_utils.generate_job_id()
     initiator_party_id = request_config['initiator']['party_id']
     initiator_role = request_config['initiator']['role']
@@ -186,7 +189,6 @@ def migrate_model_process():
 def do_migrate_model():
     request_data = request.json
     retcode, retmsg, data = migrate_model.migration(request_data)
-    operation_record(request_data, "migrate", "success" if not retcode else "failed")
     return get_json_result(retcode=retcode, retmsg=retmsg, data=data)
 
 
@@ -235,37 +237,40 @@ def do_load_model():
     except Exception as modify_err:
         stat_logger.exception(modify_err)
 
-    operation_record(request_data, "load", "success" if not retcode else "failed")
     return get_json_result(retcode=retcode, retmsg=retmsg)
 
 
 @manager.route('/bind', methods=['POST'])
 def bind_model_service():
     request_config = request.json
-    if request_config.get('job_id', None):
-        retcode, retmsg, res_data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
-        if res_data:
-            model_info = res_data[0]
-            request_config['initiator'] = {}
-            request_config['initiator']['party_id'] = str(model_info.get('f_initiator_party_id'))
-            request_config['initiator']['role'] = model_info.get('f_initiator_role')
 
-            runtime_conf = model_info.get('f_runtime_conf', {}) if model_info.get('f_runtime_conf', {}) else model_info.get('f_train_runtime_conf', {})
-            adapter = JobRuntimeConfigAdapter(runtime_conf)
-            job_parameters = adapter.get_common_parameters().to_dict()
-            request_config['job_parameters'] = job_parameters if job_parameters else model_info.get('f_train_runtime_conf', {}).get('job_parameters')
+    if request_config.get('job_id'):
+        retcode, retmsg, data = model_utils.query_model_info(model_version=request_config['job_id'], role='guest')
+        if not data:
+            return get_json_result(
+                retcode=101,
+                retmsg=f"Model {request_config.get('job_id')} can not be found in database. "
+                        "Please check if the model version is valid."
+            )
 
-            roles = runtime_conf.get('role')
-            request_config['role'] = roles if roles else model_info.get('f_train_runtime_conf', {}).get('role')
+        model_info = data[0]
+        request_config['initiator'] = {}
+        request_config['initiator']['party_id'] = str(model_info.get('f_initiator_party_id'))
+        request_config['initiator']['role'] = model_info.get('f_initiator_role')
 
-            for key, value in request_config['role'].items():
-                for i, v in enumerate(value):
-                    value[i] = str(v)
-            request_config.pop('job_id')
-        else:
-            return get_json_result(retcode=101,
-                                   retmsg="model {} can not be found in database. "
-                                          "Please check if the model version is valid.".format(request_config.get('job_id')))
+        runtime_conf = model_info.get('f_runtime_conf', {}) if model_info.get('f_runtime_conf', {}) else model_info.get('f_train_runtime_conf', {})
+        adapter = JobRuntimeConfigAdapter(runtime_conf)
+        job_parameters = adapter.get_common_parameters().to_dict()
+        request_config['job_parameters'] = job_parameters if job_parameters else model_info.get('f_train_runtime_conf', {}).get('job_parameters')
+
+        roles = runtime_conf.get('role')
+        request_config['role'] = roles if roles else model_info.get('f_train_runtime_conf', {}).get('role')
+
+        for key, value in request_config['role'].items():
+            for i, v in enumerate(value):
+                value[i] = str(v)
+        request_config.pop('job_id')
+
     if not request_config.get('servings'):
         # get my party all servings
         request_config['servings'] = RuntimeConfig.SERVICE_DB.get_urls('servings')
@@ -274,7 +279,7 @@ def bind_model_service():
         return get_json_result(retcode=101, retmsg='no service id')
     detect_utils.check_config(request_config, ['initiator', 'role', 'job_parameters'])
     bind_status, retmsg = publish_model.bind_model_service(request_config)
-    operation_record(request_config, "bind", "success" if not bind_status else "failed")
+
     return get_json_result(retcode=bind_status, retmsg='service id is {}'.format(service_id) if not retmsg else retmsg)
 
 
@@ -308,89 +313,79 @@ def operate_model(model_operation):
     if not ModelOperation.valid(model_operation):
         raise Exception('Can not support this operating now: {}'.format(model_operation))
     model_operation = ModelOperation(model_operation)
-    request_config["model_id"] = model_utils.gen_party_model_id(
+    party_model_id = model_utils.gen_party_model_id(
         request_config["model_id"], request_config["role"], request_config["party_id"])
 
     if model_operation in [ModelOperation.EXPORT, ModelOperation.IMPORT]:
+
         if model_operation is ModelOperation.IMPORT:
+            file = request.files.get('file')
+            filename = os.path.join(TEMP_DIRECTORY, uuid1().hex)
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+
             try:
-                file = request.files.get('file')
-                filename = os.path.join(TEMP_DIRECTORY, uuid1().hex)
-                os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-                try:
-                    file.save(filename)
-                except Exception as e:
-                    try:
-                        filename.unlink()
-                    except FileNotFoundError:
-                        pass
-
-                    return error_response(500, f'Save file error: {e}')
-
-                request_config['file'] = filename
-                model = pipelined_model.PipelinedModel(request_config["model_id"], request_config["model_version"])
-                model.unpack_model(filename, hash_=request_config.get('hash'))
-
-                pipeline = model.read_pipeline_model()
-                train_runtime_conf = json_loads(pipeline.train_runtime_conf)
-
-                permitted_party_id = []
-                for key, value in train_runtime_conf.get('role', {}).items():
-                    for v in value:
-                        permitted_party_id.extend([v, str(v)])
-                if request_config["party_id"] not in permitted_party_id:
-                    shutil.rmtree(model.model_path, ignore_errors=True)
-                    return error_response(400, f'Party id {request_config["party_id"]} is not in model roles, '
-                                               f'please check if the party id is valid.')
-
-                model.pipelined_component.save_define_meta_from_file_to_db()
-
-                try:
-                    adapter = JobRuntimeConfigAdapter(train_runtime_conf)
-                    job_parameters = adapter.get_common_parameters().to_dict()
-                    with DB.connection_context():
-                        db_model = MLModel.get_or_none(
-                            MLModel.f_job_id == job_parameters.get("model_version"),
-                            MLModel.f_role == request_config["role"]
-                        )
-
-                    if db_model:
-                        stat_logger.info(f'job id: {job_parameters.get("model_version")}, '
-                                         f'role: {request_config["role"]} model info already existed in database.')
-                    else:
-                        model_utils.gather_and_save_model_info(model, request_config["role"], request_config["party_id"], imported=1)
-                except peewee.IntegrityError as e:
-                    stat_logger.exception(e)
-
-                operation_record(request_config, "import", "success")
-                return get_json_result()
+                file.save(filename)
             except Exception as e:
-                operation_record(request_config, "import", "failed")
-                return error_response(500, f'Import model error: {e}')
+                try:
+                    filename.unlink()
+                except FileNotFoundError:
+                    pass
+
+                return error_response(500, f'Save file error: {e}')
+
+            request_config['file'] = filename
+            model = pipelined_model.PipelinedModel(party_model_id, request_config["model_version"])
+            model.unpack_model(filename, hash_=request_config.get('hash'))
+
+            pipeline = model.read_pipeline_model()
+            train_runtime_conf = json_loads(pipeline.train_runtime_conf)
+
+            permitted_party_id = []
+            for key, value in train_runtime_conf.get('role', {}).items():
+                for v in value:
+                    permitted_party_id.extend([v, str(v)])
+            if request_config["party_id"] not in permitted_party_id:
+                shutil.rmtree(model.model_path, ignore_errors=True)
+                return error_response(400, f'Party id {request_config["party_id"]} is not in model roles, '
+                                            f'please check if the party id is valid.')
+
+            model.pipelined_component.save_define_meta_from_file_to_db()
+
+            model_info = model_utils.gather_model_info_data(model, f_imported=1)
+            model_utils.save_model_info(model_info)
+
+            return get_json_result()
+
         # export
         else:
-            try:
-                model = pipelined_model.PipelinedModel(request_config["model_id"], request_config["model_version"])
-                if model.exists():
-                    model.packaging_model()
-                    operation_record(request_config, "export", "success")
-                    return send_file(model.archive_model_file_path, attachment_filename=os.path.basename(model.archive_model_file_path), as_attachment=True)
+            if ENABLE_MODEL_STORE:
+                sync_model = SyncModel(
+                    role=request_config['role'], party_id=request_config['party_id'],
+                    model_id=request_config['model_id'], model_version=request_config['model_version'],
+                )
 
-                operation_record(request_config, "export", "failed")
-                return error_response(210, f"Model {request_config['model_id']} {request_config['model_version']} is not exist.")
-            except Exception as e:
-                operation_record(request_config, "export", "failed")
-                stat_logger.exception(e)
-                return error_response(210, str(e))
+                if sync_model.remote_exists():
+                    sync_model.download(True)
+
+            model = pipelined_model.PipelinedModel(party_model_id, request_config["model_version"])
+            if not model.exists():
+                return error_response(404, f"Model {party_model_id} {request_config['model_version']} does not exist.")
+
+            model.packaging_model()
+            return send_file(
+                model.archive_model_file_path,
+                as_attachment=True,
+                attachment_filename=os.path.basename(model.archive_model_file_path),
+            )
+
     # store and restore
     else:
-        data = {}
+        request_config['model_id'] = party_model_id
+
         job_dsl, job_runtime_conf = gen_model_operation_job_config(request_config, model_operation)
         submit_result = DAGScheduler.submit(JobConfigurationBase(**{'dsl': job_dsl, 'runtime_conf': job_runtime_conf}), job_id=job_id)
-        data.update(submit_result)
-        operation_record(job_runtime_conf, model_operation, '')
-        return get_json_result(job_id=job_id, data=data)
+
+        return get_json_result(job_id=job_id, data=submit_result)
 
 
 @manager.route('/model_tag/<operation>', methods=['POST'])
@@ -569,45 +564,6 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
     return job_dsl, job_runtime_conf
 
 
-@DB.connection_context()
-def operation_record(data: dict, oper_type, oper_status):
-    try:
-        if oper_type == 'migrate':
-            OperLog.create(f_operation_type=oper_type,
-                           f_operation_status=oper_status,
-                           f_initiator_role=data.get("migrate_initiator", {}).get("role"),
-                           f_initiator_party_id=data.get("migrate_initiator", {}).get("party_id"),
-                           f_request_ip=request.remote_addr,
-                           f_model_id=data.get("model_id"),
-                           f_model_version=data.get("model_version"))
-        elif oper_type == 'load':
-            OperLog.create(f_operation_type=oper_type,
-                           f_operation_status=oper_status,
-                           f_initiator_role=data.get("initiator").get("role"),
-                           f_initiator_party_id=data.get("initiator").get("party_id"),
-                           f_request_ip=request.remote_addr,
-                           f_model_id=data.get('job_parameters').get("model_id"),
-                           f_model_version=data.get('job_parameters').get("model_version"))
-        elif oper_type == 'bind':
-            OperLog.create(f_operation_type=oper_type,
-                           f_operation_status=oper_status,
-                           f_initiator_role=data.get("initiator").get("role"),
-                           f_initiator_party_id=data.get("party_id") if data.get("party_id") else data.get("initiator").get("party_id"),
-                           f_request_ip=request.remote_addr,
-                           f_model_id=data.get("model_id") if data.get("model_id") else data.get('job_parameters').get("model_id"),
-                           f_model_version=data.get("model_version") if data.get("model_version") else data.get('job_parameters').get("model_version"))
-        else:
-            OperLog.create(f_operation_type=oper_type,
-                           f_operation_status=oper_status,
-                           f_initiator_role=data.get("role") if data.get("role") else data.get("initiator").get("role"),
-                           f_initiator_party_id=data.get("party_id") if data.get("party_id") else data.get("initiator").get("party_id"),
-                           f_request_ip=request.remote_addr,
-                           f_model_id=data.get("model_id") if data.get("model_id") else data.get('job_parameters').get("model_id"),
-                           f_model_version=data.get("model_version") if data.get("model_version") else data.get('job_parameters').get("model_version"))
-    except Exception:
-        stat_logger.error(traceback.format_exc())
-
-
 @manager.route('/query', methods=['POST'])
 def query_model():
     retcode, retmsg, data = model_utils.query_model_info(**request.json)
@@ -620,86 +576,122 @@ def query_model():
 def deploy():
     request_data = request.json
 
-    model_id = request_data.get("model_id")
-    model_version = request_data.get("model_version")
+    model_id = request_data['model_id']
+    model_version = request_data['model_version']
 
     if not isinstance(request_data.get('components_checkpoint'), dict):
         request_data['components_checkpoint'] = {}
 
-    retcode, retmsg, model_info = model_utils.query_model_info_from_file(model_id=model_id, model_version=model_version, to_dict=True)
-    if not model_info:
-        raise Exception(f'Deploy model failed, no model {model_id} {model_version} found.')
+    retcode, retmsg, data = model_utils.query_model_info(model_id=model_id, model_version=model_version)
+    if not data:
+        return error_response(
+            404,
+             'Deploy model failed. '
+            f'Model {model_id} {model_version} not found.'
+        )
 
-    for key, value in model_info.items():
-        version_check = compare_version(value.get('f_fate_version'), '1.5.0')
+    for model_info in data:
+        version_check = compare_version(model_info.get('f_fate_version'), '1.5.0')
         if version_check == 'lt':
             continue
 
-        init_role = key.split('/')[-2].split('#')[0]
-        init_party_id = key.split('/')[-2].split('#')[1]
-        model_init_role = (value['f_initiator_role'] if value.get('f_initiator_role')
-                           else value.get('f_train_runtime_conf', {}).get('initiator', {}).get('role', ''))
-        model_init_party_id = (value['f_initiator_party_id'] if value.get('f_initiator_party_id')
-                               else value.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id', ''))
+        initiator_role = (model_info['f_initiator_role'] if model_info.get('f_initiator_role')
+                          else model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role', ''))
+        initiator_party_id = (model_info['f_initiator_party_id'] if model_info.get('f_initiator_party_id')
+                              else model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id', ''))
 
-        if init_role == model_init_role and init_party_id == str(model_init_party_id):
+        if model_info['f_role']  == initiator_role and str(model_info['f_party_id']) == str(initiator_party_id):
             break
     else:
-        raise Exception("Deploy model failed, can not found model of initiator role or the fate version of model is older than 1.5.0")
+        return error_response(
+            404,
+            'Deploy model failed. '
+            'Cannot found model of initiator role or the fate version of model is older than 1.5.0',
+        )
+
+    roles = (
+        data[0].get('f_roles') or
+        data[0].get('f_train_runtime_conf', {}).get('role') or
+        data[0].get('f_runtime_conf', {}).get('role')
+    )
+    if not roles:
+        return error_response(
+            404,
+            'Deploy model failed. '
+            'Cannot found roles of model.'
+        )
 
     # distribute federated deploy task
     _job_id = job_utils.generate_job_id()
     request_data['child_model_version'] = _job_id
+    request_data['initiator'] = {
+        'role': initiator_role,
+        'party_id': initiator_party_id,
+    }
 
-    initiator_party_id = model_init_party_id
-    initiator_role = model_init_role
-    request_data['initiator'] = {'role': initiator_role, 'party_id': initiator_party_id}
     deploy_status = True
-    deploy_status_info = {}
-    deploy_status_msg = 'success'
-    deploy_status_info['detail'] = {}
+    deploy_status_info = {
+        'detail': {},
+        'model_id': model_id,
+        'model_version': _job_id,
+    }
 
-    for role_name, role_partys in value.get("f_train_runtime_conf", {}).get('role', {}).items():
-        if role_name not in ['arbiter', 'host', 'guest']:
+    for role_name, role_partys in roles.items():
+        if role_name not in {'arbiter', 'host', 'guest'}:
             continue
 
-        deploy_status_info[role_name] = deploy_status_info.get(role_name, {})
-        deploy_status_info['detail'][role_name] = {}
+        if role_name not in deploy_status_info:
+            deploy_status_info[role_name] = {}
+        if role_name not in deploy_status_info['detail']:
+            deploy_status_info['detail'][role_name] = {}
+
         for _party_id in role_partys:
-            request_data['local'] = {'role': role_name, 'party_id': _party_id}
+            request_data['local'] = {
+                'role': role_name,
+                'party_id': _party_id,
+            }
+
             try:
-                response = federated_api(job_id=_job_id,
-                                         method='POST',
-                                         endpoint='/model/deploy/do',
-                                         src_party_id=initiator_party_id,
-                                         dest_party_id=_party_id,
-                                         src_role=initiator_role,
-                                         json_body=request_data,
-                                         federated_mode=FederatedMode.MULTIPLE if not IS_STANDALONE else FederatedMode.SINGLE)
-                deploy_status_info[role_name][_party_id] = response['retcode']
-                detail = {_party_id: {}}
-                detail[_party_id]['retcode'] = response['retcode']
-                detail[_party_id]['retmsg'] = response['retmsg']
-                deploy_status_info['detail'][role_name].update(detail)
+                response = federated_api(
+                    job_id=_job_id,
+                    method='POST',
+                    endpoint='/model/deploy/do',
+                    src_party_id=initiator_party_id,
+                    dest_party_id=_party_id,
+                    src_role=initiator_role,
+                    json_body=request_data,
+                    federated_mode=FederatedMode.MULTIPLE if not IS_STANDALONE else FederatedMode.SINGLE
+                )
                 if response['retcode']:
                     deploy_status = False
-                    deploy_status_msg = 'failed'
-            except Exception as e:
-                stat_logger.exception(e)
-                deploy_status = False
-                deploy_status_msg = 'failed'
-                deploy_status_info[role_name][_party_id] = 100
 
-    deploy_status_info['model_id'] = request_data['model_id']
-    deploy_status_info['model_version'] = _job_id
-    return get_json_result(retcode=(0 if deploy_status else 101),
-                           retmsg=deploy_status_msg, data=deploy_status_info)
+                deploy_status_info[role_name][_party_id] = response['retcode']
+                deploy_status_info['detail'][role_name][_party_id] = {
+                    'retcode': response['retcode'],
+                    'retmsg': response['retmsg'],
+                }
+            except Exception as e:
+                deploy_status = False
+
+                deploy_status_info[role_name][_party_id] = 100
+                deploy_status_info['detail'][role_name][_party_id] = {
+                    'retcode': 100,
+                    'retmsg': 'request failed',
+                }
+
+                stat_logger.exception(e)
+
+    return get_json_result(
+        0 if deploy_status else 101,
+        'success' if deploy_status else 'failed',
+        deploy_status_info,
+    )
 
 
 @manager.route('/deploy/do', methods=['POST'])
 def do_deploy():
     retcode, retmsg = deploy_model.deploy(request.json)
-    operation_record(request.json, "deploy", "success" if not retcode else "failed")
+
     return get_json_result(retcode=retcode, retmsg=retmsg)
 
 
@@ -707,7 +699,7 @@ def do_deploy():
 def get_predict_dsl():
     request_data = request.json
     request_data['query_filters'] = ['inference_dsl']
-    retcode, retmsg, data = model_utils.query_model_info_from_file(**request_data)
+    retcode, retmsg, data = model_utils.query_model_info(**request_data)
     if data:
         for d in data:
             if d.get("f_role") in {"guest", "host"}:
@@ -764,7 +756,7 @@ def get_predict_conf():
 def homo_convert():
     request_config = request.json or request.form.to_dict()
     retcode, retmsg, res_data = publish_model.convert_homo_model(request_config)
-    operation_record(request.json, "homo_convert", "success" if not retcode else "failed")
+
     return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
 
 
@@ -774,7 +766,7 @@ def homo_convert():
 def homo_deploy():
     request_config = request.json or request.form.to_dict()
     retcode, retmsg, res_data = publish_model.deploy_homo_model(request_config)
-    operation_record(request.json, "homo_deploy", "success" if not retcode else "failed")
+
     return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
 
 

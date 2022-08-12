@@ -22,6 +22,7 @@ from peewee import DoesNotExist
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, PipelineComponentMeta
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.model import model_storage_base, mysql_model_storage, tencent_cos_model_storage
+from fate_flow.pipelined_model import Pipelined
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.settings import HOST
 
@@ -47,19 +48,11 @@ def get_storage(storage_map: dict) -> Tuple[model_storage_base.ModelStorageBase,
     return storage_map[store_type], store_address
 
 
-class SyncModel:
+class SyncModel(Pipelined):
 
-    def __init__(self, *, role=None, party_id=None, model_id=None, party_model_id=None, model_version):
-        if party_model_id is None:
-            self.role = role
-            self.party_id = party_id
-            self.model_id = model_id
-            self.party_model_id = f'{role}#{party_id}#{model_id}'
-        else:
-            self.role, self.party_id, self.model_id = party_model_id.split('#', 2)
-            self.party_model_id = party_model_id
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-        self.model_version = model_version
         self.pipelined_model = PipelinedModel(self.party_model_id, self.model_version)
 
         storage, storage_address = get_storage(model_storage_map)
@@ -134,20 +127,12 @@ class SyncModel:
         return model
 
 
-class SyncComponent:
+class SyncComponent(Pipelined):
 
-    def __init__(self, *, role=None, party_id=None, model_id=None, party_model_id=None, model_version, component_name):
-        if party_model_id is None:
-            self.role = role
-            self.party_id = party_id
-            self.model_id = model_id
-            self.party_model_id = f'{role}#{party_id}#{model_id}'
-        else:
-            self.role, self.party_id, self.model_id = party_model_id.split('#', 2)
-            self.party_model_id = party_model_id
-
-        self.model_version = model_version
+    def __init__(self, *, component_name, **kwargs):
+        super().__init__(**kwargs)
         self.component_name = component_name
+
         self.pipelined_model = PipelinedModel(self.party_model_id, self.model_version)
 
         storage, storage_address = get_storage(component_storage_map)

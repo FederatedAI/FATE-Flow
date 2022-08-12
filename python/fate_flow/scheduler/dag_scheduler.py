@@ -78,8 +78,8 @@ class DAGScheduler(Cron):
                         role=tracker.role, party_id=tracker.party_id,
                         model_id=tracker.model_id, model_version=tracker.model_version,
                     )
-                    if sync_model.remote_exists():
-                        sync_model.download(True)
+                    if not sync_model.local_exists() and sync_model.remote_exists():
+                        sync_model.download()
 
                 pipeline_model = tracker.pipelined_model.read_pipeline_model()
                 train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)

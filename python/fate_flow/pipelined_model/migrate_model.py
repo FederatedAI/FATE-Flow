@@ -13,18 +13,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
-
 from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, PipelineComponentMeta
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model import pipelined_model
-from fate_flow.settings import stat_logger, ENABLE_MODEL_STORE
+from fate_flow.settings import ENABLE_MODEL_STORE, stat_logger
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
-from fate_flow.utils.model_utils import gather_and_save_model_info, gen_model_id, gen_party_model_id
 from fate_flow.utils.job_utils import PIPELINE_COMPONENT_NAME
+from fate_flow.utils.model_utils import (
+    gather_model_info_data, gen_model_id,
+    gen_party_model_id, save_model_info,
+)
 
 
 def compare_roles(request_conf_roles: dict, run_time_conf_roles: dict):
@@ -54,6 +55,8 @@ def migration(config_data: dict):
     model_version = config_data['model_version']
     local_role = config_data['local']['role']
     local_party_id = config_data['local']['party_id']
+    new_party_id = config_data["local"]["migrate_party_id"]
+    new_model_id = gen_model_id(config_data["migrate_role"])
     unify_model_version = config_data['unify_model_version']
 
     try:
@@ -77,8 +80,8 @@ def migration(config_data: dict):
         with DB.connection_context():
             if MLModel.get_or_none(
                 MLModel.f_role == local_role,
-                MLModel.f_party_id == local_party_id,
-                MLModel.f_model_id == model_id,
+                MLModel.f_party_id == new_party_id,
+                MLModel.f_model_id == new_model_id,
                 MLModel.f_model_version == unify_model_version,
             ):
                 raise FileExistsError(
@@ -89,9 +92,9 @@ def migration(config_data: dict):
         migrate_tool = source_model.get_model_migrate_tool()
         migrate_model = pipelined_model.PipelinedModel(
             gen_party_model_id(
-                model_id=gen_model_id(config_data["migrate_role"]),
+                model_id=new_model_id,
                 role=local_role,
-                party_id=config_data["local"]["migrate_party_id"],
+                party_id=new_party_id,
             ),
             unify_model_version,
         )
@@ -141,19 +144,21 @@ def migration(config_data: dict):
         # save updated pipeline.pb file
         migrate_model.save_pipeline_model(pipeline_model)
 
+        migrate_model_info = gather_model_info_data(migrate_model)
+        save_model_info(migrate_model_info)
+
         migrate_model.gen_model_import_config()
-        gather_and_save_model_info(migrate_model, local_role, local_party_id)
         migrate_model.packaging_model()
 
-        return (0, f"Migrating model successfully. " \
-                  "The configuration of model has been modified automatically. " \
-                  "New model id is: {}, model version is: {}. " \
-                  "Model files can be found at '{}'.".format(adapter.get_common_parameters().to_dict().get("model_id"),
-                                                             migrate_model.model_version,
-                                                             os.path.abspath(migrate_model.archive_model_file_path)),
-                {"model_id": migrate_model.model_id,
-                 "model_version": migrate_model.model_version,
-                 "path": os.path.abspath(migrate_model.archive_model_file_path)})
+        return (0, (
+             "Migrating model successfully. The configuration of model has been modified automatically. "
+            f"New model id is: {migrate_model._model_id}, model version is: {migrate_model.model_version}. "
+            f"Model files can be found at '{migrate_model.archive_model_file_path}'."
+        ), {
+            "model_id": migrate_model.party_model_id,
+            "model_version": migrate_model.model_version,
+            "path": migrate_model.archive_model_file_path,
+        })
     except Exception as e:
         stat_logger.exception(e)
         return 100, str(e), {}
