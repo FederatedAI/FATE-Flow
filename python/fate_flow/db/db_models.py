@@ -435,19 +435,6 @@ class ComponentSummary(DataBaseModel):
     f_summary = LongTextField()
 
 
-class ModelOperationLog(DataBaseModel):
-    f_operation_type = CharField(max_length=20, null=False, index=True)
-    f_operation_status = CharField(max_length=20, null=True, index=True)
-    f_initiator_role = CharField(max_length=50, index=True, null=True)
-    f_initiator_party_id = CharField(max_length=10, index=True, null=True)
-    f_request_ip = CharField(max_length=20, null=True)
-    f_model_id = CharField(max_length=100)
-    f_model_version = CharField(max_length=100)
-
-    class Meta:
-        db_table = "t_model_operation_log"
-
-
 class EngineRegistry(DataBaseModel):
     f_engine_type = CharField(max_length=10, index=True)
     f_engine_name = CharField(max_length=50, index=True)
