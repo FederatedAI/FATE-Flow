@@ -100,7 +100,7 @@ def query_model_info_from_file(model_id='*', model_version='*', role='*', party_
         if not pipeline_model.exists():
             continue
 
-        model_info = gather_model_info_data(pipeline_model, role, party_id)
+        model_info = gather_model_info_data(pipeline_model)
 
         if save_to_db:
             try:
@@ -120,7 +120,7 @@ def query_model_info_from_file(model_id='*', model_version='*', role='*', party_
     return 0, 'Query model info from local model success.', models
 
 
-def gather_model_info_data(model: PipelinedModel, local_role, local_party_id, **kwargs):
+def gather_model_info_data(model: PipelinedModel, **kwargs):
     kwargs = {k if k.startswith('f_') else f'f_{k}': v for k, v in kwargs.items()}
 
     pipeline = model.read_pipeline_model()
@@ -132,8 +132,8 @@ def gather_model_info_data(model: PipelinedModel, local_role, local_party_id, **
         model_info[f'f_{attr.name}'] = field
 
     model_info['f_job_id'] = model_info['f_model_version']
-    model_info['f_role'] = local_role
-    model_info['f_party_id'] = local_party_id
+    model_info['f_role'] = model.role
+    model_info['f_party_id'] = model.party_id
     # backward compatibility
     model_info['f_runtime_conf'] = model_info['f_train_runtime_conf']
     model_info['f_size'] = model.calculate_model_file_size()

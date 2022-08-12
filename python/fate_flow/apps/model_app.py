@@ -313,7 +313,7 @@ def operate_model(model_operation):
     if not ModelOperation.valid(model_operation):
         raise Exception('Can not support this operating now: {}'.format(model_operation))
     model_operation = ModelOperation(model_operation)
-    request_config["model_id"] = model_utils.gen_party_model_id(
+    party_model_id = model_utils.gen_party_model_id(
         request_config["model_id"], request_config["role"], request_config["party_id"])
 
     if model_operation in [ModelOperation.EXPORT, ModelOperation.IMPORT]:
@@ -334,7 +334,7 @@ def operate_model(model_operation):
                 return error_response(500, f'Save file error: {e}')
 
             request_config['file'] = filename
-            model = pipelined_model.PipelinedModel(request_config["model_id"], request_config["model_version"])
+            model = pipelined_model.PipelinedModel(party_model_id, request_config["model_version"])
             model.unpack_model(filename, hash_=request_config.get('hash'))
 
             pipeline = model.read_pipeline_model()
@@ -351,12 +351,7 @@ def operate_model(model_operation):
 
             model.pipelined_component.save_define_meta_from_file_to_db()
 
-            model_info = model_utils.gather_model_info_data(
-                model,
-                request_config["role"],
-                request_config["party_id"],
-                f_imported=1,
-            )
+            model_info = model_utils.gather_model_info_data(model, f_imported=1)
             model_utils.save_model_info(model_info)
 
             return get_json_result()
@@ -372,9 +367,9 @@ def operate_model(model_operation):
                 if sync_model.remote_exists():
                     sync_model.download(True)
 
-            model = pipelined_model.PipelinedModel(request_config["model_id"], request_config["model_version"])
+            model = pipelined_model.PipelinedModel(party_model_id, request_config["model_version"])
             if not model.exists():
-                return error_response(404, f"Model {request_config['model_id']} {request_config['model_version']} does not exist.")
+                return error_response(404, f"Model {party_model_id} {request_config['model_version']} does not exist.")
 
             model.packaging_model()
             return send_file(
@@ -385,6 +380,8 @@ def operate_model(model_operation):
 
     # store and restore
     else:
+        request_config['model_id'] = party_model_id
+
         job_dsl, job_runtime_conf = gen_model_operation_job_config(request_config, model_operation)
         submit_result = DAGScheduler.submit(JobConfigurationBase(**{'dsl': job_dsl, 'runtime_conf': job_runtime_conf}), job_id=job_id)
 

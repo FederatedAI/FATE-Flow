@@ -529,7 +529,7 @@ class JobController(object):
 
         tracker.pipelined_model.save_pipeline_model(pipeline)
 
-        model_info = gather_model_info_data(tracker.pipelined_model, role, party_id)
+        model_info = gather_model_info_data(tracker.pipelined_model)
         save_model_info(model_info)
 
         schedule_logger(job_id).info(f'save pipeline on {role} {party_id} successfully')

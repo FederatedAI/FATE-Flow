@@ -175,7 +175,7 @@ def deploy(config_data):
                     step_name,
                 )
 
-        deploy_model_info = gather_model_info_data(deploy_model, local_role, local_party_id)
+        deploy_model_info = gather_model_info_data(deploy_model)
         save_model_info(deploy_model_info)
     except Exception as e:
         stat_logger.exception(e)
