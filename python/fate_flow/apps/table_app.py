@@ -73,7 +73,7 @@ def table_bind():
     schema = get_bind_table_schema(id_column, feature_column)
     schema.update(extra_schema)
     if request_data.get("with_meta", False):
-        meta = SchemaMetaParam(delimiter=request_data.get("id_delimiter"), **request_data.get("meta", {}))
+        meta = SchemaMetaParam(**request_data.get("meta", {}))
         if request_data.get("extend_sid", False):
             meta.with_match_id = True
         schema.update({"meta": meta.to_dict()})
