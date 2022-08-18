@@ -111,8 +111,6 @@ class PipelinedComponent(Pipelined, Locker):
 
     def save_define_meta_from_db_to_file(self):
         query = self.get_define_meta_from_db()
-        if not query:
-            raise ValueError(f'No define_meta data in database.')
 
         for row in query:
             run_parameters_path = self.get_run_parameters_path(row.f_component_name)

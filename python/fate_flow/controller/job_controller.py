@@ -661,18 +661,23 @@ class JobController(object):
             model_version=job.f_job_id,
         )
 
-        for component_name in job.f_inheritance_info['component_list']:
+        query_args = (
+            PipelineComponentMeta.f_component_name.in_(
+                job.f_inheritance_info['component_list'],
+            ),
+        )
+
+        query = source_pipelined_component.get_define_meta_from_db(*query_args)
+        for row in query:
             shutil.copytree(
-                source_pipelined_component.variables_data_path / component_name,
-                target_pipelined_component.variables_data_path / component_name,
+                source_pipelined_component.variables_data_path / row.f_component_name,
+                target_pipelined_component.variables_data_path / row.f_component_name,
             )
 
         source_pipelined_component.replicate_define_meta({
             'f_model_id': target_pipelined_component.model_id,
             'f_model_version': target_pipelined_component.model_version,
-        }, PipelineComponentMeta.f_component_name.in_(
-            job.f_inheritance_info['component_list'],
-        ))
+        }, query_args)
 
     @classmethod
     def checkpoint_reload(cls, job, source_job):
