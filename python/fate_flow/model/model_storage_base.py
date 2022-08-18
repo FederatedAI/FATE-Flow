@@ -48,6 +48,9 @@ class ModelStorageBase(ABC):
 
 class ComponentStorageBase(AbstractContextManager):
 
+    def __exit__(self, *exc):
+        pass
+
     @abstractmethod
     def exists(self, party_model_id, model_version, component_name):
         pass
@@ -58,4 +61,8 @@ class ComponentStorageBase(AbstractContextManager):
 
     @abstractmethod
     def download(self, party_model_id, model_version, component_name, hash_=None):
+        pass
+
+    @abstractmethod
+    def copy(self, party_model_id, model_version, component_name, source_model_version):
         pass

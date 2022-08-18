@@ -17,9 +17,9 @@ import glob
 import json
 import os
 import shutil
-from uuid import uuid1
 from copy import deepcopy
 from datetime import date, datetime
+from uuid import uuid1
 
 import peewee
 from flask import Response, request, send_file
@@ -27,19 +27,23 @@ from flask import Response, request, send_file
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
 
-from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, ModelTag, Tag
+from fate_flow.db.db_models import (
+    DB, MachineLearningModelInfo as MLModel,
+    ModelTag, PipelineComponentMeta, Tag,
+)
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfigurationBase
 from fate_flow.entity.types import ModelOperation, TagOperation
-from fate_flow.model.sync_model import SyncModel
+from fate_flow.model.sync_model import SyncComponent, SyncModel
 from fate_flow.pipelined_model import deploy_model, migrate_model, pipelined_model, publish_model
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
-from fate_flow.settings import IS_STANDALONE, TEMP_DIRECTORY, stat_logger, ENABLE_MODEL_STORE
+from fate_flow.settings import ENABLE_MODEL_STORE, IS_STANDALONE, TEMP_DIRECTORY, stat_logger
 from fate_flow.utils import detect_utils, job_utils, model_utils, schedule_utils
 from fate_flow.utils.api_utils import error_response, federated_api, get_json_result, validate_request
 from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
+from fate_flow.utils.job_utils import PIPELINE_COMPONENT_NAME
 
 
 @manager.route('/load', methods=['POST'])
@@ -208,13 +212,8 @@ def do_load_model():
             model_id=model_id, model_version=model_version,
         )
 
-        if not sync_model.db_exists():
-            return error_response(retcode=404, retmsg='Model not found.')
-
-        if sync_model.local_exists() and not sync_model.remote_exists():
-            sync_model.upload()
-        elif not sync_model.local_exists() and sync_model.remote_exists():
-            sync_model.download()
+        if sync_model.remote_exists():
+            sync_model.download(True)
 
     if not model_utils.check_if_deployed(role, party_id, model_id, model_version):
         return get_json_result(retcode=100,
@@ -290,7 +289,7 @@ def transfer_model():
     if not party_model_id or not model_version:
         return error_response(400, 'namespace and name are required')
     model_data = publish_model.download_model(party_model_id, model_version)
-    if model_data is None:
+    if not model_data:
         return error_response(404, 'model not found')
     return get_json_result(data=model_data)
 
@@ -299,7 +298,7 @@ def transfer_model():
 def download_model(party_model_id, model_version):
     party_model_id = party_model_id.replace('~', '#')
     model_data = publish_model.download_model(party_model_id, model_version)
-    if model_data is None:
+    if not model_data:
         return error_response(404, 'model not found')
     return get_json_result(data=model_data)
 
@@ -313,6 +312,8 @@ def operate_model(model_operation):
     if not ModelOperation.valid(model_operation):
         raise Exception('Can not support this operating now: {}'.format(model_operation))
     model_operation = ModelOperation(model_operation)
+
+    request_config["party_id"] = str(request_config["party_id"])
     party_model_id = model_utils.gen_party_model_id(
         request_config["model_id"], request_config["role"], request_config["party_id"])
 
@@ -340,16 +341,27 @@ def operate_model(model_operation):
             pipeline = model.read_pipeline_model()
             train_runtime_conf = json_loads(pipeline.train_runtime_conf)
 
-            permitted_party_id = []
-            for key, value in train_runtime_conf.get('role', {}).items():
-                for v in value:
-                    permitted_party_id.extend([v, str(v)])
-            if request_config["party_id"] not in permitted_party_id:
+            for _party_id in train_runtime_conf.get('role', {}).get(request_config['role'], []):
+                if request_config["party_id"] == str(_party_id):
+                    break
+            else:
                 shutil.rmtree(model.model_path, ignore_errors=True)
                 return error_response(400, f'Party id {request_config["party_id"]} is not in model roles, '
                                             f'please check if the party id is valid.')
 
             model.pipelined_component.save_define_meta_from_file_to_db()
+
+            if ENABLE_MODEL_STORE:
+                query = model.pipelined_component.get_define_meta_from_db(
+                    PipelineComponentMeta.f_component_name != PIPELINE_COMPONENT_NAME,
+                )
+                for row in query:
+                    sync_component = SyncComponent(
+                        role=request_config['role'], party_id=request_config['party_id'],
+                        model_id=request_config['model_id'], model_version=request_config['model_version'],
+                        component_name=row.f_component_name,
+                    )
+                    sync_component.upload()
 
             model_info = model_utils.gather_model_info_data(model, f_imported=1)
             model_utils.save_model_info(model_info)
@@ -363,7 +375,6 @@ def operate_model(model_operation):
                     role=request_config['role'], party_id=request_config['party_id'],
                     model_id=request_config['model_id'], model_version=request_config['model_version'],
                 )
-
                 if sync_model.remote_exists():
                     sync_model.download(True)
 

@@ -13,25 +13,43 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import json
-import time
-
 import abc
 import atexit
+import json
+import time
 from functools import wraps
+from queue import Queue
+from threading import Thread
 from urllib import parse
 
 from kazoo.client import KazooClient
-from kazoo.exceptions import NoNodeError, NodeExistsError, ZookeeperError
+from kazoo.exceptions import NodeExistsError, NoNodeError, ZookeeperError
 from kazoo.security import make_digest_acl
 
-from fate_flow.db.runtime_config import RuntimeConfig
+from fate_arch.common.versions import get_fate_version
+
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity.instance import FlowInstance
 from fate_flow.errors.error_services import *
-from fate_flow.settings import (FATE_FLOW_MODEL_TRANSFER_ENDPOINT, ZOOKEEPER_REGISTRY,
-                                HOST, HTTP_PORT, USE_REGISTRY, ZOOKEEPER, stat_logger, GRPC_PORT)
+from fate_flow.settings import (
+    FATE_FLOW_MODEL_TRANSFER_ENDPOINT, GRPC_PORT, HOST, HTTP_PORT, NGINX_HOST, NGINX_HTTP_PORT,
+    USE_REGISTRY, ZOOKEEPER, ZOOKEEPER_REGISTRY, stat_logger,
+)
 from fate_flow.utils.model_utils import models_group_by_party_model_id_and_model_version
+
+
+model_download_endpoint = f'http://{NGINX_HOST}:{NGINX_HTTP_PORT}{FATE_FLOW_MODEL_TRANSFER_ENDPOINT}'
+
+server_instance = (
+    f'{HOST}:{GRPC_PORT}',
+    json.dumps({
+        'instance_id': f'flow-{HOST.rsplit(".", 1)[-1]}-{HTTP_PORT}',
+        'timestamp': round(time.time() * 1000),
+        'version': get_fate_version(),
+        'grpc_address': f'{HOST}:{GRPC_PORT}',
+        'http_address': f'{HOST}:{HTTP_PORT}',
+    }),
+)
 
 
 def check_service_supported(method):
@@ -51,30 +69,16 @@ def check_service_supported(method):
     return magic
 
 
-def get_server_address():
-    return f'{HOST}:{GRPC_PORT}'
-
-
-def get_model_download_endpoint():
-    """Get the url endpoint of model download.
-    `protocol`, `ip`, `port` and `endpoint` are defined on `conf/service_conf.yaml`.
-
-    :return: The url endpoint.
-    :rtype: str
-    """
-    return f'http://{HOST}:{HTTP_PORT}{FATE_FLOW_MODEL_TRANSFER_ENDPOINT}'
-
-
 def get_model_download_url(party_model_id, model_version):
     """Get the full url of model download.
 
-    :param str party_model_id: The party model id, `#` will be replaced with `_`.
+    :param str party_model_id: The party model id, `#` will be replaced with `~`.
     :param str model_version: The model version.
     :return: The download url.
     :rtype: str
     """
     return '{endpoint}/{model_id}/{model_version}'.format(
-        endpoint=get_model_download_endpoint(),
+        endpoint=model_download_endpoint,
         model_id=party_model_id.replace('#', '~'),
         model_version=model_version,
     )
@@ -97,15 +101,11 @@ class ServicesDB(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def _insert(self, service_name, service_url):
-        pass
-
-    @abc.abstractmethod
-    def _insert_server(self, server_name, server_address):
+    def _insert(self, service_name, service_url, value=''):
         pass
 
     @check_service_supported
-    def insert(self, service_name, service_url):
+    def insert(self, service_name, service_url, value=''):
         """Insert a service url to database.
 
         :param str service_name: The service name.
@@ -113,37 +113,13 @@ class ServicesDB(abc.ABC):
         :return: None
         """
         try:
-            self._insert(service_name, service_url)
-        except ServicesError as e:
-            stat_logger.exception(e)
-
-    def insert_server(self, server_name, server_address):
-        """Insert a server to database.
-
-        :param str service_name: The server name.
-        :param str server_address: The server address.
-        :return: None
-        """
-        try:
-            self._insert_server(server_name, server_address)
+            self._insert(service_name, service_url, value)
         except ServicesError as e:
             stat_logger.exception(e)
 
     @abc.abstractmethod
     def _delete(self, service_name, service_url):
         pass
-
-    @property
-    def _server_instance(self) -> FlowInstance:
-        instance_info = {
-            "instance_id": f"flow-{HOST.split('.')[-1]}-{HTTP_PORT}",
-            "timestamp": int(time.time() * 1000),
-            "version": RuntimeConfig.get_env("FATEFlow"),
-            "grpc_address": f"{HOST}:{GRPC_PORT}",
-            "http_address": f"{HOST}:{HTTP_PORT}"
-        }
-        instance = FlowInstance(**instance_info)
-        return instance
 
     @check_service_supported
     def delete(self, service_name, service_url):
@@ -157,16 +133,6 @@ class ServicesDB(abc.ABC):
             self._delete(service_name, service_url)
         except ServicesError as e:
             stat_logger.exception(e)
-
-    def register_flow(self):
-        """Call `self.insert` for insert the model transfer url to database.
-        `self.insert_server` for insert fate flow server address to databae
-        Backward compatible with FATE-Serving versions before 2.1.0.
-
-        :return: None
-        """
-        self.insert_server('flow-server', get_server_address())
-        self.insert('fateflow', get_model_download_endpoint())
 
     def register_model(self, party_model_id, model_version):
         """Call `self.insert` for insert a service url to database.
@@ -188,16 +154,26 @@ class ServicesDB(abc.ABC):
         """
         self.delete('fateflow', get_model_download_url(party_model_id, model_version))
 
-    @abc.abstractmethod
-    def _get_urls(self, service_name):
-        pass
+    def register_flow(self):
+        """Call `self.insert` for insert the flow server address to databae.
+
+        :return: None
+        """
+        self.insert('flow-server', *server_instance)
+
+    def unregister_flow(self):
+        """Call `self.delete` for delete the flow server address from databae.
+
+        :return: None
+        """
+        self.delete('flow-server', server_instance[0])
 
     @abc.abstractmethod
-    def _get_servers(self, server_name) -> [FlowInstance]:
+    def _get_urls(self, service_name, with_values=False):
         pass
 
     @check_service_supported
-    def get_urls(self, service_name):
+    def get_urls(self, service_name, with_values=False):
         """Query service urls from database. The urls may belong to other nodes.
         Currently, only `fateflow` (model download) urls and `servings` (FATE-Serving) urls are supported.
         `fateflow` is a url containing scheme, host, port and path,
@@ -208,14 +184,7 @@ class ServicesDB(abc.ABC):
         :rtype: list
         """
         try:
-            return self._get_urls(service_name)
-        except ServicesError as e:
-            stat_logger.exception(e)
-            return []
-
-    def get_servers(self, server_name="flow-server"):
-        try:
-            return self._get_servers(server_name)
+            return self._get_urls(service_name, with_values)
         except ServicesError as e:
             stat_logger.exception(e)
             return []
@@ -235,6 +204,9 @@ class ServicesDB(abc.ABC):
         """
         for model in models_group_by_party_model_id_and_model_version():
             self.unregister_model(model.f_party_model_id, model.f_model_version)
+
+    def get_servers(self):
+        return [FlowInstance(**json.loads(value)) for znode, value in self.get_urls('flow-server', True)]
 
 
 class ZooKeeperDB(ServicesDB):
@@ -271,29 +243,28 @@ class ZooKeeperDB(ServicesDB):
 
         atexit.register(self.client.stop)
 
-    def _insert(self, service_name, service_url):
-        try:
-            self.client.create(self._get_znode_path(service_name, service_url), ephemeral=True, makepath=True)
-        except NodeExistsError as e:
-            stat_logger.exception(e)
-        except ZookeeperError as e:
-            raise ZooKeeperBackendError(error_message=repr(e))
+        self.znodes_list = Queue()
+        Thread(target=self._watcher).start()
 
-    def _insert_server(self, server_name, server_address):
+    def _insert(self, service_name, service_url, value=''):
+        znode = self._get_znode_path(service_name, service_url)
+        value = value.encode('utf-8')
+
         try:
-            server_path = '/'.join([self.znodes[server_name], server_address])
-            self.client.create(server_path, ephemeral=True, makepath=True)
-            self.client.set(server_path, json.dumps(self._server_instance.to_dict()).encode())
-        except NodeExistsError as e:
-            stat_logger.exception(e)
+            self.client.create(znode, value, ephemeral=True, makepath=True)
+        except NodeExistsError:
+            stat_logger.warning(f'Znode `{znode}` exists, add it to watch list.')
+            self.znodes_list.put((znode, value))
         except ZookeeperError as e:
             raise ZooKeeperBackendError(error_message=repr(e))
 
     def _delete(self, service_name, service_url):
+        znode = self._get_znode_path(service_name, service_url)
+
         try:
-            self.client.delete(self._get_znode_path(service_name, service_url))
-        except NoNodeError as e:
-            stat_logger.exception(e)
+            self.client.delete(znode)
+        except NoNodeError:
+            stat_logger.warning(f'Znode `{znode}` not found, ignore deletion.')
         except ZookeeperError as e:
             raise ZooKeeperBackendError(error_message=repr(e))
 
@@ -310,27 +281,57 @@ class ZooKeeperDB(ServicesDB):
         >>> self._get_znode_path('fateflow', 'http://127.0.0.1:9380/v1/model/transfer/arbiter-10000_guest-9999_host-10000_model/202105060929263278441')
         '/FATE-SERVICES/flow/online/transfer/providers/http%3A%2F%2F127.0.0.1%3A9380%2Fv1%2Fmodel%2Ftransfer%2Farbiter-10000_guest-9999_host-10000_model%2F202105060929263278441'
         """
+
         return '/'.join([self.znodes[service_name], parse.quote(service_url, safe='')])
 
-    def _get_urls(self, service_name):
+    def _get_urls(self, service_name, with_values=False):
         try:
-            urls = self.client.get_children(self.znodes[service_name])
+            _urls = self.client.get_children(self.znodes[service_name])
         except ZookeeperError as e:
             raise ZooKeeperBackendError(error_message=repr(e))
 
-        urls = [parse.unquote(url) for url in urls]
-        if service_name == 'servings':
-            # The url format of `servings` is `grpc://{host}:{port}/{path}?{query}`.
-            # We only need `{host}:{port}`.
-            urls = [parse.urlparse(url).netloc or url for url in urls]
+        urls = []
+
+        for url in _urls:
+            url = parse.unquote(url)
+            data = ''
+            znode = self._get_znode_path(service_name, url)
+
+            if service_name == 'servings':
+                url = parse.urlparse(url).netloc or url
+
+            if with_values:
+                try:
+                    data = self.client.get(znode)
+                except NoNodeError:
+                    stat_logger.warning(f'Znode `{znode}` not found, return empty value.')
+                except ZookeeperError as e:
+                    raise ZooKeeperBackendError(error_message=repr(e))
+                else:
+                    data = data[0].decode('utf-8')
+
+            urls.append((url, data) if with_values else url)
+
         return urls
 
-    def _get_servers(self, server_name):
-        try:
-            server_list = self.client.get_children(self.znodes[server_name])
-        except ZookeeperError as e:
-            raise ZooKeeperBackendError(error_message=repr(e))
-        return [FlowInstance(**json.loads(self.client.get("/".join([self.znodes[server_name], server]))[0].decode())) for server in server_list]
+    def _watcher(self):
+        while True:
+            znode, value = self.znodes_list.get()
+
+            try:
+                self.client.create(znode, value, ephemeral=True, makepath=True)
+            except NodeExistsError:
+                stat = self.client.exists(znode)
+
+                if stat is not None:
+                    if stat.owner_session_id is None:
+                        stat_logger.warning(f'Znode `{znode}` is not an ephemeral node.')
+                        continue
+                    if stat.owner_session_id == self.client.client_id[0]:
+                        stat_logger.warning(f'Duplicate znode `{znode}`.')
+                        continue
+
+                self.znodes_list.put((znode, value))
 
 
 class FallbackDB(ServicesDB):
@@ -339,7 +340,11 @@ class FallbackDB(ServicesDB):
        It cannot insert or delete the service url.
 
     """
-    supported_services = ('fateflow', 'servings')
+    supported_services = (
+        'fateflow',
+        'flow-server',
+        'servings',
+    )
 
     def _insert(self, *args, **kwargs):
         pass
@@ -347,22 +352,18 @@ class FallbackDB(ServicesDB):
     def _delete(self, *args, **kwargs):
         pass
 
-    def _insert_server(self, *args, **kwargs):
-        pass
-
-    def _get_urls(self, service_name):
+    def _get_urls(self, service_name, with_values=False):
         if service_name == 'fateflow':
-            return [get_model_download_endpoint()]
+            return [(model_download_endpoint, '')] if with_values else [model_download_endpoint]
+        if service_name == 'flow-server':
+            return [server_instance] if with_values else [server_instance[0]]
 
         urls = getattr(ServerRegistry, service_name.upper(), [])
         if isinstance(urls, dict):
             urls = urls.get('hosts', [])
         if not isinstance(urls, list):
             urls = [urls]
-        return urls
-
-    def _get_servers(self, server_name):
-        return [self._server_instance]
+        return [(url, '') for url in urls] if with_values else urls
 
 
 def service_db():

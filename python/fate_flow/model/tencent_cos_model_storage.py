@@ -13,7 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
 from copy import deepcopy
 
 from qcloud_cos import CosConfig, CosS3Client
@@ -124,9 +123,7 @@ class TencentCOSComponentStorage(ComponentStorageBase):
     def __init__(self, Region, SecretId, SecretKey, Bucket):
         self.client = CosS3Client(CosConfig(Region=Region, SecretId=SecretId, SecretKey=SecretKey))
         self.bucket = Bucket
-
-    def __exit__(self, *exc):
-        pass
+        self.region = Region
 
     def get_key(self, party_model_id, model_version, component_name):
         return f'FATEFlow/PipelinedComponent/{party_model_id}/{model_version}/{component_name}.zip'
@@ -168,3 +165,14 @@ class TencentCOSComponentStorage(ComponentStorageBase):
             EnableCRC=True,
         )
         pipelined_component.unpack_component(component_name, hash_)
+
+    def copy(self, party_model_id, model_version, component_name, source_model_version):
+        self.client.copy(
+            Bucket=self.bucket,
+            Key=self.get_key(party_model_id, model_version, component_name),
+            CopySource={
+                'Bucket': self.bucket,
+                'Key': self.get_key(party_model_id, source_model_version, component_name),
+                'Region': self.region,
+            },
+        )

@@ -13,18 +13,21 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import grpc
 import os
-from ruamel import yaml
 
-from fate_flow.settings import HOST, HTTP_PORT, FATE_FLOW_MODEL_TRANSFER_ENDPOINT, USE_REGISTRY
+import grpc
+
 from fate_arch.common.base_utils import json_loads
-from fate_arch.protobuf.python import model_service_pb2
-from fate_arch.protobuf.python import model_service_pb2_grpc
-from fate_flow.settings import stat_logger
-from fate_flow.utils import model_utils
+from fate_arch.protobuf.python import model_service_pb2, model_service_pb2_grpc
+
+from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model import pipelined_model
 from fate_flow.pipelined_model.homo_model_deployer.model_deploy import model_deploy
+from fate_flow.settings import (
+    ENABLE_MODEL_STORE, FATE_FLOW_MODEL_TRANSFER_ENDPOINT,
+    HOST, HTTP_PORT, USE_REGISTRY, stat_logger,
+)
+from fate_flow.utils import model_utils
 
 
 def generate_publish_model_info(config_data):
@@ -116,9 +119,17 @@ def bind_model_service(config_data):
 
 
 def download_model(party_model_id, model_version):
+    if ENABLE_MODEL_STORE:
+        sync_model = SyncModel(
+            party_model_id=party_model_id,
+            model_version=model_version,
+        )
+        if sync_model.remote_exists():
+            sync_model.download(True)
+
     model = pipelined_model.PipelinedModel(party_model_id, model_version)
     if not model.exists():
-        return
+        return {}
     return model.collect_models(in_bytes=True)
 
 

@@ -13,13 +13,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from re import I
 import sys
 from copy import deepcopy
 
-from peewee import BigIntegerField, CharField, CompositeKey, IntegerField, PeeweeException, TextField
+from peewee import (
+    BigIntegerField, CharField, CompositeKey,
+    IntegerField, PeeweeException, Value,
+)
 from playhouse.pool import PooledMySQLDatabase
 
-from fate_arch.common.base_utils import deserialize_b64, serialize_b64
+from fate_arch.common.base_utils import (
+    current_timestamp, deserialize_b64,
+    serialize_b64, timestamp_to_date,
+)
 from fate_arch.common.conf_utils import decrypt_database_password, decrypt_database_config
 from fate_arch.metastore.base_model import LongTextField
 
@@ -129,16 +136,14 @@ class MysqlModelStorage(ModelStorageBase):
                     MachineLearningModel.f_model_id == model_id,
                     MachineLearningModel.f_model_version == model_version,
                 ).order_by(MachineLearningModel.f_slice_index)
-            if not models_in_tables:
-                raise ValueError(f'Cannot found model in table.')
-
-            model_archive_data = b''.join(deserialize_b64(models_in_table.f_content)
-                                          for models_in_table in models_in_tables)
-            if not model_archive_data:
-                raise ValueError(f'Cannot get model archive data.')
 
             with open(model.archive_model_file_path, 'wb') as fw:
-                fw.write(model_archive_data)
+                for models_in_table in models_in_tables:
+                    fw.write(deserialize_b64(models_in_table.f_content))
+
+                if fw.tell() == 0:
+                    raise IndexError(f'Cannot found model in table.')
+
             model.unpack_model(model.archive_model_file_path, force_update, hash_)
         except Exception as e:
             LOGGER.exception(e)
@@ -179,6 +184,8 @@ class MysqlComponentStorage(ComponentStorageBase):
     def __enter__(self):
         DB.init(self.database, user=self.user, password=self.password, host=self.host, port=self.port, **self.connect_kwargs)
 
+        return self
+
     def __exit__(self, *exc):
         DB.close()
 
@@ -218,7 +225,7 @@ class MysqlComponentStorage(ComponentStorageBase):
                     break
 
                 model_in_table = MachineLearningComponent()
-                model_in_table.f_model_id = party_model_id
+                model_in_table.f_party_model_id = party_model_id
                 model_in_table.f_model_version = model_version
                 model_in_table.f_component_name = component_name
                 model_in_table.f_content = serialize_b64(content, to_str=True)
@@ -240,24 +247,64 @@ class MysqlComponentStorage(ComponentStorageBase):
                 MachineLearningComponent.f_model_version == model_version,
                 MachineLearningComponent.f_component_name == component_name,
             ).order_by(MachineLearningComponent.f_slice_index)
-        if not models_in_tables:
-            raise ValueError(f'Cannot found component model in table.')
-
-        archive_data = b''.join(deserialize_b64(models_in_table.f_content) for models_in_table in models_in_tables)
-        if not archive_data:
-            raise ValueError(f'Cannot get model archive data.')
 
         pipelined_component = PipelinedComponent(party_model_id=party_model_id, model_version=model_version)
+
         with open(pipelined_component.get_archive_path(component_name), 'wb') as fw:
-            fw.write(archive_data)
+            for models_in_table in models_in_tables:
+                fw.write(deserialize_b64(models_in_table.f_content))
+
+            if fw.tell() == 0:
+                raise IndexError(f'Cannot found component model in table.')
+
         pipelined_component.unpack_component(component_name, hash_)
+
+    @DB.connection_context()
+    def copy(self, party_model_id, model_version, component_name, source_model_version):
+        now = current_timestamp()
+
+        source = MachineLearningComponent.select(
+            MachineLearningComponent.f_create_time,
+            MachineLearningComponent.f_create_date,
+            Value(now).alias('f_update_time'),
+            Value(timestamp_to_date(now)).alias('f_update_date'),
+
+            MachineLearningComponent.f_party_model_id,
+            Value(model_version).alias('f_model_version'),
+            MachineLearningComponent.f_component_name,
+
+            MachineLearningComponent.f_size,
+            MachineLearningComponent.f_content,
+            MachineLearningComponent.f_slice_index,
+        ).where(
+            MachineLearningComponent.f_party_model_id == party_model_id,
+            MachineLearningComponent.f_model_version == source_model_version,
+            MachineLearningComponent.f_component_name == component_name,
+        ).order_by(MachineLearningComponent.f_slice_index)
+
+        rows = MachineLearningComponent.insert_from(source, (
+            MachineLearningComponent.f_create_time,
+            MachineLearningComponent.f_create_date,
+            MachineLearningComponent.f_update_time,
+            MachineLearningComponent.f_update_date,
+
+            MachineLearningComponent.f_party_model_id,
+            MachineLearningComponent.f_model_version,
+            MachineLearningComponent.f_component_name,
+
+            MachineLearningComponent.f_size,
+            MachineLearningComponent.f_content,
+            MachineLearningComponent.f_slice_index,
+        )).execute()
+
+        if not rows:
+            raise IndexError(f'Copy component model failed.')
 
 
 class MachineLearningModel(DataBaseModel):
     f_model_id = CharField(max_length=100, index=True)
     f_model_version = CharField(max_length=100, index=True)
     f_size = BigIntegerField(default=0)
-    f_description = TextField(null=True, default='')
     f_content = LongTextField(default='')
     f_slice_index = IntegerField(default=0, index=True)
 

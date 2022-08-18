@@ -17,19 +17,25 @@ import datetime
 import inspect
 import os
 import sys
+from functools import wraps
 
-from peewee import (CharField, IntegerField, BigIntegerField,
-                    TextField, CompositeKey, BigAutoField, BooleanField)
+from peewee import (
+    BigAutoField, BigIntegerField, BooleanField, CharField,
+    CompositeKey, IntegerField, TextField,
+)
 from playhouse.hybrid import hybrid_property
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_arch.common import file_utils
-from fate_flow.utils.log_utils import getLogger
-from fate_arch.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField, SerializedField, \
-    SerializedType, ListField
+from fate_arch.metastore.base_model import (
+    BaseModel, DateTimeField, JSONField, ListField,
+    LongTextField, SerializedField, SerializedType,
+)
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.settings import DATABASE, stat_logger, IS_STANDALONE
+from fate_flow.settings import DATABASE, IS_STANDALONE, stat_logger
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.utils.object_utils import from_dict_hook
+
 
 LOGGER = getLogger()
 
@@ -57,7 +63,7 @@ class BaseDataBase:
     def __init__(self):
         database_config = DATABASE.copy()
         db_name = database_config.pop("name")
-        if IS_STANDALONE:
+        if IS_STANDALONE and not os.environ.get("FORCE_USE_MYSQL"):
             from playhouse.apsw_ext import APSWDatabase
             self.database_connection = APSWDatabase(file_utils.get_project_base_directory("fate_sqlite.db"))
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
@@ -102,6 +108,13 @@ class DatabaseLock:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if isinstance(self.db, PooledMySQLDatabase):
             self.unlock()
+
+    def __call__(self, func):
+        @wraps(func)
+        def magic(*args, **kwargs):
+            with self:
+                return func(*args, **kwargs)
+        return magic
 
 
 DB = BaseDataBase().database_connection
