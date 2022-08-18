@@ -100,13 +100,11 @@ class ServerRegistry(ReloadConfigBase):
         update_server = {}
         for server_name, server_info in service_config.items():
             cls.parameter_check(server_info)
-            if "api" in server_info:
-                for service_name, info in server_info.get("api").items():
-                    ServiceRegistry.save_service_info(server_name, service_name, uri=info.get('uri'), method="POST", server_info=info)
-            if "api" in server_info:
-                del server_info["api"]
+            api_info = server_info.pop("api", {})
+            for service_name, info in api_info.items():
+                ServiceRegistry.save_service_info(server_name, service_name, uri=info.get('uri'), method="POST", server_info=server_info)
             cls.save_server_info_to_db(server_name, server_info.get("host"), server_info.get("port"), protocol="http")
-            setattr(cls, server_name, server_info)
+            setattr(cls, server_name.upper(), server_info)
         return update_server
 
     @classmethod
@@ -153,7 +151,7 @@ class ServerRegistry(ReloadConfigBase):
     @DB.connection_context()
     def save_server_info_to_db(cls, server_name, host, port, protocol="http"):
         server_info = {
-            "f_server_name": server_name.upper(),
+            "f_server_name": server_name,
             "f_host": host,
             "f_port": port,
             "f_protocol": protocol

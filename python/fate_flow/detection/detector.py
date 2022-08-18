@@ -50,7 +50,11 @@ class Detector(cron.Cron):
             running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, only_latest=False)
             stop_job_ids = set()
             for task in running_tasks:
-                if not task.f_engine_conf or task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST or task.f_run_on_this_party:
+                if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST and task.f_run_on_this_party:
+                    cls.detect_cluster_instance_status(task, stop_job_ids)
+                    continue
+                if not task.f_engine_conf or task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST or \
+                        not task.f_run_on_this_party:
                     continue
                 count += 1
                 try:
@@ -214,6 +218,21 @@ class Detector(cron.Cron):
                 detect_logger(job_id=job.f_job_id).info(f"detector request stop job {job.f_job_id} successfully")
             except Exception as e:
                 detect_logger(job_id=job.f_job_id).exception(e)
+
+    @classmethod
+    def detect_cluster_instance_status(cls, task, stop_job_ids):
+        detect_logger().info('start detect running task instance status')
+        try:
+            if task.f_run_ip in ["127.0.0.1", "localhost"]:
+                return
+            instance_list = RuntimeConfig.SERVICE_DB.get_servers()
+            if task.f_run_ip and task.f_run_port:
+                if ":".join([task.f_run_ip, str(task.f_run_port)]) not in [instance.http_address for instance in instance_list]:
+                    detect_logger(job_id=task.f_job_id).exception('detect cluster instance status failed, '
+                                                                  'add job to stop list')
+                    stop_job_ids.add(task.f_job_id)
+        except Exception as e:
+            detect_logger(job_id=task.f_job_id).exception(e)
 
 
 class FederatedDetector(Detector):
