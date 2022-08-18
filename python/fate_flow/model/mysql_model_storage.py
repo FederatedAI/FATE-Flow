@@ -13,10 +13,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from re import I
 import sys
 from copy import deepcopy
 
-from peewee import BigIntegerField, CharField, CompositeKey, IntegerField, PeeweeException
+from peewee import (
+    BigIntegerField, CharField, CompositeKey,
+    IntegerField, PeeweeException, Value,
+)
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_arch.common.base_utils import (
@@ -138,7 +142,7 @@ class MysqlModelStorage(ModelStorageBase):
                     fw.write(deserialize_b64(models_in_table.f_content))
 
                 if fw.tell() == 0:
-                    raise ValueError(f'Cannot found model in table.')
+                    raise IndexError(f'Cannot found model in table.')
 
             model.unpack_model(model.archive_model_file_path, force_update, hash_)
         except Exception as e:
@@ -251,7 +255,7 @@ class MysqlComponentStorage(ComponentStorageBase):
                 fw.write(deserialize_b64(models_in_table.f_content))
 
             if fw.tell() == 0:
-                raise ValueError(f'Cannot found component model in table.')
+                raise IndexError(f'Cannot found component model in table.')
 
         pipelined_component.unpack_component(component_name, hash_)
 
@@ -262,11 +266,11 @@ class MysqlComponentStorage(ComponentStorageBase):
         source = MachineLearningComponent.select(
             MachineLearningComponent.f_create_time,
             MachineLearningComponent.f_create_date,
-            now,
-            timestamp_to_date(now),
+            Value(now).alias('f_update_time'),
+            Value(timestamp_to_date(now)).alias('f_update_date'),
 
             MachineLearningComponent.f_party_model_id,
-            model_version,
+            Value(model_version).alias('f_model_version'),
             MachineLearningComponent.f_component_name,
 
             MachineLearningComponent.f_size,
@@ -278,7 +282,7 @@ class MysqlComponentStorage(ComponentStorageBase):
             MachineLearningComponent.f_component_name == component_name,
         ).order_by(MachineLearningComponent.f_slice_index)
 
-        MachineLearningModel.insert_from(source, (
+        rows = MachineLearningComponent.insert_from(source, (
             MachineLearningComponent.f_create_time,
             MachineLearningComponent.f_create_date,
             MachineLearningComponent.f_update_time,
@@ -291,7 +295,10 @@ class MysqlComponentStorage(ComponentStorageBase):
             MachineLearningComponent.f_size,
             MachineLearningComponent.f_content,
             MachineLearningComponent.f_slice_index,
-        ))
+        )).execute()
+
+        if not rows:
+            raise IndexError(f'Copy component model failed.')
 
 
 class MachineLearningModel(DataBaseModel):

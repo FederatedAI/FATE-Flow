@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import replace_ip
@@ -70,7 +71,7 @@ class LogCollector():
         if lines:
             line_list = []
             line_num = begin if begin else 1
-            for line in lines.strip().split("\n"):
+            for line in lines.split("\n"):
                 line = replace_ip(line)
                 line_list.append({"line_num": line_num, "content": line})
                 line_num += 1
@@ -78,14 +79,14 @@ class LogCollector():
 
     def get_size(self):
         try:
-            return int(self.execute(f"cat {self.get_log_file_path()} |wc -l").strip())
+            return int(self.execute(f"cat {self.get_log_file_path()} | wc -l").strip())
         except:
             return 0
 
     @staticmethod
     def execute(cmd):
-        res = os.popen(cmd)
-        data = res.read()
-        res.close()
-        return data
-
+        res = subprocess.run(
+            cmd, shell=True, universal_newlines=True,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        )
+        return res.stdout

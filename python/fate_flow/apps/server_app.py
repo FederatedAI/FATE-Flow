@@ -32,7 +32,7 @@ def fate_flow_server_info():
 
 @manager.route('/version/get', methods=['POST'])
 def get_fate_version_info():
-    module = request.json.get('module', None)
+    module = (request.json or {}).get('module', None)
     if module:
         version = {module: RuntimeConfig.get_env(module)}
     else:

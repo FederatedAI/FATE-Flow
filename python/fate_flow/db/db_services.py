@@ -169,11 +169,11 @@ class ServicesDB(abc.ABC):
         self.delete('flow-server', server_instance[0])
 
     @abc.abstractmethod
-    def _get_urls(self, service_name, include_data=False):
+    def _get_urls(self, service_name, with_values=False):
         pass
 
     @check_service_supported
-    def get_urls(self, service_name, include_data=False):
+    def get_urls(self, service_name, with_values=False):
         """Query service urls from database. The urls may belong to other nodes.
         Currently, only `fateflow` (model download) urls and `servings` (FATE-Serving) urls are supported.
         `fateflow` is a url containing scheme, host, port and path,
@@ -184,7 +184,7 @@ class ServicesDB(abc.ABC):
         :rtype: list
         """
         try:
-            return self._get_urls(service_name, include_data)
+            return self._get_urls(service_name, with_values)
         except ServicesError as e:
             stat_logger.exception(e)
             return []
@@ -253,15 +253,18 @@ class ZooKeeperDB(ServicesDB):
         try:
             self.client.create(znode, value, ephemeral=True, makepath=True)
         except NodeExistsError:
+            stat_logger.warning(f'Znode `{znode}` exists, add it to watch list.')
             self.znodes_list.put((znode, value))
         except ZookeeperError as e:
             raise ZooKeeperBackendError(error_message=repr(e))
 
     def _delete(self, service_name, service_url):
+        znode = self._get_znode_path(service_name, service_url)
+
         try:
-            self.client.delete(self._get_znode_path(service_name, service_url))
+            self.client.delete(znode)
         except NoNodeError:
-            pass
+            stat_logger.warning(f'Znode `{znode}` not found, ignore deletion.')
         except ZookeeperError as e:
             raise ZooKeeperBackendError(error_message=repr(e))
 
@@ -281,24 +284,33 @@ class ZooKeeperDB(ServicesDB):
 
         return '/'.join([self.znodes[service_name], parse.quote(service_url, safe='')])
 
-    def _get_urls(self, service_name, include_data=False):
+    def _get_urls(self, service_name, with_values=False):
         try:
-            _urls = self.client.get_children(self.znodes[service_name], include_data=include_data)
+            _urls = self.client.get_children(self.znodes[service_name])
         except ZookeeperError as e:
             raise ZooKeeperBackendError(error_message=repr(e))
 
         urls = []
 
         for url in _urls:
-            url, data = url if include_data else (url, b'')
-
             url = parse.unquote(url)
-            data = data.decode('utf-8')
+            data = ''
+            znode = self._get_znode_path(service_name, url)
 
             if service_name == 'servings':
                 url = parse.urlparse(url).netloc or url
 
-            urls.append((url, data) if include_data else url)
+            if with_values:
+                try:
+                    data = self.client.get(znode)
+                except NoNodeError:
+                    stat_logger.warning(f'Znode `{znode}` not found, return empty value.')
+                except ZookeeperError as e:
+                    raise ZooKeeperBackendError(error_message=repr(e))
+                else:
+                    data = data[0].decode('utf-8')
+
+            urls.append((url, data) if with_values else url)
 
         return urls
 
@@ -340,18 +352,18 @@ class FallbackDB(ServicesDB):
     def _delete(self, *args, **kwargs):
         pass
 
-    def _get_urls(self, service_name, *args, **kwargs):
+    def _get_urls(self, service_name, with_values=False):
         if service_name == 'fateflow':
-            return [model_download_endpoint]
+            return [(model_download_endpoint, '')] if with_values else [model_download_endpoint]
         if service_name == 'flow-server':
-            return [server_instance]
+            return [server_instance] if with_values else [server_instance[0]]
 
         urls = getattr(ServerRegistry, service_name.upper(), [])
         if isinstance(urls, dict):
             urls = urls.get('hosts', [])
         if not isinstance(urls, list):
             urls = [urls]
-        return urls
+        return [(url, '') for url in urls] if with_values else urls
 
 
 def service_db():
