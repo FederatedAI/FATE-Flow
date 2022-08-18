@@ -15,15 +15,20 @@
 #
 from flask import request
 
-from fate_flow.db.service_registry import ServiceRegistry
+from fate_flow.db.service_registry import ServiceRegistry, ServerRegistry
 from fate_flow.utils.api_utils import get_json_result, validate_request
 
 
 @manager.route("/registry", methods=['POST'])
-@validate_request("server_name", "service_name", "uri")
 def create_service():
-    ServiceRegistry.save_service_info(**request.json)
-    return get_json_result()
+    service_info = request.json
+    # compatibility
+    update_server = {}
+    if "server_name" not in service_info:
+        update_server = ServerRegistry.save(request.json)
+    else:
+        ServiceRegistry.save_service_info(**request.json)
+    return get_json_result(data=update_server)
 
 
 @manager.route('/query', methods=['POST'])

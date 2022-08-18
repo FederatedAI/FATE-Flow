@@ -110,6 +110,12 @@ def schema_update():
     request_data = request.json
     data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
     schema = data_table_meta.get_schema()
+    if request_data.get("schema", {}).get("meta"):
+        if schema.get("meta"):
+            schema["meta"].update(request_data.get("schema").get("meta"))
+        else:
+            schema["meta"] = request_data.get("schema").get("meta")
+        request_data["schema"].pop("meta", {})
     schema.update(request_data.get("schema", {}))
     data_table_meta.update_metas(schema=schema)
     return get_json_result(data=schema)

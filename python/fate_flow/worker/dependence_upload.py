@@ -140,7 +140,8 @@ class DependenceUpload(BaseWorker):
         for path, dirnames, filenames in os.walk(dir_path):
             fpath = path.replace(input_dir_path, '')
             for filename in filenames:
-                zip_object.write(os.path.join(path, filename), os.path.join(fpath, filename))
+                if os.path.exists(os.path.join(path, filename)):
+                    zip_object.write(os.path.join(path, filename), os.path.join(fpath, filename))
 
     @staticmethod
     def copy_dir(source_path, target_path):
