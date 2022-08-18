@@ -124,7 +124,8 @@ def download_model(party_model_id, model_version):
             party_model_id=party_model_id,
             model_version=model_version,
         )
-        sync_model.download(True)
+        if sync_model.remote_exists():
+            sync_model.download(True)
 
     model = pipelined_model.PipelinedModel(party_model_id, model_version)
     if not model.exists():

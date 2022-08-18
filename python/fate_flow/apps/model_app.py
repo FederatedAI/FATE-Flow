@@ -212,13 +212,8 @@ def do_load_model():
             model_id=model_id, model_version=model_version,
         )
 
-        if not sync_model.db_exists():
-            return error_response(retcode=404, retmsg='Model not found.')
-
-        if sync_model.local_exists() and not sync_model.remote_exists():
-            sync_model.upload()
-        elif not sync_model.local_exists() and sync_model.remote_exists():
-            sync_model.download()
+        if sync_model.remote_exists():
+            sync_model.download(True)
 
     if not model_utils.check_if_deployed(role, party_id, model_id, model_version):
         return get_json_result(retcode=100,
@@ -380,7 +375,6 @@ def operate_model(model_operation):
                     role=request_config['role'], party_id=request_config['party_id'],
                     model_id=request_config['model_id'], model_version=request_config['model_version'],
                 )
-
                 if sync_model.remote_exists():
                     sync_model.download(True)
 
