@@ -88,7 +88,7 @@ def query_model_info_from_db(query_filters=None, **kwargs):
     return 0, 'Query model info from db success.', models
 
 
-def query_model_info_from_file(model_id='*', model_version='*', role='*', party_id='*', query_filters=None, save_to_db=False):
+def query_model_info_from_file(model_id='*', model_version='*', role='*', party_id='*', query_filters=None, save_to_db=False, **kwargs):
     fp_list = glob.glob(f"{get_fate_flow_directory('model_local_cache')}/{role}#{party_id}#{model_id}/{model_version}")
 
     models = []

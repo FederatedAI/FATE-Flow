@@ -29,7 +29,7 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.db.db_models import (
     DB, MachineLearningModelInfo as MLModel,
-    ModelTag, PipelineComponentMeta,
+    ModelTag, PipelineComponentMeta, Tag,
 )
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
@@ -317,6 +317,8 @@ def operate_model(model_operation):
     if not ModelOperation.valid(model_operation):
         raise Exception('Can not support this operating now: {}'.format(model_operation))
     model_operation = ModelOperation(model_operation)
+
+    request_config["party_id"] = str(request_config["party_id"])
     party_model_id = model_utils.gen_party_model_id(
         request_config["model_id"], request_config["role"], request_config["party_id"])
 
@@ -344,11 +346,10 @@ def operate_model(model_operation):
             pipeline = model.read_pipeline_model()
             train_runtime_conf = json_loads(pipeline.train_runtime_conf)
 
-            permitted_party_id = []
-            for key, value in train_runtime_conf.get('role', {}).items():
-                for v in value:
-                    permitted_party_id.extend([v, str(v)])
-            if request_config["party_id"] not in permitted_party_id:
+            for _party_id in train_runtime_conf.get('role', {}).get(request_config['role'], []):
+                if request_config["party_id"] == str(_party_id):
+                    break
+            else:
                 shutil.rmtree(model.model_path, ignore_errors=True)
                 return error_response(400, f'Party id {request_config["party_id"]} is not in model roles, '
                                             f'please check if the party id is valid.')
