@@ -708,26 +708,29 @@ def do_deploy():
 
 @manager.route('/get/predict/dsl', methods=['POST'])
 def get_predict_dsl():
-    request_data = request.json
-    request_data['query_filters'] = ['inference_dsl']
+    request_data = request.json or {}
+    request_data['query_filters'] = ['role', 'inference_dsl']
     retcode, retmsg, data = model_utils.query_model_info(**request_data)
-    if data:
-        for d in data:
-            if d.get("f_role") in {"guest", "host"}:
-                _data = d
-                break
-        else:
-            return error_response(210, "can not found guest or host model, please get predict dsl on guest or host.")
-        if request_data.get("filename"):
-            os.makedirs(TEMP_DIRECTORY, exist_ok=True)
-            temp_filepath = os.path.join(TEMP_DIRECTORY, uuid1().hex)
-            with open(temp_filepath, "w") as fout:
-                fout.write(json_dumps(_data['f_inference_dsl'], indent=4))
-            return send_file(open(temp_filepath, "rb"), as_attachment=True,
-                             attachment_filename=request_data["filename"])
-        else:
-            return get_json_result(data=_data['f_inference_dsl'])
-    return error_response(210, "No model found, please check if arguments are specified correctly.")
+
+    if not data:
+        return error_response(210, "No model found, please check if arguments are specified correctly.")
+
+    for _data in data:
+        if _data.get("f_role") in {"guest", "host"}:
+            data = _data
+            break
+    else:
+        return error_response(210, "can not found guest or host model, please get predict dsl on guest or host.")
+
+    if request_data.get("filename"):
+        os.makedirs(TEMP_DIRECTORY, exist_ok=True)
+        temp_filepath = os.path.join(TEMP_DIRECTORY, uuid1().hex)
+        with open(temp_filepath, "w") as fout:
+            fout.write(json_dumps(data['f_inference_dsl'], indent=4))
+        return send_file(open(temp_filepath, "rb"), as_attachment=True,
+                            attachment_filename=request_data["filename"])
+
+    return get_json_result(data=data['f_inference_dsl'])
 
 
 @manager.route('/get/predict/conf', methods=['POST'])
