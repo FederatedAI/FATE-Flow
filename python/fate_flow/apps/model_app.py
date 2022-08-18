@@ -577,7 +577,7 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
 
 @manager.route('/query', methods=['POST'])
 def query_model():
-    retcode, retmsg, data = model_utils.query_model_info(**request.json)
+    retcode, retmsg, data = model_utils.query_model_info(**(request.json or {}))
     result = {"retcode": retcode, "retmsg": retmsg, "data": data}
     return Response(json.dumps(result, sort_keys=False, cls=DatetimeEncoder), mimetype="application/json")
 
