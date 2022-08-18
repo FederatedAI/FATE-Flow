@@ -156,7 +156,7 @@ class PipelinedComponent(Pipelined, Locker):
     def replicate_define_meta(self, modification, query_args=()):
         query = self.get_define_meta_from_db(*query_args)
         if not query:
-            raise ValueError(f'Filtered define_meta data not found.')
+            return
 
         insert = []
         for row in query:
