@@ -89,38 +89,38 @@ class ComponentRegistry:
 
     @classmethod
     @DB.connection_context()
+    @DB.lock("component_register")
     def save_to_db(cls):
         # save component registry info
-        with DB.lock("component_register"):
-            for provider_name, provider_group_info in cls.REGISTRY["providers"].items():
-                for version, version_register_info in provider_group_info.items():
-                    if version != "default":
-                        version_info = {
-                            "f_path": version_register_info.get("path"),
-                            "f_python": version_register_info.get("python", ""),
-                            "f_class_path": version_register_info.get("class_path"),
+        for provider_name, provider_group_info in cls.REGISTRY["providers"].items():
+            for version, version_register_info in provider_group_info.items():
+                if version != "default":
+                    version_info = {
+                        "f_path": version_register_info.get("path"),
+                        "f_python": version_register_info.get("python", ""),
+                        "f_class_path": version_register_info.get("class_path"),
+                        "f_version": version,
+                        "f_provider_name": provider_name
+                    }
+                    cls.safe_save(ComponentProviderInfo, version_info, f_version=version, f_provider_name=provider_name)
+                    for component_name, component_info in version_register_info.get("components").items():
+                        component_registry_info = {
                             "f_version": version,
-                            "f_provider_name": provider_name
+                            "f_provider_name": provider_name,
+                            "f_component_name": component_name,
+                            "f_module": component_info.get("module")
                         }
-                        cls.safe_save(ComponentProviderInfo, version_info, f_version=version, f_provider_name=provider_name)
-                        for component_name, component_info in version_register_info.get("components").items():
-                            component_registry_info = {
-                                "f_version": version,
-                                "f_provider_name": provider_name,
-                                "f_component_name": component_name,
-                                "f_module": component_info.get("module")
-                            }
-                            cls.safe_save(ComponentRegistryInfo, component_registry_info, f_version=version,
-                                          f_provider_name=provider_name, f_component_name=component_name)
+                        cls.safe_save(ComponentRegistryInfo, component_registry_info, f_version=version,
+                                        f_provider_name=provider_name, f_component_name=component_name)
 
-            for component_name, info in cls.REGISTRY["components"].items():
-                component_info = {
-                    "f_component_name": component_name,
-                    "f_default_provider": info.get("default_provider"),
-                    "f_support_provider": info.get("support_provider"),
-                    "f_component_alias": info.get("alias"),
-                }
-                cls.safe_save(ComponentInfo, component_info, f_component_name=component_name)
+        for component_name, info in cls.REGISTRY["components"].items():
+            component_info = {
+                "f_component_name": component_name,
+                "f_default_provider": info.get("default_provider"),
+                "f_support_provider": info.get("support_provider"),
+                "f_component_alias": info.get("alias"),
+            }
+            cls.safe_save(ComponentInfo, component_info, f_component_name=component_name)
 
     @classmethod
     def safe_save(cls, model, defaults, **kwargs):

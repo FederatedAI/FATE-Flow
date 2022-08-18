@@ -24,8 +24,8 @@ from fate_arch.common.data_utils import default_output_info
 from fate_arch.storage import StorageEngine
 
 from fate_flow.db.db_models import DB, ComponentSummary, TrackingOutputDataInfo
+from fate_flow.db.db_utils import bulk_insert_into_db
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import DataCache, Metric, MetricMeta, RunParameters
 from fate_flow.manager.cache_manager import CacheManager
 from fate_flow.manager.metric_manager import MetricManager
@@ -299,8 +299,12 @@ class Tracker(object):
             tracking_output_data_info.f_table_namespace = table_namespace
             tracking_output_data_info.f_table_name = table_name
             tracking_output_data_info.f_create_time = current_timestamp()
-            self.bulk_insert_into_db(self.get_dynamic_db_model(TrackingOutputDataInfo, self.job_id),
-                                     [tracking_output_data_info.to_dict()])
+
+            bulk_insert_into_db(
+                self.get_dynamic_db_model(TrackingOutputDataInfo, self.job_id),
+                (tracking_output_data_info.to_dict(), ),
+                schedule_logger(self.job_id),
+            )
         except Exception as e:
             schedule_logger(self.job_id).exception("An exception where inserted output data info {} {} {} to database:\n{}".format(
                 data_name,
@@ -308,22 +312,6 @@ class Tracker(object):
                 table_name,
                 e
             ))
-
-    @DB.connection_context()
-    def bulk_insert_into_db(self, model, data_source):
-        try:
-            try:
-                DB.create_tables([model])
-            except Exception as e:
-                schedule_logger(self.job_id).exception(e)
-            batch_size = 50 if RuntimeConfig.USE_LOCAL_DATABASE else 1000
-            for i in range(0, len(data_source), batch_size):
-                with DB.atomic():
-                    model.insert_many(data_source[i:i+batch_size]).execute()
-            return len(data_source)
-        except Exception as e:
-            schedule_logger(self.job_id).exception(e)
-            return 0
 
     def save_as_table(self, computing_table, name, namespace):
         if self.job_parameters.storage_engine == StorageEngine.LINKIS_HIVE:

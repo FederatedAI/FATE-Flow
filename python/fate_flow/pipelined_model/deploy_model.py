@@ -19,7 +19,7 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.model.checkpoint import CheckpointManager
-from fate_flow.model.sync_model import SyncModel
+from fate_flow.model.sync_model import SyncComponent, SyncModel
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.settings import ENABLE_MODEL_STORE, stat_logger
@@ -77,9 +77,20 @@ def deploy(config_data):
 
         source_model.pipelined_component.replicate_define_meta({
             'f_model_version': child_model_version,
+            'f_archive_sha256': None,
+            'f_archive_from_ip': None,
         }, (
             PipelineComponentMeta.f_component_name != PIPELINE_COMPONENT_NAME,
         ))
+
+        if ENABLE_MODEL_STORE:
+            for row in query:
+                sync_component = SyncComponent(
+                    role=local_role, party_id=local_party_id,
+                    model_id=model_id, model_version=child_model_version,
+                    component_name=row.f_component_name,
+                )
+                sync_component.copy(model_version, row.f_archive_sha256)
 
         pipeline_model = source_model.read_pipeline_model()
 
@@ -151,9 +162,9 @@ def deploy(config_data):
         # save model file
         deploy_model.save_pipeline_model(pipeline_model)
 
-        for component_name, component in train_dsl.get('components', {}).items():
-            step_index = components_checkpoint.get(component_name, {}).get('step_index')
-            step_name = components_checkpoint.get(component_name, {}).get('step_name')
+        for row in query:
+            step_index = components_checkpoint.get(row.f_component_name, {}).get('step_index')
+            step_name = components_checkpoint.get(row.f_component_name, {}).get('step_name')
             if step_index is not None:
                 step_index = int(step_index)
                 step_name = None
@@ -163,14 +174,13 @@ def deploy(config_data):
             checkpoint_manager = CheckpointManager(
                 role=local_role, party_id=local_party_id,
                 model_id=model_id, model_version=model_version,
-                component_name=component_name,
+                component_name=row.f_component_name,
             )
             checkpoint_manager.load_checkpoints_from_disk()
             if checkpoint_manager.latest_checkpoint is not None:
                 checkpoint_manager.deploy(
                     child_model_version,
-                    component['output']['model'][0]
-                    if component.get('output', {}).get('model') else 'default',
+                    row.f_model_alias,
                     step_index,
                     step_name,
                 )

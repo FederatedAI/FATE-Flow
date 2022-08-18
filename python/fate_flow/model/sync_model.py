@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 from copy import deepcopy
+from functools import wraps
 from hashlib import sha256
 from typing import Tuple
 
@@ -46,6 +47,16 @@ def get_storage(storage_map: dict) -> Tuple[model_storage_base.ModelStorageBase,
         raise KeyError(f"Model storage '{store_type}' is not supported.")
 
     return storage_map[store_type], store_address
+
+
+def lock(method):
+    @wraps(method)
+    def magic(self, *args, **kwargs):
+        with self.lock:
+            return method(self, *args, **kwargs)
+        # equivalent to:
+        # return self.lock(method)(self, *args, **kwargs)
+    return magic
 
 
 class SyncModel(Pipelined):
@@ -171,7 +182,8 @@ class SyncComponent(Pipelined):
         return self.pipelined_model.pipelined_component.exists(self.component_name)
 
     def remote_exists(self):
-        return self.component_storage.exists(*self.component_storage_parameters)
+        with self.component_storage as storage:
+            return storage.exists(*self.component_storage_parameters)
 
     def get_archive_hash(self):
         query = tuple(PipelineComponentMeta.select().where(*self.query_args).group_by(
@@ -188,18 +200,28 @@ class SyncComponent(Pipelined):
         ).where(*self.query_args).execute()
 
     @DB.connection_context()
+    @lock
     def upload(self):
-        with self.lock:
-            # check the data in database
-            self.get_archive_hash()
+        # check the data in database
+        self.get_archive_hash()
 
-            hash_ = self.component_storage.upload(*self.component_storage_parameters)
+        with self.component_storage as storage:
+            hash_ = storage.upload(*self.component_storage_parameters)
 
-            self.update_archive_hash(hash_)
+        self.update_archive_hash(hash_)
 
     @DB.connection_context()
+    @lock
     def download(self):
-        with self.lock:
-            hash_ = self.get_archive_hash()
+        hash_ = self.get_archive_hash()
 
-            self.component_storage.download(*self.component_storage_parameters, hash_)
+        with self.component_storage as storage:
+            storage.download(*self.component_storage_parameters, hash_)
+
+    @DB.connection_context()
+    @lock
+    def copy(self, source_model_version, hash_):
+        with self.component_storage as storage:
+            storage.copy(*self.component_storage_parameters, source_model_version)
+
+        self.update_archive_hash(hash_)

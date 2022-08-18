@@ -63,8 +63,14 @@ FATE_FLOW_UPDATE_CHECK = False
 HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")
 GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("grpc_port")
+
+NGINX_HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("host", HOST)
+NGINX_HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("http_port", HTTP_PORT)
+NGINX_GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("grpc_port", GRPC_PORT)
+
 PROXY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol")
+
 ENGINES = engine_utils.get_engines()
 IS_STANDALONE = engine_utils.is_standalone()
 
