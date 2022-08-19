@@ -62,7 +62,7 @@ class ApiReader(ComponentBase):
     def __init__(self):
         super(ApiReader, self).__init__()
         self.parameters = {}
-        self.required_url_key_list = ["upload", "status", "download"]
+        self.required_url_key_list = ["upload", "query", "download"]
         self.service_info = {}
 
     def _run(self, cpn_input: ComponentInputProtocol):
@@ -143,11 +143,11 @@ class ApiReader(ComponentBase):
         return table, output_name, output_namespace
 
     def check_status(self, job_id):
-        query_registry_info = self.service_info.get("status")
+        query_registry_info = self.service_info.get("query")
         for i in range(0, self.parameters.get("timeout", 60 * 5)):
             status_response = getattr(requests, query_registry_info.f_method.lower(), None)(
-            url=query_registry_info.f_url,
-            json={"jobId": job_id}
+                url=query_registry_info.f_url,
+                json={"jobId": job_id}
             )
             logger.info(f"status: {status_response.text}")
             if status_response.status_code == 200 and status_response.json().get("data").get("status") == "success":
@@ -161,7 +161,11 @@ class ApiReader(ComponentBase):
         download_registry_info = self.service_info.get("download")
         download_path = os.path.join(self.task_dir, "features")
         logger.info(f"start download feature, url: {download_registry_info.f_url}")
-        with closing(getattr(requests, download_registry_info.f_method.lower(), None)(url=download_registry_info.f_url, params={"jobId": job_id}, stream=True)) as response:
+        params = {"jobId": job_id}
+        with closing(getattr(requests, download_registry_info.f_method.lower(), None)(
+                url=download_registry_info.f_url,
+                params={"requestBody": json.dumps(params)},
+                stream=True)) as response:
             if response.status_code == 200:
                 with open(download_path, 'wb') as fw:
                     for chunk in response.iter_content(1024):
