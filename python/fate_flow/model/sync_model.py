@@ -116,7 +116,10 @@ class SyncModel(Pipelined):
         with self.lock:
             model = self.get_model()
 
-            hash_ = self.model_storage.store(force_update=force_update, **self.model_storage_parameters)
+            hash_ = self.model_storage.store(
+                force_update=force_update,
+                **self.model_storage_parameters,
+            )
 
             model.f_archive_sha256 = hash_
             model.f_archive_from_ip = HOST
@@ -132,8 +135,10 @@ class SyncModel(Pipelined):
         with self.lock:
             model = self.get_model()
 
-            if force_update or model.f_archive_from_ip != HOST:
-                self.model_storage.restore(force_update=force_update, hash_=model.f_archive_sha256, **self.model_storage_parameters)
+            self.model_storage.restore(
+                force_update=force_update, hash_=model.f_archive_sha256,
+                **self.model_storage_parameters,
+            )
 
         return model
 

@@ -245,7 +245,7 @@ def models_group_by_party_model_id_and_model_version():
         MLModel.f_model_id,
         MLModel.f_model_version,
     ]
-    return MLModel.select(*args).where(MLModel.f_archive_from_ip == HOST).group_by(*args)
+    return MLModel.select(*args).group_by(*args)
 
 
 @DB.connection_context()
