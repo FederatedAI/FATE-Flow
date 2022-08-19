@@ -102,7 +102,7 @@ class ServerRegistry(ReloadConfigBase):
             cls.parameter_check(server_info)
             api_info = server_info.pop("api", {})
             for service_name, info in api_info.items():
-                ServiceRegistry.save_service_info(server_name, service_name, uri=info.get('uri'), method="POST", server_info=server_info)
+                ServiceRegistry.save_service_info(server_name, service_name, uri=info.get('uri'), method=info.get('method', 'POST'), server_info=server_info)
             cls.save_server_info_to_db(server_name, server_info.get("host"), server_info.get("port"), protocol="http")
             setattr(cls, server_name.upper(), server_info)
         return update_server
