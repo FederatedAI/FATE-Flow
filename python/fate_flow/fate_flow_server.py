@@ -108,7 +108,7 @@ if __name__ == '__main__':
                                   (cygrpc.ChannelArgKey.max_receive_message_length, -1)])
 
     proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
-    server.add_insecure_port("{}:{}".format(HOST, GRPC_PORT))
+    server.add_insecure_port(f"{HOST}:{GRPC_PORT}")
     server.start()
     print("FATE Flow grpc server start successfully")
     stat_logger.info("FATE Flow grpc server start successfully")

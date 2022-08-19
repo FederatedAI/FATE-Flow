@@ -55,8 +55,6 @@ class PipelinedComponent(Pipelined, Locker):
 
     def exists(self, component_name):
         query = self.get_define_meta_from_db(PipelineComponentMeta.f_component_name == component_name)
-        if not query:
-            raise ValueError(f'The define_meta data of {component_name} not found in database.')
 
         for row in query:
             variables_data_path = self.variables_data_path / row.f_component_name / row.f_model_alias
