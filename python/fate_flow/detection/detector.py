@@ -47,7 +47,7 @@ class Detector(cron.Cron):
         detect_logger().info('start to detect running task..')
         count = 0
         try:
-            running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, only_latest=False)
+            running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, only_latest=True)
             stop_job_ids = set()
             for task in running_tasks:
                 if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST and task.f_run_on_this_party:
@@ -228,8 +228,8 @@ class Detector(cron.Cron):
             instance_list = RuntimeConfig.SERVICE_DB.get_servers()
             if task.f_run_ip and task.f_run_port:
                 if ":".join([task.f_run_ip, str(task.f_run_port)]) not in [instance.http_address for instance in instance_list]:
-                    detect_logger(job_id=task.f_job_id).exception('detect cluster instance status failed, '
-                                                                  'add job to stop list')
+                    detect_logger(job_id=task.f_job_id).exception(f'detect cluster instance status failed, add task'
+                                                                  f' {task.f_task_id} {task.f_task_version} to stop list')
                     stop_job_ids.add(task.f_job_id)
         except Exception as e:
             detect_logger(job_id=task.f_job_id).exception(e)
