@@ -15,29 +15,46 @@
 #
 import functools
 import json
+import random
 import time
 from functools import wraps
-import flask
 
 from flask import Response, jsonify, request as flask_request
 from werkzeug.http import HTTP_STATUS_CODES
 
 from fate_arch.common import CoordinationCommunicationProtocol, CoordinationProxyService, FederatedMode
 from fate_arch.common.base_utils import json_loads
+
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import RetCode
-from fate_flow.hook.common.parameters import SignatureParameters
-from fate_flow.settings import API_VERSION, HEADERS, PROXY, PROXY_PROTOCOL, stat_logger, PERMISSION_SWITCH, \
-    SITE_AUTHENTICATION, HOST, HTTP_PORT, PARTY_ID, REQUEST_TRY_TIMES
-from fate_flow.utils.base_utils import compare_version
-from fate_flow.utils.grpc_utils import forward_grpc_packet, gen_routing_metadata, get_command_federation_channel, \
-    wrap_grpc_packet
 from fate_flow.hook import HookManager
+from fate_flow.hook.common.parameters import SignatureParameters
+from fate_flow.settings import (
+    API_VERSION, HEADERS, HOST, HTTP_PORT, PARTY_ID, PERMISSION_SWITCH, PROXY, PROXY_PROTOCOL,
+    REQUEST_MAX_WAIT_SEC, REQUEST_TRY_TIMES, REQUEST_WAIT_SEC, SITE_AUTHENTICATION, stat_logger,
+)
+from fate_flow.utils.base_utils import compare_version
+from fate_flow.utils.grpc_utils import (
+    forward_grpc_packet, gen_routing_metadata,
+    get_command_federation_channel, wrap_grpc_packet,
+)
 from fate_flow.utils.log_utils import audit_logger, schedule_logger
 from fate_flow.utils.permission_utils import get_permission_parameters
 from fate_flow.utils.requests_utils import request
+
+
+def get_exponential_backoff_interval(retries, full_jitter=False):
+    """Calculate the exponential backoff wait time."""
+    # Will be zero if factor equals 0
+    countdown = min(REQUEST_MAX_WAIT_SEC, REQUEST_WAIT_SEC * (2 ** retries))
+    # Full jitter according to
+    # https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+    if full_jitter:
+        countdown = random.randrange(countdown + 1)
+    # Adjust according to maximum wait time and account for negative values.
+    return max(0, countdown)
 
 
 def get_json_result(retcode=RetCode.SUCCESS, retmsg='success', data=None, job_id=None, meta=None):
@@ -134,14 +151,15 @@ def get_federated_proxy_address(src_party_id, dest_party_id):
 
 def federated_coordination_on_http(job_id, method, host, port, endpoint, src_party_id, src_role, dest_party_id, json_body, api_version=API_VERSION, overall_timeout=None, try_times=REQUEST_TRY_TIMES, headers=None):
     try_times = max(try_times, 1)
+    if overall_timeout is None:
+        overall_timeout = JobDefaultConfig.remote_request_timeout
+
+    endpoint = f"/{api_version}{endpoint}"
+    url = "http://{}:{}{}".format(host, port, endpoint)
+    audit_logger(job_id).info(f'remote http api request: {url}')
 
     if not headers:
         headers = generate_headers(src_party_id, src_role, json_body)
-    overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
-    endpoint = f"/{api_version}{endpoint}"
-
-    url = "http://{}:{}{}".format(host, port, endpoint)
-    audit_logger(job_id).info(f'remote http api request: {url}')
     headers.update(HEADERS)
     headers["dest-party-id"] = str(dest_party_id)
 
@@ -149,46 +167,46 @@ def federated_coordination_on_http(job_id, method, host, port, endpoint, src_par
         try:
             response = request(method=method, url=url, json=json_body, headers=headers)
         except Exception as e:
-            if t == try_times - 1:
-                raise e
-
             schedule_logger(job_id).warning(f'remote http request {endpoint} error, sleep and try again')
-            time.sleep(2 * (t + 1))
-            continue
+            time.sleep(get_exponential_backoff_interval(t))
         else:
             audit_logger(job_id).info(f'remote http api response: {endpoint} {response.text}')
             return response.json()
+    else:
+        raise e
 
 
 def federated_coordination_on_grpc(job_id, method, host, port, endpoint, src_party_id, src_role, dest_party_id, json_body, api_version=API_VERSION,
                                    overall_timeout=None, try_times=REQUEST_TRY_TIMES, headers=None):
-    overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
+    try_times = max(try_times, 1)
+    if overall_timeout is None:
+        overall_timeout = JobDefaultConfig.remote_request_timeout
+
     endpoint = f"/{api_version}{endpoint}"
     _packet = wrap_grpc_packet(json_body, method, endpoint, src_party_id, dest_party_id, job_id,
                                overall_timeout=overall_timeout, headers=headers)
     _routing_metadata = gen_routing_metadata(src_party_id=src_party_id, dest_party_id=dest_party_id)
-    exception = None
+
     for t in range(try_times):
         try:
             channel, stub = get_command_federation_channel(host, port)
             _return, _call = stub.unaryCall.with_call(_packet, metadata=_routing_metadata, timeout=(overall_timeout/1000))
-            audit_logger(job_id).info("grpc api response: {}".format(_return))
             channel.close()
-            response = json_loads(_return.body.value)
-            return response
+
+            audit_logger(job_id).info("grpc api response: {}".format(_return))
+            return json_loads(_return.body.value)
         except Exception as e:
-            exception = e
             schedule_logger(job_id).warning(f"remote request {endpoint} error, sleep and try again")
-            time.sleep(2 * (t+1))
+            time.sleep(get_exponential_backoff_interval(t))
     else:
-        tips = 'Please check rollSite and fateflow network connectivity'
         """
+        tips = 'Please check rollSite and fateflow network connectivity'
         if 'Error received from peer' in str(exception):
             tips = 'Please check if the fate flow server of the other party is started. '
         if 'failed to connect to all addresses' in str(exception):
             tips = 'Please check whether the rollsite service(port: 9370) is started. '
         """
-        raise Exception('{}rpc request error: {}'.format(tips, exception))
+        raise e
 
 
 def proxy_api(role, _job_id, request_config):
@@ -290,7 +308,7 @@ def validate_request(*args, **kwargs):
     def wrapper(func):
         @wraps(func)
         def decorated_function(*_args, **_kwargs):
-            input_arguments = flask.request.json or flask.request.form.to_dict()
+            input_arguments = flask_request.json or flask_request.form.to_dict()
             no_arguments = []
             error_arguments = []
             for arg in args:
