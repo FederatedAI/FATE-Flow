@@ -242,6 +242,8 @@ class PipelinedModel(Locker):
     @local_cache_required
     def packaging_model(self):
         with self.lock:
+            self.gen_model_import_config()
+
             # self.archive_model_file_path
             shutil.make_archive(self.archive_model_base_path, 'zip', self.model_path)
 
@@ -318,5 +320,5 @@ class PipelinedModel(Locker):
             'model_version': self.model_version,
             'file': self.archive_model_file_path,
         }
-        with open(os.path.join(self.model_path, 'import_model.json'), 'x', encoding='utf-8') as f:
+        with open(os.path.join(self.model_path, 'import_model.json'), 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=4)

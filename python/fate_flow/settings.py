@@ -38,12 +38,7 @@ FATE_VERSION_DEPENDENCIES_PATH = os.path.join(get_fate_flow_directory(), "versio
 CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
 INCOMPATIBLE_VERSION_CONF = os.path.join(FATE_FLOW_CONF_PATH, "incompatible_version.yaml")
 SUBPROCESS_STD_LOG_NAME = "std.log"
-HEADERS = {
-    "Content-Type": "application/json",
-    "Connection": "close",
-    "service": FATE_FLOW_SERVICE_NAME
-}
-_ONE_DAY_IN_SECONDS = 60 * 60 * 24
+
 GRPC_SERVER_MAX_WORKERS = None
 MAX_TIMESTAMP_INTERVAL = 60
 

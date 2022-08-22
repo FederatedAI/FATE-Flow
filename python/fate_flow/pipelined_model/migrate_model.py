@@ -18,6 +18,7 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, PipelineComponentMeta
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model import pipelined_model
+from fate_flow.scheduler.cluster_scheduler import ClusterScheduler
 from fate_flow.settings import ENABLE_MODEL_STORE, stat_logger
 from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
@@ -147,8 +148,10 @@ def migration(config_data: dict):
         migrate_model_info = gather_model_info_data(migrate_model)
         save_model_info(migrate_model_info)
 
-        migrate_model.gen_model_import_config()
-        migrate_model.packaging_model()
+        ClusterScheduler.cluster_command('/model/archive/pack', {
+            'party_model_id': migrate_model.party_model_id,
+            'model_version': migrate_model.model_version,
+        })
 
         return (0, (
              "Migrating model successfully. The configuration of model has been modified automatically. "

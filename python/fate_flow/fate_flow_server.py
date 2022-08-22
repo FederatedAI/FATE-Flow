@@ -20,13 +20,11 @@ import logging
 import os
 import signal
 import sys
-import time
 import traceback
 
 import grpc
 from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
-
 
 from fate_arch.common import file_utils
 from fate_arch.common.versions import get_versions
@@ -46,8 +44,10 @@ from fate_flow.entity.types import ProcessRole
 from fate_flow.hook import HookManager
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
-from fate_flow.settings import (_ONE_DAY_IN_SECONDS, GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT,
-                                access_logger, database_logger, detect_logger, stat_logger)
+from fate_flow.settings import (
+    GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT,
+    access_logger, database_logger, detect_logger, stat_logger,
+)
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.utils.log_utils import schedule_logger
@@ -121,16 +121,6 @@ if __name__ == '__main__':
         for h in access_logger.handlers:
             werkzeug_logger.addHandler(h)
         run_simple(hostname=HOST, port=HTTP_PORT, application=app, threaded=True, use_reloader=RuntimeConfig.DEBUG, use_debugger=RuntimeConfig.DEBUG)
-    except OSError as e:
+    except Exception:
         traceback.print_exc()
         os.kill(os.getpid(), signal.SIGKILL)
-    except Exception as e:
-        traceback.print_exc()
-        os.kill(os.getpid(), signal.SIGKILL)
-
-    try:
-        while True:
-            time.sleep(_ONE_DAY_IN_SECONDS)
-    except KeyboardInterrupt:
-        server.stop(0)
-        sys.exit(0)

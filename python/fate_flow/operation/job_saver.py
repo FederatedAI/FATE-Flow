@@ -146,14 +146,16 @@ class JobSaver(object):
         query_filters = []
         primary_keys = entity_model.get_primary_keys_name()
         for p_k in primary_keys:
-            query_filters.append(operator.attrgetter(p_k)(entity_model) == entity_info[p_k.lstrip("f").lstrip("_")])
+            query_filters.append(operator.attrgetter(p_k)(entity_model) == entity_info[p_k[2:]])
+
         objs = entity_model.select().where(*query_filters)
-        if objs:
-            obj = objs[0]
-        else:
+        if not objs:
             raise Exception(f"can not found the {entity_model.__name__} record to update")
-        update_filters = query_filters[:]
+        obj = objs[0]
+
+        update_filters = query_filters.copy()
         update_info = {"job_id": entity_info["job_id"]}
+
         for status_field in cls.STATUS_FIELDS:
             if entity_info.get(status_field) and hasattr(entity_model, f"f_{status_field}"):
                 if status_field in ["status", "party_status"]:
@@ -174,6 +176,7 @@ class JobSaver(object):
                     else:
                         # not allow update status
                         update_info.pop(status_field)
+
         return cls.execute_update(old_obj=obj, model=entity_model, update_info=update_info, update_filters=update_filters)
 
     @classmethod

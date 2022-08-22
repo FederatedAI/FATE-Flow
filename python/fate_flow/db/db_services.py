@@ -43,11 +43,12 @@ model_download_endpoint = f'http://{NGINX_HOST}:{NGINX_HTTP_PORT}{FATE_FLOW_MODE
 server_instance = (
     f'{HOST}:{GRPC_PORT}',
     json.dumps({
-        'instance_id': f'flow-{HOST.rsplit(".", 1)[-1]}-{HTTP_PORT}',
+        'instance_id': f'flow-{HOST}-{HTTP_PORT}',
         'timestamp': round(time.time() * 1000),
-        'version': get_fate_version(),
-        'grpc_address': f'{HOST}:{GRPC_PORT}',
-        'http_address': f'{HOST}:{HTTP_PORT}',
+        'version': get_fate_version() or '',
+        'host': HOST,
+        'grpc_port': GRPC_PORT,
+        'http_port': HTTP_PORT,
     }),
 )
 
@@ -206,7 +207,11 @@ class ServicesDB(abc.ABC):
             self.unregister_model(model.f_party_model_id, model.f_model_version)
 
     def get_servers(self):
-        return [FlowInstance(**json.loads(value)) for znode, value in self.get_urls('flow-server', True)]
+        servers = {}
+        for znode, value in self.get_urls('flow-server', True):
+            instance = FlowInstance(**json.loads(value))
+            servers[instance.instance_id] = instance
+        return servers
 
 
 class ZooKeeperDB(ServicesDB):

@@ -131,7 +131,7 @@ def gather_model_info_data(model: PipelinedModel, **kwargs):
             field = json_loads(field)
         model_info[f'f_{attr.name}'] = field
 
-    model_info['f_job_id'] = model_info['f_model_version']
+    model_info['f_job_id'] = model_info.get('f_job_id', model_info['f_model_version'])
     model_info['f_role'] = model.role
     model_info['f_party_id'] = model.party_id
     # backward compatibility

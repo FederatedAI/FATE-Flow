@@ -18,11 +18,10 @@ import json
 import os
 import shutil
 from copy import deepcopy
-from datetime import date, datetime
 from uuid import uuid1
 
 import peewee
-from flask import Response, request, send_file
+from flask import request, send_file
 
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_dumps, json_loads
@@ -36,7 +35,8 @@ from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfigurationBase
 from fate_flow.entity.types import ModelOperation, TagOperation
 from fate_flow.model.sync_model import SyncComponent, SyncModel
-from fate_flow.pipelined_model import deploy_model, migrate_model, pipelined_model, publish_model
+from fate_flow.pipelined_model import deploy_model, migrate_model, publish_model
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.settings import ENABLE_MODEL_STORE, IS_STANDALONE, TEMP_DIRECTORY, stat_logger
 from fate_flow.utils import detect_utils, job_utils, model_utils, schedule_utils
@@ -335,7 +335,7 @@ def operate_model(model_operation):
                 return error_response(500, f'Save file error: {e}')
 
             request_config['file'] = filename
-            model = pipelined_model.PipelinedModel(party_model_id, request_config["model_version"])
+            model = PipelinedModel(party_model_id, request_config["model_version"])
             model.unpack_model(filename, hash_=request_config.get('hash'))
 
             pipeline = model.read_pipeline_model()
@@ -363,7 +363,7 @@ def operate_model(model_operation):
                     )
                     sync_component.upload()
 
-            model_info = model_utils.gather_model_info_data(model, f_imported=1)
+            model_info = model_utils.gather_model_info_data(model, f_job_id=job_id, f_imported=1)
             model_utils.save_model_info(model_info)
 
             return get_json_result()
@@ -378,7 +378,7 @@ def operate_model(model_operation):
                 if sync_model.remote_exists():
                     sync_model.download(True)
 
-            model = pipelined_model.PipelinedModel(party_model_id, request_config["model_version"])
+            model = PipelinedModel(party_model_id, request_config["model_version"])
             if not model.exists():
                 return error_response(404, f"Model {party_model_id} {request_config['model_version']} does not exist.")
 
@@ -578,8 +578,7 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
 @manager.route('/query', methods=['POST'])
 def query_model():
     retcode, retmsg, data = model_utils.query_model_info(**(request.json or {}))
-    result = {"retcode": retcode, "retmsg": retmsg, "data": data}
-    return Response(json.dumps(result, sort_keys=False, cls=DatetimeEncoder), mimetype="application/json")
+    return get_json_result(retcode=retcode, retmsg=retmsg, data=data)
 
 
 @manager.route('/deploy', methods=['POST'])
@@ -741,8 +740,8 @@ def get_predict_conf():
     model_fp_list = glob.glob(model_dir + f"/guest#*#{request_data['model_id']}/{request_data['model_version']}")
     if model_fp_list:
         fp = model_fp_list[0]
-        pipeline_model = pipelined_model.PipelinedModel(fp.split('/')[-2], fp.split('/')[-1])
-        pipeline = pipeline_model.read_pipeline_model()
+        model = PipelinedModel(fp.split('/')[-2], fp.split('/')[-1])
+        pipeline = model.read_pipeline_model()
         predict_dsl = json_loads(pipeline.inference_dsl)
 
         train_runtime_conf = json_loads(pipeline.train_runtime_conf)
@@ -784,11 +783,30 @@ def homo_deploy():
     return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
 
 
-class DatetimeEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.strftime('%Y-%m-%d %H:%M:%S')
-        elif isinstance(obj, date):
-            return obj.strftime('%Y-%m-%d')
-        else:
-            return json.JSONEncoder.default(self, obj)
+@manager.route('/archive/pack', methods=['POST'])
+@validate_request('party_model_id', 'model_version')
+def pack_model():
+    request_config = request.json or request.form.to_dict()
+
+    if ENABLE_MODEL_STORE:
+        sync_model = SyncModel(
+            party_model_id=request_config['party_model_id'],
+            model_version=request_config['model_version'],
+        )
+        if sync_model.remote_exists():
+            sync_model.download(True)
+
+    model = PipelinedModel(
+        model_id=request_config['party_model_id'],
+        model_version=request_config['model_version'],
+    )
+
+    if not model.exists():
+        return error_response(404, 'Model not found.')
+
+    hash_ = model.packaging_model()
+
+    return get_json_result(data={
+        'path': model.archive_model_file_path,
+        'hash': hash_,
+    })

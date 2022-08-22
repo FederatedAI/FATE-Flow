@@ -13,12 +13,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.utils.log_utils import getLogger
-
-from fate_flow.components._base import BaseParam, ComponentBase, ComponentInputProtocol, ComponentMeta
+from fate_flow.components._base import (
+    BaseParam, ComponentBase,
+    ComponentInputProtocol, ComponentMeta,
+)
 from fate_flow.entity import MetricMeta, MetricType
 from fate_flow.model.checkpoint import CheckpointManager
+from fate_flow.model.sync_model import SyncComponent
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.settings import ENABLE_MODEL_STORE
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.utils.model_utils import gen_party_model_id
 
 
@@ -111,6 +115,14 @@ class ModelLoader(ComponentBase):
             if v is not None:
                 setattr(self, k, v)
                 break
+
+        if ENABLE_MODEL_STORE:
+            sync_component = SyncComponent(
+                role=self.tracker.role, party_id=self.tracker.party_id,
+                model_id=self.model_id, model_version=self.model_version,
+                component_name=self.component_name,
+            )
+            sync_component.download()
 
         if self.model_alias is not None:
             return self.read_component_model()
