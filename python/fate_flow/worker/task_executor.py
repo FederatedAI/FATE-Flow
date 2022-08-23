@@ -264,7 +264,7 @@ class TaskExecutor(BaseTaskWorker):
             self.generate_error_report()
             LOGGER.exception(e)
             try:
-                LOGGER.info("start destroy sessions success")
+                LOGGER.info("start destroy sessions")
                 sess.destroy_all_sessions()
                 LOGGER.info("destroy all sessions success")
             except Exception as e:
