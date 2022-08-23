@@ -47,14 +47,13 @@ class Detector(cron.Cron):
         detect_logger().info('start to detect running task..')
         count = 0
         try:
-            running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, only_latest=True)
+            running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, run_on_this_party=True)
             stop_job_ids = set()
             for task in running_tasks:
-                if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST and task.f_run_on_this_party:
+                if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST:
                     cls.detect_cluster_instance_status(task, stop_job_ids)
                     continue
-                if not task.f_engine_conf or task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST or \
-                        not task.f_run_on_this_party:
+                if not task.f_engine_conf or task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST:
                     continue
                 count += 1
                 try:
@@ -214,8 +213,8 @@ class Detector(cron.Cron):
         for job in jobs:
             try:
                 detect_logger(job_id=job.f_job_id).info(f"detector request start to stop job {job.f_job_id}, because of {stop_msg}")
-                FederatedScheduler.request_stop_job(job=job, stop_status=stop_status)
-                detect_logger(job_id=job.f_job_id).info(f"detector request stop job {job.f_job_id} successfully")
+                status = FederatedScheduler.request_stop_job(job=job, stop_status=stop_status)
+                detect_logger(job_id=job.f_job_id).info(f"detector request stop job {job.f_job_id} {status}")
             except Exception as e:
                 detect_logger(job_id=job.f_job_id).exception(e)
 
@@ -224,6 +223,17 @@ class Detector(cron.Cron):
         detect_logger().info('start detect running task instance status')
         try:
             if task.f_run_ip in ["127.0.0.1", "localhost"]:
+                return
+            latest_task = JobSaver.query_task(task_id=task.f_task_id, role=task.f_role, party_id=task.f_party_id)[0]
+            if latest_task.f_task_version != task.f_task_version:
+                JobSaver.update_task_status(task_info={
+                    "task_id": task.f_task_id,
+                    "role": task.f_role,
+                    "party_id": task.f_party_id,
+                    "task_version": task.f_task_version,
+                    "status": JobStatus.FAILED,
+                    "party_status": JobStatus.FAILED
+                })
                 return
             instance_list = RuntimeConfig.SERVICE_DB.get_servers()
             if task.f_run_ip and task.f_run_port:
