@@ -9,7 +9,7 @@ from fate_flow.utils.api_utils import get_json_result
 from fate_flow.utils.requests_utils import request
 
 
-def task_request_proxy(filter_local=False):
+def task_request_proxy(filter_local=False, force=True):
     def _outer(func):
         @functools.wraps(func)
         def _wrapper(*args, **kwargs):
@@ -24,12 +24,18 @@ def task_request_proxy(filter_local=False):
                             source_address = source_url.split("/")[2]
                             dest_address = ":".join([tasks[0].f_run_ip, str(tasks[0].f_run_port)])
                             dest_url = source_url.replace(source_address, dest_address)
-                            response = request(method=flask_request.method, url=dest_url, json=flask_request.json, headers=flask_request.headers)
-                            if response.status_code == 200:
-                                response = response.json()
-                                return get_json_result(retcode=response.get("retcode"), retmsg=response.get('retmsg'))
-                            else:
-                                return get_json_result(retcode=response.status_code, retmsg=response.text)
+                            try:
+                                response = request(method=flask_request.method, url=dest_url, json=flask_request.json, headers=flask_request.headers)
+                                if 200 <= response.status_code < 300:
+                                    response = response.json()
+                                    return get_json_result(retcode=response.get("retcode"),
+                                                           retmsg=response.get('retmsg'))
+                                else:
+                                    raise Exception(f"status_code: {response.status_code}, text: {response.text}")
+                            except Exception as e:
+                                if force:
+                                    return func(*args, **kwargs)
+                                raise e
                 else:
                     return get_json_result(retcode=RetCode.DATA_ERROR, retmsg='no found task')
             return func(*args, **kwargs)

@@ -232,7 +232,6 @@ def stop_task(job_id, component_name, task_id, task_version, role, party_id, sto
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/clean/<content_type>', methods=['POST'])
-@task_request_proxy()
 def clean_task(job_id, component_name, task_id, task_version, role, party_id, content_type):
     TaskController.clean_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id), content_type=TaskCleanResourceType(content_type))
     return get_json_result(retcode=0, retmsg='success')

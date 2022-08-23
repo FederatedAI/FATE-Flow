@@ -467,15 +467,13 @@ def get_job_dataset(is_initiator, role, party_id, roles, job_args):
 def asynchronous_function(func):
     @wraps(func)
     def _wrapper(*args, **kwargs):
-        is_asynchronous = False
-        if "is_asynchronous" in kwargs.keys():
-            is_asynchronous = kwargs.pop("is_asynchronous")
-            if is_asynchronous:
-                thread = threading.Thread(target=func, args=args, kwargs=kwargs)
-                thread.start()
-                is_asynchronous = True
-                return is_asynchronous
-        if not is_asynchronous:
+        is_asynchronous = kwargs.pop("is_asynchronous", False)
+        if is_asynchronous:
+            thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+            thread.start()
+            is_asynchronous = True
+            return is_asynchronous
+        else:
             return func(*args, **kwargs)
     return _wrapper
 
