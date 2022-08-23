@@ -27,11 +27,10 @@ class ClusterScheduler(SchedulerBase):
 
     @classmethod
     def cluster_command(cls, endpoint, json_body):
-        instance_list = RuntimeConfig.SERVICE_DB.get_servers()
-
         log_msg = f'sending {endpoint} cluster federated command'
         schedule_logger().info(start_log(msg=log_msg))
 
+        instance_list = RuntimeConfig.SERVICE_DB.get_servers()
         result = {}
 
         with ThreadPoolExecutor(max_workers=len(instance_list)) as executor:
@@ -40,24 +39,29 @@ class ClusterScheduler(SchedulerBase):
                     cluster_api,
                     method='POST',
                     host=instance.host,
-                    port=instance.port,
+                    port=instance.http_port,
                     endpoint=endpoint,
                     json_body=json_body,
-                ): instance for instance in instance_list
+                ): instance_id
+                for instance_id, instance in instance_list.items()
             }
+
             for future in as_completed(futures):
-                instance = futures[future]
+                instance = instance_list[futures[future]]
+
                 try:
                     response = future.result()
                 except Exception as e:
                     schedule_logger().exception(e)
+
                     response = {
                         'retcode': RetCode.FEDERATED_ERROR,
                         'retmsg': f'Federated schedule error: {instance.instance_id}\n{e}',
                     }
                 else:
-                    if response["retcode"] != RetCode.SUCCESS:
-                        schedule_logger().warning(failed_log(msg=log_msg, detail=response))
-                result[instance] = response
+                    if response['retcode'] != RetCode.SUCCESS:
+                        schedule_logger().error(failed_log(msg=log_msg, detail=response))
+
+                result[instance.instance_id] = response
 
         return result

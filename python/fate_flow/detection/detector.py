@@ -231,9 +231,6 @@ class Detector(Cron):
         detect_logger(job_id=task.f_job_id).info('start detect running task instance status')
 
         try:
-            if is_localhost(task.f_run_ip):
-                return
-
             latest_tasks = JobSaver.query_task(task_id=task.f_task_id, role=task.f_role, party_id=task.f_party_id)
 
             if len(latest_tasks) != 1:
@@ -256,6 +253,9 @@ class Detector(Cron):
                     'status': JobStatus.FAILED,
                     'party_status': JobStatus.FAILED,
                 })
+                return
+
+            if not task.f_run_ip or not task.f_run_port or is_localhost(task.f_run_ip):
                 return
 
             instance_list = RuntimeConfig.SERVICE_DB.get_servers()

@@ -17,15 +17,19 @@ import json
 import random
 import time
 from functools import wraps
+from io import BytesIO
 
-from flask import Response, jsonify, request as flask_request
+from flask import (
+    Response, jsonify, send_file,
+    request as flask_request,
+)
 from werkzeug.http import HTTP_STATUS_CODES
 
 from fate_arch.common import (
     CoordinationCommunicationProtocol, CoordinationProxyService,
     FederatedMode,
 )
-from fate_arch.common.base_utils import json_loads
+from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_arch.common.versions import get_fate_version
 
 from fate_flow.db.job_default_config import JobDefaultConfig
@@ -420,3 +424,16 @@ def cluster_route(func):
 
 def is_localhost(ip):
     return ip in {'127.0.0.1', '::1', '[::1]', 'localhost'}
+
+
+def send_file_in_mem(data, filename):
+    if not isinstance(data, (str, bytes)):
+        data = json_dumps(data)
+    if isinstance(data, str):
+        data = data.encode('utf-8')
+
+    f = BytesIO()
+    f.write(data)
+    f.seek(0)
+
+    return send_file(f, as_attachment=True, attachment_filename=filename)
