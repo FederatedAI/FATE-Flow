@@ -109,6 +109,23 @@ flow data upload -c ${conf_path}
 
 ```
 
+### upload-history
+
+用于查询上传历史
+
+```
+flow data upload-history -l 20
+flow data upload-history --job-id $JOB_ID
+```
+
+**选项**
+
+| 参数名      | 必选 | 类型   | 说明                |
+| :---------- | :--- | :----- | ------------------- |
+| -l --limit  | no   | int    | 返回数量 (默认: 10) |
+| -j --job_id | no   | string | 任务ID              |
+|             |      |        |                     |
+
 ### download
 
 **简要描述：** 
