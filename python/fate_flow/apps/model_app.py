@@ -577,7 +577,9 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
 
 @manager.route('/query', methods=['POST'])
 def query_model():
-    retcode, retmsg, data = model_utils.query_model_info(**(request.json or {}))
+    request_data = request.json or request.form.to_dict() or {}
+
+    retcode, retmsg, data = model_utils.query_model_info(**request_data)
     return get_json_result(retcode=retcode, retmsg=retmsg, data=data)
 
 
@@ -783,9 +785,9 @@ def homo_deploy():
     return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
 
 
-@manager.route('/archive/pack', methods=['POST'])
+@manager.route('/archive/packaging', methods=['POST'])
 @validate_request('party_model_id', 'model_version')
-def pack_model():
+def packaging_model():
     request_config = request.json or request.form.to_dict()
 
     if ENABLE_MODEL_STORE:
@@ -810,3 +812,16 @@ def pack_model():
         'path': model.archive_model_file_path,
         'hash': hash_,
     })
+
+
+@manager.route('/service/register', methods=['POST'])
+@validate_request('party_model_id', 'model_version')
+def register_service():
+    request_config = request.json or request.form.to_dict()
+
+    RuntimeConfig.SERVICE_DB.register_model(
+        party_model_id=request_config['party_model_id'],
+        model_version=request_config['model_version'],
+    )
+
+    return get_json_result()

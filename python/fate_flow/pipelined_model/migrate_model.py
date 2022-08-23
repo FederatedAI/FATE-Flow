@@ -148,7 +148,7 @@ def migration(config_data: dict):
         migrate_model_info = gather_model_info_data(migrate_model)
         save_model_info(migrate_model_info)
 
-        ClusterScheduler.cluster_command('/model/archive/pack', {
+        ClusterScheduler.cluster_command('/model/archive/packaging', {
             'party_model_id': migrate_model.party_model_id,
             'model_version': migrate_model.model_version,
         })

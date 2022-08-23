@@ -13,16 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
-import requests
-
-from fate_flow.utils.log_utils import getLogger
-from fate_flow.entity import RetCode
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.scheduling_apps.client import ControllerClient
-from fate_flow.settings import HEADERS
-from fate_flow.utils.decorators import trys
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.worker.base_worker import BaseWorker
+
 
 LOGGER = getLogger()
 
@@ -124,19 +119,3 @@ class BaseTaskWorker(BaseWorker):
             self.report_info
         ))
         ControllerClient.report_task(self.report_info)
-
-    @trys(5)
-    def request_data_exchange_proxy(self, endpoint, data, headers=None):
-        http_port = 7000
-        federation_proxy_remote_url = f"http://{self.args.run_ip}:{http_port}{endpoint}"
-        if headers:
-            response = requests.post(federation_proxy_remote_url, data=data, headers=headers)
-        else:
-            response = requests.post(federation_proxy_remote_url, json=data, headers=HEADERS)
-        if response.status_code not in {200, 201}:
-            raise Exception(
-                f"request proxy url {federation_proxy_remote_url} error, response code: {response.status_code}")
-        response_dict = response.json()
-        if response_dict["retcode"] != RetCode.SUCCESS:
-            raise Exception(f"request proxy url {federation_proxy_remote_url} error, response: {response_dict}")
-        return response_dict

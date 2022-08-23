@@ -24,7 +24,8 @@ from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.settings import ENABLE_MODEL_STORE, HOST, stat_logger
+from fate_flow.scheduler.cluster_scheduler import ClusterScheduler
+from fate_flow.settings import ENABLE_MODEL_STORE, stat_logger
 from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
 from fate_flow.utils.log_utils import sql_logger
 
@@ -197,9 +198,12 @@ def save_model_info(model_info):
         )
         sync_model.upload(True)
 
-    RuntimeConfig.SERVICE_DB.register_model(gen_party_model_id(
-        role=model.f_role, party_id=model.f_party_id, model_id=model.f_model_id
-    ), model.f_model_version)
+    ClusterScheduler.cluster_command('/model/service/register', {
+        'party_model_id': gen_party_model_id(
+            role=model.f_role, party_id=model.f_party_id, model_id=model.f_model_id
+        ),
+        'model_version': model.f_model_version,
+    })
 
     return model
 

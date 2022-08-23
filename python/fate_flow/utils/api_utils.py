@@ -13,7 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from email import header
 import json
 import random
 import time
@@ -54,6 +53,7 @@ from fate_flow.utils.requests_utils import request
 fate_version = get_fate_version() or ''
 request_headers = {
     'User-Agent': f'{FATE_FLOW_SERVICE_NAME}/{fate_version}',
+    'service': FATE_FLOW_SERVICE_NAME,
     'src_fate_ver': fate_version,
 }
 
@@ -152,7 +152,7 @@ def local_api(job_id, method, endpoint, json_body):
 
 def cluster_api(method, host, port, endpoint, json_body, headers=None):
     return federated_coordination_on_http(
-        job_id=None, method=method, host=host, port=port, endpoint=endpoint,
+        job_id='', method=method, host=host, port=port, endpoint=endpoint,
         json_body=json_body, headers=headers or request_headers.copy(),
     )
 
@@ -221,12 +221,12 @@ def federated_coordination_on_http(
             response.raise_for_status()
         except Exception as e:
             schedule_logger(job_id).warning(f'http api error: {url}\n{e}')
+            if t >= REQUEST_TRY_TIMES - 1:
+                raise e
         else:
             audit_logger(job_id).info(f'http api response: {url}\n{response.text}')
             return response.json()
 
-        if t >= REQUEST_TRY_TIMES - 1:
-            raise e
         time.sleep(get_exponential_backoff_interval(t))
 
 
@@ -257,14 +257,14 @@ def federated_coordination_on_grpc(
             )
         except Exception as e:
             schedule_logger(job_id).warning(f'grpc api error: {endpoint}\n{e}')
+            if t >= REQUEST_TRY_TIMES - 1:
+                raise e
         else:
             audit_logger(job_id).info(f'grpc api response: {endpoint}\n{_return}')
             return json_loads(_return.body.value)
         finally:
             channel.close()
 
-        if t >= REQUEST_TRY_TIMES - 1:
-            raise e
         time.sleep(get_exponential_backoff_interval(t))
 
 
@@ -383,24 +383,34 @@ def validate_request(*args, **kwargs):
 def cluster_route(func):
     @wraps(func)
     def _route(*args, **kwargs):
-        instance_id = flask_request.json.get('instance_id')
+        request_data = flask_request.json or flask_request.form.to_dict()
 
+        instance_id = request_data.get('instance_id')
         if not instance_id:
             return func(*args, **kwargs)
 
+        request_data['forward_times'] = int(request_data.get('forward_times', 0)) + 1
+        if request_data['forward_times'] > 1:
+            return error_response(429, 'Too many forwarding times.')
+
         instance = RuntimeConfig.SERVICE_DB.get_servers().get(instance_id)
-        if not instance:
+        if instance is None:
             return error_response(404, 'Flow Instance not found.')
 
         if instance.http_address == f'{HOST}:{HTTP_PORT}':
             return func(*args, **kwargs)
 
+        endpoint = flask_request.full_path
+        prefix = f'/{API_VERSION}/'
+        if endpoint.startswith(prefix):
+            endpoint = endpoint[len(prefix) - 1:]
+
         response = cluster_api(
             method=flask_request.method,
             host=instance.host,
-            post=instance.http_port,
-            endpoint=flask_request.url,
-            json_body=flask_request.json,
+            port=instance.http_port,
+            endpoint=endpoint,
+            json_body=request_data,
             headers=flask_request.headers,
         )
         return get_json_result(**response)

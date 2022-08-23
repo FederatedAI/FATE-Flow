@@ -20,7 +20,7 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HEADERS, HOST
+from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HOST
 from fate_flow.utils.log_utils import audit_logger
 from fate_flow.utils.requests_utils import request
 
@@ -73,7 +73,6 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
         dst = header.dst
         headers_str = header.task.model.dataKey if header.task.model.dataKey else "{}"
         headers = json_loads(headers_str)
-        headers.update(HEADERS)
         method = header.operator
         param_dict = json_loads(param)
         source_routing_header = []
