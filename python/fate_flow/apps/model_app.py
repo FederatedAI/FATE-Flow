@@ -19,7 +19,7 @@ from copy import deepcopy
 from uuid import uuid1
 
 import peewee
-from flask import abort, request
+from flask import abort, request, send_file
 
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_loads
@@ -310,19 +310,35 @@ def download_model(party_model_id, model_version):
 def operate_model(model_operation):
     request_config = request.json or request.form.to_dict()
     job_id = job_utils.generate_job_id()
+
     # TODO: export, import, store, restore should NOT be in the same function
     if not ModelOperation.valid(model_operation):
-        raise Exception('Can not support this operating now: {}'.format(model_operation))
+        raise Exception(f'Not supported model operation: "{model_operation}".')
     model_operation = ModelOperation(model_operation)
 
-    request_config["party_id"] = str(request_config["party_id"])
+    request_config['party_id'] = str(request_config['party_id'])
     party_model_id = model_utils.gen_party_model_id(
-        request_config["model_id"], request_config["role"], request_config["party_id"])
+        request_config['model_id'],
+        request_config['role'],
+        request_config['party_id'],
+    )
 
     if model_operation in [ModelOperation.EXPORT, ModelOperation.IMPORT]:
 
         if model_operation is ModelOperation.IMPORT:
             file = request.files.get('file')
+            if not file:
+                return error_response(400, '`file` is required.')
+
+            with DB.connection_context():
+                if MLModel.get_or_none(
+                    MLModel.f_role == request_config['role'],
+                    MLModel.f_party_id == request_config['party_id'],
+                    MLModel.f_model_id == request_config['model_id'],
+                    MLModel.f_model_version == request_config['model_version'],
+                ):
+                    return error_response(409, 'Model already exists.')
+
             filename = os.path.join(TEMP_DIRECTORY, uuid1().hex)
             os.makedirs(os.path.dirname(filename), exist_ok=True)
 
@@ -336,7 +352,6 @@ def operate_model(model_operation):
 
                 return error_response(500, f'Save file error: {e}')
 
-            request_config['file'] = filename
             model = PipelinedModel(party_model_id, request_config["model_version"])
             model.unpack_model(filename, hash_=request_config.get('hash'))
 
@@ -348,8 +363,11 @@ def operate_model(model_operation):
                     break
             else:
                 shutil.rmtree(model.model_path, ignore_errors=True)
-                return error_response(400, f'Party id {request_config["party_id"]} is not in model roles, '
-                                            f'please check if the party id is valid.')
+                return error_response(
+                    400,
+                    f'Party id {request_config["party_id"]} is not in model roles, '
+                    f'please check if the party id is valid.',
+                )
 
             model.pipelined_component.save_define_meta_from_file_to_db()
 
@@ -766,7 +784,7 @@ def get_predict_conf():
     if request_data.get('filename'):
         return send_file_in_mem(conf, request_data['filename'])
 
-    return get_json_result(conf)
+    return get_json_result(data=conf)
 
 
 @manager.route('/homo/convert', methods=['POST'])

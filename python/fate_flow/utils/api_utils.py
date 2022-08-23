@@ -394,7 +394,7 @@ def cluster_route(func):
             return func(*args, **kwargs)
 
         request_data['forward_times'] = int(request_data.get('forward_times', 0)) + 1
-        if request_data['forward_times'] > 1:
+        if request_data['forward_times'] > 2:
             return error_response(429, 'Too many forwarding times.')
 
         instance = RuntimeConfig.SERVICE_DB.get_servers().get(instance_id)

@@ -68,8 +68,10 @@ class ModelStore(ComponentBase):
     def _run(self, input_cpn: ComponentInputProtocol):
         parameters = input_cpn.parameters
         model_storage = get_model_storage(parameters)
-        model_storage.store(parameters["model_id"], parameters["model_version"],
-                            parameters["store_address"], parameters.get("force_update", False))
+        model_storage.store(
+            parameters["model_id"], parameters["model_version"],
+            parameters["store_address"], parameters.get("force_update", False),
+        )
 
 
 model_restore_cpn_meta = ComponentMeta("ModelRestore")
@@ -82,10 +84,14 @@ class ModelRestoreParam(BaseParam):
         model_id: str = None,
         model_version: str = None,
         store_address: dict = None,
+        force_update: bool = False,
+        hash_: str = None,
     ):
         self.model_id = model_id
         self.model_version = model_version
         self.store_address = store_address
+        self.force_update = force_update
+        self.hash_ = hash_
 
     def check(self):
         return True
@@ -96,4 +102,8 @@ class ModelRestore(ComponentBase):
     def _run(self, input_cpn: ComponentInputProtocol):
         parameters = input_cpn.parameters
         model_storage = get_model_storage(parameters)
-        model_storage.restore(parameters["model_id"], parameters["model_version"], parameters["store_address"])
+        model_storage.restore(
+            parameters["model_id"], parameters["model_version"],
+            parameters["store_address"], parameters.get("force_update", False),
+            parameters.get("hash_"),
+        )
