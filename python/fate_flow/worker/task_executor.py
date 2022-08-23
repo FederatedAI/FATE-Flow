@@ -263,6 +263,12 @@ class TaskExecutor(BaseTaskWorker):
             self.report_info["party_status"] = TaskStatus.FAILED
             self.generate_error_report()
             LOGGER.exception(e)
+            try:
+                LOGGER.info("start destroy sessions success")
+                sess.destroy_all_sessions()
+                LOGGER.info("destroy all sessions success")
+            except Exception as e:
+                LOGGER.exception(e)
         finally:
             try:
                 self.report_info["end_time"] = current_timestamp()
