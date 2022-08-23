@@ -383,7 +383,17 @@ def operate_model(model_operation):
                     )
                     sync_component.upload()
 
-            model_info = model_utils.gather_model_info_data(model, f_job_id=job_id, f_imported=1)
+
+            model_info = model_utils.gather_model_info_data(model)
+            # TODO: update pipeline_model
+            model_info.update({
+                'f_role': request_config['role'],
+                'f_party_id': request_config['party_id'],
+                'f_model_id': request_config['model_id'],
+                'f_model_version': request_config['model_version'],
+                'f_job_id': job_id,
+                'f_imported': 1,
+            })
             model_utils.save_model_info(model_info)
 
             return get_json_result()
