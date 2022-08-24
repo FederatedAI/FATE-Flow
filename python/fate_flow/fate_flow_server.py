@@ -55,10 +55,12 @@ from fate_flow.utils.xthread import ThreadPoolExecutor
 
 
 if __name__ == '__main__':
-    stat_logger.info(f"project base: {file_utils.get_project_base_directory()}, fate base: {file_utils.get_fate_directory()}, fate flow base: {get_fate_flow_directory()}")
-    # init
-    # signal.signal(signal.SIGTERM, job_utils.cleaning)
-    # signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
+    stat_logger.info(
+        f'project base: {file_utils.get_project_base_directory()}, '
+        f'fate base: {file_utils.get_fate_directory()}, '
+        f'fate flow base: {get_fate_flow_directory()}'
+    )
+
     # init db
     init_flow_db()
     init_arch_db()
