@@ -16,10 +16,15 @@
 from flask import request
 
 from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
+from federatedml.protobuf.model_merge.merge_hetero_models import hetero_model_merge
 
 from fate_flow.db.component_registry import ComponentRegistry
-from fate_flow.utils.api_utils import error_response, get_json_result
+from fate_flow.model.sync_model import SyncComponent
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.settings import ENABLE_MODEL_STORE
+from fate_flow.utils.api_utils import error_response, get_json_result, validate_request
 from fate_flow.utils.detect_utils import check_config
+from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 
@@ -67,3 +72,98 @@ def validate_component_param():
         return error_response(400, str(e))
 
     return get_json_result()
+
+
+@manager.route('/hetero/merge', methods=['POST'])
+@validate_request(
+    'model_id', 'model_version', 'guest_party_id', 'host_party_ids',
+    'component_name', 'model_alias', 'model_type', 'output_format',
+)
+def hetero_merge():
+    request_data = request.json
+
+    if ENABLE_MODEL_STORE:
+        sync_component = SyncComponent(
+            role='guest',
+            party_id=request_data['guest_party_id'],
+            model_id=request_data['model_id'],
+            model_version=request_data['model_version'],
+            component_name=request_data['component_name'],
+        )
+        if not sync_component.local_exists() and sync_component.remote_exists():
+            sync_component.download(True)
+
+        for party_id in request_data['host_party_ids']:
+            sync_component = SyncComponent(
+                role='host',
+                party_id=party_id,
+                model_id=request_data['model_id'],
+                model_version=request_data['model_version'],
+                component_name=request_data['component_name'],
+            )
+            if not sync_component.local_exists() and sync_component.remote_exists():
+                sync_component.download(True)
+
+    model = PipelinedModel(
+        gen_party_model_id(
+            request_data['model_id'],
+            'guest',
+            request_data['guest_party_id'],
+        ),
+        request_data['model_version'],
+    ).read_component_model(
+        request_data['component_name'],
+        request_data['model_alias'],
+        output_json=True,
+    )
+
+    guest_param = None
+    guest_meta = None
+
+    for k, v in model.items():
+        if k.endswith('Param'):
+            guest_param = v
+        elif k.endswith('Meta'):
+            guest_meta = v
+        else:
+            return error_response(400, f'Unknown guest model key: "{k}".')
+
+    if guest_param is None or guest_meta is None:
+        return error_response(400, 'Invalid guest model.')
+
+    host_params = []
+    host_metas = []
+
+    for party_id in request_data['host_party_ids']:
+        model = PipelinedModel(
+            gen_party_model_id(
+                request_data['model_id'],
+                'host',
+                party_id,
+            ),
+            request_data['model_version'],
+        ).read_component_model(
+            request_data['component_name'],
+            request_data['model_alias'],
+            output_json=True,
+        )
+
+        for k, v in model.items():
+            if k.endswith('Param'):
+                host_params.append(v)
+            elif k.endswith('Meta'):
+                host_metas.append(v)
+            else:
+                return error_response(400, f'Unknown host model key: "{k}".')
+
+    if not host_params or not host_metas or len(host_params) != len(host_metas):
+        return error_response(400, 'Invalid host models.')
+
+    data = hetero_model_merge(
+        guest_param, guest_meta,
+        host_params, host_metas,
+        request_data['model_type'],
+        request_data['output_format'],
+        request_data.get('target_name', 'y')
+    )
+    return get_json_result(data=data)
