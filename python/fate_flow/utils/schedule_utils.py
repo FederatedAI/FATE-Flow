@@ -59,25 +59,23 @@ def rerun_signal(job_id, set_or_reset: bool):
 def schedule_lock(func):
     @wraps(func)
     def _wrapper(*args, **kwargs):
-        _lock = False
-        if "lock" in kwargs.keys():
-            _lock = kwargs.pop("lock")
-            if _lock:
-                job = kwargs.get("job")
-                schedule_logger(job.f_job_id).info(f"get job {job.f_job_id} schedule lock")
-                _result = None
-                if not ready_signal(job_id=job.f_job_id, set_or_reset=True):
-                    schedule_logger(job.f_job_id).info(f"get job {job.f_job_id} schedule lock failed, job may be handled by another scheduler")
-                    return
-                try:
-                    _result = func(*args, **kwargs)
-                except Exception as e:
-                    raise e
-                finally:
-                    ready_signal(job_id=job.f_job_id, set_or_reset=False)
-                    schedule_logger(job.f_job_id).info(f"release job {job.f_job_id} schedule lock")
-                    return _result
-        if not _lock:
+        _lock = kwargs.pop("lock", False)
+        if _lock:
+            job = kwargs.get("job")
+            schedule_logger(job.f_job_id).info(f"get job {job.f_job_id} schedule lock")
+            _result = None
+            if not ready_signal(job_id=job.f_job_id, set_or_reset=True):
+                schedule_logger(job.f_job_id).info(f"get job {job.f_job_id} schedule lock failed, job may be handled by another scheduler")
+                return
+            try:
+                _result = func(*args, **kwargs)
+            except Exception as e:
+                raise e
+            finally:
+                ready_signal(job_id=job.f_job_id, set_or_reset=False)
+                schedule_logger(job.f_job_id).info(f"release job {job.f_job_id} schedule lock")
+                return _result
+        else:
             return func(*args, **kwargs)
     return _wrapper
 
