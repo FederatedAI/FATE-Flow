@@ -14,26 +14,34 @@
 #  limitations under the License.
 #
 import time
+from typing import List
 
 from fate_arch.common.base_utils import current_timestamp
+from fate_arch.session import Session
+
 from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.db.db_models import DB, Job, DependenciesStorageMeta
-from fate_arch.session import Session
+from fate_flow.db.db_models import DB, DependenciesStorageMeta, Job
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.utils.log_utils import detect_logger
-from fate_flow.manager.dependence_manager import DependenceManager
-from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus, FederatedSchedulingStatusCode
-from fate_flow.settings import SESSION_VALID_PERIOD
-from fate_flow.utils import cron, job_utils, process_utils
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.entity.run_status import (
+    EndStatus, FederatedSchedulingStatusCode,
+    JobStatus, TaskStatus,
+)
+from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.manager.resource_manager import ResourceManager
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.scheduler.federated_scheduler import FederatedScheduler
+from fate_flow.settings import SESSION_VALID_PERIOD
+from fate_flow.utils.api_utils import is_localhost
+from fate_flow.utils.cron import Cron
+from fate_flow.utils.job_utils import check_job_is_timeout, generate_retry_interval
+from fate_flow.utils.process_utils import check_process
+from fate_flow.utils.log_utils import detect_logger
 
 
-class Detector(cron.Cron):
+class Detector(Cron):
     def run_do(self):
         self.detect_running_task()
         self.detect_end_task()
@@ -121,7 +129,7 @@ class Detector(cron.Cron):
             stop_jobs = set()
             for job in running_jobs:
                 try:
-                    if job_utils.check_job_is_timeout(job):
+                    if check_job_is_timeout(job):
                         stop_jobs.add(job)
                 except Exception as e:
                     detect_logger(job_id=job.f_job_id).exception(e)
@@ -167,7 +175,7 @@ class Detector(cron.Cron):
             upload_process_list = DependenciesStorageMeta.select().where(DependenciesStorageMeta.f_upload_status==True)
             for dependence in upload_process_list:
                 if int(dependence.f_pid):
-                    is_alive = process_utils.check_process(pid=int(dependence.f_pid))
+                    is_alive = check_process(pid=int(dependence.f_pid))
                     if not is_alive:
                         try:
                             DependenceManager.kill_upload_process(version=dependence.f_version,
@@ -206,7 +214,7 @@ class Detector(cron.Cron):
             detect_logger().info('finish detect expired session')
 
     @classmethod
-    def request_stop_jobs(cls, jobs: [Job], stop_msg, stop_status):
+    def request_stop_jobs(cls, jobs: List[Job], stop_msg, stop_status):
         if not len(jobs):
             return
         detect_logger().info(f"have {len(jobs)} should be stopped, because of {stop_msg}")
@@ -220,27 +228,45 @@ class Detector(cron.Cron):
 
     @classmethod
     def detect_cluster_instance_status(cls, task, stop_job_ids):
-        detect_logger().info('start detect running task instance status')
+        detect_logger(job_id=task.f_job_id).info('start detect running task instance status')
+
         try:
-            if task.f_run_ip in ["127.0.0.1", "localhost"]:
+            latest_tasks = JobSaver.query_task(task_id=task.f_task_id, role=task.f_role, party_id=task.f_party_id)
+
+            if len(latest_tasks) != 1:
+                detect_logger(job_id=task.f_job_id).error(
+                    f'query latest tasks of {task.f_task_id} failed, '
+                    f'have {len(latest_tasks)} tasks'
+                )
                 return
-            latest_task = JobSaver.query_task(task_id=task.f_task_id, role=task.f_role, party_id=task.f_party_id)[0]
-            if latest_task.f_task_version != task.f_task_version:
-                JobSaver.update_task_status(task_info={
-                    "task_id": task.f_task_id,
-                    "role": task.f_role,
-                    "party_id": task.f_party_id,
-                    "task_version": task.f_task_version,
-                    "status": JobStatus.FAILED,
-                    "party_status": JobStatus.FAILED
+
+            if task.f_task_version != latest_tasks[0].f_task_version:
+                detect_logger(job_id=task.f_job_id).info(
+                    f'{task.f_task_id} {task.f_task_version} is not the latest task, '
+                     'update task status to failed'
+                )
+                JobSaver.update_task_status({
+                    'task_id': task.f_task_id,
+                    'role': task.f_role,
+                    'party_id': task.f_party_id,
+                    'task_version': task.f_task_version,
+                    'status': JobStatus.FAILED,
+                    'party_status': JobStatus.FAILED,
                 })
                 return
+
+            if not task.f_run_ip or not task.f_run_port or is_localhost(task.f_run_ip):
+                return
+
             instance_list = RuntimeConfig.SERVICE_DB.get_servers()
-            if task.f_run_ip and task.f_run_port:
-                if ":".join([task.f_run_ip, str(task.f_run_port)]) not in [instance.http_address for instance in instance_list]:
-                    detect_logger(job_id=task.f_job_id).exception(f'detect cluster instance status failed, add task'
-                                                                  f' {task.f_task_id} {task.f_task_version} to stop list')
-                    stop_job_ids.add(task.f_job_id)
+            instance_list = {instance.http_address for instance_id, instance in instance_list.items()}
+
+            if f'{task.f_run_ip}:{task.f_run_port}' not in instance_list:
+                detect_logger(job_id=task.f_job_id).warning(
+                     'detect cluster instance status failed, '
+                    f'add task {task.f_task_id} {task.f_task_version} to stop list'
+                )
+                stop_job_ids.add(task.f_job_id)
         except Exception as e:
             detect_logger(job_id=task.f_job_id).exception(e)
 
@@ -274,7 +300,7 @@ class FederatedDetector(Detector):
                         exception = e
                         detect_logger(job_id=job.f_job_id).debug(e)
                     finally:
-                        retry_interval = job_utils.generate_retry_interval(cur_retry, max_retry_cnt, long_retry_cnt)
+                        retry_interval = generate_retry_interval(cur_retry, max_retry_cnt, long_retry_cnt)
                         time.sleep(retry_interval)
                         cur_retry += 1
                 if exception is not None:

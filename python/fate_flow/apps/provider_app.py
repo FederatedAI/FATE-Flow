@@ -23,8 +23,10 @@ from fate_flow.entity import ComponentProvider, RetCode
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.scheduler.cluster_scheduler import ClusterScheduler
-from fate_flow.utils.api_utils import error_response, get_json_result
-from fate_flow.utils.api_utils import validate_request
+from fate_flow.utils.api_utils import (
+    error_response, get_json_result,
+    validate_request,
+)
 
 
 @manager.route('/update', methods=['POST'])
@@ -52,11 +54,18 @@ def register():
                                  path=info["path"],
                                  class_path=info.get("class_path", ComponentRegistry.get_default_class_path()))
     code, std = WorkerManager.start_general_worker(worker_name=WorkerName.PROVIDER_REGISTRAR, provider=provider)
-    if code == 0:
-        federated_response = ClusterScheduler.update_provider({"name": info["name"], "version": info["version"]})
-        return get_json_result(federated_response)
-    else:
+
+    if code != 0:
         return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"register failed:\n{std}")
+
+    federated_response = ClusterScheduler.cluster_command(
+        "/provider/update",
+        {
+            "name": info["name"],
+            "version": info["version"],
+        },
+    )
+    return get_json_result(data=federated_response)
 
 
 @manager.route('/registry/get', methods=['POST'])

@@ -14,15 +14,8 @@
 #  limitations under the License.
 #
 import os
-import sys
 
 from fate_flow.entity.types import ProcessRole
-
-
-if sys.version_info < (3, 7):
-    from backports.datetime_fromisoformat import MonkeyPatch
-
-    MonkeyPatch.patch_fromisoformat()
 
 
 def set_env():

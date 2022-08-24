@@ -32,7 +32,7 @@ from fate_flow.utils import detect_utils, requests_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
 
 JOB_OPERATE_FUNC = ["submit_job", "stop_job", "query_job", "data_view_query", "clean_job", "clean_queue"]
-JOB_FUNC = ["job_config", "job_log"]
+JOB_FUNC = ["job_config", "job_log_download"]
 TASK_OPERATE_FUNC = ["query_task"]
 TRACKING_FUNC = ["component_parameters", "component_metric_all", "component_metric_delete", "component_metrics",
                  "component_output_model", "component_output_data", "component_output_data_table"]
@@ -51,6 +51,7 @@ def prettify(response, verbose=True):
 
 def call_fun(func, config_data, dsl_path, config_path):
     server_url = "http://{}:{}/{}".format(HOST, HTTP_PORT, API_VERSION)
+    response = None
 
     if func in JOB_OPERATE_FUNC:
         if func == 'submit_job':
@@ -104,12 +105,12 @@ def call_fun(func, config_data, dsl_path, config_path):
                 response_data['directory'] = download_directory
                 response_data['retmsg'] = 'download successfully, please check {} directory'.format(download_directory)
                 response = response_data
-        elif func == 'job_log':
+        elif func == 'job_log_download':
             detect_utils.check_config(config=config_data, required_arguments=['job_id', 'output_path'])
             job_id = config_data['job_id']
             tar_file_name = 'job_{}_log.tar.gz'.format(job_id)
             extract_dir = os.path.join(config_data['output_path'], 'job_{}_log'.format(job_id))
-            with closing(requests_utils.request(method="get", url="/".join([server_url, func.replace('_', '/')]), json=config_data,
+            with closing(requests_utils.request(method="post", url="/".join([server_url, func.replace('_', '/')]), json=config_data,
                                                 stream=True)) as response:
                 if response.status_code == 200:
                     download_from_request(http_response=response, tar_file_name=tar_file_name, extract_dir=extract_dir)

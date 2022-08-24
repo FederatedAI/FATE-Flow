@@ -24,7 +24,8 @@ from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
-from fate_flow.settings import ENABLE_MODEL_STORE, HOST, stat_logger
+from fate_flow.scheduler.cluster_scheduler import ClusterScheduler
+from fate_flow.settings import ENABLE_MODEL_STORE, stat_logger
 from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
 from fate_flow.utils.log_utils import sql_logger
 
@@ -120,9 +121,7 @@ def query_model_info_from_file(model_id='*', model_version='*', role='*', party_
     return 0, 'Query model info from local model success.', models
 
 
-def gather_model_info_data(model: PipelinedModel, **kwargs):
-    kwargs = {k if k.startswith('f_') else f'f_{k}': v for k, v in kwargs.items()}
-
+def gather_model_info_data(model: PipelinedModel):
     pipeline = model.read_pipeline_model()
 
     model_info = {}
@@ -143,7 +142,6 @@ def gather_model_info_data(model: PipelinedModel, **kwargs):
         model_info['f_initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
         model_info['f_initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
 
-    model_info.update(kwargs)
     return model_info
 
 
@@ -197,9 +195,12 @@ def save_model_info(model_info):
         )
         sync_model.upload(True)
 
-    RuntimeConfig.SERVICE_DB.register_model(gen_party_model_id(
-        role=model.f_role, party_id=model.f_party_id, model_id=model.f_model_id
-    ), model.f_model_version)
+    ClusterScheduler.cluster_command('/model/service/register', {
+        'party_model_id': gen_party_model_id(
+            role=model.f_role, party_id=model.f_party_id, model_id=model.f_model_id
+        ),
+        'model_version': model.f_model_version,
+    })
 
     return model
 
@@ -245,7 +246,7 @@ def models_group_by_party_model_id_and_model_version():
         MLModel.f_model_id,
         MLModel.f_model_version,
     ]
-    return MLModel.select(*args).where(MLModel.f_archive_from_ip == HOST).group_by(*args)
+    return MLModel.select(*args).group_by(*args)
 
 
 @DB.connection_context()

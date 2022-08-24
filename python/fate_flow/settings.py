@@ -38,12 +38,7 @@ FATE_VERSION_DEPENDENCIES_PATH = os.path.join(get_fate_flow_directory(), "versio
 CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
 INCOMPATIBLE_VERSION_CONF = os.path.join(FATE_FLOW_CONF_PATH, "incompatible_version.yaml")
 SUBPROCESS_STD_LOG_NAME = "std.log"
-HEADERS = {
-    "Content-Type": "application/json",
-    "Connection": "close",
-    "service": FATE_FLOW_SERVICE_NAME
-}
-_ONE_DAY_IN_SECONDS = 60 * 60 * 24
+
 GRPC_SERVER_MAX_WORKERS = None
 MAX_TIMESTAMP_INTERVAL = 60
 
@@ -53,6 +48,8 @@ ERROR_REPORT_WITH_PATH = False
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
 
 REQUEST_TRY_TIMES = 3
+REQUEST_WAIT_SEC = 2
+REQUEST_MAX_WAIT_SEC = 300
 
 USE_REGISTRY = get_base_config("use_registry")
 
@@ -67,6 +64,8 @@ GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("grpc_port")
 NGINX_HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("host") or HOST
 NGINX_HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("http_port") or HTTP_PORT
 NGINX_GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("grpc_port") or GRPC_PORT
+
+RANDOM_INSTANCE_ID = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("random_instance_id", False)
 
 PROXY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol")

@@ -13,37 +13,39 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import glob
-import json
 import os
 import shutil
 from copy import deepcopy
-from datetime import date, datetime
 from uuid import uuid1
 
 import peewee
-from flask import Response, request, send_file
+from flask import abort, request, send_file
 
 from fate_arch.common import FederatedMode
-from fate_arch.common.base_utils import json_dumps, json_loads
+from fate_arch.common.base_utils import json_loads
 
 from fate_flow.db.db_models import (
-    DB, MachineLearningModelInfo as MLModel,
-    ModelTag, PipelineComponentMeta, Tag,
+    DB, ModelTag, PipelineComponentMeta, Tag,
+    MachineLearningModelInfo as MLModel,
 )
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import JobConfigurationBase
 from fate_flow.entity.types import ModelOperation, TagOperation
 from fate_flow.model.sync_model import SyncComponent, SyncModel
-from fate_flow.pipelined_model import deploy_model, migrate_model, pipelined_model, publish_model
+from fate_flow.pipelined_model import deploy_model, migrate_model, publish_model
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.settings import ENABLE_MODEL_STORE, IS_STANDALONE, TEMP_DIRECTORY, stat_logger
-from fate_flow.utils import detect_utils, job_utils, model_utils, schedule_utils
-from fate_flow.utils.api_utils import error_response, federated_api, get_json_result, validate_request
-from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
+from fate_flow.utils import detect_utils, job_utils, model_utils
+from fate_flow.utils.api_utils import (
+    error_response, federated_api, get_json_result,
+    send_file_in_mem, validate_request,
+)
+from fate_flow.utils.base_utils import compare_version
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.job_utils import PIPELINE_COMPONENT_NAME
+from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
 
 @manager.route('/load', methods=['POST'])
@@ -308,19 +310,35 @@ def download_model(party_model_id, model_version):
 def operate_model(model_operation):
     request_config = request.json or request.form.to_dict()
     job_id = job_utils.generate_job_id()
+
     # TODO: export, import, store, restore should NOT be in the same function
     if not ModelOperation.valid(model_operation):
-        raise Exception('Can not support this operating now: {}'.format(model_operation))
+        raise Exception(f'Not supported model operation: "{model_operation}".')
     model_operation = ModelOperation(model_operation)
 
-    request_config["party_id"] = str(request_config["party_id"])
+    request_config['party_id'] = str(request_config['party_id'])
     party_model_id = model_utils.gen_party_model_id(
-        request_config["model_id"], request_config["role"], request_config["party_id"])
+        request_config['model_id'],
+        request_config['role'],
+        request_config['party_id'],
+    )
 
     if model_operation in [ModelOperation.EXPORT, ModelOperation.IMPORT]:
 
         if model_operation is ModelOperation.IMPORT:
             file = request.files.get('file')
+            if not file:
+                return error_response(400, '`file` is required.')
+
+            with DB.connection_context():
+                if MLModel.get_or_none(
+                    MLModel.f_role == request_config['role'],
+                    MLModel.f_party_id == request_config['party_id'],
+                    MLModel.f_model_id == request_config['model_id'],
+                    MLModel.f_model_version == request_config['model_version'],
+                ):
+                    return error_response(409, 'Model already exists.')
+
             filename = os.path.join(TEMP_DIRECTORY, uuid1().hex)
             os.makedirs(os.path.dirname(filename), exist_ok=True)
 
@@ -334,8 +352,7 @@ def operate_model(model_operation):
 
                 return error_response(500, f'Save file error: {e}')
 
-            request_config['file'] = filename
-            model = pipelined_model.PipelinedModel(party_model_id, request_config["model_version"])
+            model = PipelinedModel(party_model_id, request_config["model_version"])
             model.unpack_model(filename, hash_=request_config.get('hash'))
 
             pipeline = model.read_pipeline_model()
@@ -346,8 +363,11 @@ def operate_model(model_operation):
                     break
             else:
                 shutil.rmtree(model.model_path, ignore_errors=True)
-                return error_response(400, f'Party id {request_config["party_id"]} is not in model roles, '
-                                            f'please check if the party id is valid.')
+                return error_response(
+                    400,
+                    f'Party id {request_config["party_id"]} is not in model roles, '
+                    f'please check if the party id is valid.',
+                )
 
             model.pipelined_component.save_define_meta_from_file_to_db()
 
@@ -363,7 +383,17 @@ def operate_model(model_operation):
                     )
                     sync_component.upload()
 
-            model_info = model_utils.gather_model_info_data(model, f_imported=1)
+
+            model_info = model_utils.gather_model_info_data(model)
+            # TODO: update pipeline_model
+            model_info.update({
+                'f_role': request_config['role'],
+                'f_party_id': request_config['party_id'],
+                'f_model_id': request_config['model_id'],
+                'f_model_version': request_config['model_version'],
+                'f_job_id': job_id,
+                'f_imported': 1,
+            })
             model_utils.save_model_info(model_info)
 
             return get_json_result()
@@ -378,7 +408,7 @@ def operate_model(model_operation):
                 if sync_model.remote_exists():
                     sync_model.download(True)
 
-            model = pipelined_model.PipelinedModel(party_model_id, request_config["model_version"])
+            model = PipelinedModel(party_model_id, request_config["model_version"])
             if not model.exists():
                 return error_response(404, f"Model {party_model_id} {request_config['model_version']} does not exist.")
 
@@ -577,9 +607,10 @@ def gen_model_operation_job_config(config_data: dict, model_operation: ModelOper
 
 @manager.route('/query', methods=['POST'])
 def query_model():
-    retcode, retmsg, data = model_utils.query_model_info(**(request.json or {}))
-    result = {"retcode": retcode, "retmsg": retmsg, "data": data}
-    return Response(json.dumps(result, sort_keys=False, cls=DatetimeEncoder), mimetype="application/json")
+    request_data = request.json or request.form.to_dict() or {}
+
+    retcode, retmsg, data = model_utils.query_model_info(**request_data)
+    return get_json_result(retcode=retcode, retmsg=retmsg, data=data)
 
 
 @manager.route('/deploy', methods=['POST'])
@@ -706,63 +737,64 @@ def do_deploy():
     return get_json_result(retcode=retcode, retmsg=retmsg)
 
 
-@manager.route('/get/predict/dsl', methods=['POST'])
-def get_predict_dsl():
-    request_data = request.json or {}
-    request_data['query_filters'] = ['role', 'inference_dsl']
+def get_dsl_and_conf():
+    request_data = request.json or request.form.to_dict() or {}
+    request_data['query_filters'] = [
+        'model_id',
+        'model_version',
+        'role',
+        'party_id',
+        'train_runtime_conf',
+        'inference_dsl',
+    ]
+
     retcode, retmsg, data = model_utils.query_model_info(**request_data)
 
     if not data:
-        return error_response(210, "No model found, please check if arguments are specified correctly.")
+        abort(error_response(
+            210,
+            'No model found, '
+            'please check if arguments are specified correctly.',
+        ))
 
     for _data in data:
-        if _data.get("f_role") in {"guest", "host"}:
+        if _data.get('f_role') in {'guest', 'host'}:
             data = _data
             break
     else:
-        return error_response(210, "can not found guest or host model, please get predict dsl on guest or host.")
+        abort(error_response(
+            210,
+            'Cannot found guest or host model, '
+            'please get predict dsl on guest or host.',
+        ))
 
-    if request_data.get("filename"):
-        os.makedirs(TEMP_DIRECTORY, exist_ok=True)
-        temp_filepath = os.path.join(TEMP_DIRECTORY, uuid1().hex)
-        with open(temp_filepath, "w") as fout:
-            fout.write(json_dumps(data['f_inference_dsl'], indent=4))
-        return send_file(open(temp_filepath, "rb"), as_attachment=True,
-                            attachment_filename=request_data["filename"])
+    return request_data, data
+
+
+@manager.route('/get/predict/dsl', methods=['POST'])
+def get_predict_dsl():
+    request_data, data = get_dsl_and_conf()
+
+    if request_data.get('filename'):
+        return send_file_in_mem(data['f_inference_dsl'], request_data['filename'])
 
     return get_json_result(data=data['f_inference_dsl'])
 
 
 @manager.route('/get/predict/conf', methods=['POST'])
-@validate_request('model_id', 'model_version')
 def get_predict_conf():
-    request_data = request.json
-    model_dir = os.path.join(get_fate_flow_directory(), 'model_local_cache')
-    model_fp_list = glob.glob(model_dir + f"/guest#*#{request_data['model_id']}/{request_data['model_version']}")
-    if model_fp_list:
-        fp = model_fp_list[0]
-        pipeline_model = pipelined_model.PipelinedModel(fp.split('/')[-2], fp.split('/')[-1])
-        pipeline = pipeline_model.read_pipeline_model()
-        predict_dsl = json_loads(pipeline.inference_dsl)
+    request_data, data = get_dsl_and_conf()
 
-        train_runtime_conf = json_loads(pipeline.train_runtime_conf)
-        parser = schedule_utils.get_dsl_parser_by_version(train_runtime_conf.get('dsl_version', '1') )
-        predict_conf = parser.generate_predict_conf_template(predict_dsl, train_runtime_conf,
-                                                             request_data['model_id'],
-                                                             request_data['model_version'])
-    else:
-        predict_conf = ''
-    if predict_conf:
-        if request_data.get("filename"):
-            os.makedirs(TEMP_DIRECTORY, exist_ok=True)
-            temp_filepath = os.path.join(TEMP_DIRECTORY, uuid1().hex)
-            with open(temp_filepath, "w") as fout:
-                fout.write(json_dumps(predict_conf, indent=4))
-            return send_file(open(temp_filepath, "rb"), as_attachment=True,
-                             attachment_filename=request_data["filename"])
-        else:
-            return get_json_result(data=predict_conf)
-    return error_response(210, "No model found, please check if arguments are specified correctly.")
+    parser = get_dsl_parser_by_version(data['f_train_runtime_conf'].get('dsl_version', 1))
+    conf = parser.generate_predict_conf_template(
+        data['f_inference_dsl'], data['f_train_runtime_conf'],
+        data['f_model_id'], data['f_model_version'],
+    )
+
+    if request_data.get('filename'):
+        return send_file_in_mem(conf, request_data['filename'])
+
+    return get_json_result(data=conf)
 
 
 @manager.route('/homo/convert', methods=['POST'])
@@ -784,11 +816,48 @@ def homo_deploy():
     return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
 
 
-class DatetimeEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.strftime('%Y-%m-%d %H:%M:%S')
-        elif isinstance(obj, date):
-            return obj.strftime('%Y-%m-%d')
-        else:
-            return json.JSONEncoder.default(self, obj)
+@manager.route('/archive/packaging', methods=['POST'])
+@validate_request('party_model_id', 'model_version')
+def packaging_model():
+    request_data = request.json or request.form.to_dict()
+
+    if ENABLE_MODEL_STORE:
+        sync_model = SyncModel(
+            party_model_id=request_data['party_model_id'],
+            model_version=request_data['model_version'],
+        )
+        if sync_model.remote_exists():
+            sync_model.download(True)
+
+    model = PipelinedModel(
+        model_id=request_data['party_model_id'],
+        model_version=request_data['model_version'],
+    )
+
+    if not model.exists():
+        return error_response(404, 'Model not found.')
+
+    hash_ = model.packaging_model()
+
+    return get_json_result(data={
+        'party_model_id': model.party_model_id,
+        'model_version': model.model_version,
+        'path': model.archive_model_file_path,
+        'hash': hash_,
+    })
+
+
+@manager.route('/service/register', methods=['POST'])
+@validate_request('party_model_id', 'model_version')
+def register_service():
+    request_data = request.json or request.form.to_dict()
+
+    RuntimeConfig.SERVICE_DB.register_model(
+        party_model_id=request_data['party_model_id'],
+        model_version=request_data['model_version'],
+    )
+
+    return get_json_result(data={
+        'party_model_id': request_data['party_model_id'],
+        'model_version': request_data['model_version'],
+    })

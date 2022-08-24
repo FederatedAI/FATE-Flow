@@ -21,8 +21,9 @@ class FlowInstance(BaseEntity):
         self.instance_id = None,
         self.timestamp = None,
         self.version = None,
-        self.grpc_address = None,
-        self.http_address = None
+        self.host = None,
+        self.grpc_port = None,
+        self.http_port = None
         for k, v in kwargs.items():
             if hasattr(self, k):
                 setattr(self, k, v)
@@ -34,3 +35,11 @@ class FlowInstance(BaseEntity):
                 continue
             d[k] = v
         return d
+
+    @property
+    def grpc_address(self):
+        return f'{self.host}:{self.grpc_port}'
+
+    @property
+    def http_address(self):
+        return f'{self.host}:{self.http_port}'

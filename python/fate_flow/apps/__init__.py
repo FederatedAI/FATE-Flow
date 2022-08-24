@@ -19,6 +19,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 from flask import Blueprint, Flask, request
+from werkzeug.wrappers.request import Request
 
 from fate_arch.common.base_utils import CustomJSONEncoder
 from fate_flow.entity import RetCode
@@ -33,9 +34,11 @@ logger = logging.getLogger('flask.app')
 for h in access_logger.handlers:
     logger.addHandler(h)
 
+Request.json = property(lambda self: self.get_json(force=True, silent=True))
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
-app.errorhandler(500)(server_error_response)
+app.errorhandler(Exception)(server_error_response)
 app.json_encoder = CustomJSONEncoder
 
 pages_dir = [

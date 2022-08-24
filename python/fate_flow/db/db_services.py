@@ -25,6 +25,7 @@ from urllib import parse
 from kazoo.client import KazooClient
 from kazoo.exceptions import NodeExistsError, NoNodeError, ZookeeperError
 from kazoo.security import make_digest_acl
+from shortuuid import ShortUUID
 
 from fate_arch.common.versions import get_fate_version
 
@@ -33,21 +34,23 @@ from fate_flow.entity.instance import FlowInstance
 from fate_flow.errors.error_services import *
 from fate_flow.settings import (
     FATE_FLOW_MODEL_TRANSFER_ENDPOINT, GRPC_PORT, HOST, HTTP_PORT, NGINX_HOST, NGINX_HTTP_PORT,
-    USE_REGISTRY, ZOOKEEPER, ZOOKEEPER_REGISTRY, stat_logger,
+    RANDOM_INSTANCE_ID, USE_REGISTRY, ZOOKEEPER, ZOOKEEPER_REGISTRY, stat_logger,
 )
 from fate_flow.utils.model_utils import models_group_by_party_model_id_and_model_version
 
 
 model_download_endpoint = f'http://{NGINX_HOST}:{NGINX_HTTP_PORT}{FATE_FLOW_MODEL_TRANSFER_ENDPOINT}'
 
+instance_id = ShortUUID().random(length=8) if RANDOM_INSTANCE_ID else f'flow-{HOST}-{HTTP_PORT}'
 server_instance = (
     f'{HOST}:{GRPC_PORT}',
     json.dumps({
-        'instance_id': f'flow-{HOST.rsplit(".", 1)[-1]}-{HTTP_PORT}',
+        'instance_id': instance_id,
         'timestamp': round(time.time() * 1000),
-        'version': get_fate_version(),
-        'grpc_address': f'{HOST}:{GRPC_PORT}',
-        'http_address': f'{HOST}:{HTTP_PORT}',
+        'version': get_fate_version() or '',
+        'host': HOST,
+        'grpc_port': GRPC_PORT,
+        'http_port': HTTP_PORT,
     }),
 )
 
@@ -206,7 +209,11 @@ class ServicesDB(abc.ABC):
             self.unregister_model(model.f_party_model_id, model.f_model_version)
 
     def get_servers(self):
-        return [FlowInstance(**json.loads(value)) for znode, value in self.get_urls('flow-server', True)]
+        servers = {}
+        for znode, value in self.get_urls('flow-server', True):
+            instance = FlowInstance(**json.loads(value))
+            servers[instance.instance_id] = instance
+        return servers
 
 
 class ZooKeeperDB(ServicesDB):
