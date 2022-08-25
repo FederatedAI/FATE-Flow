@@ -303,7 +303,7 @@ class Reader(ComponentBase):
                         data_list[0].extend(headers)
                 LOGGER.info(f"data info header: {data_list[0]}")
                 for data in output_table_meta.get_part_of_data():
-                    delimiter = schema.get("meta").get("delimiter") or output_table_meta.id_delimiter
+                    delimiter = schema.get("meta", {}).get("delimiter") or output_table_meta.id_delimiter
                     data_list.append(data[1].split(delimiter))
                 data = np.array(data_list)
                 Tdata = data.transpose()
