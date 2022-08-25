@@ -14,15 +14,20 @@
 #  limitations under the License.
 #
 from copy import deepcopy
-from functools import wraps
 from hashlib import sha256
 from typing import Tuple
 
 from peewee import DoesNotExist
 
-from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel, PipelineComponentMeta
+from fate_flow.db.db_models import (
+    DB, PipelineComponentMeta,
+    MachineLearningModelInfo as MLModel,
+)
 from fate_flow.db.service_registry import ServerRegistry
-from fate_flow.model import model_storage_base, mysql_model_storage, tencent_cos_model_storage
+from fate_flow.model import (
+    lock, model_storage_base,
+    mysql_model_storage, tencent_cos_model_storage,
+)
 from fate_flow.pipelined_model import Pipelined
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.settings import HOST
@@ -47,16 +52,6 @@ def get_storage(storage_map: dict) -> Tuple[model_storage_base.ModelStorageBase,
         raise KeyError(f"Model storage '{store_type}' is not supported.")
 
     return storage_map[store_type], store_address
-
-
-def lock(method):
-    @wraps(method)
-    def magic(self, *args, **kwargs):
-        with self.lock:
-            return method(self, *args, **kwargs)
-        # equivalent to:
-        # return self.lock(method)(self, *args, **kwargs)
-    return magic
 
 
 class SyncModel(Pipelined):

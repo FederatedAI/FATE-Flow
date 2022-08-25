@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import hashlib
+import os
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -23,14 +24,10 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.db.db_models import DB, PipelineComponentMeta
 from fate_flow.db.db_utils import bulk_insert_into_db
-from fate_flow.model import Locker
+from fate_flow.model import Locker, local_cache_required, lock
 from fate_flow.pipelined_model import Pipelined
 from fate_flow.settings import TEMP_DIRECTORY
 from fate_flow.utils.base_utils import get_fate_flow_directory
-from fate_flow.utils.log_utils import getLogger
-
-
-LOGGER = getLogger()
 
 
 class PipelinedComponent(Pipelined, Locker):
@@ -53,7 +50,10 @@ class PipelinedComponent(Pipelined, Locker):
 
         Locker.__init__(self, self.model_path)
 
-    def exists(self, component_name):
+    def exists(self, component_name=None):
+        if component_name is None:
+            return self.model_path.is_dir() and set(os.listdir(self.model_path)) - {'.lock'}
+
         query = self.get_define_meta_from_db(PipelineComponentMeta.f_component_name == component_name)
 
         for row in query:
@@ -67,7 +67,7 @@ class PipelinedComponent(Pipelined, Locker):
     def get_define_meta_from_file(self):
         if not self.define_meta_path.is_file():
            return {}
-        return yaml.load(self.define_meta_path.read_text('utf-8'))
+        return yaml.safe_load(self.define_meta_path.read_text('utf-8'))
 
     @DB.connection_context()
     def get_define_meta_from_db(self, *query_args):
@@ -105,28 +105,37 @@ class PipelinedComponent(Pipelined, Locker):
             f_model_alias=model_alias,
             f_model_proto_index=model_proto_index,
             f_run_parameters=run_parameters,
-        ).execute()
+        ).on_conflict(preserve=(
+            PipelineComponentMeta.f_update_time,
+            PipelineComponentMeta.f_update_date,
+            PipelineComponentMeta.f_component_module_name,
+            PipelineComponentMeta.f_model_alias,
+            PipelineComponentMeta.f_model_proto_index,
+            PipelineComponentMeta.f_run_parameters,
+        )).execute()
 
+    @lock
     def save_define_meta_from_db_to_file(self):
         query = self.get_define_meta_from_db()
 
         for row in query:
             run_parameters_path = self.get_run_parameters_path(row.f_component_name)
             run_parameters_path.parent.mkdir(parents=True, exist_ok=True)
-
-            with run_parameters_path.open('x', encoding='utf-8') as f:
+            with run_parameters_path.open('w', encoding='utf-8') as f:
                 f.write(json_dumps(row.f_run_parameters))
 
         self.define_meta_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with self.define_meta_path.open('x', encoding='utf-8') as f:
+        with self.define_meta_path.open('w', encoding='utf-8') as f:
             yaml.dump(self.rearrange_define_meta(query), f, Dumper=yaml.RoundTripDumper)
 
-    def save_define_meta_from_file_to_db(self):
-        with DB.connection_context():
-            count = PipelineComponentMeta.select().where(*self.query_args).count()
-        if count > 0:
-            raise ValueError(f'The define_meta data already exists in database.')
+    # import model
+    @local_cache_required(True)
+    def save_define_meta_from_file_to_db(self, force_update=False):
+        if not force_update:
+            with DB.connection_context():
+                count = PipelineComponentMeta.select().where(*self.query_args).count()
+            if count > 0:
+                raise ValueError(f'The define_meta data already exists in database.')
 
         define_meta = self.get_define_meta_from_file()
         run_parameters = self.get_run_parameters_from_files()
@@ -147,7 +156,7 @@ class PipelinedComponent(Pipelined, Locker):
                 }
                 insert.append(row)
 
-        bulk_insert_into_db(PipelineComponentMeta, insert, LOGGER)
+        bulk_insert_into_db(PipelineComponentMeta, insert, force_update)
 
     def replicate_define_meta(self, modification, query_args=()):
         query = self.get_define_meta_from_db(*query_args)
@@ -161,11 +170,12 @@ class PipelinedComponent(Pipelined, Locker):
             row.update(modification)
             insert.append(row)
 
-        bulk_insert_into_db(PipelineComponentMeta, insert, LOGGER)
+        bulk_insert_into_db(PipelineComponentMeta, insert)
 
     def get_run_parameters_path(self, component_name):
         return self.run_parameters_path / component_name / 'run_parameters.json'
 
+    @lock
     def get_run_parameters_from_files(self):
         if not self.run_parameters_path.is_dir():
             return {}
@@ -192,29 +202,27 @@ class PipelinedComponent(Pipelined, Locker):
         elif path.is_file():
             zip_file.write(path, path.relative_to(self.model_path))
 
+    @local_cache_required(True)
     def pack_component(self, component_name):
         filename = self.get_archive_path(component_name)
 
-        with self.lock:
-            with ZipFile(filename, 'w') as zip_file:
-                self.walk_component(zip_file, self.variables_data_path / component_name)
-                self.walk_component(zip_file, self.checkpoint_path / component_name)
+        with ZipFile(filename, 'w') as zip_file:
+            self.walk_component(zip_file, self.variables_data_path / component_name)
+            self.walk_component(zip_file, self.checkpoint_path / component_name)
 
-            hash_ = hashlib.sha256(filename.read_bytes()).hexdigest()
+        hash_ = hashlib.sha256(filename.read_bytes()).hexdigest()
 
         return filename, hash_
 
+    @lock
     def unpack_component(self, component_name, hash_=None):
         filename = self.get_archive_path(component_name)
 
-        self.model_path.mkdir(parents=True, exist_ok=True)
+        if hash_ is not None:
+            sha256 = hashlib.sha256(filename.read_bytes()).hexdigest()
 
-        with self.lock:
-            if hash_ is not None:
-                sha256 = hashlib.sha256(filename.read_bytes()).hexdigest()
+            if hash_ != sha256:
+                raise ValueError(f'Model archive hash mismatch. path: {filename} expected: {hash_} actual: {sha256}')
 
-                if hash_ != sha256:
-                    raise ValueError(f'Model archive hash mismatch. path: {filename} expected: {hash_} actual: {sha256}')
-
-            with ZipFile(filename, 'r') as zip_file:
-                zip_file.extractall(self.model_path)
+        with ZipFile(filename, 'r') as zip_file:
+            zip_file.extractall(self.model_path)

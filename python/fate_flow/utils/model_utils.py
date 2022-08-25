@@ -14,20 +14,15 @@
 #  limitations under the License.
 #
 import glob
-from collections import OrderedDict
 
-import peewee
-
-from fate_arch.common.base_utils import current_timestamp, json_loads
+from fate_arch.common.base_utils import json_loads
 
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
-from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.scheduler.cluster_scheduler import ClusterScheduler
 from fate_flow.settings import ENABLE_MODEL_STORE, stat_logger
 from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
-from fate_flow.utils.log_utils import sql_logger
 
 
 def all_party_key(all_party):
@@ -167,42 +162,30 @@ def query_model_info(**kwargs):
 
 
 def save_model_info(model_info):
-    model = MLModel()
-    model.f_create_time = current_timestamp()
-    for k, v in model_info.items():
-        attr_name = f'f_{k}'
-        if hasattr(MLModel, attr_name):
-            setattr(model, attr_name, v)
-        elif hasattr(MLModel, k):
-            setattr(model, k, v)
+    model_info = {k if k.startswith('f_') else f'f_{k}': v for k, v in model_info.items()}
 
-    try:
-        with DB.connection_context():
-            rows = model.save(force_insert=True)
-        if rows != 1:
-            raise Exception("Save to database failed")
-    except peewee.IntegrityError as e:
-        if e.args[0] != 1062:
-            raise e
-
-        sql_logger(model_info.get("job_id", "fate_flow")).warning(e)
-        return
+    with DB.connection_context():
+        MLModel.insert(**model_info).on_conflict(preserve=(
+            'f_update_time',
+            'f_update_date',
+            *model_info.keys(),
+        )).execute()
 
     if ENABLE_MODEL_STORE:
         sync_model = SyncModel(
-            role=model.f_role, party_id=model.f_party_id,
-            model_id=model.f_model_id, model_version=model.f_model_version,
+            role=model_info['f_role'], party_id=model_info['f_party_id'],
+            model_id=model_info['f_model_id'], model_version=model_info['f_model_version'],
         )
         sync_model.upload(True)
 
     ClusterScheduler.cluster_command('/model/service/register', {
         'party_model_id': gen_party_model_id(
-            role=model.f_role, party_id=model.f_party_id, model_id=model.f_model_id
+            model_info['f_model_id'],
+            model_info['f_role'],
+            model_info['f_party_id'],
         ),
-        'model_version': model.f_model_version,
+        'model_version': model_info['f_model_version'],
     })
-
-    return model
 
 
 def check_if_parent_model(pipeline):

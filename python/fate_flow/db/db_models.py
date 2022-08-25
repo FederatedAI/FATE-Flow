@@ -21,7 +21,7 @@ from functools import wraps
 
 from peewee import (
     BigAutoField, BigIntegerField, BooleanField, CharField,
-    CompositeKey, IntegerField, TextField,
+    CompositeKey, Insert, IntegerField, TextField,
 )
 from playhouse.hybrid import hybrid_property
 from playhouse.pool import PooledMySQLDatabase
@@ -63,7 +63,10 @@ class BaseDataBase:
     def __init__(self):
         database_config = DATABASE.copy()
         db_name = database_config.pop("name")
-        if IS_STANDALONE and not os.environ.get("FORCE_USE_MYSQL"):
+        if IS_STANDALONE and not bool(int(os.environ.get("FORCE_USE_MYSQL", 0))):
+            # sqlite does not support other options
+            Insert.on_conflict = lambda self, *args, **kwargs: self.on_conflict_replace()
+
             from playhouse.apsw_ext import APSWDatabase
             self.database_connection = APSWDatabase(file_utils.get_project_base_directory("fate_sqlite.db"))
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)

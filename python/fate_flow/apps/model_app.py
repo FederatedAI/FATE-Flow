@@ -331,14 +331,17 @@ def operate_model(model_operation):
             if not file:
                 return error_response(400, '`file` is required.')
 
-            with DB.connection_context():
-                if MLModel.get_or_none(
-                    MLModel.f_role == request_config['role'],
-                    MLModel.f_party_id == request_config['party_id'],
-                    MLModel.f_model_id == request_config['model_id'],
-                    MLModel.f_model_version == request_config['model_version'],
-                ):
-                    return error_response(409, 'Model already exists.')
+            force_update = bool(int(request_config.get('force_update', 0)))
+
+            if not force_update:
+                with DB.connection_context():
+                    if MLModel.get_or_none(
+                        MLModel.f_role == request_config['role'],
+                        MLModel.f_party_id == request_config['party_id'],
+                        MLModel.f_model_id == request_config['model_id'],
+                        MLModel.f_model_version == request_config['model_version'],
+                    ):
+                        return error_response(409, 'Model already exists.')
 
             filename = os.path.join(TEMP_DIRECTORY, uuid1().hex)
             os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -354,7 +357,7 @@ def operate_model(model_operation):
                 return error_response(500, f'Save file error: {e}')
 
             model = PipelinedModel(party_model_id, request_config["model_version"])
-            model.unpack_model(filename, hash_=request_config.get('hash'))
+            model.unpack_model(filename, force_update, request_config.get('hash'))
 
             pipeline = model.read_pipeline_model()
             train_runtime_conf = json_loads(pipeline.train_runtime_conf)
@@ -370,7 +373,7 @@ def operate_model(model_operation):
                     f'please check if the party id and role is valid.',
                 )
 
-            model.pipelined_component.save_define_meta_from_file_to_db()
+            model.pipelined_component.save_define_meta_from_file_to_db(force_update)
 
             if ENABLE_MODEL_STORE:
                 query = model.pipelined_component.get_define_meta_from_db(
@@ -408,7 +411,7 @@ def operate_model(model_operation):
 
                 pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
 
-            model.save_pipeline_model(pipeline)
+            model.save_pipeline_model(pipeline, True)
 
             model_info = model_utils.gather_model_info_data(model)
             model_info['f_role'] = request_config['role']
