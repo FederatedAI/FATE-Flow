@@ -249,7 +249,7 @@ class Reader(ComponentBase):
 
     def update_anonymous(self, computing_table, schema):
         if schema.get("meta"):
-            if "anonymous_header" in schema:
+            if "anonymous_header" not in schema:
                 schema.update(AnonymousGenerator.generate_header(computing_table, schema))
                 schema = AnonymousGenerator.generate_anonymous_header(schema=schema)
             schema = AnonymousGenerator.update_anonymous_header_with_role(schema, self.tracker.role, self.tracker.party_id)
@@ -260,7 +260,7 @@ class Reader(ComponentBase):
         dest_schema = dest_meta.get_schema()
         LOGGER.info(f"src schema: {src_schema}, dest schema {dest_schema}")
         if src_schema.get("meta"):
-            if not src_schema.get("anonymous_header"):
+            if "anonymous_header" not in src_schema:
                 LOGGER.info("start to create anonymous")
                 dest_computing_table = session.get_computing_session().load(
                     dest_meta.get_address(),
