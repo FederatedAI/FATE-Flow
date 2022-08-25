@@ -71,8 +71,8 @@ getport
 
 getpid() {
     echo "check process by http port and grpc port"
-    pid1=`lsof -i:${service_config_fateflow_http_port} | grep 'LISTEN' | awk '{NR==1 print $2}'`
-    pid2=`lsof -i:${service_config_fateflow_grpc_port} | grep 'LISTEN' | awk '{NR==1 print $2}'`
+    pid1=`lsof -i:${service_config_fateflow_http_port} | grep 'LISTEN' | awk 'NR==1 {print $2}'`
+    pid2=`lsof -i:${service_config_fateflow_grpc_port} | grep 'LISTEN' | awk 'NR==1 {print $2}'`
     if [[ -n ${pid1} && "x"${pid1} = "x"${pid2} ]];then
         pid=$pid1
     elif [[ -z ${pid1} && -z ${pid2} ]];then

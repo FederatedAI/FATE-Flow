@@ -124,25 +124,32 @@ def migration(config_data: dict):
 
         pipeline_model = source_model.read_pipeline_model()
 
-        # Utilize Pipeline_model collect model data. And modify related inner information of model
+        pipeline_model.model_id = new_model_id
+        pipeline_model.model_version = unify_model_version
+        pipeline_model.roles = json_dumps(config_data['migrate_role'], byte=True)
+
         train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
-        train_runtime_conf["role"] = config_data["migrate_role"]
-        train_runtime_conf["initiator"] = config_data["migrate_initiator"]
-
-        adapter = JobRuntimeConfigAdapter(train_runtime_conf)
-        train_runtime_conf = adapter.update_model_id_version(model_id=gen_model_id(train_runtime_conf["role"]),
-                                                             model_version=migrate_model.model_version)
-
-        # update pipeline.pb file
+        train_runtime_conf['role'] = config_data['migrate_role']
+        train_runtime_conf['initiator'] = config_data['migrate_initiator']
+        train_runtime_conf = JobRuntimeConfigAdapter(
+            train_runtime_conf,
+        ).update_model_id_version(
+            model_id=new_model_id,
+            model_version=unify_model_version,
+        )
         pipeline_model.train_runtime_conf = json_dumps(train_runtime_conf, byte=True)
-        pipeline_model.model_id = bytes(adapter.get_common_parameters().to_dict().get("model_id"), "utf-8")
-        pipeline_model.model_version = bytes(adapter.get_common_parameters().to_dict().get("model_version"), "utf-8")
 
         if compare_version(pipeline_model.fate_version, '1.5.0') == 'gt':
             pipeline_model.initiator_role = config_data["migrate_initiator"]['role']
             pipeline_model.initiator_party_id = config_data["migrate_initiator"]['party_id']
 
-        # save updated pipeline.pb file
+            runtime_conf_on_party = json_loads(pipeline_model.runtime_conf_on_party)
+            runtime_conf_on_party['role'] = config_data['migrate_role']
+            runtime_conf_on_party['initiator'] = config_data['migrate_initiator']
+            runtime_conf_on_party['job_parameters']['model_id'] = new_model_id
+            runtime_conf_on_party['job_parameters']['model_version'] = unify_model_version
+            pipeline_model.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
+
         migrate_model.save_pipeline_model(pipeline_model)
 
         migrate_model_info = gather_model_info_data(migrate_model)
