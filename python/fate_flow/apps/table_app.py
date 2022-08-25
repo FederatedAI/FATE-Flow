@@ -81,7 +81,7 @@ def table_bind():
     storage_session = sess.storage(storage_engine=engine, options=request_data.get("options"))
     table = storage_session.create_table(address=address, name=name, namespace=namespace,
                                          partitions=request_data.get('partitions', None),
-                                         hava_head=request_data.get("head"), schema=schema,
+                                         have_head=request_data.get("head"), schema=schema,
                                          extend_sid=request_data.get("extend_sid", False),
                                          id_delimiter=request_data.get("id_delimiter"),
                                          in_serialized=in_serialized,
