@@ -77,7 +77,7 @@ def validate_component_param():
 @manager.route('/hetero/merge', methods=['POST'])
 @validate_request(
     'model_id', 'model_version', 'guest_party_id', 'host_party_ids',
-    'component_name', 'model_alias', 'model_type', 'output_format',
+    'component_name', 'model_type', 'output_format',
 )
 def hetero_merge():
     request_data = request.json
@@ -113,7 +113,6 @@ def hetero_merge():
         request_data['model_version'],
     ).read_component_model(
         request_data['component_name'],
-        request_data['model_alias'],
         output_json=True,
     )
 
@@ -144,7 +143,6 @@ def hetero_merge():
             request_data['model_version'],
         ).read_component_model(
             request_data['component_name'],
-            request_data['model_alias'],
             output_json=True,
         )
 
@@ -164,6 +162,7 @@ def hetero_merge():
         host_params, host_metas,
         request_data['model_type'],
         request_data['output_format'],
-        request_data.get('target_name', 'y')
+        request_data.get('target_name', 'y'),
+        request_data.get('include_guest_coef', False),
     )
     return get_json_result(data=data)
