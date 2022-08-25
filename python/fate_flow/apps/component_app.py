@@ -16,8 +16,8 @@
 from flask import request
 
 from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
-from federatedml.protobuf.model_merge.merge_hetero_models import hetero_model_merge
 
+from fate_flow.component_env_utils.env_utils import get_class_object
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.model.sync_model import SyncComponent
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
@@ -157,7 +157,7 @@ def hetero_merge():
     if not host_params or not host_metas or len(host_params) != len(host_metas):
         return error_response(400, 'Invalid host models.')
 
-    data = hetero_model_merge(
+    data = get_class_object('hetero_model_merge')(
         guest_param, guest_meta,
         host_params, host_metas,
         request_data['model_type'],
