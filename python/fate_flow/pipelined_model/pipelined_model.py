@@ -161,7 +161,10 @@ class PipelinedModel(Locker):
         return model_buffers
 
     # TODO: use different functions instead of passing arguments
-    def read_component_model(self, component_name, model_alias, parse=True, output_json=False):
+    def read_component_model(self, component_name, model_alias=None, parse=True, output_json=False):
+        if model_alias is None:
+            model_alias = self.get_model_alias(component_name)
+
         query = self.pipelined_component.get_define_meta_from_db(
             PipelineComponentMeta.f_component_name == component_name,
             PipelineComponentMeta.f_model_alias == model_alias,

@@ -18,7 +18,8 @@
       "model_migrate": "protobuf.model_migrate.model_migrate",
       "homo_model_convert": "protobuf.homo_model_convert.homo_model_convert",
       "anonymous_generator": "util.anonymous_generator_util.Anonymous",
-      "data_format": "util.data_format_preprocess.DataFormatPreProcess"
+      "data_format": "util.data_format_preprocess.DataFormatPreProcess",
+      "hetero_model_merge": "protobuf.model_merge.merge_hetero_models.hetero_model_merge"
     }
   }
 }

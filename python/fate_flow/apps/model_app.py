@@ -797,25 +797,6 @@ def get_predict_conf():
     return get_json_result(data=conf)
 
 
-@manager.route('/homo/convert', methods=['POST'])
-@validate_request("model_id", "model_version", "role", "party_id")
-def homo_convert():
-    request_config = request.json or request.form.to_dict()
-    retcode, retmsg, res_data = publish_model.convert_homo_model(request_config)
-
-    return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
-
-
-@manager.route('/homo/deploy', methods=['POST'])
-@validate_request("service_id", "model_id", "model_version", "role", "party_id",
-                  "component_name", "deployment_type", "deployment_parameters")
-def homo_deploy():
-    request_config = request.json or request.form.to_dict()
-    retcode, retmsg, res_data = publish_model.deploy_homo_model(request_config)
-
-    return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
-
-
 @manager.route('/archive/packaging', methods=['POST'])
 @validate_request('party_model_id', 'model_version')
 def packaging_model():
@@ -861,3 +842,22 @@ def register_service():
         'party_model_id': request_data['party_model_id'],
         'model_version': request_data['model_version'],
     })
+
+
+@manager.route('/homo/convert', methods=['POST'])
+@validate_request("model_id", "model_version", "role", "party_id")
+def homo_convert():
+    request_data = request.json or request.form.to_dict()
+    retcode, retmsg, res_data = publish_model.convert_homo_model(request_data)
+
+    return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
+
+
+@manager.route('/homo/deploy', methods=['POST'])
+@validate_request("service_id", "model_id", "model_version", "role", "party_id",
+                  "component_name", "deployment_type", "deployment_parameters")
+def homo_deploy():
+    request_data = request.json or request.form.to_dict()
+    retcode, retmsg, res_data = publish_model.deploy_homo_model(request_data)
+
+    return get_json_result(retcode=retcode, retmsg=retmsg, data=res_data)
