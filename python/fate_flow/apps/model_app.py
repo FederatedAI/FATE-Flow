@@ -22,7 +22,7 @@ import peewee
 from flask import abort, request, send_file
 
 from fate_arch.common import FederatedMode
-from fate_arch.common.base_utils import json_loads
+from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.db.db_models import (
     DB, ModelTag, PipelineComponentMeta, Tag,
@@ -317,6 +317,7 @@ def operate_model(model_operation):
     model_operation = ModelOperation(model_operation)
 
     request_config['party_id'] = str(request_config['party_id'])
+    request_config['model_version'] = str(request_config['model_version'])
     party_model_id = model_utils.gen_party_model_id(
         request_config['model_id'],
         request_config['role'],
@@ -330,14 +331,17 @@ def operate_model(model_operation):
             if not file:
                 return error_response(400, '`file` is required.')
 
-            with DB.connection_context():
-                if MLModel.get_or_none(
-                    MLModel.f_role == request_config['role'],
-                    MLModel.f_party_id == request_config['party_id'],
-                    MLModel.f_model_id == request_config['model_id'],
-                    MLModel.f_model_version == request_config['model_version'],
-                ):
-                    return error_response(409, 'Model already exists.')
+            force_update = bool(int(request_config.get('force_update', 0)))
+
+            if not force_update:
+                with DB.connection_context():
+                    if MLModel.get_or_none(
+                        MLModel.f_role == request_config['role'],
+                        MLModel.f_party_id == request_config['party_id'],
+                        MLModel.f_model_id == request_config['model_id'],
+                        MLModel.f_model_version == request_config['model_version'],
+                    ):
+                        return error_response(409, 'Model already exists.')
 
             filename = os.path.join(TEMP_DIRECTORY, uuid1().hex)
             os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -353,23 +357,23 @@ def operate_model(model_operation):
                 return error_response(500, f'Save file error: {e}')
 
             model = PipelinedModel(party_model_id, request_config["model_version"])
-            model.unpack_model(filename, hash_=request_config.get('hash'))
+            model.unpack_model(filename, force_update, request_config.get('hash'))
 
             pipeline = model.read_pipeline_model()
             train_runtime_conf = json_loads(pipeline.train_runtime_conf)
 
-            for _party_id in train_runtime_conf.get('role', {}).get(request_config['role'], []):
-                if request_config["party_id"] == str(_party_id):
+            for _party_id in train_runtime_conf['role'].get(request_config['role'], []):
+                if request_config['party_id'] == str(_party_id):
                     break
             else:
                 shutil.rmtree(model.model_path, ignore_errors=True)
                 return error_response(
                     400,
-                    f'Party id {request_config["party_id"]} is not in model roles, '
-                    f'please check if the party id is valid.',
+                    f'Party id "{request_config["party_id"]}" is not in role "{request_config["role"]}", '
+                    f'please check if the party id and role is valid.',
                 )
 
-            model.pipelined_component.save_define_meta_from_file_to_db()
+            model.pipelined_component.save_define_meta_from_file_to_db(force_update)
 
             if ENABLE_MODEL_STORE:
                 query = model.pipelined_component.get_define_meta_from_db(
@@ -383,20 +387,46 @@ def operate_model(model_operation):
                     )
                     sync_component.upload()
 
+            pipeline.model_id = request_config['model_id']
+            pipeline.model_version = request_config['model_version']
+
+            train_runtime_conf = JobRuntimeConfigAdapter(
+                train_runtime_conf,
+            ).update_model_id_version(
+                model_id=request_config['model_id'],
+                model_version=request_config['model_version'],
+            )
+
+            if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
+                runtime_conf_on_party = json_loads(pipeline.runtime_conf_on_party)
+                runtime_conf_on_party['job_parameters']['model_id'] = request_config['model_id']
+                runtime_conf_on_party['job_parameters']['model_version'] = request_config['model_version']
+
+                # fix migrate bug between 1.5.x and 1.8.x
+                if compare_version(pipeline.fate_version, '1.9.0') == 'lt':
+                    pipeline.roles = json_dumps(train_runtime_conf['role'], byte=True)
+
+                    runtime_conf_on_party['role'] = train_runtime_conf['role']
+                    runtime_conf_on_party['initiator'] = train_runtime_conf['initiator']
+
+                pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
+
+            model.save_pipeline_model(pipeline, True)
 
             model_info = model_utils.gather_model_info_data(model)
-            # TODO: update pipeline_model
-            model_info.update({
-                'f_role': request_config['role'],
-                'f_party_id': request_config['party_id'],
-                'f_model_id': request_config['model_id'],
-                'f_model_version': request_config['model_version'],
-                'f_job_id': job_id,
-                'f_imported': 1,
-            })
+            model_info['f_role'] = request_config['role']
+            model_info['f_party_id'] = request_config['party_id']
+            model_info['f_job_id'] = job_id
+            model_info['f_imported'] = 1
             model_utils.save_model_info(model_info)
 
-            return get_json_result()
+            return get_json_result(data={
+                'job_id': job_id,
+                'role': request_config['role'],
+                'party_id': request_config['party_id'],
+                'model_id': request_config['model_id'],
+                'model_version': request_config['model_version'],
+            })
 
         # export
         else:

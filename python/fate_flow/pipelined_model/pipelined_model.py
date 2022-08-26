@@ -19,7 +19,6 @@ import json
 import os
 import shutil
 import typing
-from functools import wraps
 
 from google.protobuf import json_format
 
@@ -28,7 +27,10 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_flow.component_env_utils import provider_utils
 from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.model import Locker, parse_proto_object
+from fate_flow.model import (
+    Locker, local_cache_required,
+    lock, parse_proto_object,
+)
 from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
 from fate_flow.protobuf.python.pipeline_pb2 import Pipeline
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger
@@ -37,15 +39,6 @@ from fate_flow.utils.job_utils import (
     PIPELINE_COMPONENT_MODULE_NAME, PIPELINE_MODEL_NAME,
 )
 from fate_flow.utils.base_utils import get_fate_flow_directory
-
-
-def local_cache_required(method):
-    @wraps(method)
-    def magic(self, *args, **kwargs):
-        if not self.exists():
-            raise FileNotFoundError(f'Can not found {self.model_id} {self.model_version} model local cache')
-        return method(self, *args, **kwargs)
-    return magic
 
 
 class PipelinedModel(Locker):
@@ -67,7 +60,7 @@ class PipelinedModel(Locker):
 
         super().__init__(self.model_path)
 
-    def save_pipeline_model(self, pipeline_buffer_object):
+    def save_pipeline_model(self, pipeline_buffer_object, save_define_meta_file=True):
         model_buffers = {
             PIPELINE_MODEL_NAME: (
                 type(pipeline_buffer_object).__name__,
@@ -77,7 +70,9 @@ class PipelinedModel(Locker):
         }
         self.save_component_model(PIPELINE_COMPONENT_NAME, PIPELINE_COMPONENT_MODULE_NAME, PIPELINE_MODEL_ALIAS, model_buffers)
 
-        self.pipelined_component.save_define_meta_from_db_to_file()
+        # only update pipeline model file if save_define_meta_file is False
+        if save_define_meta_file:
+            self.pipelined_component.save_define_meta_from_db_to_file()
 
     def save_component_model(self, *args, **kwargs):
         component_model = self.create_component_model(*args, **kwargs)
@@ -106,15 +101,16 @@ class PipelinedModel(Locker):
 
         return component_model
 
+    @lock
     def write_component_model(self, component_model):
         for storage_path, (object_serialized_encoded, object_json) in component_model.get("buffer").items():
             storage_path = get_fate_flow_directory() + storage_path
             os.makedirs(os.path.dirname(storage_path), exist_ok=True)
 
-            with open(storage_path, "xb") as fw:
+            with open(storage_path, "wb") as fw:
                 fw.write(base64.b64decode(object_serialized_encoded.encode()))
 
-            with open(f"{storage_path}.json", "x", encoding="utf8") as fw:
+            with open(f"{storage_path}.json", "w", encoding="utf8") as fw:
                 fw.write(json_dumps(object_json))
 
         self.pipelined_component.save_define_meta(
@@ -125,7 +121,7 @@ class PipelinedModel(Locker):
 
         stat_logger.info(f'saved {component_model["component_name"]} {component_model["model_alias"]} successfully')
 
-    @local_cache_required
+    @local_cache_required(True)
     def _read_component_model(self, component_name, model_alias):
         component_model_storage_path = os.path.join(self.pipelined_component.variables_data_path, component_name, model_alias)
         model_proto_index = self.get_model_proto_index(component_name=component_name, model_alias=model_alias)
@@ -193,7 +189,7 @@ class PipelinedModel(Locker):
         return model_buffers
 
     # TODO: integration with read_component_model
-    @local_cache_required
+    @local_cache_required(True)
     def read_pipeline_model(self, parse=True):
         component_model_storage_path = os.path.join(self.pipelined_component.variables_data_path, PIPELINE_COMPONENT_NAME, PIPELINE_MODEL_ALIAS)
         model_proto_index = self.get_model_proto_index(PIPELINE_COMPONENT_NAME, PIPELINE_MODEL_ALIAS)
@@ -208,7 +204,7 @@ class PipelinedModel(Locker):
 
         return model_buffers[PIPELINE_MODEL_NAME]
 
-    @local_cache_required
+    @local_cache_required(True)
     def collect_models(self, in_bytes=False, b64encode=True):
         define_meta = self.pipelined_component.get_define_meta()
         model_buffers = {}
@@ -240,39 +236,36 @@ class PipelinedModel(Locker):
         return provider_utils.get_provider_class_object(RuntimeConfig.COMPONENT_PROVIDER, "homo_model_convert", True)
 
     def exists(self):
-        return os.path.isdir(self.model_path) and set(os.listdir(self.model_path)) - {'.lock'}
+        return self.pipelined_component.exists()
 
-    @local_cache_required
+    @local_cache_required(True)
     def packaging_model(self):
-        with self.lock:
-            self.gen_model_import_config()
+        self.gen_model_import_config()
 
-            # self.archive_model_file_path
-            shutil.make_archive(self.archive_model_base_path, 'zip', self.model_path)
+        # self.archive_model_file_path
+        shutil.make_archive(self.archive_model_base_path, 'zip', self.model_path)
 
-            with open(self.archive_model_file_path, 'rb') as f:
-                hash_ = hashlib.sha256(f.read()).hexdigest()
+        with open(self.archive_model_file_path, 'rb') as f:
+            hash_ = hashlib.sha256(f.read()).hexdigest()
 
         stat_logger.info(f'Make model {self.model_id} {self.model_version} archive successfully. '
                          f'path: {self.archive_model_file_path} hash: {hash_}')
         return hash_
 
+    @lock
     def unpack_model(self, archive_file_path: str, force_update: bool = False, hash_: str = None):
-        os.makedirs(self.model_path, exist_ok=True)
+        if self.exists() and not force_update:
+            raise FileExistsError(f'Model {self.model_id} {self.model_version} local cache already existed.')
 
-        with self.lock:
-            if self.exists() and not force_update:
-                raise FileExistsError(f'Model {self.model_id} {self.model_version} local cache already existed.')
+        if hash_ is not None:
+            with open(archive_file_path, 'rb') as f:
+                sha256 = hashlib.sha256(f.read()).hexdigest()
 
-            if hash_ is not None:
-                with open(archive_file_path, 'rb') as f:
-                    sha256 = hashlib.sha256(f.read()).hexdigest()
+            if hash_ != sha256:
+                raise ValueError(f'Model archive hash mismatch. '
+                                    f'path: {archive_file_path} expected: {hash_} actual: {sha256}')
 
-                if hash_ != sha256:
-                    raise ValueError(f'Model archive hash mismatch. '
-                                     f'path: {archive_file_path} expected: {hash_} actual: {sha256}')
-
-            shutil.unpack_archive(archive_file_path, self.model_path, 'zip')
+        shutil.unpack_archive(archive_file_path, self.model_path, 'zip')
 
         stat_logger.info(f'Unpack model {self.model_id} {self.model_version} archive successfully. path: {self.model_path}')
 
@@ -309,12 +302,14 @@ class PipelinedModel(Locker):
     def archive_model_file_path(self):
         return f'{self.archive_model_base_path}.zip'
 
+    @local_cache_required(True)
     def calculate_model_file_size(self):
         size = 0
         for root, dirs, files in os.walk(self.model_path):
             size += sum([os.path.getsize(os.path.join(root, name)) for name in files])
         return round(size/1024)
 
+    @local_cache_required(True)
     def gen_model_import_config(self):
         config = {
             'role': self.role,
@@ -323,5 +318,5 @@ class PipelinedModel(Locker):
             'model_version': self.model_version,
             'file': self.archive_model_file_path,
         }
-        with open(os.path.join(self.model_path, 'import_model.json'), 'w', encoding='utf-8') as f:
+        with (self.model_path / 'import_model.json').open('w', encoding='utf-8') as f:
             json.dump(config, f, indent=4)

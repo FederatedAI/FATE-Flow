@@ -95,7 +95,6 @@ def deploy(config_data):
         pipeline_model = source_model.read_pipeline_model()
 
         train_runtime_conf = json_loads(pipeline_model.train_runtime_conf)
-        runtime_conf_on_party = json_loads(pipeline_model.runtime_conf_on_party)
         dsl_version = train_runtime_conf.get("dsl_version", "1")
 
         parser = get_dsl_parser_by_version(dsl_version)
@@ -136,8 +135,12 @@ def deploy(config_data):
                 cpn_role_parameters[cpn_name] = role_params
             train_runtime_conf = parser.convert_conf_v1_to_v2(train_runtime_conf, cpn_role_parameters)
 
-        adapter = JobRuntimeConfigAdapter(train_runtime_conf)
-        train_runtime_conf = adapter.update_model_id_version(model_version=deploy_model.model_version)
+        train_runtime_conf = JobRuntimeConfigAdapter(
+            train_runtime_conf,
+        ).update_model_id_version(
+            model_version=deploy_model.model_version,
+        )
+
         pipeline_model.model_version = child_model_version
         pipeline_model.train_runtime_conf = json_dumps(train_runtime_conf, byte=True)
 
@@ -156,6 +159,8 @@ def deploy(config_data):
                 'parent_model_version': model_version,
             }, byte=True)
             pipeline_model.parent = False
+
+            runtime_conf_on_party = json_loads(pipeline_model.runtime_conf_on_party)
             runtime_conf_on_party['job_parameters']['model_version'] = child_model_version
             pipeline_model.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
 

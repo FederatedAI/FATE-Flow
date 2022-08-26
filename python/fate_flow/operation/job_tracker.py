@@ -303,7 +303,6 @@ class Tracker(object):
             bulk_insert_into_db(
                 self.get_dynamic_db_model(TrackingOutputDataInfo, self.job_id),
                 (tracking_output_data_info.to_dict(), ),
-                schedule_logger(self.job_id),
             )
         except Exception as e:
             schedule_logger(self.job_id).exception("An exception where inserted output data info {} {} {} to database:\n{}".format(

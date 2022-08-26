@@ -94,8 +94,8 @@ def server_error_response(e):
     stat_logger.exception(e)
 
     if len(e.args) > 1:
-        return get_json_result(retcode=RetCode.EXCEPTION_ERROR, retmsg=str(e.args[0]), data=e.args[1])
-    return get_json_result(retcode=RetCode.EXCEPTION_ERROR, retmsg=str(e))
+        return get_json_result(retcode=RetCode.EXCEPTION_ERROR, retmsg=repr(e.args[0]), data=e.args[1])
+    return get_json_result(retcode=RetCode.EXCEPTION_ERROR, retmsg=repr(e))
 
 
 def error_response(response_code, retmsg=None):

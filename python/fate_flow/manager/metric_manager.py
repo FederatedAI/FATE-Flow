@@ -64,7 +64,7 @@ class MetricManager:
                 db_source['f_value'] = serialize_b64(v)
                 db_source['f_create_time'] = current_timestamp()
                 tracking_metric_data_source.append(db_source)
-            db_utils.bulk_insert_into_db(model_class, tracking_metric_data_source, schedule_logger(self.job_id))
+            db_utils.bulk_insert_into_db(model_class, tracking_metric_data_source)
         except Exception as e:
             schedule_logger(self.job_id).exception(
                 "An exception where inserted metric {} of metric namespace: {} to database:\n{}".format(

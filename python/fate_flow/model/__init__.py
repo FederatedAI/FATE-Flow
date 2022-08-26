@@ -15,9 +15,10 @@
 #
 import importlib
 import inspect
+from functools import wraps
 from pathlib import Path
 
-from filelock import FileLock
+from filelock import FileLock as _FileLock
 
 from fate_arch.protobuf.python.default_empty_fill_pb2 import DefaultEmptyFillMessage
 
@@ -78,6 +79,28 @@ def parse_proto_object(buffer_name, serialized_string, buffer_class=None):
     return buffer_object
 
 
+def lock(method):
+    @wraps(method)
+    def magic(self, *args, **kwargs):
+        with self.lock:
+            return method(self, *args, **kwargs)
+    return magic
+
+
+def local_cache_required(locking=False):
+    def decorator(method):
+        @wraps(method)
+        def magic(self, *args, **kwargs):
+            if not self.exists():
+                raise FileNotFoundError(f'Can not found {self.model_id} {self.model_version} model local cache')
+            if not locking:
+                return method(self, *args, **kwargs)
+            with self.lock:
+                return method(self, *args, **kwargs)
+        return magic
+    return decorator
+
+
 class Locker:
 
     def __init__(self, directory):
@@ -105,3 +128,11 @@ class Locker:
     def __setstate__(self, state):
         self.__dict__.update(state)
         self.lock = self._lock
+
+
+class FileLock(_FileLock):
+
+    def _acquire(self, *args, **kwargs):
+        Path(self._lock_file).parent.mkdir(parents=True, exist_ok=True)
+
+        super()._acquire(*args, **kwargs)
