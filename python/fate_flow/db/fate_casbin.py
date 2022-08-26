@@ -41,15 +41,19 @@ class FateCasbin():
         self.e = casbin.Enforcer(CASBIN_MODEL_CONF, self.adapter)
 
     def query(self, party_id):
+        self.e.load_policy()
         return self.e.get_permissions_for_user(party_id)
 
     def delete(self, party_id, type, value):
+        self.e.load_policy()
         return self.e.delete_permission_for_user(party_id, type, value)
 
     def delete_all(self, party_id, type):
+        self.e.load_policy()
         return self.e.remove_filtered_policy(0, party_id, type)
 
     def grant(self, party_id, type, value):
+        self.e.load_policy()
         return self.e.add_permission_for_user(party_id, type, value)
 
     def enforce(self, party_id, type, value):
