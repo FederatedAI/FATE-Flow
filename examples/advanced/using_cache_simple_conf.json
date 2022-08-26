@@ -50,7 +50,7 @@
               "namespace": "experiment"
             }
           },
-          "dataio_0": {
+          "data_transform_0": {
             "with_label": true,
             "label_name": "y",
             "label_type": "int",
@@ -58,7 +58,7 @@
           },
           "cache_loader_0": {
             "job_id": "202108311713595638160",
-            "component_name": "dataio_0",
+            "component_name": "data_transform_0",
             "cache_name": "0"
           }
         }
@@ -71,13 +71,13 @@
               "namespace": "experiment"
             }
           },
-          "dataio_0": {
+          "data_transform_0": {
             "with_label": false,
             "output_format": "dense"
           },
           "cache_loader_0": {
             "job_id": "202108311713595638160",
-            "component_name": "dataio_0",
+            "component_name": "data_transform_0",
             "cache_name": "0"
           }
         }

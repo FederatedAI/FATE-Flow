@@ -49,7 +49,7 @@
           "reader_0": {
             "table": {
               "job_id": "202107291950368353361",
-              "component_name": "dataio_0",
+              "component_name": "data_transform_0",
               "data": "train"
             }
           }
@@ -60,7 +60,7 @@
           "reader_0": {
             "table": {
               "job_id": "202107291950368353361",
-              "component_name": "dataio_0",
+              "component_name": "data_transform_0",
               "data": "train"
             }
           }
