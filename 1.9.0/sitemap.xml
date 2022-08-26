@@ -161,30 +161,6 @@
          
     </url>
     <url>
-         <loc>backup/Model_Restore_After_Deploy_Guide.zh/</loc>
-         <lastmod>2022-08-26</lastmod>
-         <changefreq>daily</changefreq>
-         
-         <xhtml:link rel="alternate" hreflang="en" href="backup/Model_Restore_After_Deploy_Guide.zh/"/>
-         
-    </url>
-    <url>
-         <loc>backup/fate_flow_client.zh/</loc>
-         <lastmod>2022-08-26</lastmod>
-         <changefreq>daily</changefreq>
-         
-         <xhtml:link rel="alternate" hreflang="en" href="backup/fate_flow_client.zh/"/>
-         
-    </url>
-    <url>
-         <loc>backup/fate_flow_operation_authority_api/</loc>
-         <lastmod>2022-08-26</lastmod>
-         <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="zh" href="zh/backup/fate_flow_operation_authority_api/"/>
-         <xhtml:link rel="alternate" hreflang="en" href="backup/fate_flow_operation_authority_api/"/>
-         
-    </url>
-    <url>
          <loc>cli/checkpoint/</loc>
          <lastmod>2022-08-26</lastmod>
          <changefreq>daily</changefreq>
