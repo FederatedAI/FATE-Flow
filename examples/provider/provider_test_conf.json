@@ -17,13 +17,30 @@
   },
   "job_parameters": {
     "common": {
-      "task_parallelism": 1,
-      "auto_retries": 1,
-      "computing_partitions": 8
+      "task_parallelism": 2,
+      "computing_partitions": 8,
+      "task_cores": 4,
+      "auto_retries": 1
     }
   },
   "component_parameters": {
     "common": {
+      "intersection_0": {
+        "intersect_method": "raw",
+        "sync_intersect_ids": true,
+        "only_output_key": false
+      },
+      "hetero_lr_0": {
+        "penalty": "L2",
+        "optimizer": "rmsprop",
+        "alpha": 0.01,
+        "max_iter": 3,
+        "batch_size": 320,
+        "learning_rate": 0.15,
+        "init_param": {
+          "init_method": "random_uniform"
+        }
+      }
     },
     "role": {
       "guest": {
@@ -53,7 +70,27 @@
           "data_transform_0": {
             "with_label": false,
             "output_format": "dense"
+          },
+          "evaluation_0": {
+            "need_run": false
           }
+        }
+      }
+    }
+  },
+  "provider": {
+    "common": {
+      "hetero_feature_binning_0": "fate@1.8.0"
+    },
+    "role": {
+      "guest": {
+        "0": {
+          "data_transform_0": "fate@1.9.0"
+        }
+      },
+      "host": {
+        "0": {
+          "data_transform_0": "fate@1.9.0"
         }
       }
     }

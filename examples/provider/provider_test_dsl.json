@@ -22,7 +22,7 @@
           "train"
         ],
         "model": [
-          "data_transform"
+          "dataio"
         ]
       },
       "need_deploy": true
