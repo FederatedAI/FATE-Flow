@@ -198,6 +198,13 @@ flow model import -c $FATE_FLOW_BASE/examples/model/import_model.json
 
 ```json
 {
+  "data": {
+    "job_id": "202208261102212849780",
+    "model_id": "arbiter-10000#guest-9999#host-10000#model",
+    "model_version": "foobar",
+    "party_id": "9999",
+    "role": "guest"
+  },
   "retcode": 0,
   "retmsg": "success"
 }
