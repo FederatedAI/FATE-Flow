@@ -356,7 +356,7 @@ def operate_model(model_operation):
 
                 return error_response(500, f'Save file error: {e}')
 
-            model = PipelinedModel(party_model_id, request_config["model_version"])
+            model = PipelinedModel(party_model_id, request_config['model_version'])
             model.unpack_model(filename, force_update, request_config.get('hash'))
 
             pipeline = model.read_pipeline_model()
@@ -411,7 +411,7 @@ def operate_model(model_operation):
 
                 pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
 
-            model.save_pipeline_model(pipeline, True)
+            model.save_pipeline_model(pipeline, False)
 
             model_info = model_utils.gather_model_info_data(model)
             model_info['f_role'] = request_config['role']

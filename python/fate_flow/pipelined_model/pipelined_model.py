@@ -317,6 +317,7 @@ class PipelinedModel(Locker):
             'model_id': self._model_id,
             'model_version': self.model_version,
             'file': self.archive_model_file_path,
+            'force_update': False,
         }
         with (self.model_path / 'import_model.json').open('w', encoding='utf-8') as f:
             json.dump(config, f, indent=4)

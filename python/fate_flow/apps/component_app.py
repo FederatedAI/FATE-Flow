@@ -163,6 +163,7 @@ def hetero_merge():
         request_data['model_type'],
         request_data['output_format'],
         request_data.get('target_name', 'y'),
+        request_data.get('host_rename', False),
         request_data.get('include_guest_coef', False),
     )
     return get_json_result(data=data)
