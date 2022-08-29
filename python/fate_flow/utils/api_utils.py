@@ -109,15 +109,30 @@ def error_response(response_code, retmsg=None):
 
 
 def federated_api(job_id, method, endpoint, src_party_id, dest_party_id, src_role, json_body, federated_mode):
+    src_party_id = str(src_party_id or '')
+    dest_party_id = str(dest_party_id or '')
+    src_role = src_role or ''
+
+    headers = request_headers.copy()
+    headers.update({
+        'src_party_id': src_party_id,
+        'dest_party_id': dest_party_id,
+        'src_role': src_role,
+    })
+
+    if SITE_AUTHENTICATION:
+        sign_obj = HookManager.site_signature(SignatureParameters(PARTY_ID, json_body))
+        headers['site_signature'] = sign_obj.site_signature or ''
+
     kwargs = {
         'job_id': job_id,
         'method': method,
         'endpoint': endpoint,
-        'src_party_id': str(src_party_id),
-        'dest_party_id': str(dest_party_id),
+        'src_party_id': src_party_id,
+        'dest_party_id': dest_party_id,
         'src_role': src_role,
         'json_body': json_body,
-        'headers': generate_headers(src_party_id, src_role, json_body),
+        'headers': headers,
     }
 
     if federated_mode == FederatedMode.SINGLE or kwargs['dest_party_id'] == '0':
@@ -306,20 +321,6 @@ def forward_api(role, request_config):
         response =  {"retcode": http_response.status_code, "retmsg": http_response.text}
     audit_logger().info(response)
     return response
-
-
-def generate_headers(src_party_id, src_role, body):
-    headers = request_headers.copy()
-    headers.update({
-        'src_party_id': str(src_party_id or ''),
-        'src_role': src_role or '',
-    })
-
-    if SITE_AUTHENTICATION:
-        sign_obj = HookManager.site_signature(SignatureParameters(PARTY_ID, body))
-        headers['site_signature'] = sign_obj.site_signature or ''
-
-    return headers
 
 
 def create_job_request_check(func):
