@@ -1,8 +1,19 @@
+# Release 1.9.0
+## Major Features and Improvements
+* Support high availability and load balancing to improve system availability and stability
+* Added support for site authentication and data set authority authentication, and supports hook mode for users to customize authentication schemes
+* Component registration optimization, support participants to use different versions of algorithm components
+* Upload, reader support feature anonymity, support specifying id column
+* Scheduling optimization, asynchronous time-consuming operations, component scheduling performance improved by more than 5 times This optimization obvious benefits for multi-component tasks
+* Added component ApiReader to get feature data by id
+* Model storage optimization, support model data synchronization between local and other storage
+* The scheduler now can obtain the error information from other participant's algorithm components
+
 # Release 1.8.0
 ## Major Features and Improvements
-Optimize the model migration function to reduce user operation steps;
-Add version compatibility check in component center to support multiple parties to use different versions;
-Add data table disable/enable function, and support batch delete disable table
+* Optimize the model migration function to reduce user operation steps;
+* Add version compatibility check in component center to support multiple parties to use different versions;
+* Add data table disable/enable function, and support batch delete disable table
 
 # Release 1.7.2
 ## Major Features and Improvements
