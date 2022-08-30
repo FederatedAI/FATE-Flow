@@ -125,16 +125,16 @@ authentication:
 #### 3.1.3 Key Management
 - Add the partner's public key
 
-{{snippet('cli/key.md', '#### save')}}
+{{snippet('cli/key.md', '### save')}}
 
 - Delete a partner's public key
 
-{{snippet('cli/key.md', '#### delete')}}
+{{snippet('cli/key.md', '### delete')}}
 
 
 - Query the co-key
 
-{{snippet('cli/key.md', '#### query')}}
+{{snippet('cli/key.md', '### query')}}
 
 ### 3.2 Third-party service authentication
 #### 3.2.1 Configuration

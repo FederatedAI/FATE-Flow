@@ -33,15 +33,15 @@
 ```
 #### 2.1.2 Authorization
 
-{{snippet('cli/privilege.zh.md', '## grant')}}
+{{snippet('cli/privilege.md', '### grant')}}
 
 #### 2.1.3 Revoke privileges
 
-{{snippet('cli/privilege.zh.md', '#### delete')}}
+{{snippet('cli/privilege.md', '### delete')}}
 
 #### 2.1.4 Permission query
 
-{{snippet('cli/privilege.zh.md', '#### query')}}
+{{snippet('cli/privilege.md', '### query')}}
 
 ### 2.2 Third-party interface privilege authentication
 - Third party services need to authenticate to the flow privilege interface, refer to [privilege authentication service registration](./third_party_service_registry.md#33-permission)
