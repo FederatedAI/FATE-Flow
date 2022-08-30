@@ -597,6 +597,26 @@
     1. 说明
   </a>
   
+    <nav class="md-nav" aria-label="1. 说明">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    1.1 模型注册
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    1.2 高可用
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -772,6 +792,26 @@
     1. 说明
   </a>
   
+    <nav class="md-nav" aria-label="1. 说明">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    1.1 模型注册
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    1.2 高可用
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -808,8 +848,11 @@
 
 <h1 id="_1">服务注册中心<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
 <h2 id="1">1. 说明<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<h3 id="11">1.1 模型注册<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
 <p>FATE-Flow 通过 Apache ZooKeeper 与 FATE-Serving 交互，如果在配置中启用了 <code>use_registry</code>，则 Flow 在启动时会向 ZooKeeper 注册模型的下载 URL，Serving 可以通过这些 URL 获取模型。</p>
 <p>同样，Serving 也会向 ZooKeeper 注册其自身的地址，Flow 会获取该地址以与之通信。 如果没有启用 <code>use_registry</code>，Flow 则会尝试与配置文件中的设置 <code>servings</code> 地址通信。</p>
+<h3 id="12">1.2 高可用<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
+<p>FATE-Flow 通过向 Apache ZooKeeper 注册自身的 IP 和端口实现同一 party 内多节点的自动发现。</p>
 <h2 id="2-zookeeper">2. 配置 ZooKeeper 服务<a class="headerlink" href="#2-zookeeper" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="nt">zookeeper</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"></span>
@@ -821,7 +864,10 @@
 <h2 id="3-znode">3. ZNode<a class="headerlink" href="#3-znode" title="Permanent link">&para;</a></h2>
 <ul>
 <li>
-<p>FATE-Flow: <code>/FATE-SERVICES/flow/online/transfer/providers</code></p>
+<p>FATE-Flow 模型注册: <code>/FATE-SERVICES/flow/online/transfer/providers</code></p>
+</li>
+<li>
+<p>FATE-Flow 高可用: <code>/FATE-COMPONENTS/fate-flow</code></p>
 </li>
 <li>
 <p>FATE-Serving: <code>/FATE-SERVICES/serving/online/publishLoad/providers</code></p>
