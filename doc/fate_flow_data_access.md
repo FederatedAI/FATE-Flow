@@ -64,11 +64,18 @@
 
 The input table of the reader is configured in the conf when submitting the job:
 
-```shell
+```json
 {
   "role": {
     "guest": {
-      "0": { "reader_0": { "table": { "name": "breast_hetero_guest", "namespace": "experiment"}
+      "0": {
+        "reader_0": {
+          "table": {
+            "name": "breast_hetero_guest",
+            "namespace": "experiment"
+          }
+        }
+      }
     }
   }
 }
@@ -95,3 +102,35 @@ default_engines:
 - The reader component's input data storage type supports: eggroll, hdfs, localfs, mysql, path, etc;
 - reader component output data type is determined by default_engines.storage configuration (except for path)
 
+## 12. api-reader
+
+**Brief description:** 
+
+- The data input of api-reader component is id, and the data output is feature;
+- request parameters can be user-defined, e.g. version number, back month, etc..
+- The component will request third-party services, and the third-party services need to implement upload, query, download interfaces and register with the fate flow, which can be referred to [api-reader related service registration](./third_party_service_registry.md#31-apireader)
+
+**Parameter configuration**:
+
+Configure the api-reader parameter in the conf when submitting the job:
+
+```json
+{
+  "role": {
+    "guest": {
+      "0": { "api_reader_0": {
+        "server_name": "xxx",
+        "parameters": { "version": "xxx"},
+        "id_delimiter": ",",
+        "head": true
+        }
+      }
+    }
+  }
+}
+```
+Parameter meaning:
+- server_name: the name of the service to be requested
+- parameters: the parameters of the requested feature
+- id_delimiter: the data separator to be returned
+- head: whether the returned data contains a header or not
