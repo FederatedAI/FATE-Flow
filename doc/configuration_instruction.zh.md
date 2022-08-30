@@ -23,14 +23,52 @@ encrypt_password: false
 encrypt_module: fate_arch.common.encrypt_utils#pwdecrypt
 # 加密私钥
 private_key:
+# 站点id，站点鉴权时需要配置
+party_id:
+# 钩子模块配置
+hook_module:
+  # 客户端认证钩子
+  client_authentication: fate_flow.hook.flow.client_authentication
+  # 站点端认证钩子
+  site_authentication: fate_flow.hook.flow.site_authentication
+  # 权限认证钩子
+  permission: fate_flow.hook.flow.permission
+# 除了支持使用flow的钩子进行认证、鉴权，也支持使用第三方服务注册的认证和鉴权接口
+# 第三方认证、鉴权服务注册的服务名
+hook_server_name:
+# 认证
+authentication:
+  # 客户端认证配置
+  client:
+    # 客户端认证开关
+    switch: false
+    http_app_key:
+    http_secret_key:
+  # 站点认证配置
+  site:
+    # 认证开关
+    switch: false
+# 鉴权
+permission:
+  # 鉴权开关
+  switch: false
+  # 组件鉴权开关
+  component: false
+  # 数据集鉴权开关
+  dataset: false
 fateflow:
   # 必须使用真实绑定的ip地址，避免因为多网卡/多IP引发的额外问题
   # you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported
   host: 127.0.0.1
   http_port: 9380
   grpc_port: 9360
-  http_app_key:
-  http_secret_key:
+  # 高可用性时需要配置nginx地址
+  nginx:
+    host:
+    http_port:
+    grpc_port:
+  # 实例id默认为{host}:{http_port}，可以通过random_instance_id配置生成随机id
+  random_instance_id: false
   # 支持使用rollsite/nginx/fateflow作为多方任务协调通信代理
   # rollsite支持fate on eggroll的场景，仅支持grpc协议，支持P2P组网及星型组网模式
   # nginx支持所有引擎场景，支持http与grpc协议，默认为http，支持P2P组网及星型组网模式
