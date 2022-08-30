@@ -532,7 +532,21 @@
   
     <li class="md-nav__item">
       <a href="../fate_flow_authority_management/" class="md-nav__link">
-        Multi-Party Collaboration Authority Management
+        Certification program
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_permission_management/" class="md-nav__link">
+        Fate flow permission management
       </a>
     </li>
   
@@ -589,20 +603,6 @@
     <li class="md-nav__item">
       <a href="../fate_flow_client/" class="md-nav__link">
         FATE Flow Client
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fate_flow_http_api/" class="md-nav__link">
-        REST API
       </a>
     </li>
   
@@ -928,13 +928,51 @@
 <span class="c1"># Whether to enable higher security serialization mode</span><span class="w"></span>
 <span class="nt">use_deserialize_safe_module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
 <span class="nt">dependent_distribution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="c1"># party id： required for site authentication</span><span class="w"></span>
+<span class="nt">party_id</span><span class="p">:</span><span class="w"></span>
+<span class="c1"># Hook module configuration</span><span class="w"></span>
+<span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># Client authentication hooks</span><span class="w"></span>
+<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># site-side authentication hooks</span><span class="w"></span>
+<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># Permission authentication hooks</span><span class="w"></span>
+<span class="w">  </span><span class="nt">permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.permission</span><span class="w"></span>
+<span class="c1"># In addition to using flow&#39;s hooks for authentication and authentication, we also support authentication and authentication interfaces registered with third-party services</span><span class="w"></span>
+<span class="c1"># The name of the service registered by the third-party authentication and authentication service</span><span class="w"></span>
+<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"></span>
+<span class="c1"># Authentication</span><span class="w"></span>
+<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># Client authentication configuration</span><span class="w"></span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="c1"># Client authentication switch</span><span class="w"></span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># Site authentication configuration</span><span class="w"></span>
+<span class="w">  </span><span class="nt">site</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="c1"># Authentication switch</span><span class="w"></span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="c1"># Authentication</span><span class="w"></span>
+<span class="nt">permission</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># Authentication switch</span><span class="w"></span>
+<span class="w">  </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># Component authentication switch</span><span class="w"></span>
+<span class="w">  </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># Data set authentication switch</span><span class="w"></span>
+<span class="w">  </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
 <span class="nt">fateflow</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="c1"># you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported</span><span class="w"></span>
 <span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
 <span class="w">  </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9380</span><span class="w"></span>
 <span class="w">  </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9360</span><span class="w"></span>
-<span class="w">  </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># The nginx address needs to be configured for high availability</span><span class="w"></span>
+<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">http_port</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># use random instance_id instead of {host}:{http_port}</span><span class="w"></span>
+<span class="w">  </span><span class="nt">random_instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
 <span class="w">  </span><span class="c1"># support rollsite/nginx/fateflow as a coordination proxy</span><span class="w"></span>
 <span class="w">  </span><span class="c1"># rollsite support fate on eggroll, use grpc protocol</span><span class="w"></span>
 <span class="w">  </span><span class="c1"># nginx support fate on eggroll and fate on spark, use http or grpc protocol, default is http</span><span class="w"></span>

@@ -237,15 +237,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../document_navigation/" class="md-tabs__link md-tabs__link--active">
+      <a href="../document_navigation/" class="md-tabs__link">
         Docs
       </a>
     </li>
@@ -335,14 +333,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
@@ -532,6 +528,20 @@
   
     <li class="md-nav__item">
       <a href="../fate_flow_authority_management/" class="md-nav__link">
+        认证方案
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_permission_management/" class="md-nav__link">
         多方合作权限管理
       </a>
     </li>
@@ -590,129 +600,6 @@
       <a href="../fate_flow_client/" class="md-nav__link">
         命令行客户端
       </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          REST API
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        REST API
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    1. 说明
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    2. 接口鉴权
-  </a>
-  
-    <nav class="md-nav" aria-label="2. 接口鉴权">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
-    2.1 签名生成方法
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
-    2.2. 示例
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23" class="md-nav__link">
-    2.3. 错误码
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    3. 设计规范
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 设计规范">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31-http-method" class="md-nav__link">
-    3.1 HTTP Method
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32-url" class="md-nav__link">
-    3.2 URL规则(现有)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#33-url" class="md-nav__link">
-    3.3 URL规则(建议改进)
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -830,63 +717,29 @@
       
         <li class="md-nav__item">
   <a href="#2" class="md-nav__link">
-    2. 接口鉴权
+    2. 设计规范
   </a>
   
-    <nav class="md-nav" aria-label="2. 接口鉴权">
+    <nav class="md-nav" aria-label="2. 设计规范">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
-    2.1 签名生成方法
+  <a href="#21-http-method" class="md-nav__link">
+    2.1 HTTP Method
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
-    2.2. 示例
+  <a href="#22-url" class="md-nav__link">
+    2.2 URL规则(现有)
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#23" class="md-nav__link">
-    2.3. 错误码
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    3. 设计规范
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 设计规范">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31-http-method" class="md-nav__link">
-    3.1 HTTP Method
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32-url" class="md-nav__link">
-    3.2 URL规则(现有)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#33-url" class="md-nav__link">
-    3.3 URL规则(建议改进)
+  <a href="#23-url" class="md-nav__link">
+    2.3 URL规则(建议改进)
   </a>
   
 </li>
@@ -916,49 +769,13 @@
 
 <h1 id="rest-api">REST API<a class="headerlink" href="#rest-api" title="Permanent link">&para;</a></h1>
 <h2 id="1">1. 说明<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<h2 id="2">2. 接口鉴权<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p>Flow HTTP API 在 1.7.0 新增了签名鉴权，如果在配置文件里设置了 <code>http_app_key</code> 和 <code>http_secret_key</code>，则所有发送到 Flow 的请求都需要增加以下 header</p>
-<p><code>TIMESTAMP</code>：Unix timestamp，单位毫秒，如 <code>1634890066095</code> 表示 <code>2021-10-22 16:07:46 GMT+0800</code>，注意该时间与服务器当前时间的差距不能超过 60 秒</p>
-<p><code>NONCE</code>：随机字符串，可以使用 UUID，如 <code>782d733e-330f-11ec-8be9-a0369fa972af</code></p>
-<p><code>APP_KEY</code>：需与 Flow 配置文件中的 <code>http_app_key</code> 一致</p>
-<p><code>SIGNATURE</code>：基于 Flow 配置文件中的 <code>http_secret_key</code> 和请求参数生成的签名</p>
-<h3 id="21">2.1 签名生成方法<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
-<ul>
-<li>按照顺序组合下列内容</li>
-</ul>
-<p><code>TIMESTAMP</code></p>
-<p><code>NONCE</code></p>
-<p><code>APP_KEY</code></p>
-<p>请求路径+查询参数，如没有查询参数则不需要末尾的 <code>?</code>，如 <code>/v1/job/submit</code> 或 <code>/v1/data/upload?table_name=dvisits_hetero_guest&amp;namespace=experiment</code></p>
-<p>如果 <code>Content-Type</code> 为 <code>application/json</code>，则为原始 JSON，即 request body；如果不是，此项使用空字符串填充</p>
-<p>如果 <code>Content-Type</code> 为 <code>application/x-www-form-urlencoded</code> 或 <code>multipart/form-data</code>，则需要把所有参数以字母顺序排序并 <code>urlencode</code>，转码方式参照 RFC 3986（即除 <code>a-zA-Z0-9-._~</code> 以外的字符都要转码），注意文件不参与签名；如果不是，此项使用空字符串填充</p>
-<ul>
-<li>
-<p>把所有参数用换行符 <code>\n</code> 连接然后以 <code>ASCII</code> 编码</p>
-</li>
-<li>
-<p>使用 <code>HMAC-SHA1</code> 算法，以 Flow 配置文件中的 <code>http_secret_key</code> 为密钥，算出二进制摘要</p>
-</li>
-<li>
-<p>使用 base64 编码二进制摘要</p>
-</li>
-</ul>
-<h3 id="22">2.2. 示例<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
-<p>可以参考 <a href="https://github.com/FederatedAI/FATE/blob/develop-1.7/python/fate_client/flow_sdk/client/base.py#L63">Fate SDK</a> 的签名方法或 <a href="https://github.com/FederatedAI/FATE-Flow/blob/develop-1.7.0/python/fate_flow/apps/__init__.py#L104">Fate Flow</a> 的校验方法</p>
-<h3 id="23">2.3. 错误码<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
-<p><code>400 Bad Request</code> request body 既有 json 又有 form</p>
-<p><code>401 Unauthorized</code> 缺少一个或多个 header</p>
-<p><code>400 Invalid TIMESTAMP</code> <code>TIMESTAMP</code> 无法解析</p>
-<p><code>425 TIMESTAMP is more than 60 seconds away from the server time</code> header 中的 <code>TIMESTAMP</code> 与服务器时间相差超过 60 秒</p>
-<p><code>401 Unknown APP_KEY</code> header 中的 <code>APP_KEY</code> 与 Flow 配置文件中的 <code>http_app_key</code> 不一致</p>
-<p><code>403 Forbidden</code> 签名校验失败</p>
-<h2 id="3">3. 设计规范<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<h3 id="31-http-method">3.1 HTTP Method<a class="headerlink" href="#31-http-method" title="Permanent link">&para;</a></h3>
+<h2 id="2">2. 设计规范<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21-http-method">2.1 HTTP Method<a class="headerlink" href="#21-http-method" title="Permanent link">&para;</a></h3>
 <ul>
 <li>HTTP Method: 一律采用<code>POST</code></li>
 <li>Content Type: application/json</li>
 </ul>
-<h3 id="32-url">3.2 URL规则(现有)<a class="headerlink" href="#32-url" title="Permanent link">&para;</a></h3>
+<h3 id="22-url">2.2 URL规则(现有)<a class="headerlink" href="#22-url" title="Permanent link">&para;</a></h3>
 <p>/一级/二级/N级/最后一级</p>
 <ul>
 <li>一级：接口版本，如v1</li>
@@ -966,7 +783,7 @@
 <li>N级：子资源名称，如list, 允许有多个N级</li>
 <li>最后一级：操作: create/update/query/get/delete</li>
 </ul>
-<h3 id="33-url">3.3 URL规则(建议改进)<a class="headerlink" href="#33-url" title="Permanent link">&para;</a></h3>
+<h3 id="23-url">2.3 URL规则(建议改进)<a class="headerlink" href="#23-url" title="Permanent link">&para;</a></h3>
 <p>/一级/二级/三级/四级/N级/最后一级</p>
 <ul>
 <li>一级：系统名称: fate</li>
@@ -994,42 +811,6 @@
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="页脚" >
-      
-        
-        <a href="../fate_flow_client/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 命令行客户端" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                上一页
-              </span>
-              命令行客户端
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../fate_flow_http_api_call_demo/" class="md-footer__link md-footer__link--next" aria-label="下一页: REST API 调用" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                下一页
-              </span>
-              REST API 调用
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">

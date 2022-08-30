@@ -532,7 +532,21 @@
   
     <li class="md-nav__item">
       <a href="../fate_flow_authority_management/" class="md-nav__link">
-        Multi-Party Collaboration Authority Management
+        Certification program
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_permission_management/" class="md-nav__link">
+        Fate flow permission management
       </a>
     </li>
   
@@ -698,20 +712,6 @@
     <li class="md-nav__item">
       <a href="../fate_flow_client/" class="md-nav__link">
         FATE Flow Client
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fate_flow_http_api/" class="md-nav__link">
-        REST API
       </a>
     </li>
   
@@ -1076,6 +1076,13 @@
 </code></pre></div>
 <p>The import is considered successful when it returns the following.</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202208261102212849780&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;arbiter-10000#guest-9999#host-10000#model&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;foobar&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9999&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="p">},</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>

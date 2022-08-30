@@ -528,7 +528,21 @@
   
     <li class="md-nav__item">
       <a href="../../fate_flow_authority_management/" class="md-nav__link">
-        Multi-Party Collaboration Authority Management
+        Certification program
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fate_flow_permission_management/" class="md-nav__link">
+        Fate flow permission management
       </a>
     </li>
   
@@ -585,20 +599,6 @@
     <li class="md-nav__item">
       <a href="../../fate_flow_client/" class="md-nav__link">
         FATE Flow Client
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fate_flow_http_api/" class="md-nav__link">
-        REST API
       </a>
     </li>
   
@@ -763,7 +763,7 @@
 <h2 id="privilege">Privilege<a class="headerlink" href="#privilege" title="Permanent link">&para;</a></h2>
 <h3 id="grant">grant<a class="headerlink" href="#grant" title="Permanent link">&para;</a></h3>
 <p>Add privileges</p>
-<div class="highlight"><pre><span></span><code>flow privilege grant <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow privilege grant -c fateflow/examples/permission/grant.json
 </code></pre></div>
 <p><strong>Options</strong></p>
 <table>
@@ -777,63 +777,46 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">src-party-id</td>
+<td style="text-align: left;">party_id</td>
 <td style="text-align: left;">yes</td>
 <td style="text-align: left;">string</td>
-<td>originating-party-id</td>
+<td>site id</td>
 </tr>
 <tr>
-<td style="text-align: left;">src-role</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
-<td>originating-party-role</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-role</td>
+<td style="text-align: left;">component</td>
 <td style="text-align: left;">no</td>
 <td style="text-align: left;">string</td>
-<td>guest, host, arbiter, all, where all is all privileges granted</td>
+<td>component name, can be split by "," for multiple components, "*" for all components</td>
 </tr>
 <tr>
-<td style="text-align: left;">privilege-command</td>
+<td style="text-align: left;">dataset</td>
 <td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
-<td>"stop", "run", "create", all, where all is all privileges granted</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-component</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
-<td>Lowercase for algorithm components, such as dataio, heteronn, etc., where all is all privileges granted</td>
+<td style="text-align: left;">object</td>
+<td>list of datasets</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
-<ul>
-<li>Give role privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span> --src-role guest --privilege-role all
-</code></pre></div>
-<ul>
-<li>Give command privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span> --src-role guest --privilege-command all
-</code></pre></div>
-<ul>
-<li>Grant component privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span> --src-role guest --privilege-component all
-</code></pre></div>
-<ul>
-<li>Grant multiple privileges at the same time</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span> --src-role guest --privilege-role all --privilege-command all --privilege-component all
-</code></pre></div>
-<p><strong>return parameters</strong> </p>
+<p><strong>sample</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;reader,dataio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></p>
+<p><strong>return</strong></p>
 <table>
 <thead>
 <tr>
-<th>parameter-name</th>
+<th>parameter name</th>
 <th style="text-align: left;">type</th>
 <th>description</th>
 </tr>
@@ -842,7 +825,7 @@
 <tr>
 <td>retcode</td>
 <td style="text-align: left;">int</td>
-<td>return-code</td>
+<td>return code</td>
 </tr>
 <tr>
 <td>retmsg</td>
@@ -851,7 +834,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
+<p><strong>Sample</strong></p>
 <div class="highlight"><pre><span></span><code><span class="o">{</span>
     <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
     <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
@@ -859,9 +842,9 @@
 </code></pre></div>
 <h3 id="delete">delete<a class="headerlink" href="#delete" title="Permanent link">&para;</a></h3>
 <p>Delete permissions</p>
-<div class="highlight"><pre><span></span><code>flow privilege delete <span class="o">[</span>options<span class="o">]</span>
+<p><div class="highlight"><pre><span></span><code>flow privilege delete -c fateflow/examples/permission/delete.json
 </code></pre></div>
-<p><strong>Options</strong></p>
+<strong>Options</strong></p>
 <table>
 <thead>
 <tr>
@@ -873,63 +856,46 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">src-party-id</td>
+<td style="text-align: left;">party_id</td>
 <td style="text-align: left;">yes</td>
 <td style="text-align: left;">string</td>
-<td>originating-party-id</td>
+<td>site_id</td>
 </tr>
 <tr>
-<td style="text-align: left;">src-role</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
-<td>originating-party-role</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-role</td>
+<td style="text-align: left;">component</td>
 <td style="text-align: left;">no</td>
 <td style="text-align: left;">string</td>
-<td>guest, host, arbiter, all, where all is all privileges revoked</td>
+<td>component name, can be split by "," for multiple components, "*" for all components</td>
 </tr>
 <tr>
-<td style="text-align: left;">privilege-command</td>
+<td style="text-align: left;">dataset</td>
 <td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
-<td>"stop", "run", "create", all, where all is revoke all privileges</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-component</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
-<td>lowercase for algorithm components, such as dataio, heteronn, etc., where all is revoke all privileges</td>
+<td style="text-align: left;">object</td>
+<td>list of datasets, "*" is all datasets</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
-<ul>
-<li>Revoke role privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span> --src-role guest --privilege-role all
-</code></pre></div>
-<ul>
-<li>Revoke command privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span> --src-role guest --privilege-command all
-</code></pre></div>
-<ul>
-<li>Revoke component privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span> --src-role guest --privilege-component all
-</code></pre></div>
-<ul>
-<li>Grant multiple privileges at the same time</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span> --src-role guest --privilege-role all --privilege-command all --privilege-component all
-</code></pre></div>
-<p><strong>return parameters</strong> </p>
+<p><strong>sample</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;reader,dataio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></p>
+<p><strong>return</strong></p>
 <table>
 <thead>
 <tr>
-<th>parameter-name</th>
+<th>parameter name</th>
 <th style="text-align: left;">type</th>
 <th>description</th>
 </tr>
@@ -938,7 +904,7 @@
 <tr>
 <td>retcode</td>
 <td style="text-align: left;">int</td>
-<td>return-code</td>
+<td>return code</td>
 </tr>
 <tr>
 <td>retmsg</td>
@@ -947,7 +913,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
+<p><strong>Sample</strong></p>
 <div class="highlight"><pre><span></span><code><span class="o">{</span>
     <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
     <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
@@ -955,13 +921,15 @@
 </code></pre></div>
 <h3 id="query">query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h3>
 <p>Query permissions</p>
-<div class="highlight"><pre><span></span><code>flow privilege query <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow privilege query -p <span class="m">10000</span>
 </code></pre></div>
 <p><strong>Options</strong></p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
+<th style="text-align: left;">parameters</th>
+<th style="text-align: left;">short-format</th>
+<th style="text-align: left;">long-format</th>
 <th style="text-align: left;">required</th>
 <th style="text-align: left;">type</th>
 <th>description</th>
@@ -969,25 +937,16 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">src-party-id</td>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;"><code>-p</code></td>
+<td style="text-align: left;"><code>--party-id</code></td>
 <td style="text-align: left;">yes</td>
 <td style="text-align: left;">string</td>
-<td>originating-party-id</td>
-</tr>
-<tr>
-<td style="text-align: left;">src-role</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
-<td>originating-party-role</td>
+<td>site id</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
-<div class="highlight"><pre><span></span><code>flow privilege query --src-party-id <span class="m">9999</span> --src-role guest 
-</code></pre></div>
-<ul>
-<li><strong>return parameters</strong> </li>
-</ul>
+<p><strong>returns</strong></p>
 <table>
 <thead>
 <tr>
@@ -1005,7 +964,7 @@
 <tr>
 <td>retmsg</td>
 <td style="text-align: left;">string</td>
-<td>return message</td>
+<td>Return information</td>
 </tr>
 <tr>
 <td>data</td>
@@ -1014,18 +973,27 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
-<div class="highlight"><pre><span></span><code><span class="o">{</span>
-    <span class="s2">&quot;data&quot;</span>: <span class="o">{</span>
-        <span class="s2">&quot;privilege_command&quot;</span>: <span class="o">[]</span>,
-        <span class="s2">&quot;privilege_component&quot;</span>: <span class="o">[]</span>,
-        <span class="s2">&quot;privilege_role&quot;</span>: <span class="o">[]</span>,
-        <span class="s2">&quot;role&quot;</span>: <span class="s2">&quot;guest&quot;</span>,
-        <span class="s2">&quot;src_party_id&quot;</span>: <span class="s2">&quot;9999&quot;</span>
-    <span class="o">}</span>,
-    <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
-    <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
-<span class="o">}</span>
+<p><strong>Sample</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;reader&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;dataio&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">],</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">            </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="p">},</span><span class="w"></span>
+<span class="w">            </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 
