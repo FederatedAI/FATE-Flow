@@ -121,6 +121,14 @@
          
     </url>
     <url>
+         <loc>fate_flow_permission_management/</loc>
+         <lastmod>2022-08-30</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/fate_flow_permission_management/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="fate_flow_permission_management/"/>
+         
+    </url>
+    <url>
          <loc>fate_flow_resource_management/</loc>
          <lastmod>2022-08-30</lastmod>
          <changefreq>daily</changefreq>
@@ -161,6 +169,14 @@
          
     </url>
     <url>
+         <loc>third_party_service_registry/</loc>
+         <lastmod>2022-08-30</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/third_party_service_registry/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="third_party_service_registry/"/>
+         
+    </url>
+    <url>
          <loc>cli/checkpoint/</loc>
          <lastmod>2022-08-30</lastmod>
          <changefreq>daily</changefreq>
@@ -182,6 +198,14 @@
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/job/"/>
          <xhtml:link rel="alternate" hreflang="en" href="cli/job/"/>
+         
+    </url>
+    <url>
+         <loc>cli/key/</loc>
+         <lastmod>2022-08-30</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="zh" href="zh/cli/key/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="cli/key/"/>
          
     </url>
     <url>

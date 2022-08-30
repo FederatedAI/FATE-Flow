@@ -13,7 +13,7 @@
     
     
       
-        <title>Index - FATE Flow</title>
+        <title>Key - FATE Flow</title>
       
     
     
@@ -71,6 +71,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#key" class="md-skip">
+          跳转至
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -106,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Index
+              Key
             
           </span>
         </div>
@@ -695,6 +700,48 @@
   
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#key" class="md-nav__link">
+    Key
+  </a>
+  
+    <nav class="md-nav" aria-label="Key">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query" class="md-nav__link">
+    query
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save" class="md-nav__link">
+    save
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete" class="md-nav__link">
+    delete
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -705,15 +752,211 @@
             <article class="md-content__inner md-typeset">
               
                 
-  <a href="https://github.com/FederatedAI/FATE-Flow/edit/master/doc/mkdocs/theme/README.md" title="编辑此页" class="md-content__button md-icon">
+  <a href="https://github.com/FederatedAI/FATE-Flow/edit/master/doc/cli/key.zh.md" title="编辑此页" class="md-content__button md-icon">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
 
-  <h1>Index</h1>
+  <h1>Key</h1>
 
-<p>Mostly copied from <a href="https://github.com/cirruslabs/cirrus-ci-docs/tree/master/theme">https://github.com/cirruslabs/cirrus-ci-docs/tree/master/theme</a></p>
+<h2 id="key">Key<a class="headerlink" href="#key" title="Permanent link">&para;</a></h2>
+<h3 id="query">query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h3>
+<p>用于查询本方或合作方fate站点公钥信息</p>
+<p><div class="highlight"><pre><span></span><code>flow key query -p <span class="m">9999</span>
+</code></pre></div>
+<strong>选项</strong> </p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数</th>
+<th style="text-align: left;">短格式</th>
+<th style="text-align: left;">长格式</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;"><code>-p</code></td>
+<td style="text-align: left;"><code>--party-id</code></td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>站点id</td>
+</tr>
+</tbody>
+</table>
+<p><strong>返回</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">retcode</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">retmsg</td>
+<td style="text-align: left;">string</td>
+<td>返回信息</td>
+</tr>
+<tr>
+<td style="text-align: left;">data</td>
+<td style="text-align: left;">object</td>
+<td>返回数据</td>
+</tr>
+</tbody>
+</table>
+<p>样例</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzxgbxa3cfhvwbu0AFfY/\nkm7uFZ17J0EEDgaIWlrLakds7XboU5iOT0eReQp/KG3R0fVM9rBtdj8NcBcArtZ9\n2242Atls3jiuza/MPPo9XACnedGW7O+VAfvVmq2sdmKZMX5l7krEXYN645UZAd8b\nhIh+xf0qGW6IgxyKvqF13VxxB7OMUzUwyY/ZcN2rW1urfdXsCNoQ1cFl3KaarkHl\nn/gBMcCDvACXoKysFnFE7L4E7CGglYaDBJrfIyti+sbSVNxUDx2at2VXqj/PohTa\nkBKfrgK7sT85gz1sc9uRwhwF4nOY7izq367S7t/W8BJ75gWsr+lhhiIfE19RBbBQ\n/wIDAQAB\n-----END PUBLIC KEY-----&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h3 id="save">save<a class="headerlink" href="#save" title="Permanent link">&para;</a></h3>
+<p>用于保存其它fate站点公钥信息，即为和其他站点合作</p>
+<div class="highlight"><pre><span></span><code>flow key save -c fateflow/examples/key/save_public_key.json
+</code></pre></div>
+<p><strong>选项</strong> </p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数</th>
+<th style="text-align: left;">短格式</th>
+<th style="text-align: left;">长格式</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">conf_path</td>
+<td style="text-align: left;"><code>-c</code></td>
+<td style="text-align: left;"><code>--conf-path</code></td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>配置路径</td>
+</tr>
+</tbody>
+</table>
+<p>注: conf_path为参数路径，具体参数如下</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>站点id</td>
+</tr>
+<tr>
+<td style="text-align: left;">key</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>站点公钥</td>
+</tr>
+</tbody>
+</table>
+<p><strong>返回</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">retcode</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">retmsg</td>
+<td style="text-align: left;">string</td>
+<td>返回信息</td>
+</tr>
+</tbody>
+</table>
+<p>样例</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h3 id="delete">delete<a class="headerlink" href="#delete" title="Permanent link">&para;</a></h3>
+<p>删除合作方站点公钥，即为取消合作关系</p>
+<div class="highlight"><pre><span></span><code>flow key delete -p <span class="m">9999</span>
+</code></pre></div>
+<p><strong>选项</strong> </p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数</th>
+<th style="text-align: left;">短格式</th>
+<th style="text-align: left;">长格式</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;"><code>-p</code></td>
+<td style="text-align: left;"><code>--party-id</code></td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>站点id</td>
+</tr>
+</tbody>
+</table>
+<p><strong>返回</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">retcode</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">retmsg</td>
+<td style="text-align: left;">string</td>
+<td>返回信息</td>
+</tr>
+</tbody>
+</table>
+<p>样例</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
 
 
 

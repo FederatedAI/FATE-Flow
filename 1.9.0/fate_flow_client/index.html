@@ -532,7 +532,21 @@
   
     <li class="md-nav__item">
       <a href="../fate_flow_authority_management/" class="md-nav__link">
-        Multi-Party Collaboration Authority Management
+        Certification program
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_permission_management/" class="md-nav__link">
+        Fate flow permission management
       </a>
     </li>
   
@@ -1248,20 +1262,6 @@
   
 </nav>
       
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fate_flow_http_api/" class="md-nav__link">
-        REST API
-      </a>
     </li>
   
 
@@ -2162,8 +2162,8 @@ flow init -c conf/service_conf.yaml
 <tr>
 <td style="text-align: left;">storage_engine</td>
 <td style="text-align: left;">no</td>
-<td style="text-align: left;">storage engine type</td>
-<td>default "EGGROLL", also support "HDFS", "LOCALFS", "HIVE", etc.</td>
+<td style="text-align: left;">string</td>
+<td>storage engine type, default "EGGROLL", also support "HDFS", "LOCALFS", "HIVE", etc.</td>
 </tr>
 <tr>
 <td style="text-align: left;">namespace</td>
@@ -2209,7 +2209,93 @@ flow init -c conf/service_conf.yaml
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
+<p><strong>mete information</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">parameter name</th>
+<th style="text-align: left;">required</th>
+<th style="text-align: left;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">input_format</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>The format of the data (danse, svmlight, tag:value), used to determine</td>
+</tr>
+<tr>
+<td style="text-align: left;">delimiter</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>The data separator, default ","</td>
+</tr>
+<tr>
+<td style="text-align: left;">tag_with_value</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">bool</td>
+<td>Valid for tag data format, whether to carry value</td>
+</tr>
+<tr>
+<td style="text-align: left;">tag_value_delimiter</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>tag:value data separator, default ":"</td>
+</tr>
+<tr>
+<td style="text-align: left;">with_match_id</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">bool</td>
+<td>Whether or not to carry match id</td>
+</tr>
+<tr>
+<td style="text-align: left;">with_match_id</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">object</td>
+<td>The name of the id column, effective when extend_sid is enabled, e.g., ["email", "phone"]</td>
+</tr>
+<tr>
+<td style="text-align: left;">id_range</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">object</td>
+<td>For tag/svmlight format data, which columns are ids</td>
+</tr>
+<tr>
+<td style="text-align: left;">exclusive_data_type</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>The format of the special type data columns</td>
+</tr>
+<tr>
+<td style="text-align: left;">data_type</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>Column data type, default "float64</td>
+</tr>
+<tr>
+<td style="text-align: left;">with_label</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">bool</td>
+<td>Whether to have a label, default False</td>
+</tr>
+<tr>
+<td style="text-align: left;">label_name</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>The name of the label, default "y"</td>
+</tr>
+<tr>
+<td style="text-align: left;">label_type</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>Label type, default "int"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>In version 1.9.0 and later, passing in the meta parameter will generate anonymous information about the feature.</strong>
+<strong>Example</strong> </p>
 <ul>
 <li>eggroll</li>
 </ul>
@@ -2801,6 +2887,93 @@ flow data upload-history --job-id $JOB_ID
 </tr>
 </tbody>
 </table>
+<p><strong>mete information</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">parameter name</th>
+<th style="text-align: left;">required</th>
+<th style="text-align: left;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">input_format</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>The format of the data (danse, svmlight, tag:value), used to determine</td>
+</tr>
+<tr>
+<td style="text-align: left;">delimiter</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>The data separator, default ","</td>
+</tr>
+<tr>
+<td style="text-align: left;">tag_with_value</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">bool</td>
+<td>Valid for tag data format, whether to carry value</td>
+</tr>
+<tr>
+<td style="text-align: left;">tag_value_delimiter</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>tag:value data separator, default ":"</td>
+</tr>
+<tr>
+<td style="text-align: left;">with_match_id</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">bool</td>
+<td>Whether or not to carry match id</td>
+</tr>
+<tr>
+<td style="text-align: left;">with_match_id</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">object</td>
+<td>The name of the id column, effective when extend_sid is enabled, e.g., ["email", "phone"]</td>
+</tr>
+<tr>
+<td style="text-align: left;">id_range</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">object</td>
+<td>For tag/svmlight format data, which columns are ids</td>
+</tr>
+<tr>
+<td style="text-align: left;">exclusive_data_type</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>The format of the special type data columns</td>
+</tr>
+<tr>
+<td style="text-align: left;">data_type</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>Column data type, default "float64</td>
+</tr>
+<tr>
+<td style="text-align: left;">with_label</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">bool</td>
+<td>Whether to have a label, default False</td>
+</tr>
+<tr>
+<td style="text-align: left;">label_name</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>The name of the label, default "y"</td>
+</tr>
+<tr>
+<td style="text-align: left;">label_type</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>Label type, default "int"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>In version 1.9.0 and later, if the meta parameter is passed in during the table bind phase, no anonymous information about the feature is generated directly. 
+The feature anonymization information of the original data will be updated after the data has passed through the reader component once</strong></p>
 <p><strong>Sample</strong> </p>
 <ul>
 <li>hdfs</li>
@@ -5488,87 +5661,96 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;fate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;1.7.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;1.9.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">                </span><span class="nt">&quot;class_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;anonymous_generator&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.anonymous_generator_util.Anonymous&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;data_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.data_format_preprocess.DataFormatPreProcess&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;feature_instance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.instance.Instance&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;feature_vector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.sparse_vector.SparseVector&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;hetero_model_merge&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_merge.merge_hetero_models.hetero_model_merge&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;homo_model_convert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.homo_model_convert.homo_model_convert&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;components.components.Components&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.generated&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;model_migrate&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_migrate.model_migrate&quot;</span><span class="w"></span>
 <span class="w">                </span><span class="p">},</span><span class="w"></span>
 <span class="w">                </span><span class="nt">&quot;components&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterolinr&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homoonehotencoder&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;dataio&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;psi&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homodatasplit&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homolr&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;columnexpand&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterokmeans&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterosshelr&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homosecureboost&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heteropoisson&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;featureimputation&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterofeatureselection&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heteropearson&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="s2">&quot;heterodatasplit&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;ftl&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterolr&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homonn&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;evaluation&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;featurescale&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;intersection&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heteronn&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;datastatistics&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterosecureboost&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;sbtfeaturetransformer&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;datatransform&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterofeaturebinning&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;feldmanverifiablesum&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;psi&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="s2">&quot;heterofastsecureboost&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;federatedsample&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;secureaddexample&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;secureinformationretrieval&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;sampleweight&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;union&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;onehotencoder&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homofeaturebinning&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heterofeaturebinning&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="s2">&quot;scorecard&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;sampleweight&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;homosecureboost&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;onehotencoder&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;secureinformationretrieval&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;homoonehotencoder&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;datatransform&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;dataio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heterosshelinr&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;intersection&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;homofeaturebinning&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;secureaddexample&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;union&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;datastatistics&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;columnexpand&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;homonn&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;labeltransform&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heterosecureboost&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heterofeatureselection&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heterolr&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;feldmanverifiablesum&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heteropoisson&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;evaluation&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;federatedsample&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;homodatasplit&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;ftl&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="s2">&quot;localbaseline&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;labeltransform&quot;</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;featurescale&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;featureimputation&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heteropearson&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heterokmeans&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heteronn&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heterolinr&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;spdztest&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;heterosshelr&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;homolr&quot;</span><span class="w"></span>
 <span class="w">                </span><span class="p">],</span><span class="w"></span>
 <span class="w">                </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${FATE_PROJECT_BASE}/python/federatedml&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                </span><span class="nt">&quot;python&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"></span>
 <span class="w">            </span><span class="p">},</span><span class="w"></span>
 <span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.9.0&quot;</span><span class="w"></span>
 <span class="w">            </span><span class="p">}</span><span class="w"></span>
 <span class="w">        </span><span class="p">},</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;fate_flow&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;1.7.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;1.9.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">                </span><span class="nt">&quot;class_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;anonymous_generator&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.anonymous_generator_util.Anonymous&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;data_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.data_format_preprocess.DataFormatPreProcess&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;feature_instance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.instance.Instance&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;feature_vector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.sparse_vector.SparseVector&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="nt">&quot;hetero_model_merge&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_merge.merge_hetero_models.hetero_model_merge&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;homo_model_convert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.homo_model_convert.homo_model_convert&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;components.components.Components&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.generated&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="nt">&quot;model_migrate&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_migrate.model_migrate&quot;</span><span class="w"></span>
 <span class="w">                </span><span class="p">},</span><span class="w"></span>
 <span class="w">                </span><span class="nt">&quot;components&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;download&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;upload&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;modelloader&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;reader&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;writer&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="s2">&quot;modelrestore&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;upload&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;apireader&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;modelstore&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                    </span><span class="s2">&quot;cacheloader&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;modelstore&quot;</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;modelloader&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;download&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s2">&quot;reader&quot;</span><span class="w"></span>
 <span class="w">                </span><span class="p">],</span><span class="w"></span>
 <span class="w">                </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${FATE_FLOW_BASE}/python/fate_flow&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                </span><span class="nt">&quot;python&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"></span>
 <span class="w">            </span><span class="p">},</span><span class="w"></span>
 <span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.9.0&quot;</span><span class="w"></span>
 <span class="w">            </span><span class="p">}</span><span class="w"></span>
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
@@ -5634,6 +5816,12 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 </code></pre></div>
 <p>output:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;flow-xxx-9380&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
@@ -5766,7 +5954,7 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <h2 id="privilege">Privilege<a class="headerlink" href="#privilege" title="Permanent link">&para;</a></h2>
 <h3 id="grant">grant<a class="headerlink" href="#grant" title="Permanent link">&para;</a></h3>
 <p>Add privileges</p>
-<div class="highlight"><pre><span></span><code>flow privilege grant <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow privilege grant -c fateflow/examples/permission/grant.json
 </code></pre></div>
 <p><strong>Options</strong></p>
 <table>
@@ -5780,63 +5968,46 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">src-party-id</td>
+<td style="text-align: left;">party_id</td>
 <td style="text-align: left;">yes</td>
 <td style="text-align: left;">string</td>
-<td>originating-party-id</td>
+<td>site id</td>
 </tr>
 <tr>
-<td style="text-align: left;">src-role</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
-<td>originating-party-role</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-role</td>
+<td style="text-align: left;">component</td>
 <td style="text-align: left;">no</td>
 <td style="text-align: left;">string</td>
-<td>guest, host, arbiter, all, where all is all privileges granted</td>
+<td>component name, can be split by "," for multiple components, "*" for all components</td>
 </tr>
 <tr>
-<td style="text-align: left;">privilege-command</td>
+<td style="text-align: left;">dataset</td>
 <td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
-<td>"stop", "run", "create", all, where all is all privileges granted</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-component</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
-<td>Lowercase for algorithm components, such as dataio, heteronn, etc., where all is all privileges granted</td>
+<td style="text-align: left;">object</td>
+<td>list of datasets</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
-<ul>
-<li>Give role privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span> --src-role guest --privilege-role all
-</code></pre></div>
-<ul>
-<li>Give command privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span> --src-role guest --privilege-command all
-</code></pre></div>
-<ul>
-<li>Grant component privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span> --src-role guest --privilege-component all
-</code></pre></div>
-<ul>
-<li>Grant multiple privileges at the same time</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span> --src-role guest --privilege-role all --privilege-command all --privilege-component all
-</code></pre></div>
-<p><strong>return parameters</strong> </p>
+<p><strong>sample</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;reader,dataio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></p>
+<p><strong>return</strong></p>
 <table>
 <thead>
 <tr>
-<th>parameter-name</th>
+<th>parameter name</th>
 <th style="text-align: left;">type</th>
 <th>description</th>
 </tr>
@@ -5845,7 +6016,7 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <tr>
 <td>retcode</td>
 <td style="text-align: left;">int</td>
-<td>return-code</td>
+<td>return code</td>
 </tr>
 <tr>
 <td>retmsg</td>
@@ -5854,7 +6025,7 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
+<p><strong>Sample</strong></p>
 <div class="highlight"><pre><span></span><code><span class="o">{</span>
     <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
     <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
@@ -5862,9 +6033,9 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 </code></pre></div>
 <h3 id="delete_1">delete<a class="headerlink" href="#delete_1" title="Permanent link">&para;</a></h3>
 <p>Delete permissions</p>
-<div class="highlight"><pre><span></span><code>flow privilege delete <span class="o">[</span>options<span class="o">]</span>
+<p><div class="highlight"><pre><span></span><code>flow privilege delete -c fateflow/examples/permission/delete.json
 </code></pre></div>
-<p><strong>Options</strong></p>
+<strong>Options</strong></p>
 <table>
 <thead>
 <tr>
@@ -5876,63 +6047,46 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">src-party-id</td>
+<td style="text-align: left;">party_id</td>
 <td style="text-align: left;">yes</td>
 <td style="text-align: left;">string</td>
-<td>originating-party-id</td>
+<td>site_id</td>
 </tr>
 <tr>
-<td style="text-align: left;">src-role</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
-<td>originating-party-role</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-role</td>
+<td style="text-align: left;">component</td>
 <td style="text-align: left;">no</td>
 <td style="text-align: left;">string</td>
-<td>guest, host, arbiter, all, where all is all privileges revoked</td>
+<td>component name, can be split by "," for multiple components, "*" for all components</td>
 </tr>
 <tr>
-<td style="text-align: left;">privilege-command</td>
+<td style="text-align: left;">dataset</td>
 <td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
-<td>"stop", "run", "create", all, where all is revoke all privileges</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-component</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
-<td>lowercase for algorithm components, such as dataio, heteronn, etc., where all is revoke all privileges</td>
+<td style="text-align: left;">object</td>
+<td>list of datasets, "*" is all datasets</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
-<ul>
-<li>Revoke role privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span> --src-role guest --privilege-role all
-</code></pre></div>
-<ul>
-<li>Revoke command privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span> --src-role guest --privilege-command all
-</code></pre></div>
-<ul>
-<li>Revoke component privileges</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span> --src-role guest --privilege-component all
-</code></pre></div>
-<ul>
-<li>Grant multiple privileges at the same time</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span> --src-role guest --privilege-role all --privilege-command all --privilege-component all
-</code></pre></div>
-<p><strong>return parameters</strong> </p>
+<p><strong>sample</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;reader,dataio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></p>
+<p><strong>return</strong></p>
 <table>
 <thead>
 <tr>
-<th>parameter-name</th>
+<th>parameter name</th>
 <th style="text-align: left;">type</th>
 <th>description</th>
 </tr>
@@ -5941,7 +6095,7 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <tr>
 <td>retcode</td>
 <td style="text-align: left;">int</td>
-<td>return-code</td>
+<td>return code</td>
 </tr>
 <tr>
 <td>retmsg</td>
@@ -5950,7 +6104,7 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
+<p><strong>Sample</strong></p>
 <div class="highlight"><pre><span></span><code><span class="o">{</span>
     <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
     <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
@@ -5958,13 +6112,15 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 </code></pre></div>
 <h3 id="query_3">query<a class="headerlink" href="#query_3" title="Permanent link">&para;</a></h3>
 <p>Query permissions</p>
-<div class="highlight"><pre><span></span><code>flow privilege query <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow privilege query -p <span class="m">10000</span>
 </code></pre></div>
 <p><strong>Options</strong></p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
+<th style="text-align: left;">parameters</th>
+<th style="text-align: left;">short-format</th>
+<th style="text-align: left;">long-format</th>
 <th style="text-align: left;">required</th>
 <th style="text-align: left;">type</th>
 <th>description</th>
@@ -5972,25 +6128,16 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">src-party-id</td>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;"><code>-p</code></td>
+<td style="text-align: left;"><code>--party-id</code></td>
 <td style="text-align: left;">yes</td>
 <td style="text-align: left;">string</td>
-<td>originating-party-id</td>
-</tr>
-<tr>
-<td style="text-align: left;">src-role</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
-<td>originating-party-role</td>
+<td>site id</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
-<div class="highlight"><pre><span></span><code>flow privilege query --src-party-id <span class="m">9999</span> --src-role guest 
-</code></pre></div>
-<ul>
-<li><strong>return parameters</strong> </li>
-</ul>
+<p><strong>returns</strong></p>
 <table>
 <thead>
 <tr>
@@ -6008,7 +6155,7 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <tr>
 <td>retmsg</td>
 <td style="text-align: left;">string</td>
-<td>return message</td>
+<td>Return information</td>
 </tr>
 <tr>
 <td>data</td>
@@ -6017,18 +6164,27 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 </tr>
 </tbody>
 </table>
-<p><strong>Example</strong> </p>
-<div class="highlight"><pre><span></span><code><span class="o">{</span>
-    <span class="s2">&quot;data&quot;</span>: <span class="o">{</span>
-        <span class="s2">&quot;privilege_command&quot;</span>: <span class="o">[]</span>,
-        <span class="s2">&quot;privilege_component&quot;</span>: <span class="o">[]</span>,
-        <span class="s2">&quot;privilege_role&quot;</span>: <span class="o">[]</span>,
-        <span class="s2">&quot;role&quot;</span>: <span class="s2">&quot;guest&quot;</span>,
-        <span class="s2">&quot;src_party_id&quot;</span>: <span class="s2">&quot;9999&quot;</span>
-    <span class="o">}</span>,
-    <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
-    <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
-<span class="o">}</span>
+<p><strong>Sample</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;reader&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;dataio&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">],</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">            </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="p">},</span><span class="w"></span>
+<span class="w">            </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <h2 id="tag">Tag<a class="headerlink" href="#tag" title="Permanent link">&para;</a></h2>
 <h3 id="create">create<a class="headerlink" href="#create" title="Permanent link">&para;</a></h3>
@@ -6380,13 +6536,13 @@ flow tag query -t <span class="nv">$TAG_NAME</span> --with-model
       
       
         
-        <a href="../fate_flow_http_api/" class="md-footer__link md-footer__link--next" aria-label="Next: REST API" rel="next">
+        <a href="../fate_flow_http_api_call_demo/" class="md-footer__link md-footer__link--next" aria-label="Next: REST API CLIENT" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              REST API
+              REST API CLIENT
             </div>
           </div>
           <div class="md-footer__button md-icon">

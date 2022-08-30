@@ -13,7 +13,7 @@
     
     
       
-        <title>服务端操作 - FATE Flow</title>
+        <title>第三方服务注册中心 - FATE Flow</title>
       
     
     
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              服务端操作
+              第三方服务注册中心
             
           </span>
         </div>
@@ -237,15 +237,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../document_navigation/" class="md-tabs__link md-tabs__link--active">
+      <a href="../document_navigation/" class="md-tabs__link">
         Docs
       </a>
     </li>
@@ -335,14 +333,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
@@ -557,66 +553,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          服务端操作
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../fate_flow_server_operation/" class="md-nav__link">
         服务端操作
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    1. 说明
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    2. 查看版本信息
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    3. 重新加载配置文件
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -776,15 +717,129 @@
       
         <li class="md-nav__item">
   <a href="#2" class="md-nav__link">
-    2. 查看版本信息
+    2. 注册
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 注册">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    2.1 服务器注册
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    2.2 服务注册
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#3" class="md-nav__link">
-    3. 重新加载配置文件
+    3 接口参数详情
   </a>
+  
+    <nav class="md-nav" aria-label="3 接口参数详情">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-apireader" class="md-nav__link">
+    3.1 ApiReader
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 ApiReader">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311-upload" class="md-nav__link">
+    3.1.1 upload
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312-query" class="md-nav__link">
+    3.1.2 query
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#313-download" class="md-nav__link">
+    3.1.3 download
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    3.2 认证
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 认证">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321-client_authentication" class="md-nav__link">
+    3.2.1 客户端认证(client_authentication)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    3.2.2 站点认证
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2.2 站点认证">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3221-signature" class="md-nav__link">
+    3.2.2.1 signature
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3222-site_authentication" class="md-nav__link">
+    3.2.2.2 site_authentication
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-permission" class="md-nav__link">
+    3.3 鉴权(permission)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -800,86 +855,52 @@
             <article class="md-content__inner md-typeset">
               
                 
-  <a href="https://github.com/FederatedAI/FATE-Flow/edit/master/doc/fate_flow_server_operation.zh.md" title="编辑此页" class="md-content__button md-icon">
+  <a href="https://github.com/FederatedAI/FATE-Flow/edit/master/doc/third_party_service_registry.zh.md" title="编辑此页" class="md-content__button md-icon">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
 
-<h1 id="_1">服务端操作<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h1 id="_1">第三方服务注册中心<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
 <h2 id="1">1. 说明<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>从<code>1.7.0</code>版本开始, 提供<code>FATE Flow Server</code>的一些更新维护功能, 后续版本会进一步增强</p>
-<h2 id="2">2. 查看版本信息<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p>列出所有相关系统版本号</p>
-<div class="highlight"><pre><span></span><code>flow server versions
-</code></pre></div>
-<p><strong>选项</strong></p>
-<p>无</p>
-<p><strong>返回</strong></p>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
-<td>返回码</td>
-</tr>
-<tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
-<td>返回信息</td>
-</tr>
-<tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
-<td>返回数据</td>
-</tr>
-<tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
-<td>作业id</td>
-</tr>
-</tbody>
-</table>
-<p><strong>样例</strong> </p>
-<div class="highlight"><pre><span></span><code>flow server versions
-</code></pre></div>
-<p>输出:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;API&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;CENTOS&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;7.2&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;EGGROLL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.4.0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;FATE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;FATEBoard&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;FATEFlow&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;JDK&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;MAVEN&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3.6.3&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;PYTHON&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3.6.5&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;SPARK&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.4.1&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;UBUNTU&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;16.04&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
-</code></pre></div>
-<h2 id="3">3. 重新加载配置文件<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<p>如下配置项在<code>reload</code>后会重新生效</p>
 <ul>
-<li>$FATE_PROJECT_BASE/conf/service_conf.yaml中# engine services后的所有配置</li>
-<li>$FATE_FLOW_BASE/python/fate_flow/job_default_config.yaml中所有配置</li>
+<li>fateflow支持第三方服务进行注册，用于回调场景</li>
+<li>所有的接口需要先注册服务地址，再注册接口</li>
 </ul>
-<div class="highlight"><pre><span></span><code>flow server reload
-</code></pre></div>
-<p><strong>选项</strong></p>
-<p>无</p>
-<p><strong>返回</strong></p>
+<h2 id="2">2. 注册<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 服务器注册<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<ul>
+<li>uri: <code>/v1/server/&lt;server_name&gt;/register</code></li>
+<li>方式：POST</li>
+<li>请求参数</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">host</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>服务ip地址</td>
+</tr>
+<tr>
+<td style="text-align: left;">port</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">int</td>
+<td>服务端口</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>返回参数</li>
+</ul>
 <table>
 <thead>
 <tr>
@@ -899,49 +920,517 @@
 <td style="text-align: left;">string</td>
 <td>返回信息</td>
 </tr>
+</tbody>
+</table>
+<h2 id="22">2.2 服务注册<a class="headerlink" href="#22" title="Permanent link">&para;</a></h2>
+<ul>
+<li>uri: <code>/v1/service/registry</code></li>
+<li>方式：POST</li>
+<li>请求参数 </li>
+</ul>
+<table>
+<thead>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
-<td>返回数据</td>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">server_name</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>注册的服务器名字</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
+<td style="text-align: left;">service_name</td>
+<td style="text-align: left;">是</td>
 <td style="text-align: left;">string</td>
-<td>作业id</td>
+<td>服务名</td>
+</tr>
+<tr>
+<td style="text-align: left;">uri</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>服务uri</td>
+</tr>
+<tr>
+<td style="text-align: left;">method</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">string</td>
+<td>请求方式，默认"POST"</td>
+</tr>
+<tr>
+<td style="text-align: left;">protocol</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">string</td>
+<td>默认"http"</td>
 </tr>
 </tbody>
 </table>
-<p><strong>样例</strong> </p>
-<div class="highlight"><pre><span></span><code>flow server reload
+<ul>
+<li>返回参数</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">retcode</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">retmsg</td>
+<td style="text-align: left;">string</td>
+<td>返回信息</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3">3 接口参数详情<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h3 id="31-apireader">3.1 ApiReader<a class="headerlink" href="#31-apireader" title="Permanent link">&para;</a></h3>
+<p>ApiReader组件需要第三方服务注册三个接口：upload、query、download，用于请求离线id的特征数据。</p>
+<h4 id="311-upload">3.1.1 upload<a class="headerlink" href="#311-upload" title="Permanent link">&para;</a></h4>
+<ul>
+<li>说明：upload接口将id传给第三方服务</li>
+<li>接口注册：参考<a href="#2-服务注册">服务注册</a>，其中service_name参数为"upload"</li>
+<li>请求参数：</li>
+<li>headers: {"Content-Type": "application/octet-stream"}</li>
+<li>params: </li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">requestBody</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>json字符串，包含特征筛选参数</td>
+</tr>
+<tr>
+<td style="text-align: left;">- body：数据流</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>
+<p>请求示例(python)：</p>
+<p><div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">id_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">MultipartEncoder</span><span class="p">(</span>
+        <span class="n">fields</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">id_path</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="s1">&#39;application/octet-stream&#39;</span><span class="p">)}</span>
+    <span class="p">)</span>
+    <span class="n">upload_registry_info</span> <span class="o">=</span> <span class="n">service_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;upload&quot;</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="n">upload_registry_info</span><span class="o">.</span><span class="n">f_method</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="kc">None</span><span class="p">)(</span>
+        <span class="n">url</span><span class="o">=</span><span class="n">upload_registry_info</span><span class="o">.</span><span class="n">f_url</span><span class="p">,</span>
+        <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;requestBody&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;stat_month&quot;</span><span class="p">:</span> <span class="s2">&quot;202201&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;v1&quot;</span><span class="p">})},</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s2">&quot;application/octet-stream&quot;</span><span class="p">}</span>
+    <span class="p">)</span>
 </code></pre></div>
-<p>输出:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;job_default_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;auto_retries&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;auto_retry_delay&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;default_component_provider_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;component_plugins/fate/python/federatedml&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;end_status_job_scheduling_time_limit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300000</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;end_status_job_scheduling_updates&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;federated_command_trys&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;federated_status_collect_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PUSH&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;job_timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">259200</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;max_cores_percent_per_job&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;output_data_summary_count_limit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;remote_request_timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;task_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;task_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;task_parallelism&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;total_cores_overweight_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;total_memory_overweight_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;upload_max_bytes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4194304000</span><span class="w"></span>
-<span class="w">        </span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;service_registry&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
-</code></pre></div>
+- 接口返回:</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">code</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">message</td>
+<td style="text-align: left;">string</td>
+<td>返回信息</td>
+</tr>
+<tr>
+<td style="text-align: left;">data</td>
+<td style="text-align: left;">object</td>
+<td>返回参数jobId，用于异步状态查询</td>
+</tr>
+</tbody>
+</table>
+<h4 id="312-query">3.1.2 query<a class="headerlink" href="#312-query" title="Permanent link">&para;</a></h4>
+<ul>
+<li>说明：query接口用于查询任务进度</li>
+<li>接口注册：参考<a href="#2-服务注册">服务注册</a>，其中service_name参数为"query"</li>
+<li>请求参数：</li>
+<li>body：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">jobId</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>upload返回的jobId</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>接口返回:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">code</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">message</td>
+<td style="text-align: left;">string</td>
+<td>返回信息</td>
+</tr>
+<tr>
+<td style="text-align: left;">status</td>
+<td style="text-align: left;">string</td>
+<td>任务状态</td>
+</tr>
+</tbody>
+</table>
+<h4 id="313-download">3.1.3 download<a class="headerlink" href="#313-download" title="Permanent link">&para;</a></h4>
+<ul>
+<li>说明：query接口用于查询任务进度</li>
+<li>接口注册：参考<a href="#2-服务注册">服务注册</a>，其中service_name参数为"download"</li>
+<li>请求参数：</li>
+<li>params：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">requestBody</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>json字符串，包含"jobId"</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>接口返回: 特征数据流</li>
+</ul>
+<h3 id="32">3.2 认证<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<h4 id="321-client_authentication">3.2.1 客户端认证(client_authentication)<a class="headerlink" href="#321-client_authentication" title="Permanent link">&para;</a></h4>
+<ul>
+<li>说明：客户端认证用于认证客户端的请求</li>
+<li>接口注册：参考<a href="#2-服务注册">服务注册</a>，其中service_name参数为"client_authentication"</li>
+<li>请求参数：</li>
+<li>body：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">full_path</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>请求路径</td>
+</tr>
+<tr>
+<td style="text-align: left;">headers</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>请求头</td>
+</tr>
+<tr>
+<td style="text-align: left;">form</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">object</td>
+<td>请求体</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>接口返回: </li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">code</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">msg</td>
+<td style="text-align: left;">string</td>
+<td>返回信息</td>
+</tr>
+</tbody>
+</table>
+<h4 id="322">3.2.2 站点认证<a class="headerlink" href="#322" title="Permanent link">&para;</a></h4>
+<h5 id="3221-signature">3.2.2.1 signature<a class="headerlink" href="#3221-signature" title="Permanent link">&para;</a></h5>
+<ul>
+<li>说明：请求其他站点前，fate flow会调用签名接口获取签名并放到请求头中</li>
+<li>接口注册：参考<a href="#2-服务注册">服务注册</a>，其中service_name参数为"signature"</li>
+<li>请求参数：</li>
+<li>body：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>站点id</td>
+</tr>
+<tr>
+<td style="text-align: left;">body</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">object</td>
+<td>请求体</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>接口返回: </li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">code</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">site_signature</td>
+<td style="text-align: left;">string</td>
+<td>签名</td>
+</tr>
+</tbody>
+</table>
+<h5 id="3222-site_authentication">3.2.2.2 site_authentication<a class="headerlink" href="#3222-site_authentication" title="Permanent link">&para;</a></h5>
+<ul>
+<li>说明：用于认证其他fate站点的请求</li>
+<li>接口注册：参考<a href="#2-服务注册">服务注册</a>，其中service_name参数为"site_authentication"</li>
+<li>请求参数：</li>
+<li>body：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">src_party_id</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>请求方站点id</td>
+</tr>
+<tr>
+<td style="text-align: left;">site_signature</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>签名</td>
+</tr>
+<tr>
+<td style="text-align: left;">body</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">object</td>
+<td>请求体</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>接口返回: </li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">code</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">msg</td>
+<td style="text-align: left;">string</td>
+<td>返回信息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-permission">3.3 鉴权(permission)<a class="headerlink" href="#33-permission" title="Permanent link">&para;</a></h3>
+<ul>
+<li>说明：对其他站点的请求进行鉴权</li>
+<li>接口注册：参考<a href="#2-服务注册">服务注册</a>，其中service_name参数为"permission"</li>
+<li>请求参数：</li>
+<li>body：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">src_role</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>请求方角色</td>
+</tr>
+<tr>
+<td style="text-align: left;">src_party_id</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>请求方partyid</td>
+</tr>
+<tr>
+<td style="text-align: left;">initiator</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">object</td>
+<td>发起方信息</td>
+</tr>
+<tr>
+<td style="text-align: left;">roles</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">object</td>
+<td>全部参与方信息</td>
+</tr>
+<tr>
+<td style="text-align: left;">component_list</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">object</td>
+<td>组件列表</td>
+</tr>
+<tr>
+<td style="text-align: left;">dataset_list</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">object</td>
+<td>数据集列表</td>
+</tr>
+<tr>
+<td style="text-align: left;">run_time_conf</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">object</td>
+<td>job conf</td>
+</tr>
+<tr>
+<td style="text-align: left;">dsl</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">object</td>
+<td>job dsl</td>
+</tr>
+<tr>
+<td style="text-align: left;">component_parameters</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">object</td>
+<td>组件参数</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>接口返回: </li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">code</td>
+<td style="text-align: left;">int</td>
+<td>返回码</td>
+</tr>
+<tr>
+<td style="text-align: left;">msg</td>
+<td style="text-align: left;">string</td>
+<td>返回信息</td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -960,42 +1449,6 @@
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="页脚" >
-      
-        
-        <a href="../fate_flow_permission_management/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 多方合作权限管理" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                上一页
-              </span>
-              多方合作权限管理
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../fate_flow_service_registry/" class="md-footer__link md-footer__link--next" aria-label="下一页: 服务注册中心" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                下一页
-              </span>
-              服务注册中心
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">

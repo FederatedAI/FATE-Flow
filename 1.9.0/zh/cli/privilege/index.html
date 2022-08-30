@@ -528,6 +528,20 @@
   
     <li class="md-nav__item">
       <a href="../../fate_flow_authority_management/" class="md-nav__link">
+        认证方案
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fate_flow_permission_management/" class="md-nav__link">
         多方合作权限管理
       </a>
     </li>
@@ -585,20 +599,6 @@
     <li class="md-nav__item">
       <a href="../../fate_flow_client/" class="md-nav__link">
         命令行客户端
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fate_flow_http_api/" class="md-nav__link">
-        REST API
       </a>
     </li>
   
@@ -763,9 +763,32 @@
 <h2 id="privilege">Privilege<a class="headerlink" href="#privilege" title="Permanent link">&para;</a></h2>
 <h3 id="grant">grant<a class="headerlink" href="#grant" title="Permanent link">&para;</a></h3>
 <p>添加权限</p>
-<div class="highlight"><pre><span></span><code>flow privilege grant <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow privilege grant -c fateflow/examples/permission/grant.json
 </code></pre></div>
 <p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数</th>
+<th style="text-align: left;">短格式</th>
+<th style="text-align: left;">长格式</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">conf_path</td>
+<td style="text-align: left;"><code>-c</code></td>
+<td style="text-align: left;"><code>--conf-path</code></td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>配置路径</td>
+</tr>
+</tbody>
+</table>
+<p>注: conf_path为参数路径，具体参数如下</p>
 <table>
 <thead>
 <tr>
@@ -777,58 +800,41 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">src-party-id</td>
+<td style="text-align: left;">party_id</td>
 <td style="text-align: left;">是</td>
 <td style="text-align: left;">string</td>
-<td>发起方partyid</td>
+<td>站点id</td>
 </tr>
 <tr>
-<td style="text-align: left;">src-role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
-<td>发起方role</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-role</td>
+<td style="text-align: left;">component</td>
 <td style="text-align: left;">否</td>
 <td style="text-align: left;">string</td>
-<td>guest, host, arbiter，all, 其中all为全部权限都给予</td>
+<td>组件名，可用","分割多个组件，"*"为所有组件</td>
 </tr>
 <tr>
-<td style="text-align: left;">privilege-command</td>
+<td style="text-align: left;">dataset</td>
 <td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
-<td>”stop”, “run”, “create”, all, 其中all为全部权限都给予</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-component</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
-<td>算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都给予</td>
+<td style="text-align: left;">object</td>
+<td>数据集列表</td>
 </tr>
 </tbody>
 </table>
-<p><strong>样例</strong></p>
-<ul>
-<li>赋予role权限</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span>  --src-role guest --privilege-role all
-</code></pre></div>
-<ul>
-<li>赋予command权限</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span>  --src-role guest --privilege-command all
-</code></pre></div>
-<ul>
-<li>赋予component权限</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span>  --src-role guest --privilege-component all
-</code></pre></div>
-<ul>
-<li>同时赋予多种权限</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege grant --src-party-id <span class="m">9999</span>  --src-role guest --privilege-role all --privilege-command all --privilege-component all
-</code></pre></div>
+<p><strong>样例</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;reader,dataio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></p>
 <p><strong>返回</strong></p>
 <table>
 <thead>
@@ -859,9 +865,32 @@
 </code></pre></div>
 <h3 id="delete">delete<a class="headerlink" href="#delete" title="Permanent link">&para;</a></h3>
 <p>删除权限</p>
-<div class="highlight"><pre><span></span><code>flow privilege delete <span class="o">[</span>options<span class="o">]</span>
+<p><div class="highlight"><pre><span></span><code>flow privilege delete -c fateflow/examples/permission/delete.json
 </code></pre></div>
-<p><strong>选项</strong></p>
+<strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">参数</th>
+<th style="text-align: left;">短格式</th>
+<th style="text-align: left;">长格式</th>
+<th style="text-align: left;">必选</th>
+<th style="text-align: left;">类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">conf_path</td>
+<td style="text-align: left;"><code>-c</code></td>
+<td style="text-align: left;"><code>--conf-path</code></td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">string</td>
+<td>配置路径</td>
+</tr>
+</tbody>
+</table>
+<p>注: conf_path为参数路径，具体参数如下</p>
 <table>
 <thead>
 <tr>
@@ -873,58 +902,41 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">src-party-id</td>
+<td style="text-align: left;">party_id</td>
 <td style="text-align: left;">是</td>
 <td style="text-align: left;">string</td>
-<td>发起方partyid</td>
+<td>站点id</td>
 </tr>
 <tr>
-<td style="text-align: left;">src-role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
-<td>发起方role</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-role</td>
+<td style="text-align: left;">component</td>
 <td style="text-align: left;">否</td>
 <td style="text-align: left;">string</td>
-<td>guest, host, arbiter，all, 其中all为全部权限都撤销</td>
+<td>组件名，可用","分割多个组件，"*"为所有组件</td>
 </tr>
 <tr>
-<td style="text-align: left;">privilege-command</td>
+<td style="text-align: left;">dataset</td>
 <td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
-<td>“stop”, “run”, “create”, all, 其中all为全部权限都撤销</td>
-</tr>
-<tr>
-<td style="text-align: left;">privilege-component</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
-<td>算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都撤销</td>
+<td style="text-align: left;">object</td>
+<td>数据集列表， "*"为所有数据集</td>
 </tr>
 </tbody>
 </table>
-<p><strong>样例</strong></p>
-<ul>
-<li>撤销role权限</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span>  --src-role guest --privilege-role all
-</code></pre></div>
-<ul>
-<li>撤销command权限</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span>  --src-role guest --privilege-command all
-</code></pre></div>
-<ul>
-<li>撤销component权限</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span>  --src-role guest --privilege-component all
-</code></pre></div>
-<ul>
-<li>同时赋予多种权限</li>
-</ul>
-<div class="highlight"><pre><span></span><code>flow privilege delete --src-party-id <span class="m">9999</span>  --src-role guest --privilege-role all --privilege-command all --privilege-component all
-</code></pre></div>
+<p><strong>样例</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;reader,dataio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></p>
 <p><strong>返回</strong></p>
 <table>
 <thead>
@@ -955,13 +967,15 @@
 </code></pre></div>
 <h3 id="query">query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h3>
 <p>查询权限</p>
-<div class="highlight"><pre><span></span><code>flow privilege query <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow privilege query -p <span class="m">10000</span>
 </code></pre></div>
 <p><strong>选项</strong></p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
+<th style="text-align: left;">参数</th>
+<th style="text-align: left;">短格式</th>
+<th style="text-align: left;">长格式</th>
 <th style="text-align: left;">必选</th>
 <th style="text-align: left;">类型</th>
 <th>说明</th>
@@ -969,22 +983,15 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">src-party-id</td>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;"><code>-p</code></td>
+<td style="text-align: left;"><code>--party-id</code></td>
 <td style="text-align: left;">是</td>
 <td style="text-align: left;">string</td>
-<td>发起方partyid</td>
-</tr>
-<tr>
-<td style="text-align: left;">src-role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
-<td>发起方role</td>
+<td>站点id</td>
 </tr>
 </tbody>
 </table>
-<p><strong>样例</strong></p>
-<div class="highlight"><pre><span></span><code>flow privilege query --src-party-id <span class="m">9999</span>  --src-role guest
-</code></pre></div>
 <p><strong>返回</strong></p>
 <table>
 <thead>
@@ -1013,17 +1020,26 @@
 </tbody>
 </table>
 <p><strong>样例</strong></p>
-<div class="highlight"><pre><span></span><code><span class="o">{</span>
-    <span class="s2">&quot;data&quot;</span>: <span class="o">{</span>
-        <span class="s2">&quot;privilege_command&quot;</span>: <span class="o">[]</span>,
-        <span class="s2">&quot;privilege_component&quot;</span>: <span class="o">[]</span>,
-        <span class="s2">&quot;privilege_role&quot;</span>: <span class="o">[]</span>,
-        <span class="s2">&quot;role&quot;</span>: <span class="s2">&quot;guest&quot;</span>,
-        <span class="s2">&quot;src_party_id&quot;</span>: <span class="s2">&quot;9999&quot;</span>
-    <span class="o">}</span>,
-    <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
-    <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
-<span class="o">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;reader&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;dataio&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">],</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">            </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="p">},</span><span class="w"></span>
+<span class="w">            </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 
 

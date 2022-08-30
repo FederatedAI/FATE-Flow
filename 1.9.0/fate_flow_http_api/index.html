@@ -237,15 +237,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../document_navigation/" class="md-tabs__link md-tabs__link--active">
+      <a href="../document_navigation/" class="md-tabs__link">
         Docs
       </a>
     </li>
@@ -335,14 +333,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
@@ -532,7 +528,21 @@
   
     <li class="md-nav__item">
       <a href="../fate_flow_authority_management/" class="md-nav__link">
-        Multi-Party Collaboration Authority Management
+        Certification program
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_permission_management/" class="md-nav__link">
+        Fate flow permission management
       </a>
     </li>
   
@@ -590,95 +600,6 @@
       <a href="../fate_flow_client/" class="md-nav__link">
         FATE Flow Client
       </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          REST API
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        REST API
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-description" class="md-nav__link">
-    1. Description
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-interface-authentication" class="md-nav__link">
-    2. Interface Authentication
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Interface Authentication">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#21-signature-generation-method" class="md-nav__link">
-    2.1 Signature generation method
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-example" class="md-nav__link">
-    2.2. Example
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-error-codes" class="md-nav__link">
-    2.3. Error codes
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -792,33 +713,12 @@
     1. Description
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-interface-authentication" class="md-nav__link">
-    2. Interface Authentication
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Interface Authentication">
+    <nav class="md-nav" aria-label="1. Description">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21-signature-generation-method" class="md-nav__link">
-    2.1 Signature generation method
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-example" class="md-nav__link">
-    2.2. Example
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-error-codes" class="md-nav__link">
-    2.3. Error codes
+  <a href="#2-error-codes" class="md-nav__link">
+    2. Error codes
   </a>
   
 </li>
@@ -848,36 +748,7 @@
 
 <h1 id="rest-api">REST API<a class="headerlink" href="#rest-api" title="Permanent link">&para;</a></h1>
 <h2 id="1-description">1. Description<a class="headerlink" href="#1-description" title="Permanent link">&para;</a></h2>
-<h2 id="2-interface-authentication">2. Interface Authentication<a class="headerlink" href="#2-interface-authentication" title="Permanent link">&para;</a></h2>
-<p>Flow HTTP API added signature authentication in 1.7.0. If <code>http_app_key</code> and <code>http_secret_key</code> are set in the configuration file, all requests sent to Flow will need to add the following header</p>
-<p><code>TIMESTAMP</code>: Unix timestamp in milliseconds, e.g. <code>1634890066095</code> means <code>2021-10-22 16:07:46 GMT+0800</code>, note that the difference between this time and the current time of the server cannot exceed 60 seconds</p>
-<p><code>NONCE</code>: random string, can use UUID, such as <code>782d733e-330f-11ec-8be9-a0369fa972af</code></p>
-<p><code>APP_KEY</code>: must be consistent with <code>http_app_key</code> in the Flow configuration file</p>
-<p><code>SIGNATURE</code>: signature generated based on <code>http_secret_key</code> and the request parameters in the Flow configuration file</p>
-<h3 id="21-signature-generation-method">2.1 Signature generation method<a class="headerlink" href="#21-signature-generation-method" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Combine the following elements in order</li>
-</ul>
-<p><code>TIMESTAMP</code></p>
-<p><code>NONCE</code></p>
-<p><code>APP_KEY</code></p>
-<p>request path + query parameters, if there are no query parameters then the final <code>?</code>, such as <code>/v1/job/submit</code> or <code>/v1/data/upload?table_name=dvisits_hetero_guest&amp;namespace=experiment</code></p>
-<p>If <code>Content-Type</code> is <code>application/json</code>, then it is the original JSON, i.e. the request body; if not, this item is filled with the empty string</p>
-<p>If <code>Content-Type</code> is <code>application/x-www-form-urlencoded</code> or <code>multipart/form-data</code>, all parameters need to be sorted alphabetically and <code>urlencode</code>, refer to RFC 3986 (i.e. except <code>a-zA-Z0-9- . _~</code>), note that the file does not participate in the signature; if not, this item is filled with the empty string</p>
-<ul>
-<li>
-<p>Concatenate all parameters with the newline character <code>\n</code> and encode them in <code>ASCII</code>.</p>
-</li>
-<li>
-<p>Use the <code>HMAC-SHA1</code> algorithm to calculate the binary digest using the <code>http_secret_key</code> key in the Flow configuration file</p>
-</li>
-<li>
-<p>Encode the binary digest using base64</p>
-</li>
-</ul>
-<h3 id="22-example">2.2. Example<a class="headerlink" href="#22-example" title="Permanent link">&para;</a></h3>
-<p>You can refer to the signature method of <a href="https://github.com/FederatedAI/FATE/blob/develop-1.7/python/fate_client/flow_sdk/client/base.py#L63">Fate SDK</a> or the proofreading method of <a href="https://github.com/FederatedAI/FATE/blob/develop-1.7/python/fate_client/flow_sdk/client/base.py#L63">Fate Flow</a> (<a href="https://github.com/FederatedAI/FATE-Flow/blob/develop-1.7.0/python/fate_flow/apps/__init__.py#L104">https://github.com/FederatedAI/FATE-Flow/blob/develop-1.7.0/python/fate_flow/apps/__init__.py#L104</a>) for the checksum method</p>
-<h3 id="23-error-codes">2.3. Error codes<a class="headerlink" href="#23-error-codes" title="Permanent link">&para;</a></h3>
+<h3 id="2-error-codes">2. Error codes<a class="headerlink" href="#2-error-codes" title="Permanent link">&para;</a></h3>
 <p><code>400 Bad Request</code> request body has both json and form</p>
 <p><code>401 Unauthorized</code> Missing one or more header(s)</p>
 <p><code>400 Invalid TIMESTAMP</code> <code>TIMESTAMP</code> could not be parsed</p>
@@ -902,42 +773,6 @@
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="../fate_flow_client/" class="md-footer__link md-footer__link--prev" aria-label="Previous: FATE Flow Client" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              FATE Flow Client
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../fate_flow_http_api_call_demo/" class="md-footer__link md-footer__link--next" aria-label="Next: REST API CLIENT" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              REST API CLIENT
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">

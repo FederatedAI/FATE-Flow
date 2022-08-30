@@ -13,7 +13,7 @@
     
     
       
-        <title>Service Registry - FATE Flow</title>
+        <title>Fate flow permission management - FATE Flow</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#service-registry" class="md-skip">
+        <a href="#multi-party-cooperation-rights-management" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Service Registry
+              Fate flow permission management
             
           </span>
         </div>
@@ -543,11 +543,116 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../fate_flow_permission_management/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Fate flow permission management
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Fate flow permission management
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#multi-party-cooperation-rights-management" class="md-nav__link">
+    Multi-party cooperation rights management
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-description" class="md-nav__link">
+    1. Description
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-permission-authentication" class="md-nav__link">
+    2. Permission authentication
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Permission authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-flow-permission-authentication" class="md-nav__link">
+    2.1 flow permission authentication
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 flow permission authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211-authentication-scheme" class="md-nav__link">
+    2.1.1 Authentication scheme
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#212-authorization" class="md-nav__link">
+    2.1.2 Authorization
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#213-revoke-privileges" class="md-nav__link">
+    2.1.3 Revoke privileges
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#214-permission-query" class="md-nav__link">
+    2.1.4 Permission query
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-third-party-interface-privilege-authentication" class="md-nav__link">
+    2.2 Third-party interface privilege authentication
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -571,86 +676,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Service Registry
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../fate_flow_service_registry/" class="md-nav__link">
         Service Registry
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-description" class="md-nav__link">
-    1. Description
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Description">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#11-model-registry" class="md-nav__link">
-    1.1 Model Registry
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#12-high-availability" class="md-nav__link">
-    1.2 High Availability
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-configuring-the-zookeeper-service" class="md-nav__link">
-    2. Configuring the ZooKeeper service
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-znode" class="md-nav__link">
-    3. ZNode
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -778,8 +808,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -788,23 +816,59 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#multi-party-cooperation-rights-management" class="md-nav__link">
+    Multi-party cooperation rights management
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#1-description" class="md-nav__link">
     1. Description
   </a>
   
-    <nav class="md-nav" aria-label="1. Description">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-permission-authentication" class="md-nav__link">
+    2. Permission authentication
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Permission authentication">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-model-registry" class="md-nav__link">
-    1.1 Model Registry
+  <a href="#21-flow-permission-authentication" class="md-nav__link">
+    2.1 flow permission authentication
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 flow permission authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211-authentication-scheme" class="md-nav__link">
+    2.1.1 Authentication scheme
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#12-high-availability" class="md-nav__link">
-    1.2 High Availability
+  <a href="#212-authorization" class="md-nav__link">
+    2.1.2 Authorization
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#213-revoke-privileges" class="md-nav__link">
+    2.1.3 Revoke privileges
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#214-permission-query" class="md-nav__link">
+    2.1.4 Permission query
   </a>
   
 </li>
@@ -813,18 +877,16 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#2-configuring-the-zookeeper-service" class="md-nav__link">
-    2. Configuring the ZooKeeper service
+        
+          <li class="md-nav__item">
+  <a href="#22-third-party-interface-privilege-authentication" class="md-nav__link">
+    2.2 Third-party interface privilege authentication
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#3-znode" class="md-nav__link">
-    3. ZNode
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -840,38 +902,285 @@
             <article class="md-content__inner md-typeset">
               
                 
-  <a href="https://github.com/FederatedAI/FATE-Flow/edit/master/doc/fate_flow_service_registry.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/FederatedAI/FATE-Flow/edit/master/doc/fate_flow_permission_management.md" title="Edit this page" class="md-content__button md-icon">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
 
-<h1 id="service-registry">Service Registry<a class="headerlink" href="#service-registry" title="Permanent link">&para;</a></h1>
+  <h1>Fate flow permission management</h1>
+
+<h2 id="multi-party-cooperation-rights-management">Multi-party cooperation rights management<a class="headerlink" href="#multi-party-cooperation-rights-management" title="Permanent link">&para;</a></h2>
 <h2 id="1-description">1. Description<a class="headerlink" href="#1-description" title="Permanent link">&para;</a></h2>
-<h3 id="11-model-registry">1.1 Model Registry<a class="headerlink" href="#11-model-registry" title="Permanent link">&para;</a></h3>
-<p>FATE-Flow interacts with FATE-Serving through Apache ZooKeeper. If <code>use_registry</code> is enabled in the configuration, Flow registers model download URLs with ZooKeeper when it starts, and Serving can get the models through these URLs.</p>
-<p>Likewise, Serving registers its own address with ZooKeeper, which Flow will fetch to communicate with. If <code>use_registry</code> is not enabled, Flow will try to communicate with the set <code>servings</code> address in the configuration file.</p>
-<h3 id="12-high-availability">1.2 High Availability<a class="headerlink" href="#12-high-availability" title="Permanent link">&para;</a></h3>
-<p>FATE-Flow implements automatic discovery of multiple nodes in the same party by registering its own IP and port with Apache ZooKeeper.</p>
-<h2 id="2-configuring-the-zookeeper-service">2. Configuring the ZooKeeper service<a class="headerlink" href="#2-configuring-the-zookeeper-service" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="nt">zookeeper</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span><span class="w"></span>
-<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-</code></pre></div>
-<h2 id="3-znode">3. ZNode<a class="headerlink" href="#3-znode" title="Permanent link">&para;</a></h2>
 <ul>
 <li>
-<p>FATE-Flow Model Registry: <code>/FATE-SERVICES/flow/online/transfer/providers</code></p>
+<p>fateflow permission authentication supports both flow's own authentication and third-party authentication</p>
 </li>
 <li>
-<p>FATE-Flow High Availability: <code>/FATE-COMPONENTS/fate-flow</code></p>
+<p>Authentication configuration: <code>$FATE_BASE/conf/service_conf.yaml</code>.</p>
 </li>
-<li>
-<p>FATE-Serving: <code>/FATE-SERVICES/serving/online/publishLoad/providers</code></p>
-</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.permission</span><span class="w"></span>
+<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"></span>
+<span class="nt">permission</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="w">  </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="w">  </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+</code></pre></div>
+  The permission hooks support both "fate_flow.hook.flow.permission" and "fate_flow.hook.api.permission".</p>
+<h2 id="2-permission-authentication">2. Permission authentication<a class="headerlink" href="#2-permission-authentication" title="Permanent link">&para;</a></h2>
+<h3 id="21-flow-permission-authentication">2.1 flow permission authentication<a class="headerlink" href="#21-flow-permission-authentication" title="Permanent link">&para;</a></h3>
+<h4 id="211-authentication-scheme">2.1.1 Authentication scheme<a class="headerlink" href="#211-authentication-scheme" title="Permanent link">&para;</a></h4>
+<ul>
+<li>The flow permission authentication scheme uses the casbin permission control framework and supports both component and dataset permissions.</li>
+<li>The configuration is as follows.
+<div class="highlight"><pre><span></span><code><span class="w">  </span><span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.permission</span><span class="w"></span>
+<span class="w">  </span><span class="nt">permission</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">    </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">    </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+</code></pre></div></li>
+</ul>
+<h4 id="212-authorization">2.1.2 Authorization<a class="headerlink" href="#212-authorization" title="Permanent link">&para;</a></h4>
+<p>Add privileges</p>
+<div class="highlight"><pre><span></span><code>flow privilege grant -c fateflow/examples/permission/grant.json
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">parameter name</th>
+<th style="text-align: left;">required</th>
+<th style="text-align: left;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;">yes</td>
+<td style="text-align: left;">string</td>
+<td>site id</td>
+</tr>
+<tr>
+<td style="text-align: left;">component</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>component name, can be split by "," for multiple components, "*" for all components</td>
+</tr>
+<tr>
+<td style="text-align: left;">dataset</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">object</td>
+<td>list of datasets</td>
+</tr>
+</tbody>
+</table>
+<p><strong>sample</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;reader,dataio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></p>
+<p><strong>return</strong></p>
+<table>
+<thead>
+<tr>
+<th>parameter name</th>
+<th style="text-align: left;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>retcode</td>
+<td style="text-align: left;">int</td>
+<td>return code</td>
+</tr>
+<tr>
+<td>retmsg</td>
+<td style="text-align: left;">string</td>
+<td>return message</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample</strong></p>
+<div class="highlight"><pre><span></span><code><span class="o">{</span>
+    <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
+    <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
+<span class="o">}</span>
+</code></pre></div>
+<h4 id="213-revoke-privileges">2.1.3 Revoke privileges<a class="headerlink" href="#213-revoke-privileges" title="Permanent link">&para;</a></h4>
+<p>Delete permissions</p>
+<p><div class="highlight"><pre><span></span><code>flow privilege delete -c fateflow/examples/permission/delete.json
+</code></pre></div>
+<strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">parameter name</th>
+<th style="text-align: left;">required</th>
+<th style="text-align: left;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;">yes</td>
+<td style="text-align: left;">string</td>
+<td>site_id</td>
+</tr>
+<tr>
+<td style="text-align: left;">component</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">string</td>
+<td>component name, can be split by "," for multiple components, "*" for all components</td>
+</tr>
+<tr>
+<td style="text-align: left;">dataset</td>
+<td style="text-align: left;">no</td>
+<td style="text-align: left;">object</td>
+<td>list of datasets, "*" is all datasets</td>
+</tr>
+</tbody>
+</table>
+<p><strong>sample</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;reader,dataio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></p>
+<p><strong>return</strong></p>
+<table>
+<thead>
+<tr>
+<th>parameter name</th>
+<th style="text-align: left;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>retcode</td>
+<td style="text-align: left;">int</td>
+<td>return code</td>
+</tr>
+<tr>
+<td>retmsg</td>
+<td style="text-align: left;">string</td>
+<td>return message</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample</strong></p>
+<div class="highlight"><pre><span></span><code><span class="o">{</span>
+    <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
+    <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
+<span class="o">}</span>
+</code></pre></div>
+<h4 id="214-permission-query">2.1.4 Permission query<a class="headerlink" href="#214-permission-query" title="Permanent link">&para;</a></h4>
+<p>Query permissions</p>
+<div class="highlight"><pre><span></span><code>flow privilege query -p <span class="m">10000</span>
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">parameters</th>
+<th style="text-align: left;">short-format</th>
+<th style="text-align: left;">long-format</th>
+<th style="text-align: left;">required</th>
+<th style="text-align: left;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">party_id</td>
+<td style="text-align: left;"><code>-p</code></td>
+<td style="text-align: left;"><code>--party-id</code></td>
+<td style="text-align: left;">yes</td>
+<td style="text-align: left;">string</td>
+<td>site id</td>
+</tr>
+</tbody>
+</table>
+<p><strong>returns</strong></p>
+<table>
+<thead>
+<tr>
+<th>parameter name</th>
+<th style="text-align: left;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>retcode</td>
+<td style="text-align: left;">int</td>
+<td>return-code</td>
+</tr>
+<tr>
+<td>retmsg</td>
+<td style="text-align: left;">string</td>
+<td>Return information</td>
+</tr>
+<tr>
+<td>data</td>
+<td style="text-align: left;">object</td>
+<td>return data</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;reader&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="s2">&quot;dataio&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">],</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;dataset&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">            </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="p">},</span><span class="w"></span>
+<span class="w">            </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h3 id="22-third-party-interface-privilege-authentication">2.2 Third-party interface privilege authentication<a class="headerlink" href="#22-third-party-interface-privilege-authentication" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Third party services need to authenticate to the flow privilege interface, refer to <a href="../third_party_service_registry/#33-permission">privilege authentication service registration</a></li>
+<li>If the authentication fails, flow will directly return the authentication failure to the partner.</li>
 </ul>
 
 
@@ -896,7 +1205,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../fate_flow_server_operation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Server Operation" rel="prev">
+        <a href="../fate_flow_authority_management/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Certification program" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -905,20 +1214,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Server Operation
+              Certification program
             </div>
           </div>
         </a>
       
       
         
-        <a href="../fate_flow_model_migration/" class="md-footer__link md-footer__link--next" aria-label="Next: Inter-cluster Model Migration" rel="next">
+        <a href="../fate_flow_server_operation/" class="md-footer__link md-footer__link--next" aria-label="Next: Server Operation" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Inter-cluster Model Migration
+              Server Operation
             </div>
           </div>
           <div class="md-footer__button md-icon">
