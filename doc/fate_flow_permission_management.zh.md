@@ -44,5 +44,5 @@
 {{snippet('cli/privilege.zh.md', '### query')}}
 
 ### 2.2 第三方接口权限认证
-- 第三方服务需要向flow权限认证接口，具体参考[权限认证服务注册](./third_party_service_registry.zh.md#23-鉴权)
+- 第三方服务需要向flow权限认证接口，具体参考[权限认证服务注册](./third_party_service_registry.zh.md#33-permission)
 - 若认证失败，flow会直接返回认证失败给合作方。

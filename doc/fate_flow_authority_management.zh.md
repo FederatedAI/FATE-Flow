@@ -100,7 +100,7 @@ hook_server_name: "xxx"
 ```
 
 #### 2.2.2 接口鉴权方式
-- 第三方服务需要向flow注册客户端认证接口，具体参考[客户端认证服务注册](./third_party_service_registry.zh.md#221-客户端认证)
+- 第三方服务需要向flow注册客户端认证接口，具体参考[客户端认证服务注册](./third_party_service_registry.zh.md#321-client_authentication)
 - 若认证失败，flow会直接返回认证失败给客户端。
 
 ## 3. 站点认证
@@ -149,5 +149,5 @@ hook_server_name: "xxx"
 ```
 
 #### 3.2.2 接口鉴权方式
-- 第三方服务需要向flow注册站点认证接口，具体参考[站点认证服务注册](./third_party_service_registry.zh.md#222-站点认证)
+- 第三方服务需要向flow注册站点认证接口，具体参考[站点认证服务注册](./third_party_service_registry.zh.md#3222-site_authentication)
 - 若认证失败，flow会直接返回认证失败给发起方。
