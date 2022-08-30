@@ -19,11 +19,11 @@ nav:
     - fate_flow_monitoring.md
     - fate_flow_model_registry.md
     - fate_flow_authority_management.md
+    - fate_flow_permission_management.md
     - fate_flow_server_operation.md
     - fate_flow_service_registry.md
     - fate_flow_model_migration.md
     - fate_flow_client.md
-    - fate_flow_http_api.md
     - fate_flow_http_api_call_demo.md
     - configuration_instruction.md
     - system_operational.md
