@@ -5,53 +5,44 @@
 Add privileges
 
 ```bash
-flow privilege grant [options]
+flow privilege grant -c fateflow/examples/permission/grant.json
 ```
 
 **Options**
 
-| parameter name | required | type | description |
-| :------------------ | :--- | :----- | ------------------------------------------------------------ |
-| src-party-id | yes | string | originating-party-id |
-| src-role | yes | string | originating-party-role |
-| privilege-role | no | string | guest, host, arbiter, all, where all is all privileges granted
-| privilege-command | no | string | "stop", "run", "create", all, where all is all privileges granted
-| privilege-component | no | string | Lowercase for algorithm components, such as dataio, heteronn, etc., where all is all privileges granted
+| parameter name | required | type | description                                                                         |
+|:----------|:----|:-------|-------------------------------------------------------------------------------------|
+| party_id | yes | string | site id                                                                             |
+| component | no | string | component name, can be split by "," for multiple components, "*" for all components |
+| dataset | no | object | list of datasets                                                                    |
 
-**Example** 
 
-- Give role privileges
+**sample**
+```json
+{
+  "party_id": 10000,
+  "component": "reader,dataio",
+  "dataset": [
+    {
+      "namespace": "experiment",
+      "name": "breast_hetero_guest"
+    },
+    {
+      "namespace": "experiment",
+      "name": "breast_hetero_host"
+    }
+  ]
+}
+```
 
-  ```shell
-  flow privilege grant --src-party-id 9999 --src-role guest --privilege-role all
-  ```
-  
-- Give command privileges
+**return**
 
-  ```shell
-  flow privilege grant --src-party-id 9999 --src-role guest --privilege-command all
-  ```
-  
-- Grant component privileges
-
-  ```shell
-  flow privilege grant --src-party-id 9999 --src-role guest --privilege-component all
-  ```
-
-- Grant multiple privileges at the same time
-
-  ```shell
-  flow privilege grant --src-party-id 9999 --src-role guest --privilege-role all --privilege-command all --privilege-component all
-  ```
-
-**return parameters** 
-
-| parameter-name | type | description |
+| parameter name | type | description |
 | ------- | :----- | -------- |
-| retcode | int | return-code |
+| retcode | int | return code |
 | retmsg | string | return message |
 
-**Example** 
+**Sample**
 
 ```shell
 {
@@ -65,53 +56,42 @@ flow privilege grant [options]
 Delete permissions
 
 ```bash
-flow privilege delete [options]
+flow privilege delete -c fateflow/examples/permission/delete.json
 ```
-
 **Options**
 
 | parameter name | required | type | description |
-| :------------------ | :--- | :----- | ------------------------------------------------------------ |
-| src-party-id | yes | string | originating-party-id |
-| src-role | yes | string | originating-party-role |
-| privilege-role | no | string | guest, host, arbiter, all, where all is all privileges revoked
-| privilege-command | no | string | "stop", "run", "create", all, where all is revoke all privileges
-| privilege-component | no | string | lowercase for algorithm components, such as dataio, heteronn, etc., where all is revoke all privileges |
+|:----------|:----|:-------|--------------------------|
+| party_id | yes | string | site_id |
+| component | no | string | component name, can be split by "," for multiple components, "*" for all components |
+| dataset | no | object | list of datasets, "*" is all datasets |
 
-**Example** 
+**sample**
+```json
+{
+  "party_id": 10000,
+  "component": "reader,dataio",
+  "dataset": [
+    {
+      "namespace": "experiment",
+      "name": "breast_hetero_guest"
+    },
+    {
+      "namespace": "experiment",
+      "name": "breast_hetero_host"
+    }
+  ]
+}
+```
 
-- Revoke role privileges
+**return**
 
-  ```shell
-  flow privilege delete --src-party-id 9999 --src-role guest --privilege-role all
-  ```
-
-- Revoke command privileges
-
-  ```shell
-  flow privilege delete --src-party-id 9999 --src-role guest --privilege-command all
-  ```
-
-- Revoke component privileges
-
-  ```shell
-  flow privilege delete --src-party-id 9999 --src-role guest --privilege-component all
-  ```
-
-- Grant multiple privileges at the same time
-
-  ```shell
-  flow privilege delete --src-party-id 9999 --src-role guest --privilege-role all --privilege-command all --privilege-component all
-  ```
-
-**return parameters** 
-
-| parameter-name | type | description |
+| parameter name | type | description |
 | ------- | :----- | -------- |
-| retcode | int | return-code |
+| retcode | int | return code |
 | retmsg | string | return message |
 
-**Example** 
+**Sample**
 
 ```shell
 {
@@ -125,41 +105,43 @@ flow privilege delete [options]
 Query permissions
 
 ```bash
-flow privilege query [options]
+flow privilege query -p 10000
 ```
 
 **Options**
 
-| parameter name | required | type | description |
-| :----------- | :--- | :----- | ------------- |
-| src-party-id | yes | string | originating-party-id |
-| src-role | yes | string | originating-party-role |
+| parameters | short-format | long-format | required | type | description |
+| :-------- |:-----|:-------------| :--- | :----- |------|
+| party_id | `-p` | `--party-id` | yes | string | site id |
 
-**Example** 
-
-```shell
-flow privilege query --src-party-id 9999 --src-role guest 
-```
-
-- **return parameters** 
+**returns**
 
 
 | parameter name | type | description |
 | ------- | :----- | -------- |
 | retcode | int | return-code |
-| retmsg | string | return message |
+| retmsg | string | Return information |
 | data | object | return data |
 
-**Example** 
+**Sample**
 
-```shell
+```json
 {
     "data": {
-        "privilege_command": [],
-        "privilege_component": [],
-        "privilege_role": [],
-        "role": "guest",
-        "src_party_id": "9999"
+        "component": [
+            "reader",
+            "dataio"
+        ],
+        "dataset": [
+            {
+                "name": "breast_hetero_guest",
+                "namespace": "experiment"
+            },
+            {
+                "name": "breast_hetero_host",
+                "namespace": "experiment"
+            }
+        ]
     },
     "retcode": 0,
     "retmsg": "success"

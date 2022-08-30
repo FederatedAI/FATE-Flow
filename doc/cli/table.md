@@ -111,6 +111,26 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 | id_column | no | string | id field |
 | feature_column | no | array | feature_field |
 
+**mete information**
+
+| parameter name | required | type | description |
+|:---------------------|:----|:-------|-------------------------------------------|
+| input_format | no | string | The format of the data (danse, svmlight, tag:value), used to determine |
+| delimiter | no | string | The data separator, default "," |
+| tag_with_value | no | bool | Valid for tag data format, whether to carry value |
+| tag_value_delimiter | no | string | tag:value data separator, default ":" |
+| with_match_id | no | bool | Whether or not to carry match id |
+| with_match_id | no | object | The name of the id column, effective when extend_sid is enabled, e.g., ["email", "phone"] |
+| id_range | no | object | For tag/svmlight format data, which columns are ids |
+| exclusive_data_type | no | string | The format of the special type data columns |
+| data_type | no | string | Column data type, default "float64 |
+| with_label | no | bool | Whether to have a label, default False |
+| label_name | no | string | The name of the label, default "y" |
+| label_type | no | string | Label type, default "int" |
+
+**In version 1.9.0 and later, if the meta parameter is passed in during the table bind phase, no anonymous information about the feature is generated directly. 
+The feature anonymization information of the original data will be updated after the data has passed through the reader component once**
+
 **Sample** 
 
 - hdfs

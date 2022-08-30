@@ -5,44 +5,41 @@
 添加权限
 
 ```bash
-flow privilege grant [options]
+flow privilege grant -c fateflow/examples/permission/grant.json
 ```
 
 **选项**
 
-| 参数名              | 必选 | 类型   | 说明                                                         |
-| :------------------ | :--- | :----- | ------------------------------------------------------------ |
-| src-party-id        | 是   | string | 发起方partyid                                                |
-| src-role            | 是   | string | 发起方role                                                   |
-| privilege-role      | 否   | string | guest, host, arbiter，all, 其中all为全部权限都给予           |
-| privilege-command   | 否   | string | ”stop”, “run”, “create”, all, 其中all为全部权限都给予        |
-| privilege-component | 否   | string | 算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都给予 |
+| 参数    | 短格式 | 长格式 | 必选 | 类型   | 说明           |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| conf_path | `-c`   |`--conf-path`   |是   | string | 配置路径  |
+
+注: conf_path为参数路径，具体参数如下
+
+| 参数名       | 必选  | 类型     | 说明       |
+|:----------|:----|:-------|----------|
+| party_id  | 是   | string | 站点id     |
+| component | 否   | string | 组件名，可用","分割多个组件，"*"为所有组件 |
+| dataset   | 否   | object | 数据集列表    |
+
 
 **样例**
-
-- 赋予role权限
-
-  ```shell
-  flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all
-  ```
-
-- 赋予command权限
-
-  ```shell
-  flow privilege grant --src-party-id 9999  --src-role guest --privilege-command all
-  ```
-
-- 赋予component权限
-
-  ```shell
-  flow privilege grant --src-party-id 9999  --src-role guest --privilege-component all
-  ```
-
-- 同时赋予多种权限
-
-  ```shell
-  flow privilege grant --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
-  ```
+```json
+{
+  "party_id": 10000,
+  "component": "reader,dataio",
+  "dataset": [
+    {
+      "namespace": "experiment",
+      "name": "breast_hetero_guest"
+    },
+    {
+      "namespace": "experiment",
+      "name": "breast_hetero_host"
+    }
+  ]
+}
+```
 
 **返回**
 
@@ -65,44 +62,40 @@ flow privilege grant [options]
 删除权限
 
 ```bash
-flow privilege delete [options]
+flow privilege delete -c fateflow/examples/permission/delete.json
 ```
-
 **选项**
 
-| 参数名              | 必选 | 类型   | 说明                                                         |
-| :------------------ | :--- | :----- | ------------------------------------------------------------ |
-| src-party-id        | 是   | string | 发起方partyid                                                |
-| src-role            | 是   | string | 发起方role                                                   |
-| privilege-role      | 否   | string | guest, host, arbiter，all, 其中all为全部权限都撤销           |
-| privilege-command   | 否   | string | “stop”, “run”, “create”, all, 其中all为全部权限都撤销        |
-| privilege-component | 否   | string | 算法组件的小写,如dataio,heteronn等等, 其中all为全部权限都撤销 |
+| 参数    | 短格式 | 长格式 | 必选 | 类型   | 说明           |
+| :-------- | :--- | :--- | :--- | :----- | -------------- |
+| conf_path | `-c`   |`--conf-path`   |是   | string | 配置路径  |
+
+
+注: conf_path为参数路径，具体参数如下
+
+| 参数名       | 必选  | 类型     | 说明                       |
+|:----------|:----|:-------|--------------------------|
+| party_id  | 是   | string | 站点id                     |
+| component | 否   | string | 组件名，可用","分割多个组件，"*"为所有组件 |
+| dataset   | 否   | object | 数据集列表， "*"为所有数据集         |
 
 **样例**
-
-- 撤销role权限
-
-  ```shell
-  flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all
-  ```
-
-- 撤销command权限
-
-  ```shell
-  flow privilege delete --src-party-id 9999  --src-role guest --privilege-command all
-  ```
-
-- 撤销component权限
-
-  ```shell
-  flow privilege delete --src-party-id 9999  --src-role guest --privilege-component all
-  ```
-
-- 同时赋予多种权限
-
-  ```shell
-  flow privilege delete --src-party-id 9999  --src-role guest --privilege-role all --privilege-command all --privilege-component all
-  ```
+```json
+{
+  "party_id": 10000,
+  "component": "reader,dataio",
+  "dataset": [
+    {
+      "namespace": "experiment",
+      "name": "breast_hetero_guest"
+    },
+    {
+      "namespace": "experiment",
+      "name": "breast_hetero_host"
+    }
+  ]
+}
+```
 
 **返回**
 
@@ -125,21 +118,14 @@ flow privilege delete [options]
 查询权限
 
 ```bash
-flow privilege query [options]
+flow privilege query -p 10000
 ```
 
 **选项**
 
-| 参数名       | 必选 | 类型   | 说明          |
-| :----------- | :--- | :----- | ------------- |
-| src-party-id | 是   | string | 发起方partyid |
-| src-role     | 是   | string | 发起方role    |
-
-**样例**
-
-```shell
-flow privilege query --src-party-id 9999  --src-role guest
-```
+| 参数    | 短格式  | 长格式          | 必选 | 类型   | 说明   |
+| :-------- |:-----|:-------------| :--- | :----- |------|
+| party_id | `-p` | `--party-id` |是   | string | 站点id |
 
 **返回**
 
@@ -152,14 +138,23 @@ flow privilege query --src-party-id 9999  --src-role guest
 
 **样例**
 
-```shell
+```json
 {
     "data": {
-        "privilege_command": [],
-        "privilege_component": [],
-        "privilege_role": [],
-        "role": "guest",
-        "src_party_id": "9999"
+        "component": [
+            "reader",
+            "dataio"
+        ],
+        "dataset": [
+            {
+                "name": "breast_hetero_guest",
+                "namespace": "experiment"
+            },
+            {
+                "name": "breast_hetero_host",
+                "namespace": "experiment"
+            }
+        ]
     },
     "retcode": 0,
     "retmsg": "success"
