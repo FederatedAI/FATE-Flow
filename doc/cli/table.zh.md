@@ -112,6 +112,26 @@ flow table bind [options]
 | id_column      | 否   | string | id字段                                |
 | feature_column | 否   | array  | 特征字段                              |
 
+**mete信息**
+
+| 参数名                  | 必选  | 类型     | 说明                                        |
+|:---------------------|:----|:-------|-------------------------------------------|
+| input_format         | 否   | string | 数据格式(danse、svmlight、tag:value)，用来判断       |
+| delimiter            | 否   | string | 数据分隔符,默认","                               |
+| tag_with_value       | 否   | bool   | 对tag的数据格式生效，是否携带value                     |
+| tag_value_delimiter  | 否   | string | tag:value数据分隔符，默认":"                      |
+| with_match_id        | 否   | bool   | 是否携带match id                              |
+| id_list              | 否   | object | id列名称，开启extend_sid下生效，如：["imei", "phone"] |
+| id_range             | 否   | object | 对于tag/svmlight格式数据，哪几列为id                 |
+| exclusive_data_type  | 否   | string | 特殊类型数据列格式                                 |
+| data_type            | 否   | string | 列数据类型，默认"float64                          |
+| with_label           | 否   | bool   | 是否有标签，默认False                             |
+| label_name           | 否   | string | 标签名，默认"y"                                 |
+| label_type           | 否   | string | 标签类型, 默认"int"                             |
+
+**注：在1.9.0及之后的版本中，若在table bind阶段传入meta参数，并不会直接生成特征的匿名信息。 
+当数据经过了一次reader组件后会更新原始数据的特征匿名信息**
+
 **样例** 
 
 - hdfs

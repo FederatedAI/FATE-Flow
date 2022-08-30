@@ -12,21 +12,39 @@ Note: conf_path is the parameter path, the specific parameters are as follows
 
 **Options**
 
-| parameter name | required | type | description |
-| :------------------ | :--- | :----------- | ------------------------------------------------------------ |
-| file | yes | string | data storage path |
-| id_delimiter | yes | string | Data separator, e.g. "," |
-| head | no | int | Whether the data has a table header | yes | int
-| partition | yes | int | Number of data partitions |
-| storage_engine | no | storage engine type | default "EGGROLL", also support "HDFS", "LOCALFS", "HIVE", etc. |
-| namespace | yes | string | table namespace | yes
-| table_name | yes | string | table name |
-| storage_address | no | object | The storage address of the corresponding storage engine is required
-| use_local_data | no | int | The default is 1, which means use the data from the client's machine; 0 means use the data from the fate flow service's machine.
-| drop | no | int | Whether to overwrite uploads |
-| extend_sid | no | bool | Whether to add a new column for uuid id, default False |
-| auto_increasing_sid | no | bool | Whether the new id column is self-increasing (will only work if extend_sid is True), default False |
+| parameter name | required | type | description                                                                                                                      |
+| :------------------ | :--- | :----------- |----------------------------------------------------------------------------------------------------------------------------------|
+| file | yes | string | data storage path                                                                                                                |
+| id_delimiter | yes | string | Data separator, e.g. ","                                                                                                         |
+| head | no | int | Whether the data has a table header                                                                                              | yes | int
+| partition | yes | int | Number of data partitions                                                                                                        |
+| storage_engine | no | string | storage engine type, default "EGGROLL", also support "HDFS", "LOCALFS", "HIVE", etc.                                             |
+| namespace | yes | string | table namespace                                                                                                                  | yes
+| table_name | yes | string | table name                                                                                                                       |
+| storage_address | no | object | The storage address of the corresponding storage engine is required                                                              
+| use_local_data | no | int | The default is 1, which means use the data from the client's machine; 0 means use the data from the fate flow service's machine. 
+| drop | no | int | Whether to overwrite uploads                                                                                                     |
+| extend_sid | no | bool | Whether to add a new column for uuid id, default False                                                                           |
+| auto_increasing_sid | no | bool | Whether the new id column is self-increasing (will only work if extend_sid is True), default False                               |
 
+**mete information**
+
+| parameter name | required | type | description |
+|:---------------------|:----|:-------|-------------------------------------------|
+| input_format | no | string | The format of the data (danse, svmlight, tag:value), used to determine |
+| delimiter | no | string | The data separator, default "," |
+| tag_with_value | no | bool | Valid for tag data format, whether to carry value |
+| tag_value_delimiter | no | string | tag:value data separator, default ":" |
+| with_match_id | no | bool | Whether or not to carry match id |
+| with_match_id | no | object | The name of the id column, effective when extend_sid is enabled, e.g., ["email", "phone"] |
+| id_range | no | object | For tag/svmlight format data, which columns are ids |
+| exclusive_data_type | no | string | The format of the special type data columns |
+| data_type | no | string | Column data type, default "float64 |
+| with_label | no | bool | Whether to have a label, default False |
+| label_name | no | string | The name of the label, default "y" |
+| label_type | no | string | Label type, default "int" |
+
+**In version 1.9.0 and later, passing in the meta parameter will generate anonymous information about the feature.**
 **Example** 
 
 - eggroll
