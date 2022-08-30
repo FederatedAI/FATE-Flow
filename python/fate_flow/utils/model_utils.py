@@ -13,32 +13,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
 import glob
-import operator
-from collections import OrderedDict
 
-import peewee
+from fate_arch.common.base_utils import json_loads
 
-from fate_arch.common.base_utils import json_loads, current_timestamp
-
-from fate_flow.settings import stat_logger
-from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
-from fate_flow.utils.base_utils import get_fate_flow_directory
-from fate_flow.utils.log_utils import sql_logger
-
-
-gen_key_string_separator = '#'
-
-
-def gen_party_model_id(model_id, role, party_id):
-    return gen_key_string_separator.join([role, str(party_id), model_id]) if model_id else None
-
-
-def gen_model_id(all_party):
-    return gen_key_string_separator.join([all_party_key(all_party), "model"])
+from fate_flow.model.sync_model import SyncModel
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.scheduler.cluster_scheduler import ClusterScheduler
+from fate_flow.settings import ENABLE_MODEL_STORE, stat_logger
+from fate_flow.utils.base_utils import compare_version, get_fate_flow_directory
 
 
 def all_party_key(all_party):
@@ -56,7 +40,7 @@ def all_party_key(all_party):
         all_party_key = 'all'
     elif isinstance(all_party, dict):
         sorted_role_name = sorted(all_party.keys())
-        all_party_key = gen_key_string_separator.join([
+        all_party_key = '#'.join([
             ('%s-%s' % (
                 role_name,
                 '_'.join([str(p) for p in sorted(set(all_party[role_name]))]))
@@ -67,156 +51,141 @@ def all_party_key(all_party):
     return all_party_key
 
 
+def gen_party_model_id(model_id, role, party_id):
+    return '#'.join([role, str(party_id), model_id]) if model_id else None
+
+
+def gen_model_id(all_party):
+    return '#'.join([all_party_key(all_party), "model"])
+
+
 @DB.connection_context()
-def query_model_info_from_db(model_version, role=None, party_id=None, model_id=None, query_filters=None, **kwargs):
+def query_model_info_from_db(query_filters=None, **kwargs):
     conditions = []
     filters = []
-    aruments = locals()
-    cond_attrs = [attr for attr in ['model_version', 'model_id', 'role', 'party_id'] if aruments[attr]]
-    for f_n in cond_attrs:
-        conditions.append(operator.attrgetter('f_%s' % f_n)(MLModel) == aruments[f_n])
-    for f_n in kwargs:
-        if hasattr(MLModel, 'f_%s' % f_n):
-            conditions.append(operator.attrgetter('f_%s' % f_n)(MLModel))
 
-    if query_filters and isinstance(query_filters, list):
-        for attr in query_filters:
-            attr_name = 'f_%s' % attr
-            if hasattr(MLModel, attr_name):
-                filters.append(operator.attrgetter(attr_name)(MLModel))
+    for k, v in kwargs.items():
+        k = f'f_{k}'
+        if hasattr(MLModel, k):
+            conditions.append(getattr(MLModel, k) == v)
 
-    if filters:
-        models = MLModel.select(*filters).where(*conditions)
-    else:
-        models = MLModel.select().where(*conditions)
+    for k in query_filters:
+        k = f'f_{k}'
+        if hasattr(MLModel, k):
+            filters.append(getattr(MLModel, k))
 
-    if models:
-        return 0, 'Query model info from db success.', [model.to_dict() for model in models]
-    else:
-        return 100, 'Query model info failed, cannot find model from db. ', []
+    models = MLModel.select(*filters)
+    if conditions:
+        models = models.where(*conditions)
+    models = [model.to_dict() for model in models]
+
+    if not models:
+        return 100, 'Query model info failed, cannot find model from db.', []
+    return 0, 'Query model info from db success.', models
 
 
-def query_model_info_from_file(model_id=None, model_version=None, role=None, party_id=None, query_filters=None, to_dict=False, **kwargs):
-    res = {} if to_dict else []
-    model_dir = os.path.join(get_fate_flow_directory(), 'model_local_cache')
-    glob_dir = f"{model_dir}{os.sep}{role if role else '*'}#{party_id if party_id else '*'}#{model_id if model_id else '*'}{os.sep}{model_version if model_version else '*'}"
-    stat_logger.info(f'glob model dir: {glob_dir}')
-    model_fp_list = glob.glob(glob_dir)
-    if model_fp_list:
-        for fp in model_fp_list:
-            pipeline_model = PipelinedModel(model_id=fp.split(os.path.sep)[-2], model_version=fp.split(os.path.sep)[-1])
-            model_info = gather_model_info_data(pipeline_model, query_filters=query_filters)
-            if model_info:
-                _role = fp.split('/')[-2].split('#')[0]
-                _party_id = fp.split('/')[-2].split('#')[1]
-                model_info["f_role"] = _role
-                model_info["f_party_id"] = _party_id
-                if isinstance(res, dict):
-                    res[fp] = model_info
-                else:
-                    res.append(model_info)
+def query_model_info_from_file(model_id='*', model_version='*', role='*', party_id='*', query_filters=None, save_to_db=False, **kwargs):
+    fp_list = glob.glob(f"{get_fate_flow_directory('model_local_cache')}/{role}#{party_id}#{model_id}/{model_version}")
 
-                if kwargs.get('save'):
-                    try:
-                        insert_info = gather_model_info_data(pipeline_model).copy()
-                        insert_info['role'] = _role
-                        insert_info['party_id'] = _party_id
-                        insert_info['job_id'] = insert_info.get('f_model_version')
-                        insert_info['size'] = pipeline_model.calculate_model_file_size()
-                        if compare_version(insert_info['f_fate_version'], '1.5.1') == 'lt':
-                            insert_info['roles'] = insert_info.get('f_train_runtime_conf', {}).get('role', {})
-                            insert_info['initiator_role'] = insert_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
-                            insert_info['initiator_party_id'] = insert_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
-                        save_model_info(insert_info)
-                    except Exception as e:
-                        stat_logger.exception(e)
-    if res:
-        return 0, 'Query model info from local model success.', res
-    return 100, 'Query model info failed, cannot find model from local model files.', res
+    models = []
+    for fp in fp_list:
+        _, party_model_id, model_version = fp.rsplit('/', 2)
+        role, party_id, model_id = party_model_id.split('#', 2)
+
+        pipeline_model = PipelinedModel(model_id=party_model_id, model_version=model_version)
+        if not pipeline_model.exists():
+            continue
+
+        model_info = gather_model_info_data(pipeline_model)
+
+        if save_to_db:
+            try:
+                save_model_info(model_info)
+            except Exception as e:
+                stat_logger.exception(e)
+
+        if query_filters:
+            for k, v in model_info.items():
+                if k not in query_filters:
+                    del model_info[k]
+
+        models.append(model_info)
+
+    if not models:
+        return 100, 'Query model info failed, cannot find model from local model files.', []
+    return 0, 'Query model info from local model success.', models
 
 
-def gather_model_info_data(model: PipelinedModel, query_filters=None):
-    if model.exists():
-        pipeline = model.read_pipeline_model()
-        model_info = OrderedDict()
-        if query_filters and isinstance(query_filters, list):
-            for attr, field in pipeline.ListFields():
-                if attr.name in query_filters:
-                    if isinstance(field, bytes):
-                        model_info["f_" + attr.name] = json_loads(field, OrderedDict)
-                    else:
-                        model_info["f_" + attr.name] = field
-        else:
-            for attr, field in pipeline.ListFields():
-                if isinstance(field, bytes):
-                    model_info["f_" + attr.name] = json_loads(field, OrderedDict)
-                else:
-                    model_info["f_" + attr.name] = field
-        return model_info
-    return []
+def gather_model_info_data(model: PipelinedModel):
+    pipeline = model.read_pipeline_model()
+
+    model_info = {}
+    for attr, field in pipeline.ListFields():
+        if isinstance(field, bytes):
+            field = json_loads(field)
+        model_info[f'f_{attr.name}'] = field
+
+    model_info['f_job_id'] = model_info['f_model_version']
+    model_info['f_role'] = model.role
+    model_info['f_party_id'] = model.party_id
+    # backward compatibility
+    model_info['f_runtime_conf'] = model_info['f_train_runtime_conf']
+    model_info['f_size'] = model.calculate_model_file_size()
+
+    if compare_version(model_info['f_fate_version'], '1.5.1') == 'lt':
+        model_info['f_roles'] = model_info.get('f_train_runtime_conf', {}).get('role', {})
+        model_info['f_initiator_role'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('role')
+        model_info['f_initiator_party_id'] = model_info.get('f_train_runtime_conf', {}).get('initiator', {}).get('party_id')
+
+    return model_info
 
 
-def query_model_info(model_version, role=None, party_id=None, model_id=None, query_filters=None, **kwargs):
-    arguments = locals()
-    retcode, retmsg, data = query_model_info_from_db(**arguments)
-    if not retcode:
-        return retcode, retmsg, data
-    else:
-        arguments['save'] = True
-        retcode, retmsg, data = query_model_info_from_file(**arguments)
+def query_model_info(**kwargs):
+    file_only = kwargs.pop('file_only', False)
+    kwargs['query_filters'] = set(kwargs['query_filters']) if kwargs.get('query_filters') else set()
+
+    if not file_only:
+        retcode, retmsg, data = query_model_info_from_db(**kwargs)
         if not retcode:
             return retcode, retmsg, data
-        return 100, 'Query model info failed, cannot find model from db. ' \
-                    'Try use both model id and model version to query model info from local models', []
+
+        kwargs['save_to_db'] = True
+
+    retcode, retmsg, data = query_model_info_from_file(**kwargs)
+    if not retcode:
+        return retcode, retmsg, data
+
+    return 100, (
+        'Query model info failed, cannot find model from db and local model files. '
+        'Try use both model id and model version to query model info from local models.'
+    ), []
 
 
-@DB.connection_context()
 def save_model_info(model_info):
-    model = MLModel()
-    model.f_create_time = current_timestamp()
-    for k, v in model_info.items():
-        attr_name = 'f_%s' % k
-        if hasattr(MLModel, attr_name):
-            setattr(model, attr_name, v)
-        elif hasattr(MLModel, k):
-            setattr(model, k, v)
+    model_info = {k if k.startswith('f_') else f'f_{k}': v for k, v in model_info.items()}
 
-    try:
-        rows = model.save(force_insert=True)
-        if rows != 1:
-            raise Exception("Save to database failed")
-    except peewee.IntegrityError as e:
-        if e.args[0] != 1062:
-            raise Exception("Create {} failed:\n{}".format(MLModel, e))
+    with DB.connection_context():
+        MLModel.insert(**model_info).on_conflict(preserve=(
+            'f_update_time',
+            'f_update_date',
+            *model_info.keys(),
+        )).execute()
 
-        sql_logger(job_id=model_info.get("job_id", "fate_flow")).warning(e)
-        return
-    except Exception as e:
-        raise Exception("Create {} failed:\n{}".format(MLModel, e))
+    if ENABLE_MODEL_STORE:
+        sync_model = SyncModel(
+            role=model_info['f_role'], party_id=model_info['f_party_id'],
+            model_id=model_info['f_model_id'], model_version=model_info['f_model_version'],
+        )
+        sync_model.upload(True)
 
-    RuntimeConfig.SERVICE_DB.register_model(gen_party_model_id(
-        role=model.f_role, party_id=model.f_party_id, model_id=model.f_model_id
-    ), model.f_model_version)
-
-    return model
-
-
-def compare_version(version: str, target_version: str):
-    ver_list = version.split('.')
-    tar_ver_list = target_version.split('.')
-    if int(ver_list[0]) >= int(tar_ver_list[0]):
-        if int(ver_list[1]) > int(tar_ver_list[1]):
-            return 'gt'
-        elif int(ver_list[1]) < int(tar_ver_list[1]):
-            return 'lt'
-        else:
-            if int(ver_list[2]) > int(tar_ver_list[2]):
-                return 'gt'
-            elif int(ver_list[2]) == int(tar_ver_list[2]):
-                return 'eq'
-            else:
-                return 'lt'
-    return 'lt'
+    ClusterScheduler.cluster_command('/model/service/register', {
+        'party_model_id': gen_party_model_id(
+            model_info['f_model_id'],
+            model_info['f_role'],
+            model_info['f_party_id'],
+        ),
+        'model_version': model_info['f_model_version'],
+    })
 
 
 def check_if_parent_model(pipeline):
@@ -241,7 +210,7 @@ def check_if_deployed(role, party_id, model_id, model_version):
     party_model_id = gen_party_model_id(model_id=model_id, role=role, party_id=party_id)
     pipeline_model = PipelinedModel(model_id=party_model_id, model_version=model_version)
     if not pipeline_model.exists():
-        raise Exception(f"Model {party_model_id} {model_version} not exists in model local cache.")
+        raise FileNotFoundError(f"Model {party_model_id} {model_version} not exists in model local cache.")
 
     pipeline = pipeline_model.read_pipeline_model()
     if compare_version(pipeline.fate_version, '1.5.0') == 'gt':
@@ -260,21 +229,19 @@ def models_group_by_party_model_id_and_model_version():
         MLModel.f_model_id,
         MLModel.f_model_version,
     ]
-    models = MLModel.select(*args).group_by(*args)
-    for model in models:
-        model.f_party_model_id = gen_party_model_id(role=model.f_role,
-                                                    party_id=model.f_party_id,
-                                                    model_id=model.f_model_id)
-    return models
+    return MLModel.select(*args).group_by(*args)
 
 
 @DB.connection_context()
 def get_job_configuration_from_model(job_id, role, party_id):
-    retcode, retmsg, res = query_model_info(model_version=job_id, role=role, party_id=party_id,
-                                            query_filters=['train_dsl', 'dsl', 'train_runtime_conf', 'runtime_conf'])
-    if res:
-        dsl = res[0].get('train_dsl') if res[0].get('train_dsl') else res[0].get('dsl')
-        runtime_conf = res[0].get('runtime_conf')
-        train_runtime_conf = res[0].get('train_runtime_conf')
-        return dsl, runtime_conf, train_runtime_conf
-    return {}, {}, {}
+    retcode, retmsg, data = query_model_info(
+        model_version=job_id, role=role, party_id=party_id,
+        query_filters=['train_dsl', 'dsl', 'train_runtime_conf', 'runtime_conf'],
+    )
+    if not data:
+        return {}, {}, {}
+
+    dsl = data[0].get('train_dsl') if data[0].get('train_dsl') else data[0].get('dsl')
+    runtime_conf = data[0].get('runtime_conf')
+    train_runtime_conf = data[0].get('train_runtime_conf')
+    return dsl, runtime_conf, train_runtime_conf

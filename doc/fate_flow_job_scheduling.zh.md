@@ -158,6 +158,7 @@ DSL 的配置文件采用 json 格式，实际上，整个配置文件就是一�
 ### 3.5 组件Provider
 
 FATE-Flow 1.7.0版本开始，同一个FATE-Flow系统支持加载多种且多版本的组件提供方，也即provider，provider提供了若干个组件，提交作业时可以配置组件的来源provider
+FATE-Flow 1.9.0版本开始，provider的参数需在conf中配置，具体如下
 
 **描述** 指定provider，支持全局指定以及单个组件指定；若不指定，默认 provider：`fate@$FATE_VERSION`
 
@@ -169,52 +170,25 @@ FATE-Flow 1.7.0版本开始，同一个FATE-Flow系统支持加载多种且多�
 
 ```json
 {
-  "provider": "fate@1.7.0",
-  "components": {
-    "reader_0": {
-      "module": "Reader",
-      "output": {
-        "data": [
-          "table"
-        ]
-      }
+  "dsl_version": "2",
+  "initiator": {},
+  "role": {},
+  "job_parameters": {},
+  "component_parameters": {},
+  "provider": {
+    "common": {
+      "hetero_feature_binning_0": "fate@1.8.0"
     },
-    "dataio_0": {
-      "module": "DataIO",
-      "provider": "fate@1.7.0",
-      "input": {
-        "data": {
-          "data": [
-            "reader_0.table"
-          ]
+    "role": {
+      "guest": {
+        "0": {
+          "data_transform_0": "fate@1.9.0"
         }
       },
-      "output": {
-        "data": [
-          "train"
-        ],
-        "model": [
-          "dataio"
-        ]
-      },
-      "need_deploy": true
-    },
-    "hetero_feature_binning_0": {
-      "module": "HeteroFeatureBinning",
-      "input": {
-        "data": {
-          "data": [
-            "dataio_0.train"
-          ]
+      "host": {
+        "0": {
+          "data_transform_0": "fate@1.9.0"
         }
-      },
-      "output": {
-        "data": [
-          "train"
-        ],
-        "model": [
-          "hetero_feature_binning"
-        ]
       }
     }
   }

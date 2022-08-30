@@ -8,8 +8,8 @@
         ]
       }
     },
-    "dataio_0": {
-      "module": "DataIO",
+    "data_transform_0": {
+      "module": "DataTransform",
       "input": {
         "data": {
           "data": [
@@ -22,7 +22,7 @@
           "train"
         ],
         "model": [
-          "dataio"
+          "data_transform"
         ]
       },
       "need_deploy": true
@@ -40,7 +40,7 @@
       "input": {
         "data": {
           "data": [
-            "dataio_0.train"
+            "data_transform_0.train"
           ]
         },
         "cache": [

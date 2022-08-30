@@ -13,21 +13,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import abc
+from abc import ABC, abstractmethod
+from contextlib import AbstractContextManager
 
 
-class ModelStorageBase(metaclass=abc.ABCMeta):
-    key_separator = "/"
+class ModelStorageBase(ABC):
 
-    def store_key(self, model_id: str, model_version: str):
-        return self.key_separator.join(["FATEFlow", "PipelinedModel", model_id, model_version])
-
-    @abc.abstractmethod
+    @abstractmethod
     def exists(self, model_id: str, model_version: str, store_address: dict):
         pass
 
-    @abc.abstractmethod
-    def store(self, model_id: str, model_version: str, store_address: dict):
+    @abstractmethod
+    def store(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False):
         """
         Store the model from local cache to a reliable system
         :param model_id:
@@ -37,8 +34,8 @@ class ModelStorageBase(metaclass=abc.ABCMeta):
         """
         pass
 
-    @abc.abstractmethod
-    def restore(self, model_id: str, model_version: str, store_address: dict):
+    @abstractmethod
+    def restore(self, model_id: str, model_version: str, store_address: dict, force_update: bool = False, hash_: str = None):
         """
         Restore model from storage system to local cache
         :param model_id:
@@ -46,4 +43,26 @@ class ModelStorageBase(metaclass=abc.ABCMeta):
         :param store_address:
         :return:
         """
+        pass
+
+
+class ComponentStorageBase(AbstractContextManager):
+
+    def __exit__(self, *exc):
+        pass
+
+    @abstractmethod
+    def exists(self, party_model_id, model_version, component_name):
+        pass
+
+    @abstractmethod
+    def upload(self, party_model_id, model_version, component_name):
+        pass
+
+    @abstractmethod
+    def download(self, party_model_id, model_version, component_name, hash_=None):
+        pass
+
+    @abstractmethod
+    def copy(self, party_model_id, model_version, component_name, source_model_version):
         pass

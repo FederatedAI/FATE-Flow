@@ -17,6 +17,7 @@ from flask import request
 from flask.json import jsonify
 
 from fate_arch.common import FederatedMode
+
 from fate_flow.utils.api_utils import federated_api, forward_api, proxy_api
 
 
@@ -45,7 +46,7 @@ def start_proxy(role):
             json_body["body"] = request_config
         response = federated_api(job_id=_job_id,
                                  method='POST',
-                                 endpoint='/forward/{}/do'.format(role),
+                                 endpoint=f'/forward/{role}/do',
                                  src_party_id=src_party_id,
                                  dest_party_id=dest_party_id,
                                  src_role=None,
@@ -59,5 +60,3 @@ def start_forward(role):
     request_config = request.json or request.form.to_dict()
     response = forward_api(role, request_config)
     return jsonify(response)
-
-

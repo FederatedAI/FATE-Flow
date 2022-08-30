@@ -30,7 +30,7 @@ from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import TEMP_DIRECTORY, stat_logger
-from fate_flow.utils import detect_utils, job_utils, log_utils, schedule_utils
+from fate_flow.utils import job_utils, log_utils, schedule_utils, api_utils
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
 from fate_flow.utils.log_utils import schedule_logger
@@ -56,7 +56,7 @@ def stop_job():
         schedule_logger(job_id).info(f"request stop job to {stop_status}")
         status_code, response = FederatedScheduler.request_stop_job(job=jobs[0], stop_status=stop_status, command_body=jobs[0].to_dict())
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
-            return get_json_result(retcode=RetCode.SUCCESS, retmsg=f"stop job on this party {kill_status}; stop job on all party success")
+            return get_json_result(retcode=RetCode.SUCCESS, retmsg=f"stop job on this party {'success' if kill_status else 'failed'}; stop job on all party success")
         else:
             return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"stop job on this party {kill_status}", data=response)
     else:
@@ -151,8 +151,16 @@ def update_job():
         return get_json_result(retcode=0, retmsg='success')
 
 
+@manager.route('/report', methods=['POST'])
+def job_report():
+    tasks = JobSaver.query_task(**request.json)
+    if not tasks:
+        return get_json_result(retcode=101, retmsg='find task failed')
+    return get_json_result(retcode=0, retmsg='success', data=job_utils.task_report(tasks))
+
+
 @manager.route('/parameter/update', methods=['POST'])
-@detect_utils.validate_request("job_id")
+@api_utils.validate_request("job_id")
 def update_parameters():
     job_info = request.json
     component_parameters = job_info.pop("component_parameters", None)
@@ -197,7 +205,7 @@ def check_job_log_dir():
 
 
 @manager.route('/log/download', methods=['POST'])
-@detect_utils.validate_request('job_id')
+@api_utils.validate_request('job_id')
 def job_log_download():
     job_id, job_log_dir = check_job_log_dir()
 
@@ -215,7 +223,7 @@ def job_log_download():
 
 
 @manager.route('/log/path', methods=['POST'])
-@detect_utils.validate_request('job_id')
+@api_utils.validate_request('job_id')
 def job_log_path():
     job_id, job_log_dir = check_job_log_dir()
 
@@ -310,7 +318,7 @@ def dsl_generator():
 
 
 @manager.route('/url/get', methods=['POST'])
-@detect_utils.validate_request('job_id', 'role', 'party_id')
+@api_utils.validate_request('job_id', 'role', 'party_id')
 def get_url():
     request_data = request.json
     jobs = JobSaver.query_job(job_id=request_data.get('job_id'), role=request_data.get('role'),
@@ -354,6 +362,6 @@ def parse_order_by(default=None):
 valid_query_parameters = {
     'role': {'guest', 'host', 'arbiter', 'local'},
     'status': {'success', 'running', 'waiting', 'failed', 'canceled'},
-    'order_by': {'job_id', 'create_time', 'start_time', 'end_time', 'elapsed'},
+    'order_by': {'job_id', 'task_version', 'create_time', 'start_time', 'end_time', 'elapsed'},
     'order': {'asc', 'desc'},
 }

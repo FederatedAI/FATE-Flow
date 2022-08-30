@@ -39,6 +39,8 @@ from fate_flow.utils.dsl_exception import DSLNotExistError, ComponentFieldNotExi
 from fate_flow.utils.runtime_conf_parse_util import RuntimeConfParserUtil
 
 
+ComponentParameterSource = "ComponentParameterSource"
+
 class Component(object):
     def __init__(self):
         self.module = None
@@ -171,8 +173,8 @@ class BaseDSLParser(object):
                     raise NamingFormatError(component=name)
 
     def _find_dependencies(self, mode="train", version=1):
-        self.component_downstream = [[] for i in range(len(self.components))]
-        self.component_upstream = [[] for i in range(len(self.components))]
+        self.component_downstream = [[] for _ in range(len(self.components))]
+        self.component_upstream = [[] for _ in range(len(self.components))]
 
         components_details = self.dsl.get("components")
         components_output = self._find_outputs(self.dsl)
@@ -253,7 +255,7 @@ class BaseDSLParser(object):
                             self.component_downstream[idx_dependency].append(name)
                             self.component_upstream[idx].append(input_component)
 
-        self.in_degree = [0 for i in range(len(self.components))]
+        self.in_degree = [0 for _ in range(len(self.components))]
         for i in range(len(self.components)):
             if self.component_downstream[i]:
                 self.component_downstream[i] = list(set(self.component_downstream[i]))
@@ -310,7 +312,12 @@ class BaseDSLParser(object):
                     cur_component = self.train_input_model.get(cur_component)
                     parent_path.append(cur_component)
                 else:
-                    isometric_component = input_component
+                    if is_warm_start and self.components[input_pos].get_module().lower() == "modelloader":
+                        model_load_alias = RuntimeConfParserUtil.get_model_loader_alias(input_component, runtime_conf,
+                                                                                        local_role, local_party_id)
+                        isometric_component = model_load_alias
+                    else:
+                        isometric_component = input_component
                     break
 
         pre_parameters = {}
@@ -319,6 +326,11 @@ class BaseDSLParser(object):
                 pre_parameters = previous_parameters.get(cur_component, {})
             else:
                 pre_parameters = previous_parameters.get(isometric_component, {})
+
+        if self.mode == "predict" and pre_parameters:
+            source_component = previous_parameters.get(component, {}).get(ComponentParameterSource)
+            if source_component and source_component != cur_component:
+                runtime_conf = self.runtime_conf
 
         role_parameters = RuntimeConfParserUtil.get_component_parameters(provider,
                                                                          runtime_conf,
@@ -330,17 +342,8 @@ class BaseDSLParser(object):
                                                                          parse_user_specified_only=parse_user_specified_only,
                                                                          pre_parameters=pre_parameters)
 
-        """
-        if previous_parameters is not None:
-            if not isometric_component:
-                pre_parameters = previous_parameters.get(cur_component, {})
-            else:
-                pre_parameters = previous_parameters.get(isometric_component, {})
-
-            if pre_parameters:
-                role_parameters = RuntimeConfParserUtil.merge_dict(pre_parameters, role_parameters)
-        """
-
+        if role_parameters:
+            role_parameters[ComponentParameterSource] = cur_component
         for component in parent_path:
             idx = self.component_name_index.get(component)
             self.components[idx].set_component_provider(provider)
@@ -464,7 +467,7 @@ class BaseDSLParser(object):
 
         if tot_nodes != len(self.components):
             stack = []
-            vis = [False for i in range(len(self.components))]
+            vis = [False for _ in range(len(self.components))]
             for i in range(len(self.components)):
                 if vis[i]:
                     continue
@@ -551,7 +554,7 @@ class BaseDSLParser(object):
             if not dependence_dict[name]:
                 del dependence_dict[name]
 
-        component_list = [None for i in range(len(self.components))]
+        component_list = [None for _ in range(len(self.components))]
         topo_rank_reverse_mapping = {}
         for i in range(len(self.topo_rank)):
             topo_rank_reverse_mapping[self.topo_rank[i]] = i
@@ -576,7 +579,7 @@ class BaseDSLParser(object):
                 max_depth[down_vertex] = max(max_depth[down_vertex], max_depth[vertex] + 1)
 
         max_dep = max(max_depth)
-        hierarchical_structure = [[] for i in range(max_dep + 1)]
+        hierarchical_structure = [[] for _ in range(max_dep + 1)]
         name_component_maps = {}
 
         for component in self.components:
@@ -672,11 +675,14 @@ class BaseDSLParser(object):
         dsl_parser._find_dependencies(version=2)
         dsl_parser._auto_deduction(deploy_cpns=deploy_cpns, version=2, erase_top_data_input=True)
 
+        """
         dsl_parser.update_predict_dsl_provider(train_dsl)
         if provider_update_dsl:
             dsl_parser.update_predict_dsl_provider(provider_update_dsl)
+        """
         return dsl_parser.predict_dsl
 
+    """
     def update_predict_dsl_provider(self, dsl):
         for component in dsl["components"]:
             provider = dsl["components"][component].get("provider")
@@ -685,6 +691,7 @@ class BaseDSLParser(object):
 
         if "provider" in dsl:
             self.predict_dsl["provider"] = dsl["provider"]
+    """
 
     def _auto_deduction(self, deploy_cpns=None, version=1, erase_top_data_input=False):
         self.predict_dsl = {"components": {}}
@@ -829,7 +836,8 @@ class BaseDSLParser(object):
     def get_args_input(self):
         return self.args_input
 
-    def get_need_deploy_parameter(self, name, deploy_cpns=None):
+    @staticmethod
+    def get_need_deploy_parameter(name, deploy_cpns=None):
         if deploy_cpns is not None:
             return name in deploy_cpns
 
@@ -838,15 +846,14 @@ class BaseDSLParser(object):
     def get_job_parameters(self, *args, **kwargs):
         return self.job_parameters
 
-    def get_job_providers(self, provider_detail=None, dsl=None):
-        if self.job_providers:
-            return self.job_providers
+    def get_job_providers(self, provider_detail=None, dsl=None, conf=None, local_role=None, local_party_id=None):
+        if dsl is None:
+            self.job_providers = RuntimeConfParserUtil.get_job_providers(self.dsl, provider_detail, conf,
+                                                                         local_role, local_party_id)
         else:
-            if dsl is None:
-                self.job_providers = RuntimeConfParserUtil.get_job_providers(self.dsl, provider_detail)
-            else:
-                self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail)
-            return self.job_providers
+            self.job_providers = RuntimeConfParserUtil.get_job_providers(dsl, provider_detail, conf,
+                                                                         local_role, local_party_id)
+        return self.job_providers
 
     @staticmethod
     def _gen_predict_data_mapping():
@@ -1099,6 +1106,11 @@ class DSLParserV2(BaseDSLParser):
                                                                            conf_version=2)
 
         else:
+            """training provider will be delete first"""
+            pipeline_runtime_conf = copy.deepcopy(pipeline_runtime_conf)
+            if "provider" in pipeline_runtime_conf:
+                del pipeline_runtime_conf["provider"]
+
             predict_runtime_conf = RuntimeConfParserUtil.merge_predict_runtime_conf(pipeline_runtime_conf,
                                                                                     runtime_conf)
             self.predict_runtime_conf = predict_runtime_conf
@@ -1226,6 +1238,4 @@ class DSLParserV2(BaseDSLParser):
                                              f"!= new: {r}-{party_idx}-{cpn_second_role_params}")
 
             first_role_params, second_role_params = cur_role_params, pre_role_params
-
-
 

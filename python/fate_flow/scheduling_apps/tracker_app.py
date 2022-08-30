@@ -16,8 +16,14 @@
 from flask import request
 
 from fate_arch.common.base_utils import deserialize_b64
+
+from fate_flow.model.sync_model import SyncComponent
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.utils.api_utils import get_json_result
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
+from fate_flow.settings import ENABLE_MODEL_STORE
+from fate_flow.utils.api_utils import get_json_result, validate_request
+from fate_flow.utils.model_utils import gen_party_model_id
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/metric_data/save',
@@ -53,6 +59,7 @@ def create_table_meta(job_id, component_name, task_version, task_id, role, party
     tracker.save_table_meta(request_data)
     return get_json_result()
 
+
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/table_meta/get',
                methods=['POST'])
 def get_table_meta(job_id, component_name, task_version, task_id, role, party_id):
@@ -67,13 +74,23 @@ def get_table_meta(job_id, component_name, task_version, task_id, role, party_id
                methods=['POST'])
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/component_model/save',
                methods=['POST'])
+@validate_request('model_id', 'model_version', 'component_model')
 def save_component_model(job_id, component_name, task_version, task_id, role, party_id):
-    request_data = request.json
-    model_id = request_data.get("model_id")
-    model_version = request_data.get("model_version")
-    tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
-                      role=role, party_id=party_id, model_id=model_id, model_version=model_version)
-    tracker.write_output_model(request_data.get("component_model"))
+    party_model_id = gen_party_model_id(request.json['model_id'], role, party_id)
+    model_version = request.json['model_version']
+
+    pipelined_model = PipelinedModel(party_model_id, model_version)
+    pipelined_model.write_component_model(request.json['component_model'])
+
+    if ENABLE_MODEL_STORE:
+        sync_component = SyncComponent(
+            party_model_id=party_model_id,
+            model_version=model_version,
+            component_name=component_name,
+        )
+        # no need to test sync_component.remote_exists()
+        sync_component.upload()
+
     return get_json_result()
 
 
@@ -81,25 +98,38 @@ def save_component_model(job_id, component_name, task_version, task_id, role, pa
                methods=['POST'])
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/component_model/get',
                methods=['POST'])
+@validate_request('model_id', 'model_version', 'search_model_alias')
 def get_component_model(job_id, component_name, task_version, task_id, role, party_id):
-    request_data = request.json
-    model_id = request_data.get("model_id")
-    model_version = request_data.get("model_version")
-    tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
-                      role=role, party_id=party_id, model_id=model_id, model_version=model_version)
-    data = tracker.read_output_model(model_alias=request_data.get("search_model_alias"), parse=False)
+    party_model_id = gen_party_model_id(request.json['model_id'], role, party_id)
+    model_version = request.json['model_version']
+
+    if ENABLE_MODEL_STORE:
+        sync_component = SyncComponent(
+            party_model_id=party_model_id,
+            model_version=model_version,
+            component_name=component_name,
+        )
+        if not sync_component.local_exists() and sync_component.remote_exists():
+            sync_component.download()
+
+    pipelined_model = PipelinedModel(party_model_id, model_version)
+    data = pipelined_model.read_component_model(component_name, request.json['search_model_alias'], False)
+
     return get_json_result(data=data)
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/model/run_parameters/get',
                methods=['POST'])
+@validate_request('model_id', 'model_version')
 def get_component_model_run_parameters(job_id, component_name, task_version, task_id, role, party_id):
-    request_data = request.json
-    model_id = request_data.get("model_id")
-    model_version = request_data.get("model_version")
-    tracker = Tracker(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version,
-                      role=role, party_id=party_id, model_id=model_id, model_version=model_version)
-    data = tracker.pipelined_model.read_model_run_parameters()
+    pipelined_component = PipelinedComponent(
+        role=role,
+        party_id=party_id,
+        model_id=request.json['model_id'],
+        model_version=request.json['model_version'],
+    )
+    data = pipelined_component.get_run_parameters()
+
     return get_json_result(data=data)
 
 

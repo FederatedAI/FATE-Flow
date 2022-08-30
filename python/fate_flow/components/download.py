@@ -15,8 +15,9 @@
 #
 import os
 
+from fate_arch import storage
+from fate_flow.manager.data_manager import TableStorage
 from fate_flow.utils.log_utils import getLogger
-from fate_arch.session import Session
 from fate_arch.storage import DEFAULT_ID_DELIMITER
 from fate_flow.components._base import (
     BaseParam,
@@ -25,8 +26,6 @@ from fate_flow.components._base import (
     ComponentInputProtocol,
 )
 from fate_flow.entity import Metric, MetricMeta
-from fate_flow.scheduling_apps.client import ControllerClient
-from fate_flow.utils import job_utils
 
 LOGGER = getLogger()
 
@@ -61,53 +60,25 @@ class Download(ComponentBase):
         self.parameters = cpn_input.parameters
         self.parameters["role"] = cpn_input.roles["role"]
         self.parameters["local"] = cpn_input.roles["local"]
-        name, namespace = self.parameters.get("name"), self.parameters.get("namespace")
-        with open(os.path.abspath(self.parameters["output_path"]), "w") as fw:
-            session = Session(
-                job_utils.generate_session_id(
-                    self.tracker.task_id,
-                    self.tracker.task_version,
-                    self.tracker.role,
-                    self.tracker.party_id,
-                )
+
+        data_table_meta = storage.StorageTableMeta(name=self.parameters.get("name"), namespace=self.parameters.get("namespace"))
+        TableStorage.send_table(
+            output_tables_meta={"table": data_table_meta},
+            output_data_file_path = os.path.abspath(self.parameters["output_path"]),
+            local_download=True
+        )
+        self.callback_metric(
+            metric_name="data_access",
+            metric_namespace="download",
+            metric_data=[Metric("count", data_table_meta.count)]
+        )
+        LOGGER.info("===== export {} lines totally =====".format(data_table_meta.count))
+        LOGGER.info("===== export data finish =====")
+        LOGGER.info(
+            "===== export data file path:{} =====".format(
+                os.path.abspath(self.parameters["output_path"])
             )
-            data_table = session.get_table(name=name, namespace=namespace)
-            if not data_table:
-                raise Exception(f"no found table {name} {namespace}")
-            count = data_table.count()
-            LOGGER.info("===== begin to export data =====")
-            lines = 0
-            job_info = {}
-            job_info["job_id"] = self.tracker.job_id
-            job_info["role"] = self.tracker.role
-            job_info["party_id"] = self.tracker.party_id
-            for key, value in data_table.collect():
-                if not value:
-                    fw.write(key + "\n")
-                else:
-                    fw.write(
-                        key + self.parameters.get("delimiter", ",") + str(value) + "\n"
-                    )
-                lines += 1
-                if lines % 2000 == 0:
-                    LOGGER.info("===== export {} lines =====".format(lines))
-                if lines % 10000 == 0:
-                    job_info["progress"] = lines / count * 100 // 1
-                    ControllerClient.update_job(job_info=job_info)
-            job_info["progress"] = 100
-            ControllerClient.update_job(job_info=job_info)
-            self.callback_metric(
-                metric_name="data_access",
-                metric_namespace="download",
-                metric_data=[Metric("count", data_table.count())],
-            )
-            LOGGER.info("===== export {} lines totally =====".format(lines))
-            LOGGER.info("===== export data finish =====")
-            LOGGER.info(
-                "===== export data file path:{} =====".format(
-                    os.path.abspath(self.parameters["output_path"])
-                )
-            )
+        )
 
     def callback_metric(self, metric_name, metric_namespace, metric_data):
         self.tracker.log_metric_data(

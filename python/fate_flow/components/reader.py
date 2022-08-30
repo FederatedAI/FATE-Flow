@@ -32,7 +32,7 @@ from fate_flow.components._base import (
 from fate_flow.errors import ParameterError
 from fate_flow.entity import MetricMeta
 from fate_flow.entity.types import InputSearchType
-from fate_flow.manager.data_manager import DataTableTracker, TableStorage
+from fate_flow.manager.data_manager import DataTableTracker, TableStorage, AnonymousGenerator
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.utils import data_utils
 
@@ -138,26 +138,13 @@ class Reader(ComponentBase):
                 "job_id": self.tracker.job_id,
             },
         )
-        headers_str = output_table_meta.get_schema().get("header")
-        table_info = {}
-        if output_table_meta.get_schema() and headers_str:
-            if isinstance(headers_str, str):
-                data_list = [headers_str.split(",")]
-                is_display = True
-            else:
-                data_list = [headers_str]
-                is_display = False
-            if is_display:
-                for data in output_table_meta.get_part_of_data():
-                    data_list.append(data[1].split(","))
-                data = np.array(data_list)
-                Tdata = data.transpose()
-                for data in Tdata:
-                    table_info[data[0]] = ",".join(list(set(data[1:]))[:5])
+        table_info, anonymous_info, attribute_info = self.data_info_display(output_table_meta)
         data_info = {
             "table_name": input_table_name,
             "namespace": input_table_namespace,
             "table_info": table_info,
+            "anonymous_info": anonymous_info,
+            "attribute_info": attribute_info,
             "partitions": output_table_meta.get_partitions(),
             "storage_engine": output_table_meta.get_engine(),
         }
@@ -211,118 +198,8 @@ class Reader(ComponentBase):
         computing_engine: ComputingEngine = ComputingEngine.EGGROLL,
         output_storage_address={},
     ) -> (StorageTableMetaABC, AddressABC, StorageEngine):
-        input_table_meta = StorageTableMeta(name=input_name, namespace=input_namespace)
-
-        if not input_table_meta:
-            raise RuntimeError(
-                f"can not found table name: {input_name} namespace: {input_namespace}"
-            )
-        address_dict = output_storage_address.copy()
-        if input_table_meta.get_engine() in [StorageEngine.PATH]:
-            from fate_arch.storage import PathStoreType
-
-            address_dict["name"] = output_name
-            address_dict["namespace"] = output_namespace
-            address_dict["storage_type"] = PathStoreType.PICTURE
-            address_dict["path"] = input_table_meta.get_address().path
-            output_table_address = StorageTableMeta.create_address(
-                storage_engine=StorageEngine.PATH, address_dict=address_dict
-            )
-            output_table_engine = StorageEngine.PATH
-        elif computing_engine == ComputingEngine.STANDALONE:
-            from fate_arch.storage import StandaloneStoreType
-
-            address_dict["name"] = output_name
-            address_dict["namespace"] = output_namespace
-            address_dict["storage_type"] = StandaloneStoreType.ROLLPAIR_LMDB
-            output_table_address = StorageTableMeta.create_address(
-                storage_engine=StorageEngine.STANDALONE, address_dict=address_dict
-            )
-            output_table_engine = StorageEngine.STANDALONE
-        elif computing_engine == ComputingEngine.EGGROLL:
-            from fate_arch.storage import EggRollStoreType
-
-            address_dict["name"] = output_name
-            address_dict["namespace"] = output_namespace
-            address_dict["storage_type"] = EggRollStoreType.ROLLPAIR_LMDB
-            output_table_address = StorageTableMeta.create_address(
-                storage_engine=StorageEngine.EGGROLL, address_dict=address_dict
-            )
-            output_table_engine = StorageEngine.EGGROLL
-        elif computing_engine == ComputingEngine.SPARK:
-            if input_table_meta.get_engine() == StorageEngine.HIVE:
-                output_table_address = input_table_meta.get_address()
-                output_table_address.name = output_name
-                output_table_engine = input_table_meta.get_engine()
-            elif input_table_meta.get_engine() == StorageEngine.LOCALFS:
-                output_table_address = input_table_meta.get_address()
-                output_table_address.path = default_output_fs_path(
-                    name=output_name,
-                    namespace=output_namespace,
-                    storage_engine=StorageEngine.LOCALFS
-                )
-                output_table_engine = input_table_meta.get_engine()
-            else:
-                address_dict["path"] = default_output_fs_path(
-                    name=output_name,
-                    namespace=output_namespace,
-                    prefix=address_dict.get("path_prefix"),
-                    storage_engine=StorageEngine.HDFS
-                )
-                output_table_address = StorageTableMeta.create_address(
-                    storage_engine=StorageEngine.HDFS, address_dict=address_dict
-                )
-                output_table_engine = StorageEngine.HDFS
-        elif computing_engine == ComputingEngine.LINKIS_SPARK:
-            output_table_address = input_table_meta.get_address()
-            output_table_address.name = output_name
-            output_table_engine = input_table_meta.get_engine()
-        else:
-            raise RuntimeError(f"can not support computing engine {computing_engine}")
-        return input_table_meta, output_table_address, output_table_engine
-
-    def deal_linkis_hive(self, src_table: StorageTableABC, dest_table: StorageTableABC):
-        import functools
-
-        from pyspark.sql import SparkSession
-
-        session = SparkSession.builder.enableHiveSupport().getOrCreate()
-        src_data = session.sql(
-            f"select * from {src_table.address.database}.{src_table.address.name}"
-        )
-        LOGGER.info(
-            f"database:{src_table.address.database}, name:{src_table.address.name}"
-        )
-        LOGGER.info(f"src data: {src_data}")
-        # src_data = src_table.collect(is_spark=1)
-        src_data = src_data.toPandas().astype(str)
-        LOGGER.info(f"columns: {src_data.columns}")
-        header_source_item = list(src_data.columns)
-
-        id_delimiter = src_table.meta.get_id_delimiter()
-        LOGGER.info(f"id_delimiter: {id_delimiter}")
-        LOGGER.info(f"src_data: {src_data}")
-        src_data.applymap(lambda x: str(x))
-        f = functools.partial(self.convert_join, delimitor=id_delimiter)
-        src_data["result"] = src_data.agg(f, axis=1)
-        dest_data = src_data.iloc[:, [0, -1]]
-        dest_data.columns = ["key", "value"]
-        LOGGER.info(f"dest_data: {dest_data}")
-        LOGGER.info(
-            f"database:{dest_table.address.database}, name:{dest_table.address.name}"
-        )
-        dest_table.put_all(dest_data)
-        schema = {
-            "header": id_delimiter.join(header_source_item[1:]).strip(),
-            "sid": header_source_item[0].strip(),
-        }
-        dest_table.meta.update_metas(schema=schema)
-
-    def convert_join(self, x, delimitor=","):
-        import pickle
-
-        x = [str(i) for i in x]
-        return pickle.dumps(delimitor.join(x[1:])).hex()
+        return data_utils.convert_output(input_name, input_namespace, output_name, output_namespace, computing_engine,
+                                         output_storage_address)
 
     def save_table(self, src_table: StorageTableABC, dest_table: StorageTableABC):
         LOGGER.info(f"start copying table")
@@ -336,6 +213,8 @@ class Reader(ComponentBase):
             self.to_save(src_table, dest_table)
         else:
             TableStorage.copy_table(src_table, dest_table)
+            # update anonymous
+            self.create_anonymous(src_meta=src_table.meta, dest_meta=dest_table.meta)
 
     def to_save(self, src_table, dest_table):
         src_table_meta = src_table.meta
@@ -346,7 +225,6 @@ class Reader(ComponentBase):
             id_delimiter=src_table_meta.get_id_delimiter(),
             in_serialized=src_table_meta.get_in_serialized(),
         )
-        LOGGER.info(f"schema: {src_table_meta.get_schema()}")
         schema = src_table_meta.get_schema()
         self.tracker.job_tracker.save_output_data(
             src_computing_table,
@@ -357,7 +235,90 @@ class Reader(ComponentBase):
             schema=schema,
             need_read=False
         )
-        dest_table.meta.update_metas(schema=schema, part_of_data=src_table_meta.get_part_of_data(), count=src_table_meta.get_count())
+        schema = self.update_anonymous(computing_table=src_computing_table,schema=schema)
+        LOGGER.info(f"dest schema: {schema}")
+        dest_table.meta.update_metas(
+            schema=schema,
+            part_of_data=src_table_meta.get_part_of_data(),
+            count=src_table_meta.get_count(),
+            id_delimiter=src_table_meta.get_id_delimiter()
+        )
         LOGGER.info(
             f"save {dest_table.namespace} {dest_table.name} success"
         )
+
+    def update_anonymous(self, computing_table, schema):
+        if schema.get("meta"):
+            if "anonymous_header" not in schema:
+                schema.update(AnonymousGenerator.generate_header(computing_table, schema))
+                schema = AnonymousGenerator.generate_anonymous_header(schema=schema)
+            schema = AnonymousGenerator.update_anonymous_header_with_role(schema, self.tracker.role, self.tracker.party_id)
+        return schema
+
+    def create_anonymous(self, src_meta, dest_meta):
+        src_schema = src_meta.get_schema()
+        dest_schema = dest_meta.get_schema()
+        LOGGER.info(f"src schema: {src_schema}, dest schema {dest_schema}")
+        if src_schema.get("meta"):
+            if "anonymous_header" not in src_schema:
+                LOGGER.info("start to create anonymous")
+                dest_computing_table = session.get_computing_session().load(
+                    dest_meta.get_address(),
+                    schema=dest_meta.get_schema(),
+                    partitions=dest_meta.get_partitions(),
+                    id_delimiter=dest_meta.get_id_delimiter(),
+                    in_serialized=dest_meta.get_in_serialized(),
+                )
+                src_schema.update(AnonymousGenerator.generate_header(dest_computing_table, src_schema))
+                dest_schema.update(AnonymousGenerator.generate_header(dest_computing_table, dest_schema))
+                src_schema = AnonymousGenerator.generate_anonymous_header(schema=src_schema)
+                dest_schema = AnonymousGenerator.generate_anonymous_header(schema=dest_schema)
+                dest_schema = AnonymousGenerator.update_anonymous_header_with_role(dest_schema, self.tracker.role,
+                                                                                   self.tracker.party_id)
+                LOGGER.info(f"update src schema {src_schema} and dest schema {dest_schema}")
+                src_meta.update_metas(schema=src_schema)
+                dest_meta.update_metas(schema=dest_schema)
+            else:
+                dest_schema = AnonymousGenerator.update_anonymous_header_with_role(dest_schema, self.tracker.role,
+                                                                                   self.tracker.party_id)
+                LOGGER.info(f"update dest schema {dest_schema}")
+                dest_meta.update_metas(schema=dest_schema)
+
+    @staticmethod
+    def data_info_display(output_table_meta):
+        headers = output_table_meta.get_schema().get("header")
+        schema = output_table_meta.get_schema()
+        table_info = {}
+        anonymous_info = {}
+        attribute_info = {}
+        try:
+            if schema and headers:
+                if schema.get("original_index_info"):
+                    data_list = [AnonymousGenerator.reconstruct_header(schema)]
+                else:
+                    if isinstance(headers, str):
+                        data_list = [headers.split(",")]
+                    else:
+                        data_list = [[schema.get("label_name")] if schema.get("label_name") else []]
+                        data_list[0].extend(headers)
+                LOGGER.info(f"data info header: {data_list[0]}")
+                for data in output_table_meta.get_part_of_data():
+                    delimiter = schema.get("meta", {}).get("delimiter") or output_table_meta.id_delimiter
+                    data_list.append(data[1].split(delimiter))
+                data = np.array(data_list)
+                Tdata = data.transpose()
+                for data in Tdata:
+                    table_info[data[0]] = ",".join(list(set(data[1:]))[:5])
+            if schema and schema.get("anonymous_header"):
+                anonymous_info = dict(zip(schema.get("header"), schema.get("anonymous_header")))
+                attribute_info = dict(zip(schema.get("header"), ["feature"] * len(schema.get("header"))))
+                if schema.get("label_name"):
+                    anonymous_info[schema.get("label_name")] = schema.get("anonymous_label")
+                    attribute_info[schema.get("label_name")] = "label"
+                if schema.get("meta").get("id_list"):
+                    for id_name in schema.get("meta").get("id_list"):
+                        if id_name in attribute_info:
+                            attribute_info[id_name] = "match_id"
+        except Exception as e:
+            LOGGER.exception(e)
+        return table_info, anonymous_info, attribute_info

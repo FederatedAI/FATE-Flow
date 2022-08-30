@@ -158,6 +158,7 @@ All data needs to be fetched from the data store via the **Reader** module, note
 ### 3.5 Component Providers
 
 Since FATE-Flow version 1.7.0, the same FATE-Flow system supports loading multiple component providers, i.e. providers, which provide several components, and the source provider of the component can be configured when submitting a job
+Since FATE-Flow version 1.9.0, the parameters of the provider need to be configured in job conf, as follows
 
 **Description** Specify the provider, support global specification and individual component specification; if not specified, the default provider: `fate@$FATE_VERSION`
 
@@ -169,52 +170,25 @@ Since FATE-Flow version 1.7.0, the same FATE-Flow system supports loading multip
 
 ```json
 {
-  "provider": "fate@1.7.0",
-  "components": {
-    "reader_0": {
-      "module": "Reader",
-      "output": {
-        "data": [
-          "table"
-        ]
-      }
+  "dsl_version": "2",
+  "initiator": {},
+  "role": {},
+  "job_parameters": {},
+  "component_parameters": {},
+  "provider": {
+    "common": {
+      "hetero_feature_binning_0": "fate@1.8.0"
     },
-    "dataio_0": {
-      "module": "DataIO",
-      "provider": "fate@1.7.0",
-      "input": {
-        "data": {
-          "data": [
-            "reader_0.table"
-          ]
+    "role": {
+      "guest": {
+        "0": {
+          "data_transform_0": "fate@1.9.0"
         }
       },
-      "output": {
-        "data": [
-          "train"
-        ],
-        "model": [
-          "dataio"
-        ]
-      },
-      "need_deploy": true
-    },
-    "hetero_feature_binning_0": {
-      "module": "HeteroFeatureBinning",
-      "input": {
-        "data": {
-          "data": [
-            "dataio_0.train"
-          ]
+      "host": {
+        "0": {
+          "data_transform_0": "fate@1.9.0"
         }
-      },
-      "output": {
-        "data": [
-          "train"
-        ],
-        "model": [
-          "hetero_feature_binning"
-        ]
       }
     }
   }

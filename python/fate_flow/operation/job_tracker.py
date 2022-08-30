@@ -14,29 +14,24 @@
 #  limitations under the License.
 #
 import operator
-import copy
 import typing
 
+from fate_arch import session, storage
 from fate_arch.abc import CTableABC
-from fate_arch.common import EngineType, Party
-from fate_arch.common.data_utils import default_output_fs_path, default_output_info
-from fate_arch.computing import ComputingEngine
-from fate_arch.federation import FederationEngine
+from fate_arch.common import EngineType
+from fate_arch.common.base_utils import current_timestamp, deserialize_b64, serialize_b64
+from fate_arch.common.data_utils import default_output_info
 from fate_arch.storage import StorageEngine
-from fate_arch.common.base_utils import current_timestamp, serialize_b64, deserialize_b64, json_loads
-from fate_flow.utils.log_utils import schedule_logger
-from fate_flow.db.db_models import (DB, Job, TrackingOutputDataInfo,
-                                    ComponentSummary, MachineLearningModelInfo as MLModel)
-from fate_flow.entity import Metric, MetricMeta
-from fate_flow.entity import DataCache
-from fate_flow.db.runtime_config import RuntimeConfig
+
+from fate_flow.db.db_models import DB, ComponentSummary, TrackingOutputDataInfo
+from fate_flow.db.db_utils import bulk_insert_into_db
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.pipelined_model import pipelined_model
+from fate_flow.entity import DataCache, Metric, MetricMeta, RunParameters
 from fate_flow.manager.cache_manager import CacheManager
 from fate_flow.manager.metric_manager import MetricManager
-from fate_arch import storage, session
-from fate_flow.utils import model_utils, job_utils, data_utils
-from fate_flow.entity import RunParameters
+from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.utils import job_utils, model_utils
+from fate_flow.utils.log_utils import schedule_logger
 
 
 class Tracker(object):
@@ -60,8 +55,8 @@ class Tracker(object):
         self.job_parameters = job_parameters
         self.role = role
         self.party_id = party_id
-        self.component_name = component_name if component_name else job_utils.job_pipeline_component_name()
-        self.module_name = component_module_name if component_module_name else job_utils.job_pipeline_component_module_name()
+        self.component_name = component_name if component_name else job_utils.PIPELINE_COMPONENT_NAME
+        self.module_name = component_module_name if component_module_name else job_utils.PIPELINE_COMPONENT_MODULE_NAME
         self.task_id = task_id
         self.task_version = task_version
 
@@ -70,8 +65,7 @@ class Tracker(object):
         self.model_version = model_version
         self.pipelined_model = None
         if self.party_model_id and self.model_version:
-            self.pipelined_model = pipelined_model.PipelinedModel(model_id=self.party_model_id,
-                                                                  model_version=self.model_version)
+            self.pipelined_model = PipelinedModel(self.party_model_id, self.model_version)
         self.metric_manager = MetricManager(job_id=self.job_id, role=self.role, party_id=self.party_id, component_name=self.component_name, task_id=self.task_id, task_version=self.task_version)
 
     def save_metric_data(self, metric_namespace: str, metric_name: str, metrics: typing.List[Metric], job_level=False):
@@ -132,8 +126,6 @@ class Tracker(object):
             part_of_limit = JobDefaultConfig.output_data_summary_count_limit
             part_of_data = []
             if need_read:
-                match_id_name = computing_table.schema.get("match_id_name")
-                schedule_logger(self.job_id).info(f'match id name:{match_id_name}')
                 for k, v in computing_table.collect():
                     part_of_data.append((k, v))
                     part_of_limit -= 1
@@ -191,43 +183,6 @@ class Tracker(object):
 
                 output_tables_meta[output_data_info.f_data_name] = data_table_meta
         return output_tables_meta
-
-    def init_pipeline_model(self):
-        self.pipelined_model.create_pipelined_model()
-
-    def save_output_model(self, model_buffers: dict, model_alias: str):
-        if model_buffers:
-            self.pipelined_model.save_component_model(component_name=self.component_name,
-                                                      component_module_name=self.module_name,
-                                                      model_alias=model_alias,
-                                                      model_buffers=model_buffers)
-
-    def get_output_model(self, model_alias, parse=True, output_json=False):
-        return self.read_output_model(model_alias=model_alias,
-                                      parse=parse,
-                                      output_json=output_json)
-
-    def write_output_model(self, component_model):
-        self.pipelined_model.write_component_model(component_model)
-
-    def read_output_model(self, model_alias, parse=True, output_json=False):
-        return self.pipelined_model.read_component_model(component_name=self.component_name,
-                                                         model_alias=model_alias,
-                                                         parse=parse,
-                                                         output_json=output_json)
-
-    def collect_model(self):
-        model_buffers = self.pipelined_model.collect_models()
-        return model_buffers
-
-    def save_pipeline_model(self, pipeline_buffer_object):
-        self.pipelined_model.save_pipeline_model(pipeline_buffer_object)
-
-    def get_pipeline_model(self):
-        return self.pipelined_model.read_pipeline_model()
-
-    def get_component_define(self):
-        return self.pipelined_model.get_component_define(component_name=self.component_name)
 
     def save_output_cache(self, cache_data: typing.Dict[str, CTableABC], cache_meta: dict, cache_name, output_storage_engine, output_storage_address: dict, token=None):
         output_namespace, output_name = default_output_info(task_id=self.task_id, task_version=self.task_version, output_type="cache")
@@ -306,6 +261,7 @@ class Tracker(object):
 
     @DB.connection_context()
     def read_summary_from_db(self, need_deserialize=True):
+        cpn_summary = ""
         try:
             summary_model = self.get_dynamic_db_model(ComponentSummary, self.job_id)
             summary = summary_model.get_or_none(
@@ -316,17 +272,15 @@ class Tracker(object):
             )
             if summary:
                 cpn_summary = deserialize_b64(summary.f_summary) if need_deserialize else summary.f_summary
-            else:
-                cpn_summary = ""
         except Exception as e:
             schedule_logger(self.job_id).exception(e)
-            raise e
         return cpn_summary
 
     @DB.connection_context()
     def reload_summary(self, source_tracker):
         cpn_summary = source_tracker.read_summary_from_db(need_deserialize=False)
-        self.insert_summary_into_db(cpn_summary, need_serialize=False)
+        if cpn_summary:
+            self.insert_summary_into_db(cpn_summary, need_serialize=False)
 
     def log_output_data_info(self, data_name: str, table_namespace: str, table_name: str):
         self.insert_output_data_info_into_db(data_name=data_name, table_namespace=table_namespace, table_name=table_name)
@@ -345,8 +299,11 @@ class Tracker(object):
             tracking_output_data_info.f_table_namespace = table_namespace
             tracking_output_data_info.f_table_name = table_name
             tracking_output_data_info.f_create_time = current_timestamp()
-            self.bulk_insert_into_db(self.get_dynamic_db_model(TrackingOutputDataInfo, self.job_id),
-                                     [tracking_output_data_info.to_dict()])
+
+            bulk_insert_into_db(
+                self.get_dynamic_db_model(TrackingOutputDataInfo, self.job_id),
+                (tracking_output_data_info.to_dict(), ),
+            )
         except Exception as e:
             schedule_logger(self.job_id).exception("An exception where inserted output data info {} {} {} to database:\n{}".format(
                 data_name,
@@ -354,22 +311,6 @@ class Tracker(object):
                 table_name,
                 e
             ))
-
-    @DB.connection_context()
-    def bulk_insert_into_db(self, model, data_source):
-        try:
-            try:
-                DB.create_tables([model])
-            except Exception as e:
-                schedule_logger(self.job_id).exception(e)
-            batch_size = 50 if RuntimeConfig.USE_LOCAL_DATABASE else 1000
-            for i in range(0, len(data_source), batch_size):
-                with DB.atomic():
-                    model.insert_many(data_source[i:i+batch_size]).execute()
-            return len(data_source)
-        except Exception as e:
-            schedule_logger(self.job_id).exception(e)
-            return 0
 
     def save_as_table(self, computing_table, name, namespace):
         if self.job_parameters.storage_engine == StorageEngine.LINKIS_HIVE:
@@ -434,117 +375,13 @@ class Tracker(object):
     def get_output_data_group_key(cls, task_id, data_name):
         return task_id + data_name
 
-    def clean_task(self, runtime_conf):
-        schedule_logger(self.job_id).info('clean task {} {} on {} {}'.format(self.task_id,
-                                                                             self.task_version,
-                                                                             self.role,
-                                                                             self.party_id))
-        try:
-            with session.Session() as sess:
-                # clean up temporary tables
-                computing_temp_namespace = job_utils.generate_session_id(task_id=self.task_id,
-                                                                         task_version=self.task_version,
-                                                                         role=self.role,
-                                                                         party_id=self.party_id)
-                if self.job_parameters.computing_engine == ComputingEngine.EGGROLL:
-                    session_options = {"eggroll.session.processors.per.node": 1}
-                else:
-                    session_options = {}
-                try:
-                    if self.job_parameters.computing_engine != ComputingEngine.LINKIS_SPARK:
-                        sess.init_computing(computing_session_id=f"{computing_temp_namespace}_clean", options=session_options)
-                        sess.computing.cleanup(namespace=computing_temp_namespace, name="*")
-                        schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(computing_temp_namespace,
-                                                                                                             self.role,
-                                                                                                             self.party_id))
-                        # clean up the last tables of the federation
-                        federation_temp_namespace = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                        sess.computing.cleanup(namespace=federation_temp_namespace, name="*")
-                        schedule_logger(self.job_id).info('clean table by namespace {} on {} {} done'.format(federation_temp_namespace,
-                                                                                                             self.role,
-                                                                                                             self.party_id))
-                    if self.job_parameters.federation_engine == FederationEngine.RABBITMQ and self.role != "local":
-                        schedule_logger(self.job_id).info('rabbitmq start clean up')
-                        parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]
-                        federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                        component_parameters_on_party = copy.deepcopy(runtime_conf)
-                        component_parameters_on_party["local"] = {"role": self.role, "party_id": self.party_id}
-                        sess.init_federation(federation_session_id=federation_session_id,
-                                             runtime_conf=component_parameters_on_party,
-                                             service_conf=self.job_parameters.engines_address.get(EngineType.FEDERATION, {}))
-                        sess._federation_session.cleanup(parties)
-                        schedule_logger(self.job_id).info('rabbitmq clean up success')
-
-                    #TODO optimize the clean process
-                    if self.job_parameters.federation_engine == FederationEngine.PULSAR and self.role != "local":
-                        schedule_logger(self.job_id).info('start to clean up pulsar topics')
-                        parties = [Party(k, p) for k, v in runtime_conf['role'].items() for p in v]
-                        federation_session_id = job_utils.generate_task_version_id(self.task_id, self.task_version)
-                        component_parameters_on_party = copy.deepcopy(runtime_conf)
-                        component_parameters_on_party["local"] = {"role": self.role, "party_id": self.party_id}
-                        sess.init_federation(federation_session_id=federation_session_id,
-                                             runtime_conf=component_parameters_on_party,
-                                             service_conf=self.job_parameters.engines_address.get(EngineType.FEDERATION, {}))
-                        sess._federation_session.cleanup(parties)
-                        schedule_logger(self.job_id).info('pulsar topic clean up success')
-                except Exception as e:
-                    schedule_logger(self.job_id).exception("cleanup error")
-                finally:
-                    sess.destroy_all_sessions()
-                return True
-        except Exception as e:
-            schedule_logger(self.job_id).exception(e)
-            return False
-
-    @DB.connection_context()
-    def save_machine_learning_model_info(self):
-        try:
-            record = MLModel.get_or_none(MLModel.f_model_version == self.job_id,
-                                         MLModel.f_role == self.role,
-                                         MLModel.f_model_id == self.model_id,
-                                         MLModel.f_party_id == self.party_id)
-            if not record:
-                job = Job.get_or_none(Job.f_job_id == self.job_id)
-                pipeline = self.pipelined_model.read_pipeline_model()
-                if job:
-                    job_data = job.to_dict()
-                    model_info = {
-                        'job_id': job_data.get("f_job_id"),
-                        'role': self.role,
-                        'party_id': self.party_id,
-                        'roles': job_data.get("f_roles"),
-                        'model_id': self.model_id,
-                        'model_version': self.model_version,
-                        'initiator_role': job_data.get('f_initiator_role'),
-                        'initiator_party_id': job_data.get('f_initiator_party_id'),
-                        'runtime_conf': job_data.get('f_runtime_conf'),
-                        'work_mode': job_data.get('f_work_mode'),
-                        'train_dsl': job_data.get('f_dsl'),
-                        'train_runtime_conf': job_data.get('f_train_runtime_conf'),
-                        'size': self.get_model_size(),
-                        'job_status': job_data.get('f_status'),
-                        'parent': pipeline.parent,
-                        'fate_version': pipeline.fate_version,
-                        'runtime_conf_on_party': json_loads(pipeline.runtime_conf_on_party),
-                        'parent_info': json_loads(pipeline.parent_info),
-                        'inference_dsl': json_loads(pipeline.inference_dsl)
-                    }
-                    model_utils.save_model_info(model_info)
-
-                    schedule_logger(self.job_id).info(
-                        'save {} model info done. model id: {}, model version: {}.'.format(self.job_id,
-                                                                                           self.model_id,
-                                                                                           self.model_version))
-                else:
-                    schedule_logger(self.job_id).info(
-                        'save {} model info failed, no job found in db. '
-                        'model id: {}, model version: {}.'.format(self.job_id,
-                                                                  self.model_id,
-                                                                  self.model_version))
-            else:
-                schedule_logger(self.job_id).info('model {} info has already existed in database.'.format(self.job_id))
-        except Exception as e:
-            schedule_logger(self.job_id).exception(e)
+    def clean_task(self):
+        schedule_logger(self.job_id).info(
+            'clean task {} {} on {} {}'.format(self.task_id, self.task_version, self.role, self.party_id))
+        session_id = job_utils.generate_session_id(self.task_id, self.task_version, self.role, self.party_id)
+        sess = session.Session(session_id=session_id, options={"logger": schedule_logger(self.job_id)})
+        sess.destroy_all_sessions()
+        return True
 
     @classmethod
     def get_dynamic_db_model(cls, base, job_id):
@@ -553,6 +390,3 @@ class Tracker(object):
     @classmethod
     def get_dynamic_tracking_table_index(cls, job_id):
         return job_id[:8]
-
-    def get_model_size(self):
-        return self.pipelined_model.calculate_model_file_size()

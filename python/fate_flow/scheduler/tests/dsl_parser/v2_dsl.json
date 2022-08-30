@@ -8,8 +8,8 @@
                 ]
             }
         },
-        "dataio_0": {
-            "module": "DataIO",
+        "data_transform_0": {
+            "module": "DataTransform",
             "input": {
                 "data": {
                     "data": [
@@ -25,14 +25,14 @@
                     "model"
                 ]
             },
-			"provider": "fate@1.7.0"
+			"provider": "fate@1.8.0"
         },
         "intersection_0": {
             "module": "Intersection",
             "input": {
                 "data": {
                     "data": [
-                        "dataio_0.data"
+                        "data_transform_0.data"
                     ]
                 }
             },
@@ -41,7 +41,7 @@
                     "data"
                 ]
             },
-			"provider": "fate_federated_algorithm"
+			"provider": "fate"
         },
         "feature_scale_0": {
             "module": "FeatureScale",

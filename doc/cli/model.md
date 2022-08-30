@@ -95,22 +95,12 @@ flow model import -c examples/model/restore_model.json --from-database
 ```json
 {
   "data": {
-    "board_url": "http://127.0.0.1:8080/index.html#/dashboard?job_id=202111091125358161430&role=local&party_id=0",
-    "code": 0,
-    "dsl_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/job_dsl.json",
-    "job_id": "202111091125358161430",
-    "logs_directory": "/root/Codes/FATE-Flow/logs/202111091125358161430",
-    "message": "success",
-    "model_info": {
-      "model_id": "local-0#model",
-      "model_version": "202111091125358161430"
-    },
-    "pipeline_dsl_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/pipeline_dsl.json",
-    "runtime_conf_on_party_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/local/0/job_runtime_on_party_conf.json",
-    "runtime_conf_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/job_runtime_conf.json",
-    "train_runtime_conf_path": "/root/Codes/FATE-Flow/jobs/202111091125358161430/train_runtime_conf.json"
+    "job_id": "202208261102212849780",
+    "model_id": "arbiter-10000#guest-9999#host-10000#model",
+    "model_version": "foobar",
+    "party_id": "9999",
+    "role": "guest"
   },
-  "jobId": "202111091125358161430",
   "retcode": 0,
   "retmsg": "success"
 }

@@ -17,6 +17,8 @@ import operator
 from functools import reduce
 from typing import Dict, Type, Union
 
+from fate_arch.common.base_utils import current_timestamp, timestamp_to_date
+
 from fate_flow.db.db_models import DB, DataBaseModel
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.utils.log_utils import getLogger
@@ -26,20 +28,29 @@ LOGGER = getLogger()
 
 
 @DB.connection_context()
-def bulk_insert_into_db(model, data_source, logger):
-    try:
-        try:
-            DB.create_tables([model])
-        except Exception as e:
-            logger.exception(e)
-        batch_size = 50 if RuntimeConfig.USE_LOCAL_DATABASE else 1000
-        for i in range(0, len(data_source), batch_size):
-            with DB.atomic():
-                model.insert_many(data_source[i:i + batch_size]).execute()
-        return len(data_source)
-    except Exception as e:
-        logger.exception(e)
-        return 0
+def bulk_insert_into_db(model, data_source, replace=False):
+    DB.create_tables([model])
+
+    current_time = current_timestamp()
+    current_date = timestamp_to_date(current_time)
+
+    for data in data_source:
+        if 'f_create_time' not in data:
+            data['f_create_time'] = current_time
+        data['f_create_date'] = timestamp_to_date(data['f_create_time'])
+        data['f_update_time'] = current_time
+        data['f_update_date'] = current_date
+
+    preserve = tuple(data_source[0].keys() - {'f_create_time', 'f_create_date'})
+
+    batch_size = 50 if RuntimeConfig.USE_LOCAL_DATABASE else 1000
+
+    for i in range(0, len(data_source), batch_size):
+        with DB.atomic():
+            query = model.insert_many(data_source[i:i + batch_size])
+            if replace:
+                query = query.on_conflict(preserve=preserve)
+            query.execute()
 
 
 def get_dynamic_db_model(base, job_id):

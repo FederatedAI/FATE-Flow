@@ -17,6 +17,7 @@ Providing production-level service capabilities:
 - Real-Time Job Monitoring
 - Multi-Party Federated Model Registry
 - Multi-Party Cooperation Authority Management
+- High Availability
 - CLI, REST API, Python API
 
 For detailed introduction, please refer to [FATE Flow Overall Design](https://federatedai.github.io/FATE-Flow/latest/fate_flow/#overall-design)

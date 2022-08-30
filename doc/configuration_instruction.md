@@ -16,13 +16,51 @@ use_registry: false
 # Whether to enable higher security serialization mode
 use_deserialize_safe_module: false
 dependent_distribution: false
+# party id： required for site authentication
+party_id:
+# Hook module configuration
+hook_module:
+  # Client authentication hooks
+  client_authentication: fate_flow.hook.flow.client_authentication
+  # site-side authentication hooks
+  site_authentication: fate_flow.hook.flow.site_authentication
+  # Permission authentication hooks
+  permission: fate_flow.hook.flow.permission
+# In addition to using flow's hooks for authentication and authentication, we also support authentication and authentication interfaces registered with third-party services
+# The name of the service registered by the third-party authentication and authentication service
+hook_server_name:
+# Authentication
+authentication:
+  # Client authentication configuration
+  client:
+    # Client authentication switch
+    switch: false
+    http_app_key:
+    http_secret_key:
+  # Site authentication configuration
+  site:
+    # Authentication switch
+    switch: false
+# Authentication
+permission:
+  # Authentication switch
+  switch: false
+  # Component authentication switch
+  component: false
+  # Data set authentication switch
+  dataset: false
 fateflow:
   # you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported
   host: 127.0.0.1
   http_port: 9380
   grpc_port: 9360
-  http_app_key:
-  http_secret_key:
+  # The nginx address needs to be configured for high availability
+  nginx:
+    host:
+    http_port:
+    grpc_port:
+  # use random instance_id instead of {host}:{http_port}
+  random_instance_id: false
   # support rollsite/nginx/fateflow as a coordination proxy
   # rollsite support fate on eggroll, use grpc protocol
   # nginx support fate on eggroll and fate on spark, use http or grpc protocol, default is http

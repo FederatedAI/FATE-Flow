@@ -16,31 +16,32 @@
 import os
 import shutil
 
-from fate_arch.common import EngineType
-from fate_arch.common import engine_utils
-from fate_arch.common.base_utils import json_dumps, current_timestamp
+from fate_arch.common import EngineType, engine_utils
+from fate_arch.common.base_utils import current_timestamp, json_dumps
 from fate_arch.computing import ComputingEngine
+
 from fate_flow.controller.task_controller import TaskController
+from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RunParameters
-from fate_flow.entity.run_status import JobStatus, EndStatus, TaskStatus
-from fate_flow.entity.run_status import JobStatus, EndStatus, JobInheritanceStatus
-from fate_flow.entity.types import InputSearchType, WorkerName
+from fate_flow.entity.run_status import EndStatus, JobInheritanceStatus, JobStatus, TaskStatus
+from fate_flow.entity.types import RetCode, WorkerName
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.model.checkpoint import CheckpointManager
+from fate_flow.model.sync_model import SyncComponent
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.pipelined_model.pipelined_model import PipelinedModel
+from fate_flow.pipelined_model.pipelined_model import PipelinedComponent
 from fate_flow.protobuf.python import pipeline_pb2
-from fate_flow.settings import USE_AUTHENTICATION, USE_DATA_AUTHENTICATION, ENGINES
-from fate_flow.utils import job_utils, schedule_utils, data_utils, log_utils, model_utils
-from fate_flow.utils.authentication_utils import authentication_check
-from fate_flow.utils.authentication_utils import data_authentication_check
+from fate_flow.scheduler.federated_scheduler import FederatedScheduler
+from fate_flow.settings import ENABLE_MODEL_STORE, ENGINES
+from fate_flow.utils import data_utils, job_utils, log_utils, schedule_utils
+from fate_flow.utils.job_utils import get_job_dataset
 from fate_flow.utils.log_utils import schedule_logger
-from fate_flow.entity.types import TaskCleanResourceType
+from fate_flow.utils.model_utils import gather_model_info_data, save_model_info
 
 
 class JobController(object):
@@ -50,13 +51,12 @@ class JobController(object):
         dsl = job_info['dsl']
         runtime_conf = job_info['runtime_conf']
         train_runtime_conf = job_info['train_runtime_conf']
-        if USE_AUTHENTICATION:
-            authentication_check(src_role=job_info.get('src_role', None), src_party_id=job_info.get('src_party_id', None),
-                                 dsl=dsl, runtime_conf=runtime_conf, role=role, party_id=party_id)
 
-        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=dsl,
-                                                       runtime_conf=runtime_conf,
-                                                       train_runtime_conf=train_runtime_conf)
+        dsl_parser = schedule_utils.get_job_dsl_parser(
+            dsl=dsl,
+            runtime_conf=runtime_conf,
+            train_runtime_conf=train_runtime_conf
+        )
         job_parameters = dsl_parser.get_job_parameters(runtime_conf)
         schedule_logger(job_id).info('job parameters:{}'.format(job_parameters))
         dest_user = job_parameters.get(role, {}).get(party_id, {}).get('user', '')
@@ -68,17 +68,6 @@ class JobController(object):
             user[_role] = {}
             for _party_id, _parameters in party_id_item.items():
                 user[_role][_party_id] = _parameters.get("user", "")
-        schedule_logger(job_id).info('job user:{}'.format(user))
-        if USE_DATA_AUTHENTICATION:
-            job_args = dsl_parser.get_args_input()
-            schedule_logger(job_id).info('job args:{}'.format(job_args))
-            dataset_dict = cls.get_dataset(False, role, party_id, runtime_conf.get("role"), job_args)
-            dataset_list = []
-            if dataset_dict.get(role, {}).get(party_id):
-                for k, v in dataset_dict[role][party_id].items():
-                    dataset_list.append({"namespace": v.split('.')[0], "table_name": v.split('.')[1]})
-            data_authentication_check(src_role=job_info.get('src_role'), src_party_id=job_info.get('src_party_id'),
-                                      src_user=src_user, dest_user=dest_user, dataset_list=dataset_list)
         job_parameters = RunParameters(**job_parameters.get(role, {}).get(party_id, {}))
 
         # save new job into db
@@ -100,8 +89,16 @@ class JobController(object):
         job_info["runtime_conf_on_party"]["job_parameters"] = job_parameters.to_dict()
         JobSaver.create_job(job_info=job_info)
         schedule_logger(job_id).info("start initialize tasks")
-        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id, role=role, party_id=party_id, run_on_this_party=True,
-                                                                  initiator_role=job_info["initiator_role"], initiator_party_id=job_info["initiator_party_id"], job_parameters=job_parameters, dsl_parser=dsl_parser)
+        initialized_result, provider_group = cls.initialize_tasks(job_id=job_id,
+                                                                  role=role,
+                                                                  party_id=party_id,
+                                                                  run_on_this_party=True,
+                                                                  initiator_role=job_info["initiator_role"],
+                                                                  initiator_party_id=job_info["initiator_party_id"],
+                                                                  job_parameters=job_parameters,
+                                                                  dsl_parser=dsl_parser,
+                                                                  runtime_conf=runtime_conf,
+                                                                  check_version=True)
         schedule_logger(job_id).info("initialize tasks success")
         for provider_key, group_info in provider_group.items():
             for cpn in group_info["components"]:
@@ -274,7 +271,9 @@ class JobController(object):
         return initialized_result
 
     @classmethod
-    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id, job_parameters: RunParameters = None, dsl_parser=None, components: list = None, **kwargs):
+    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id,
+                         job_parameters: RunParameters = None, dsl_parser=None, components: list = None,
+                         runtime_conf=None, check_version=False, is_scheduler=False, **kwargs):
         common_task_info = {}
         common_task_info["job_id"] = job_id
         common_task_info["initiator_role"] = initiator_role
@@ -287,10 +286,18 @@ class JobController(object):
         common_task_info["auto_retries"] = kwargs.get("auto_retries", job_parameters.auto_retries if job_parameters else None)
         common_task_info["auto_retry_delay"] = kwargs.get("auto_retry_delay", job_parameters.auto_retry_delay if job_parameters else None)
         common_task_info["task_version"] = kwargs.get("task_version")
+        if role == "local":
+            common_task_info["run_ip"] = RuntimeConfig.JOB_SERVER_HOST
+            common_task_info["run_port"] = RuntimeConfig.HTTP_PORT
         if dsl_parser is None:
-            dsl_parser = schedule_utils.get_job_dsl_parser_by_job_id(job_id)
+            dsl_parser, runtime_conf, dsl = schedule_utils.get_job_dsl_parser_by_job_id(job_id)
         provider_group = ProviderManager.get_job_provider_group(dsl_parser=dsl_parser,
-                                                                components=components)
+                                                                runtime_conf=runtime_conf,
+                                                                components=components,
+                                                                role=role,
+                                                                party_id=party_id,
+                                                                check_version=check_version,
+                                                                is_scheduler=is_scheduler)
         initialized_result = {}
         for group_key, group_info in provider_group.items():
             initialized_config = {}
@@ -331,8 +338,7 @@ class JobController(object):
                           model_id=job_parameters.model_id,
                           model_version=job_parameters.model_version,
                           job_parameters=job_parameters)
-        if job_parameters.job_type != "predict":
-            tracker.init_pipeline_model()
+
         partner = {}
         show_role = {}
         for _role, _role_party in roles.items():
@@ -352,43 +358,8 @@ class JobController(object):
                         partner[_role].append(_party_id)
 
         job_args = dsl_parser.get_args_input()
-        dataset = cls.get_dataset(
-            is_initiator, role, party_id, roles, job_args)
-        tracker.log_job_view(
-            {'partner': partner, 'dataset': dataset, 'roles': show_role})
-
-    @classmethod
-    def get_dataset(cls, is_initiator, role, party_id, roles, job_args):
-        dataset = {}
-        dsl_version = 1
-        if job_args.get('dsl_version'):
-            if job_args.get('dsl_version') == 2:
-                dsl_version = 2
-        for _role, _role_party_args in job_args.items():
-            if _role == "dsl_version":
-                continue
-            if is_initiator or _role == role:
-                for _party_index in range(len(_role_party_args)):
-                    _party_id = roles[_role][_party_index]
-                    if is_initiator or _party_id == party_id:
-                        dataset[_role] = dataset.get(_role, {})
-                        dataset[_role][_party_id] = dataset[_role].get(
-                            _party_id, {})
-                        if dsl_version == 1:
-                            for _data_type, _data_location in _role_party_args[_party_index]['args']['data'].items():
-                                dataset[_role][_party_id][_data_type] = '{}.{}'.format(
-                                    _data_location['namespace'], _data_location['name'])
-                        else:
-                            for key in _role_party_args[_party_index].keys():
-                                for _data_type, _data_location in _role_party_args[_party_index][key].items():
-                                    search_type = data_utils.get_input_search_type(parameters=_data_location)
-                                    if search_type is InputSearchType.TABLE_INFO:
-                                        dataset[_role][_party_id][key] = '{}.{}'.format(_data_location['namespace'], _data_location['name'])
-                                    elif search_type is InputSearchType.JOB_COMPONENT_OUTPUT:
-                                        dataset[_role][_party_id][key] = '{}.{}.{}'.format(_data_location['job_id'], _data_location['component_name'], _data_location['data_name'])
-                                    else:
-                                        dataset[_role][_party_id][key] = "unknown"
-        return dataset
+        dataset = get_job_dataset(is_initiator, role, party_id, roles, job_args)
+        tracker.log_job_view({'partner': partner, 'dataset': dataset, 'roles': show_role})
 
     @classmethod
     def query_job_input_args(cls, input_data, role, party_id):
@@ -464,8 +435,10 @@ class JobController(object):
         for task in tasks:
             if task.f_status in [TaskStatus.SUCCESS, TaskStatus.WAITING, TaskStatus.PASS]:
                 continue
-            kill_task_status = TaskController.stop_task(
-                task=task, stop_status=stop_status)
+            kill_task_status = False
+            status, response = FederatedScheduler.stop_task(job=job, task=task, stop_status=stop_status)
+            if status == RetCode.SUCCESS:
+                kill_task_status = True
             kill_status = kill_status & kill_task_status
             kill_details[task.f_task_id] = 'success' if kill_task_status else 'failed'
         if kill_status:
@@ -477,60 +450,96 @@ class JobController(object):
 
     @classmethod
     def save_pipelined_model(cls, job_id, role, party_id):
-        schedule_logger(job_id).info(f"start to save pipeline model on {role} {party_id}")
-        job_configuration = job_utils.get_job_configuration(job_id=job_id, role=role,
-                                                            party_id=party_id)
-        runtime_conf_on_party = job_configuration.runtime_conf_on_party
-        job_parameters = runtime_conf_on_party.get('job_parameters', {})
-        if role in job_parameters.get("assistant_role", []):
+        if role == 'local':
+            schedule_logger(job_id).info('A job of local role does not need to save pipeline model')
             return
+
+        schedule_logger(job_id).info(f'start to save pipeline model on {role} {party_id}')
+
+        job_configuration = job_utils.get_job_configuration(job_id, role, party_id)
+
+        runtime_conf_on_party = job_configuration.runtime_conf_on_party
+        job_parameters = runtime_conf_on_party['job_parameters']
+
         model_id = job_parameters['model_id']
         model_version = job_parameters['model_version']
         job_type = job_parameters.get('job_type', '')
         roles = runtime_conf_on_party['role']
         initiator_role = runtime_conf_on_party['initiator']['role']
         initiator_party_id = runtime_conf_on_party['initiator']['party_id']
-        if job_type == 'predict':
-            return
-        dsl_parser = schedule_utils.get_job_dsl_parser(dsl=job_configuration.dsl,
-                                                       runtime_conf=job_configuration.runtime_conf,
-                                                       train_runtime_conf=job_configuration.train_runtime_conf)
+        assistant_role = job_parameters.get('assistant_role', [])
 
-        components_parameters = {}
-        tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, only_latest=True)
-        for task in tasks:
-            components_parameters[task.f_component_name] = task.f_component_parameters
-        predict_dsl = schedule_utils.fill_inference_dsl(dsl_parser, origin_inference_dsl=job_configuration.dsl, components_parameters=components_parameters)
+        if role in set(assistant_role) or job_type == 'predict':
+            return
+
+        dsl_parser = schedule_utils.get_job_dsl_parser(
+            dsl=job_configuration.dsl,
+            runtime_conf=job_configuration.runtime_conf,
+            train_runtime_conf=job_configuration.train_runtime_conf,
+        )
+
+        tasks = JobSaver.query_task(
+            job_id=job_id,
+            role=role,
+            party_id=party_id,
+            only_latest=True,
+        )
+        components_parameters = {
+            task.f_component_name: task.f_component_parameters for task in tasks
+        }
+
+        predict_dsl = schedule_utils.fill_inference_dsl(dsl_parser, job_configuration.dsl, components_parameters)
 
         pipeline = pipeline_pb2.Pipeline()
-        pipeline.inference_dsl = json_dumps(predict_dsl, byte=True)
-        pipeline.train_dsl = json_dumps(job_configuration.dsl, byte=True)
-        pipeline.train_runtime_conf = json_dumps(job_configuration.runtime_conf, byte=True)
-        pipeline.fate_version = RuntimeConfig.get_env("FATE")
+
+        pipeline.roles = json_dumps(roles, byte=True)
+
         pipeline.model_id = model_id
         pipeline.model_version = model_version
 
-        pipeline.parent = True
-        pipeline.loaded_times = 0
-        pipeline.roles = json_dumps(roles, byte=True)
         pipeline.initiator_role = initiator_role
         pipeline.initiator_party_id = initiator_party_id
-        pipeline.runtime_conf_on_party = json_dumps(
-            runtime_conf_on_party, byte=True)
-        pipeline.parent_info = json_dumps({}, byte=True)
 
-        tracker = Tracker(job_id=job_id, role=role, party_id=party_id,
-                          model_id=model_id, model_version=model_version, job_parameters=RunParameters(**job_parameters))
-        tracker.save_pipeline_model(pipeline_buffer_object=pipeline)
-        if role != 'local':
-            tracker.save_machine_learning_model_info()
-        schedule_logger(job_id).info(f"save pipeline on {role} {party_id} successfully")
+        pipeline.train_dsl = json_dumps(job_configuration.dsl, byte=True)
+        pipeline.train_runtime_conf = json_dumps(job_configuration.runtime_conf, byte=True)
+        pipeline.runtime_conf_on_party = json_dumps(runtime_conf_on_party, byte=True)
+        pipeline.inference_dsl = json_dumps(predict_dsl, byte=True)
+
+        pipeline.fate_version = RuntimeConfig.get_env('FATE')
+        pipeline.parent = True
+        pipeline.parent_info = json_dumps({}, byte=True)
+        pipeline.loaded_times = 0
+
+        tracker = Tracker(
+            job_id=job_id, role=role, party_id=party_id,
+            model_id=model_id, model_version=model_version,
+            job_parameters=RunParameters(**job_parameters),
+        )
+
+        if ENABLE_MODEL_STORE:
+            query = tracker.pipelined_model.pipelined_component.get_define_meta_from_db()
+            for row in query:
+                sync_component = SyncComponent(
+                    role=role, party_id=party_id,
+                    model_id=model_id, model_version=model_version,
+                    component_name=row.f_component_name,
+                )
+                if not sync_component.local_exists() and sync_component.remote_exists():
+                    sync_component.download()
+
+        tracker.pipelined_model.save_pipeline_model(pipeline)
+
+        model_info = gather_model_info_data(tracker.pipelined_model)
+        save_model_info(model_info)
+
+        schedule_logger(job_id).info(f'save pipeline on {role} {party_id} successfully')
 
     @classmethod
     def clean_job(cls, job_id, role, party_id, roles):
-        schedule_logger(job_id).info(f"start to clean job on {role} {party_id}")
-        # todo
-        schedule_logger(job_id).info(f"job on {role} {party_id} clean done")
+        pass
+        # schedule_logger(job_id).info(f"start to clean job on {role} {party_id}")
+        # TODO: clean job
+        # schedule_logger(job_id).info(f"job on {role} {party_id} clean done")
 
     @classmethod
     def job_reload(cls, job):
@@ -631,48 +640,58 @@ class JobController(object):
             JobSaver.reload_task(source_task, target_tasks[key])
 
         # update job status
-        JobSaver.update_job(job_info={"job_id": job.f_job_id, "role": job.f_role, "party_id": job.f_party_id, "inheritance_status": JobInheritanceStatus.SUCCESS})
+        JobSaver.update_job(job_info={
+            "job_id": job.f_job_id,
+            "role": job.f_role,
+            "party_id": job.f_party_id,
+            "inheritance_status": JobInheritanceStatus.SUCCESS,
+        })
         schedule_logger(job.f_job_id).info("reload status success")
 
     @classmethod
     def output_model_reload(cls, job, source_job):
-        source_model_id = model_utils.gen_party_model_id(
-            source_job.f_runtime_conf.get("job_parameters").get("common").get("model_id"),
-            job.f_role,
-            job.f_party_id
+        source_pipelined_component = PipelinedComponent(
+            role=source_job.f_role, party_id=source_job.f_party_id,
+            model_id=source_job.f_runtime_conf['job_parameters']['common']['model_id'],
+            model_version=source_job.f_job_id,
         )
-        model_id = model_utils.gen_party_model_id(
-            job.f_runtime_conf.get("job_parameters").get("common").get("model_id"),
-            job.f_role,
-            job.f_party_id
+        target_pipelined_component = PipelinedComponent(
+            role=job.f_role, party_id=job.f_party_id,
+            model_id=job.f_runtime_conf['job_parameters']['common']['model_id'],
+            model_version=job.f_job_id,
         )
-        PipelinedModel(
-            model_id=model_id,
-            model_version=job.f_job_id
-        ).reload_component_model(
-            model_id=source_model_id,
-            model_version=job.f_inheritance_info.get("job_id"),
-            component_list=job.f_inheritance_info.get("component_list")
+
+        query_args = (
+            PipelineComponentMeta.f_component_name.in_(
+                job.f_inheritance_info['component_list'],
+            ),
         )
+
+        query = source_pipelined_component.get_define_meta_from_db(*query_args)
+        for row in query:
+            shutil.copytree(
+                source_pipelined_component.variables_data_path / row.f_component_name,
+                target_pipelined_component.variables_data_path / row.f_component_name,
+            )
+
+        source_pipelined_component.replicate_define_meta({
+            'f_model_id': target_pipelined_component.model_id,
+            'f_model_version': target_pipelined_component.model_version,
+        }, query_args)
 
     @classmethod
     def checkpoint_reload(cls, job, source_job):
-        for component_name in job.f_inheritance_info.get("component_list"):
-            path = CheckpointManager(
-                role=job.f_role,
-                party_id=job.f_party_id,
-                component_name=component_name,
-                model_version=job.f_inheritance_info.get("job_id"),
-                model_id=source_job.f_runtime_conf.get("job_parameters").get("common").get("model_id")
+        for component_name in job.f_inheritance_info['component_list']:
+            source_path = CheckpointManager(
+                role=source_job.f_role, party_id=source_job.f_party_id,
+                model_id=source_job.f_runtime_conf['job_parameters']['common']['model_id'],
+                model_version=source_job.f_job_id, component_name=component_name,
             ).directory
             target_path = CheckpointManager(
-                role=job.f_role,
-                party_id=job.f_party_id,
-                component_name=component_name,
-                model_version=job.f_job_id,
-                model_id=job.f_runtime_conf.get("job_parameters").get("common").get("model_id")
+                role=job.f_role, party_id=job.f_party_id,
+                model_id=job.f_runtime_conf['job_parameters']['common']['model_id'],
+                model_version=job.f_job_id, component_name=component_name,
             ).directory
-            if os.path.exists(path):
-                if os.path.exists(target_path):
-                    shutil.rmtree(target_path)
-                shutil.copytree(path, target_path)
+
+            if os.path.exists(source_path):
+                shutil.copytree(source_path, target_path)

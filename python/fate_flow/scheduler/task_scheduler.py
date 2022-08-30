@@ -36,6 +36,7 @@ class TaskScheduler(object):
         initiator_tasks_group = JobSaver.get_tasks_asc(job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id)
         waiting_tasks = []
         auto_rerun_tasks = []
+        job_interrupt = False
         for initiator_task in initiator_tasks_group.values():
             if job.f_runtime_conf_on_party["job_parameters"]["federated_status_collect_type"] == FederatedCommunicationType.PULL:
                 # collect all parties task party status and store it in the database now
@@ -45,16 +46,21 @@ class TaskScheduler(object):
                 pass
             # get all parties party task status and calculate
             new_task_status = cls.get_federated_task_status(job_id=initiator_task.f_job_id, task_id=initiator_task.f_task_id, task_version=initiator_task.f_task_version)
+            task_interrupt = False
             task_status_have_update = False
             if new_task_status != initiator_task.f_status:
                 task_status_have_update = True
                 initiator_task.f_status = new_task_status
                 FederatedScheduler.sync_task_status(job=job, task=initiator_task)
-
+            if InterruptStatus.contains(new_task_status):
+                task_interrupt = True
+                job_interrupt = True
             if initiator_task.f_status == TaskStatus.WAITING:
                 waiting_tasks.append(initiator_task)
-            elif task_status_have_update and EndStatus.contains(initiator_task.f_status):
-                FederatedScheduler.stop_task(job=job, task=initiator_task, stop_status=initiator_task.f_status)
+            elif task_status_have_update and EndStatus.contains(initiator_task.f_status) or task_interrupt:
+                command_body = {"is_asynchronous": True}
+                schedule_logger(initiator_task.f_job_id).info(f"stop task body: {command_body}, task status: {initiator_task.f_status}")
+                FederatedScheduler.stop_task(job=job, task=initiator_task, stop_status=initiator_task.f_status, command_body=command_body)
                 if not canceled and AutoRerunStatus.contains(initiator_task.f_status):
                     if initiator_task.f_auto_retries > 0:
                         auto_rerun_tasks.append(initiator_task)
@@ -63,7 +69,8 @@ class TaskScheduler(object):
                         schedule_logger(job.f_job_id).info(f"task {initiator_task.f_task_id} {initiator_task.f_status} has no retry count")
 
         scheduling_status_code = SchedulingStatusCode.NO_NEXT
-        if not canceled:
+        schedule_logger(job.f_job_id).info(f"canceled status {canceled}, job interrupt status {job_interrupt}")
+        if not canceled and not job_interrupt:
             for waiting_task in waiting_tasks:
                 for component in dsl_parser.get_upstream_dependent_components(component_name=waiting_task.f_component_name):
                     dependent_task = initiator_tasks_group[
@@ -168,7 +175,8 @@ class TaskScheduler(object):
                                                dsl_parser=dsl_parser,
                                                components=[task.f_component_name],
                                                task_version=task.f_task_version,
-                                               auto_retries=task.f_auto_retries)
+                                               auto_retries=task.f_auto_retries,
+                                               runtime_conf=job.f_runtime_conf)
         schedule_logger(job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
 
     @classmethod

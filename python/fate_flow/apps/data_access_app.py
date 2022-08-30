@@ -13,8 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
-import shutil
+from uuid import uuid1
+from pathlib import Path
 
 from flask import request
 
@@ -24,7 +24,7 @@ from fate_arch import storage
 from fate_arch.common import FederatedMode
 from fate_arch.common.base_utils import json_loads
 from fate_flow.settings import UPLOAD_DATA_FROM_CLIENT
-from fate_flow.utils.api_utils import get_json_result
+from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.utils import detect_utils, job_utils
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.operation.job_saver import JobSaver
@@ -36,24 +36,31 @@ page_name = 'data'
 @manager.route('/<access_module>', methods=['post'])
 def download_upload(access_module):
     job_id = job_utils.generate_job_id()
+
     if access_module == "upload" and UPLOAD_DATA_FROM_CLIENT and not (request.json and request.json.get("use_local_data") == 0):
         file = request.files['file']
-        filename = os.path.join(job_utils.get_job_directory(job_id), 'fate_upload_tmp', file.filename)
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        filename = Path(job_utils.get_job_directory(job_id), 'fate_upload_tmp', uuid1().hex)
+        filename.parent.mkdir(parents=True, exist_ok=True)
+
         try:
-            file.save(filename)
+            file.save(str(filename))
         except Exception as e:
-            shutil.rmtree(os.path.join(job_utils.get_job_directory(job_id), 'fate_upload_tmp'))
-            raise e
-        job_config = request.args.to_dict()
-        if "namespace" in job_config and "table_name" in job_config:
-            pass
-        else:
+            try:
+                filename.unlink()
+            except FileNotFoundError:
+                pass
+
+            return error_response(500, f'Save file error: {e}')
+
+        job_config = request.args.to_dict() or request.form.to_dict()
+        if "namespace" not in job_config or "table_name" not in job_config:
             # higher than version 1.5.1, support eggroll run parameters
             job_config = json_loads(list(job_config.keys())[0])
-        job_config['file'] = filename
+
+        job_config['file'] = str(filename)
     else:
         job_config = request.json
+
     required_arguments = ['namespace', 'table_name']
     if access_module == 'upload':
         required_arguments.extend(['file', 'head', 'partition'])
@@ -62,17 +69,23 @@ def download_upload(access_module):
     elif access_module == 'writer':
         pass
     else:
-        raise Exception('can not support this operating: {}'.format(access_module))
+        return error_response(400, f'Cannot support this operating: {access_module}')
+
     detect_utils.check_config(job_config, required_arguments=required_arguments)
     data = {}
     # compatibility
     if "table_name" in job_config:
         job_config["name"] = job_config["table_name"]
-    for _ in ["head", "partition", "drop"]:
+    for _ in ["head", "partition", "drop", "extend_sid", "auto_increasing_sid"]:
         if _ in job_config:
-            job_config[_] = int(job_config[_])
+            if _ == "false":
+                job_config[_] = False
+            elif _ == "true":
+                job_config[_] = True
+            else:
+                job_config[_] = int(job_config[_])
     if access_module == "upload":
-        if job_config.get('drop', 0) == 1:
+        if int(job_config.get('drop', 0)) > 0:
             job_config["destroy"] = True
         else:
             job_config["destroy"] = False
@@ -162,7 +175,10 @@ def gen_data_access_job_config(config_data, access_module):
                 "destroy",
                 "extend_sid",
                 "auto_increasing_sid",
-                "block_size"
+                "block_size",
+                "schema",
+                "with_meta",
+                "meta"
             }
         update_config(job_runtime_conf, job_dsl, initiator_role, parameters, access_module, config_data)
 

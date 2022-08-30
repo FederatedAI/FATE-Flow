@@ -39,9 +39,11 @@ class JobDefaultConfig(ReloadConfigBase):
     auto_retries = None
     auto_retry_delay = None
     federated_status_collect_type = None
+    detect_connect_max_retry_count = None
+    detect_connect_long_retry_count = None
 
     # upload
-    upload_max_bytes = None  # bytes
+    upload_block_max_bytes = None  # bytes
 
     # component output
     output_data_summary_count_limit = None

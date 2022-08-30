@@ -26,87 +26,96 @@ flow provider list [options]
 {
     "data": {
         "fate": {
-            "1.7.0": {
+            "1.9.0": {
                 "class_path": {
+                    "anonymous_generator": "util.anonymous_generator_util.Anonymous",
+                    "data_format": "util.data_format_preprocess.DataFormatPreProcess",
                     "feature_instance": "feature.instance.Instance",
                     "feature_vector": "feature.sparse_vector.SparseVector",
+                    "hetero_model_merge": "protobuf.model_merge.merge_hetero_models.hetero_model_merge",
                     "homo_model_convert": "protobuf.homo_model_convert.homo_model_convert",
                     "interface": "components.components.Components",
                     "model": "protobuf.generated",
                     "model_migrate": "protobuf.model_migrate.model_migrate"
                 },
                 "components": [
-                    "heterolinr",
-                    "homoonehotencoder",
-                    "dataio",
-                    "psi",
-                    "homodatasplit",
-                    "homolr",
-                    "columnexpand",
-                    "heterokmeans",
-                    "heterosshelr",
-                    "homosecureboost",
-                    "heteropoisson",
-                    "featureimputation",
-                    "heterofeatureselection",
-                    "heteropearson",
                     "heterodatasplit",
-                    "ftl",
-                    "heterolr",
-                    "homonn",
-                    "evaluation",
-                    "featurescale",
-                    "intersection",
-                    "heteronn",
-                    "datastatistics",
-                    "heterosecureboost",
-                    "sbtfeaturetransformer",
-                    "datatransform",
-                    "heterofeaturebinning",
-                    "feldmanverifiablesum",
+                    "psi",
                     "heterofastsecureboost",
-                    "federatedsample",
-                    "secureaddexample",
-                    "secureinformationretrieval",
-                    "sampleweight",
-                    "union",
-                    "onehotencoder",
-                    "homofeaturebinning",
+                    "heterofeaturebinning",
                     "scorecard",
+                    "sampleweight",
+                    "homosecureboost",
+                    "onehotencoder",
+                    "secureinformationretrieval",
+                    "homoonehotencoder",
+                    "datatransform",
+                    "dataio",
+                    "heterosshelinr",
+                    "intersection",
+                    "homofeaturebinning",
+                    "secureaddexample",
+                    "union",
+                    "datastatistics",
+                    "columnexpand",
+                    "homonn",
+                    "labeltransform",
+                    "heterosecureboost",
+                    "heterofeatureselection",
+                    "heterolr",
+                    "feldmanverifiablesum",
+                    "heteropoisson",
+                    "evaluation",
+                    "federatedsample",
+                    "homodatasplit",
+                    "ftl",
                     "localbaseline",
-                    "labeltransform"
+                    "featurescale",
+                    "featureimputation",
+                    "heteropearson",
+                    "heterokmeans",
+                    "heteronn",
+                    "heterolinr",
+                    "spdztest",
+                    "heterosshelr",
+                    "homolr"
                 ],
                 "path": "${FATE_PROJECT_BASE}/python/federatedml",
                 "python": ""
             },
             "default": {
-                "version": "1.7.0"
+                "version": "1.9.0"
             }
         },
         "fate_flow": {
-            "1.7.0": {
+            "1.9.0": {
                 "class_path": {
+                    "anonymous_generator": "util.anonymous_generator_util.Anonymous",
+                    "data_format": "util.data_format_preprocess.DataFormatPreProcess",
                     "feature_instance": "feature.instance.Instance",
                     "feature_vector": "feature.sparse_vector.SparseVector",
+                    "hetero_model_merge": "protobuf.model_merge.merge_hetero_models.hetero_model_merge",
                     "homo_model_convert": "protobuf.homo_model_convert.homo_model_convert",
                     "interface": "components.components.Components",
                     "model": "protobuf.generated",
                     "model_migrate": "protobuf.model_migrate.model_migrate"
                 },
                 "components": [
-                    "download",
-                    "upload",
-                    "modelloader",
-                    "reader",
+                    "writer",
                     "modelrestore",
+                    "upload",
+                    "apireader",
+                    "modelstore",
                     "cacheloader",
-                    "modelstore"
+                    "modelloader",
+                    "download",
+                    "reader"
                 ],
                 "path": "${FATE_FLOW_BASE}/python/fate_flow",
                 "python": ""
             },
             "default": {
-                "version": "1.7.0"
+                "version": "1.9.0"
             }
         }
     },
@@ -158,7 +167,14 @@ flow provider register -c $FATE_FLOW_BASE/examples/other/register_provider.json
 
 ```json
 {
+    "data": {
+        "flow-xxx-9380": {
+            "retcode": 0,
+            "retmsg": "success"
+        }
+    },
     "retcode": 0,
     "retmsg": "success"
 }
+
 ```

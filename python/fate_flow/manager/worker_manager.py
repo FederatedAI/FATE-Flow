@@ -16,21 +16,19 @@
 import os
 import subprocess
 import sys
+from uuid import uuid1
 
-import psutil
-
-from fate_arch.common.base_utils import json_dumps, current_timestamp
+from fate_arch.common.base_utils import current_timestamp, json_dumps
 from fate_arch.common.file_utils import load_json_conf
-from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.metastore.base_model import auto_date_timestamp_db_field
+
 from fate_flow.db.db_models import DB, Task, WorkerInfo
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.entity import ComponentProvider
-from fate_flow.entity import RunParameters
+from fate_flow.entity import ComponentProvider, RunParameters
 from fate_flow.entity.types import WorkerName
 from fate_flow.settings import stat_logger
-from fate_flow.utils import job_utils, process_utils, base_utils
-from fate_flow.utils.log_utils import ready_log, start_log, successful_log, failed_log
+from fate_flow.utils import job_utils, process_utils
+from fate_flow.utils.log_utils import failed_log, ready_log, schedule_logger, start_log, successful_log
 
 
 class WorkerManager:
@@ -67,20 +65,10 @@ class WorkerManager:
             if not initialized_config:
                 raise ValueError("no initialized_config argument")
             config = initialized_config
-            job_conf = job_utils.save_using_job_conf(job_id=job_id,
-                                                     role=role,
-                                                     party_id=party_id,
-                                                     config_dir=config_dir)
-
             from fate_flow.worker.task_initializer import TaskInitializer
             module = TaskInitializer
             module_file_path = sys.modules[TaskInitializer.__module__].__file__
-            specific_cmd = [
-                '--dsl', job_conf["dsl_path"],
-                '--runtime_conf', job_conf["runtime_conf_path"],
-                '--train_runtime_conf', job_conf["train_runtime_conf_path"],
-                '--pipeline_dsl', job_conf["pipeline_dsl_path"],
-            ]
+            specific_cmd = []
             provider_info = initialized_config["provider"]
         else:
             raise Exception(f"not support {worker_name} worker")
@@ -184,11 +172,11 @@ class WorkerManager:
         config = task_parameters.to_dict()
         config["src_user"] = kwargs.get("src_user")
         config_path, result_path = cls.get_config(config_dir=config_dir, config=config, log_dir=log_dir)
-
+        env = cls.get_env(task.f_job_id, task.f_provider_info)
         if executable:
             process_cmd = executable
         else:
-            process_cmd = [sys.executable or "python3"]
+            process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
 
         common_cmd = [
             module_file_path,
@@ -204,13 +192,13 @@ class WorkerManager:
             "--parent_log_dir", os.path.dirname(log_dir),
             "--worker_id", worker_id,
             "--run_ip", RuntimeConfig.JOB_SERVER_HOST,
+            "--run_port", RuntimeConfig.HTTP_PORT,
             "--job_server", f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
             "--session_id", session_id,
-            "--federation_session_id", federation_session_id,
+            "--federation_session_id", federation_session_id
         ]
         process_cmd.extend(common_cmd)
         process_cmd.extend(specific_cmd)
-        env = cls.get_env(task.f_job_id, task.f_provider_info)
         if extra_env:
             env.update(extra_env)
         schedule_logger(task.f_job_id).info(
@@ -223,7 +211,7 @@ class WorkerManager:
 
     @classmethod
     def get_process_dirs(cls, worker_name: WorkerName, job_id=None, role=None, party_id=None, task: Task = None):
-        worker_id = base_utils.new_unique_id()
+        worker_id = uuid1().hex
         party_id = str(party_id)
         if task:
             config_dir = job_utils.get_job_directory(job_id, role, party_id, task.f_component_name, task.f_task_id,

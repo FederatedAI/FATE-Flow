@@ -24,8 +24,10 @@ from fate_flow.utils.log_utils import LoggerFactory, getLogger
 
 # Server
 API_VERSION = "v1"
+FATE_ENV_KEY_LIST = ['FATE', 'FATEFlow', 'FATEBoard', 'EGGROLL', 'CENTOS', 'UBUNTU', 'PYTHON', 'MAVEN', 'JDK', 'SPARK']
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
+CASBIN_TABLE_NAME = "fate_casbin"
 TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
 FATE_FLOW_CONF_PATH = os.path.join(get_fate_flow_directory(), "conf")
 
@@ -33,17 +35,21 @@ FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_CONF_PATH, "job_defau
 FATE_FLOW_DEFAULT_COMPONENT_REGISTRY_PATH = os.path.join(FATE_FLOW_CONF_PATH, "component_registry.json")
 TEMPLATE_INFO_PATH = os.path.join(FATE_FLOW_CONF_PATH, "template_info.yaml")
 FATE_VERSION_DEPENDENCIES_PATH = os.path.join(get_fate_flow_directory(), "version_dependencies")
+CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
+INCOMPATIBLE_VERSION_CONF = os.path.join(FATE_FLOW_CONF_PATH, "incompatible_version.yaml")
 SUBPROCESS_STD_LOG_NAME = "std.log"
-HEADERS = {
-    "Content-Type": "application/json",
-    "Connection": "close",
-    "service": FATE_FLOW_SERVICE_NAME
-}
-_ONE_DAY_IN_SECONDS = 60 * 60 * 24
+
 GRPC_SERVER_MAX_WORKERS = None
 MAX_TIMESTAMP_INTERVAL = 60
 
+ERROR_REPORT = True
+ERROR_REPORT_WITH_PATH = False
+
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
+
+REQUEST_TRY_TIMES = 3
+REQUEST_WAIT_SEC = 2
+REQUEST_MAX_WAIT_SEC = 300
 
 USE_REGISTRY = get_base_config("use_registry")
 
@@ -54,10 +60,16 @@ FATE_FLOW_UPDATE_CHECK = False
 HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")
 GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("grpc_port")
-HTTP_APP_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_app_key")
-HTTP_SECRET_KEY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_secret_key")
+
+NGINX_HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("host") or HOST
+NGINX_HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("http_port") or HTTP_PORT
+NGINX_GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("grpc_port") or GRPC_PORT
+
+RANDOM_INSTANCE_ID = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("random_instance_id", False)
+
 PROXY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol")
+
 ENGINES = engine_utils.get_engines()
 IS_STANDALONE = engine_utils.is_standalone()
 
@@ -65,11 +77,12 @@ DATABASE = decrypt_database_config()
 ZOOKEEPER = get_base_config("zookeeper", {})
 
 # Registry
-FATE_SERVICES_REGISTRY = {
-    'zookeeper': {
-        'fateflow': "/FATE-SERVICES/flow/online/transfer/providers",
-        'servings': "/FATE-SERVICES/serving/online/publishLoad/providers",
-    },
+ZOOKEEPER_REGISTRY = {
+    # server
+    'flow-server': "/FATE-COMPONENTS/fate-flow",
+    # model service
+    'fateflow': "/FATE-SERVICES/flow/online/transfer/providers",
+    'servings': "/FATE-SERVICES/serving/online/publishLoad/providers",
 }
 
 # Engine
@@ -122,10 +135,25 @@ database_logger = getLogger("fate_flow_database")
 UPLOAD_DATA_FROM_CLIENT = True
 
 # authentication
-USE_AUTHENTICATION = False
-USE_DATA_AUTHENTICATION = False
-AUTOMATIC_AUTHORIZATION_OUTPUT_DATA = True
-USE_DEFAULT_TIMEOUT = False
-AUTHENTICATION_DEFAULT_TIMEOUT = 30 * 24 * 60 * 60 # s
-PRIVILEGE_COMMAND_WHITELIST = []
-CHECK_NODES_IDENTITY = False
+AUTHENTICATION_CONF = get_base_config("authentication", {})
+
+PARTY_ID = get_base_config("party_id", "")
+
+# client
+CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", {}).get("switch", False)
+HTTP_APP_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_app_key")
+HTTP_SECRET_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_secret_key")
+
+# site
+SITE_AUTHENTICATION = AUTHENTICATION_CONF.get("site", {}).get("switch", False)
+
+# permission
+PERMISSION_CONF = get_base_config("permission", {})
+PERMISSION_SWITCH = PERMISSION_CONF.get("switch")
+COMPONENT_PERMISSION = PERMISSION_CONF.get("component")
+DATASET_PERMISSION = PERMISSION_CONF.get("dataset")
+
+HOOK_MODULE = get_base_config("hook_module")
+HOOK_SERVER_NAME = get_base_config("hook_server_name")
+
+ENABLE_MODEL_STORE = get_base_config('enable_model_store', False)

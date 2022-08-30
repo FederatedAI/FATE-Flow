@@ -57,11 +57,18 @@
 
 submit job时的conf中配置reader的输入表:
 
-```shell
+```json
 {
   "role": {
     "guest": {
-      "0": {"reader_0": {"table": {"name": "breast_hetero_guest", "namespace": "experiment"}
+      "0": {
+        "reader_0": {
+          "table": {
+            "name": "breast_hetero_guest",
+            "namespace": "experiment"
+          }
+        }
+      }
     }
   }
 }
@@ -88,3 +95,35 @@ default_engines:
 - reader组件输入数据的存储类型支持: eggroll、hdfs、localfs、mysql、path等;
 - reader组件的输出数据类型由default_engines.storage配置决定(path除外)
 
+## 12.  api-reader组件
+
+**简要描述：** 
+
+- api-reader组件的数据输入为id，数据输出为特征;
+- 请求参数可以由用户自定义，如：版本号、回溯月份等；
+- 组件会请求第三方服务，第三方服务需要实现upload、query、download接口并向fate flow注册，可参考[api-reader相关服务注册](./third_party_service_registry.zh.md#31-apireader)
+
+**参数配置**:
+
+submit job时的conf中配置api-reader参数:
+
+```json
+{
+  "role": {
+    "guest": {
+      "0": {"api_reader_0": {
+        "server_name": "xxx",
+        "parameters": {"version": "xxx"},
+        "id_delimiter": ",",
+        "head": true
+        }
+      }
+    }
+  }
+}
+```
+参数含义：
+- server_name: 需要请求的服务名
+- parameters: 需要请求的特征参数
+- id_delimiter：返回的数据分隔符
+- head: 返回的数据是否含有数据头

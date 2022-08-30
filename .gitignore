@@ -18,6 +18,7 @@ venv
 /audit/
 .vscode/*
 /temp/
+/tmp
 /worker/
 /provider_registrar/
 /model_local_cache/

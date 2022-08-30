@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 from .runtime_config import RuntimeConfig
-from .service_registry import ServiceRegistry
+from .service_registry import ServerRegistry
 from .job_default_config import JobDefaultConfig
 from fate_flow.manager.resource_manager import ResourceManager
 
@@ -24,7 +24,7 @@ class ConfigManager:
     def load(cls):
         configs = {
             "job_default_config": JobDefaultConfig.load(),
-            "service_registry": ServiceRegistry.load(),
+            "server_registry": ServerRegistry.load(),
         }
         ResourceManager.initialize()
         RuntimeConfig.load_config_manager()

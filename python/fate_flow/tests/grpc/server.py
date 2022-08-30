@@ -13,21 +13,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import time
+import sys
 
 import grpc
 import requests
 from grpc._cython import cygrpc
 
+from fate_arch.protobuf.python   import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
 from fate_arch.common.base_utils import json_dumps, json_loads
+
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.settings import FATE_FLOW_SERVICE_NAME
-from fate_flow.settings import stat_logger, HOST, GRPC_PORT
 from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.utils.proto_compatibility import basic_meta_pb2
-from fate_flow.utils.proto_compatibility import proxy_pb2
-from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
-import time
-import sys
+from fate_flow.settings import FATE_FLOW_SERVICE_NAME, stat_logger, HOST, GRPC_PORT
+
 from fate_flow.tests.grpc.xthread import ThreadPoolExecutor
 
 
@@ -49,7 +48,8 @@ def get_url(_suffix):
 
 
 class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
-    def unaryCall(self, _request, context):
+    @staticmethod
+    def unaryCall(_request, context):
         packet = _request
         header = packet.header
         _suffix = packet.body.key
@@ -66,15 +66,11 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
             source_routing_header.append((key, value))
         stat_logger.info(f"grpc request routing header: {source_routing_header}")
 
-        param = bytes.decode(bytes(json_dumps(param_dict), 'utf-8'))
-
         action = getattr(requests, method.lower(), None)
         if action:
             print(_suffix)
-            #resp = action(url=get_url(_suffix), data=param, headers=HEADERS)
         else:
             pass
-        #resp_json = resp.json()
         resp_json = {"status": "test"}
         import time
         print("sleep")

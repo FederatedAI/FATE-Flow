@@ -18,14 +18,14 @@ from fate_arch.metastore.db_utils import StorageConnector
 from fate_arch.session import Session
 from fate_arch.storage import StorageTableMeta, StorageTableOrigin
 from fate_flow.entity import RunParameters
-from fate_flow.manager.data_manager import DataTableTracker, TableStorage
+from fate_flow.manager.data_manager import DataTableTracker, TableStorage, SchemaMetaParam, AnonymousGenerator
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
+from fate_flow.utils.data_utils import get_extend_id_name
 from fate_flow.worker.task_executor import TaskExecutor
-from fate_flow.utils.api_utils import get_json_result, error_response
+from fate_flow.utils.api_utils import get_json_result, error_response, validate_request
 from fate_flow.utils import job_utils, schedule_utils
 from flask import request
-from fate_flow.utils.detect_utils import validate_request
 
 
 @manager.route('/connector/create', methods=['POST'])
@@ -54,9 +54,11 @@ def table_bind():
     engine = request_data.get('engine')
     name = request_data.get('name')
     namespace = request_data.get('namespace')
+    extra_schema = request_data.get("schema", {})
     address = storage.StorageTableMeta.create_address(storage_engine=engine, address_dict=address_dict)
     in_serialized = request_data.get("in_serialized", 1 if engine in {storage.StorageEngine.STANDALONE, storage.StorageEngine.EGGROLL,
-                                                                      storage.StorageEngine.MYSQL, storage.StorageEngine.PATH} else 0)
+                                                                      storage.StorageEngine.MYSQL, storage.StorageEngine.PATH,
+                                                                      storage.StorageEngine.API} else 0)
     destroy = (int(request_data.get("drop", 0)) == 1)
     data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
     if data_table_meta:
@@ -68,22 +70,31 @@ def table_bind():
                                           'If you still want to continue uploading, please add the parameter --drop')
     id_column = request_data.get("id_column") or request_data.get("id_name")
     feature_column = request_data.get("feature_column") or request_data.get("feature_name")
-    schema = None
-    if id_column and feature_column:
-        schema = {'header': feature_column, 'sid': id_column}
-    elif id_column:
-        schema = {'sid': id_column, 'header': ''}
+    schema = get_bind_table_schema(id_column, feature_column)
+    schema.update(extra_schema)
+    if request_data.get("with_meta", False):
+        meta = SchemaMetaParam(**request_data.get("meta", {}))
+        if request_data.get("extend_sid", False):
+            meta.with_match_id = True
+        schema.update({"meta": meta.to_dict()})
     sess = Session()
     storage_session = sess.storage(storage_engine=engine, options=request_data.get("options"))
     table = storage_session.create_table(address=address, name=name, namespace=namespace,
                                          partitions=request_data.get('partitions', None),
-                                         hava_head=request_data.get("head"), schema=schema,
-                                         id_delimiter=request_data.get("id_delimiter"), in_serialized=in_serialized,
-                                         origin=request_data.get("origin", StorageTableOrigin.TABLE_BIND))
+                                         have_head=request_data.get("head"), schema=schema,
+                                         extend_sid=request_data.get("extend_sid", False),
+                                         id_delimiter=request_data.get("id_delimiter"),
+                                         in_serialized=in_serialized,
+                                         origin=request_data.get("origin", StorageTableOrigin.TABLE_BIND)
+                                         )
     response = get_json_result(data={"table_name": name, "namespace": namespace})
     if not table.check_address():
         response = get_json_result(retcode=100, retmsg=f'engine {engine} address {address_dict} check failed')
     else:
+        if request_data.get("extend_sid"):
+            schema = update_bind_table_schema(id_column, feature_column, request_data.get("extend_sid"), request_data.get("id_delimiter"))
+            schema.update(extra_schema)
+            table.meta.update_metas(schema=schema)
         DataTableTracker.create_table_tracker(
             table_name=name,
             table_namespace=namespace,
@@ -91,6 +102,42 @@ def table_bind():
         )
     sess.destroy_all_sessions()
     return response
+
+
+@manager.route('/schema/update', methods=['post'])
+@validate_request("schema", "namespace", "name")
+def schema_update():
+    request_data = request.json
+    data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
+    schema = data_table_meta.get_schema()
+    if request_data.get("schema", {}).get("meta"):
+        if schema.get("meta"):
+            schema["meta"].update(request_data.get("schema").get("meta"))
+        else:
+            schema["meta"] = request_data.get("schema").get("meta")
+        request_data["schema"].pop("meta", {})
+    schema.update(request_data.get("schema", {}))
+    data_table_meta.update_metas(schema=schema)
+    return get_json_result(data=schema)
+
+
+@manager.route('/schema/anonymous/migrate', methods=['post'])
+@validate_request("namespace", "name", "role", "party_id", "migrate_mapping")
+def meta_update():
+    request_data = request.json
+    data_table_meta = storage.StorageTableMeta(name=request_data.get("name"), namespace=request_data.get("namespace"))
+    schema = data_table_meta.get_schema()
+    update_schema = AnonymousGenerator.migrate_schema_anonymous(
+        anonymous_schema=schema,
+        role=request_data.get("role"),
+        party_id=request_data.get("party_id"),
+        migrate_mapping=request_data.get("migrate_mapping"))
+    if update_schema:
+        schema.update(update_schema)
+        data_table_meta.update_metas(schema=schema)
+        return get_json_result(data=schema)
+    else:
+        return get_json_result(retcode=101, retmsg="update failed")
 
 
 @manager.route('/download', methods=['get'])
@@ -181,6 +228,7 @@ def table_api(table_func):
         table_key_count = 0
         table_partition = None
         table_schema = None
+        extend_sid = False
         table_name, namespace = config.get("name") or config.get("table_name"), config.get("namespace")
         table_meta = storage.StorageTableMeta(name=table_name, namespace=namespace)
         address = None
@@ -190,6 +238,8 @@ def table_api(table_func):
             table_key_count = table_meta.get_count()
             table_partition = table_meta.get_partitions()
             table_schema = table_meta.get_schema()
+            extend_sid = table_meta.get_extend_sid()
+            table_schema.update()
             address = table_meta.get_address().__dict__
             enable = not table_meta.get_disable()
             origin = table_meta.get_origin()
@@ -204,8 +254,8 @@ def table_api(table_func):
                                      "schema": table_schema,
                                      "enable": enable,
                                      "origin": origin,
-                                     "address": address,
-                                     })
+                                     "extend_sid": extend_sid,
+                                     "address": address})
     else:
         return get_json_result()
 
@@ -254,7 +304,7 @@ def get_job_all_table(job):
 def get_component_input_table(dsl_parser, job, component_name):
     component = dsl_parser.get_component_info(component_name=component_name)
     module_name = get_component_module(component_name, job.f_dsl)
-    if 'reader' in module_name.lower():
+    if 'reader' == module_name.lower():
         return job.f_runtime_conf.get("component_parameters", {}).get("role", {}).get(job.f_role, {}).get(str(job.f_roles.get(job.f_role).index(int(job.f_party_id)))).get(component_name)
     task_input_dsl = component.get_input()
     job_args_on_party = TaskExecutor.get_job_args_on_party(dsl_parser=dsl_parser,
@@ -283,3 +333,22 @@ def get_component_module(component_name, job_dsl):
 def adapter_request_data(request_data):
     if request_data.get("table_name"):
         request_data["name"] = request_data.get("table_name")
+
+
+def get_bind_table_schema(id_column, feature_column):
+    schema = {}
+    if id_column and feature_column:
+        schema = {'header': feature_column, 'sid': id_column}
+    elif id_column:
+        schema = {'sid': id_column, 'header': ''}
+    return schema
+
+
+def update_bind_table_schema(id_column, feature_column, extend_sid, id_delimiter):
+    schema = None
+    if id_column and feature_column:
+        schema = {'header': id_delimiter.join([id_column, feature_column]), 'sid': get_extend_id_name()}
+    elif id_column:
+        schema = {'header': id_column, 'sid': get_extend_id_name()}
+    schema.update({'extend_tag': True})
+    return schema

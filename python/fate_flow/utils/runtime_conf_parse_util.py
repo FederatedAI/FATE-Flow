@@ -205,7 +205,7 @@ class RuntimeConfParserUtil(object):
         return component_role_parameters
 
     @staticmethod
-    def get_job_providers(dsl, provider_detail):
+    def get_job_providers_by_dsl(dsl, provider_detail):
         provider_info = {}
         global_provider_name = None
         global_provider_version = None
@@ -221,37 +221,13 @@ class RuntimeConfParserUtil(object):
 
         for component in dsl["components"]:
             module = dsl["components"][component]["module"]
-            provider = dsl["components"][component].get("provider")
-            name, version = None, None
-            if provider:
-                provider_msg = provider.split("@", -1)
-                if provider[0] == "@" or len(provider_msg) > 2:
-                    raise ValueError("Provider format should be provider_name@provider_version or provider_name, "
-                                     "@provider_version is not supported")
-                if len(provider_msg) == 2:
-                    name, version = provider.split("@", -1)
-                else:
-                    name = provider_msg[0]
-
-            if not name:
-                if global_provider_name:
-                    name = global_provider_name
-                    version = global_provider_version
-
-            if name and name not in provider_detail["components"][module]["support_provider"]:
-                raise ValueError(f"Provider: {name} does not support in {module}, please register")
-            if version and version not in provider_detail["providers"][name]:
-                raise ValueError(f"Provider: {name} version: {version} does not support in {module}, please register")
-
-            if name and not version:
-                version = RuntimeConfParserUtil.get_component_provider(alias=component,
-                                                                       module=module,
-                                                                       provider_detail=provider_detail,
-                                                                       name=name)
-            elif not name and not version:
-                name, version = RuntimeConfParserUtil.get_component_provider(alias=component,
-                                                                             module=module,
-                                                                             provider_detail=provider_detail)
+            provider_config = dsl["components"][component].get("provider")
+            name, version = RuntimeConfParserUtil.get_component_provider_by_user_conf(component,
+                                                                                      module,
+                                                                                      provider_config,
+                                                                                      provider_detail,
+                                                                                      global_provider_name,
+                                                                                      global_provider_version)
 
             provider_info.update({component: {
                 "module": module,
@@ -262,6 +238,123 @@ class RuntimeConfParserUtil(object):
             }})
 
         return provider_info
+
+    @classmethod
+    def get_job_providers(cls, dsl, provider_detail, submit_dict=None, local_role=None, local_party_id=None):
+        provider_info = cls.get_job_providers_by_dsl(dsl, provider_detail)
+        if submit_dict is None:
+            return provider_info
+        else:
+            if local_party_id is None or local_role is None \
+                    or local_role not in submit_dict["role"] or \
+                    (str(local_party_id) not in submit_dict["role"][local_role]
+                     and int(local_party_id) not in submit_dict["role"][local_role]):
+                raise ValueError("when parse provider from conf, local role & party_id should should be None")
+
+            provider_info_all_party = {}
+            dsl_version = submit_dict.get("dsl_version", 1)
+            if dsl_version == 1 or "provider" not in submit_dict:
+                for role in submit_dict["role"]:
+                    party_id_list = submit_dict["role"][role]
+                    provider_info_all_party[role] = {party_id: dict() for party_id in party_id_list}
+
+                provider_info_all_party[local_role][local_party_id] = provider_info
+            else:
+                provider_config = submit_dict["provider"]
+                common_provider_config = provider_config.get("common", {})
+                other_party_provider_config = dict()
+                if common_provider_config:
+                    for component, provider_msg in common_provider_config.items():
+                        if component not in provider_info:
+                            raise ValueError(f"Redundant omponent {component} is not found in dsl")
+
+                        module = provider_info[component]["module"]
+                        name, version = cls.get_component_provider_by_user_conf(component,
+                                                                                module,
+                                                                                provider_msg,
+                                                                                provider_detail)
+
+                        provider_info[component]["provider"] = dict(name=name, version=version)
+
+                        other_name, other_version = cls.get_component_provider_by_user_conf(component,
+                                                                                            module,
+                                                                                            provider_msg)
+                        other_party_provider_config[component] = {
+                            "module": module,
+                            "provider": {
+                                "name": other_name,
+                                "version": other_version
+                            }
+                        }
+
+                provider_info_all_party[local_role]= {local_party_id : copy.deepcopy(provider_info)}
+
+                for role in submit_dict["role"]:
+                    if role not in provider_info_all_party:
+                        provider_info_all_party[role] = {}
+                    role_provider_config = provider_config.get("role", {}).get(role, {})
+                    for idx, party_id in enumerate(submit_dict["role"][role]):
+                        if role == local_role and party_id == local_party_id:
+                            provider_info_party = copy.deepcopy(provider_info)
+                        else:
+                            provider_info_party = copy.deepcopy(other_party_provider_config)
+
+                        for role_id, role_id_provider_config in role_provider_config.items():
+                            if role_id == "all" or str(idx) in role_id.split("|", -1):
+                                for component, provider_msg in role_id_provider_config.items():
+                                    module = dsl["components"][component]["module"]
+                                    detail_info = provider_detail if role == role and party_id == local_party_id else None
+                                    name, version = cls.get_component_provider_by_user_conf(component,
+                                                                                            module,
+                                                                                            provider_msg,
+                                                                                            provider_detail=detail_info)
+                                    if component not in provider_info_party:
+                                        provider_info_party[component] = dict(module=module)
+
+                                    provider_info_party[component]["provider"] = dict(name=name, version=version)
+
+                        provider_info_all_party[role][party_id] = provider_info_party
+
+            return provider_info_all_party
+
+    @staticmethod
+    def get_component_provider_by_user_conf(component, module, provider_config, provider_detail=None,
+                                            default_name=None, default_version=None):
+        name, version = None, None
+        if provider_config:
+            provider_msg = provider_config.split("@", -1)
+            if provider_config[0] == "@" or len(provider_msg) > 2:
+                raise ValueError("Provider format should be provider_name@provider_version or provider_name, "
+                                 "@provider_version is not supported")
+            if len(provider_msg) == 2:
+                name, version = provider_config.split("@", -1)
+            else:
+                name = provider_msg[0]
+
+        if not name:
+            if default_name:
+                name = default_name
+                version = default_version
+
+        if provider_detail is None:
+            return name, version
+
+        if name and name not in provider_detail["components"][module]["support_provider"]:
+            raise ValueError(f"Provider: {name} does not support in {module}, please register")
+        if version and version not in provider_detail["providers"][name]:
+            raise ValueError(f"Provider: {name} version: {version} does not support in {module}, please register")
+
+        if name and not version:
+            version = RuntimeConfParserUtil.get_component_provider(alias=component,
+                                                                   module=module,
+                                                                   provider_detail=provider_detail,
+                                                                   name=name)
+        elif not name and not version:
+            name, version = RuntimeConfParserUtil.get_component_provider(alias=component,
+                                                                         module=module,
+                                                                         provider_detail=provider_detail)
+
+        return name, version
 
     @staticmethod
     def get_component_provider(alias, module, provider_detail, detect=True, name=None):
@@ -303,10 +396,6 @@ class RuntimeConfParserUtil(object):
         provider_name, provider_version = RuntimeConfParserUtil.get_component_provider(alias=alias,
                                                                                        module=module,
                                                                                        provider_detail=provider_detail,
-                                                                                       local_role=local_role,
-                                                                                       local_party_id=local_party_id,
-                                                                                       job_parameters=job_parameters,
-                                                                                       provider_cache=provider_cache,
                                                                                        detect=detect)
 
         return RuntimeConfParserUtil.instantiate_component_provider(provider_detail,
@@ -378,6 +467,23 @@ class RuntimeConfParserUtil(object):
 
         return runtime_conf
 
+    @staticmethod
+    def get_model_loader_alias(component_name, runtime_conf, local_role, local_party_id):
+        role_params = runtime_conf.get("component_parameters", {}).get("role", {}).get("local_role")
+        if not role_params:
+            return runtime_conf.get("component_parameters", {}).\
+                get("common", {}).get(component_name, {}).get("component_name")
+
+        party_idx = runtime_conf.get("role").get(local_role).index(local_party_id)
+        for id_list, params in role_params.times():
+            ids = id_list.split("|", -1)
+            if ids == "all" or str(party_idx) in ids:
+                if params.get(component_name, {}).get("component_name"):
+                    model_load_alias = params.get(component_name, {}).get("component_name")
+                    return model_load_alias
+
+        return runtime_conf.get("component_parameters", {}). \
+            get("common", {}).get(component_name, {}).get("component_name")
 
 class RuntimeConfParserV1(object):
     @staticmethod

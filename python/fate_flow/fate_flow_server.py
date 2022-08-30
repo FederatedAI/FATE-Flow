@@ -13,46 +13,54 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+# init env. must be the first import
+import fate_flow as _
+
+import logging
 import os
 import signal
 import sys
-import time
 import traceback
-import logging
 
 import grpc
 from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
-# be sure to import environment variable before importing fate_arch
-from fate_flow import set_env
+
 from fate_arch.common import file_utils
-from fate_flow.utils.base_utils import get_fate_flow_directory
-from fate_flow.utils.proto_compatibility import proxy_pb2_grpc
-from fate_flow.apps import app
-from fate_flow.db.db_models import init_database_tables as init_flow_db
-from fate_arch.metastore.db_models import init_database_tables as init_arch_db
-from fate_flow.detection.detector import Detector
-from fate_flow.scheduler.dag_scheduler import DAGScheduler
-from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.entity.types import ProcessRole
-from fate_flow.settings import (HOST, HTTP_PORT, GRPC_PORT, _ONE_DAY_IN_SECONDS, GRPC_SERVER_MAX_WORKERS,
-                                stat_logger, detect_logger, access_logger, database_logger)
-from fate_flow.utils.authentication_utils import PrivilegeAuth
-from fate_flow.utils.grpc_utils import UnaryService
-from fate_flow.db.db_services import service_db
-from fate_flow.utils.xthread import ThreadPoolExecutor
-from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.common.versions import get_versions
-from fate_flow.db.config_manager import ConfigManager
+from fate_arch.metastore.db_models import init_database_tables as init_arch_db
+from fate_arch.protobuf.python import proxy_pb2_grpc
+
+from fate_flow.apps import app
+from fate_flow.controller.version_controller import VersionController
 from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.db.config_manager import ConfigManager
+from fate_flow.db.db_models import init_database_tables as init_flow_db
+from fate_flow.db.db_services import service_db
+from fate_flow.db.key_manager import RsaKeyManager
+from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.detection.detector import Detector, FederatedDetector
+from fate_flow.entity.types import ProcessRole
+from fate_flow.hook import HookManager
 from fate_flow.manager.provider_manager import ProviderManager
+from fate_flow.scheduler.dag_scheduler import DAGScheduler
+from fate_flow.settings import (
+    GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT,
+    access_logger, database_logger, detect_logger, stat_logger,
+)
+from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.grpc_utils import UnaryService
+from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.utils.xthread import ThreadPoolExecutor
 
 
 if __name__ == '__main__':
-    stat_logger.info(f"project base: {file_utils.get_project_base_directory()}, fate base: {file_utils.get_fate_directory()}, fate flow base: {get_fate_flow_directory()}")
-    # init
-    # signal.signal(signal.SIGTERM, job_utils.cleaning)
-    # signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
+    stat_logger.info(
+        f'project base: {file_utils.get_project_base_directory()}, '
+        f'fate base: {file_utils.get_fate_directory()}, '
+        f'fate flow base: {get_fate_flow_directory()}'
+    )
+
     # init db
     init_flow_db()
     init_arch_db()
@@ -82,8 +90,11 @@ if __name__ == '__main__':
     default_algorithm_provider = ProviderManager.register_default_providers()
     RuntimeConfig.set_component_provider(default_algorithm_provider)
     ComponentRegistry.load()
-    PrivilegeAuth.init()
+    HookManager.init()
+    RsaKeyManager.init()
+    VersionController.init()
     Detector(interval=5 * 1000, logger=detect_logger).start()
+    FederatedDetector(interval=10 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
 
     peewee_logger = logging.getLogger('peewee')
@@ -99,7 +110,7 @@ if __name__ == '__main__':
                                   (cygrpc.ChannelArgKey.max_receive_message_length, -1)])
 
     proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
-    server.add_insecure_port("{}:{}".format(HOST, GRPC_PORT))
+    server.add_insecure_port(f"{HOST}:{GRPC_PORT}")
     server.start()
     print("FATE Flow grpc server start successfully")
     stat_logger.info("FATE Flow grpc server start successfully")
@@ -112,16 +123,6 @@ if __name__ == '__main__':
         for h in access_logger.handlers:
             werkzeug_logger.addHandler(h)
         run_simple(hostname=HOST, port=HTTP_PORT, application=app, threaded=True, use_reloader=RuntimeConfig.DEBUG, use_debugger=RuntimeConfig.DEBUG)
-    except OSError as e:
+    except Exception:
         traceback.print_exc()
         os.kill(os.getpid(), signal.SIGKILL)
-    except Exception as e:
-        traceback.print_exc()
-        os.kill(os.getpid(), signal.SIGKILL)
-
-    try:
-        while True:
-            time.sleep(_ONE_DAY_IN_SECONDS)
-    except KeyboardInterrupt:
-        server.stop(0)
-        sys.exit(0)

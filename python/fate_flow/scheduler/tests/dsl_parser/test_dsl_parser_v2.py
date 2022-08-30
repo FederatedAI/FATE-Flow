@@ -20,12 +20,6 @@ import pprint
 import sys
 from fate_flow.scheduler import dsl_parser
 
-"""
-def run(self, pipeline_dsl=None, pipeline_runtime_conf=None, dsl=None, runtime_conf=None,
-        provider_detail=None, mode="train", local_role=None,
-        local_party_id=None, deploy_detail=None, *args, **kwargs):
-"""
-
 dsl_path_v2 = sys.argv[1]
 conf_path_v2 = sys.argv[2]
 provider_path = sys.argv[3]
@@ -47,8 +41,10 @@ dsl_parser_v2.run(dsl=dsl_v2,
 
 pprint.pprint(dsl_parser_v2.get_job_parameters())
 print("\n\n\n")
-pprint.pprint(dsl_parser_v2.get_job_providers(provider_detail=provider_detail))
+pprint.pprint(dsl_parser_v2.get_job_providers(provider_detail=provider_detail, conf=conf_v2,
+                                              local_role="guest", local_party_id=10000))
 
+exit(0)
 print("\n\n\n")
 pprint.pprint(dsl_parser_v2.get_dependency())
 pprint.pprint(dsl_parser_v2.get_dsl_hierarchical_structure())
@@ -114,7 +110,7 @@ print(dsl_parser_v2.get_dsl_hierarchical_structure())
 print(dsl_parser_v2.get_dsl_hierarchical_structure()[0]["reader_0"].get_component_provider())
 print("\n\n\n")
 
-pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "dataio_0"], dsl_v2))
+pprint.pprint(dsl_parser_v2.deploy_component(["reader_0", "data_transform_0"], dsl_v2))
 print("\n\n\n")
 
 module_object_name_mapping = dict()
@@ -129,13 +125,13 @@ for component in job_providers.keys():
     module_object_name_mapping[component] = module_object
 
 pprint.pprint(dsl_parser_v2.get_predict_dsl(dsl_v2, module_object_name_mapping))
-print(dsl_parser_v2.get_downstream_dependent_components("dataio_0"))
-print(dsl_parser_v2.get_upstream_dependent_components("dataio_0"))
+print(dsl_parser_v2.get_downstream_dependent_components("data_transform_0"))
+print(dsl_parser_v2.get_upstream_dependent_components("data_transform_0"))
 
 
 dsl = copy.deepcopy(dsl_v2)
 del dsl["components"]["reader_0"]
-del dsl["components"]["dataio_0"]
+del dsl["components"]["data_transform_0"]
 del dsl["components"]["hetero_feature_selection_0"]
 
 print(dsl_parser_v2.check_input_existence(dsl))

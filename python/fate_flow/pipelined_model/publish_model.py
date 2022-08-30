@@ -13,18 +13,21 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import grpc
 import os
-from ruamel import yaml
 
-from fate_flow.settings import HOST, HTTP_PORT, FATE_FLOW_MODEL_TRANSFER_ENDPOINT, USE_REGISTRY
+import grpc
+
 from fate_arch.common.base_utils import json_loads
-from fate_arch.protobuf.python import model_service_pb2
-from fate_arch.protobuf.python import model_service_pb2_grpc
-from fate_flow.settings import stat_logger
-from fate_flow.utils import model_utils
+from fate_arch.protobuf.python import model_service_pb2, model_service_pb2_grpc
+
+from fate_flow.model.sync_model import SyncModel
 from fate_flow.pipelined_model import pipelined_model
 from fate_flow.pipelined_model.homo_model_deployer.model_deploy import model_deploy
+from fate_flow.settings import (
+    ENABLE_MODEL_STORE, FATE_FLOW_MODEL_TRANSFER_ENDPOINT,
+    HOST, HTTP_PORT, USE_REGISTRY, stat_logger,
+)
+from fate_flow.utils import model_utils
 
 
 def generate_publish_model_info(config_data):
@@ -116,9 +119,17 @@ def bind_model_service(config_data):
 
 
 def download_model(party_model_id, model_version):
+    if ENABLE_MODEL_STORE:
+        sync_model = SyncModel(
+            party_model_id=party_model_id,
+            model_version=model_version,
+        )
+        if sync_model.remote_exists():
+            sync_model.download(True)
+
     model = pipelined_model.PipelinedModel(party_model_id, model_version)
     if not model.exists():
-        return
+        return {}
     return model.collect_models(in_bytes=True)
 
 
@@ -131,24 +142,23 @@ def convert_homo_model(request_data):
     if not model.exists():
         return 100, 'Model {} {} does not exist'.format(party_model_id, model_version), None
 
-    with open(model.define_meta_path, "r", encoding="utf-8") as fr:
-        define_index = yaml.safe_load(fr)
+    define_meta = pipelined_model.pipelined_component.get_define_meta()
 
     framework_name = request_data.get("framework_name")
     detail = []
     # todo: use subprocess?
     convert_tool = model.get_homo_model_convert_tool()
-    for key, value in define_index.get("model_proto", {}).items():
+    for key, value in define_meta.get("model_proto", {}).items():
         if key == 'pipeline':
             continue
         for model_alias in value.keys():
             buffer_obj = model.read_component_model(key, model_alias)
-            module_name = define_index.get("component_define", {}).get(key, {}).get('module_name')
+            module_name = define_meta.get("component_define", {}).get(key, {}).get('module_name')
             converted_framework, converted_model = convert_tool.model_convert(model_contents=buffer_obj,
                                                                               module_name=module_name,
                                                                               framework_name=framework_name)
             if converted_model:
-                converted_model_dir = os.path.join(model.variables_data_path, key, model_alias, "converted_model")
+                converted_model_dir = os.path.join(model.pipelined_component.variables_data_path, key, model_alias, "converted_model")
                 os.makedirs(converted_model_dir, exist_ok=True)
 
                 saved_path = convert_tool.save_converted_model(converted_model,
@@ -195,7 +205,7 @@ def deploy_homo_model(request_data):
 
     # currently there is only one model output
     model_alias = model_alias_list[0]
-    converted_model_dir = os.path.join(model.variables_data_path, component_name, model_alias, "converted_model")
+    converted_model_dir = os.path.join(model.pipelined_component.variables_data_path, component_name, model_alias, "converted_model")
     if not os.path.isdir(converted_model_dir):
         return 100, '''Component {} in Model {} {} isn't converted'''.\
             format(component_name, party_model_id, model_version), None

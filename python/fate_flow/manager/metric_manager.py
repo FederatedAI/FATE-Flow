@@ -47,8 +47,8 @@ class MetricManager:
             model_class = self.get_model_class()
             tracking_metric = model_class()
             tracking_metric.f_job_id = self.job_id
-            tracking_metric.f_component_name = (
-                self.component_name if not job_level else job_utils.job_pipeline_component_name())
+            tracking_metric.f_component_name = (self.component_name if not job_level
+                                                else job_utils.PIPELINE_COMPONENT_NAME)
             tracking_metric.f_task_id = self.task_id
             tracking_metric.f_task_version = self.task_version
             tracking_metric.f_role = self.role
@@ -64,7 +64,7 @@ class MetricManager:
                 db_source['f_value'] = serialize_b64(v)
                 db_source['f_create_time'] = current_timestamp()
                 tracking_metric_data_source.append(db_source)
-            db_utils.bulk_insert_into_db(model_class, tracking_metric_data_source, schedule_logger(self.job_id))
+            db_utils.bulk_insert_into_db(model_class, tracking_metric_data_source)
         except Exception as e:
             schedule_logger(self.job_id).exception(
                 "An exception where inserted metric {} of metric namespace: {} to database:\n{}".format(
@@ -81,8 +81,8 @@ class MetricManager:
             tracking_metrics = tracking_metric_model.select(tracking_metric_model.f_key,
                                                             tracking_metric_model.f_value).where(
                 tracking_metric_model.f_job_id == self.job_id,
-                tracking_metric_model.f_component_name == (
-                    self.component_name if not job_level else job_utils.job_pipeline_component_name()),
+                tracking_metric_model.f_component_name == (self.component_name if not job_level
+                                                           else job_utils.PIPELINE_COMPONENT_NAME),
                 tracking_metric_model.f_role == self.role,
                 tracking_metric_model.f_party_id == self.party_id,
                 tracking_metric_model.f_metric_namespace == metric_namespace,

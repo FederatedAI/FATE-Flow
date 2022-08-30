@@ -1,7 +1,7 @@
 {
     "components" : {
-        "dataio_0": {
-            "module": "DataIO",
+        "data_transform_0": {
+            "module": "DataTransform",
             "input": {
                 "data": {
                     "data": [
@@ -11,7 +11,7 @@
             },
             "output": {
                 "data": ["train"],
-                "model": ["dataio"]
+                "model": ["data_transform"]
             }
          },
          "intersection_0": {
@@ -19,7 +19,7 @@
              "input": {
                  "data": {
                      "data": [
-                         "dataio_0.train"
+                         "data_transform_0.train"
                      ]
                  }
              },

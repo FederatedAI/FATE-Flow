@@ -19,6 +19,7 @@ from copy import deepcopy
 
 from fate_arch.common import file_utils
 from fate_arch.common.versions import get_versions
+from fate_flow.controller.version_controller import VersionController
 from fate_flow.entity import ComponentProvider
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.db.job_default_config import JobDefaultConfig
@@ -106,9 +107,20 @@ class ProviderManager:
         return ComponentProvider(name=name, version=version, path=path, class_path=class_path)
 
     @classmethod
-    def get_job_provider_group(cls, dsl_parser, components: list = None, check_registration=True):
-        providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY)
+    def get_job_provider_group(cls, dsl_parser, role, party_id, components: list = None, check_registration=True,
+                               runtime_conf=None, check_version=False, is_scheduler=False):
+        if is_scheduler:
+            # local provider
+            providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY)
+        else:
+            providers_info = dsl_parser.get_job_providers(provider_detail=ComponentRegistry.REGISTRY, conf=runtime_conf,
+                                                          local_role=role, local_party_id=party_id)
+        if check_version:
+            VersionController.job_provider_version_check(providers_info, local_role=role, local_party_id=party_id)
         group = {}
+        if role in providers_info and not is_scheduler:
+            providers_info = providers_info.get(role, {}).get(int(party_id), {}) or\
+                             providers_info.get(role, {}).get(str(party_id), {})
         if components is not None:
             _providers_info = {}
             for component_name in components:
@@ -142,7 +154,8 @@ class ProviderManager:
                                                            provider.name,
                                                            provider.version,
                                                            local_role=role,
-                                                           local_party_id=int(party_id))
+                                                           local_party_id=int(party_id),
+                                                           previous_parameters=previous_components_parameters)
         user_specified_parameters = dsl_parser.parse_user_specified_component_parameters(component_name,
                                                                                          ComponentRegistry.REGISTRY,
                                                                                          provider.name,

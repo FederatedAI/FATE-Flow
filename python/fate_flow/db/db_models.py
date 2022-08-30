@@ -17,17 +17,23 @@ import datetime
 import inspect
 import os
 import sys
+from functools import wraps
 
-from peewee import (CharField, IntegerField, BigIntegerField,
-                    TextField, CompositeKey, BigAutoField, BooleanField)
+from peewee import (
+    BigAutoField, BigIntegerField, BooleanField, CharField,
+    CompositeKey, Insert, IntegerField, TextField,
+)
+from playhouse.hybrid import hybrid_property
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_arch.common import file_utils
-from fate_flow.utils.log_utils import getLogger
-from fate_arch.metastore.base_model import JSONField, BaseModel, LongTextField, DateTimeField, SerializedField, \
-    SerializedType, ListField
+from fate_arch.metastore.base_model import (
+    BaseModel, DateTimeField, JSONField, ListField,
+    LongTextField, SerializedField, SerializedType,
+)
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.settings import DATABASE, stat_logger, IS_STANDALONE
+from fate_flow.settings import DATABASE, IS_STANDALONE, stat_logger
+from fate_flow.utils.log_utils import getLogger
 from fate_flow.utils.object_utils import from_dict_hook
 
 
@@ -36,7 +42,8 @@ LOGGER = getLogger()
 
 class JsonSerializedField(SerializedField):
     def __init__(self, object_hook=from_dict_hook, object_pairs_hook=None, **kwargs):
-        super(JsonSerializedField, self).__init__(serialized_type=SerializedType.JSON, object_hook=object_hook, object_pairs_hook=object_pairs_hook, **kwargs)
+        super(JsonSerializedField, self).__init__(serialized_type=SerializedType.JSON, object_hook=object_hook,
+                                                  object_pairs_hook=object_pairs_hook, **kwargs)
 
 
 def singleton(cls, *args, **kw):
@@ -56,7 +63,10 @@ class BaseDataBase:
     def __init__(self):
         database_config = DATABASE.copy()
         db_name = database_config.pop("name")
-        if IS_STANDALONE:
+        if IS_STANDALONE and not bool(int(os.environ.get("FORCE_USE_MYSQL", 0))):
+            # sqlite does not support other options
+            Insert.on_conflict = lambda self, *args, **kwargs: self.on_conflict_replace()
+
             from playhouse.apsw_ext import APSWDatabase
             self.database_connection = APSWDatabase(file_utils.get_project_base_directory("fate_sqlite.db"))
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
@@ -69,30 +79,29 @@ class BaseDataBase:
 class DatabaseLock:
     def __init__(self, lock_name, timeout=10, db=None):
         self.lock_name = lock_name
-        self.timeout = timeout
+        self.timeout = int(timeout)
         self.db = db if db else DB
 
     def lock(self):
-        sql = "SELECT GET_LOCK('%s', %s)" % (self.lock_name, self.timeout)
-        cursor = self.db.execute_sql(sql)
+        # SQL parameters only support %s format placeholders
+        cursor = self.db.execute_sql("SELECT GET_LOCK(%s, %s)", (self.lock_name, self.timeout))
         ret = cursor.fetchone()
         if ret[0] == 0:
-            raise Exception('mysql lock {} is already used'.format(self.lock_name))
+            raise Exception(f'acquire mysql lock {self.lock_name} timeout')
         elif ret[0] == 1:
             return True
         else:
-            raise Exception('mysql lock {} error occurred!')
+            raise Exception(f'failed to acquire lock {self.lock_name}')
 
     def unlock(self):
-        sql = "SELECT RELEASE_LOCK('%s')" % (self.lock_name)
-        cursor = self.db.execute_sql(sql)
+        cursor = self.db.execute_sql("SELECT RELEASE_LOCK(%s)", (self.lock_name, ))
         ret = cursor.fetchone()
         if ret[0] == 0:
-            raise Exception('mysql lock {} is not released'.format(self.lock_name))
+            raise Exception(f'mysql lock {self.lock_name} was not established by this thread')
         elif ret[0] == 1:
             return True
         else:
-            raise Exception('mysql lock {} did not exist.'.format(self.lock_name))
+            raise Exception(f'mysql lock {self.lock_name} does not exist')
 
     def __enter__(self):
         if isinstance(self.db, PooledMySQLDatabase):
@@ -102,6 +111,13 @@ class DatabaseLock:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if isinstance(self.db, PooledMySQLDatabase):
             self.unlock()
+
+    def __call__(self, func):
+        @wraps(func)
+        def magic(*args, **kwargs):
+            with self:
+                return func(*args, **kwargs)
+        return magic
 
 
 DB = BaseDataBase().database_connection
@@ -224,11 +240,14 @@ class Task(DataBaseModel):
     f_worker_id = CharField(null=True, max_length=100)
     f_cmd = JSONField(null=True)
     f_run_ip = CharField(max_length=100, null=True)
+    f_run_port = IntegerField(null=True)
     f_run_pid = IntegerField(null=True)
     f_party_status = CharField(max_length=50)
     f_provider_info = JSONField()
     f_component_parameters = JSONField()
     f_engine_conf = JSONField(null=True)
+    f_kill_status = BooleanField(default=False)
+    f_error_report = TextField(default="")
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)
@@ -265,13 +284,13 @@ class TrackingMetric(DataBaseModel):
 
     f_id = BigAutoField(primary_key=True)
     f_job_id = CharField(max_length=25, index=True)
-    f_component_name = TextField()
-    f_task_id = CharField(max_length=100, null=True, index=True)
-    f_task_version = BigIntegerField(null=True, index=True)
-    f_role = CharField(max_length=50, index=True)
-    f_party_id = CharField(max_length=10, index=True)
-    f_metric_namespace = CharField(max_length=180)
-    f_metric_name = CharField(max_length=180)
+    f_component_name = CharField(max_length=30, index=True)
+    f_task_id = CharField(max_length=100, null=True)
+    f_task_version = BigIntegerField(null=True)
+    f_role = CharField(max_length=10, index=True)
+    f_party_id = CharField(max_length=10)
+    f_metric_namespace = CharField(max_length=80, index=True)
+    f_metric_name = CharField(max_length=80, index=True)
     f_key = CharField(max_length=200)
     f_value = LongTextField()
     f_type = IntegerField()  # 0 is data, 1 is meta
@@ -292,7 +311,8 @@ class TrackingOutputDataInfo(DataBaseModel):
         if ModelClass is None:
             class Meta:
                 db_table = '%s_%s' % ('t_tracking_output_data_info', table_index)
-                primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_data_name', 'f_role', 'f_party_id')
+                primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_data_name', 'f_role',
+                                           'f_party_id')
 
             attrs = {'__module__': cls.__module__, 'Meta': Meta}
             ModelClass = type("%s_%s" % (cls.__name__, table_index), (cls,),
@@ -321,21 +341,28 @@ class MachineLearningModelInfo(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
     f_model_id = CharField(max_length=100, index=True)
     f_model_version = CharField(max_length=100, index=True)
-    f_loaded_times = IntegerField(default=0)
     f_size = BigIntegerField(default=0)
-    f_description = TextField(null=True, default='')
     f_initiator_role = CharField(max_length=50)
     f_initiator_party_id = CharField(max_length=50, default=-1)
+    # TODO: deprecated. use f_train_runtime_conf instead
     f_runtime_conf = JSONField(default={})
     f_train_dsl = JSONField(default={})
     f_train_runtime_conf = JSONField(default={})
-    f_imported = IntegerField(default=0)
-    f_job_status = CharField(max_length=50, null=True)
     f_runtime_conf_on_party = JSONField(default={})
+    f_inference_dsl = JSONField(default={})
     f_fate_version = CharField(max_length=10, null=True, default='')
     f_parent = BooleanField(null=True, default=None)
     f_parent_info = JSONField(default={})
-    f_inference_dsl = JSONField(default={})
+    # loaded times in api /model/load/do
+    f_loaded_times = IntegerField(default=0)
+    # imported from api /model/import
+    f_imported = IntegerField(default=0)
+    f_archive_sha256 = CharField(max_length=100, null=True)
+    f_archive_from_ip = CharField(max_length=100, null=True)
+
+    @hybrid_property
+    def f_party_model_id(self):
+        return '#'.join([self.f_role, self.f_party_id, self.f_model_id])
 
     class Meta:
         db_table = "t_machine_learning_model_info"
@@ -418,23 +445,10 @@ class ComponentSummary(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
     f_role = CharField(max_length=25, index=True)
     f_party_id = CharField(max_length=10, index=True)
-    f_component_name = TextField()
+    f_component_name = CharField(max_length=50)
     f_task_id = CharField(max_length=50, null=True, index=True)
     f_task_version = CharField(max_length=50, null=True)
     f_summary = LongTextField()
-
-
-class ModelOperationLog(DataBaseModel):
-    f_operation_type = CharField(max_length=20, null=False, index=True)
-    f_operation_status = CharField(max_length=20, null=True, index=True)
-    f_initiator_role = CharField(max_length=50, index=True, null=True)
-    f_initiator_party_id = CharField(max_length=10, index=True, null=True)
-    f_request_ip = CharField(max_length=20, null=True)
-    f_model_id = CharField(max_length=100)
-    f_model_version = CharField(max_length=100)
-
-    class Meta:
-        db_table = "t_model_operation_log"
 
 
 class EngineRegistry(DataBaseModel):
@@ -445,7 +459,7 @@ class EngineRegistry(DataBaseModel):
     f_cores = IntegerField()
     f_memory = IntegerField()  # MB
     f_remaining_cores = IntegerField()
-    f_remaining_memory = IntegerField() # MB
+    f_remaining_memory = IntegerField()  # MB
     f_nodes = IntegerField()
 
     class Meta:
@@ -524,3 +538,56 @@ class DependenciesStorageMeta(DataBaseModel):
     class Meta:
         db_table = "t_dependencies_storage_meta"
         primary_key = CompositeKey('f_storage_engine', 'f_type', 'f_version')
+
+
+class ServerRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30, index=True)
+    f_host = CharField(max_length=30)
+    f_port = IntegerField()
+    f_protocol = CharField(max_length=10)
+
+    class Meta:
+        db_table = "t_server_registry_info"
+
+
+class ServiceRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30)
+    f_service_name = CharField(max_length=30)
+    f_url = CharField(max_length=100)
+    f_method = CharField(max_length=10)
+    f_params = JSONField(null=True)
+    f_data = JSONField(null=True)
+    f_headers = JSONField(null=True)
+
+    class Meta:
+        db_table = "t_service_registry_info"
+        primary_key = CompositeKey('f_server_name', 'f_service_name')
+
+
+class SiteKeyInfo(DataBaseModel):
+    f_party_id = CharField(max_length=10, index=True)
+    f_key_name = CharField(max_length=10, index=True)
+    f_key = LongTextField()
+
+    class Meta:
+        db_table = "t_site_key_info"
+        primary_key = CompositeKey('f_party_id', 'f_key_name')
+
+class PipelineComponentMeta(DataBaseModel):
+    f_model_id = CharField(max_length=100, index=True)
+    f_model_version = CharField(max_length=100, index=True)
+    f_role = CharField(max_length=50, index=True)
+    f_party_id = CharField(max_length=10, index=True)
+    f_component_name = CharField(max_length=100, index=True)
+    f_component_module_name = CharField(max_length=100)
+    f_model_alias = CharField(max_length=100, index=True)
+    f_model_proto_index = JSONField(null=True)
+    f_run_parameters = JSONField(null=True)
+    f_archive_sha256 = CharField(max_length=100, null=True)
+    f_archive_from_ip = CharField(max_length=100, null=True)
+
+    class Meta:
+        db_table = 't_pipeline_component_meta'
+        indexes = (
+            (('f_model_id', 'f_model_version', 'f_role', 'f_party_id', 'f_component_name'), True),
+        )

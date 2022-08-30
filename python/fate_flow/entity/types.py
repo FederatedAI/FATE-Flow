@@ -87,6 +87,26 @@ class ResourceOperation(CustomEnum):
     RETURN = "return"
 
 
+class PermissionType(CustomEnum):
+    COMPONENT = "component"
+    DATASET = "dataset"
+
+
+class SiteKeyName(CustomEnum):
+    PRIVATE = "private"
+    PUBLIC = "public"
+
+
+class RegistryServiceName(CustomEnum):
+    UPLOAD = "upload"
+    DOWNLOAD = "download"
+    QUERY = "query"
+    CLIENT_AUTHENTICATION = "client_authentication"
+    SIGNATURE = "signature"
+    SITE_AUTHENTICATION = "site_authentication"
+    PERMISSION_CHECK = "permission"
+
+
 class KillProcessRetCode(IntEnum, CustomEnum):
     KILLED = 0
     NOT_FOUND = 1
@@ -110,6 +130,8 @@ class RetCode(IntEnum, CustomEnum):
     CONNECTION_ERROR = 105
     RUNNING = 106
     INCOMPATIBLE_FATE_VER = 107
+    PERMISSION_ERROR = 108
+    AUTHENTICATION_ERROR = 109
     SERVER_ERROR = 500
 
 

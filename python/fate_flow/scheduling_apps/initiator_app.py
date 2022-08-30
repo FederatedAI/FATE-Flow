@@ -51,7 +51,7 @@ def report_task(job_id, component_name, task_id, task_version, role, party_id):
         "role": role,
         "party_id": party_id,
     })
-    JobSaver.update_task(task_info=task_info)
+    JobSaver.update_task(task_info=task_info, report=True)
     if task_info.get("party_status"):
         JobSaver.update_status(Task, task_info)
     return get_json_result(retcode=0, retmsg='success')

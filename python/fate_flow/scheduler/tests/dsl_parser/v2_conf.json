@@ -9,7 +9,7 @@
             10000
         ],
         "host": [
-            9999
+            9999, 9998, 9997
         ],
         "arbiter": [
             9999
@@ -92,7 +92,7 @@
         "role": {
             "host": {
                 "0": {
-                    "dataio_0": {
+                    "data_transform_0": {
                         "with_label": false
                     },
                     "reader_0": {
@@ -105,7 +105,7 @@
             },
             "guest": {
                 "0": {
-                    "dataio_0": {
+                    "data_transform_0": {
                         "with_label": true,
                         "output_format": "dense"
                     },
@@ -115,6 +115,27 @@
                             "namespace": "experiment"
                         }
                     }
+                }
+            }
+        }
+    },
+    "provider": {
+        "common": {
+            "hetero_feature_binning_0": "fate@1.8.0"
+        },
+        "role": {
+            "guest": {
+                "0": {
+                    "data_transform_0": "fate@1.8.0"
+                }
+            },
+            "host": {
+                "0": {
+                    "data_transform_0": "fate@1.7.3",
+                    "one_hot_encoder_0": "fate@1.7.3"
+                },
+                "1|2": {
+                    "data_transform_0": "fate@1.7.4"
                 }
             }
         }

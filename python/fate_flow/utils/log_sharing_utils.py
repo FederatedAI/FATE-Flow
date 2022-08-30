@@ -1,7 +1,8 @@
 import os
-import re
+import subprocess
 
 from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.log_utils import replace_ip
 
 JOB = ["jobSchedule", "jobScheduleError"]
 PARTY = ["partyError", "partyWarning", "partyInfo", "partyDebug"]
@@ -15,6 +16,7 @@ LOGMapping = {
     "partyDebug": "DEBUG.log",
     "componentInfo": "INFO.log"
 }
+
 
 def parameters_check(log_type, job_id, role, party_id, component_name):
     if log_type in JOB:
@@ -51,38 +53,40 @@ class LogCollector():
             "componentInfo": os.path.join(self.job_id, self.role, self.party_id, self.component_name, "INFO.log")
         }
         if self.log_type not in type_dict.keys():
-            raise Exception(f"no found log  type {self.log_type}")
+            raise Exception(f"no found log type {self.log_type}")
         return os.path.join(get_fate_flow_directory('logs'), type_dict[self.log_type])
 
     def cat_log(self, begin, end):
         line_list = []
+        log_path = self.get_log_file_path()
         if begin and end:
-            cmd = f"cat {self.get_log_file_path()} | tail -n +{begin}| head -n {end-begin+1}"
+            cmd = f"cat {log_path} | tail -n +{begin}| head -n {end-begin+1}"
+        elif begin:
+            cmd = f"cat {log_path} | tail -n +{begin}"
+        elif end:
+            cmd = f"cat {log_path} | head -n {end}"
         else:
-            cmd = f"cat {self.get_log_file_path()}"
+            cmd = f"cat {log_path}"
         lines = self.execute(cmd)
         if lines:
             line_list = []
             line_num = begin if begin else 1
-            for line in lines.strip().split("\n"):
-                match_ip = re.findall('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}', line)
-                if match_ip:
-                    for ip in match_ip:
-                        line = re.sub(ip, "xxx.xxx.xxx.xxx", line)
+            for line in lines.split("\n"):
+                line = replace_ip(line)
                 line_list.append({"line_num": line_num, "content": line})
                 line_num += 1
         return line_list
 
     def get_size(self):
         try:
-            return int(self.execute(f"cat {self.get_log_file_path()} |wc -l").strip())
+            return int(self.execute(f"cat {self.get_log_file_path()} | wc -l").strip())
         except:
             return 0
 
     @staticmethod
     def execute(cmd):
-        res = os.popen(cmd)
-        data = res.read()
-        res.close()
-        return data
-
+        res = subprocess.run(
+            cmd, shell=True, universal_newlines=True,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        )
+        return res.stdout

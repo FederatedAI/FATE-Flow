@@ -1,18 +1,15 @@
 {
-  "provider": "fate@1.8.0",
   "components": {
     "reader_0": {
       "module": "Reader",
-      "provider": "fate_flow@1.8.0",
       "output": {
         "data": [
           "table"
         ]
       }
     },
-    "dataio_0": {
-      "module": "DataIO",
-      "provider": "fate@1.8.0",
+    "data_transform_0": {
+      "module": "DataTransform",
       "input": {
         "data": {
           "data": [
@@ -25,18 +22,17 @@
           "train"
         ],
         "model": [
-          "dataio"
+          "data_transform"
         ]
       },
       "need_deploy": true
     },
     "hetero_feature_binning_0": {
       "module": "HeteroFeatureBinning",
-      "provider": "fate@1.8.0",
       "input": {
         "data": {
           "data": [
-            "dataio_0.train"
+            "data_transform_0.train"
           ]
         }
       },

@@ -17,26 +17,18 @@ from flask import request
 
 from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import RetCode
 from fate_flow.entity.types import TaskCleanResourceType
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.utils.api_utils import get_json_result
-from fate_flow.utils.authentication_utils import request_authority_certification
-from fate_flow.utils.model_utils import compare_version
+from fate_flow.utils.api_utils import get_json_result, create_job_request_check
+from fate_flow.utils.task_utils import task_request_proxy
 
 
-# execute command on every party
 @manager.route('/<job_id>/<role>/<party_id>/create', methods=['POST'])
-@request_authority_certification(party_id_index=-2, role_index=-3, command='create')
+@create_job_request_check
 def create_job(job_id, role, party_id):
-    src_fate_ver = request.json.get('src_fate_ver')
-    if src_fate_ver is not None and compare_version(src_fate_ver, '1.7.0') == 'lt':
-        return get_json_result(retcode=RetCode.INCOMPATIBLE_FATE_VER, retmsg='Incompatible FATE versions',
-                               data={'src_fate_ver': src_fate_ver, "current_fate_ver": RuntimeConfig.get_env('FATE')})
-
     try:
         result = JobController.create_job(job_id=job_id, role=role, party_id=int(party_id), job_info=request.json)
         return get_json_result(retcode=0, retmsg='success', data=result)
@@ -163,7 +155,7 @@ def create_task(job_id, component_name, task_id, task_version, role, party_id):
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/start', methods=['POST'])
-@request_authority_certification(party_id_index=-2, role_index=-3, command='run')
+@task_request_proxy(filter_local=True)
 def start_task(job_id, component_name, task_id, task_version, role, party_id):
     TaskController.start_task(job_id, component_name, task_id, task_version, role, party_id, **request.json)
     return get_json_result(retcode=0, retmsg='success')
@@ -229,12 +221,12 @@ def task_status(job_id, component_name, task_id, task_version, role, party_id, s
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/stop/<stop_status>', methods=['POST'])
-@request_authority_certification(party_id_index=-3, role_index=-4, command='stop')
+@task_request_proxy()
 def stop_task(job_id, component_name, task_id, task_version, role, party_id, stop_status):
     tasks = JobSaver.query_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role, party_id=int(party_id))
     kill_status = True
     for task in tasks:
-        kill_status = kill_status & TaskController.stop_task(task=task, stop_status=stop_status)
+        kill_status = kill_status & TaskController.stop_task(task=task, stop_status=stop_status, is_asynchronous=request.json.get("is_asynchronous"))
     return get_json_result(retcode=RetCode.SUCCESS if kill_status else RetCode.EXCEPTION_ERROR,
                            retmsg='success' if kill_status else 'failed')
 
