@@ -249,7 +249,7 @@ class TableStorage:
             except Exception as e:
                 # warning
                 stat_logger.warning(e)
-        return send_file(output_data_tarfile, attachment_filename=tar_file_name)
+        return send_file(output_data_tarfile, attachment_filename=tar_file_name, as_attachment=True)
 
 
 def delete_tables_by_table_infos(output_data_table_infos):
