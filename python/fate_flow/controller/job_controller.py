@@ -599,7 +599,7 @@ class JobController(object):
     def output_reload(cls, job, source_tasks: dict, target_tasks: dict):
         # model reload
         schedule_logger(job.f_job_id).info("start reload model")
-        source_job = JobSaver.query_job(job_id=job.f_inheritance_info.get("job_id"))[0]
+        source_job = JobSaver.query_job(job_id=job.f_inheritance_info["job_id"], role=job.f_role, party_id=job.f_party_id)[0]
         cls.output_model_reload(job, source_job)
 
         schedule_logger(job.f_job_id).info("start reload data")
