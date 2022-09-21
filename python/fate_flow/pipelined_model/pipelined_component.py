@@ -130,8 +130,8 @@ class PipelinedComponent(Pipelined, Locker):
 
     # import model
     @local_cache_required(True)
-    def save_define_meta_from_file_to_db(self, force_update=False):
-        if not force_update:
+    def save_define_meta_from_file_to_db(self, replace_on_conflict=False):
+        if not replace_on_conflict:
             with DB.connection_context():
                 count = PipelineComponentMeta.select().where(*self.query_args).count()
             if count > 0:
@@ -156,9 +156,9 @@ class PipelinedComponent(Pipelined, Locker):
                 }
                 insert.append(row)
 
-        bulk_insert_into_db(PipelineComponentMeta, insert, force_update)
+        bulk_insert_into_db(PipelineComponentMeta, insert, replace_on_conflict)
 
-    def replicate_define_meta(self, modification, query_args=()):
+    def replicate_define_meta(self, modification, query_args=(), replace_on_conflict=False):
         query = self.get_define_meta_from_db(*query_args)
         if not query:
             return
@@ -170,7 +170,7 @@ class PipelinedComponent(Pipelined, Locker):
             row.update(modification)
             insert.append(row)
 
-        bulk_insert_into_db(PipelineComponentMeta, insert)
+        bulk_insert_into_db(PipelineComponentMeta, insert, replace_on_conflict)
 
     def get_run_parameters_path(self, component_name):
         return self.run_parameters_path / component_name / 'run_parameters.json'

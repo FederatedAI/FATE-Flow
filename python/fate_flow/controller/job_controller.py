@@ -601,7 +601,7 @@ class JobController(object):
         schedule_logger(job.f_job_id).info("start reload model")
         source_job = JobSaver.query_job(job_id=job.f_inheritance_info.get("job_id"))[0]
         cls.output_model_reload(job, source_job)
-        cls.checkpoint_reload(job, source_job)
+
         schedule_logger(job.f_job_id).info("start reload data")
         source_tracker_dict = cls.load_task_tracker(source_tasks)
         target_tracker_dict = cls.load_task_tracker(target_tasks)
@@ -669,29 +669,20 @@ class JobController(object):
 
         query = source_pipelined_component.get_define_meta_from_db(*query_args)
         for row in query:
-            shutil.copytree(
-                source_pipelined_component.variables_data_path / row.f_component_name,
-                target_pipelined_component.variables_data_path / row.f_component_name,
-            )
+            for i in ('variables_data_path', 'run_parameters_path', 'checkpoint_path'):
+                source_dir = getattr(source_pipelined_component, i) / row.f_component_name
+                target_dir = getattr(target_pipelined_component, i) / row.f_component_name
+
+                if not source_dir.is_dir():
+                    continue
+                if target_dir.is_dir():
+                    shutil.rmtree(target_dir)
+
+                shutil.copytree(source_dir, target_dir)
 
         source_pipelined_component.replicate_define_meta({
+            'f_role': target_pipelined_component.role,
+            'f_party_id': target_pipelined_component.party_id,
             'f_model_id': target_pipelined_component.model_id,
             'f_model_version': target_pipelined_component.model_version,
-        }, query_args)
-
-    @classmethod
-    def checkpoint_reload(cls, job, source_job):
-        for component_name in job.f_inheritance_info['component_list']:
-            source_path = CheckpointManager(
-                role=source_job.f_role, party_id=source_job.f_party_id,
-                model_id=source_job.f_runtime_conf['job_parameters']['common']['model_id'],
-                model_version=source_job.f_job_id, component_name=component_name,
-            ).directory
-            target_path = CheckpointManager(
-                role=job.f_role, party_id=job.f_party_id,
-                model_id=job.f_runtime_conf['job_parameters']['common']['model_id'],
-                model_version=job.f_job_id, component_name=component_name,
-            ).directory
-
-            if os.path.exists(source_path):
-                shutil.copytree(source_path, target_path)
+        }, query_args, True)
