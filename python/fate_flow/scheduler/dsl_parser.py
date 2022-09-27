@@ -312,7 +312,7 @@ class BaseDSLParser(object):
                     cur_component = self.train_input_model.get(cur_component)
                     parent_path.append(cur_component)
                 else:
-                    if is_warm_start and self.components[input_pos].get_module().lower() == "modelloader":
+                    if (is_warm_start or not is_same_module) and self.components[input_pos].get_module().lower() == "modelloader":
                         model_load_alias = RuntimeConfParserUtil.get_model_loader_alias(input_component, runtime_conf,
                                                                                         local_role, local_party_id)
                         isometric_component = model_load_alias
