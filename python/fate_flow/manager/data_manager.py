@@ -102,6 +102,11 @@ class AnonymousGenerator(object):
         obj = env_utils.get_class_object("data_format")
         return obj.reconstruct_header(schema)
 
+    @staticmethod
+    def recover_schema(schema):
+        obj = env_utils.get_class_object("data_format")
+        return obj.recover_schema(schema)
+
 
 class DataTableTracker(object):
     @classmethod

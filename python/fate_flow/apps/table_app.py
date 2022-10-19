@@ -112,9 +112,10 @@ def schema_update():
     schema = data_table_meta.get_schema()
     if request_data.get("schema", {}).get("meta"):
         if schema.get("meta"):
+            schema = AnonymousGenerator.recover_schema(schema)
             schema["meta"].update(request_data.get("schema").get("meta"))
         else:
-            schema["meta"] = request_data.get("schema").get("meta")
+            return get_json_result(retcode=101, retmsg="no found meta")
         request_data["schema"].pop("meta", {})
     schema.update(request_data.get("schema", {}))
     data_table_meta.update_metas(schema=schema)
