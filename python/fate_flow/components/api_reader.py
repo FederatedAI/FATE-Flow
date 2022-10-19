@@ -44,14 +44,14 @@ class ApiReaderParam(BaseParam):
             id_delimiter=",",
             head=True,
             extend_sid=False,
-            timeout=60 * 60 * 8
+            timeout=60 * 12
     ):
         self.server_name = server_name
         self.parameters = parameters
         self.id_delimiter = id_delimiter
         self.head = head
         self.extend_sid = extend_sid
-        self.time_out = timeout
+        self.timeout = timeout
 
     def check(self):
         return True
@@ -145,7 +145,8 @@ class ApiReader(ComponentBase):
 
     def check_status(self, job_id):
         query_registry_info = self.service_info.get("query")
-        for i in range(0, self.parameters.get("timeout", 60 * 5)):
+        logger.info(f"parameters timeout: {self.parameters.get('timeout', 60 * 12)} min")
+        for i in range(0, self.parameters.get("timeout", 60 * 12)):
             status_response = getattr(requests, query_registry_info.f_method.lower(), None)(
                 url=query_registry_info.f_url,
                 json={"jobId": job_id}
@@ -159,7 +160,7 @@ class ApiReader(ComponentBase):
                     logger.error(f"job id {job_id} status: {status_response.json().get('data').get('status')}")
                     raise Exception(status_response.json().get("data"))
             logger.info(f"job id {job_id} status: {status_response.json().get('data').get('status')}")
-            time.sleep(30)
+            time.sleep(60)
         raise TimeoutError("check status timeout")
 
     def download_data(self, job_id):
