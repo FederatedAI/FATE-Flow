@@ -396,8 +396,24 @@ class TaskExecutor(BaseTaskWorker):
                         search_component_name, search_model_alias = dsl_model_key_items[1], dsl_model_key_items[2]
                     else:
                         raise Exception('get input {} failed'.format(input_type))
-                    tracker_client = TrackerClient(job_id=job_id, role=role, party_id=party_id, component_name=search_component_name, model_id=job_parameters.model_id, model_version=job_parameters.model_version)
-                    models = tracker_client.read_component_output_model(search_model_alias)
+
+                    kwargs = {
+                        'job_id': job_id,
+                        'role': role,
+                        'party_id': party_id,
+                        'component_name': search_component_name,
+                        'model_id': job_parameters.model_id,
+                        # in the prediction job, job_parameters.model_version comes from the training job
+                        'model_version': job_parameters.model_version,
+                    }
+                    # get models from the training job
+                    models = TrackerClient(**kwargs).read_component_output_model(search_model_alias)
+
+                    if not models and job_parameters.job_type == 'predict':
+                        kwargs['model_version'] = job_id
+                        # get models from the prediction job if not found in the training job
+                        models = TrackerClient(**kwargs).read_component_output_model(search_model_alias)
+
                     this_type_args[search_component_name] = models
             else:
                 raise Exception(f"not support {input_type} input type")
