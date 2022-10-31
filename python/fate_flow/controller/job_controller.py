@@ -548,25 +548,27 @@ class JobController(object):
         source_inheritance_tasks, target_inheritance_tasks = cls.load_source_target_tasks(job)
         schedule_logger(job.f_job_id).info(f"source_inheritance_tasks:{source_inheritance_tasks}, target_inheritance_tasks:{target_inheritance_tasks}")
         cls.output_reload(job, source_inheritance_tasks, target_inheritance_tasks)
+        if job.f_is_initiator:
+            source_inheritance_tasks, target_inheritance_tasks = cls.load_source_target_tasks(job, update_status=True)
         cls.status_reload(job, source_inheritance_tasks, target_inheritance_tasks)
 
     @classmethod
-    def load_source_target_tasks(cls, job):
-        source_inheritance_tasks = cls.load_tasks(job_id=job.f_inheritance_info.get("job_id"), role=job.f_role,
-                                                  party_id=job.f_party_id,
-                                                  component_list=job.f_inheritance_info.get("component_list", []))
-        target_inheritance_tasks = cls.load_tasks(job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id,
-                                                  component_list=job.f_inheritance_info.get("component_list", []))
+    def load_source_target_tasks(cls, job, update_status=False):
+        filters = {"component_list": job.f_inheritance_info.get("component_list", [])}
+        if not update_status:
+            filters.update({"role": job.f_role, "party_id": job.f_party_id})
+        source_inheritance_tasks = cls.load_tasks(job_id=job.f_inheritance_info.get("job_id"), **filters)
+        target_inheritance_tasks = cls.load_tasks(job_id=job.f_job_id, **filters)
         return source_inheritance_tasks, target_inheritance_tasks
 
     @classmethod
-    def load_tasks(cls, component_list, job_id, role, party_id):
-        tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, only_latest=True)
+    def load_tasks(cls, component_list, job_id, **kwargs):
+        tasks = JobSaver.query_task(job_id=job_id, only_latest=True, **kwargs)
         task_dict = {}
         for cpn in component_list:
             for task in tasks:
                 if cpn == task.f_component_name:
-                    task_dict[cpn] = task
+                    task_dict[f"{cpn}_{task.f_role}_{task.f_task_version}"] = task
         return task_dict
 
     @classmethod
@@ -637,7 +639,10 @@ class JobController(object):
         schedule_logger(job.f_job_id).info("start reload status")
         # update task status
         for key, source_task in source_tasks.items():
-            JobSaver.reload_task(source_task, target_tasks[key])
+            try:
+                JobSaver.reload_task(source_task, target_tasks[key])
+            except Exception as e:
+                schedule_logger(job.f_job_id).warning(f"reload failed: {e}")
 
         # update job status
         JobSaver.update_job(job_info={

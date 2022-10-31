@@ -322,7 +322,7 @@ class TableStorage:
                                 if need_head and header and output_table_meta.get_have_head() and \
                                         output_table_meta.get_schema().get("is_display", True):
                                     fw.write('{}\n'.format(','.join(header)))
-                            fw.write('{}\n'.format(output_tables_meta.get_id_delimiter().join(map(lambda x: str(x), data_line))))
+                            fw.write('{}\n'.format(output_table_meta.get_id_delimiter().join(map(lambda x: str(x), data_line))))
                             output_data_count += 1
                             if output_data_count == limit:
                                 break
