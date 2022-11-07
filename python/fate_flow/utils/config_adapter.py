@@ -16,16 +16,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from copy import deepcopy
+
 from fate_flow.entity import RunParameters
 
 
 class JobRuntimeConfigAdapter(object):
     def __init__(self, job_runtime_conf):
+        job_runtime_conf = deepcopy(job_runtime_conf)
+        if 'job_parameters' not in job_runtime_conf:
+            job_runtime_conf['job_parameters'] = {}
+        if 'common' not in job_runtime_conf['job_parameters']:
+            job_runtime_conf['job_parameters']['common'] = {}
         self.job_runtime_conf = job_runtime_conf
-        if not self.job_runtime_conf.get("job_parameters"):
-            self.job_runtime_conf["job_parameters"] = {}
-        if "common" not in self.job_runtime_conf["job_parameters"]:
-            self.job_runtime_conf["job_parameters"]["common"] = {}
 
     def get_common_parameters(self):
         if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
@@ -54,7 +57,6 @@ class JobRuntimeConfigAdapter(object):
                 self.job_runtime_conf['job_parameters'] = job_parameters.to_dict()
         return self.job_runtime_conf['job_parameters']
 
-
     def check_removed_parameter(self):
         check_list = []
         if self.check_backend():
@@ -62,7 +64,6 @@ class JobRuntimeConfigAdapter(object):
         if self.check_work_mode():
             check_list.append("work_mode")
         return ','.join(check_list)
-
 
     def check_backend(self):
         if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
@@ -90,19 +91,12 @@ class JobRuntimeConfigAdapter(object):
     def update_model_id_version(self, model_id=None, model_version=None):
         if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
             if model_id:
-                self.job_runtime_conf['job_parameters'].get('common', {})['model_id'] = model_id
+                self.job_runtime_conf['job_parameters']['common']['model_id'] = model_id
             if model_version:
-                self.job_runtime_conf['job_parameters'].get('common', {})['model_version'] = model_version
+                self.job_runtime_conf['job_parameters']['common']['model_version'] = model_version
         else:
             if model_id:
                 self.job_runtime_conf['job_parameters']['model_id'] = model_id
             if model_version:
                 self.job_runtime_conf['job_parameters']['model_version'] = model_version
         return self.job_runtime_conf
-
-
-
-
-
-
-

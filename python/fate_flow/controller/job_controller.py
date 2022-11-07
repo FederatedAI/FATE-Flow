@@ -667,12 +667,10 @@ class JobController(object):
         )
 
         query_args = (
-            PipelineComponentMeta.f_component_name.in_(
-                job.f_inheritance_info['component_list'],
-            ),
+            PipelineComponentMeta.f_component_name.in_(job.f_inheritance_info['component_list']),
         )
-
         query = source_pipelined_component.get_define_meta_from_db(*query_args)
+
         for row in query:
             for i in ('variables_data_path', 'run_parameters_path', 'checkpoint_path'):
                 source_dir = getattr(source_pipelined_component, i) / row.f_component_name

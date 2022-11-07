@@ -311,8 +311,10 @@ class TrackingOutputDataInfo(DataBaseModel):
         if ModelClass is None:
             class Meta:
                 db_table = '%s_%s' % ('t_tracking_output_data_info', table_index)
-                primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_data_name', 'f_role',
-                                           'f_party_id')
+                primary_key = CompositeKey(
+                    'f_job_id', 'f_task_id', 'f_task_version',
+                    'f_data_name', 'f_role', 'f_party_id',
+                )
 
             attrs = {'__module__': cls.__module__, 'Meta': Meta}
             ModelClass = type("%s_%s" % (cls.__name__, table_index), (cls,),
@@ -572,6 +574,7 @@ class SiteKeyInfo(DataBaseModel):
     class Meta:
         db_table = "t_site_key_info"
         primary_key = CompositeKey('f_party_id', 'f_key_name')
+
 
 class PipelineComponentMeta(DataBaseModel):
     f_model_id = CharField(max_length=100, index=True)
