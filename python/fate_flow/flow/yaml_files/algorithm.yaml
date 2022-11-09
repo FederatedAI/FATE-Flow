@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: algorithm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      module: algorithm
+  serviceName: algorithm
+  template:
+    metadata:
+      labels:
+        module: algorithm
+    spec:
+      containers:
+        - name: algorithm
+          image:
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: algorithm-data
+              mountPath: /data/projects/fate/fateflow/logs
+              subPath: logs
+            - name: algorithm-data
+              mountPath: /data/projects/fate/fateflow/jobs
+              subPath: jobs
+      serviceAccountName: default
+      restartPolicy: Always
+      volumes:
+        - name: algorithm-data
+          emptyDir: {}
