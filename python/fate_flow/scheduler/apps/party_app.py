@@ -64,20 +64,20 @@ def check_dependence(job_id, role, party_id):
 
 @manager.route('/<job_id>/<role>/<party_id>/resource/apply', methods=['POST'])
 def apply_resource(job_id, role, party_id):
-    status = ResourceManager.apply_for_job_resource(job_id=job_id, role=role, party_id=int(party_id))
-    if status:
-        return get_json_result(retcode=0, retmsg='success')
-    else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"apply for job {job_id} resource failed")
+    # status = ResourceManager.apply_for_job_resource(job_id=job_id, role=role, party_id=int(party_id))
+    # if status:
+    return get_json_result(retcode=0, retmsg='success')
+    # else:
+        # return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"apply for job {job_id} resource failed")
 
 
 @manager.route('/<job_id>/<role>/<party_id>/resource/return', methods=['POST'])
 def return_resource(job_id, role, party_id):
-    status = ResourceManager.return_job_resource(job_id=job_id, role=role, party_id=int(party_id))
-    if status:
-        return get_json_result(retcode=0, retmsg='success')
-    else:
-        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"apply for job {job_id} resource failed")
+    # status = ResourceManager.return_job_resource(job_id=job_id, role=role, party_id=int(party_id))
+    # if status:
+    return get_json_result(retcode=0, retmsg='success')
+    # else:
+        # return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"apply for job {job_id} resource failed")
 
 
 @manager.route('/<job_id>/<role>/<party_id>/start', methods=['POST'])

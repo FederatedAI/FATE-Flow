@@ -28,22 +28,12 @@ class JobRuntimeConfigAdapter(object):
             self.job_runtime_conf["job_parameters"]["common"] = {}
 
     def get_common_parameters(self):
-        if int(self.job_runtime_conf.get('dsl_version', 1)) == 2:
-            job_parameters = RunParameters(**self.job_runtime_conf.get("job_parameters", {}).get("common", {}))
-            self.job_runtime_conf['job_parameters']['common'] = job_parameters.to_dict()
-        else:
-            if "processors_per_node" in self.job_runtime_conf['job_parameters']:
-                self.job_runtime_conf['job_parameters']["eggroll_run"] = \
-                    {"eggroll.session.processors.per.node": self.job_runtime_conf['job_parameters']["processors_per_node"]}
-            job_parameters = RunParameters(**self.job_runtime_conf['job_parameters'])
-            self.job_runtime_conf['job_parameters'] = job_parameters.to_dict()
+        job_parameters = RunParameters(**self.job_runtime_conf.get("job_parameters", {}).get("common", {}))
+        self.job_runtime_conf['job_parameters']['common'] = job_parameters.to_dict()
         return job_parameters
 
     def update_common_parameters(self, common_parameters: RunParameters):
-        if int(self.job_runtime_conf.get("dsl_version", 1)) == 2:
-            self.job_runtime_conf["job_parameters"]["common"] = common_parameters.to_dict()
-        else:
-            self.job_runtime_conf["job_parameters"] = common_parameters.to_dict()
+        self.job_runtime_conf["job_parameters"]["common"] = common_parameters.to_dict()
         return self.job_runtime_conf
 
     def get_job_parameters_dict(self, job_parameters: RunParameters = None):

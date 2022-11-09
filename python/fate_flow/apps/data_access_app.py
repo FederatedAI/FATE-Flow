@@ -18,6 +18,7 @@ from pathlib import Path
 
 from flask import request
 
+from fate_flow.controller.job_controller import JobController
 from fate_flow.entity.run_status import StatusSet
 from fate_flow.entity import JobConfigurationBase
 from fate_arch import storage
@@ -26,7 +27,6 @@ from fate_arch.common.base_utils import json_loads
 from fate_flow.settings import UPLOAD_DATA_FROM_CLIENT
 from fate_flow.utils.api_utils import get_json_result, error_response
 from fate_flow.utils import detect_utils, job_utils
-from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.operation.job_saver import JobSaver
 
 
@@ -97,7 +97,7 @@ def download_upload(access_module):
                                    retmsg='The data table already exists.'
                                           'If you still want to continue uploading, please add the parameter --drop')
     job_dsl, job_runtime_conf = gen_data_access_job_config(job_config, access_module)
-    submit_result = DAGScheduler.submit(JobConfigurationBase(**{'dsl': job_dsl, 'runtime_conf': job_runtime_conf}), job_id=job_id)
+    submit_result = JobController.request_create_job(JobConfigurationBase(**{'dsl': job_dsl, 'runtime_conf': job_runtime_conf, "job_id": job_id}))
     data.update(submit_result)
     return get_json_result(job_id=job_id, data=data)
 

@@ -131,17 +131,6 @@ def check_config(config: typing.Dict, required_parameters: typing.List):
         return True, 'ok'
 
 
-def check_job_conf(runtime_conf, job_dsl):
-    detect_utils.check_config(runtime_conf, ['initiator', 'role'])
-    detect_utils.check_config(runtime_conf['initiator'], ['role', 'party_id'])
-    # deal party id
-    runtime_conf['initiator']['party_id'] = int(runtime_conf['initiator']['party_id'])
-    for r in runtime_conf['role'].keys():
-        for i in range(len(runtime_conf['role'][r])):
-            runtime_conf['role'][r][i] = int(runtime_conf['role'][r][i])
-    constraint_check(runtime_conf, job_dsl)
-
-
 def runtime_conf_basic(if_local=False):
     job_runtime_conf = {
         "dsl_version": 2,
@@ -416,19 +405,6 @@ def check_job_inheritance_parameters(job, inheritance_jobs, inheritance_tasks):
 
 def get_job_all_components(dsl):
     return [dsl['components'][component_name]['module'].lower() for component_name in dsl['components'].keys()]
-
-
-def constraint_check(job_runtime_conf, job_dsl):
-    if job_dsl:
-        all_components = get_job_all_components(job_dsl)
-        glm = ['heterolr', 'heterolinr', 'heteropoisson']
-        for cpn in glm:
-            if cpn in all_components:
-                roles = job_runtime_conf.get('role')
-                if 'guest' in roles.keys() and 'arbiter' in roles.keys() and 'host' in roles.keys():
-                    for party_id in set(roles['guest']) & set(roles['arbiter']):
-                        if party_id not in roles['host'] or len(set(roles['guest']) & set(roles['arbiter'])) != len(roles['host']):
-                            raise Exception("{} component constraint party id, please check role config:{}".format(cpn, job_runtime_conf.get('role')))
 
 
 def get_job_dataset(is_initiator, role, party_id, roles, job_args):

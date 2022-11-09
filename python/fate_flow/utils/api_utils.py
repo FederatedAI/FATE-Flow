@@ -79,7 +79,7 @@ def get_json_result(retcode=RetCode.SUCCESS, retmsg='success', data=None, job_id
         "retcode": retcode,
         "retmsg": retmsg,
         "data": data,
-        "jobId": job_id,
+        "job_id": job_id,
         "meta": meta,
     }
 

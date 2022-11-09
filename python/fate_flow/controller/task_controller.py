@@ -126,7 +126,7 @@ class TaskController(object):
         update_status = False
         try:
             update_status = JobSaver.update_task(task_info=task_info)
-            cls.report_task_to_initiator(task_info=task_info)
+            cls.report_task_to_scheduler(task_info=task_info)
         except Exception as e:
             schedule_logger(task_info["job_id"]).exception(e)
         finally:
@@ -136,7 +136,7 @@ class TaskController(object):
     def update_task_status(cls, task_info):
         update_status = JobSaver.update_task_status(task_info=task_info)
         if update_status and EndStatus.contains(task_info.get("status")):
-            ResourceManager.return_task_resource(task_info=task_info)
+            # ResourceManager.return_task_resource(task_info=task_info)
             cls.clean_task(job_id=task_info["job_id"],
                            task_id=task_info["task_id"],
                            task_version=task_info["task_version"],
@@ -144,19 +144,13 @@ class TaskController(object):
                            party_id=task_info["party_id"],
                            content_type=TaskCleanResourceType.TABLE,
                            is_asynchronous=True)
-        cls.report_task_to_initiator(task_info=task_info)
+        cls.report_task_to_scheduler(task_info=task_info)
         return update_status
 
     @classmethod
-    def report_task_to_initiator(cls, task_info):
-        tasks = JobSaver.query_task(task_id=task_info["task_id"],
-                                    task_version=task_info["task_version"],
-                                    role=task_info["role"],
-                                    party_id=task_info["party_id"])
-        if task_info.get("error_report"):
-            tasks[0].f_error_report = task_info.get("error_report")
-        if tasks[0].f_federated_status_collect_type == FederatedCommunicationType.PUSH:
-            FederatedScheduler.report_task_to_initiator(task=tasks[0])
+    def report_task_to_scheduler(cls, task_info):
+        jobs = JobSaver.query_job(job_id=task_info["job_id"])
+        FederatedScheduler.report_task_to_scheduler(party_id=jobs[0].f_scheduler_party_id, command_body=task_info)
 
     @classmethod
     def collect_task(cls, job_id, component_name, task_id, task_version, role, party_id):

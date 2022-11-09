@@ -17,9 +17,10 @@ from ._base import BaseEntity
 
 
 class JobConfigurationBase(BaseEntity):
-    def __init__(self, dsl=None, runtime_conf=None, **kwargs):
+    def __init__(self, dsl=None, runtime_conf=None, job_id=None, **kwargs):
         self._dsl = dsl if dsl else kwargs.get("job_dsl")
         self._runtime_conf = runtime_conf if runtime_conf else kwargs.get("job_runtime_conf")
+        self._job_id = job_id
 
     @property
     def dsl(self):
@@ -28,6 +29,10 @@ class JobConfigurationBase(BaseEntity):
     @property
     def runtime_conf(self):
         return self._runtime_conf
+
+    @property
+    def job_id(self):
+        return self._job_id
 
 
 class JobConfiguration(JobConfigurationBase):

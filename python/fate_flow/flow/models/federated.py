@@ -1,56 +1,63 @@
 from .resource import BaseAPI
+from ..entity.types import ResourceOperation
 
 
 class FederatedAPI(BaseAPI):
-    @classmethod
-    def create_job(cls, job: Job):
-        return cls.job_command(job=job, command="create", command_body=job.to_human_model_dict(), parallel=False)
+    def create_job(self, job_id, roles, job_info):
+        return self.job_command(job_id=job_id, roles=roles, command="create", command_body=job_info, parallel=False)
 
-    @classmethod
-    def resource_for_job(cls, job, operation_type: ResourceOperation, specific_dest=None):
-        return cls.job_command(job=job, command=f"resource/{operation_type.value}", specific_dest=specific_dest)
+    def update_parameter(self, job_id, roles, updated_parameters):
+        return self.job_command(job_id=job_id, roles=roles, command="parameter/update", command_body=updated_parameters,
+                                parallel=False)
 
-    @classmethod
-    def start_job(cls, job, command_body=None):
-        return cls.job_command(job=job, command="start", command_body=command_body)
+    def resource_for_job(self, job_id, roles, operation_type: ResourceOperation):
+        return self.job_command(job_id=job_id, roles=roles, command=f"resource/{operation_type.value}")
 
-    @classmethod
-    def sync_job_status(cls, job):
-        return cls.job_command(job=job, command=f"status/{job.f_status}", command_body=job.to_human_model_dict())
+    def check_component(self, job_id, roles, check_type):
+        status_code, response = self.job_command(job_id=job_id, roles=roles, command=f"component/{check_type}/check")
+        return status_code, response
 
-    @classmethod
-    def stop_job(cls, job, stop_status):
-        job.f_status = stop_status
-        return cls.job_command(job=job, command="stop/{}".format(stop_status))
+    def dependence_for_job(self, job_id, roles):
+        return self.job_command(job_id=job_id, roles=roles, command=f"dependence/check")
 
-    @classmethod
-    def rerun_job(cls, job, command_body):
-        return cls.job_command(job=job, command="rerun", command_body=command_body, dest_only_initiator=True)
+    def connect(self, job_id, roles, command_body):
+        return self.job_command(job_id=job_id, roles=roles, command="align", command_body=command_body)
 
-    @classmethod
-    def clean_job(cls, job):
-        return cls.job_command(job=job, command="clean", command_body=job.f_runtime_conf_on_party["role"].copy())
+    def align_args(self, job_id, roles, command_body):
+        return self.job_command(job_id=job_id, roles=roles, command="align", command_body=command_body)
 
-    @classmethod
-    def create_task(cls, job, task):
-        return cls.task_command(job=job, task=task, command="create", command_body=task.to_human_model_dict())
+    def start_job(self, job_id, roles, command_body):
+        return self.job_command(job_id=job_id, roles=roles, command="start", command_body=command_body)
 
-    @classmethod
-    def start_task(cls, job, task):
-        return cls.task_command(job=job, task=task, command="start", command_body={}, need_user=True)
+    def sync_job_status(self, job_id, roles, status, command_body=None):
+        return self.job_command(job_id=job_id, roles=roles, command=f"status/{status}", command_body=command_body)
 
-    @classmethod
-    def collect_task(cls, job, task):
-        return cls.task_command(job=job, task=task, command="collect")
+    def sync_job(self, job_id, roles, command_body=None):
+        return self.job_command(job_id=job_id, roles=roles, command="update", command_body=command_body)
 
-    @classmethod
-    def sync_task_status(cls, job, task):
-        return cls.task_command(job=job, task=task, command=f"status/{task.f_status}")
+    def save_pipelined_model(self, job_id, roles):
+        return self.job_command(job_id=job_id, roles=roles, command="model")
 
-    @classmethod
-    def stop_task(cls, job, task, stop_status, command_body=None):
-        return cls.task_command(job=job, task=task, command="stop/{}".format(stop_status), command_body=command_body)
+    def stop_job(self, job_id, roles, stop_status):
+        return self.job_command(job_id=job_id, roles=roles, command="stop/{}".format(stop_status))
 
-    @classmethod
-    def clean_task(cls, job, task, content_type: TaskCleanResourceType):
-        return cls.task_command(job=job, task=task, command="clean/{}".format(content_type.value))
+    def clean_job(self, job_id, roles, command_body=None):
+        return self.job_command(job_id=job_id, roles=roles, command="clean", command_body=command_body)
+
+    def create_task(self, tasks, command_body=None):
+        return self.task_command(tasks=tasks, command="create", command_body=command_body)
+
+    def start_task(self, tasks):
+        return self.task_command(tasks=tasks, command="start")
+
+    def collect_task(self, tasks):
+        return self.task_command(tasks=tasks, command="collect")
+
+    def sync_task_status(self, tasks, status):
+        return self.task_command(tasks=tasks, command=f"status/{status}")
+
+    def stop_task(self, tasks, stop_status, command_body=None):
+        return self.task_command(tasks=tasks, command="stop/{}".format(stop_status), command_body=command_body)
+
+    def clean_task(self, tasks, content_type):
+        return self.task_command(tasks=tasks, command="clean/{}".format(content_type))

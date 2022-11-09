@@ -43,6 +43,7 @@ from fate_flow.detection.detector import Detector, FederatedDetector
 from fate_flow.entity.types import ProcessRole
 from fate_flow.hook import HookManager
 from fate_flow.manager.provider_manager import ProviderManager
+from fate_flow.scheduler.client import SchedulerClient
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.settings import (
     GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT,
@@ -92,6 +93,7 @@ if __name__ == '__main__':
     ComponentRegistry.load()
     HookManager.init()
     RsaKeyManager.init()
+    SchedulerClient.init()
     VersionController.init()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     FederatedDetector(interval=10 * 1000, logger=detect_logger).start()

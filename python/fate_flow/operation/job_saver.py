@@ -19,7 +19,8 @@ import time
 import typing
 
 from fate_arch.common.base_utils import current_timestamp
-from fate_flow.db.db_models import DB, Job, Task, DataBaseModel
+from fate_flow.db.db_models import DB, Job, Task, DataBaseModel, JobSchedulerInfo, TaskSchedulerInfo, \
+    TaskSchedulerStatus
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
 from fate_flow.utils.log_utils import schedule_logger, sql_logger
 from fate_flow.utils import schedule_utils
@@ -30,12 +31,14 @@ class JobSaver(object):
     STATUS_FIELDS = ["status", "party_status"]
 
     @classmethod
-    def create_job(cls, job_info) -> Job:
-        return cls.create_job_family_entity(Job, job_info)
+    def create_job(cls, job_info, is_scheduler=False) -> Job:
+        job_obj = Job if not is_scheduler else JobSchedulerInfo
+        return cls.create_job_family_entity(job_obj, job_info)
 
     @classmethod
-    def create_task(cls, task_info) -> Task:
-        return cls.create_job_family_entity(Task, task_info)
+    def create_task(cls, task_info, is_scheduler=False) -> Task:
+        task_obj = Task if not is_scheduler else TaskSchedulerInfo
+        return cls.create_job_family_entity(task_obj, task_info)
 
     @classmethod
     @DB.connection_context()
@@ -43,9 +46,10 @@ class JobSaver(object):
         Job.delete().where(Job.f_job_id == job_id)
 
     @classmethod
-    def update_job_status(cls, job_info):
+    def update_job_status(cls, job_info, is_scheduler=False):
+        job_obj = Job if not is_scheduler else JobSchedulerInfo
         schedule_logger(job_info["job_id"]).info("try to update job status to {}".format(job_info.get("status")))
-        update_status = cls.update_status(Job, job_info)
+        update_status = cls.update_status(job_obj, job_info)
         if update_status:
             schedule_logger(job_info["job_id"]).info("update job status successfully")
             if EndStatus.contains(job_info.get("status")):
@@ -56,19 +60,20 @@ class JobSaver(object):
                         new_job_info[k] = job_info[k]
                 if not new_job_info.get("tag"):
                     new_job_info["tag"] = "job_end"
-                cls.update_entity_table(Job, new_job_info)
+                cls.update_entity_table(job_obj, new_job_info)
         else:
             schedule_logger(job_info["job_id"]).warning("update job status does not take effect")
         return update_status
 
     @classmethod
-    def update_job(cls, job_info):
+    def update_job(cls, job_info, is_scheduler=False):
+        job_obj = Job if not is_scheduler else JobSchedulerInfo
         schedule_logger(job_info["job_id"]).info("try to update job")
         if "status" in job_info:
             # Avoid unintentional usage that updates the status
             del job_info["status"]
             schedule_logger(job_info["job_id"]).warning("try to update job, pop job status")
-        update_status = cls.update_entity_table(Job, job_info)
+        update_status = cls.update_entity_table(job_obj, job_info)
         if update_status:
             schedule_logger(job_info.get("job_id")).info(f"job update successfully: {job_info}")
         else:
@@ -76,9 +81,18 @@ class JobSaver(object):
         return update_status
 
     @classmethod
-    def update_task_status(cls, task_info):
-        schedule_logger(task_info["job_id"]).info("try to update task {} {} status".format(task_info["task_id"], task_info["task_version"]))
-        update_status = cls.update_status(Task, task_info)
+    def update_task_status(cls, task_info, is_scheduler=False, scheduler_status=False):
+        task_obj = Task
+        if is_scheduler:
+            task_obj = TaskSchedulerInfo
+            if "party_status" in task_info:
+                task_info["status"] = task_info["party_status"]
+        if scheduler_status:
+            task_obj = TaskSchedulerStatus
+        schedule_logger(task_info["job_id"]).info("try to update task obj {} {} {} status".format(task_obj.__name__,
+                                                                                                  task_info["task_id"],
+                                                                                                  task_info["task_version"]))
+        update_status = cls.update_status(task_obj, task_info)
         if update_status:
             schedule_logger(task_info["job_id"]).info("update task {} {} status successfully: {}".format(task_info["task_id"], task_info["task_version"], task_info))
         else:
@@ -86,9 +100,10 @@ class JobSaver(object):
         return update_status
 
     @classmethod
-    def update_task(cls, task_info, report=False):
+    def update_task(cls, task_info, is_scheduler=False, report=False):
+        task_obj = Task if not is_scheduler else TaskSchedulerInfo
         schedule_logger(task_info["job_id"]).info("try to update task {} {}".format(task_info["task_id"], task_info["task_version"]))
-        update_status = cls.update_entity_table(Task, task_info)
+        update_status = cls.update_entity_table(task_obj, task_info)
         if task_info.get("error_report") and report:
             schedule_logger(task_info["job_id"]).error("role {} party id {} task {} error report: {}".format(
                 task_info["role"], task_info["party_id"], task_info["task_id"], task_info["error_report"]))
@@ -142,7 +157,7 @@ class JobSaver(object):
 
     @classmethod
     @DB.connection_context()
-    def update_status(cls, entity_model: DataBaseModel, entity_info: dict):
+    def update_status(cls, entity_model, entity_info: dict):
         query_filters = []
         primary_keys = entity_model.get_primary_keys_name()
         for p_k in primary_keys:
@@ -163,14 +178,17 @@ class JobSaver(object):
                     old_status = getattr(obj, f"f_{status_field}")
                     new_status = update_info[status_field]
                     if_pass = False
-                    if isinstance(obj, Task):
+                    if isinstance(obj, Task) or isinstance(obj, TaskSchedulerInfo) or isinstance(obj, TaskSchedulerStatus):
                         if TaskStatus.StateTransitionRule.if_pass(src_status=old_status, dest_status=new_status):
                             if_pass = True
-                    elif isinstance(obj, Job):
+                    elif isinstance(obj, Job) or isinstance(obj, JobSchedulerInfo):
                         if JobStatus.StateTransitionRule.if_pass(src_status=old_status, dest_status=new_status):
                             if_pass = True
                         if EndStatus.contains(new_status) and new_status not in {JobStatus.SUCCESS, JobStatus.CANCELED}:
-                            update_filters.append(Job.f_rerun_signal == False)
+                            if isinstance(obj, JobSchedulerInfo):
+                                update_filters.append(JobSchedulerInfo.f_rerun_signal == False)
+                            elif isinstance(obj, Job):
+                                update_filters.append(Job.f_rerun_signal == False)
                     if if_pass:
                         update_filters.append(operator.attrgetter(f"f_{status_field}")(type(obj)) == old_status)
                     else:
@@ -224,14 +242,15 @@ class JobSaver(object):
 
     @classmethod
     @DB.connection_context()
-    def query_job(cls, reverse=None, order_by=None, **kwargs):
-        return Job.query(reverse=reverse, order_by=order_by, **kwargs)
+    def query_job(cls, reverse=None, order_by=None, is_scheduler=False, **kwargs):
+        job_obj = Job if not is_scheduler else JobSchedulerInfo
+        return job_obj.query(reverse=reverse, order_by=order_by, **kwargs)
 
     @classmethod
     @DB.connection_context()
-    def get_tasks_asc(cls, job_id, role, party_id):
-        tasks = Task.query(order_by="create_time", reverse=False, job_id=job_id, role=role, party_id=party_id)
-        tasks_group = cls.get_latest_tasks(tasks=tasks)
+    def get_tasks_asc(cls, job_id):
+        tasks = TaskSchedulerStatus.query(order_by="create_time", reverse=False, job_id=job_id)
+        tasks_group = cls.get_latest_tasks(tasks=tasks, is_scheduler=True)
         return tasks_group
 
     @classmethod
@@ -260,10 +279,10 @@ class JobSaver(object):
             return False
 
     @classmethod
-    def get_latest_tasks(cls, tasks):
+    def get_latest_tasks(cls, tasks, is_scheduler=False):
         tasks_group = {}
         for task in tasks:
-            task_key = cls.task_key(task_id=task.f_task_id, role=task.f_role, party_id=task.f_party_id)
+            task_key = cls.task_key(task_id=task.f_task_id, role=task.f_role, party_id=task.f_party_id) if not is_scheduler else task.f_task_id
             if task_key not in tasks_group:
                 tasks_group[task_key] = task
             elif task.f_task_version > tasks_group[task_key].f_task_version:
@@ -283,6 +302,20 @@ class JobSaver(object):
     @classmethod
     def task_key(cls, task_id, role, party_id):
         return f"{task_id}_{role}_{party_id}"
+
+    @classmethod
+    def create_task_scheduler_status(cls, task_info):
+        cls.create_job_family_entity(TaskSchedulerStatus, task_info)
+
+    @classmethod
+    def get_latest_scheduler_tasks(cls, tasks):
+        tasks_group = {}
+        for task in tasks:
+            if task.f_task_id not in tasks_group:
+                tasks_group[task.f_task_id] = task
+            elif task.f_task_version > tasks_group[task.f_task_id].f_task_version:
+                tasks_group[task.f_task_id] = task
+        return tasks_group
 
 
 def str_to_time_stamp(time_str):

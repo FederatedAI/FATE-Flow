@@ -1,86 +1,94 @@
 import threading
 
 from ..api import APIClient
+from ..entity.run_status import FederatedSchedulingStatusCode
+from ..entity.types import RetCode, Task
 
 
 class BaseAPI:
     def __init__(self, client: APIClient):
         self.client = client
 
-    def command(self, job_id, src_role, src_party_id, dest_role, dest_party_id, endpoint, body,
-                federated_mode, federated_response):
+    def federated_command(self, job_id, src_role, src_party_id, dest_role, dest_party_id, endpoint, body,
+                          federated_response, federated_mode=None, method='POST', only_scheduler=False):
         try:
             response = self.client.remote(job_id=job_id,
-                                          method='POST',
+                                          method=method,
                                           endpoint=endpoint,
                                           src_role=src_role,
                                           src_party_id=src_party_id,
                                           dest_party_id=dest_party_id,
                                           json_body=body if body else {},
                                           federated_mode=federated_mode)
+            if only_scheduler:
+                return response
         except Exception as e:
             response = {
-                "retcode": 1,
+                "retcode": RetCode.FEDERATED_ERROR,
                 "retmsg": "Federated schedule error, {}".format(e)
             }
-        return response
+        federated_response[dest_role][dest_party_id] = response
 
-    @classmethod
-    def job_command(cls, job, command, command_body=None, dest_only_initiator=False, specific_dest=None, parallel=False):
+    def job_command(self, job_id, roles, command, command_body=None, parallel=False):
         federated_response = {}
-        job_parameters = job.f_runtime_conf_on_party["job_parameters"]
-        if dest_only_initiator:
-            dest_partis = [(job.f_initiator_role, [job.f_initiator_party_id])]
-            api_type = "initiator"
-        elif specific_dest:
-            dest_partis = specific_dest.items()
-            api_type = "party"
-        else:
-            dest_partis = job.f_roles.items()
-            api_type = "party"
+        api_type = "party"
+        dest_partis = roles.items()
         threads = []
         for dest_role, dest_party_ids in dest_partis:
             federated_response[dest_role] = {}
             for dest_party_id in dest_party_ids:
-                endpoint = f"/{api_type}/{job.f_job_id}/{dest_role}/{dest_party_id}/{command}"
-                args = (job.f_job_id, job.f_role, job.f_party_id, dest_role, dest_party_id, endpoint, command_body, job_parameters["federated_mode"], federated_response)
+                endpoint = f"/{api_type}/{job_id}/{dest_role}/{dest_party_id}/{command}"
+                args = (job_id, "", "", dest_role, dest_party_id, endpoint, command_body, federated_response)
                 if parallel:
-                    t = threading.Thread(target=cls.command, args=args)
+                    t = threading.Thread(target=self.federated_command, args=args)
                     threads.append(t)
                     t.start()
                 else:
-                    cls.command(*args)
+                    self.federated_command(*args)
         for thread in threads:
             thread.join()
-        return cls.return_federated_response(federated_response=federated_response)
+        return self.return_federated_response(federated_response=federated_response)
 
-    @classmethod
-    def task_command(cls, job: Job, task: Task, command, command_body=None, parallel=False, need_user=False):
-        msg = f"execute federated task {task.f_component_name} command({command})"
+    def task_command(self, tasks, command, command_body=None, parallel=False):
         federated_response = {}
-        job_parameters = job.f_runtime_conf_on_party["job_parameters"]
         threads = []
         for task in tasks:
-            dest_role, dest_party_id = task.f_role, task.f_party_id
+            dest_role, dest_party_id = task["role"], task["party_id"]
             federated_response[dest_role] = federated_response.get(dest_role, {})
-            endpoint = f"/party/{task.f_job_id}/{task.f_component_name}/{task.f_task_id}/{task.f_task_version}/{dest_role}/{dest_party_id}/{command}"
-            if need_user:
-                command_body["user_id"] = job.f_user.get(dest_role, {}).get(str(dest_party_id), "")
-            args = (job.f_job_id, job.f_role, job.f_party_id, dest_role, dest_party_id, endpoint, command_body, job_parameters["federated_mode"], federated_response)
+            endpoint = f"/party/{task['job_id']}/{task['component_name']}/{task['task_id']}/{task['task_version']}/{dest_role}/{dest_party_id}/{command}"
+            args = (task['job_id'], task['role'], task['party_id'], dest_role, dest_party_id, endpoint, command_body, federated_response)
             if parallel:
-                t = threading.Thread(target=cls.command, args=args)
+                t = threading.Thread(target=self.federated_command, args=args)
                 threads.append(t)
                 t.start()
             else:
-                cls.command(*args)
+                self.federated_command(*args)
         for thread in threads:
             thread.join()
-        status_code, response = cls.return_federated_response(federated_response=federated_response)
+        status_code, response = self.return_federated_response(federated_response=federated_response)
         return status_code, response
 
-    @classmethod
-    def scheduler_command(cls):
-        pass
+    def scheduler_command(self, command, party_id, command_body=None, method='POST'):
+        try:
+            federated_response = {}
+            endpoint = f"/scheduler/{command}"
+            response = self.federated_command(job_id="",
+                                              method=method,
+                                              endpoint=endpoint,
+                                              src_role="",
+                                              src_party_id="",
+                                              dest_role="",
+                                              dest_party_id=party_id,
+                                              body=command_body if command_body else {},
+                                              federated_response=federated_response,
+                                              only_scheduler=True
+                                              )
+        except Exception as e:
+            response = {
+                "retcode": RetCode.FEDERATED_ERROR,
+                "retmsg": "Federated schedule error, {}".format(e)
+            }
+        return response
 
     @classmethod
     def return_federated_response(cls, federated_response):

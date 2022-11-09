@@ -43,7 +43,8 @@ app.json_encoder = CustomJSONEncoder
 
 pages_dir = [
     Path(__file__).parent,
-    Path(__file__).parent.parent / 'scheduling_apps'
+    # Path(__file__).parent.parent / 'scheduling_apps',
+    Path(__file__).parent.parent / 'scheduler/apps'
 ]
 pages_path = [j for i in pages_dir for j in i.glob('*_app.py')]
 scheduling_url_prefix = []
@@ -66,7 +67,7 @@ for path in pages_path:
     page_name = getattr(page, 'page_name', page_name)
 
     app.register_blueprint(page.manager, url_prefix=f'/{api_version}/{page_name}')
-    if 'scheduling_apps' in path.parts:
+    if "scheduler/apps" in path.parts:
         scheduling_url_prefix.append(f'/{api_version}/{page_name}')
     else:
         client_url_prefix.append(f'/{api_version}/{page_name}')

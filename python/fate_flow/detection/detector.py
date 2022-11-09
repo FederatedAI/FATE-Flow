@@ -32,6 +32,7 @@ from fate_flow.entity.run_status import (
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
+from fate_flow.scheduler.client import SchedulerClient
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import SESSION_VALID_PERIOD
 from fate_flow.utils.api_utils import is_localhost
@@ -55,7 +56,7 @@ class Detector(Cron):
         detect_logger().info('start to detect running task..')
         count = 0
         try:
-            running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, run_on_this_party=True)
+            running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING)
             stop_job_ids = set()
             for task in running_tasks:
                 if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST:
@@ -214,14 +215,15 @@ class Detector(Cron):
             detect_logger().info('finish detect expired session')
 
     @classmethod
-    def request_stop_jobs(cls, jobs: List[Job], stop_msg, stop_status):
+    def request_stop_jobs(cls, jobs, stop_msg, stop_status):
         if not len(jobs):
             return
         detect_logger().info(f"have {len(jobs)} should be stopped, because of {stop_msg}")
         for job in jobs:
             try:
                 detect_logger(job_id=job.f_job_id).info(f"detector request start to stop job {job.f_job_id}, because of {stop_msg}")
-                status = FederatedScheduler.request_stop_job(job=job, stop_status=stop_status)
+                status = FederatedScheduler.request_stop_job(job_id=job.f_job_id, party_id=job.f_scheduler_party_id,
+                                                             stop_status=stop_status)
                 detect_logger(job_id=job.f_job_id).info(f"detector request stop job {job.f_job_id} {status}")
             except Exception as e:
                 detect_logger(job_id=job.f_job_id).exception(e)
@@ -289,7 +291,12 @@ class FederatedDetector(Detector):
                 while cur_retry < max_retry_cnt:
                     detect_logger().info(f"start federated detect running job {job.f_job_id} cur_retry={cur_retry}")
                     try:
-                        status_code, response = FederatedScheduler.connect(job)
+                        status_code, response = FederatedScheduler.connect(job_id=job.f_job_id,
+                                                                           roles=job.f_roles,
+                                                                           command_body={"job_id": job.f_job_id,
+                                                                                         "role": job.f_role,
+                                                                                         "party_id": job.f_party_id}
+                                                                           )
                         if status_code != FederatedSchedulingStatusCode.SUCCESS:
                             exception = f"connect code: {status_code}"
                         else:

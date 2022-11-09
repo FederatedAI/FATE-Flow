@@ -132,66 +132,67 @@ class ResourceManager(object):
     @classmethod
     @DB.connection_context()
     def resource_for_job(cls, job_id, role, party_id, operation_type: ResourceOperation):
-        operate_status = False
-        engine_name, cores, memory = cls.calculate_job_resource(job_id=job_id, role=role, party_id=party_id)
-        try:
-            with DB.atomic():
-                updates = {
-                    Job.f_engine_type: EngineType.COMPUTING,
-                    Job.f_engine_name: engine_name,
-                    Job.f_cores: cores,
-                    Job.f_memory: memory,
-                }
-                filters = [
-                    Job.f_job_id == job_id,
-                    Job.f_role == role,
-                    Job.f_party_id == party_id,
-                ]
-                if operation_type is ResourceOperation.APPLY:
-                    updates[Job.f_remaining_cores] = cores
-                    updates[Job.f_remaining_memory] = memory
-                    updates[Job.f_resource_in_use] = True
-                    updates[Job.f_apply_resource_time] = base_utils.current_timestamp()
-                    filters.append(Job.f_resource_in_use == False)
-                elif operation_type is ResourceOperation.RETURN:
-                    updates[Job.f_resource_in_use] = False
-                    updates[Job.f_return_resource_time] = base_utils.current_timestamp()
-                    filters.append(Job.f_resource_in_use == True)
-                operate = Job.update(updates).where(*filters)
-                record_status = operate.execute() > 0
-                if not record_status:
-                    raise RuntimeError(f"record job {job_id} resource {operation_type} failed on {role} {party_id}")
-
-                if cores or memory:
-                    filters, updates = cls.update_resource_sql(resource_model=EngineRegistry,
-                                                               cores=cores,
-                                                               memory=memory,
-                                                               operation_type=operation_type,
-                                                               )
-                    filters.append(EngineRegistry.f_engine_type == EngineType.COMPUTING)
-                    filters.append(EngineRegistry.f_engine_name == engine_name)
-                    operate = EngineRegistry.update(updates).where(*filters)
-                    apply_status = operate.execute() > 0
-                else:
-                    apply_status = True
-                if not apply_status:
-                    raise RuntimeError(
-                        f"update engine {engine_name} record for job {job_id} resource {operation_type} on {role} {party_id} failed")
-            operate_status = True
-        except Exception as e:
-            schedule_logger(job_id).warning(e)
-            schedule_logger(job_id).warning(
-                f"{operation_type} job resource(cores {cores} memory {memory}) on {role} {party_id} failed")
-            operate_status = False
-        finally:
-            remaining_cores, remaining_memory = cls.get_remaining_resource(EngineRegistry,
-                                                                           [
-                                                                               EngineRegistry.f_engine_type == EngineType.COMPUTING,
-                                                                               EngineRegistry.f_engine_name == engine_name])
-            operate_msg = "successfully" if operate_status else "failed"
-            schedule_logger(job_id).info(
-                f"{operation_type} job resource(cores {cores} memory {memory}) on {role} {party_id} {operate_msg}, remaining cores: {remaining_cores} remaining memory: {remaining_memory}")
-            return operate_status
+        # operate_status = False
+        # engine_name, cores, memory = cls.calculate_job_resource(job_id=job_id, role=role, party_id=party_id)
+        # try:
+        #     with DB.atomic():
+        #         updates = {
+        #             Job.f_engine_type: EngineType.COMPUTING,
+        #             Job.f_engine_name: engine_name,
+        #             Job.f_cores: cores,
+        #             Job.f_memory: memory,
+        #         }
+        #         filters = [
+        #             Job.f_job_id == job_id,
+        #             Job.f_role == role,
+        #             Job.f_party_id == party_id,
+        #         ]
+        #         if operation_type is ResourceOperation.APPLY:
+        #             updates[Job.f_remaining_cores] = cores
+        #             updates[Job.f_remaining_memory] = memory
+        #             updates[Job.f_resource_in_use] = True
+        #             updates[Job.f_apply_resource_time] = base_utils.current_timestamp()
+        #             filters.append(Job.f_resource_in_use == False)
+        #         elif operation_type is ResourceOperation.RETURN:
+        #             updates[Job.f_resource_in_use] = False
+        #             updates[Job.f_return_resource_time] = base_utils.current_timestamp()
+        #             filters.append(Job.f_resource_in_use == True)
+        #         operate = Job.update(updates).where(*filters)
+        #         record_status = operate.execute() > 0
+        #         if not record_status:
+        #             raise RuntimeError(f"record job {job_id} resource {operation_type} failed on {role} {party_id}")
+        #
+        #         if cores or memory:
+        #             filters, updates = cls.update_resource_sql(resource_model=EngineRegistry,
+        #                                                        cores=cores,
+        #                                                        memory=memory,
+        #                                                        operation_type=operation_type,
+        #                                                        )
+        #             filters.append(EngineRegistry.f_engine_type == EngineType.COMPUTING)
+        #             filters.append(EngineRegistry.f_engine_name == engine_name)
+        #             operate = EngineRegistry.update(updates).where(*filters)
+        #             apply_status = operate.execute() > 0
+        #         else:
+        #             apply_status = True
+        #         if not apply_status:
+        #             raise RuntimeError(
+        #                 f"update engine {engine_name} record for job {job_id} resource {operation_type} on {role} {party_id} failed")
+        #     operate_status = True
+        # except Exception as e:
+        #     schedule_logger(job_id).warning(e)
+        #     schedule_logger(job_id).warning(
+        #         f"{operation_type} job resource(cores {cores} memory {memory}) on {role} {party_id} failed")
+        #     operate_status = False
+        # finally:
+        #     remaining_cores, remaining_memory = cls.get_remaining_resource(EngineRegistry,
+        #                                                                    [
+        #                                                                        EngineRegistry.f_engine_type == EngineType.COMPUTING,
+        #                                                                        EngineRegistry.f_engine_name == engine_name])
+        #     operate_msg = "successfully" if operate_status else "failed"
+        #     schedule_logger(job_id).info(
+        #         f"{operation_type} job resource(cores {cores} memory {memory}) on {role} {party_id} {operate_msg}, remaining cores: {remaining_cores} remaining memory: {remaining_memory}")
+        #     return operate_status
+        return True
 
     @classmethod
     def adapt_engine_parameters(cls, role, job_parameters: RunParameters, create_initiator_baseline=False):

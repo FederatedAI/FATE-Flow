@@ -45,8 +45,7 @@ class TaskInitializer(BaseWorker):
         LOGGER.info(start_log(log_msg, role=self.args.role, party_id=self.args.party_id))
         for component_name in self.args.config["components"]:
             result[component_name] = {}
-            task_info = {}
-            task_info.update(common_task_info)
+            common_task_info.update({"scheduler_party_id": job_configuration.runtime_conf["scheduler_party_id"]})
 
             parameters, user_specified_parameters = ProviderManager.get_component_parameters(dsl_parser=dsl_parser,
                                                                                              component_name=component_name,

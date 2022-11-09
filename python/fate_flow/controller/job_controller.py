@@ -15,6 +15,7 @@
 #
 import os
 import shutil
+from copy import deepcopy
 
 from fate_arch.common import EngineType, engine_utils
 from fate_arch.common.base_utils import current_timestamp, json_dumps
@@ -24,7 +25,7 @@ from fate_flow.controller.task_controller import TaskController
 from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.entity import RunParameters
+from fate_flow.entity import RunParameters, JobConfigurationBase
 from fate_flow.entity.run_status import EndStatus, JobInheritanceStatus, JobStatus, TaskStatus
 from fate_flow.entity.types import RetCode, WorkerName
 from fate_flow.manager.provider_manager import ProviderManager
@@ -37,7 +38,7 @@ from fate_flow.operation.job_tracker import Tracker
 from fate_flow.pipelined_model.pipelined_model import PipelinedComponent
 from fate_flow.protobuf.python import pipeline_pb2
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.settings import ENABLE_MODEL_STORE, ENGINES
+from fate_flow.settings import ENABLE_MODEL_STORE, ENGINES, PARTY_ID
 from fate_flow.utils import data_utils, job_utils, log_utils, schedule_utils
 from fate_flow.utils.job_utils import get_job_dataset
 from fate_flow.utils.log_utils import schedule_logger
@@ -46,11 +47,25 @@ from fate_flow.utils.model_utils import gather_model_info_data, save_model_info
 
 class JobController(object):
     @classmethod
+    def request_create_job(cls, submit_job_conf: JobConfigurationBase):
+        runtime_conf = submit_job_conf.runtime_conf
+        common_job_parameters = RunParameters(**runtime_conf.get('job_parameters', {}).get('common', {}))
+        runtime_conf["job_parameters"].update({"common": common_job_parameters.to_dict()})
+        runtime_conf["initiator_party_id"] = PARTY_ID
+        if not runtime_conf.get("scheduler_party_id"):
+            runtime_conf["scheduler_party_id"] = PARTY_ID
+        response = FederatedScheduler.request_create_job(party_id=runtime_conf["scheduler_party_id"],
+                                                         command_body={"dsl": submit_job_conf.dsl,
+                                                                       "runtime_conf": runtime_conf,
+                                                                       "job_id": submit_job_conf.job_id})
+        return response
+
+    @classmethod
     def create_job(cls, job_id, role, party_id, job_info):
         # parse job configuration
         dsl = job_info['dsl']
         runtime_conf = job_info['runtime_conf']
-        train_runtime_conf = job_info['train_runtime_conf']
+        train_runtime_conf = job_info.get('train_runtime_conf', {})
 
         dsl_parser = schedule_utils.get_job_dsl_parser(
             dsl=dsl,
@@ -59,33 +74,21 @@ class JobController(object):
         )
         job_parameters = dsl_parser.get_job_parameters(runtime_conf)
         schedule_logger(job_id).info('job parameters:{}'.format(job_parameters))
-        dest_user = job_parameters.get(role, {}).get(party_id, {}).get('user', '')
-        user = {}
+
         src_party_id = int(job_info['src_party_id']) if job_info.get('src_party_id') else 0
         src_role = job_info.get('src_role', '')
-        src_user = job_parameters.get(src_role, {}).get(src_party_id, {}).get('user', '') if src_role else ''
-        for _role, party_id_item in job_parameters.items():
-            user[_role] = {}
-            for _party_id, _parameters in party_id_item.items():
-                user[_role][_party_id] = _parameters.get("user", "")
+
         job_parameters = RunParameters(**job_parameters.get(role, {}).get(party_id, {}))
 
-        # save new job into db
-        if role == job_info["initiator_role"] and party_id == job_info["initiator_party_id"]:
-            is_initiator = True
-        else:
-            is_initiator = False
         job_info["status"] = JobStatus.READY
-        job_info["user_id"] = dest_user
-        job_info["src_user"] = src_user
-        job_info["user"] = user
         # this party configuration
         job_info["role"] = role
         job_info["party_id"] = party_id
-        job_info["is_initiator"] = is_initiator
+        # job_info["is_initiator"] = is_initiator
         job_info["progress"] = 0
         cls.create_job_parameters_on_party(role=role, party_id=party_id, job_parameters=job_parameters)
         # update job parameters on party
+        job_info["runtime_conf_on_party"] = deepcopy(job_info["runtime_conf"])
         job_info["runtime_conf_on_party"]["job_parameters"] = job_parameters.to_dict()
         JobSaver.create_job(job_info=job_info)
         schedule_logger(job_id).info("start initialize tasks")
@@ -93,7 +96,6 @@ class JobController(object):
                                                                   role=role,
                                                                   party_id=party_id,
                                                                   run_on_this_party=True,
-                                                                  initiator_role=job_info["initiator_role"],
                                                                   initiator_party_id=job_info["initiator_party_id"],
                                                                   job_parameters=job_parameters,
                                                                   dsl_parser=dsl_parser,
@@ -106,7 +108,7 @@ class JobController(object):
 
         roles = job_info['roles']
         cls.initialize_job_tracker(job_id=job_id, role=role, party_id=party_id,
-                                   job_parameters=job_parameters, roles=roles, is_initiator=is_initiator, dsl_parser=dsl_parser)
+                                   job_parameters=job_parameters, roles=roles, is_initiator=False, dsl_parser=dsl_parser)
 
         job_utils.save_job_conf(job_id=job_id,
                                 role=role,
@@ -132,11 +134,11 @@ class JobController(object):
             setattr(job_parameters, f"{k}_engine", engines[k])
 
     @classmethod
-    def create_common_job_parameters(cls, job_id, initiator_role, common_job_parameters: RunParameters):
+    def create_common_job_parameters(cls, job_id, common_job_parameters: RunParameters):
         JobController.set_federated_mode(job_parameters=common_job_parameters)
         JobController.set_engines(job_parameters=common_job_parameters, engine_type={EngineType.COMPUTING})
         JobController.fill_default_job_parameters(job_id=job_id, job_parameters=common_job_parameters)
-        JobController.adapt_job_parameters(role=initiator_role, job_parameters=common_job_parameters, create_initiator_baseline=True)
+        JobController.adapt_job_parameters(role="", job_parameters=common_job_parameters, create_initiator_baseline=True)
 
     @classmethod
     def create_job_parameters_on_party(cls, role, party_id, job_parameters: RunParameters):
@@ -215,7 +217,7 @@ class JobController(object):
         if input_job_parameters:
             if input_job_parameters.get("common"):
                 common_job_parameters = RunParameters(**input_job_parameters["common"])
-                cls.create_common_job_parameters(job_id=job_id, initiator_role=initiator_role, common_job_parameters=common_job_parameters)
+                cls.create_common_job_parameters(job_id=job_id, common_job_parameters=common_job_parameters)
                 for attr in {"model_id", "model_version"}:
                     setattr(common_job_parameters, attr, updated_job_parameters["common"].get(attr))
                 updated_job_parameters["common"] = common_job_parameters.to_dict()
@@ -271,13 +273,11 @@ class JobController(object):
         return initialized_result
 
     @classmethod
-    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_role, initiator_party_id,
+    def initialize_tasks(cls, job_id, role, party_id, run_on_this_party, initiator_party_id,
                          job_parameters: RunParameters = None, dsl_parser=None, components: list = None,
                          runtime_conf=None, check_version=False, is_scheduler=False, **kwargs):
         common_task_info = {}
         common_task_info["job_id"] = job_id
-        common_task_info["initiator_role"] = initiator_role
-        common_task_info["initiator_party_id"] = initiator_party_id
         common_task_info["role"] = role
         common_task_info["party_id"] = party_id
         common_task_info["run_on_this_party"] = run_on_this_party
@@ -436,7 +436,7 @@ class JobController(object):
             if task.f_status in [TaskStatus.SUCCESS, TaskStatus.WAITING, TaskStatus.PASS]:
                 continue
             kill_task_status = False
-            status, response = FederatedScheduler.stop_task(job=job, task=task, stop_status=stop_status)
+            status, response = FederatedScheduler.stop_task(task_id=task.f_task_id, stop_status=stop_status)
             if status == RetCode.SUCCESS:
                 kill_task_status = True
             kill_status = kill_status & kill_task_status

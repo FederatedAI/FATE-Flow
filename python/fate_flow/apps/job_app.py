@@ -22,14 +22,14 @@ from flask import abort, request, send_file
 
 from fate_arch.common.base_utils import json_dumps, json_loads
 from fate_flow.controller.job_controller import JobController
-from fate_flow.entity import JobConfigurationBase, RetCode
+from fate_flow.entity import JobConfigurationBase, RetCode, RunParameters
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode, JobStatus
 from fate_flow.operation.job_clean import JobClean
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.settings import TEMP_DIRECTORY, stat_logger
+from fate_flow.settings import TEMP_DIRECTORY, stat_logger, PARTY_ID
 from fate_flow.utils import job_utils, log_utils, schedule_utils, api_utils
 from fate_flow.utils.api_utils import error_response, get_json_result
 from fate_flow.utils.config_adapter import JobRuntimeConfigAdapter
@@ -38,10 +38,9 @@ from fate_flow.utils.log_utils import schedule_logger
 
 @manager.route('/submit', methods=['POST'])
 def submit_job():
-    submit_result = DAGScheduler.submit(JobConfigurationBase(**request.json))
-    return get_json_result(retcode=submit_result["code"], retmsg=submit_result["message"],
-                           job_id=submit_result["job_id"],
-                           data=submit_result if submit_result["code"] == RetCode.SUCCESS else None)
+    submit_result = JobController.request_create_job(JobConfigurationBase(**request.json))
+    schedule_logger('wzh').info(submit_result)
+    return get_json_result(**submit_result)
 
 
 @manager.route('/stop', methods=['POST'])
@@ -54,7 +53,8 @@ def stop_job():
         kill_status, kill_details = JobController.stop_jobs(job_id=job_id, stop_status=stop_status)
         schedule_logger(job_id).info(f"stop job on this party status {kill_status}")
         schedule_logger(job_id).info(f"request stop job to {stop_status}")
-        status_code, response = FederatedScheduler.request_stop_job(job=jobs[0], stop_status=stop_status, command_body=jobs[0].to_dict())
+        status_code, response = FederatedScheduler.request_stop_job(party_id=jobs[0].f_scheduler_party_id,
+                                                                    job_id=job_id, stop_status=stop_status)
         if status_code == FederatedSchedulingStatusCode.SUCCESS:
             return get_json_result(retcode=RetCode.SUCCESS, retmsg=f"stop job on this party {'success' if kill_status else 'failed'}; stop job on all party success")
         else:
@@ -281,7 +281,9 @@ def clean_queue():
     jobs = JobSaver.query_job(is_initiator=True, status=JobStatus.WAITING)
     clean_status = {}
     for job in jobs:
-        status_code, response = FederatedScheduler.request_stop_job(job=job, stop_status=JobStatus.CANCELED)
+        status_code, response = FederatedScheduler.request_stop_job(party_id=job.f_scheduler_party_id,
+                                                                    job_id=job.f_job_id,
+                                                                    stop_status=JobStatus.CANCELED)
         clean_status[job.f_job_id] = status_code
     return get_json_result(retcode=0, retmsg='success', data=clean_status)
 
