@@ -169,7 +169,7 @@ def gen_data_access_job_config(config_data, access_module):
                 "file",
                 "namespace",
                 "name",
-                "delimiter",
+                "id_delimiter",
                 "storage_engine",
                 "storage_address",
                 "destroy",
