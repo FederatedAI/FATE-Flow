@@ -22,6 +22,7 @@ from fate_arch.common import file_utils
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.db.db_models import ComponentProviderInfo
 from fate_flow.db.dependence_registry import DependenceRegistry
+from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import ComponentProvider
 from fate_flow.entity.types import FateDependenceName, ComponentProviderName, FateDependenceStorageEngine
 from fate_flow.settings import FATE_VERSION_DEPENDENCIES_PATH
@@ -102,7 +103,7 @@ class DependenceUpload(BaseWorker):
 
         LOGGER.info(f'start upload')
         snapshot_time = DependenceRegistry.get_modify_time(source_path)
-        storage_dir = f"/fate_dependence/{provider.version}"
+        storage_dir = f"{ServerRegistry.HDFS.NAME_NODE}/fate_dependence/{provider.version}"
         os.system(f" {os.getenv('HADOOP_HOME')}/bin/hdfs dfs -mkdir -p  {storage_dir}")
         status = os.system(f"{os.getenv('HADOOP_HOME')}/bin/hdfs dfs -put -f {target_file} {storage_dir}")
         LOGGER.info(f'upload end, status is {status}')
