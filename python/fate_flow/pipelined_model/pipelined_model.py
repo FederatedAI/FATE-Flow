@@ -160,6 +160,9 @@ class PipelinedModel(Locker):
         if model_alias is None:
             model_alias = self.get_model_alias(component_name)
 
+        if not self.pipelined_component.exists(component_name, model_alias):
+            return {}
+
         _model_buffers = self._read_component_model(component_name, model_alias)
 
         model_buffers = {}
