@@ -59,15 +59,6 @@ class RsaKeyManager:
 
     @classmethod
     @DB.connection_context()
-    def get_key(cls, party_id, key_name=SiteKeyName.PUBLIC.value):
-        site_info = SiteKeyInfo.query(party_id=party_id, key_name=key_name)
-        if site_info:
-            return site_info[0].f_key
-        else:
-            return None
-
-    @classmethod
-    @DB.connection_context()
     def delete(cls, party_id, key_name=SiteKeyName.PUBLIC.value):
         site_info = SiteKeyInfo.query(party_id=party_id, key_name=key_name)
         if site_info:

@@ -167,7 +167,7 @@ class TaskExecutor(BaseTaskWorker):
                                                                      )
             if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
                 task_run_args["job_parameters"] = job_parameters
-            LOGGER.info(f"task input args {task_run_args}")
+            # LOGGER.info(f"task input args {task_run_args}")
 
             need_run = component_parameters_on_party.get("ComponentParam", {}).get("need_run", True)
             provider_interface = provider_utils.get_provider_interface(provider=component_provider)
