@@ -25,6 +25,7 @@ from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.settings import ENABLE_MODEL_STORE
 from fate_flow.utils.api_utils import error_response, get_json_result, validate_request
 from fate_flow.utils.detect_utils import check_config
+from fate_flow.utils.job_utils import generate_job_id
 from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
@@ -278,8 +279,13 @@ def woe_array_merge():
             )
             break
 
+    pipelined_model = PipelinedModel(
+        pipelined_model.party_model_id,
+        generate_job_id()
+    )
+
     pipelined_model.save_component_model(
-        query.f_component_name + '_merged',
+        query.f_component_name,
         query.f_component_module_name,
         query.f_model_alias,
         model,
@@ -291,8 +297,8 @@ def woe_array_merge():
             role=query.f_role,
             party_id=query.f_party_id,
             model_id=query.f_model_id,
-            model_version=query.f_model_version,
-            component_name=query.f_component_name + '_merged',
+            model_version=pipelined_model.model_version,
+            component_name=query.f_component_name,
         )
         sync_component.upload()
 
@@ -300,6 +306,6 @@ def woe_array_merge():
         'role': query.f_role,
         'party_id': query.f_party_id,
         'model_id': query.f_model_id,
-        'model_version': query.f_model_version,
-        'component_name': query.f_component_name + '_merged',
+        'model_version': pipelined_model.model_version,
+        'component_name': query.f_component_name,
     })
