@@ -103,9 +103,11 @@ class DependenceUpload(BaseWorker):
 
         LOGGER.info(f'start upload')
         snapshot_time = DependenceRegistry.get_modify_time(source_path)
-        storage_dir = f"{ServerRegistry.HDFS.get('name_node')}/fate_dependence/{provider.version}"
-        os.system(f" {os.getenv('HADOOP_HOME')}/bin/hdfs dfs -mkdir -p  {storage_dir}")
-        status = os.system(f"{os.getenv('HADOOP_HOME')}/bin/hdfs dfs -put -f {target_file} {storage_dir}")
+        hdfs_address = ServerRegistry.FATE_ON_SPARK.get("hdfs", {}).get("name_node")
+        LOGGER.info(f'hdfs address: {hdfs_address}')
+        storage_dir = f"/fate_dependence/{provider.version}"
+        os.system(f" {os.getenv('HADOOP_HOME')}/bin/hdfs dfs -mkdir -p  {hdfs_address}{storage_dir}")
+        status = os.system(f"{os.getenv('HADOOP_HOME')}/bin/hdfs dfs -put -f {target_file} {hdfs_address}{storage_dir}")
         LOGGER.info(f'upload end, status is {status}')
         if status == 0:
             storage_path = os.path.join(storage_dir, os.path.basename(target_file))
