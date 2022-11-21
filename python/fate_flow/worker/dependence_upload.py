@@ -68,7 +68,7 @@ class DependenceUpload(BaseWorker):
             # todo: version python env
             # The reason why we add the pip install here is because this venv_pack pacakge will only be needed when
             # dependent distribution is enabled
-            subprocess.run(["pip", "install", "venv_pack"])
+            subprocess.run(["pip", "install", "venv-pack==0.2.0"])
             target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python_env.tar.gz")
             subprocess.run(["/data/projects/python/venv/bin/venv-pack", "-o", target_file])
             source_path = os.path.dirname(os.path.dirname(os.getenv("VIRTUAL_ENV")))
