@@ -66,9 +66,6 @@ class DependenceUpload(BaseWorker):
         LOGGER.info(f'dependencies loading ...')
         if dependence_type == FateDependenceName.Python_Env.value:
             # todo: version python env
-            # The reason why we add the pip install here is because this venv_pack pacakge will only be needed when
-            # dependent distribution is enabled
-            subprocess.run(["pip", "install", "venv-pack==0.2.0"])
             target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python_env.tar.gz")
             venv_pack_path = os.path.join(os.getenv("VIRTUAL_ENV"), "bin/venv-pack")
             subprocess.run([venv_pack_path, "-o", target_file])
