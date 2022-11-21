@@ -17,6 +17,7 @@ import functools
 import os
 import shutil
 import zipfile
+import subprocess
 
 from fate_arch.common import file_utils
 from fate_flow.utils.log_utils import getLogger
@@ -65,13 +66,12 @@ class DependenceUpload(BaseWorker):
         LOGGER.info(f'dependencies loading ...')
         if dependence_type == FateDependenceName.Python_Env.value:
             # todo: version python env
-            target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python_env.zip")
+            target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python_env.tar.gz")
+            venv_pack_path = os.path.join(os.getenv("VIRTUAL_ENV"), "bin/venv-pack")
+            subprocess.run([venv_pack_path, "-o", target_file])
             source_path = os.path.dirname(os.path.dirname(os.getenv("VIRTUAL_ENV")))
             cls.rewrite_pyvenv_cfg(os.path.join(os.getenv("VIRTUAL_ENV"), "pyvenv.cfg"), "python_env")
-            env_dir_list = ["python", "miniconda3"]
-            cls.zip_dir(source_path, target_file, env_dir_list)
-
-            dependencies_conf = {"executor_python": f"./{dependence_type}/python/venv/bin/python",
+            dependencies_conf = {"executor_python": f"./{dependence_type}/bin/python",
                                  "driver_python": f"{os.path.join(os.getenv('VIRTUAL_ENV'), 'bin', 'python')}"}
         else:
             fate_code_dependencies = {
