@@ -170,30 +170,6 @@ def save_job_conf(job_id, role, party_id, dsl, runtime_conf, runtime_conf_on_par
     return path_dict
 
 
-def save_task_using_job_conf(task: Task):
-    task_dir = get_task_directory(job_id=task.f_job_id,
-                                  role=task.f_role,
-                                  party_id=task.f_party_id,
-                                  component_name=task.f_component_name,
-                                  task_id=task.f_task_id,
-                                  task_version=str(task.f_task_version))
-    return save_using_job_conf(task.f_job_id, task.f_role, task.f_party_id, config_dir=task_dir)
-
-
-def save_using_job_conf(job_id, role, party_id, config_dir):
-    path_dict = get_job_conf_path(job_id=job_id, role=role, party_id=party_id, specified_dir=config_dir)
-    job_configuration = get_job_configuration(job_id=job_id,
-                                              role=role,
-                                              party_id=party_id)
-    dump_job_conf(path_dict=path_dict,
-                  dsl=job_configuration.dsl,
-                  runtime_conf=job_configuration.runtime_conf,
-                  runtime_conf_on_party=job_configuration.runtime_conf_on_party,
-                  train_runtime_conf=job_configuration.train_runtime_conf,
-                  pipeline_dsl=None)
-    return path_dict
-
-
 def dump_job_conf(path_dict, dsl, runtime_conf, runtime_conf_on_party, train_runtime_conf, pipeline_dsl=None):
     os.makedirs(os.path.dirname(path_dict.get('dsl_path')), exist_ok=True)
     os.makedirs(os.path.dirname(path_dict.get('runtime_conf_on_party_path')), exist_ok=True)

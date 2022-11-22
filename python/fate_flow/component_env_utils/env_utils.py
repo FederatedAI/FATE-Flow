@@ -40,11 +40,6 @@ def import_python_path(provider_info):
     import_path(get_python_path(provider_info))
 
 
-def import_component_output_depend(provider_info=None):
-    if not provider_info:
-        provider_info = ProviderManager.get_default_fate_provider().to_dict()
-    import_python_path(provider_info)
-
 
 def get_class_object(class_name):
     provider_info = ProviderManager.get_default_fate_provider().to_dict()
