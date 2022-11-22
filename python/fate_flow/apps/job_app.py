@@ -39,7 +39,6 @@ from fate_flow.utils.log_utils import schedule_logger
 @manager.route('/submit', methods=['POST'])
 def submit_job():
     submit_result = JobController.request_create_job(JobConfigurationBase(**request.json))
-    schedule_logger('wzh').info(submit_result)
     return get_json_result(**submit_result)
 
 

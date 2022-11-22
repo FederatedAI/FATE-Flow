@@ -98,8 +98,9 @@ def download_upload(access_module):
                                           'If you still want to continue uploading, please add the parameter --drop')
     job_dsl, job_runtime_conf = gen_data_access_job_config(job_config, access_module)
     submit_result = JobController.request_create_job(JobConfigurationBase(**{'dsl': job_dsl, 'runtime_conf': job_runtime_conf, "job_id": job_id}))
-    data.update(submit_result)
-    return get_json_result(job_id=job_id, data=data)
+    if submit_result.get("data"):
+        submit_result["data"].update(data)
+    return get_json_result(**submit_result)
 
 
 @manager.route('/upload/history', methods=['POST'])
@@ -169,7 +170,7 @@ def gen_data_access_job_config(config_data, access_module):
                 "file",
                 "namespace",
                 "name",
-                "delimiter",
+                "id_delimiter",
                 "storage_engine",
                 "storage_address",
                 "destroy",

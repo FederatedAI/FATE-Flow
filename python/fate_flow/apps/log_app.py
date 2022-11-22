@@ -33,3 +33,10 @@ def get_log():
     request_data = request.json
     data = LogCollector(**request_data).cat_log(request_data.get("begin"), request_data.get("end"))
     return get_json_result(retcode=0, retmsg='success', data=data)
+
+
+@manager.route('/write', methods=['POST'])
+def write_log():
+    from fate_flow.utils.schedule_utils import schedule_logger
+    schedule_logger("log_test").info(request.form.to_dict())
+    return get_json_result(retcode=0, retmsg='success')
