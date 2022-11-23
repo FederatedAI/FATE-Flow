@@ -77,6 +77,7 @@ def table_bind():
         if request_data.get("extend_sid", False):
             meta.with_match_id = True
         schema.update({"meta": meta.to_dict()})
+        extra_schema["meta"] = meta.to_dict()
     sess = Session()
     storage_session = sess.storage(storage_engine=engine, options=request_data.get("options"))
     table = storage_session.create_table(address=address, name=name, namespace=namespace,
@@ -112,9 +113,10 @@ def schema_update():
     schema = data_table_meta.get_schema()
     if request_data.get("schema", {}).get("meta"):
         if schema.get("meta"):
+            schema = AnonymousGenerator.recover_schema(schema)
             schema["meta"].update(request_data.get("schema").get("meta"))
         else:
-            schema["meta"] = request_data.get("schema").get("meta")
+            return get_json_result(retcode=101, retmsg="no found meta")
         request_data["schema"].pop("meta", {})
     schema.update(request_data.get("schema", {}))
     data_table_meta.update_metas(schema=schema)

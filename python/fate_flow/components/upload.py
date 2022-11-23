@@ -155,6 +155,8 @@ class Upload(ComponentBase):
             namespace = _namespace
         if name is None:
             name = _table_name
+        if self.parameters.get("with_meta"):
+            self.parameters["id_delimiter"] = self.parameters.get("meta").get("delimiter")
         read_head = self.parameters["head"]
         if read_head == 0:
             head = False

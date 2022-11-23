@@ -25,7 +25,6 @@ from google.protobuf import json_format
 from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.component_env_utils import provider_utils
-from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.model import (
     Locker, local_cache_required,
@@ -161,11 +160,7 @@ class PipelinedModel(Locker):
         if model_alias is None:
             model_alias = self.get_model_alias(component_name)
 
-        query = self.pipelined_component.get_define_meta_from_db(
-            PipelineComponentMeta.f_component_name == component_name,
-            PipelineComponentMeta.f_model_alias == model_alias,
-        )
-        if not query:
+        if not self.pipelined_component.exists(component_name, model_alias):
             return {}
 
         _model_buffers = self._read_component_model(component_name, model_alias)

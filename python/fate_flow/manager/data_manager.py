@@ -102,6 +102,11 @@ class AnonymousGenerator(object):
         obj = env_utils.get_class_object("data_format")
         return obj.reconstruct_header(schema)
 
+    @staticmethod
+    def recover_schema(schema):
+        obj = env_utils.get_class_object("data_format")
+        return obj.recover_schema(schema)
+
 
 class DataTableTracker(object):
     @classmethod
@@ -317,7 +322,8 @@ class TableStorage:
                                 if need_head and header and output_table_meta.get_have_head() and \
                                         output_table_meta.get_schema().get("is_display", True):
                                     fw.write('{}\n'.format(','.join(header)))
-                            fw.write('{}\n'.format(','.join(map(lambda x: str(x), data_line))))
+                            delimiter = output_table_meta.get_id_delimiter() if output_table_meta.get_id_delimiter() else ","
+                            fw.write('{}\n'.format(delimiter.join(map(lambda x: str(x), data_line))))
                             output_data_count += 1
                             if output_data_count == limit:
                                 break

@@ -1,3 +1,10 @@
+# Release 1.9.1
+## Bug Fixes
+* Fix parameter inheritance when loading non-model modules from ModelLoader 
+* Fix job inheritance after adding or removing roles from training configuration
+* Fix delimiter error in uploaded/downloaded data
+* Fix anonymous feature name renewal
+
 # Release 1.9.0
 ## Major Features and Improvements
 * Support high availability and load balancing to improve system availability and stability

@@ -50,17 +50,46 @@ class PipelinedComponent(Pipelined, Locker):
 
         Locker.__init__(self, self.model_path)
 
-    def exists(self, component_name=None):
+    def exists(self, component_name=None, model_alias=None):
         if component_name is None:
             return self.model_path.is_dir() and set(os.listdir(self.model_path)) - {'.lock'}
 
         query = self.get_define_meta_from_db(PipelineComponentMeta.f_component_name == component_name)
 
-        for row in query:
-            variables_data_path = self.variables_data_path / row.f_component_name / row.f_model_alias
-            for model_name, buffer_name in row.f_model_proto_index.items():
-                if not (variables_data_path / model_name).is_file():
+        if query:
+            query = query[0]
+
+            if model_alias is None:
+                model_alias = query.f_model_alias
+
+            model_proto_index = query.f_model_proto_index
+        else:
+            query = self.get_define_meta_from_file()
+
+            try:
+                query = query['model_proto'][component_name]
+            except KeyError:
+                return False
+
+            if model_alias is None:
+                if len(query) != 1:
                     return False
+
+                model_alias = next(iter(query.keys()))
+
+            try:
+                model_proto_index = query[model_alias]
+            except KeyError:
+                return False
+
+        if not model_proto_index:
+            return False
+
+        variables_data_path = self.variables_data_path / component_name / model_alias
+
+        for model_name, buffer_name in model_proto_index.items():
+            if not (variables_data_path / model_name).is_file():
+                return False
 
         return True
 
@@ -130,8 +159,8 @@ class PipelinedComponent(Pipelined, Locker):
 
     # import model
     @local_cache_required(True)
-    def save_define_meta_from_file_to_db(self, force_update=False):
-        if not force_update:
+    def save_define_meta_from_file_to_db(self, replace_on_conflict=False):
+        if not replace_on_conflict:
             with DB.connection_context():
                 count = PipelineComponentMeta.select().where(*self.query_args).count()
             if count > 0:
@@ -156,9 +185,9 @@ class PipelinedComponent(Pipelined, Locker):
                 }
                 insert.append(row)
 
-        bulk_insert_into_db(PipelineComponentMeta, insert, force_update)
+        bulk_insert_into_db(PipelineComponentMeta, insert, replace_on_conflict)
 
-    def replicate_define_meta(self, modification, query_args=()):
+    def replicate_define_meta(self, modification, query_args=(), replace_on_conflict=False):
         query = self.get_define_meta_from_db(*query_args)
         if not query:
             return
@@ -170,7 +199,7 @@ class PipelinedComponent(Pipelined, Locker):
             row.update(modification)
             insert.append(row)
 
-        bulk_insert_into_db(PipelineComponentMeta, insert)
+        bulk_insert_into_db(PipelineComponentMeta, insert, replace_on_conflict)
 
     def get_run_parameters_path(self, component_name):
         return self.run_parameters_path / component_name / 'run_parameters.json'

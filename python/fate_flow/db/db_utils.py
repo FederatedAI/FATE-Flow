@@ -28,7 +28,7 @@ LOGGER = getLogger()
 
 
 @DB.connection_context()
-def bulk_insert_into_db(model, data_source, replace=False):
+def bulk_insert_into_db(model, data_source, replace_on_conflict=False):
     DB.create_tables([model])
 
     current_time = current_timestamp()
@@ -48,7 +48,7 @@ def bulk_insert_into_db(model, data_source, replace=False):
     for i in range(0, len(data_source), batch_size):
         with DB.atomic():
             query = model.insert_many(data_source[i:i + batch_size])
-            if replace:
+            if replace_on_conflict:
                 query = query.on_conflict(preserve=preserve)
             query.execute()
 
