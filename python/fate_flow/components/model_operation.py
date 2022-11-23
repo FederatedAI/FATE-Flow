@@ -65,8 +65,8 @@ class ModelStoreParam(BaseParam):
 
 @model_store_cpn_meta.bind_runner.on_local
 class ModelStore(ComponentBase):
-    def _run(self, input_cpn: ComponentInputProtocol):
-        parameters = input_cpn.parameters
+    def _run(self, cpn_input: ComponentInputProtocol):
+        parameters = cpn_input.parameters
         model_storage = get_model_storage(parameters)
         model_storage.store(
             parameters["model_id"], parameters["model_version"],
@@ -99,8 +99,8 @@ class ModelRestoreParam(BaseParam):
 
 @model_restore_cpn_meta.bind_runner.on_local
 class ModelRestore(ComponentBase):
-    def _run(self, input_cpn: ComponentInputProtocol):
-        parameters = input_cpn.parameters
+    def _run(self, cpn_input: ComponentInputProtocol):
+        parameters = cpn_input.parameters
         model_storage = get_model_storage(parameters)
         model_storage.restore(
             parameters["model_id"], parameters["model_version"],
