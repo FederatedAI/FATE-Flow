@@ -1345,23 +1345,23 @@
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-d, --dsl-path</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-d, --dsl-path</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>job dsl的路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">-c, --conf-path</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-c, --conf-path</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>job conf的路径</td>
 </tr>
 </tbody>
@@ -1370,50 +1370,50 @@
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业ID</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">data.dsl_path</td>
-<td style="text-align: left;">string</td>
+<td align="left">data.dsl_path</td>
+<td align="left">string</td>
 <td>依据提交的dsl内容，由系统生成的实际运行dsl配置的存放路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">data.runtime_conf_on_party_path</td>
-<td style="text-align: left;">string</td>
+<td align="left">data.runtime_conf_on_party_path</td>
+<td align="left">string</td>
 <td>依据提交的conf内容，由系统生成的在每个party实际运行conf配置的存放路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">data.board_url</td>
-<td style="text-align: left;">string</td>
+<td align="left">data.board_url</td>
+<td align="left">string</td>
 <td>fateboard查看地址</td>
 </tr>
 <tr>
-<td style="text-align: left;">data.model_info</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data.model_info</td>
+<td align="left">dict</td>
 <td>模型标识信息</td>
 </tr>
 </tbody>
@@ -2072,29 +2072,29 @@ FATE-Flow 1.9.0版本开始，provider的参数需在conf中配置，具体如�
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>job id 路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">-cpn, --component-name</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">-cpn, --component-name</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>指定从哪个组件重跑，没被指定的组件若与指定组件没有上游依赖关系则不会执行;若不指定该参数则整个作业重跑</td>
 </tr>
 <tr>
-<td style="text-align: left;">--force</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">--force</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>作业即使成功也重跑;若不指定该参数，作业如果成功，则跳过重跑</td>
 </tr>
 </tbody>
@@ -2103,30 +2103,30 @@ FATE-Flow 1.9.0版本开始，provider的参数需在conf中配置，具体如�
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业ID</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -2147,23 +2147,23 @@ FATE-Flow 1.9.0版本开始，provider的参数需在conf中配置，具体如�
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>job id 路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">-c, --conf-path</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-c, --conf-path</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>需要更新的job conf的内容，不需要更新的参数不需要填写</td>
 </tr>
 </tbody>
@@ -2172,30 +2172,30 @@ FATE-Flow 1.9.0版本开始，provider的参数需在conf中配置，具体如�
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业ID</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回更新后的job conf</td>
 </tr>
 </tbody>

@@ -2169,95 +2169,95 @@ flow init -c conf/service_conf.yaml
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">file</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">file</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>数据存储路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">id_delimiter</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">id_delimiter</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>数据分隔符,如","</td>
 </tr>
 <tr>
-<td style="text-align: left;">head</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">int</td>
+<td align="left">head</td>
+<td align="left">否</td>
+<td align="left">int</td>
 <td>数据是否有表头</td>
 </tr>
 <tr>
-<td style="text-align: left;">partition</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">int</td>
+<td align="left">partition</td>
+<td align="left">是</td>
+<td align="left">int</td>
 <td>数据分区数</td>
 </tr>
 <tr>
-<td style="text-align: left;">storage_engine</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">storage_engine</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>存储引擎类型，默认"EGGROLL"，还支持"HDFS","LOCALFS", "HIVE"等</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">namespace</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>表命名空间</td>
 </tr>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">storage_address</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">object</td>
+<td align="left">storage_address</td>
+<td align="left">否</td>
+<td align="left">object</td>
 <td>需要填写对应存储引擎的存储地址</td>
 </tr>
 <tr>
-<td style="text-align: left;">use_local_data</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">int</td>
+<td align="left">use_local_data</td>
+<td align="left">否</td>
+<td align="left">int</td>
 <td>默认1，代表使用client机器的数据;0代表使用fate flow服务所在机器的数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">drop</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">int</td>
+<td align="left">drop</td>
+<td align="left">否</td>
+<td align="left">int</td>
 <td>是否覆盖上传</td>
 </tr>
 <tr>
-<td style="text-align: left;">extend_sid</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">extend_sid</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>是否新增一列uuid id，默认False</td>
 </tr>
 <tr>
-<td style="text-align: left;">auto_increasing_sid</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">auto_increasing_sid</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>新增的id列是否自增(extend_sid为True才会生效), 默认False</td>
 </tr>
 <tr>
-<td style="text-align: left;">with_meta</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">with_meta</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>是否携带meta数据, 默认False</td>
 </tr>
 <tr>
-<td style="text-align: left;">meta</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">object</td>
+<td align="left">meta</td>
+<td align="left">否</td>
+<td align="left">object</td>
 <td>元数据, 默认为空，with_meta为true生效</td>
 </tr>
 </tbody>
@@ -2266,83 +2266,83 @@ flow init -c conf/service_conf.yaml
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">input_format</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">input_format</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>数据格式(danse、svmlight、tag:value)，用来判断</td>
 </tr>
 <tr>
-<td style="text-align: left;">delimiter</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">delimiter</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>数据分隔符,默认","</td>
 </tr>
 <tr>
-<td style="text-align: left;">tag_with_value</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">tag_with_value</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>对tag的数据格式生效，是否携带value</td>
 </tr>
 <tr>
-<td style="text-align: left;">tag_value_delimiter</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">tag_value_delimiter</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>tag:value数据分隔符，默认":"</td>
 </tr>
 <tr>
-<td style="text-align: left;">with_match_id</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">with_match_id</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>是否携带match id</td>
 </tr>
 <tr>
-<td style="text-align: left;">id_list</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">object</td>
+<td align="left">id_list</td>
+<td align="left">否</td>
+<td align="left">object</td>
 <td>id列名称，开启extend_sid下生效，如：["imei", "phone"]</td>
 </tr>
 <tr>
-<td style="text-align: left;">id_range</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">object</td>
+<td align="left">id_range</td>
+<td align="left">否</td>
+<td align="left">object</td>
 <td>对于tag/svmlight格式数据，哪几列为id</td>
 </tr>
 <tr>
-<td style="text-align: left;">exclusive_data_type</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">exclusive_data_type</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>特殊类型数据列格式</td>
 </tr>
 <tr>
-<td style="text-align: left;">data_type</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">data_type</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>列数据类型，默认"float64</td>
 </tr>
 <tr>
-<td style="text-align: left;">with_label</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">with_label</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>是否有标签，默认False</td>
 </tr>
 <tr>
-<td style="text-align: left;">label_name</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">label_name</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>标签名，默认"y"</td>
 </tr>
 <tr>
-<td style="text-align: left;">label_type</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">label_type</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>标签类型, 默认"int"</td>
 </tr>
 </tbody>
@@ -2392,30 +2392,30 @@ flow init -c conf/service_conf.yaml
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>任务id</td>
 </tr>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -2454,29 +2454,29 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-l --limit</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">int</td>
+<td align="left">-l --limit</td>
+<td align="left">no</td>
+<td align="left">int</td>
 <td>返回数量 (默认: 10)</td>
 </tr>
 <tr>
-<td style="text-align: left;">-j --job_id</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j --job_id</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>任务ID</td>
 </tr>
 <tr>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
 <td></td>
 </tr>
 </tbody>
@@ -2491,29 +2491,29 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">output_path</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">output_path</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>下载路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">int</td>
+<td align="left">namespace</td>
+<td align="left">是</td>
+<td align="left">int</td>
 <td>fate表命名空间</td>
 </tr>
 </tbody>
@@ -2529,30 +2529,30 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>任务id</td>
 </tr>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -2590,59 +2590,59 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">int</td>
+<td align="left">namespace</td>
+<td align="left">是</td>
+<td align="left">int</td>
 <td>fate表命名空间</td>
 </tr>
 <tr>
-<td style="text-align: left;">storage_engine</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">storage_engine</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>存储类型,如：MYSQL</td>
 </tr>
 <tr>
-<td style="text-align: left;">address</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">object</td>
+<td align="left">address</td>
+<td align="left">否</td>
+<td align="left">object</td>
 <td>存储地址</td>
 </tr>
 <tr>
-<td style="text-align: left;">output_namespace</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">output_namespace</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>另存为fate的表命名空间</td>
 </tr>
 <tr>
-<td style="text-align: left;">output_name</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">output_name</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>另存为fate的表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">**注: storage_engine、address是组合参数，提供存储到指定引擎的功能；</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
+<td align="left">**注: storage_engine、address是组合参数，提供存储到指定引擎的功能；</td>
+<td align="left"></td>
+<td align="left"></td>
 <td></td>
 </tr>
 <tr>
-<td style="text-align: left;">output_namespace、output_name也是组合参数，提供另存为同种引擎的新表功能**</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
+<td align="left">output_namespace、output_name也是组合参数，提供另存为同种引擎的新表功能**</td>
+<td align="left"></td>
+<td align="left"></td>
 <td></td>
 </tr>
 </tbody>
@@ -2659,30 +2659,30 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>任务id</td>
 </tr>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -2719,29 +2719,29 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数</th>
-<th style="text-align: left;">短格式</th>
-<th style="text-align: left;">长格式</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;"><code>-t</code></td>
-<td style="text-align: left;"><code>--table-name</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;"><code>-n</code></td>
-<td style="text-align: left;"><code>--namespace</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表命名空间</td>
 </tr>
 </tbody>
@@ -2750,25 +2750,25 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -2803,29 +2803,29 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数</th>
-<th style="text-align: left;">短格式</th>
-<th style="text-align: left;">长格式</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;"><code>-t</code></td>
-<td style="text-align: left;"><code>--table-name</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;"><code>-n</code></td>
-<td style="text-align: left;"><code>--namespace</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表命名空间</td>
 </tr>
 </tbody>
@@ -2834,25 +2834,25 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -2875,21 +2875,21 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数</th>
-<th style="text-align: left;">短格式</th>
-<th style="text-align: left;">长格式</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">conf_path</td>
-<td style="text-align: left;"><code>-c</code></td>
-<td style="text-align: left;"><code>--conf-path</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">conf_path</td>
+<td align="left"><code>-c</code></td>
+<td align="left"><code>--conf-path</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>配置路径</td>
 </tr>
 </tbody>
@@ -2898,65 +2898,65 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">namespace</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表命名空间</td>
 </tr>
 <tr>
-<td style="text-align: left;">engine</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">engine</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>存储引擎, 支持"HDFS", "MYSQL", "PATH"</td>
 </tr>
 <tr>
-<td style="text-align: left;">adress</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">object</td>
+<td align="left">adress</td>
+<td align="left">是</td>
+<td align="left">object</td>
 <td>真实存储地址</td>
 </tr>
 <tr>
-<td style="text-align: left;">drop</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">int</td>
+<td align="left">drop</td>
+<td align="left">否</td>
+<td align="left">int</td>
 <td>覆盖以前的信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">head</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">int</td>
+<td align="left">head</td>
+<td align="left">否</td>
+<td align="left">int</td>
 <td>是否有数据表头</td>
 </tr>
 <tr>
-<td style="text-align: left;">id_delimiter</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">id_delimiter</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>数据分隔符</td>
 </tr>
 <tr>
-<td style="text-align: left;">id_column</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">id_column</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>id字段</td>
 </tr>
 <tr>
-<td style="text-align: left;">feature_column</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">array</td>
+<td align="left">feature_column</td>
+<td align="left">否</td>
+<td align="left">array</td>
 <td>特征字段</td>
 </tr>
 </tbody>
@@ -2965,83 +2965,83 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">input_format</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">input_format</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>数据格式(danse、svmlight、tag:value)，用来判断</td>
 </tr>
 <tr>
-<td style="text-align: left;">delimiter</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">delimiter</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>数据分隔符,默认","</td>
 </tr>
 <tr>
-<td style="text-align: left;">tag_with_value</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">tag_with_value</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>对tag的数据格式生效，是否携带value</td>
 </tr>
 <tr>
-<td style="text-align: left;">tag_value_delimiter</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">tag_value_delimiter</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>tag:value数据分隔符，默认":"</td>
 </tr>
 <tr>
-<td style="text-align: left;">with_match_id</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">with_match_id</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>是否携带match id</td>
 </tr>
 <tr>
-<td style="text-align: left;">id_list</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">object</td>
+<td align="left">id_list</td>
+<td align="left">否</td>
+<td align="left">object</td>
 <td>id列名称，开启extend_sid下生效，如：["imei", "phone"]</td>
 </tr>
 <tr>
-<td style="text-align: left;">id_range</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">object</td>
+<td align="left">id_range</td>
+<td align="left">否</td>
+<td align="left">object</td>
 <td>对于tag/svmlight格式数据，哪几列为id</td>
 </tr>
 <tr>
-<td style="text-align: left;">exclusive_data_type</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">exclusive_data_type</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>特殊类型数据列格式</td>
 </tr>
 <tr>
-<td style="text-align: left;">data_type</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">data_type</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>列数据类型，默认"float64</td>
 </tr>
 <tr>
-<td style="text-align: left;">with_label</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">with_label</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>是否有标签，默认False</td>
 </tr>
 <tr>
-<td style="text-align: left;">label_name</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">label_name</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>标签名，默认"y"</td>
 </tr>
 <tr>
-<td style="text-align: left;">label_type</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">label_type</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>标签类型, 默认"int"</td>
 </tr>
 </tbody>
@@ -3103,25 +3103,25 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -3144,29 +3144,29 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数</th>
-<th style="text-align: left;">短格式</th>
-<th style="text-align: left;">长格式</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;"><code>-t</code></td>
-<td style="text-align: left;"><code>--table-name</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;"><code>-n</code></td>
-<td style="text-align: left;"><code>--namespace</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表命名空间</td>
 </tr>
 </tbody>
@@ -3175,25 +3175,25 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -3216,29 +3216,29 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数</th>
-<th style="text-align: left;">短格式</th>
-<th style="text-align: left;">长格式</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;"><code>-t</code></td>
-<td style="text-align: left;"><code>--table-name</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left"><code>-t</code></td>
+<td align="left"><code>--table-name</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;"><code>-n</code></td>
-<td style="text-align: left;"><code>--namespace</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">namespace</td>
+<td align="left"><code>-n</code></td>
+<td align="left"><code>--namespace</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表命名空间</td>
 </tr>
 </tbody>
@@ -3247,25 +3247,25 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -3288,25 +3288,25 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -3336,23 +3336,23 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-d, --dsl-path</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-d, --dsl-path</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>job dsl的路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">-c, --conf-path</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-c, --conf-path</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>job conf的路径</td>
 </tr>
 </tbody>
@@ -3361,50 +3361,50 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业ID</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">data.dsl_path</td>
-<td style="text-align: left;">string</td>
+<td align="left">data.dsl_path</td>
+<td align="left">string</td>
 <td>依据提交的dsl内容，由系统生成的实际运行dsl配置的存放路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">data.runtime_conf_on_party_path</td>
-<td style="text-align: left;">string</td>
+<td align="left">data.runtime_conf_on_party_path</td>
+<td align="left">string</td>
 <td>依据提交的conf内容，由系统生成的在每个party实际运行conf配置的存放路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">data.board_url</td>
-<td style="text-align: left;">string</td>
+<td align="left">data.board_url</td>
+<td align="left">string</td>
 <td>fateboard查看地址</td>
 </tr>
 <tr>
-<td style="text-align: left;">data.model_info</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data.model_info</td>
+<td align="left">dict</td>
 <td>模型标识信息</td>
 </tr>
 </tbody>
@@ -3440,29 +3440,29 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>job id 路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">-cpn, --component-name</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">-cpn, --component-name</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>指定从哪个组件重跑，没被指定的组件若与指定组件没有上游依赖关系则不会执行;若不指定该参数则整个作业重跑</td>
 </tr>
 <tr>
-<td style="text-align: left;">--force</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">bool</td>
+<td align="left">--force</td>
+<td align="left">否</td>
+<td align="left">bool</td>
 <td>作业即使成功也重跑;若不指定该参数，作业如果成功，则跳过重跑</td>
 </tr>
 </tbody>
@@ -3471,30 +3471,30 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业ID</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -3514,23 +3514,23 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>job id 路径</td>
 </tr>
 <tr>
-<td style="text-align: left;">-c, --conf-path</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-c, --conf-path</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>需要更新的job conf的内容，不需要更新的参数不需要填写</td>
 </tr>
 </tbody>
@@ -3539,30 +3539,30 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业ID</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回更新后的job conf</td>
 </tr>
 </tbody>
@@ -3996,35 +3996,35 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-r, --role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-r, --role</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与角色</td>
 </tr>
 <tr>
-<td style="text-align: left;">-p, --partyid</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-p, --partyid</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与方id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-cpn, --component-name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-cpn, --component-name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>组件名，与job dsl中的保持一致</td>
 </tr>
 </tbody>
@@ -4033,25 +4033,25 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -4089,35 +4089,35 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-r, --role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-r, --role</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与角色</td>
 </tr>
 <tr>
-<td style="text-align: left;">-p, --partyid</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-p, --partyid</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与方id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-cpn, --component-name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-cpn, --component-name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>组件名，与job dsl中的保持一致</td>
 </tr>
 </tbody>
@@ -4126,30 +4126,30 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 </tbody>
@@ -4239,35 +4239,35 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-r, --role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-r, --role</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与角色</td>
 </tr>
 <tr>
-<td style="text-align: left;">-p, --partyid</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-p, --partyid</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与方id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-cpn, --component-name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-cpn, --component-name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>组件名，与job dsl中的保持一致</td>
 </tr>
 </tbody>
@@ -4276,30 +4276,30 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 </tbody>
@@ -4409,41 +4409,41 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-r, --role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-r, --role</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与角色</td>
 </tr>
 <tr>
-<td style="text-align: left;">-p, --partyid</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-p, --partyid</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与方id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-cpn, --component-name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-cpn, --component-name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>组件名，与job dsl中的保持一致</td>
 </tr>
 <tr>
-<td style="text-align: left;">-o, --output-path</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-o, --output-path</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>输出数据的存放路径</td>
 </tr>
 </tbody>
@@ -4452,30 +4452,30 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 </tbody>
@@ -4498,35 +4498,35 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-r, --role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-r, --role</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与角色</td>
 </tr>
 <tr>
-<td style="text-align: left;">-p, --partyid</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-p, --partyid</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与方id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-cpn, --component-name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-cpn, --component-name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>组件名，与job dsl中的保持一致</td>
 </tr>
 </tbody>
@@ -4535,30 +4535,30 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 </tbody>
@@ -4587,35 +4587,35 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-r, --role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-r, --role</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与角色</td>
 </tr>
 <tr>
-<td style="text-align: left;">-p, --partyid</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-p, --partyid</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与方id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-cpn, --component-name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-cpn, --component-name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>组件名，与job dsl中的保持一致</td>
 </tr>
 </tbody>
@@ -4624,30 +4624,30 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 </tbody>
@@ -4720,35 +4720,35 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-j, --job-id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j, --job-id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-r, --role</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-r, --role</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与角色</td>
 </tr>
 <tr>
-<td style="text-align: left;">-p, --partyid</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-p, --partyid</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>参与方id</td>
 </tr>
 <tr>
-<td style="text-align: left;">-cpn, --component-name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-cpn, --component-name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>组件名，与job dsl中的保持一致</td>
 </tr>
 </tbody>
@@ -4757,30 +4757,30 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 </tbody>
@@ -4820,23 +4820,23 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">namespace</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表命名空间</td>
 </tr>
 </tbody>
@@ -4845,25 +4845,25 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -4883,23 +4883,23 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">name</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">name</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表名</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">namespace</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>fate表命名空间</td>
 </tr>
 </tbody>
@@ -4908,25 +4908,25 @@ flow task list -l <span class="m">25</span>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -5727,25 +5727,25 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -5861,17 +5861,17 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-c, --conf-path</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">-c, --conf-path</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>配置路径</td>
 </tr>
 </tbody>
@@ -5880,20 +5880,20 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 </tbody>
@@ -5930,25 +5930,25 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -5988,17 +5988,17 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">job_id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">job_id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>任务id</td>
 </tr>
 </tbody>
@@ -6007,25 +6007,25 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -6054,21 +6054,21 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数</th>
-<th style="text-align: left;">短格式</th>
-<th style="text-align: left;">长格式</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">conf_path</td>
-<td style="text-align: left;"><code>-c</code></td>
-<td style="text-align: left;"><code>--conf-path</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">conf_path</td>
+<td align="left"><code>-c</code></td>
+<td align="left"><code>--conf-path</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>配置路径</td>
 </tr>
 </tbody>
@@ -6077,29 +6077,29 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">party_id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">party_id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>站点id</td>
 </tr>
 <tr>
-<td style="text-align: left;">component</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">component</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>组件名，可用","分割多个组件，"*"为所有组件</td>
 </tr>
 <tr>
-<td style="text-align: left;">dataset</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">object</td>
+<td align="left">dataset</td>
+<td align="left">否</td>
+<td align="left">object</td>
 <td>数据集列表</td>
 </tr>
 </tbody>
@@ -6125,19 +6125,19 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <thead>
 <tr>
 <th>参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
 <td>retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 </tbody>
@@ -6156,21 +6156,21 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数</th>
-<th style="text-align: left;">短格式</th>
-<th style="text-align: left;">长格式</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">conf_path</td>
-<td style="text-align: left;"><code>-c</code></td>
-<td style="text-align: left;"><code>--conf-path</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">conf_path</td>
+<td align="left"><code>-c</code></td>
+<td align="left"><code>--conf-path</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>配置路径</td>
 </tr>
 </tbody>
@@ -6179,29 +6179,29 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">party_id</td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">party_id</td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>站点id</td>
 </tr>
 <tr>
-<td style="text-align: left;">component</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">string</td>
+<td align="left">component</td>
+<td align="left">否</td>
+<td align="left">string</td>
 <td>组件名，可用","分割多个组件，"*"为所有组件</td>
 </tr>
 <tr>
-<td style="text-align: left;">dataset</td>
-<td style="text-align: left;">否</td>
-<td style="text-align: left;">object</td>
+<td align="left">dataset</td>
+<td align="left">否</td>
+<td align="left">object</td>
 <td>数据集列表， "*"为所有数据集</td>
 </tr>
 </tbody>
@@ -6227,19 +6227,19 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <thead>
 <tr>
 <th>参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
 <td>retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 </tbody>
@@ -6258,21 +6258,21 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数</th>
-<th style="text-align: left;">短格式</th>
-<th style="text-align: left;">长格式</th>
-<th style="text-align: left;">必选</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数</th>
+<th align="left">短格式</th>
+<th align="left">长格式</th>
+<th align="left">必选</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">party_id</td>
-<td style="text-align: left;"><code>-p</code></td>
-<td style="text-align: left;"><code>--party-id</code></td>
-<td style="text-align: left;">是</td>
-<td style="text-align: left;">string</td>
+<td align="left">party_id</td>
+<td align="left"><code>-p</code></td>
+<td align="left"><code>--party-id</code></td>
+<td align="left">是</td>
+<td align="left">string</td>
 <td>站点id</td>
 </tr>
 </tbody>
@@ -6282,24 +6282,24 @@ flow model get-model-info --model-id &lt;model_id&gt; --model-version &lt;model_
 <thead>
 <tr>
 <th>参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
 <td>retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
 <td>data</td>
-<td style="text-align: left;">object</td>
+<td align="left">object</td>
 <td>返回数据</td>
 </tr>
 </tbody>
@@ -6514,30 +6514,30 @@ flow tag query -t <span class="nv">$TAG_NAME</span> --with-model
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 </tbody>
@@ -6578,30 +6578,30 @@ flow tag query -t <span class="nv">$TAG_NAME</span> --with-model
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">参数名</th>
-<th style="text-align: left;">类型</th>
+<th align="left">参数名</th>
+<th align="left">类型</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>返回码</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>返回信息</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">dict</td>
+<td align="left">data</td>
+<td align="left">dict</td>
 <td>返回数据</td>
 </tr>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>作业id</td>
 </tr>
 </tbody>

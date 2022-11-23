@@ -783,83 +783,83 @@
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
-<th style="text-align: left;">required</th>
-<th style="text-align: left;">type</th>
+<th align="left">parameter name</th>
+<th align="left">required</th>
+<th align="left">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">file</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
+<td align="left">file</td>
+<td align="left">yes</td>
+<td align="left">string</td>
 <td>data storage path</td>
 </tr>
 <tr>
-<td style="text-align: left;">id_delimiter</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
+<td align="left">id_delimiter</td>
+<td align="left">yes</td>
+<td align="left">string</td>
 <td>Data separator, e.g. ","</td>
 </tr>
 <tr>
-<td style="text-align: left;">head</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">int</td>
+<td align="left">head</td>
+<td align="left">no</td>
+<td align="left">int</td>
 <td>Whether the data has a table header</td>
 </tr>
 <tr>
-<td style="text-align: left;">partition</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">int</td>
+<td align="left">partition</td>
+<td align="left">yes</td>
+<td align="left">int</td>
 <td>Number of data partitions</td>
 </tr>
 <tr>
-<td style="text-align: left;">storage_engine</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">storage_engine</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>storage engine type, default "EGGROLL", also support "HDFS", "LOCALFS", "HIVE", etc.</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
+<td align="left">namespace</td>
+<td align="left">yes</td>
+<td align="left">string</td>
 <td>table namespace</td>
 </tr>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left">yes</td>
+<td align="left">string</td>
 <td>table name</td>
 </tr>
 <tr>
-<td style="text-align: left;">storage_address</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">object</td>
+<td align="left">storage_address</td>
+<td align="left">no</td>
+<td align="left">object</td>
 <td>The storage address of the corresponding storage engine is required</td>
 </tr>
 <tr>
-<td style="text-align: left;">use_local_data</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">int</td>
+<td align="left">use_local_data</td>
+<td align="left">no</td>
+<td align="left">int</td>
 <td>The default is 1, which means use the data from the client's machine; 0 means use the data from the fate flow service's machine.</td>
 </tr>
 <tr>
-<td style="text-align: left;">drop</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">int</td>
+<td align="left">drop</td>
+<td align="left">no</td>
+<td align="left">int</td>
 <td>Whether to overwrite uploads</td>
 </tr>
 <tr>
-<td style="text-align: left;">extend_sid</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">bool</td>
+<td align="left">extend_sid</td>
+<td align="left">no</td>
+<td align="left">bool</td>
 <td>Whether to add a new column for uuid id, default False</td>
 </tr>
 <tr>
-<td style="text-align: left;">auto_increasing_sid</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">bool</td>
+<td align="left">auto_increasing_sid</td>
+<td align="left">no</td>
+<td align="left">bool</td>
 <td>Whether the new id column is self-increasing (will only work if extend_sid is True), default False</td>
 </tr>
 </tbody>
@@ -868,83 +868,83 @@
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
-<th style="text-align: left;">required</th>
-<th style="text-align: left;">type</th>
+<th align="left">parameter name</th>
+<th align="left">required</th>
+<th align="left">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">input_format</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">input_format</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>The format of the data (danse, svmlight, tag:value), used to determine</td>
 </tr>
 <tr>
-<td style="text-align: left;">delimiter</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">delimiter</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>The data separator, default ","</td>
 </tr>
 <tr>
-<td style="text-align: left;">tag_with_value</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">bool</td>
+<td align="left">tag_with_value</td>
+<td align="left">no</td>
+<td align="left">bool</td>
 <td>Valid for tag data format, whether to carry value</td>
 </tr>
 <tr>
-<td style="text-align: left;">tag_value_delimiter</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">tag_value_delimiter</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>tag:value data separator, default ":"</td>
 </tr>
 <tr>
-<td style="text-align: left;">with_match_id</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">bool</td>
+<td align="left">with_match_id</td>
+<td align="left">no</td>
+<td align="left">bool</td>
 <td>Whether or not to carry match id</td>
 </tr>
 <tr>
-<td style="text-align: left;">with_match_id</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">object</td>
+<td align="left">with_match_id</td>
+<td align="left">no</td>
+<td align="left">object</td>
 <td>The name of the id column, effective when extend_sid is enabled, e.g., ["email", "phone"]</td>
 </tr>
 <tr>
-<td style="text-align: left;">id_range</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">object</td>
+<td align="left">id_range</td>
+<td align="left">no</td>
+<td align="left">object</td>
 <td>For tag/svmlight format data, which columns are ids</td>
 </tr>
 <tr>
-<td style="text-align: left;">exclusive_data_type</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">exclusive_data_type</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>The format of the special type data columns</td>
 </tr>
 <tr>
-<td style="text-align: left;">data_type</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">data_type</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>Column data type, default "float64</td>
 </tr>
 <tr>
-<td style="text-align: left;">with_label</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">bool</td>
+<td align="left">with_label</td>
+<td align="left">no</td>
+<td align="left">bool</td>
 <td>Whether to have a label, default False</td>
 </tr>
 <tr>
-<td style="text-align: left;">label_name</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">label_name</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>The name of the label, default "y"</td>
 </tr>
 <tr>
-<td style="text-align: left;">label_type</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">label_type</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>Label type, default "int"</td>
 </tr>
 </tbody>
@@ -994,30 +994,30 @@
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
-<th style="text-align: left;">type</th>
+<th align="left">parameter name</th>
+<th align="left">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>job id</td>
 </tr>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>return code</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>return message</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>return data</td>
 </tr>
 </tbody>
@@ -1056,29 +1056,29 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
-<th style="text-align: left;">required</th>
-<th style="text-align: left;">type</th>
+<th align="left">parameter name</th>
+<th align="left">required</th>
+<th align="left">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">-l --limit</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">int</td>
+<td align="left">-l --limit</td>
+<td align="left">no</td>
+<td align="left">int</td>
 <td>Number of records to return. (default: 10)</td>
 </tr>
 <tr>
-<td style="text-align: left;">-j --job_id</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">-j --job_id</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>Job ID</td>
 </tr>
 <tr>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
 <td></td>
 </tr>
 </tbody>
@@ -1093,29 +1093,29 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
-<th style="text-align: left;">required</th>
-<th style="text-align: left;">type</th>
+<th align="left">parameter name</th>
+<th align="left">required</th>
+<th align="left">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">output_path</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
+<td align="left">output_path</td>
+<td align="left">yes</td>
+<td align="left">string</td>
 <td>download_path</td>
 </tr>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left">yes</td>
+<td align="left">string</td>
 <td>fate table name</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">int</td>
+<td align="left">namespace</td>
+<td align="left">yes</td>
+<td align="left">int</td>
 <td>fate table namespace</td>
 </tr>
 </tbody>
@@ -1131,30 +1131,30 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
-<th style="text-align: left;">type</th>
+<th align="left">parameter name</th>
+<th align="left">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>job id</td>
 </tr>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>return code</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>return message</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>return data</td>
 </tr>
 </tbody>
@@ -1192,59 +1192,59 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
-<th style="text-align: left;">required</th>
-<th style="text-align: left;">type</th>
+<th align="left">parameter name</th>
+<th align="left">required</th>
+<th align="left">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">table_name</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">string</td>
+<td align="left">table_name</td>
+<td align="left">yes</td>
+<td align="left">string</td>
 <td>fate table name</td>
 </tr>
 <tr>
-<td style="text-align: left;">namespace</td>
-<td style="text-align: left;">yes</td>
-<td style="text-align: left;">int</td>
+<td align="left">namespace</td>
+<td align="left">yes</td>
+<td align="left">int</td>
 <td>fate table namespace</td>
 </tr>
 <tr>
-<td style="text-align: left;">storage_engine</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">storage_engine</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>Storage type, e.g., MYSQL</td>
 </tr>
 <tr>
-<td style="text-align: left;">address</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">object</td>
+<td align="left">address</td>
+<td align="left">no</td>
+<td align="left">object</td>
 <td>storage_address</td>
 </tr>
 <tr>
-<td style="text-align: left;">output_namespace</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">output_namespace</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>Save as a table namespace for fate</td>
 </tr>
 <tr>
-<td style="text-align: left;">output_name</td>
-<td style="text-align: left;">no</td>
-<td style="text-align: left;">string</td>
+<td align="left">output_name</td>
+<td align="left">no</td>
+<td align="left">string</td>
 <td>Save as fate's table name</td>
 </tr>
 <tr>
-<td style="text-align: left;">**Note: storage_engine, address are combined parameters that provide storage to the specified engine.</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
+<td align="left">**Note: storage_engine, address are combined parameters that provide storage to the specified engine.</td>
+<td align="left"></td>
+<td align="left"></td>
 <td></td>
 </tr>
 <tr>
-<td style="text-align: left;">output_namespace, output_name are also combined parameters, providing the function to save as a new table of the same engine**</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
+<td align="left">output_namespace, output_name are also combined parameters, providing the function to save as a new table of the same engine**</td>
+<td align="left"></td>
+<td align="left"></td>
 <td></td>
 </tr>
 </tbody>
@@ -1261,30 +1261,30 @@ flow data upload-history --job-id $JOB_ID
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">parameter name</th>
-<th style="text-align: left;">type</th>
+<th align="left">parameter name</th>
+<th align="left">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">jobId</td>
-<td style="text-align: left;">string</td>
+<td align="left">jobId</td>
+<td align="left">string</td>
 <td>job id</td>
 </tr>
 <tr>
-<td style="text-align: left;">retcode</td>
-<td style="text-align: left;">int</td>
+<td align="left">retcode</td>
+<td align="left">int</td>
 <td>return code</td>
 </tr>
 <tr>
-<td style="text-align: left;">retmsg</td>
-<td style="text-align: left;">string</td>
+<td align="left">retmsg</td>
+<td align="left">string</td>
 <td>return information</td>
 </tr>
 <tr>
-<td style="text-align: left;">data</td>
-<td style="text-align: left;">object</td>
+<td align="left">data</td>
+<td align="left">object</td>
 <td>return data</td>
 </tr>
 </tbody>
