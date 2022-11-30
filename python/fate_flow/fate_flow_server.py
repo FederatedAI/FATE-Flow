@@ -23,7 +23,6 @@ import sys
 import traceback
 
 import grpc
-from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
 
 from fate_arch.common import file_utils
@@ -45,7 +44,7 @@ from fate_flow.hook import HookManager
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.scheduler.dag_scheduler import DAGScheduler
 from fate_flow.settings import (
-    GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT,
+    GRPC_OPTIONS, GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT,
     access_logger, database_logger, detect_logger, stat_logger,
 )
 from fate_flow.utils.base_utils import get_fate_flow_directory
@@ -105,9 +104,7 @@ if __name__ == '__main__':
 
     thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)
     stat_logger.info(f"start grpc server thread pool by {thread_pool_executor._max_workers} max workers")
-    server = grpc.server(thread_pool=thread_pool_executor,
-                         options=[(cygrpc.ChannelArgKey.max_send_message_length, -1),
-                                  (cygrpc.ChannelArgKey.max_receive_message_length, -1)])
+    server = grpc.server(thread_pool=thread_pool_executor, options=GRPC_OPTIONS)
 
     proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
     server.add_insecure_port(f"{HOST}:{GRPC_PORT}")

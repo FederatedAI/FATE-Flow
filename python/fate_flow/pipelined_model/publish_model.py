@@ -25,7 +25,7 @@ from fate_flow.pipelined_model import pipelined_model
 from fate_flow.pipelined_model.homo_model_deployer.model_deploy import model_deploy
 from fate_flow.settings import (
     ENABLE_MODEL_STORE, FATE_FLOW_MODEL_TRANSFER_ENDPOINT,
-    HOST, HTTP_PORT, USE_REGISTRY, stat_logger,
+    GRPC_OPTIONS, HOST, HTTP_PORT, USE_REGISTRY, stat_logger,
 )
 from fate_flow.utils import model_utils
 
@@ -49,7 +49,7 @@ def load_model(config_data):
         return 100, 'Please configure servings address'
 
     for serving in config_data['servings']:
-        with grpc.insecure_channel(serving) as channel:
+        with grpc.insecure_channel(serving, GRPC_OPTIONS) as channel:
             stub = model_service_pb2_grpc.ModelServiceStub(channel)
             load_model_request = model_service_pb2.PublishRequest()
             for role_name, role_partys in config_data.get("role", {}).items():
@@ -93,7 +93,7 @@ def bind_model_service(config_data):
     model_version = config_data['job_parameters']['model_version']
 
     for serving in config_data['servings']:
-        with grpc.insecure_channel(serving) as channel:
+        with grpc.insecure_channel(serving, GRPC_OPTIONS) as channel:
             stub = model_service_pb2_grpc.ModelServiceStub(channel)
             publish_model_request = model_service_pb2.PublishRequest()
             publish_model_request.serviceId = service_id
