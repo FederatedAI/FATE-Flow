@@ -43,7 +43,7 @@ def get_component(component_name):
 @manager.route('/validate', methods=['POST'])
 def validate_component_param():
     if not request.json or not isinstance(request.json, dict):
-        return error_response(400, 'bad request')
+        return error_response(400)
 
     required_keys = [
         'component_name',

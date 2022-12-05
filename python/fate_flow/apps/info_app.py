@@ -15,11 +15,26 @@
 #
 import socket
 
-from fate_arch.common import CoordinationProxyService
-from fate_flow.utils.api_utils import error_response, get_json_result
-from fate_flow.settings import PROXY, IS_STANDALONE
+from flask import request
+from flask.json import jsonify
+
+from fate_arch.common import FederatedMode
+
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.db.service_registry import ServerRegistry
-from fate_flow.db.db_models import DB
+from fate_flow.settings import API_VERSION, GRPC_PORT, HOST, HTTP_PORT, PARTY_ID
+from fate_flow.utils.api_utils import error_response, federated_api, get_json_result
+
+
+@manager.route('/common', methods=['POST'])
+def get_common_info():
+    return get_json_result(data={
+        'version': RuntimeConfig.get_env('FATE'),
+        'host': HOST,
+        'http_port': HTTP_PORT,
+        'grpc_port': GRPC_PORT,
+        'party_id': PARTY_ID,
+    })
 
 
 @manager.route('/fateboard', methods=['POST'])
@@ -28,35 +43,16 @@ def get_fateboard_info():
     port = ServerRegistry.FATEBOARD.get('port')
     if not host or not port:
         return error_response(404, 'fateboard is not configured')
+
     return get_json_result(data={
         'host': host,
         'port': port,
     })
 
 
-@manager.route('/mysql', methods=['POST'])
-def get_mysql_info():
-    if IS_STANDALONE:
-        return error_response(404, 'mysql only available on cluster mode')
-
-    try:
-        with DB.connection_context():
-            DB.random()
-    except Exception as e:
-        return error_response(503, str(e))
-
-    return error_response(200)
-
-
 # TODO: send greetings message using grpc protocol
 @manager.route('/eggroll', methods=['POST'])
 def get_eggroll_info():
-    if IS_STANDALONE:
-        return error_response(404, 'eggroll only available on cluster mode')
-
-    if PROXY != CoordinationProxyService.ROLLSITE:
-        return error_response(404, 'coordination communication protocol is not rollsite')
-
     conf = ServerRegistry.FATE_ON_EGGROLL['rollsite']
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         r = s.connect_ex((conf['host'], conf['port']))
@@ -64,3 +60,37 @@ def get_eggroll_info():
             return error_response(503)
 
     return error_response(200)
+
+
+@manager.route('/version', methods=['POST'])
+@app.route(f'/{API_VERSION}/version/get', methods=['POST'])
+def get_version():
+    module = request.json['module'] if isinstance(request.json, dict) and request.json.get('module') else 'FATE'
+    version = RuntimeConfig.get_env(module)
+    if version is None:
+        return error_response(404, f'unknown module {module}')
+
+    return get_json_result(data={
+        module: version,
+        'API': API_VERSION,
+    })
+
+
+@manager.route('/party/<dest_party_id>', methods=['POST'])
+def get_party_info(dest_party_id):
+    response = federated_api(
+        'party_info', 'POST', '/info/common',
+        PARTY_ID, dest_party_id, '',
+        {}, FederatedMode.MULTIPLE,
+    )
+    return jsonify(response)
+
+
+@manager.route('/party/<proxy_party_id>/<dest_party_id>', methods=['POST'])
+def get_party_info_from_another_party(proxy_party_id, dest_party_id):
+    response = federated_api(
+        'party_info', 'POST', f'/info/party/{dest_party_id}',
+        PARTY_ID, proxy_party_id, '',
+        {}, FederatedMode.MULTIPLE,
+    )
+    return jsonify(response)
