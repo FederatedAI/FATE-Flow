@@ -14,22 +14,19 @@
 #  limitations under the License.
 #
 import os
-from fate_arch.common import FederatedCommunicationType
-from fate_flow.utils.job_utils import asynchronous_function
-from fate_flow.utils.log_utils import schedule_logger
-from fate_flow.controller.engine_adapt import build_engine
+
+from arch import json_dumps, current_timestamp
 from fate_flow.db.db_models import Task
-from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.run_status import TaskStatus, EndStatus
-from fate_flow.utils import job_utils
-from fate_flow.operation.job_saver import JobSaver
-from fate_arch.common.base_utils import json_dumps, current_timestamp
-from fate_arch.common import base_utils
-from fate_flow.entity import RunParameters
-from fate_flow.manager.resource_manager import ResourceManager
-from fate_flow.operation.job_tracker import Tracker
+from fate_flow.engine.computing import build_engine
+from fate_flow.entity.component_structures import RuntimeOutputChannelSpec
+from fate_flow.entity.task_structures import IOArtifact
 from fate_flow.manager.worker_manager import WorkerManager
-from fate_flow.entity.types import TaskCleanResourceType
+from fate_flow.scheduler.dsl_parser import TaskNodeInfo
+from fate_flow.scheduler.federated_scheduler import FederatedScheduler
+from fate_flow.entity.run_status import EndStatus, TaskStatus
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.utils import job_utils
+from fate_flow.utils.log_utils import schedule_logger
 
 
 class TaskController(object):
@@ -37,32 +34,10 @@ class TaskController(object):
 
     @classmethod
     def create_task(cls, role, party_id, run_on_this_party, task_info):
-        task_info["role"] = role
-        task_info["party_id"] = str(party_id)
-        task_info["status"] = TaskStatus.WAITING
-        task_info["party_status"] = TaskStatus.WAITING
-        task_info["create_time"] = base_utils.current_timestamp()
-        task_info["run_on_this_party"] = run_on_this_party
-        if task_info.get("task_id") is None:
-            task_info["task_id"] = job_utils.generate_task_id(job_id=task_info["job_id"], component_name=task_info["component_name"])
-        if task_info.get("task_version") is None:
-            task_info["task_version"] = 0
-
-        task = JobSaver.create_task(task_info=task_info)
+        pass
 
     @classmethod
-    def start_task(cls, job_id, component_name, task_id, task_version, role, party_id, **kwargs):
-        """
-        Start task, update status and party status
-        :param job_id:
-        :param component_name:
-        :param task_id:
-        :param task_version:
-        :param role:
-        :param party_id:
-        :return:
-        """
-        job_dsl = job_utils.get_job_dsl(job_id, role, party_id)
+    def start_task(cls, job_id, role, party_id, task_id, task_version):
         schedule_logger(job_id).info(
             f"try to start task {task_id} {task_version} on {role} {party_id} executor subprocess")
         task_executor_process_start_status = False
@@ -76,28 +51,23 @@ class TaskController(object):
         is_failed = False
         try:
             task = JobSaver.query_task(task_id=task_id, task_version=task_version, role=role, party_id=party_id)[0]
-            run_parameters_dict = job_utils.get_job_parameters(job_id, role, party_id)
-            run_parameters_dict["src_user"] = kwargs.get("src_user")
-            run_parameters = RunParameters(**run_parameters_dict)
+            run_parameters = task.f_component_parameters
+            schedule_logger(job_id).info(f"task run parameters: {run_parameters}")
+            task_executor_process_start_status = False
 
-            config_dir = job_utils.get_task_directory(job_id, role, party_id, component_name, task_id, task_version)
+            config_dir = job_utils.get_task_directory(job_id, role, party_id, task.f_task_name, task_id, task_version)
             os.makedirs(config_dir, exist_ok=True)
-
             run_parameters_path = os.path.join(config_dir, 'task_parameters.json')
             with open(run_parameters_path, 'w') as fw:
-                fw.write(json_dumps(run_parameters_dict))
-
-            schedule_logger(job_id).info(f"use computing engine {run_parameters.computing_engine}")
-            task_info["engine_conf"] = {"computing_engine": run_parameters.computing_engine}
-            backend_engine = build_engine(run_parameters.computing_engine)
+                fw.write(json_dumps(run_parameters))
+            backend_engine = build_engine()
             run_info = backend_engine.run(task=task,
                                           run_parameters=run_parameters,
                                           run_parameters_path=run_parameters_path,
                                           config_dir=config_dir,
-                                          log_dir=job_utils.get_job_log_directory(job_id, role, party_id, component_name),
-                                          cwd_dir=job_utils.get_job_directory(job_id, role, party_id, component_name),
-                                          user_name=kwargs.get("user_id"))
-            task_info.update(run_info)
+                                          log_dir=job_utils.get_job_log_directory(job_id, role, party_id,
+                                                                                  task.f_task_name),
+                                          cwd_dir=job_utils.get_job_directory(job_id, role, party_id, task.f_task_name))
             task_info["start_time"] = current_timestamp()
             task_executor_process_start_status = True
         except Exception as e:
@@ -114,26 +84,20 @@ class TaskController(object):
             except Exception as e:
                 schedule_logger(job_id).exception(e)
             schedule_logger(job_id).info(
-                "task {} {} on {} {} executor subprocess start {}".format(task_id, task_version, role, party_id, "success" if task_executor_process_start_status else "failed"))
+                "task {} {} on {} {} executor subprocess start {}".format(task_id, task_version, role, party_id,
+                                                                          "success" if task_executor_process_start_status else "failed"))
 
     @classmethod
     def update_task(cls, task_info):
-        """
-        Save to local database and then report to Initiator
-        :param task_info:
-        :return:
-        """
-        update_status = False
-        try:
-            update_status = JobSaver.update_task(task_info=task_info)
-            cls.report_task_to_scheduler(task_info=task_info)
-        except Exception as e:
-            schedule_logger(task_info["job_id"]).exception(e)
-        finally:
-            return update_status
+        pass
 
     @classmethod
-    def update_task_status(cls, task_info):
+    def update_task_status(cls, task_info, scheduler_party_id=None):
+        if not scheduler_party_id:
+            scheduler_party_id = JobSaver.query_task(
+                task_id=task_info.get("task_id"),
+                task_version=task_info.get("task_version")
+            )[0].f_scheduler_party_id
         update_status = JobSaver.update_task_status(task_info=task_info)
         if update_status and EndStatus.contains(task_info.get("status")):
             # ResourceManager.return_task_resource(task_info=task_info)
@@ -141,34 +105,34 @@ class TaskController(object):
                            task_id=task_info["task_id"],
                            task_version=task_info["task_version"],
                            role=task_info["role"],
-                           party_id=task_info["party_id"],
-                           content_type=TaskCleanResourceType.TABLE,
-                           is_asynchronous=True)
-        cls.report_task_to_scheduler(task_info=task_info)
+                           party_id=task_info["party_id"])
+        if "party_status" in task_info:
+            report_task_info = {
+                "job_id": task_info.get("job_id"),
+                "role": task_info.get("role"),
+                "party_id": task_info.get("party_id"),
+                "task_id": task_info.get("task_id"),
+                "task_version": task_info.get("task_version"),
+                "status": task_info.get("party_status")
+            }
+            cls.report_task_to_scheduler(task_info=report_task_info, scheduler_party_id=scheduler_party_id)
         return update_status
 
     @classmethod
-    def report_task_to_scheduler(cls, task_info):
-        jobs = JobSaver.query_job(job_id=task_info["job_id"])
-        FederatedScheduler.report_task_to_scheduler(party_id=jobs[0].f_scheduler_party_id, command_body=task_info)
+    def report_task_to_scheduler(cls, task_info, scheduler_party_id):
+        FederatedScheduler.report_task_to_scheduler(party_id=scheduler_party_id, command_body=task_info)
 
     @classmethod
-    def collect_task(cls, job_id, component_name, task_id, task_version, role, party_id):
-        tasks = JobSaver.query_task(job_id=job_id, component_name=component_name, task_id=task_id, task_version=task_version, role=role, party_id=party_id)
+    def collect_task(cls, job_id, task_id, task_version, role, party_id):
+        tasks = JobSaver.query_task(job_id=job_id, task_id=task_id,  task_version=task_version, role=role,
+                                    party_id=party_id)
         if tasks:
             return tasks[0].to_human_model_dict(only_primary_with=cls.INITIATOR_COLLECT_FIELDS)
         else:
             return None
 
     @classmethod
-    @asynchronous_function
-    def stop_task(cls, task, stop_status):
-        """
-        Try to stop the task, but the status depends on the final operation result
-        :param task:
-        :param stop_status:
-        :return:
-        """
+    def stop_task(cls, task: Task, stop_status):
         kill_status = cls.kill_task(task=task)
         task_info = {
             "job_id": task.f_job_id,
@@ -179,7 +143,7 @@ class TaskController(object):
             "party_status": stop_status,
             "kill_status": True
         }
-        cls.update_task_status(task_info=task_info)
+        cls.update_task_status(task_info=task_info, scheduler_party_id=task.f_scheduler_party_id)
         cls.update_task(task_info=task_info)
         return kill_status
 
@@ -187,8 +151,7 @@ class TaskController(object):
     def kill_task(cls, task: Task):
         kill_status = False
         try:
-            # kill task executor
-            backend_engine = build_engine(task.f_engine_conf.get("computing_engine"))
+            backend_engine = build_engine()
             if backend_engine:
                 backend_engine.kill(task)
             WorkerManager.kill_task_all_workers(task)
@@ -207,21 +170,70 @@ class TaskController(object):
             return kill_status
 
     @classmethod
-    @asynchronous_function
-    def clean_task(cls, job_id, task_id, task_version, role, party_id, content_type: TaskCleanResourceType):
-        status = set()
-        if content_type == TaskCleanResourceType.METRICS:
-            tracker = Tracker(job_id=job_id, role=role, party_id=party_id, task_id=task_id, task_version=task_version)
-            status.add(tracker.clean_metrics())
-        elif content_type == TaskCleanResourceType.TABLE:
-            jobs = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)
-            if jobs:
-                job = jobs[0]
-                job_parameters = RunParameters(**job.f_runtime_conf_on_party["job_parameters"])
-                tracker = Tracker(job_id=job_id, role=role, party_id=party_id, task_id=task_id, task_version=task_version, job_parameters=job_parameters)
-                status.add(tracker.clean_task())
-        if len(status) == 1 and True in status:
-            return True
-        else:
-            return False
+    def clean_task(cls, job_id, task_id, task_version, role, party_id):
+        pass
+
+
+class TaskParser(object):
+    def __init__(self, dag_parser, task_name):
+        self.dag_parser = dag_parser
+        self.task_name = task_name
+
+    @property
+    def task_node(self) -> TaskNodeInfo:
+        return self.dag_parser.get_task_node(task_name=self.task_name)
+
+    @property
+    def artifacts(self):
+        task_artifacts = {}
+        if self.task_node.upstream_inputs:
+            for k, v in self.task_node.upstream_inputs.items():
+                if isinstance(v, dict):
+                    task_artifacts[k] = v
+                elif isinstance(v, RuntimeOutputChannelSpec):
+                    if v.output_artifact_key == "data":
+                        task_artifacts[k] = self.get_artifacts_data(k, v)
+        return task_artifacts
+
+    @property
+    def runtime_parties(self):
+        return self.task_node.runtime_parties
+
+    @property
+    def component_ref(self):
+        return self.task_node.component_ref
+
+    @property
+    def stage(self):
+        return self.task_node.stage
+
+    @property
+    def runtime_parameters(self):
+        return self.task_node.runtime_parameters
+
+    @property
+    def output_definitions(self):
+        return self.task_node.output_definitions
+
+    @property
+    def task_runtime_conf(self):
+        return self.task_node.conf
+
+    def need_run(self, role, party_id):
+        return (role, party_id) in [(party.role, party.party_id) for party in self.runtime_parties]
+
+    def get_runtime_parameters(self, role, party_id):
+        return self.runtime_parameters.get(role, {}).get(party_id, {})
+
+    @staticmethod
+    def get_artifacts_data(name, channel: RuntimeOutputChannelSpec):
+        return IOArtifact(name=name, uri="", metadata={}).dict()
+
+    def get_dependent_tasks(self):
+        dependent_tasks = []
+        if self.task_node.upstream_inputs:
+            for k, v in self.task_node.upstream_inputs.items():
+                # if isinstance(v, RuntimeOutputChannelSpec):
+                dependent_tasks.append(v.producer_task)
+        return dependent_tasks
 

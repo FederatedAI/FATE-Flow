@@ -19,8 +19,8 @@ import typing
 import traceback
 import logging
 
-from fate_arch.common.log import LoggerFactory, getLogger
-from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.utils.file_utils import get_fate_flow_directory
+from fate_flow.utils.log import LoggerFactory, getLogger
 
 
 def ready_log(msg, job=None, task=None, role=None, party_id=None, detail=None):

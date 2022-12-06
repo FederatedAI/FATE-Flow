@@ -15,17 +15,9 @@
 #
 import functools
 import json
-from base64 import b64encode
-from hmac import HMAC
-from time import time
-from urllib.parse import quote, urlencode
-from uuid import uuid1
-
 import requests
 
-from fate_arch.common.base_utils import CustomJSONEncoder
-from fate_flow.settings import CLIENT_AUTHENTICATION, HTTP_APP_KEY, HTTP_SECRET_KEY
-
+from arch import CustomJSONEncoder
 
 requests.models.complexjson.dumps = functools.partial(json.dumps, cls=CustomJSONEncoder)
 
@@ -36,25 +28,4 @@ def request(**kwargs):
     timeout = kwargs.pop('timeout', None)
     kwargs['headers'] = {k.replace('_', '-').upper(): v for k, v in kwargs.get('headers', {}).items()}
     prepped = requests.Request(**kwargs).prepare()
-
-    if CLIENT_AUTHENTICATION and HTTP_APP_KEY and HTTP_SECRET_KEY:
-        timestamp = str(round(time() * 1000))
-        nonce = str(uuid1())
-        signature = b64encode(HMAC(HTTP_SECRET_KEY.encode('ascii'), b'\n'.join([
-            timestamp.encode('ascii'),
-            nonce.encode('ascii'),
-            HTTP_APP_KEY.encode('ascii'),
-            prepped.path_url.encode('ascii'),
-            prepped.body if kwargs.get('json') else b'',
-            urlencode(sorted(kwargs['data'].items()), quote_via=quote, safe='-._~').encode('ascii')
-            if kwargs.get('data') and isinstance(kwargs['data'], dict) else b'',
-        ]), 'sha1').digest()).decode('ascii')
-
-        prepped.headers.update({
-            'TIMESTAMP': timestamp,
-            'NONCE': nonce,
-            'APP-KEY': HTTP_APP_KEY,
-            'SIGNATURE': signature,
-        })
-
     return sess.send(prepped, stream=stream, timeout=timeout)
