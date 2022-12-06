@@ -114,6 +114,8 @@ class DockerManager(ManagerABC):
 
 class K8sManager(ManagerABC):
 
+    SUCCESS = "success"
+
     # This manager is for managing the algorithm container under k8s env,
     # especially when FATE is deployed by KubeFATE.
 
@@ -123,15 +125,22 @@ class K8sManager(ManagerABC):
     # with the same name at the same time in the Cluster.
 
     def __init__(self):
+        config.load_incluster_config()
         self.batch_api = client.BatchV1Api()
-        self.namespace = K8sUtils.get_namespace()
+        self.namespace = self._get_namespace()
         self._load_yaml_template("yaml-files/algorithm.yaml")
+
+    def _get_namespace(self) -> str:
+        # In below file, the pod can read its K8s namespace
+        with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace") as f:
+            namespace = f.readline()
+        return namespace
 
     def _load_yaml_template(self, file_path: str):
         with open(path.join(path.dirname(__file__), file_path)) as f:
             self.job_template = yaml.safe_load(f)
 
-    def _populate_yaml_template(self, job_name: str, image: str, cmds: [str]):
+    def _populate_yaml_template(self, job_name: str, image: str, cmds: [str]) -> dict:
         if not self.job_template:
             print("cannot populate an non-existing template")
         job_conf = copy.deepcopy(self.job_template)
@@ -170,21 +179,21 @@ class K8sManager(ManagerABC):
                 name=job_name,
                 namespace=self.namespace,
             )
-            if resp.status.lower() == K8sUtils.SUCCESS:
+            if resp.status.lower() == K8sManager.SUCCESS:
                 return True
             return False
         except:
             traceback.print_exc()
             return False
 
-    def run_task(self, cmd, name, image):
+    def run_task(self, cmd, name, image) -> bool:
         return self.create_job(
             job_name=name, image=image, cmds=[cmd])
 
-    def stop_task(self, name):
+    def stop_task(self, name) -> bool:
         return self.destroy_job(job_name=name)
 
-    def check_container(self, name):
+    def check_container(self, name) -> str:
         return self.get_job_status(job_name=name)
 
     def component_registry(self, image, name):
@@ -195,18 +204,3 @@ class K8sManager(ManagerABC):
 
     def check_task(self, *args, **kwargs):
         pass
-
-
-class K8sUtils:
-    SUCCESS = "success"
-
-    @classmethod
-    def load_in_cluster_config(cls) -> None:
-        config.load_incluster_config()
-
-    @classmethod
-    def get_namespace(cls) -> str:
-        # In below file, the pod can read its K8s namespace
-        with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace") as f:
-            namespace = f.readline()
-        return namespace
