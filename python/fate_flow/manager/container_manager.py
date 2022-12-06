@@ -4,10 +4,10 @@ from os import path
 
 import traceback
 import yaml
-import json
 import docker
+import copy
 
-from kubernetes import client, config, stream
+from kubernetes import client, config
 
 
 class ManagerABC(metaclass=ABCMeta):
@@ -117,49 +117,57 @@ class K8sManager(ManagerABC):
     # This manager is for managing the algorithm container under k8s env,
     # especially when FATE is deployed by KubeFATE.
 
-    def __init__(self, image):
-        self.core_api = client.CoreV1Api()
-        self.app_api = client.AppsV1Api()
+    # One thing need to be noted:
+    # If we want to call run_task by multi-threading, make sure that there
+    # are no 2 tasks sharing the same name, because K8s cannot create 2 jobs
+    # with the same name at the same time in the Cluster.
+
+    def __init__(self):
+        self.batch_api = client.BatchV1Api()
         self.namespace = K8sUtils.get_namespace()
-        self._load_yaml_file("yaml-files/algorithm.yaml", image)
-        self.sts_name = self.sts_conf.get("metadata", {}).get("name")
-        self.pod_name = "%s-0" % self.sts_name
-        if not self.sts_name:
-            print("failed to read the sts name from the sts yaml file")
+        self._load_yaml_template("yaml-files/algorithm.yaml")
 
-    def _load_yaml_file(self, file_path: str, image: str):
+    def _load_yaml_template(self, file_path: str):
         with open(path.join(path.dirname(__file__), file_path)) as f:
-            self.sts_conf = yaml.safe_load(f)
-        self.sts_conf['spec']['template']['spec']['containers'][0]['image'] = image
+            self.job_template = yaml.safe_load(f)
 
-    def create_sts(self) -> bool:
+    def _populate_yaml_template(self, job_name: str, image: str, cmds: [str]):
+        if not self.job_template:
+            print("cannot populate an non-existing template")
+        job_conf = copy.deepcopy(self.job_template)
+        metadata = job_conf['metadata']
+        container_spec = job_conf['spec']['template']['spec']['containers'][0]
+        metadata['name'] = job_name
+        metadata['namespace'] = self.namespace
+        container_spec['name'] = job_name
+        container_spec['image'] = image
+        container_spec['command'].extend(cmds)
+        return job_conf
+
+    def create_job(self, job_name: str, image: str, cmds: [str]) -> bool:
         try:
-            resp = self.app_api.create_namespaced_stateful_set(
-                namespace=self.namespace, body=self.sts_conf)
+            job_conf = self._populate_yaml_template(job_name, image, cmds)
+            self.batch_api.create_namespaced_job(
+                namespace=self.namespace, body=job_conf)
             return True
         except:
             traceback.print_exc()
             return False
 
-    def is_sts_exist(self) -> bool:
-        sts_list = [sts.metadata.name for sts in
-                    self.app_api.list_namespaced_stateful_set(self.namespace).items]
-        return True if self.sts_name in sts_list else False
+    def get_job_status(self, job_name: str) -> str:
+        res = self.batch_api.read_namespaced_job_status(job_name, self.namespace)
+        status = res.status.succeeded
+        # CHANGE ME: change the status string per need.
+        if not status:
+            return "RUNNING"
+        elif status <= 0:
+            return "FAILURE"
+        return "SUCCEED"
 
-    def describe_sts(self) -> client.V1StatefulSet:
-        resp = self.app_api.read_namespaced_stateful_set_status(
-            namespace=self.namespace, name=self.sts_name)
-        return resp
-
-    def is_pod_ready(self) -> bool:
-        if not self.is_sts_exist():
-            return False
-        return self.describe_sts().status.ready_replicas > 0
-
-    def destroy_sts(self) -> bool:
+    def destroy_job(self, job_name: str) -> bool:
         try:
-            resp = self.app_api.delete_namespaced_stateful_set(
-                name=self.sts_name,
+            resp = self.batch_api.delete_namespaced_job(
+                name=job_name,
                 namespace=self.namespace,
             )
             if resp.status.lower() == K8sUtils.SUCCESS:
@@ -169,30 +177,15 @@ class K8sManager(ManagerABC):
             traceback.print_exc()
             return False
 
-    def exec_run(self, commands: list) -> str:
-        # Calling exec and waiting for response
-        try:
-            output = stream.stream(
-                self.core_api.connect_get_namespaced_pod_exec,
-                name=self.pod_name,
-                namespace=self.namespace,
-                command=commands,
-                stderr=True, stdin=False,
-                stdout=True, tty=False)
-            print("Response: " + output)
-        except:
-            traceback.print_exc()
-            output = None
-        return output
+    def run_task(self, cmd, name, image):
+        return self.create_job(
+            job_name=name, image=image, cmds=[cmd])
 
-    def run_task(self, cmd, name):
-        return self.exec_run(cmd, name)
+    def stop_task(self, name):
+        return self.destroy_job(job_name=name)
 
-    def stop_task(self, cmd, name):
-        return self.exec_run(cmd, name)
-
-    def check_container(self):
-        return self.is_pod_ready()
+    def check_container(self, name):
+        return self.get_job_status(job_name=name)
 
     def component_registry(self, image, name):
         pass
@@ -213,9 +206,7 @@ class K8sUtils:
 
     @classmethod
     def get_namespace(cls) -> str:
-        # In below file, the pod can read it is in which K8s namespace
+        # In below file, the pod can read its K8s namespace
         with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace") as f:
             namespace = f.readline()
         return namespace
-
-

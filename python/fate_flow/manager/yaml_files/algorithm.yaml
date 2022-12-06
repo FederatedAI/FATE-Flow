@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name:
+  namespace:
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name:
+          image:
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash", "-c"]
+      serviceAccountName: flow
