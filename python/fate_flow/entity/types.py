@@ -34,52 +34,9 @@ class CustomEnum(Enum):
         return [member.name for member in cls.__members__.values()]
 
 
-class ComponentProviderName(CustomEnum):
-    FATE = "fate"
-    FATE_FLOW = "fate_flow"
-    FATE_SQL = "fate_sql"
-
-
-class FateDependenceName(CustomEnum):
-    Fate_Source_Code = "fate_code"
-    Python_Env = "python_env"
-
-
-class FateDependenceStorageEngine(CustomEnum):
-    HDFS = "HDFS"
-
-
-class PythonDependenceName(CustomEnum):
-    Fate_Source_Code = "python"
-    Python_Env = "miniconda"
-
-
-class ModelStorage(CustomEnum):
-    REDIS = "redis"
-    MYSQL = "mysql"
-    TENCENT_COS = "tencent_cos"
-
-
-class ModelOperation(CustomEnum):
-    STORE = "store"
-    RESTORE = "restore"
-    EXPORT = "export"
-    IMPORT = "import"
-    LOAD = "load"
-    BIND = "bind"
-
-
 class ProcessRole(CustomEnum):
     DRIVER = "driver"
     WORKER = "worker"
-
-
-class TagOperation(CustomEnum):
-    CREATE = "create"
-    RETRIEVE = "retrieve"
-    UPDATE = "update"
-    DESTROY = "destroy"
-    LIST = "list"
 
 
 class ResourceOperation(CustomEnum):
@@ -87,24 +44,20 @@ class ResourceOperation(CustomEnum):
     RETURN = "return"
 
 
-class PermissionType(CustomEnum):
-    COMPONENT = "component"
-    DATASET = "dataset"
+class CoordinationCommunicationProtocol(object):
+    HTTP = "http"
+    GRPC = "grpc"
 
 
-class SiteKeyName(CustomEnum):
-    PRIVATE = "private"
-    PUBLIC = "public"
+class FederatedMode(object):
+    SINGLE = "SINGLE"
+    MULTIPLE = "MULTIPLE"
 
+    def is_single(self, value):
+        return value == self.SINGLE
 
-class RegistryServiceName(CustomEnum):
-    UPLOAD = "upload"
-    DOWNLOAD = "download"
-    QUERY = "query"
-    CLIENT_AUTHENTICATION = "client_authentication"
-    SIGNATURE = "signature"
-    SITE_AUTHENTICATION = "site_authentication"
-    PERMISSION_CHECK = "permission"
+    def is_multiple(self, value):
+        return value == self.MULTIPLE
 
 
 class KillProcessRetCode(IntEnum, CustomEnum):
@@ -113,10 +66,11 @@ class KillProcessRetCode(IntEnum, CustomEnum):
     ERROR_PID = 2
 
 
-class InputSearchType(IntEnum, CustomEnum):
-    UNKNOWN = 0
-    TABLE_INFO = 1
-    JOB_COMPONENT_OUTPUT = 2
+class WorkerName(CustomEnum):
+    TASK_EXECUTOR = "task_executor"
+    TASK_INITIALIZER = "task_initializer"
+    PROVIDER_REGISTRAR = "provider_registrar"
+    DEPENDENCE_UPLOAD = "dependence_upload"
 
 
 class RetCode(IntEnum, CustomEnum):
@@ -135,16 +89,15 @@ class RetCode(IntEnum, CustomEnum):
     SERVER_ERROR = 500
 
 
-class WorkerName(CustomEnum):
-    TASK_EXECUTOR = "task_executor"
-    TASK_INITIALIZER = "task_initializer"
-    PROVIDER_REGISTRAR = "provider_registrar"
-    DEPENDENCE_UPLOAD = "dependence_upload"
-
-class TaskCleanResourceType(CustomEnum):
-    TABLE = "table"
-    METRICS = "metrics"
+class Job(IntEnum, CustomEnum):
+    NO_FOUND = 1000
 
 
-class ExternalStorage(CustomEnum):
-    MYSQL = "MYSQL"
+class Task(IntEnum, CustomEnum):
+    NO_FOUND = 2000
+
+
+class ReturnCode:
+    JOB: Job = Job
+    TASK = Task
+

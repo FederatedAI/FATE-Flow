@@ -13,22 +13,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from pydantic import BaseModel as Base
+import os
+
+import dotenv
+import typing
+
+from arch import get_project_base_directory
 
 
-from arch import BaseType
+def get_versions() -> typing.Mapping[str, typing.Any]:
+    return dotenv.dotenv_values(
+        dotenv_path=os.path.join(get_project_base_directory(), "fateflow.env")
+    )
 
 
-class BaseEntity(BaseType):
-    pass
-
-
-class BaseModel(Base):
-    def to_dict(self):
-        d = {}
-        for k, v in self.__dict__.items():
-            d[k] = v
-        return d
-
-    def __str__(self):
-        return str(self.to_dict())
+def get_flow_version() -> typing.Optional[str]:
+    return get_versions().get("FATEFlow")

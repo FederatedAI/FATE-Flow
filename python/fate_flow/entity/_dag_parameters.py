@@ -13,20 +13,27 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from pydantic import BaseModel as Base
+from ._base import BaseEntity
 
 
-from arch import BaseType
+class DagParameters(BaseEntity):
+    def __init__(self, **kwargs):
+        self.scheduler_party_id = None
+        self.initiator_party_id = None
+        self.stage = None
+        self.parties = None
+        self.conf = {}
+        self.party_tasks = {}
+        self.tasks = {}
+        for k, v in kwargs.items():
+            if hasattr(self, k):
+                setattr(self, k, v)
 
-
-class BaseEntity(BaseType):
-    pass
-
-
-class BaseModel(Base):
     def to_dict(self):
         d = {}
         for k, v in self.__dict__.items():
+            if v is None:
+                continue
             d[k] = v
         return d
 

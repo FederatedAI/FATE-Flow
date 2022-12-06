@@ -13,22 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from pydantic import BaseModel as Base
 
 
-from arch import BaseType
-
-
-class BaseEntity(BaseType):
-    pass
-
-
-class BaseModel(Base):
-    def to_dict(self):
-        d = {}
-        for k, v in self.__dict__.items():
-            d[k] = v
-        return d
-
-    def __str__(self):
-        return str(self.to_dict())
+# Define federated scheduling api

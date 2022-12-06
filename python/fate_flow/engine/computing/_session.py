@@ -13,22 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from pydantic import BaseModel as Base
+from arch import ComputingEngine, EngineType
+from fate_flow.engine.computing._eggroll import EggrollEngine
+
+from fate_flow.settings import ENGINES
 
 
-from arch import BaseType
-
-
-class BaseEntity(BaseType):
-    pass
-
-
-class BaseModel(Base):
-    def to_dict(self):
-        d = {}
-        for k, v in self.__dict__.items():
-            d[k] = v
-        return d
-
-    def __str__(self):
-        return str(self.to_dict())
+def build_engine(computing_engine=None):
+    if not computing_engine:
+        computing_engine = ENGINES.get(EngineType.COMPUTING)
+    if computing_engine in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
+        engine_session = EggrollEngine()
+    else:
+        raise ValueError(f"{computing_engine} is not supported")
+    return engine_session
