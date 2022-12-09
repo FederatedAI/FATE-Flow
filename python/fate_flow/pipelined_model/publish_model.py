@@ -142,7 +142,7 @@ def convert_homo_model(request_data):
     if not model.exists():
         return 100, 'Model {} {} does not exist'.format(party_model_id, model_version), None
 
-    define_meta = pipelined_model.pipelined_component.get_define_meta()
+    define_meta = model.pipelined_component.get_define_meta()
 
     framework_name = request_data.get("framework_name")
     detail = []
