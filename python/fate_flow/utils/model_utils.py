@@ -105,9 +105,7 @@ def query_model_info_from_file(model_id='*', model_version='*', role='*', party_
                 stat_logger.exception(e)
 
         if query_filters:
-            for k, v in model_info.items():
-                if k not in query_filters:
-                    del model_info[k]
+            model_info = {k: v for k, v in model_info.items() if k in query_filters}
 
         models.append(model_info)
 
