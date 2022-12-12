@@ -24,3 +24,36 @@ upload_block_max_bytes: 104857600 # bytes
 
 #component output
 output_data_summary_count_limit: 100
+
+task_default_conf:
+  input:
+    artifacts:
+      model_get_uri: /v2/worker/task/report
+  output:
+    model:
+      type: directory
+      metadata:
+        uri: /worker/task/model/task_name/model_id/model_version
+        format: json
+    metric:
+      type: directory
+      metadata:
+        uri: xxx
+        format: json
+    data:
+      type: directory
+      metadata:
+        uri: xxx
+        format: csv
+  logger:
+    type: flow
+    metadata:
+      level: DEBUG
+      debug_mode: true
+  device:
+    type: CPU
+  mlmd:
+    type: flow
+    metadata:
+      statu_uri: /worker/task/report
+      tracking_uri: /worker/task/output/tracking

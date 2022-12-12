@@ -14,17 +14,23 @@
 #  limitations under the License.
 #
 import os
+from copy import deepcopy
 
 from arch import json_dumps, current_timestamp
 from fate_flow.db.db_models import Task
 from fate_flow.engine.computing import build_engine
-from fate_flow.entity.component_structures import RuntimeOutputChannelSpec
-from fate_flow.entity.task_structures import IOArtifact
+from fate_flow.entity.dag_structures import RuntimeOutputChannelSpec, DAGSchema
+from fate_flow.entity.task_structures import IOArtifact, TaskRuntimeInputSpec, TaskScheduleSpec, RuntimeConfSpec, \
+    OutputSpec, OutputModelSpec, OutputDataSpec, OutputMetricSpec, MLMDSpec, LOGGERSpec, ComputingBackendSpec, \
+    FederationBackendSpec
+from fate_flow.manager.output_manager import OutputDataTracking
 from fate_flow.manager.worker_manager import WorkerManager
-from fate_flow.scheduler.dsl_parser import TaskNodeInfo
+from fate_flow.runtime.job_default_config import JobDefaultConfig
+from fate_flow.scheduler.dsl_parser import TaskNodeInfo, DagParser
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import EndStatus, TaskStatus
 from fate_flow.operation.job_saver import JobSaver
+from fate_flow.settings import HOST, HTTP_PORT, API_VERSION, DATA_STORE_PATH
 from fate_flow.utils import job_utils
 from fate_flow.utils.log_utils import schedule_logger
 
@@ -52,6 +58,14 @@ class TaskController(object):
         try:
             task = JobSaver.query_task(task_id=task_id, task_version=task_version, role=role, party_id=party_id)[0]
             run_parameters = task.f_component_parameters
+            # update runtime parameters
+            dag_parser = DagParser()
+            job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
+            dag_schema = DAGSchema(**job.f_dag)
+            dag_parser.parse_dag(dag_schema=dag_schema)
+            task_parser = TaskParser(dag_parser=dag_parser, job_id=job_id, task_name=task.f_task_name, role=role,
+                                     party_id=party_id, parties=dag_schema.dag.parties)
+            task_parser.update_task_runtime_artifacts(run_parameters)
             schedule_logger(job_id).info(f"task run parameters: {run_parameters}")
             task_executor_process_start_status = False
 
@@ -68,6 +82,7 @@ class TaskController(object):
                                           log_dir=job_utils.get_job_log_directory(job_id, role, party_id,
                                                                                   task.f_task_name),
                                           cwd_dir=job_utils.get_job_directory(job_id, role, party_id, task.f_task_name))
+            task_info.update(run_info)
             task_info["start_time"] = current_timestamp()
             task_executor_process_start_status = True
         except Exception as e:
@@ -89,7 +104,13 @@ class TaskController(object):
 
     @classmethod
     def update_task(cls, task_info):
-        pass
+        update_status = False
+        try:
+            update_status = JobSaver.update_task(task_info=task_info)
+        except Exception as e:
+            schedule_logger(task_info["job_id"]).exception(e)
+        finally:
+            return update_status
 
     @classmethod
     def update_task_status(cls, task_info, scheduler_party_id=None):
@@ -175,25 +196,29 @@ class TaskController(object):
 
 
 class TaskParser(object):
-    def __init__(self, dag_parser, task_name):
+    def __init__(self, dag_parser, job_id, task_name, role, party_id, task_id="", execution_id="",
+                 task_version=None, parties=None):
         self.dag_parser = dag_parser
+        self.job_id = job_id
         self.task_name = task_name
+        self.role = role
+        self.party_id = party_id
+        self.task_id = task_id
+        self.task_version = task_version
+        self.execution_id = execution_id
+        self.parties = parties
 
     @property
     def task_node(self) -> TaskNodeInfo:
         return self.dag_parser.get_task_node(task_name=self.task_name)
 
     @property
-    def artifacts(self):
-        task_artifacts = {}
-        if self.task_node.upstream_inputs:
-            for k, v in self.task_node.upstream_inputs.items():
-                if isinstance(v, dict):
-                    task_artifacts[k] = v
-                elif isinstance(v, RuntimeOutputChannelSpec):
-                    if v.output_artifact_key == "data":
-                        task_artifacts[k] = self.get_artifacts_data(k, v)
-        return task_artifacts
+    def federation_id(self):
+        return job_utils.generate_task_version_id(task_id=self.task_id, task_version=self.task_version)
+
+    @property
+    def computing_id(self):
+        return job_utils.generate_session_id(self.task_id, self.task_version, self.role, self.party_id)
 
     @property
     def runtime_parties(self):
@@ -219,21 +244,112 @@ class TaskParser(object):
     def task_runtime_conf(self):
         return self.task_node.conf
 
-    def need_run(self, role, party_id):
-        return (role, party_id) in [(party.role, party.party_id) for party in self.runtime_parties]
+    @property
+    def need_run(self):
+        return (self.role, self.party_id) in [(party.role, party.party_id) for party in self.runtime_parties]
 
-    def get_runtime_parameters(self, role, party_id):
-        return self.runtime_parameters.get(role, {}).get(party_id, {})
+    @property
+    def input_parameters(self):
+        return self.task_node.runtime_parameters.get(self.role, {}).get(self.party_id, {})
 
-    @staticmethod
-    def get_artifacts_data(name, channel: RuntimeOutputChannelSpec):
-        return IOArtifact(name=name, uri="", metadata={}).dict()
-
-    def get_dependent_tasks(self):
-        dependent_tasks = []
+    @property
+    def input_artifacts(self):
+        task_artifacts = {}
         if self.task_node.upstream_inputs:
             for k, v in self.task_node.upstream_inputs.items():
-                # if isinstance(v, RuntimeOutputChannelSpec):
-                dependent_tasks.append(v.producer_task)
-        return dependent_tasks
+                if isinstance(v, dict):
+                    task_artifacts[k] = v
+                elif isinstance(v, RuntimeOutputChannelSpec):
+                    task_artifacts[k] = self.get_artifacts_data(k, v)
 
+        return task_artifacts
+
+    def get_artifacts_data(self, name, channel: RuntimeOutputChannelSpec):
+        data = OutputDataTracking.query(task_name=channel.producer_task, output_key=channel.output_artifact_key,
+                                        role=self.role, party_id=self.party_id,  job_id=self.job_id)
+        if data:
+            data = data[-1]
+            return IOArtifact(name=name, uri=data.f_uri, metadata=data.f_meta).dict()
+        return IOArtifact(name=name, uri="", metadata={}).dict()
+
+    def generate_task_outputs(self):
+        return OutputSpec(
+            model=self.get_output_model_store_conf(),
+            data=self.get_output_data_store_conf(),
+            metric=OutputMetricSpec(type="directory", metadata={"uri": "", "format": "json"}),
+        )
+
+    def get_output_model_store_conf(self):
+        model_conf = deepcopy(JobDefaultConfig.task_default_conf.get("output", {}).get("model", {}))
+        if model_conf.get("metadata"):
+            uri = model_conf["metadata"].get("uri").replace("task_name", self.task_name).replace("model_id", self.job_id).replace("model_version", "0")
+            model_conf["metadata"]["uri"] = f'http://{HOST}:{HTTP_PORT}/{API_VERSION}{uri}'
+        return OutputModelSpec(**model_conf)
+
+    def get_output_data_store_conf(self):
+        data_conf = deepcopy(JobDefaultConfig.task_default_conf.get("output", {}).get("data", {}))
+        os.makedirs(DATA_STORE_PATH, exist_ok=True)
+        return OutputDataSpec(type="directory", metadata={"uri": DATA_STORE_PATH, "format": "dataframe"})
+
+    @staticmethod
+    def generate_mlmd():
+        _type = JobDefaultConfig.task_default_conf.get("mlmd", {}).get("type")
+        _statu_uri = f'http://{HOST}:{HTTP_PORT}/{API_VERSION}{JobDefaultConfig.task_default_conf.get("mlmd", {}).get("metadata", {}).get("statu_uri", "")}'
+        _tracking_uri = f'http://{HOST}:{HTTP_PORT}/{API_VERSION}{JobDefaultConfig.task_default_conf.get("mlmd", {}).get("metadata", {}).get("tracking_uri", "")}'
+        return MLMDSpec(
+            type=_type,
+            metadata={
+                "statu_uri": _statu_uri,
+                "tracking_uri": _tracking_uri
+            })
+
+    def generate_logger_conf(self):
+        logger_conf = JobDefaultConfig.task_default_conf.get("logger")
+        log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id, self.task_name)
+        if logger_conf.get("metadata"):
+            logger_conf.get("metadata").update({"basepath": log_dir})
+        return LOGGERSpec(**logger_conf)
+
+    @staticmethod
+    def generate_device():
+        return JobDefaultConfig.task_default_conf.get("device")
+
+    def generate_computing_conf(self):
+        return ComputingBackendSpec(type="standalone", metadata={"computing_id": self.computing_id})
+
+    def generate_federation_conf(self):
+        parties = []
+        for party in self.parties:
+            for _party_id in party.party_id:
+                if _party_id != self.party_id and party.role != self.role:
+                    parties.append({"role": party.role, "partyid": _party_id})
+        return FederationBackendSpec(type="standalone", metadata={"federation_id": self.federation_id, "parties": {
+            "local": {"role": self.role, "partyid": self.party_id},
+            "parties": parties
+        }})
+
+    @property
+    def task_conf(self):
+        return RuntimeConfSpec(
+            output=self.generate_task_outputs(),
+            mlmd=self.generate_mlmd(),
+            logger=self.generate_logger_conf(),
+            device=self.generate_device(),
+            computing=self.generate_computing_conf(),
+            federation=self.generate_federation_conf()
+        )
+
+    def get_task_parameters(self) -> TaskScheduleSpec:
+        return TaskScheduleSpec(
+            taskid=self.execution_id,
+            component=self.component_ref,
+            role=self.role,
+            stage=self.stage,
+            party_id=self.party_id,
+            inputs=TaskRuntimeInputSpec(parameters=self.input_parameters).dict(),
+            conf=self.task_conf
+        )
+
+    def update_task_runtime_artifacts(self, task_parameters):
+        task_parameters["inputs"].update({"artifacts": self.input_artifacts})
+        return task_parameters

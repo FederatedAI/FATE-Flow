@@ -161,6 +161,14 @@ class DagParser(object):
     def conf(self):
         return self._conf
 
+    def get_dependent_tasks(self, task_name):
+        dependent_tasks = []
+        _task_node = self.get_task_node(task_name=task_name)
+        if _task_node.upstream_inputs:
+            for k, v in _task_node.upstream_inputs.items():
+                dependent_tasks.append(v.producer_task)
+        return dependent_tasks
+
 
 class TaskNodeInfo(object):
     def __init__(self):

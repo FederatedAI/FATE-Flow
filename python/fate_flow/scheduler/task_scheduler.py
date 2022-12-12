@@ -13,7 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.controller.task_controller import TaskParser
 from fate_flow.entity import RetCode
 from fate_flow.entity.run_status import StatusSet, TaskStatus, InterruptStatus, EndStatus, AutoRerunStatus, \
     SchedulingStatusCode
@@ -63,8 +62,7 @@ class TaskScheduler(object):
         schedule_logger(job.f_job_id).info(f"canceled status {canceled}, job interrupt status {job_interrupt}")
         if not canceled and not job_interrupt:
             for task_id, waiting_task in waiting_tasks.items():
-                task_parser = TaskParser(dag_parser=dag_parser, task_name=waiting_task.f_task_name)
-                dependent_tasks = task_parser.get_dependent_tasks()
+                dependent_tasks = dag_parser.get_dependent_tasks(task_name=waiting_task.f_task_name)
                 schedule_logger(job.f_job_id).info(f"task {waiting_task.f_task_name} dependent tasks:{dependent_tasks}")
                 for task_name in dependent_tasks:
                     dependent_task = tasks_group[task_name]

@@ -19,7 +19,7 @@ from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask
 from fate_flow.entity.dag_structures import DAGSchema
 from fate_flow.entity.run_status import EndStatus, JobStatus, TaskStatus
-from fate_flow.entity.task_structures import TaskScheduleSpec, TaskRuntimeInputSpec
+from fate_flow.entity.task_structures import TaskScheduleSpec, TaskRuntimeInputSpec, RuntimeConfSpec
 from fate_flow.entity.types import ReturnCode
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
@@ -87,10 +87,16 @@ class JobController(object):
 
     @classmethod
     def create_task(cls, job_id, role, party_id, task_name, dag_schema, dag_parser, is_scheduler):
-        task_parser = TaskParser(dag_parser=dag_parser, task_name=task_name)
-        need_run = task_parser.need_run(role, party_id)
+
+        task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
+        task_version = 0
+        execution_id = job_utils.generate_session_id(task_id, task_version, role, party_id)
+        task_parser = TaskParser(dag_parser=dag_parser, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
+                                 task_id=task_id, execution_id=execution_id, task_version=task_version,
+                                 parties=dag_schema.dag.parties)
+        need_run = task_parser.need_run
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
-        task_parameters = cls.generate_task_parameters(role, party_id, task_parser).dict(exclude_none=True)
+        task_parameters = task_parser.get_task_parameters().dict()
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
                                      f" {task_parameters}")
         if is_scheduler:
@@ -101,8 +107,8 @@ class JobController(object):
                 task.f_party_id = party_id
                 task.f_task_name = task_name
                 task.f_component = task_parser.component_ref
-                task.f_task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
-                task.f_task_version = 0
+                task.f_task_id = task_id
+                task.f_task_version = task_version
                 task.f_status = TaskStatus.WAITING
                 task.f_parties = cls.get_parties_info(dag_schema)
                 ScheduleJobSaver.create_task(task.to_human_model_dict())
@@ -113,14 +119,14 @@ class JobController(object):
             task.f_party_id = party_id
             task.f_task_name = task_name
             task.f_component = task_parser.component_ref,
-            task.f_task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
-            task.f_task_version = 0
+            task.f_task_id = task_id
+            task.f_task_version = task_version
             task.f_scheduler_party_id = dag_schema.dag.conf.scheduler_party_id
             task.f_federated_status_collect_type = dag_schema.dag.conf.federated_status_collect_type
             task.f_status = TaskStatus.WAITING if need_run else TaskStatus.PASS
             task.f_party_status = TaskStatus.WAITING
             task.f_component_parameters = task_parameters
-            task.f_execution_id = job_utils.generate_session_id(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id)
+            task.f_execution_id = execution_id
             JobSaver.create_task(task.to_human_model_dict())
 
     @classmethod
@@ -156,38 +162,6 @@ class JobController(object):
             }
             ScheduleJobSaver.create_task_scheduler_status(task_info)
         schedule_logger(job_id).info("create schedule task status success")
-
-    @classmethod
-    def generate_task_parameters(cls, role, party_id, task_parser) -> TaskScheduleSpec:
-        return TaskScheduleSpec(
-            component=task_parser.component_ref,
-            role=role,
-            stage=task_parser.stage,
-            party_id=party_id,
-            inputs=TaskRuntimeInputSpec(parameters=task_parser.get_runtime_parameters(role, party_id),
-                                        artifacts=task_parser.artifacts),
-            outputs=cls.generate_component_outputs(),
-            conf=cls.generate_component_conf(task_parser)
-        )
-
-    @classmethod
-    def generate_component_conf(cls, task_parser):
-        conf = task_parser.task_runtime_conf
-        conf.update(cls.task_environment_parameters())
-        return conf
-
-    @classmethod
-    def task_environment_parameters(cls):
-        return {}
-
-    @classmethod
-    def update_computing_engine(cls):
-        pass
-
-    @classmethod
-    def generate_component_outputs(cls):
-        # todo:
-        return {}
 
     @classmethod
     def get_parties_info(cls, dag_schema: DAGSchema):

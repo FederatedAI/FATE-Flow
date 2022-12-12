@@ -104,6 +104,23 @@ class Task(DataBaseModel):
         primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id')
 
 
+class TrackingOutputDataInfo(DataBaseModel):
+    f_job_id = CharField(max_length=25, index=True)
+    f_task_id = CharField(max_length=100, null=True, index=True)
+    f_task_version = BigIntegerField(null=True)
+    f_task_name = CharField(max_length=50, index=True)
+    f_role = CharField(max_length=50, index=True)
+    f_party_id = CharField(max_length=10, index=True)
+    f_output_key = CharField(max_length=30)
+    f_type = CharField(max_length=10, null=True)
+    f_uri = CharField(max_length=100, null=True)
+    f_meta = JSONField()
+
+    class Meta:
+        db_table = "t_tracking_output_data"
+        primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id', 'f_type', 'f_output_key')
+
+
 class EngineRegistry(DataBaseModel):
     f_engine_type = CharField(max_length=10, index=True)
     f_engine_name = CharField(max_length=50, index=True)

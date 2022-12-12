@@ -13,7 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import time
+
+from fate_flow.engine.computing import build_engine
+from fate_flow.entity.run_status import TaskStatus, JobStatus
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.runtime.runtime_config import RuntimeConfig
+from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.utils.cron import Cron
+from fate_flow.utils.log_utils import detect_logger
 
 
 class Detector(Cron):
@@ -25,7 +33,49 @@ class Detector(Cron):
 
     @classmethod
     def detect_running_task(cls):
-        pass
+        detect_logger().info('start to detect running task..')
+        count = 0
+        try:
+            running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING)
+            stop_job_ids = set()
+            for task in running_tasks:
+                if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST:
+                    cls.detect_cluster_instance_status(task, stop_job_ids)
+                    continue
+                count += 1
+                try:
+                    process_exist = build_engine().is_alive(task)
+                    if not process_exist:
+                        msg = f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id}"
+                        detect_logger(job_id=task.f_job_id).info(
+                            f"{msg} with {task.f_party_status} process {task.f_run_pid} does not exist")
+                        time.sleep(3)
+                        _tasks = JobSaver.query_task(task_id=task.f_task_id, task_version=task.f_task_version,
+                                                     role=task.f_role, party_id=task.f_party_id)
+                        if _tasks:
+                            if _tasks[0].f_party_status == TaskStatus.RUNNING:
+                                stop_job_ids.add(task.f_job_id)
+                                detect_logger(job_id=task.f_job_id).info(
+                                    f"{msg} party status has been checked twice, try to stop job")
+                            else:
+                                detect_logger(job_id=task.f_job_id).info(
+                                    f"{msg} party status has changed to {_tasks[0].f_party_status}, may be stopped by task_controller.stop_task, pass stop job again")
+                        else:
+                            detect_logger(job_id=task.f_job_id).warning(f"{msg} can not found on db")
+                except Exception as e:
+                    detect_logger(job_id=task.f_job_id).exception(e)
+            if stop_job_ids:
+                detect_logger().info('start to stop jobs: {}'.format(stop_job_ids))
+            stop_jobs = set()
+            for job_id in stop_job_ids:
+                jobs = JobSaver.query_job(job_id=job_id)
+                if jobs:
+                    stop_jobs.add(jobs[0])
+            cls.request_stop_jobs(jobs=stop_jobs, stop_msg="task executor process abort", stop_status=JobStatus.FAILED)
+        except Exception as e:
+            detect_logger().exception(e)
+        finally:
+            detect_logger().info(f"finish detect {count} running task")
 
     @classmethod
     def detect_end_task(cls):
@@ -41,7 +91,18 @@ class Detector(Cron):
 
     @classmethod
     def request_stop_jobs(cls, jobs, stop_msg, stop_status):
-        pass
+        if not len(jobs):
+            return
+        detect_logger().info(f"have {len(jobs)} should be stopped, because of {stop_msg}")
+        for job in jobs:
+            try:
+                detect_logger(job_id=job.f_job_id).info(
+                    f"detector request start to stop job {job.f_job_id}, because of {stop_msg}")
+                status = FederatedScheduler.request_stop_job(job_id=job.f_job_id, party_id=job.f_scheduler_party_id,
+                                                             stop_status=stop_status)
+                detect_logger(job_id=job.f_job_id).info(f"detector request stop job {job.f_job_id} {status}")
+            except Exception as e:
+                detect_logger(job_id=job.f_job_id).exception(e)
 
     @classmethod
     def detect_cluster_instance_status(cls, task, stop_job_ids):

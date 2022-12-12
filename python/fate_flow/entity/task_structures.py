@@ -14,7 +14,7 @@ class InputSpec(BaseModel):
 
 
 class TaskRuntimeInputSpec(BaseModel):
-    parameters: Optional[Dict[str, str]]
+    parameters: Optional[Dict[str, Any]]
     artifacts: Optional[Dict[str, IOArtifact]]
 
 
@@ -33,35 +33,50 @@ class LOGGERSpec(BaseModel):
 
 
 class ComputingBackendSpec(BaseModel):
-    engine: str
-    computing_id: str
-
-
-class FederationPartySpec(BaseModel):
-    local: Dict[str, str]
-    parties: List[Dict[str, str]]
+    type: str
+    metadata: Dict[str, Any]
 
 
 class FederationBackendSpec(BaseModel):
-    engine: str
-    federation_id: str
-    parties: FederationPartySpec
+    type: str
+    metadata: Dict[str, Any]
+
+
+class OutputModelSpec(BaseModel):
+    type: str
+    metadata: Dict[str, str]
+
+
+class OutputMetricSpec(BaseModel):
+    type: str
+    metadata: Dict[str, str]
+
+
+class OutputDataSpec(BaseModel):
+    type: str
+    metadata: Dict[str, str]
+
+
+class OutputSpec(BaseModel):
+    model: OutputModelSpec
+    metric: OutputMetricSpec
+    data: OutputDataSpec
 
 
 class RuntimeConfSpec(BaseModel):
-    mlmd: Optional[MLMDSpec]
-    logger: Optional[LOGGERSpec]
-    device: Optional[str]
-    computing: Optional[ComputingBackendSpec]
-    federation: Optional[FederationBackendSpec]
+    output: OutputSpec
+    mlmd: MLMDSpec
+    logger: LOGGERSpec
+    device: Dict[str, str]
+    computing: ComputingBackendSpec
+    federation: FederationBackendSpec
 
 
 class TaskScheduleSpec(BaseModel):
-    execution_id: Optional[str]
+    taskid: Optional[str]
     component: Optional[str]
     role: Optional[str]
     stage: Optional[str]
     party_id: Optional[Union[str, int]]
     inputs: Optional[TaskRuntimeInputSpec]
-    outputs: Optional[Dict[str, IOArtifact]]
-    conf: Optional[RuntimeConfSpec]
+    conf: RuntimeConfSpec

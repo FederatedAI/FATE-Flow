@@ -63,3 +63,6 @@ access_logger = getLogger("fate_flow_access")
 database_logger = getLogger("fate_flow_database")
 
 PARTY_ID = 10000
+
+MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model")
+DATA_STORE_PATH = os.path.join(get_fate_flow_directory(), "data")
