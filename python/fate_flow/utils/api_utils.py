@@ -305,9 +305,9 @@ def proxy_api(role, _job_id, request_config):
 
 
 def forward_api(role, request_config):
-    method = request_config.get('header', {}).get('method', 'post')
-    endpoint = request_config.get('header', {}).get('endpoint')
-    if not getattr(ServerRegistry, role.upper()):
+    method = request_config.get('header', {}).get('METHOD', 'POST')
+    endpoint = request_config.get('header', {}).get('ENDPOINT')
+    if not hasattr(ServerRegistry, role.upper()):
         ServerRegistry.load()
     ip = getattr(ServerRegistry, role.upper()).get("host")
     port = getattr(ServerRegistry, role.upper()).get("port")
