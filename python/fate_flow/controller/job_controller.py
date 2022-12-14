@@ -13,13 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from arch import current_timestamp
 from fate_flow.controller.task_controller import TaskController, TaskParser
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask
-from fate_flow.entity.dag_structures import DAGSchema
+from fate_flow.entity.dag_structures import DAGSchema, JobConfSpec
 from fate_flow.entity.run_status import EndStatus, JobStatus, TaskStatus
-from fate_flow.entity.task_structures import TaskScheduleSpec, TaskRuntimeInputSpec, RuntimeConfSpec
 from fate_flow.entity.types import ReturnCode
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
@@ -27,6 +25,7 @@ from fate_flow.scheduler.dsl_parser import DagParser
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import PARTY_ID
 from fate_flow.utils import job_utils
+from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import schedule_logger
 
 
@@ -34,6 +33,8 @@ class JobController(object):
     @classmethod
     def request_create_job(cls, dag_schema: dict):
         dag_schema = DAGSchema(**dag_schema)
+        if not dag_schema.dag.conf:
+            dag_schema.dag.conf = JobConfSpec()
         dag_schema.dag.conf.initiator_party_id = PARTY_ID
         if not dag_schema.dag.conf.scheduler_party_id:
             dag_schema.dag.conf.scheduler_party_id = PARTY_ID

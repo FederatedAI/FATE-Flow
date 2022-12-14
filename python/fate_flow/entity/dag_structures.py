@@ -1,20 +1,31 @@
-from typing import Optional, List, Union, Dict, Any, Literal
+from typing import Optional, List, Union, Dict, Any, Literal, TypeVar
 
 from fate_flow.entity import BaseModel
+
 
 class PartySpec(BaseModel):
     role: Union[Literal["guest", "host", "arbiter"]]
     party_id: List[Union[str, int]]
 
 
-class RuntimeOutputChannelSpec(BaseModel):
+class RuntimeTaskOutputChannelSpec(BaseModel):
     producer_task: str
     output_artifact_key: str
 
 
+class ModelWarehouseChannelSpec(BaseModel):
+    model_id: Optional[str]
+    model_version: Optional[str]
+    producer_task: str
+    output_artifact_key: str
+
+
+InputChannelSpec = TypeVar("InputChannelSpec", RuntimeTaskOutputChannelSpec, ModelWarehouseChannelSpec)
+
+
 class RuntimeInputDefinition(BaseModel):
     parameters: Optional[Dict[str, Any]]
-    artifacts: Optional[Dict[str, Dict[str, Union[RuntimeOutputChannelSpec, List[RuntimeOutputChannelSpec]]]]]
+    artifacts: Optional[Dict[str, Dict[str, Union[InputChannelSpec, List[InputChannelSpec]]]]]
 
 
 class TaskSpec(BaseModel):

@@ -15,14 +15,7 @@
 #
 from peewee import CharField, TextField, BigIntegerField, IntegerField, BooleanField, CompositeKey
 
-from arch import JSONField
-from fate_flow.db.base_models import DataBaseModel
-from fate_flow.settings import IS_STANDALONE
-
-if IS_STANDALONE:
-    from playhouse.apsw_ext import DateTimeField
-else:
-    from peewee import DateTimeField
+from fate_flow.db.base_models import DataBaseModel, JSONField, DateTimeField
 
 
 class Job(DataBaseModel):

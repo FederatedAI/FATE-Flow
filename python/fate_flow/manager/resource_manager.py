@@ -13,10 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from arch import engine_utils
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import EngineRegistry
 from fate_flow.entity.types import ResourceOperation
+from fate_flow.utils import engine_utils
 
 
 class ResourceManager(object):

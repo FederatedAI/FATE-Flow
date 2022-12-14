@@ -17,7 +17,7 @@ import functools
 import json
 import requests
 
-from arch import CustomJSONEncoder
+from fate_flow.utils.base_utils import CustomJSONEncoder
 
 requests.models.complexjson.dumps = functools.partial(json.dumps, cls=CustomJSONEncoder)
 

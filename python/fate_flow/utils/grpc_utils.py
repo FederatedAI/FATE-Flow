@@ -15,10 +15,11 @@
 #
 import grpc
 
-from arch import json_dumps, json_loads, basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
+from arch import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HOST, REMOTE_REQUEST_TIMEOUT
+from fate_flow.utils.base_utils import json_loads, json_dumps
 from fate_flow.utils.log_utils import audit_logger
 from fate_flow.utils.requests_utils import request
 

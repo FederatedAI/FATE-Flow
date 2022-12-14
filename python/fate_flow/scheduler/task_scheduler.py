@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 from fate_flow.entity import RetCode
+from fate_flow.entity.dag_structures import DAGSchema
 from fate_flow.entity.run_status import StatusSet, TaskStatus, InterruptStatus, EndStatus, AutoRerunStatus, \
     SchedulingStatusCode
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
@@ -25,7 +26,7 @@ from fate_flow.utils.log_utils import schedule_logger
 
 class TaskScheduler(object):
     @classmethod
-    def schedule(cls, job, dag_parser: DagParser, canceled=False):
+    def schedule(cls, job, dag_parser: DagParser, dag_schema: DAGSchema, canceled=False):
         schedule_logger(job.f_job_id).info("scheduling job tasks")
         tasks_group = ScheduleJobSaver.get_status_tasks_asc(job_id=job.f_job_id)
         waiting_tasks = {}
@@ -62,7 +63,9 @@ class TaskScheduler(object):
         schedule_logger(job.f_job_id).info(f"canceled status {canceled}, job interrupt status {job_interrupt}")
         if not canceled and not job_interrupt:
             for task_id, waiting_task in waiting_tasks.items():
-                dependent_tasks = dag_parser.get_dependent_tasks(task_name=waiting_task.f_task_name)
+                dependent_tasks = dag_parser.infer_dependent_tasks(
+                    dag_schema.dag.tasks[waiting_task.f_task_name].inputs
+                )
                 schedule_logger(job.f_job_id).info(f"task {waiting_task.f_task_name} dependent tasks:{dependent_tasks}")
                 for task_name in dependent_tasks:
                     dependent_task = tasks_group[task_name]

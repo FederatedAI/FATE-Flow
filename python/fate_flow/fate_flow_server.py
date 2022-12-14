@@ -23,7 +23,7 @@ import traceback
 import grpc
 from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
-from arch import get_versions, init_arch_db, proxy_pb2_grpc
+from arch import proxy_pb2_grpc
 from fate_flow.apps import app
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.runtime_config import RuntimeConfig
@@ -37,13 +37,13 @@ from fate_flow.settings import (
 )
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.utils.log_utils import schedule_logger, getLogger
+from fate_flow.utils.version import get_versions
 from fate_flow.utils.xthread import ThreadPoolExecutor
 
 
 if __name__ == '__main__':
     # init db
     init_flow_db()
-    init_arch_db()
     # init runtime config
     import argparse
     parser = argparse.ArgumentParser()

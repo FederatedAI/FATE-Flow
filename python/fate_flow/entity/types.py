@@ -73,6 +73,11 @@ class WorkerName(CustomEnum):
     DEPENDENCE_UPLOAD = "dependence_upload"
 
 
+class ArtifactSourceType(object):
+    TASK_OUTPUT_ARTIFACT = "task_output_artifact"
+    MODEL_WAREHOUSE = "model_warehouse"
+
+
 class RetCode(IntEnum, CustomEnum):
     SUCCESS = 0
     NOT_EFFECTIVE = 10

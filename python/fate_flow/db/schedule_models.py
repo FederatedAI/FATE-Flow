@@ -13,10 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from peewee import CharField, TextField, IntegerField, BooleanField, BigIntegerField, DateTimeField, CompositeKey
+from peewee import CharField, TextField, IntegerField, BooleanField, BigIntegerField, CompositeKey
 
-from arch import JSONField
-from fate_flow.db.base_models import DataBaseModel
+from fate_flow.db.base_models import DataBaseModel, JSONField, DateTimeField
 
 
 class ScheduleJob(DataBaseModel):

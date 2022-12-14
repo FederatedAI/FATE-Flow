@@ -13,8 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from arch import ComputingEngine, EngineType
+from fate.arch.common import EngineType
 from fate_flow.engine.computing._eggroll import EggrollEngine
+from fate_flow.entity.engine_types import ComputingEngine
 
 from fate_flow.settings import ENGINES
 

@@ -15,8 +15,7 @@
 #
 from pydantic import BaseModel as Base
 
-
-from arch import BaseType
+from fate_flow.utils.base_utils import BaseType
 
 
 class BaseEntity(BaseType):

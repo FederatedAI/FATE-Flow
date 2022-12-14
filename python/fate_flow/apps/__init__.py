@@ -20,13 +20,13 @@ from pathlib import Path
 from flask import Blueprint, Flask
 from werkzeug.wrappers.request import Request
 
-from arch import CustomJSONEncoder
 
 from fate_flow.settings import API_VERSION, stat_logger, getLogger
 from fate_flow.utils.api_utils import server_error_response, args_error_response
 
 __all__ = ['app']
 
+from fate_flow.utils.base_utils import CustomJSONEncoder
 
 logger = getLogger('flask.app')
 
