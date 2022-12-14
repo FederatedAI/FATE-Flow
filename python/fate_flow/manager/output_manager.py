@@ -1,8 +1,8 @@
 import peewee
 
-from arch import current_timestamp
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import TrackingOutputDataInfo
+from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import sql_logger
 
 

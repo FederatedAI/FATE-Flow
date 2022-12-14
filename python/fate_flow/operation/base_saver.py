@@ -20,11 +20,11 @@ import typing
 
 import peewee
 
-from arch import current_timestamp
 from fate_flow.db.base_models import DB
-from fate_flow.db.db_models import DataBaseModel, Task, Job
+from fate_flow.db.db_models import Task, Job
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleTaskStatus, ScheduleJob
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
+from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import schedule_logger, sql_logger
 
 

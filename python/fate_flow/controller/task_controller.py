@@ -16,10 +16,9 @@
 import os
 from copy import deepcopy
 
-from arch import json_dumps, current_timestamp
 from fate_flow.db.db_models import Task
 from fate_flow.engine.computing import build_engine
-from fate_flow.entity.dag_structures import RuntimeOutputChannelSpec, DAGSchema
+from fate_flow.entity.dag_structures import DAGSchema, InputChannelSpec
 from fate_flow.entity.task_structures import IOArtifact, TaskRuntimeInputSpec, TaskScheduleSpec, RuntimeConfSpec, \
     OutputSpec, OutputModelSpec, OutputDataSpec, OutputMetricSpec, MLMDSpec, LOGGERSpec, ComputingBackendSpec, \
     FederationBackendSpec
@@ -32,6 +31,7 @@ from fate_flow.entity.run_status import EndStatus, TaskStatus
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.settings import HOST, HTTP_PORT, API_VERSION, DATA_STORE_PATH
 from fate_flow.utils import job_utils
+from fate_flow.utils.base_utils import current_timestamp, json_dumps
 from fate_flow.utils.log_utils import schedule_logger
 
 
@@ -259,12 +259,12 @@ class TaskParser(object):
             for k, v in self.task_node.upstream_inputs.items():
                 if isinstance(v, dict):
                     task_artifacts[k] = v
-                elif isinstance(v, RuntimeOutputChannelSpec):
+                else:
                     task_artifacts[k] = self.get_artifacts_data(k, v)
 
         return task_artifacts
 
-    def get_artifacts_data(self, name, channel: RuntimeOutputChannelSpec):
+    def get_artifacts_data(self, name, channel: InputChannelSpec):
         data = OutputDataTracking.query(task_name=channel.producer_task, output_key=channel.output_artifact_key,
                                         role=self.role, party_id=self.party_id,  job_id=self.job_id)
         if data:

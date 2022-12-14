@@ -13,7 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from arch import json_dumps, current_timestamp
 from fate_flow.scheduler.task_scheduler import TaskScheduler
 from fate_flow.controller.job_controller import JobController
 from fate_flow.db.base_models import DB
@@ -28,6 +27,7 @@ from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.scheduler.dsl_parser import DagParser
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.utils import job_utils, schedule_utils
+from fate_flow.utils.base_utils import current_timestamp, json_dumps
 from fate_flow.utils.cron import Cron
 from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
 
@@ -206,7 +206,9 @@ class DAGScheduler(Cron):
         schedule_logger(job.f_job_id).info("scheduling running job")
         dag_parser = DagParser()
         dag_parser.parse_dag(dag_schema=DAGSchema(**job.f_dag))
-        task_scheduling_status_code, auto_rerun_tasks, tasks = TaskScheduler.schedule(job=job, dag_parser=dag_parser, canceled=job.f_cancel_signal)
+        task_scheduling_status_code, auto_rerun_tasks, tasks = TaskScheduler.schedule(job=job, dag_parser=dag_parser,
+                                                                                      canceled=job.f_cancel_signal,
+                                                                                      dag_schema=DAGSchema(**job.f_dag))
 
         tasks_status = dict([(task.f_task_name, task.f_status) for task in tasks])
         schedule_logger(job_id=job.f_job_id).info(f"task_scheduling_status_code: {task_scheduling_status_code}, "

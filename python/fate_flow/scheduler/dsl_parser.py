@@ -19,8 +19,9 @@ import networkx as nx
 from pydantic import BaseModel
 from typing import Dict, Union
 
-from fate_flow.entity.component_structures import ComponentSpec
+from fate_flow.entity.component_structures import ComponentSpec, RuntimeInputDefinition
 from fate_flow.entity.dag_structures import DAGSchema
+from fate_flow.entity.types import ArtifactSourceType
 
 
 class DagParser(object):
@@ -33,6 +34,7 @@ class DagParser(object):
         self._conf = dict()
 
     def parse_dag(self, dag_schema: DAGSchema, component_specs: Dict[str, ComponentSpec] = None):
+        self.dag_schema = dag_schema
         dag_spec = dag_schema.dag
         dag_stage = dag_spec.stage
         tasks = dag_spec.tasks
@@ -40,6 +42,7 @@ class DagParser(object):
             self._conf = dag_spec.conf.dict(exclude_defaults=True)
         job_conf = self._conf.get("task", {})
         for name, task_spec in tasks.items():
+            self._dag.add_node(name)
             task_stage = dag_stage
             component_ref = task_spec.component_ref
             if not task_spec.conf:
@@ -62,8 +65,12 @@ class DagParser(object):
             upstream_inputs = dict()
             for input_key, output_specs_dict in task_spec.inputs.artifacts.items():
                 upstream_inputs[input_key] = dict()
-                for output_name, channel_spec_list in output_specs_dict.items():
+                for artifact_source, channel_spec_list in output_specs_dict.items():
                     upstream_inputs[input_key] = channel_spec_list
+
+                    if artifact_source == ArtifactSourceType.MODEL_WAREHOUSE:
+                        continue
+
                     if not isinstance(channel_spec_list, list):
                         channel_spec_list = [channel_spec_list]
 
@@ -161,14 +168,21 @@ class DagParser(object):
     def conf(self):
         return self._conf
 
-    def get_dependent_tasks(self, task_name):
-        dependent_tasks = []
-        _task_node = self.get_task_node(task_name=task_name)
-        if _task_node.upstream_inputs:
-            for k, v in _task_node.upstream_inputs.items():
-                dependent_tasks.append(v.producer_task)
-        return dependent_tasks
+    @classmethod
+    def infer_dependent_tasks(cls, task_input: RuntimeInputDefinition):
+        if not task_input or not task_input.artifacts:
+            return []
+        dependent_task_list = list()
+        for artifact_name, artifact_channel in task_input.artifacts.items():
+            for artifact_source_type, channels in artifact_channel.items():
+                if artifact_source_type == ArtifactSourceType.MODEL_WAREHOUSE:
+                    continue
 
+                if not isinstance(channels, list):
+                    channels = [channels]
+                for channel in channels:
+                    dependent_task_list.append(channel.producer_task)
+        return dependent_task_list
 
 class TaskNodeInfo(object):
     def __init__(self):

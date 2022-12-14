@@ -13,9 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from arch import current_timestamp
 from fate_flow.db.base_models import DB
 from fate_flow.db.schedule_models import ScheduleJob
+from fate_flow.utils.base_utils import current_timestamp
 
 
 @DB.connection_context()

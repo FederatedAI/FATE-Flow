@@ -22,7 +22,7 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs
 from werkzeug.http import HTTP_STATUS_CODES
 
-from arch import CoordinationProxyService
+from fate_flow.entity.engine_types import CoordinationProxyService
 from fate_flow.entity.types import RetCode, CoordinationCommunicationProtocol, FederatedMode
 from fate_flow.settings import stat_logger, PROXY_PROTOCOL, PROXY, ENGINES
 

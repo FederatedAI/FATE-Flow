@@ -15,7 +15,9 @@
 #
 import os
 
-from arch import engine_utils, get_base_config, decrypt_database_config, ComputingEngine
+from fate_flow.entity.engine_types import ComputingEngine
+from fate_flow.utils import engine_utils
+from fate_flow.utils.conf_utils import get_base_config, decrypt_database_config
 from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import LoggerFactory, getLogger
 

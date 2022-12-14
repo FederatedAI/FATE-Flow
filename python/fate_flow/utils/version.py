@@ -18,7 +18,7 @@ import os
 import dotenv
 import typing
 
-from arch import get_project_base_directory
+from fate_flow.utils.file_utils import get_project_base_directory
 
 
 def get_versions() -> typing.Mapping[str, typing.Any]:

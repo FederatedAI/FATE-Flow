@@ -17,12 +17,12 @@ import os
 import sys
 from uuid import uuid1
 
-from arch import current_timestamp, json_dumps, auto_date_timestamp_db_field
-from fate_flow.db.base_models import DB
+from fate_flow.db.base_models import DB, auto_date_timestamp_db_field
 from fate_flow.db.db_models import Task, WorkerInfo
 from fate_flow.entity.types import WorkerName
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils import job_utils, process_utils
+from fate_flow.utils.base_utils import current_timestamp, json_dumps
 from fate_flow.utils.log_utils import failed_log, schedule_logger, start_log, successful_log
 
 

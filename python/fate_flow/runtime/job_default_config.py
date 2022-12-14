@@ -13,9 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from arch import file_utils
 from fate_flow.settings import FATE_FLOW_JOB_DEFAULT_CONFIG_PATH, stat_logger
 from .reload_config_base import ReloadConfigBase
+from ..utils import file_utils
 
 
 class JobDefaultConfig(ReloadConfigBase):
