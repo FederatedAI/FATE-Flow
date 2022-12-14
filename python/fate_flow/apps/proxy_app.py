@@ -41,11 +41,11 @@ def start_proxy(role):
             },
         }
 
-        src_party_id = request_config['header'].get('src_party_id')
-        dest_party_id = request_config['header'].get('dest_party_id')
+        src_party_id = request_config['header'].get('SRC-PARTY-ID')
+        dest_party_id = request_config['header'].get('DEST-PARTY-ID')
     else:
-        src_party_id = request.headers.get('src_party_id')
-        dest_party_id = request.headers.get('dest_party_id')
+        src_party_id = request.headers.get('SRC-PARTY-ID')
+        dest_party_id = request.headers.get('DEST-PARTY-ID')
 
         request_config = {
             'header': request.headers,
