@@ -70,9 +70,10 @@ class JobController(object):
             "parties": cls.get_parties_info(dag_schema),
             "initiator_party_id": dag_schema.dag.conf.initiator_party_id,
             "scheduler_party_id": dag_schema.dag.conf.scheduler_party_id,
-            "status": JobStatus.READY
+            "status": JobStatus.READY,
+            "model_id": dag_schema.dag.conf.model_id,
+            "model_version": dag_schema.dag.conf.model_version
         }
-
         JobSaver.create_job(job_info=job_info)
         cls.create_tasks(job_id, role, party_id, dag_schema)
 

@@ -19,6 +19,8 @@ from enum import IntEnum
 from functools import wraps
 
 import typing
+
+import peewee
 from peewee import (
     BigIntegerField,
     CompositeKey,
@@ -37,7 +39,7 @@ from fate_flow.settings import DATABASE, IS_STANDALONE, stat_logger
 from fate_flow.utils.base_utils import serialize_b64, json_dumps, deserialize_b64, json_loads, date_string_to_timestamp, \
     current_timestamp, timestamp_to_date
 from fate_flow.utils.file_utils import get_project_base_directory
-from fate_flow.utils.log_utils import getLogger
+from fate_flow.utils.log_utils import getLogger, sql_logger
 from fate_flow.utils.object_utils import from_dict_hook
 
 if IS_STANDALONE:
@@ -408,3 +410,33 @@ def fill_db_model_object(model_object, human_model_dict):
         if hasattr(model_object.__class__, attr_name):
             setattr(model_object, attr_name, v)
     return model_object
+
+
+class BaseModelOperate:
+    @classmethod
+    @DB.connection_context()
+    def _create_entity(cls, entity_model: object, entity_info: object) -> object:
+        obj = entity_model()
+        obj.f_create_time = current_timestamp()
+        for k, v in entity_info.items():
+            attr_name = 'f_%s' % k
+            if hasattr(entity_model, attr_name):
+                setattr(obj, attr_name, v)
+        try:
+            rows = obj.save(force_insert=True)
+            if rows != 1:
+                raise Exception("Create {} failed".format(entity_model))
+            return obj
+        except peewee.IntegrityError as e:
+            if e.args[0] == 1062 or (isinstance(e.args[0], str) and "UNIQUE constraint failed" in e.args[0]):
+                sql_logger(job_id=entity_info.get("job_id", "fate_flow")).warning(e)
+            else:
+                raise Exception("Create {} failed:\n{}".format(entity_model, e))
+        except Exception as e:
+            raise Exception("Create {} failed:\n{}".format(entity_model, e))
+
+    @classmethod
+    @DB.connection_context()
+    def _query(cls, entity_model, **kwargs) -> object:
+        return entity_model.query(**kwargs)
+

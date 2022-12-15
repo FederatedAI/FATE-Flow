@@ -118,7 +118,7 @@ class ScheduleJobSaver(BaseSaver):
 
     @classmethod
     def create_task_scheduler_status(cls, task_info):
-        cls._create_job_family_entity(ScheduleTaskStatus, task_info)
+        cls._create_entity(ScheduleTaskStatus, task_info)
 
     @classmethod
     def get_latest_scheduler_tasks(cls, tasks):

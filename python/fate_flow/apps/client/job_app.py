@@ -16,6 +16,7 @@
 from webargs import fields
 
 from fate_flow.controller.job_controller import JobController
+from fate_flow.entity.types import ReturnCode
 from fate_flow.utils.api_utils import get_json_result, validate_request_json
 
 
@@ -32,7 +33,7 @@ def submit_job(dag_schema):
 def query_job(job_id=None, role=None, party_id=None, status=None):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id, status=status)
     if not jobs:
-        return get_json_result(code=0, message="success")
+        return get_json_result(code=ReturnCode.JOB.NO_FOUND, message="no found job")
     return get_json_result(code=0, message="success", data=[job.to_human_model_dict() for job in jobs])
 
 
@@ -42,11 +43,11 @@ def query_job(job_id=None, role=None, party_id=None, status=None):
                        task_name=fields.String(required=False), task_id=fields.String(required=False),
                        task_version=fields.Integer(required=False))
 def query_task(job_id=None, role=None, party_id=None, status=None, task_name=None, task_id=None, task_version=None):
-    jobs = JobController.query_tasks(job_id=job_id, role=role, party_id=party_id, status=status, task_name=task_name,
-                                     task_id=task_id, task_version=task_version)
-    if not jobs:
-        return get_json_result(code=0, message="success")
-    return get_json_result(code=0, message="success", data=[job.to_human_model_dict() for job in jobs])
+    tasks = JobController.query_tasks(job_id=job_id, role=role, party_id=party_id, status=status, task_name=task_name,
+                                      task_id=task_id, task_version=task_version)
+    if not tasks:
+        return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
+    return get_json_result(code=0, message="success", data=[task.to_human_model_dict() for task in tasks])
 
 
 @manager.route('/stop', methods=['POST'])

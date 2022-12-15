@@ -15,12 +15,8 @@
 #
 
 import operator
-import time
-import typing
 
-import peewee
-
-from fate_flow.db.base_models import DB
+from fate_flow.db.base_models import DB, BaseModelOperate
 from fate_flow.db.db_models import Task, Job
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleTaskStatus, ScheduleJob
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
@@ -28,16 +24,16 @@ from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import schedule_logger, sql_logger
 
 
-class BaseSaver(object):
+class BaseSaver(BaseModelOperate):
     STATUS_FIELDS = ["status", "party_status"]
 
     @classmethod
     def _create_job(cls, job_obj, job_info):
-        return cls._create_job_family_entity(job_obj, job_info)
+        return cls._create_entity(job_obj, job_info)
 
     @classmethod
     def _create_task(cls, task_obj, task_info):
-        return cls._create_job_family_entity(task_obj, task_info)
+        return cls._create_entity(task_obj, task_info)
 
     @classmethod
     @DB.connection_context()
@@ -101,28 +97,6 @@ class BaseSaver(object):
         else:
             schedule_logger(task_info["job_id"]).warning("task {} {} update does not take effect".format(task_info["task_id"], task_info["task_version"]))
         return update_status
-
-    @classmethod
-    @DB.connection_context()
-    def _create_job_family_entity(cls, entity_model, entity_info):
-        obj = entity_model()
-        obj.f_create_time = current_timestamp()
-        for k, v in entity_info.items():
-            attr_name = 'f_%s' % k
-            if hasattr(entity_model, attr_name):
-                setattr(obj, attr_name, v)
-        try:
-            rows = obj.save(force_insert=True)
-            if rows != 1:
-                raise Exception("Create {} failed".format(entity_model))
-            return obj
-        except peewee.IntegrityError as e:
-            if e.args[0] == 1062 or (isinstance(e.args[0], str) and "UNIQUE constraint failed" in e.args[0]):
-                sql_logger(job_id=entity_info.get("job_id", "fate_flow")).warning(e)
-            else:
-                raise Exception("Create {} failed:\n{}".format(entity_model, e))
-        except Exception as e:
-            raise Exception("Create {} failed:\n{}".format(entity_model, e))
 
     @classmethod
     @DB.connection_context()

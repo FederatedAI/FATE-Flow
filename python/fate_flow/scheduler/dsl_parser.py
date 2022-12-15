@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from typing import Dict, Union
 
 from fate_flow.entity.component_structures import ComponentSpec, RuntimeInputDefinition
-from fate_flow.entity.dag_structures import DAGSchema
+from fate_flow.entity.dag_structures import DAGSchema, ModelWarehouseChannelSpec, RuntimeTaskOutputChannelSpec
 from fate_flow.entity.types import ArtifactSourceType
 
 
@@ -34,7 +34,6 @@ class DagParser(object):
         self._conf = dict()
 
     def parse_dag(self, dag_schema: DAGSchema, component_specs: Dict[str, ComponentSpec] = None):
-        self.dag_schema = dag_schema
         dag_spec = dag_schema.dag
         dag_stage = dag_spec.stage
         tasks = dag_spec.tasks
@@ -66,10 +65,31 @@ class DagParser(object):
             for input_key, output_specs_dict in task_spec.inputs.artifacts.items():
                 upstream_inputs[input_key] = dict()
                 for artifact_source, channel_spec_list in output_specs_dict.items():
-                    upstream_inputs[input_key] = channel_spec_list
-
                     if artifact_source == ArtifactSourceType.MODEL_WAREHOUSE:
+                        if isinstance(channel_spec_list, list):
+                            inputs = []
+                            for channel in channel_spec_list:
+                                model_warehouse_channel = ModelWarehouseChannelSpec(**channel.dict(exclude_defaults=True))
+                                if model_warehouse_channel.model_id is None:
+                                    model_warehouse_channel.model_id = self._conf.get("model_id", None)
+                                    model_warehouse_channel.model_version = self._conf.get("model_version", None)
+                                inputs.append(model_warehouse_channel)
+                        else:
+                            inputs = ModelWarehouseChannelSpec(**channel_spec_list.dict(exclude_defaults=True))
+                            if inputs.model_id is None:
+                                inputs.model_id = self._conf.get("model_id", None)
+                                inputs.model_version = self._conf.get("model_version", None)
+
+                        upstream_inputs[input_key] = inputs
                         continue
+                    else:
+                        if isinstance(channel_spec_list, list):
+                            inputs = [RuntimeTaskOutputChannelSpec(**channel.dict(exclude_defaults=True))
+                                      for channel in channel_spec_list]
+                        else:
+                            inputs = RuntimeTaskOutputChannelSpec(**channel_spec_list.dict(exclude_defaults=True))
+
+                        upstream_inputs[input_key] = inputs
 
                     if not isinstance(channel_spec_list, list):
                         channel_spec_list = [channel_spec_list]

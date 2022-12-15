@@ -78,6 +78,12 @@ class ArtifactSourceType(object):
     MODEL_WAREHOUSE = "model_warehouse"
 
 
+class Stage(object):
+    TRAIN = "train"
+    PREDICT = "predict"
+    DEFAULT = "default"
+
+
 class RetCode(IntEnum, CustomEnum):
     SUCCESS = 0
     NOT_EFFECTIVE = 10

@@ -21,7 +21,7 @@ from fate_flow.entity import RetCode
 from fate_flow.entity.dag_structures import DAGSchema
 from fate_flow.entity.run_status import StatusSet, FederatedSchedulingStatusCode, JobStatus, TaskStatus, EndStatus, \
     SchedulingStatusCode, InterruptStatus
-from fate_flow.entity.types import ResourceOperation
+from fate_flow.entity.types import ResourceOperation, Stage
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.scheduler.dsl_parser import DagParser
@@ -50,6 +50,8 @@ class DAGScheduler(Cron):
             auto_retries = 0
             if not dag_schema.dag.conf.federated_status_collect_type:
                 dag_schema.dag.conf.federated_status_collect_type = "PUSH"
+            if not dag_schema.dag.conf.model_id or not dag_schema.dag.conf.model_id and dag_schema.dag.stage == Stage.TRAIN:
+                dag_schema.dag.conf.model_id, dag_schema.dag.conf.model_version = job_utils.generate_model_info(job_id)
             job.f_status = StatusSet.READY
             ScheduleJobSaver.create_job(job.to_human_model_dict())
             status_code, response = FederatedScheduler.create_job(
