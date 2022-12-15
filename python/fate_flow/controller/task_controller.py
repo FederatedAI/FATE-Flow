@@ -18,7 +18,8 @@ from copy import deepcopy
 
 from fate_flow.db.db_models import Task
 from fate_flow.engine.computing import build_engine
-from fate_flow.entity.dag_structures import DAGSchema, InputChannelSpec
+from fate_flow.entity.dag_structures import DAGSchema, InputChannelSpec, ModelWarehouseChannelSpec
+from fate_flow.entity.engine_types import EngineType, StorageEngine
 from fate_flow.entity.task_structures import IOArtifact, TaskRuntimeInputSpec, TaskScheduleSpec, RuntimeConfSpec, \
     OutputSpec, OutputModelSpec, OutputDataSpec, OutputMetricSpec, MLMDSpec, LOGGERSpec, ComputingBackendSpec, \
     FederationBackendSpec
@@ -29,7 +30,7 @@ from fate_flow.scheduler.dsl_parser import TaskNodeInfo, DagParser
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import EndStatus, TaskStatus
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.settings import HOST, HTTP_PORT, API_VERSION, DATA_STORE_PATH
+from fate_flow.settings import HOST, HTTP_PORT, API_VERSION, DATA_STORE_PATH, ENGINES
 from fate_flow.utils import job_utils
 from fate_flow.utils.base_utils import current_timestamp, json_dumps
 from fate_flow.utils.log_utils import schedule_logger
@@ -264,9 +265,20 @@ class TaskParser(object):
 
         return task_artifacts
 
+    def get_model_warehouse_source(self, channel: ModelWarehouseChannelSpec):
+        jobs = JobSaver.query_job(model_id=channel.model_id, model_version=channel.model_version, role=self.role, party_id=self.party_id)
+        if jobs:
+            job_id = jobs[0].f_job_id
+            return job_id
+        else:
+            raise Exception("no found model warehouse")
+
     def get_artifacts_data(self, name, channel: InputChannelSpec):
+        job_id = self.job_id
+        if isinstance(channel, ModelWarehouseChannelSpec):
+            job_id = self.get_model_warehouse_source(channel)
         data = OutputDataTracking.query(task_name=channel.producer_task, output_key=channel.output_artifact_key,
-                                        role=self.role, party_id=self.party_id,  job_id=self.job_id)
+                                        role=self.role, party_id=self.party_id,  job_id=job_id)
         if data:
             data = data[-1]
             return IOArtifact(name=name, uri=data.f_uri, metadata=data.f_meta).dict()
@@ -282,14 +294,24 @@ class TaskParser(object):
     def get_output_model_store_conf(self):
         model_conf = deepcopy(JobDefaultConfig.task_default_conf.get("output", {}).get("model", {}))
         if model_conf.get("metadata"):
-            uri = model_conf["metadata"].get("uri").replace("task_name", self.task_name).replace("model_id", self.job_id).replace("model_version", "0")
+            model_id, model_version = job_utils.generate_model_info(job_id=self.job_id)
+            uri = model_conf["metadata"].get("uri"). \
+                replace("task_name", self.task_name). \
+                replace("model_id", model_id). \
+                replace("model_version", str(model_version)). \
+                replace("role", self.role). \
+                replace("party_id", self.party_id). \
+                replace("component", self.component_ref). \
+                replace("task_name", self.task_name)
             model_conf["metadata"]["uri"] = f'http://{HOST}:{HTTP_PORT}/{API_VERSION}{uri}'
         return OutputModelSpec(**model_conf)
 
     def get_output_data_store_conf(self):
         data_conf = deepcopy(JobDefaultConfig.task_default_conf.get("output", {}).get("data", {}))
-        os.makedirs(DATA_STORE_PATH, exist_ok=True)
-        return OutputDataSpec(type="directory", metadata={"uri": DATA_STORE_PATH, "format": "dataframe"})
+        if ENGINES.get(EngineType.STORAGE) in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
+            os.makedirs(DATA_STORE_PATH, exist_ok=True)
+            return OutputDataSpec(type="directory", metadata={"uri": DATA_STORE_PATH, "format": "dataframe"})
+
 
     @staticmethod
     def generate_mlmd():

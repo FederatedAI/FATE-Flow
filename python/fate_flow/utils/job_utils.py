@@ -95,3 +95,9 @@ def get_general_worker_directory(worker_name, worker_id, *args):
 
 def get_general_worker_log_directory(worker_name, worker_id, *args):
     return os.path.join(get_fate_flow_directory(), 'logs', worker_name, worker_id, *args)
+
+
+def generate_model_info(job_id):
+    model_id = job_id
+    model_version = 0
+    return model_id, model_version
