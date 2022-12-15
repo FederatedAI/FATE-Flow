@@ -38,7 +38,8 @@ class DAGScheduler(Cron):
         job_id = job_utils.generate_job_id()
         schedule_logger(job_id).info(f"submit job, dag {dag_schema.dag.to_dict()}, schema version {dag_schema.schema_version}")
         submit_result = {
-            "job_id": job_id
+            "job_id": job_id,
+            "data": {}
         }
         try:
             job = ScheduleJob()
@@ -52,6 +53,10 @@ class DAGScheduler(Cron):
                 dag_schema.dag.conf.federated_status_collect_type = "PUSH"
             if not dag_schema.dag.conf.model_id or not dag_schema.dag.conf.model_id and dag_schema.dag.stage == Stage.TRAIN:
                 dag_schema.dag.conf.model_id, dag_schema.dag.conf.model_version = job_utils.generate_model_info(job_id)
+            submit_result["data"].update({
+                "model_id": dag_schema.dag.conf.model_id,
+                "model_version": dag_schema.dag.conf.model_version
+            })
             job.f_status = StatusSet.READY
             ScheduleJobSaver.create_job(job.to_human_model_dict())
             status_code, response = FederatedScheduler.create_job(
