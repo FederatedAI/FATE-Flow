@@ -53,7 +53,7 @@ class ScheduleJob(DataBaseModel):
 class ScheduleTask(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
     f_role = CharField(max_length=50, index=True)
-    f_party_id = CharField(max_length=10, index=True)
+    f_party_id = CharField(max_length=50, index=True)
     f_task_name = CharField(max_length=50)
     f_component = CharField(max_length=50)
     f_task_id = CharField(max_length=100)

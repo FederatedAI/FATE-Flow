@@ -3,7 +3,7 @@ from webargs import fields
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.types import ReturnCode
 from fate_flow.manager.model_manager import PipelinedModel
-from fate_flow.manager.output_manager import OutputDataTracking
+from fate_flow.manager.output_manager import OutputDataTracking, OutputMetric
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import get_json_result, validate_request_json
 
@@ -70,3 +70,11 @@ def save_output_model(role, party_id, model_id, model_version, component, task_n
 def get_output_model(role, party_id, model_id, model_version, component, task_name, model_name):
     data = PipelinedModel(model_id=model_id, model_version=model_version, role=role, party_id=party_id).read_output_model(task_name, model_name)
     return get_json_result(data=data)
+
+
+@manager.route('/task/metric/<job_id>/<role>/<party_id>/<task_name>/<task_id>/<task_version>/<name>', methods=["POST"])
+@validate_request_json(data=fields.Dict(required=True), incomplete=fields.Bool(required=True))
+def save_metric(job_id, role, party_id, task_name, task_id, task_version, name, data, incomplete):
+    OutputMetric(job_id=job_id, role=role, party_id=party_id, task_name=task_name, task_id=task_id,
+                 task_version=task_version).save_output_metrics(data, incomplete)
+    return get_json_result()

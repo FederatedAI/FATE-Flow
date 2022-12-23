@@ -13,18 +13,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.scheduler.task_scheduler import TaskScheduler
 from fate_flow.controller.job_controller import JobController
 from fate_flow.db.base_models import DB
 from fate_flow.db.schedule_models import ScheduleJob
 from fate_flow.entity import RetCode
-from fate_flow.entity.dag_structures import DAGSchema
+from fate_flow.hub.parser.default import DAGSchema
 from fate_flow.entity.run_status import StatusSet, FederatedSchedulingStatusCode, JobStatus, TaskStatus, EndStatus, \
     SchedulingStatusCode, InterruptStatus
 from fate_flow.entity.types import ResourceOperation, Stage
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.scheduler.dsl_parser import DagParser
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.utils import job_utils, schedule_utils
 from fate_flow.utils.base_utils import current_timestamp, json_dumps
@@ -36,7 +36,7 @@ class DAGScheduler(Cron):
     @classmethod
     def submit(cls, dag_schema: DAGSchema):
         job_id = job_utils.generate_job_id()
-        schedule_logger(job_id).info(f"submit job, dag {dag_schema.dag.to_dict()}, schema version {dag_schema.schema_version}")
+        schedule_logger(job_id).info(f"submit job, dag {dag_schema.dag.dict()}, schema version {dag_schema.schema_version}")
         submit_result = {
             "job_id": job_id,
             "data": {}
@@ -211,12 +211,10 @@ class DAGScheduler(Cron):
 
     def schedule_running_job(cls, job: ScheduleJob, force_sync_status=False):
         schedule_logger(job.f_job_id).info("scheduling running job")
-        dag_parser = DagParser()
-        dag_parser.parse_dag(dag_schema=DAGSchema(**job.f_dag))
-        task_scheduling_status_code, auto_rerun_tasks, tasks = TaskScheduler.schedule(job=job, dag_parser=dag_parser,
+        job_parser = FlowHub.load_job_parser(DAGSchema(**job.f_dag))
+        task_scheduling_status_code, auto_rerun_tasks, tasks = TaskScheduler.schedule(job=job, job_parser=job_parser,
                                                                                       canceled=job.f_cancel_signal,
                                                                                       dag_schema=DAGSchema(**job.f_dag))
-
         tasks_status = dict([(task.f_task_name, task.f_status) for task in tasks])
         schedule_logger(job_id=job.f_job_id).info(f"task_scheduling_status_code: {task_scheduling_status_code}, "
                                                   f"tasks_status: {tasks_status.values()}")
@@ -338,7 +336,8 @@ class DAGScheduler(Cron):
         job_info = schedule_job.to_human_model_dict(only_primary_with=update_fields)
         for field in update_fields:
             job_info[field] = getattr(schedule_job, "f_%s" % field)
-        ScheduleJobSaver.update_job_status(job_info=job_info)
+        if "status" in update_fields:
+            ScheduleJobSaver.update_job_status(job_info=job_info)
         ScheduleJobSaver.update_job(job_info=job_info)
         schedule_logger(schedule_job.f_job_id).info(f"update job {update_fields} on scheduler finished")
 

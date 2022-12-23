@@ -14,11 +14,10 @@
 #  limitations under the License.
 #
 from fate_flow.entity import RetCode
-from fate_flow.entity.dag_structures import DAGSchema
+from fate_flow.hub.parser.default import DAGSchema
 from fate_flow.entity.run_status import StatusSet, TaskStatus, InterruptStatus, EndStatus, AutoRerunStatus, \
     SchedulingStatusCode
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
-from fate_flow.scheduler.dsl_parser import DagParser
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils.log_utils import schedule_logger
@@ -26,7 +25,7 @@ from fate_flow.utils.log_utils import schedule_logger
 
 class TaskScheduler(object):
     @classmethod
-    def schedule(cls, job, dag_parser: DagParser, dag_schema: DAGSchema, canceled=False):
+    def schedule(cls, job, job_parser, dag_schema: DAGSchema, canceled=False):
         schedule_logger(job.f_job_id).info("scheduling job tasks")
         tasks_group = ScheduleJobSaver.get_status_tasks_asc(job_id=job.f_job_id)
         waiting_tasks = {}
@@ -63,7 +62,7 @@ class TaskScheduler(object):
         schedule_logger(job.f_job_id).info(f"canceled status {canceled}, job interrupt status {job_interrupt}")
         if not canceled and not job_interrupt:
             for task_id, waiting_task in waiting_tasks.items():
-                dependent_tasks = dag_parser.infer_dependent_tasks(
+                dependent_tasks = job_parser.infer_dependent_tasks(
                     dag_schema.dag.tasks[waiting_task.f_task_name].inputs
                 )
                 schedule_logger(job.f_job_id).info(f"task {waiting_task.f_task_name} dependent tasks:{dependent_tasks}")

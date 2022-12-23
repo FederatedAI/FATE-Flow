@@ -18,7 +18,7 @@ from importlib import import_module
 
 from filelock import FileLock
 
-from .file_utils import get_project_base_directory, load_yaml_conf, rewrite_yaml_conf
+from .file_utils import get_project_base_directory, load_yaml_conf, rewrite_yaml_conf, get_fate_flow_directory
 
 SERVICE_CONF = "service_conf.yaml"
 TRANSFER_CONF = "transfer_conf.yaml"
@@ -26,7 +26,7 @@ TRANSFER_CONF = "transfer_conf.yaml"
 
 def conf_realpath(conf_name):
     conf_path = f"conf/{conf_name}"
-    return os.path.join(get_project_base_directory(), conf_path)
+    return os.path.join(get_fate_flow_directory(), conf_path)
 
 
 def get_base_config(key, default=None, conf_name=SERVICE_CONF) -> dict:

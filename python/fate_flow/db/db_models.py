@@ -13,8 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from peewee import CharField, TextField, BigIntegerField, IntegerField, BooleanField, CompositeKey
+import datetime
 
+from peewee import CharField, TextField, BigIntegerField, IntegerField, BooleanField, CompositeKey, BigAutoField
 from fate_flow.db.base_models import DataBaseModel, JSONField, DateTimeField
 
 
@@ -105,7 +106,7 @@ class TrackingOutputInfo(DataBaseModel):
     f_task_version = BigIntegerField(null=True)
     f_task_name = CharField(max_length=50, index=True)
     f_role = CharField(max_length=50, index=True)
-    f_party_id = CharField(max_length=10, index=True)
+    f_party_id = CharField(max_length=50, index=True)
     f_output_key = CharField(max_length=30)
     f_type = CharField(max_length=10, null=True)
     f_uri = CharField(max_length=100, null=True)
@@ -118,7 +119,7 @@ class TrackingOutputInfo(DataBaseModel):
 
 class PipelineModelInfo(DataBaseModel):
     f_role = CharField(max_length=50)
-    f_party_id = CharField(max_length=10)
+    f_party_id = CharField(max_length=50)
     f_job_id = CharField(max_length=25, index=True)
     f_model_id = CharField(max_length=100, index=True)
     f_model_version = CharField(max_length=100, index=True)
@@ -132,7 +133,7 @@ class PipelineModelMeta(DataBaseModel):
     f_model_id = CharField(max_length=100, index=True)
     f_model_version = CharField(max_length=100, index=True)
     f_role = CharField(max_length=50, index=True)
-    f_party_id = CharField(max_length=10, index=True)
+    f_party_id = CharField(max_length=50, index=True)
     f_task_name = CharField(max_length=100, index=True)
     f_component = CharField(max_length=30, null=True)
 
@@ -178,3 +179,41 @@ class WorkerInfo(DataBaseModel):
 
     class Meta:
         db_table = "t_worker"
+
+
+class Metric(DataBaseModel):
+    _mapper = {}
+
+    @classmethod
+    def model(cls, table_index=None, date=None):
+        if not table_index:
+            table_index = date.strftime(
+                '%Y%m%d') if date else datetime.datetime.now().strftime(
+                '%Y%m%d')
+        class_name = 'Metric_%s' % table_index
+
+        ModelClass = Metric._mapper.get(class_name, None)
+        if ModelClass is None:
+            class Meta:
+                db_table = '%s_%s' % ('t_tracking_metric', table_index)
+
+            attrs = {'__module__': cls.__module__, 'Meta': Meta}
+            ModelClass = type("%s_%s" % (cls.__name__, table_index), (cls,),
+                              attrs)
+            Metric._mapper[class_name] = ModelClass
+        return ModelClass()
+
+    f_id = BigAutoField(primary_key=True)
+    f_job_id = CharField(max_length=25, index=True)
+    f_role = CharField(max_length=10, index=True)
+    f_party_id = CharField(max_length=50)
+    f_task_name = CharField(max_length=30, index=True)
+    f_task_id = CharField(max_length=100)
+    f_task_version = BigIntegerField(null=True)
+    f_namespace = CharField(max_length=30, index=True, null=True)
+    f_name = CharField(max_length=30, index=True)
+    f_type = CharField()
+    f_groups = JSONField()
+    f_metadata = JSONField()
+    f_data = JSONField()
+    f_incomplete = BooleanField()
