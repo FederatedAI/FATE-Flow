@@ -13,15 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.controller.task_controller import TaskController, TaskParser
+from fate_flow.controller.task_controller import TaskController
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask
-from fate_flow.entity.dag_structures import DAGSchema, JobConfSpec
+from fate_flow.hub.parser.default import DAGSchema, JobConfSpec
 from fate_flow.entity.run_status import EndStatus, JobStatus, TaskStatus
 from fate_flow.entity.types import ReturnCode
+from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
-from fate_flow.scheduler.dsl_parser import DagParser
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.settings import PARTY_ID
 from fate_flow.utils import job_utils
@@ -80,25 +80,26 @@ class JobController(object):
     @classmethod
     def create_tasks(cls, job_id: str, role: str, party_id: str, dag_schema: DAGSchema, is_scheduler=False):
         schedule_logger(job_id).info(f"start create {'scheduler' if is_scheduler else 'partner'} tasks ...")
-        dag_parser = DagParser()
-        dag_parser.parse_dag(dag_schema=dag_schema)
-        task_list = dag_parser.topological_sort()
+        job_parser = FlowHub.load_job_parser(dag_schema)
+        task_list = job_parser.topological_sort()
         for task_name in task_list:
-            cls.create_task(job_id, role, party_id, task_name, dag_schema, dag_parser, is_scheduler)
+            cls.create_task(job_id, role, party_id, task_name, dag_schema, job_parser, is_scheduler)
         schedule_logger(job_id).info("create tasks success")
 
     @classmethod
-    def create_task(cls, job_id, role, party_id, task_name, dag_schema, dag_parser, is_scheduler):
+    def create_task(cls, job_id, role, party_id, task_name, dag_schema, job_parser, is_scheduler):
 
         task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
         task_version = 0
         execution_id = job_utils.generate_session_id(task_id, task_version, role, party_id)
-        task_parser = TaskParser(dag_parser=dag_parser, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
-                                 task_id=task_id, execution_id=execution_id, task_version=task_version,
-                                 parties=dag_schema.dag.parties)
+        task_node = job_parser.get_task_node(task_name=task_name)
+        task_parser = FlowHub.load_task_parser(
+            task_node=task_node, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
+            task_id=task_id, execution_id=execution_id, task_version=task_version,parties=dag_schema.dag.parties
+        )
         need_run = task_parser.need_run
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
-        task_parameters = task_parser.get_task_parameters().dict()
+        task_parameters = task_parser.task_parameters.dict()
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
                                      f" {task_parameters}")
         if is_scheduler:
@@ -151,9 +152,8 @@ class JobController(object):
     @classmethod
     def create_scheduler_tasks_status(cls, job_id, dag_schema):
         schedule_logger(job_id).info("start create schedule task status info")
-        dag_parser = DagParser()
-        dag_parser.parse_dag(dag_schema=dag_schema)
-        task_list = dag_parser.topological_sort()
+        job_parser = FlowHub.load_job_parser(dag_schema)
+        task_list = job_parser.topological_sort()
         for task_name in task_list:
             task_info = {
                 "job_id": job_id,

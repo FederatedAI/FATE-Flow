@@ -15,4 +15,3 @@
 #
 from ._base import BaseEntity, BaseModel
 from .types import RetCode
-from ._dag_parameters import DagParameters
