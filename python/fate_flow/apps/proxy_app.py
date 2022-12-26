@@ -26,11 +26,8 @@ page_name = 'forward'
 
 @manager.route('/<role>', methods=['POST'])
 def start_proxy(role):
-    request_config = request.json or request.form.to_dict()
     _job_id = f'{role}_forward'
-
-    if role == 'marketplace':
-        return jsonify(proxy_api(role, _job_id, request_config))
+    request_config = request.json or request.form.to_dict()
 
     if request_config.get('header') and request_config.get('body'):
         request_config['header'] = {
@@ -40,22 +37,20 @@ def start_proxy(role):
                 for k, v in request_config['header'].items()
             },
         }
-
-        src_party_id = request_config['header'].get('SRC-PARTY-ID')
-        dest_party_id = request_config['header'].get('DEST-PARTY-ID')
     else:
-        src_party_id = request.headers.get('SRC-PARTY-ID')
-        dest_party_id = request.headers.get('DEST-PARTY-ID')
-
         request_config = {
             'header': request.headers,
             'body': request_config,
         }
 
-    response = federated_api(
-        _job_id, 'POST', f'/forward/{role}/do',
-        src_party_id, dest_party_id, '',
-        request_config, FederatedMode.MULTIPLE,
+    response = (
+        proxy_api(role, _job_id, request_config) if role == 'marketplace'
+        else federated_api(
+            _job_id, 'POST', f'/forward/{role}/do',
+            request_config['header'].get('SRC-PARTY-ID'),
+            request_config['header'].get('DEST-PARTY-ID'),
+            '', request_config, FederatedMode.MULTIPLE,
+        )
     )
     return jsonify(response)
 

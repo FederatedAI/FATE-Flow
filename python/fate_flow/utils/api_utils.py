@@ -288,37 +288,46 @@ def federated_coordination_on_grpc(
 
 
 def proxy_api(role, _job_id, request_config):
-    job_id = request_config.get('header').get('job_id', _job_id)
-    method = request_config.get('header').get('method', 'POST')
-    endpoint = request_config.get('header').get('endpoint')
-    src_party_id = request_config.get('header').get('src_party_id')
-    dest_party_id = request_config.get('header').get('dest_party_id')
-    json_body = request_config.get('body')
-    _packet = forward_grpc_packet(json_body, method, endpoint, src_party_id, dest_party_id, job_id=job_id, role=role)
-    _routing_metadata = gen_routing_metadata(src_party_id=src_party_id, dest_party_id=dest_party_id)
+    headers = request_config.get('header', {})
+    body =  request_config.get('body', {})
+    method = headers.get('METHOD', 'POST')
+    endpoint = headers.get('ENDPOINT', '')
+    job_id = headers.get('JOB-ID', _job_id)
+    src_party_id = headers.get('SRC-PARTY-ID', '')
+    dest_party_id = headers.get('DEST-PARTY-ID', '')
+
+    _packet = forward_grpc_packet(body, method, endpoint, src_party_id, dest_party_id, role, job_id)
+    _routing_metadata = gen_routing_metadata(src_party_id, dest_party_id)
     host, port, protocol = get_federated_proxy_address(src_party_id, dest_party_id)
+
     channel, stub = get_command_federation_channel(host, port)
     _return, _call = stub.unaryCall.with_call(_packet, metadata=_routing_metadata)
     channel.close()
-    json_body = json_loads(_return.body.value)
-    return json_body
+
+    response = json_loads(_return.body.value)
+    return response
 
 
 def forward_api(role, request_config):
-    method = request_config.get('header', {}).get('METHOD', 'POST')
-    endpoint = request_config.get('header', {}).get('ENDPOINT')
-    if not hasattr(ServerRegistry, role.upper()):
+    role = role.upper()
+    if not hasattr(ServerRegistry, role):
         ServerRegistry.load()
-    ip = getattr(ServerRegistry, role.upper()).get("host")
-    port = getattr(ServerRegistry, role.upper()).get("port")
-    url = "http://{}:{}{}".format(ip, port, endpoint)
-    audit_logger().info('api request: {}'.format(url))
+    registry = getattr(ServerRegistry, role)
 
-    http_response = request(method=method, url=url, json=request_config.get('body'), headers=request_config.get('header'))
-    if http_response.status_code == 200:
-        response = http_response.json()
-    else:
-        response =  {"retcode": http_response.status_code, "retmsg": http_response.text}
+    headers = request_config.get('header', {})
+    body =  request_config.get('body', {})
+    method = headers.get('METHOD', 'POST')
+    endpoint = headers.get('ENDPOINT', '')
+    ip = registry.get('host', '')
+    port = registry.get('port', '')
+    url = f'http://{ip}:{port}{endpoint}'
+    audit_logger().info(f'api request: {url}')
+
+    response = request(method=method, url=url, json=body, headers=headers)
+    response = (
+        response.json() if response.status_code == 200
+        else {'retcode': response.status_code, 'retmsg': response.text}
+    )
     audit_logger().info(response)
     return response
 
