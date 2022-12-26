@@ -312,6 +312,8 @@ def forward_api(role, request_config):
     role = role.upper()
     if not hasattr(ServerRegistry, role):
         ServerRegistry.load()
+    if not hasattr(ServerRegistry, role):
+        return {'retcode': 404, 'retmsg': f'role "{role.lower()}" not supported'}
     registry = getattr(ServerRegistry, role)
 
     headers = request_config.get('header', {})
