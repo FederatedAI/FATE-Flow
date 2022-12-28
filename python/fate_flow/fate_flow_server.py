@@ -35,6 +35,7 @@ from fate_flow.scheduler.job_scheduler import DAGScheduler
 from fate_flow.settings import (
     GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT, detect_logger, stat_logger,
 )
+from fate_flow.utils import process_utils
 from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.utils.log_utils import schedule_logger, getLogger
 from fate_flow.utils.version import get_versions
@@ -43,6 +44,7 @@ from fate_flow.utils.xthread import ThreadPoolExecutor
 
 if __name__ == '__main__':
     # init db
+    signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
     init_flow_db()
     # init runtime config
     import argparse

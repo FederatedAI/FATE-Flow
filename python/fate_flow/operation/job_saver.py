@@ -89,8 +89,13 @@ class ScheduleJobSaver(BaseSaver):
         return cls._query_job(ScheduleJob, reverse, order_by, **kwargs)
 
     @classmethod
-    def query_task(cls, only_latest=True, reverse=None, order_by=None, **kwargs):
-        return cls._query_task(ScheduleTask, only_latest=only_latest, reverse=reverse, order_by=order_by, **kwargs)
+    def query_task(cls, only_latest=True, reverse=None, order_by=None, scheduler_status=False, **kwargs):
+        if not scheduler_status:
+            obj = ScheduleTask
+        else:
+            obj = ScheduleTaskStatus
+            only_latest = False
+        return cls._query_task(obj, only_latest=only_latest, reverse=reverse, order_by=order_by, **kwargs)
 
     @classmethod
     def update_task_status(cls, task_info, scheduler_status=False):

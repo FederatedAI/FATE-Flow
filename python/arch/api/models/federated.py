@@ -33,6 +33,9 @@ class Federated(BaseAPI):
     def start_task(self, tasks):
         return self.task_command(tasks=tasks, command="start")
 
+    def rerun_task(self, tasks, task_version):
+        return self.task_command(tasks=tasks, command="rerun", command_body={"new_version": task_version})
+
     def collect_task(self, tasks):
         return self.task_command(tasks=tasks, command="collect")
 

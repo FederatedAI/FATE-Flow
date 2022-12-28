@@ -183,7 +183,7 @@ class JobConfSpec(BaseModel):
     federated_status_collect_type: Optional[str]
     auto_retries: Optional[int]
     model_id: Optional[str]
-    model_version: Optional[str]
+    model_version: Optional[Union[str, int]]
     task: Optional[TaskConfSpec]
 
 

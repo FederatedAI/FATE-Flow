@@ -100,15 +100,27 @@ class RetCode(IntEnum, CustomEnum):
     SERVER_ERROR = 500
 
 
-class Job(IntEnum, CustomEnum):
+class Code:
+    SUCCESS = 0
+
+
+class JobCode(Code):
     NO_FOUND = 1000
+    CREATE_JOB_FAILED = 1001
+    UPDATE_STATUS_FAILED = 1002
+    UPDATE_FAILED = 1003
+    KILL_FAILED = 1004
 
 
-class Task(IntEnum, CustomEnum):
+class TaskCode(Code):
     NO_FOUND = 2000
+    START_FAILED = 2001
+    UPDATE_STATUS_FAILED = 2002
+    UPDATE_FAILED = 2003
+    KILL_FAILED = 2004
 
 
 class ReturnCode:
-    JOB: Job = Job
-    TASK = Task
+    JOB = JobCode
+    TASK = TaskCode
 

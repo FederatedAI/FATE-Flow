@@ -12,4 +12,3 @@ class FlowHub:
     def load_task_parser(*args, **kwargs):
         from fate_flow.hub.parser.default import TaskParser
         return TaskParser(*args, **kwargs)
-

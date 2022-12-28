@@ -19,7 +19,7 @@ fateflow:
   random_instance_id: false
   proxy: rollsite
   # support default/http/grpc
-  protocol: default
+  protocol: http
 database:
   name: fate_flow
   user: fate

@@ -17,6 +17,7 @@ from functools import wraps
 
 from fate_flow.entity import RetCode
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
+from fate_flow.entity.types import Code
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils.log_utils import schedule_logger
@@ -66,14 +67,8 @@ def return_federated_response(federated_response):
     for dest_role in federated_response.keys():
         for party_id in federated_response[dest_role].keys():
             retcode_set.add(federated_response[dest_role][party_id]["code"])
-    if len(retcode_set) == 1 and RetCode.SUCCESS in retcode_set:
+    if len(retcode_set) == 1 and Code.SUCCESS in retcode_set:
         federated_scheduling_status_code = FederatedSchedulingStatusCode.SUCCESS
-    elif RetCode.EXCEPTION_ERROR in retcode_set:
-        federated_scheduling_status_code = FederatedSchedulingStatusCode.ERROR
-    elif RetCode.NOT_EFFECTIVE in retcode_set:
-        federated_scheduling_status_code = FederatedSchedulingStatusCode.NOT_EFFECTIVE
-    elif RetCode.SUCCESS in retcode_set:
-        federated_scheduling_status_code = FederatedSchedulingStatusCode.PARTIAL
     else:
         federated_scheduling_status_code = FederatedSchedulingStatusCode.FAILED
     return federated_scheduling_status_code, federated_response
@@ -143,6 +138,12 @@ class FederatedScheduler:
     def start_task(cls, task_id, tasks=None):
         return RuntimeConfig.SCHEDULE_CLIENT.federated.start_task(tasks=tasks)
 
+    @classmethod
+    @federated_task
+    @federated
+    def rerun_task(cls, task_id, task_version, tasks=None):
+        return RuntimeConfig.SCHEDULE_CLIENT.federated.rerun_task(tasks=tasks, task_version=task_version)
+
     # scheduler
     @classmethod
     @schedule_job
@@ -158,6 +159,12 @@ class FederatedScheduler:
                 "stop_status": stop_status
             }
         return RuntimeConfig.SCHEDULE_CLIENT.scheduler.stop_job(party_id, command_body)
+
+    @classmethod
+    @schedule_job
+    def request_rerun_job(cls, party_id, job_id):
+        command_body = {"job_id": job_id}
+        return RuntimeConfig.SCHEDULE_CLIENT.scheduler.rerun_job(party_id, command_body)
 
     @classmethod
     @schedule_job

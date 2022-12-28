@@ -42,6 +42,8 @@ HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")
 GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("grpc_port")
 
+PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol", "http")
+
 PROXY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol", "http")
 
@@ -64,3 +66,4 @@ PARTY_ID = get_base_config("party_id", "")
 
 MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model")
 LOCAL_DATA_STORE_PATH = os.path.join(get_fate_flow_directory(), "data")
+BASE_URI = f"{PROTOCOL}://{HOST}:{HTTP_PORT}/{API_VERSION}"

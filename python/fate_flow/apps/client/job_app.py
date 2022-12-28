@@ -34,7 +34,7 @@ def query_job(job_id=None, role=None, party_id=None, status=None):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id, status=status)
     if not jobs:
         return get_json_result(code=ReturnCode.JOB.NO_FOUND, message="no found job")
-    return get_json_result(code=0, message="success", data=[job.to_human_model_dict() for job in jobs])
+    return get_json_result(code=ReturnCode.JOB.SUCCESS, message="success", data=[job.to_human_model_dict() for job in jobs])
 
 
 @manager.route('/task/query', methods=['POST'])
@@ -47,14 +47,24 @@ def query_task(job_id=None, role=None, party_id=None, status=None, task_name=Non
                                       task_id=task_id, task_version=task_version)
     if not tasks:
         return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
-    return get_json_result(code=0, message="success", data=[task.to_human_model_dict() for task in tasks])
+    return get_json_result(code=ReturnCode.TASK.SUCCESS, message="success",
+                           data=[task.to_human_model_dict() for task in tasks])
 
 
 @manager.route('/stop', methods=['POST'])
 @validate_request_json(job_id=fields.String(required=False),
                        status=fields.String(required=False))
 def request_stop_job(job_id=None, status=None):
-    JobController.request_stop_job(job_id=job_id, status=status)
-    return get_json_result(code=0, message="success")
+    stop_result = JobController.request_stop_job(job_id=job_id, status=status)
+    return get_json_result(**stop_result)
 
 
+@manager.route('/rerun', methods=['POST'])
+@validate_request_json(job_id=fields.String(required=False),
+                       status=fields.String(required=False))
+def request_rerun_job(job_id=None, status=None):
+    jobs = JobController.query_job(job_id=job_id)
+    if not jobs:
+        return get_json_result(code=ReturnCode.JOB.NO_FOUND, message="no found job")
+    rerun_result = JobController.request_rerun_job(job=jobs[0])
+    return get_json_result(**rerun_result)

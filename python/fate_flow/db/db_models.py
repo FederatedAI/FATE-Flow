@@ -70,11 +70,8 @@ class Task(DataBaseModel):
     f_task_version = BigIntegerField()
     f_execution_id = CharField(max_length=100)
     f_scheduler_party_id = CharField(max_length=50)
-    f_federated_status_collect_type = CharField(max_length=10)
     f_status = CharField(max_length=50, index=True)
     f_status_code = IntegerField(null=True)
-    f_auto_retries = IntegerField(default=0)
-    f_auto_retry_delay = IntegerField(default=0)
     f_component_parameters = JSONField(null=True)
 
     f_worker_id = CharField(null=True, max_length=100)

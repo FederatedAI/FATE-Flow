@@ -12,7 +12,7 @@ remote_request_timeout: 30000  # ms
 federated_command_trys: 3
 end_status_job_scheduling_time_limit: 300000 # ms
 end_status_job_scheduling_updates: 1
-auto_retries: 0
+auto_retries: 1
 auto_retry_delay: 1  #seconds
 # It can also be specified in the job configuration using the federated_status_collect_type parameter
 federated_status_collect_type: PUSH
@@ -26,22 +26,6 @@ upload_block_max_bytes: 104857600 # bytes
 output_data_summary_count_limit: 100
 
 task_default_conf:
-  output:
-    model:
-      type: directory
-      metadata:
-        uri: /worker/task/model/role/party_id/model_id/model_version/component/task_name
-        format: json
-    metric:
-      type: directory
-      metadata:
-        uri: xxx
-        format: json
-    data:
-      type: directory
-      metadata:
-        uri: xxx
-        format: csv
   logger:
     type: flow
     metadata:
@@ -49,8 +33,13 @@ task_default_conf:
       debug_mode: true
   device:
     type: CPU
-  mlmd:
-    type: flow
-    metadata:
-      statu_uri: /worker/task/report
-      tracking_uri: /worker/task/output/tracking
+  output:
+    data:
+      type: directory
+      format: dataframe
+    model:
+      type: directory
+      format: json
+    metric:
+      type: directory
+      format: json

@@ -35,3 +35,10 @@ def stop_job(job_id, stop_status=None):
     retcode, retmsg = DAGScheduler.stop_job(job_id=job_id,
                                             stop_status=stop_status)
     return get_json_result(code=retcode, message=retmsg)
+
+
+@manager.route('/job/rerun', methods=['POST'])
+@validate_request_json(job_id=fields.String(required=True))
+def rerun_job(job_id):
+    DAGScheduler.set_job_rerun(job_id=job_id, auto=False)
+    return get_json_result()

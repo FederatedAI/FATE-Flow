@@ -14,16 +14,16 @@
 #  limitations under the License.
 #
 import os
-from copy import deepcopy
 
 from fate_flow.db.db_models import Task
+from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
 from fate_flow.engine.computing import build_engine
 from fate_flow.hub.parser.default import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.run_status import EndStatus, TaskStatus
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.entity.run_status import EndStatus, TaskStatus, FederatedSchedulingStatusCode
+from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils import job_utils
 from fate_flow.utils.base_utils import current_timestamp, json_dumps
 from fate_flow.utils.log_utils import schedule_logger
@@ -33,8 +33,87 @@ class TaskController(object):
     INITIATOR_COLLECT_FIELDS = ["status", "party_status", "start_time", "update_time", "end_time", "elapsed"]
 
     @classmethod
-    def create_task(cls, role, party_id, run_on_this_party, task_info):
-        pass
+    def create_tasks(cls, job_id: str, role: str, party_id: str, dag_schema: DAGSchema, is_scheduler=False):
+        schedule_logger(job_id).info(f"start create {'scheduler' if is_scheduler else 'partner'} tasks ...")
+        job_parser = FlowHub.load_job_parser(dag_schema)
+        task_list = job_parser.topological_sort()
+        for task_name in task_list:
+            cls.create_task(job_id, role, party_id, task_name, dag_schema, job_parser, is_scheduler)
+        schedule_logger(job_id).info("create tasks success")
+
+    @classmethod
+    def create_task(cls, job_id, role, party_id, task_name, dag_schema, job_parser, is_scheduler, task_version=0):
+
+        task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
+        execution_id = job_utils.generate_session_id(task_id, task_version, role, party_id)
+        task_node = job_parser.get_task_node(task_name=task_name)
+        task_parser = FlowHub.load_task_parser(
+            task_node=task_node, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
+            task_id=task_id, execution_id=execution_id, task_version=task_version, parties=dag_schema.dag.parties
+        )
+        need_run = task_parser.need_run
+        schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
+        task_parameters = task_parser.task_parameters.dict()
+        schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
+                                     f" {task_parameters}")
+        if is_scheduler:
+            if need_run:
+                task = ScheduleTask()
+                task.f_job_id = job_id
+                task.f_role = role
+                task.f_party_id = party_id
+                task.f_task_name = task_name
+                task.f_component = task_parser.component_ref
+                task.f_task_id = task_id
+                task.f_task_version = task_version
+                task.f_status = TaskStatus.WAITING
+                task.f_parties = [party.dict() for party in dag_schema.dag.parties]
+                ScheduleJobSaver.create_task(task.to_human_model_dict())
+        else:
+            task = Task()
+            task.f_job_id = job_id
+            task.f_role = role
+            task.f_party_id = party_id
+            task.f_task_name = task_name
+            task.f_component = task_parser.component_ref
+            task.f_task_id = task_id
+            task.f_task_version = task_version
+            task.f_scheduler_party_id = dag_schema.dag.conf.scheduler_party_id
+            task.f_status = TaskStatus.WAITING if need_run else TaskStatus.PASS
+            task.f_party_status = TaskStatus.WAITING
+            task.f_component_parameters = task_parameters
+            task.f_execution_id = execution_id
+            JobSaver.create_task(task.to_human_model_dict())
+
+    @staticmethod
+    def create_schedule_tasks(job: ScheduleJob, dag_schema):
+        for party in job.f_parties:
+            role = party.get("role")
+            party_ids = party.get("party_id")
+            for party_id in party_ids:
+                TaskController.create_tasks(job.f_job_id, role, party_id, dag_schema, is_scheduler=True)
+        TaskController.create_scheduler_tasks_status(job.f_job_id, dag_schema)
+
+    @classmethod
+    def create_scheduler_tasks_status(cls, job_id, dag_schema, task_version=0, auto_retries=None, task_name=None):
+        schedule_logger(job_id).info("start create schedule task status info")
+        job_parser = FlowHub.load_job_parser(dag_schema)
+        if task_name:
+            task_list = [task_name]
+        else:
+            task_list = job_parser.topological_sort()
+        for _task_name in task_list:
+            task_info = {
+                "job_id": job_id,
+                "task_name": _task_name,
+                "task_id": job_utils.generate_task_id(job_id=job_id, component_name=_task_name),
+                "task_version": task_version,
+                "status": TaskStatus.WAITING,
+                "auto_retries": dag_schema.dag.conf.auto_retries if auto_retries is None else auto_retries,
+                "federated_status_collect_type": dag_schema.dag.conf.federated_status_collect_type
+            }
+            ScheduleJobSaver.create_task_scheduler_status(task_info)
+        schedule_logger(job_id).info("create schedule task status success")
 
     @classmethod
     def start_task(cls, job_id, role, party_id, task_id, task_version):
@@ -97,6 +176,64 @@ class TaskController(object):
             schedule_logger(job_id).info(
                 "task {} {} on {} {} executor subprocess start {}".format(task_id, task_version, role, party_id,
                                                                           "success" if task_executor_process_start_status else "failed"))
+        return not is_failed
+
+    @classmethod
+    def create_new_version_task(cls, task: Task, new_version):
+        jobs = JobSaver.query_job(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id)
+        if not jobs:
+            return False
+        dag_schema = DAGSchema(**jobs[0].f_dag)
+        job_parser = FlowHub.load_job_parser(dag_schema)
+        cls.create_task(
+            task.f_job_id, task.f_role, task.f_party_id, task.f_task_name, dag_schema, job_parser, is_scheduler=False,
+            task_version=new_version
+        )
+
+    @classmethod
+    def create_new_version_schedule_task(cls, job, task, auto):
+        # stop old version task
+        FederatedScheduler.stop_task(task_id=task.f_task_id, command_body={"status": task.f_status})
+        # create new version task
+        task.f_task_version = task.f_task_version + 1
+        if auto:
+            task.f_auto_retries = task.f_auto_retries - 1
+        status_code, response = FederatedScheduler.rerun_task(task_id=task.f_task_id, task_version=task.f_task_version)
+        dag_schema = DAGSchema(**job.f_dag)
+        if status_code != FederatedSchedulingStatusCode.SUCCESS:
+            raise Exception(f"create {task.f_task_id} new version failed")
+        job_parser = FlowHub.load_job_parser(dag_schema)
+        for party in job.f_parties:
+            _role = party.get("role")
+            for _party_id in party.get("party_id"):
+                cls.create_task(
+                    job.f_job_id, _role, _party_id, task.f_task_name, dag_schema, job_parser,
+                    is_scheduler=True, task_version=task.f_task_version
+                )
+        TaskController.create_scheduler_tasks_status(job.f_job_id, dag_schema, task_version=task.f_task_version,
+                                                     auto_retries=task.f_auto_retries, task_name=task.f_task_name)
+        schedule_logger(job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
+
+    @classmethod
+    def prepare_rerun_task(cls, job: ScheduleJob, task: ScheduleTaskStatus, auto=False, force=False):
+        job_id = job.f_job_id
+        can_rerun = False
+        if force:
+            can_rerun = True
+            auto = False
+            schedule_logger(job_id).info(
+                f"task {task.f_task_id} {task.f_task_version} with {task.f_status} was forced to rerun")
+        elif task.f_status in {TaskStatus.SUCCESS}:
+            schedule_logger(job_id).info(
+                f"task {task.f_task_id} {task.f_task_version} is {task.f_status} and not force reruen, pass rerun")
+        elif auto and task.f_auto_retries < 1:
+            schedule_logger(job_id).info(f"task {task.f_task_id} has no retry count, pass rerun")
+        else:
+            can_rerun = True
+        if can_rerun:
+            if task.f_status != TaskStatus.WAITING:
+                cls.create_new_version_schedule_task(job=job, task=task, auto=auto)
+        return can_rerun
 
     @classmethod
     def update_task(cls, task_info):
