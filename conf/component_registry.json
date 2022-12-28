@@ -19,7 +19,9 @@
       "homo_model_convert": "protobuf.homo_model_convert.homo_model_convert",
       "anonymous_generator": "util.anonymous_generator_util.Anonymous",
       "data_format": "util.data_format_preprocess.DataFormatPreProcess",
-      "hetero_model_merge": "protobuf.model_merge.merge_hetero_models.hetero_model_merge"
+      "hetero_model_merge": "protobuf.model_merge.merge_hetero_models.hetero_model_merge",
+      "extract_woe_array_dict": "protobuf.model_migrate.binning_model_migrate.extract_woe_array_dict",
+      "merge_woe_array_dict": "protobuf.model_migrate.binning_model_migrate.merge_woe_array_dict"
     }
   }
 }

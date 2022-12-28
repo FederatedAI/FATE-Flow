@@ -24,39 +24,38 @@ from fate_flow.utils.api_utils import federated_api, forward_api, proxy_api
 page_name = 'forward'
 
 
-@manager.route('/<role>', methods=['post'])
+@manager.route('/<role>', methods=['POST'])
 def start_proxy(role):
+    _job_id = f'{role}_forward'
     request_config = request.json or request.form.to_dict()
-    _job_id = f"{role}_forward"
-    if role in ['marketplace']:
-        response = proxy_api(role, _job_id, request_config)
+
+    if request_config.get('header') and request_config.get('body'):
+        request_config['header'] = {
+            **request.headers,
+            **{
+                k.replace('_', '-').upper(): v
+                for k, v in request_config['header'].items()
+            },
+        }
     else:
-        headers = request.headers
-        json_body = {}
-        if request_config.get('header') and request_config.get("body"):
-            src_party_id = request_config.get('header').get('src_party_id')
-            dest_party_id = request_config.get('header').get('dest_party_id')
-            json_body = request_config
-            if headers:
-                json_body['header'].update(headers)
-        else:
-            src_party_id = headers.get('src_party_id')
-            dest_party_id = headers.get('dest_party_id')
-            json_body["header"] = request.headers
-            json_body["body"] = request_config
-        response = federated_api(job_id=_job_id,
-                                 method='POST',
-                                 endpoint=f'/forward/{role}/do',
-                                 src_party_id=src_party_id,
-                                 dest_party_id=dest_party_id,
-                                 src_role=None,
-                                 json_body=json_body,
-                                 federated_mode=FederatedMode.MULTIPLE)
+        request_config = {
+            'header': request.headers,
+            'body': request_config,
+        }
+
+    response = (
+        proxy_api(role, _job_id, request_config) if role == 'marketplace'
+        else federated_api(
+            _job_id, 'POST', f'/forward/{role}/do',
+            request_config['header'].get('SRC-PARTY-ID'),
+            request_config['header'].get('DEST-PARTY-ID'),
+            '', request_config, FederatedMode.MULTIPLE,
+        )
+    )
     return jsonify(response)
 
 
-@manager.route('/<role>/do', methods=['post'])
+@manager.route('/<role>/do', methods=['POST'])
 def start_forward(role):
     request_config = request.json or request.form.to_dict()
-    response = forward_api(role, request_config)
-    return jsonify(response)
+    return jsonify(forward_api(role, request_config))

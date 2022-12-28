@@ -178,7 +178,7 @@ class PipelinedModel(Locker):
             else:
                 model_buffers[model_name] = [
                     buffer_name,
-                    base64.b64encode(buffer_object_serialized_string).decode("ascii"),
+                    base64.b64encode(buffer_object_serialized_string).decode(),
                 ]
 
         return model_buffers

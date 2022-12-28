@@ -19,11 +19,13 @@ from fate_arch.common.file_utils import get_federatedml_setting_conf_directory
 
 from fate_flow.component_env_utils.env_utils import get_class_object
 from fate_flow.db.component_registry import ComponentRegistry
+from fate_flow.db.db_models import PipelineComponentMeta
 from fate_flow.model.sync_model import SyncComponent
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.settings import ENABLE_MODEL_STORE
 from fate_flow.utils.api_utils import error_response, get_json_result, validate_request
 from fate_flow.utils.detect_utils import check_config
+from fate_flow.utils.job_utils import generate_job_id
 from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
 
@@ -41,7 +43,7 @@ def get_component(component_name):
 @manager.route('/validate', methods=['POST'])
 def validate_component_param():
     if not request.json or not isinstance(request.json, dict):
-        return error_response(400, 'bad request')
+        return error_response(400)
 
     required_keys = [
         'component_name',
@@ -79,7 +81,7 @@ def validate_component_param():
     'model_id', 'model_version', 'guest_party_id', 'host_party_ids',
     'component_name', 'model_type', 'output_format',
 )
-def hetero_merge():
+def hetero_model_merge():
     request_data = request.json
 
     if ENABLE_MODEL_STORE:
@@ -91,7 +93,7 @@ def hetero_merge():
             component_name=request_data['component_name'],
         )
         if not sync_component.local_exists() and sync_component.remote_exists():
-            sync_component.download(True)
+            sync_component.download()
 
         for party_id in request_data['host_party_ids']:
             sync_component = SyncComponent(
@@ -102,7 +104,7 @@ def hetero_merge():
                 component_name=request_data['component_name'],
             )
             if not sync_component.local_exists() and sync_component.remote_exists():
-                sync_component.download(True)
+                sync_component.download()
 
     model = PipelinedModel(
         gen_party_model_id(
@@ -167,3 +169,143 @@ def hetero_merge():
         request_data.get('include_guest_coef', False),
     )
     return get_json_result(data=data)
+
+
+@manager.route('/woe_array/extract', methods=['POST'])
+@validate_request(
+    'model_id', 'model_version', 'role', 'party_id', 'component_name',
+)
+def woe_array_extract():
+    if request.json['role'] != 'guest':
+        return error_response(400, 'Only support guest role.')
+
+    if ENABLE_MODEL_STORE:
+        sync_component = SyncComponent(
+            role=request.json['role'],
+            party_id=request.json['party_id'],
+            model_id=request.json['model_id'],
+            model_version=request.json['model_version'],
+            component_name=request.json['component_name'],
+        )
+        if not sync_component.local_exists() and sync_component.remote_exists():
+            sync_component.download()
+
+    model = PipelinedModel(
+        gen_party_model_id(
+            request.json['model_id'],
+            request.json['role'],
+            request.json['party_id'],
+        ),
+        request.json['model_version'],
+    ).read_component_model(
+        request.json['component_name'],
+        output_json=True,
+    )
+
+    param = None
+    meta = None
+
+    for k, v in model.items():
+        if k.endswith('Param'):
+            param = v
+        elif k.endswith('Meta'):
+            meta = v
+        else:
+            return error_response(400, f'Unknown model key: "{k}".')
+
+    if param is None or meta is None:
+        return error_response(400, 'Invalid model.')
+
+    data = get_class_object('extract_woe_array_dict')(param)
+    return get_json_result(data=data)
+
+
+@manager.route('/woe_array/merge', methods=['POST'])
+@validate_request(
+    'model_id', 'model_version', 'role', 'party_id', 'component_name', 'woe_array',
+)
+def woe_array_merge():
+    if request.json['role'] != 'host':
+        return error_response(400, 'Only support host role.')
+
+    pipelined_model = PipelinedModel(
+        gen_party_model_id(
+            request.json['model_id'],
+            request.json['role'],
+            request.json['party_id'],
+        ),
+        request.json['model_version'],
+    )
+
+    query = pipelined_model.pipelined_component.get_define_meta_from_db(
+        PipelineComponentMeta.f_component_name == request.json['component_name'],
+    )
+    if not query:
+        return error_response(404, 'Component not found.')
+    query = query[0]
+
+    if ENABLE_MODEL_STORE:
+        sync_component = SyncComponent(
+            role=query.f_role,
+            party_id=query.f_party_id,
+            model_id=query.f_model_id,
+            model_version=query.f_model_version,
+            component_name=query.f_component_name,
+        )
+        if not sync_component.local_exists() and sync_component.remote_exists():
+            sync_component.download()
+
+    model = pipelined_model._read_component_model(
+        query.f_component_name,
+        query.f_model_alias,
+    )
+
+    for model_name, (
+        buffer_name,
+        buffer_string,
+        buffer_dict,
+    ) in model.items():
+        if model_name.endswith('Param'):
+            string_merged, dict_merged = get_class_object('merge_woe_array_dict')(
+                buffer_name,
+                buffer_string,
+                buffer_dict,
+                request.json['woe_array'],
+            )
+            model[model_name] = (
+                buffer_name,
+                string_merged,
+                dict_merged,
+            )
+            break
+
+    pipelined_model = PipelinedModel(
+        pipelined_model.party_model_id,
+        generate_job_id()
+    )
+
+    pipelined_model.save_component_model(
+        query.f_component_name,
+        query.f_component_module_name,
+        query.f_model_alias,
+        model,
+        query.f_run_parameters,
+    )
+
+    if ENABLE_MODEL_STORE:
+        sync_component = SyncComponent(
+            role=query.f_role,
+            party_id=query.f_party_id,
+            model_id=query.f_model_id,
+            model_version=pipelined_model.model_version,
+            component_name=query.f_component_name,
+        )
+        sync_component.upload()
+
+    return get_json_result(data={
+        'role': query.f_role,
+        'party_id': query.f_party_id,
+        'model_id': query.f_model_id,
+        'model_version': pipelined_model.model_version,
+        'component_name': query.f_component_name,
+    })

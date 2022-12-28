@@ -17,11 +17,13 @@ import functools
 import os
 import shutil
 import zipfile
+import subprocess
 
 from fate_arch.common import file_utils
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.db.db_models import ComponentProviderInfo
 from fate_flow.db.dependence_registry import DependenceRegistry
+from fate_flow.db.service_registry import ServerRegistry
 from fate_flow.entity import ComponentProvider
 from fate_flow.entity.types import FateDependenceName, ComponentProviderName, FateDependenceStorageEngine
 from fate_flow.settings import FATE_VERSION_DEPENDENCIES_PATH
@@ -64,13 +66,12 @@ class DependenceUpload(BaseWorker):
         LOGGER.info(f'dependencies loading ...')
         if dependence_type == FateDependenceName.Python_Env.value:
             # todo: version python env
-            target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python_env.zip")
+            target_file = os.path.join(FATE_VERSION_DEPENDENCIES_PATH, provider.version, "python_env.tar.gz")
+            venv_pack_path = os.path.join(os.getenv("VIRTUAL_ENV"), "bin/venv-pack")
+            subprocess.run([venv_pack_path, "-o", target_file])
             source_path = os.path.dirname(os.path.dirname(os.getenv("VIRTUAL_ENV")))
             cls.rewrite_pyvenv_cfg(os.path.join(os.getenv("VIRTUAL_ENV"), "pyvenv.cfg"), "python_env")
-            env_dir_list = ["python", "miniconda3"]
-            cls.zip_dir(source_path, target_file, env_dir_list)
-
-            dependencies_conf = {"executor_python": f"./{dependence_type}/python/venv/bin/python",
+            dependencies_conf = {"executor_python": f"./{dependence_type}/bin/python",
                                  "driver_python": f"{os.path.join(os.getenv('VIRTUAL_ENV'), 'bin', 'python')}"}
         else:
             fate_code_dependencies = {
@@ -102,9 +103,11 @@ class DependenceUpload(BaseWorker):
 
         LOGGER.info(f'start upload')
         snapshot_time = DependenceRegistry.get_modify_time(source_path)
+        hdfs_address = ServerRegistry.FATE_ON_SPARK.get("hdfs", {}).get("name_node")
+        LOGGER.info(f'hdfs address: {hdfs_address}')
         storage_dir = f"/fate_dependence/{provider.version}"
-        os.system(f" {os.getenv('HADOOP_HOME')}/bin/hdfs dfs -mkdir -p  {storage_dir}")
-        status = os.system(f"{os.getenv('HADOOP_HOME')}/bin/hdfs dfs -put -f {target_file} {storage_dir}")
+        os.system(f" {os.getenv('HADOOP_HOME')}/bin/hdfs dfs -mkdir -p  {hdfs_address}{storage_dir}")
+        status = os.system(f"{os.getenv('HADOOP_HOME')}/bin/hdfs dfs -put -f {target_file} {hdfs_address}{storage_dir}")
         LOGGER.info(f'upload end, status is {status}')
         if status == 0:
             storage_path = os.path.join(storage_dir, os.path.basename(target_file))

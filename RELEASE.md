@@ -1,3 +1,10 @@
+# Release 1.10.0
+## Major Features and Improvements
+* Add connection test API
+* May configure gRPC message size limit 
+## Bug Fixes
+* Fix module duplication issue in model 
+
 # Release 1.9.1
 ## Bug Fixes
 * Fix parameter inheritance when loading non-model modules from ModelLoader 

@@ -15,6 +15,8 @@
 #
 import os
 
+from grpc._cython import cygrpc
+
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import engine_utils
 from fate_arch.common.conf_utils import get_base_config, decrypt_database_config
@@ -24,7 +26,6 @@ from fate_flow.utils.log_utils import LoggerFactory, getLogger
 
 # Server
 API_VERSION = "v1"
-FATE_ENV_KEY_LIST = ['FATE', 'FATEFlow', 'FATEBoard', 'EGGROLL', 'CENTOS', 'UBUNTU', 'PYTHON', 'MAVEN', 'JDK', 'SPARK']
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
 CASBIN_TABLE_NAME = "fate_casbin"
@@ -40,11 +41,15 @@ INCOMPATIBLE_VERSION_CONF = os.path.join(FATE_FLOW_CONF_PATH, "incompatible_vers
 SUBPROCESS_STD_LOG_NAME = "std.log"
 
 GRPC_SERVER_MAX_WORKERS = None
-MAX_TIMESTAMP_INTERVAL = 60
+GRPC_OPTIONS = [
+    (cygrpc.ChannelArgKey.max_send_message_length, -1),
+    (cygrpc.ChannelArgKey.max_receive_message_length, -1),
+]
 
 ERROR_REPORT = True
 ERROR_REPORT_WITH_PATH = False
 
+MAX_TIMESTAMP_INTERVAL = 60
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
 
 REQUEST_TRY_TIMES = 3
