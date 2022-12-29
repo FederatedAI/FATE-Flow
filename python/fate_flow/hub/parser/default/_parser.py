@@ -247,7 +247,7 @@ class TaskParser(TaskParserABC):
         return JobDefaultConfig.task_default_conf.get("device")
 
     def generate_computing_conf(self):
-        return ComputingBackendSpec(type=ENGINES.get(EngineType.STORAGE), metadata={"computing_id": self.computing_id})
+        return ComputingBackendSpec(type=ENGINES.get(EngineType.STORAGE).lower(), metadata={"computing_id": self.computing_id})
 
     def generate_federation_conf(self):
         parties = []
@@ -255,7 +255,7 @@ class TaskParser(TaskParserABC):
             for _party_id in party.party_id:
                 parties.append({"role": party.role, "partyid": _party_id})
         return FederationBackendSpec(
-            type=ENGINES.get(EngineType.STORAGE),
+            type=ENGINES.get(EngineType.STORAGE).lower(),
             metadata={
                 "federation_id": self.federation_id,
                 "parties": {

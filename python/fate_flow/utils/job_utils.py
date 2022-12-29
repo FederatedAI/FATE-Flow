@@ -16,6 +16,9 @@ import datetime
 import os
 import threading
 
+from fate_flow.db.base_models import DB
+from fate_flow.db.db_models import Job
+from fate_flow.hub.parser.default import DAGSchema
 from fate_flow.utils.base_utils import fate_uuid
 from fate_flow.utils.file_utils import get_fate_flow_directory
 
@@ -101,3 +104,16 @@ def generate_model_info(job_id):
     model_id = job_id
     model_version = 0
     return model_id, model_version
+
+
+@DB.connection_context()
+def get_job_resource_info(job_id, role, party_id):
+    jobs = Job.select(Job.f_dag).where(Job.f_job_id == job_id,
+                                                         Job.f_role == role,
+                                                         Job.f_party_id == party_id)
+    if jobs:
+        job = jobs[0]
+        dag_schema = DAGSchema(**job.f_dag)
+        return dag_schema.dag.conf.task_cores, dag_schema.dag.conf.task_parallelism
+    else:
+        return None, None

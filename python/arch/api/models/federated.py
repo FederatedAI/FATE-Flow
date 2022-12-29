@@ -27,6 +27,9 @@ class Federated(BaseAPI):
     def clean_job(self, job_id, roles, command_body=None):
         return self.job_command(job_id=job_id, roles=roles, command="clean", command_body=command_body)
 
+    def resource_for_task(self, tasks, operation_type):
+        return self.task_command(tasks=tasks, command=f"resource/{operation_type}")
+
     def create_task(self, tasks, command_body=None):
         return self.task_command(tasks=tasks, command="create", command_body=command_body)
 

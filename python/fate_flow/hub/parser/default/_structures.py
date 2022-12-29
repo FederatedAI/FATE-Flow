@@ -180,6 +180,7 @@ class JobConfSpec(BaseModel):
     initiator_party_id: Optional[Union[str, int]]
     inherit: Optional[Dict[str, Any]]
     task_parallelism: Optional[int]
+    task_cores: Optional[int]
     federated_status_collect_type: Optional[str]
     auto_retries: Optional[int]
     model_id: Optional[str]

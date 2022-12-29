@@ -20,6 +20,7 @@ from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTask
 from fate_flow.engine.computing import build_engine
 from fate_flow.hub.parser.default import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
+from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import EndStatus, TaskStatus, FederatedSchedulingStatusCode
@@ -253,8 +254,8 @@ class TaskController(object):
                 task_version=task_info.get("task_version")
             )[0].f_scheduler_party_id
         update_status = JobSaver.update_task_status(task_info=task_info)
-        if update_status and EndStatus.contains(task_info.get("status")):
-            # ResourceManager.return_task_resource(task_info=task_info)
+        if update_status and EndStatus.contains(task_info.get("party_status")):
+            ResourceManager.return_task_resource(**task_info)
             cls.clean_task(job_id=task_info["job_id"],
                            task_id=task_info["task_id"],
                            task_version=task_info["task_version"],

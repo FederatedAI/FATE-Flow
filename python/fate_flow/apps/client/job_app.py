@@ -52,17 +52,15 @@ def query_task(job_id=None, role=None, party_id=None, status=None, task_name=Non
 
 
 @manager.route('/stop', methods=['POST'])
-@validate_request_json(job_id=fields.String(required=False),
-                       status=fields.String(required=False))
-def request_stop_job(job_id=None, status=None):
-    stop_result = JobController.request_stop_job(job_id=job_id, status=status)
+@validate_request_json(job_id=fields.String(required=True))
+def request_stop_job(job_id=None):
+    stop_result = JobController.request_stop_job(job_id=job_id)
     return get_json_result(**stop_result)
 
 
 @manager.route('/rerun', methods=['POST'])
-@validate_request_json(job_id=fields.String(required=False),
-                       status=fields.String(required=False))
-def request_rerun_job(job_id=None, status=None):
+@validate_request_json(job_id=fields.String(required=True))
+def request_rerun_job(job_id=None):
     jobs = JobController.query_job(job_id=job_id)
     if not jobs:
         return get_json_result(code=ReturnCode.JOB.NO_FOUND, message="no found job")

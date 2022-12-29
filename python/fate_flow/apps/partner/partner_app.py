@@ -17,11 +17,11 @@ from webargs import fields
 
 from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.entity import RetCode
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.entity.types import ReturnCode
+from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.utils.api_utils import get_json_result, validate_request_json, job_request_json, task_request_json
+from fate_flow.utils.api_utils import get_json_result, job_request_json, task_request_json
 
 page_name = 'partner'
 
@@ -84,13 +84,23 @@ def save_pipeline(job_id, role, party_id):
 @manager.route('/job/resource/apply', methods=['POST'])
 @job_request_json()
 def apply_resource(job_id, role, party_id):
-    return get_json_result(code=ReturnCode.JOB.SUCCESS, message='success')
+    status = ResourceManager.apply_for_job_resource(job_id, role, party_id)
+    if status:
+        return get_json_result(code=ReturnCode.JOB.SUCCESS, message='success')
+    else:
+        return get_json_result(code=ReturnCode.JOB.APPLY_RESOURCE_FAILED,
+                               message=f'apply for job {job_id} resource failed')
 
 
 @manager.route('/job/resource/return', methods=['POST'])
 @job_request_json()
 def return_resource(job_id, role, party_id):
-    return get_json_result(code=ReturnCode.JOB.SUCCESS, message='success')
+    status = ResourceManager.return_job_resource(job_id=job_id, role=role, party_id=party_id)
+    if status:
+        return get_json_result(ReturnCode.JOB.SUCCESS, message='success')
+    else:
+        return get_json_result(code=ReturnCode.JOB.APPLY_RESOURCE_FAILED,
+                               message=f'return for job {job_id} resource failed')
 
 
 @manager.route('/job/stop', methods=['POST'])
@@ -100,6 +110,30 @@ def stop_job(job_id, role, party_id):
     return get_json_result(code=ReturnCode.JOB.SUCCESS if kill_status else ReturnCode.JOB.KILL_FAILED,
                            message='success' if kill_status else 'failed',
                            data=kill_details)
+
+
+@manager.route('/task/resource/apply', methods=['POST'])
+@task_request_json()
+def apply_task_resource(job_id, role, party_id, task_id, task_version):
+    status = ResourceManager.apply_for_task_resource(job_id=job_id, role=role, party_id=party_id,
+                                                     task_id=task_id, task_version=task_version)
+    if status:
+        return get_json_result(code=ReturnCode.TASK.SUCCESS, message='success')
+    else:
+        return get_json_result(code=ReturnCode.TASK.APPLY_RESOURCE_FAILED,
+                               message=f'apply for task {job_id} resource failed')
+
+
+@manager.route('/task/resource/return', methods=['POST'])
+@task_request_json()
+def return_task_resource(job_id, role, party_id, task_id, task_version):
+    status = ResourceManager.return_task_resource(job_id=job_id, role=role, party_id=party_id,
+                                                  task_id=task_id, task_version=task_version)
+    if status:
+        return get_json_result(ReturnCode.TASK.SUCCESS, message='success')
+    else:
+        return get_json_result(code=ReturnCode.TASK.APPLY_RESOURCE_FAILED,
+                               message=f'return for task {job_id} resource failed')
 
 
 @manager.route('/task/start', methods=['POST'])

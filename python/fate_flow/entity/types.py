@@ -110,6 +110,7 @@ class JobCode(Code):
     UPDATE_STATUS_FAILED = 1002
     UPDATE_FAILED = 1003
     KILL_FAILED = 1004
+    APPLY_RESOURCE_FAILED = 1005
 
 
 class TaskCode(Code):
@@ -118,6 +119,7 @@ class TaskCode(Code):
     UPDATE_STATUS_FAILED = 2002
     UPDATE_FAILED = 2003
     KILL_FAILED = 2004
+    APPLY_RESOURCE_FAILED = 2005
 
 
 class ReturnCode:

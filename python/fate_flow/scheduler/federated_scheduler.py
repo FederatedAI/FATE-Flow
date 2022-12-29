@@ -23,11 +23,22 @@ from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils.log_utils import schedule_logger
 
 
-def get_tasks_by_task_id(task_id):
-    return [{"job_id": task.f_job_id, "role": task.f_role, "party_id": task.f_party_id,
-             "component": task.f_component, "task_id": task.f_task_id,
-             "task_version": task.f_task_version} for task in
-            ScheduleJobSaver.query_task(task_id=task_id, only_latest=True)]
+def get_tasks_by_task_id(task_id, roles=None):
+    tasks = [{"job_id": task.f_job_id, "role": task.f_role, "party_id": task.f_party_id,
+              "component": task.f_component, "task_id": task.f_task_id,
+              "task_version": task.f_task_version} for task in
+             ScheduleJobSaver.query_task(task_id=task_id, only_latest=True)]
+    if roles:
+        _tasks = []
+        for party in roles:
+            _role = party.get("role")
+            _party_ids = party.get("party_id")
+            for _party_id in _party_ids:
+                for task in tasks:
+                    if task.get("role") == _role and task.get("party_id") == _party_id:
+                        _tasks.append(task)
+        return _tasks
+    return tasks
 
 
 def schedule_job(func):
@@ -52,7 +63,8 @@ def federated_task(func):
     @wraps(func)
     def _inner(*args, **kwargs):
         task_id = kwargs.get("task_id")
-        tasks = get_tasks_by_task_id(task_id)
+        roles = kwargs.get("roles")
+        tasks = get_tasks_by_task_id(task_id, roles)
         if tasks:
             _return = func(tasks=tasks, *args, **kwargs)
             schedule_logger(tasks[0]["job_id"]).info(f"task command '{func.__name__}' return: {_return}")
@@ -118,6 +130,12 @@ class FederatedScheduler:
     @classmethod
     @federated_task
     @federated
+    def resource_for_task(cls, task_id, operation_type, tasks=None, roles=None):
+        return RuntimeConfig.SCHEDULE_CLIENT.federated.resource_for_task(tasks=tasks, operation_type=operation_type)
+
+    @classmethod
+    @federated_task
+    @federated
     def collect_task(cls, task_id, tasks=None):
         return RuntimeConfig.SCHEDULE_CLIENT.federated.collect_task(tasks=tasks)
 
@@ -155,9 +173,9 @@ class FederatedScheduler:
     def request_stop_job(cls, party_id, job_id, stop_status=None):
         command_body = {"job_id": job_id}
         if stop_status:
-            command_body = {
+            command_body.update({
                 "stop_status": stop_status
-            }
+            })
         return RuntimeConfig.SCHEDULE_CLIENT.scheduler.stop_job(party_id, command_body)
 
     @classmethod

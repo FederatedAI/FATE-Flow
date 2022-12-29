@@ -14,11 +14,12 @@
 #  limitations under the License.
 #
 from fate_flow.entity.engine_types import FederatedCommunicationType
-from fate_flow.entity.types import ReturnCode
+from fate_flow.entity.types import ReturnCode, ResourceOperation
 from fate_flow.hub.parser.default import DAGSchema
 from fate_flow.entity.run_status import StatusSet, TaskStatus, InterruptStatus, EndStatus, AutoRerunStatus, \
     SchedulingStatusCode
 from fate_flow.entity.run_status import FederatedSchedulingStatusCode
+from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.utils.log_utils import schedule_logger
@@ -95,7 +96,10 @@ class TaskScheduler(object):
     @classmethod
     def start_task(cls, job, task):
         schedule_logger(task.f_job_id).info("try to start task {} {}".format(task.f_task_id, task.f_task_version))
-        # todo: apply for task resource
+        # apply resource for task
+        apply_status = cls.apply_task_resource(task, job)
+        if not apply_status:
+            return SchedulingStatusCode.NO_RESOURCE
         task.f_status = TaskStatus.RUNNING
         ScheduleJobSaver.update_task_status(
             task_info=task.to_human_model_dict(only_primary_with=["status"]), scheduler_status=True
@@ -108,6 +112,39 @@ class TaskScheduler(object):
             return SchedulingStatusCode.SUCCESS
         else:
             return SchedulingStatusCode.FAILED
+
+    @classmethod
+    def apply_task_resource(cls, task, job):
+        apply_status_code, federated_response = FederatedScheduler.resource_for_task(
+            task_id=task.f_task_id,
+            operation_type=ResourceOperation.APPLY.value
+        )
+        if apply_status_code == FederatedSchedulingStatusCode.SUCCESS:
+            return True
+        else:
+            # rollback resource
+            rollback_party = []
+            failed_party = []
+            for dest_role in federated_response.keys():
+                for dest_party_id in federated_response[dest_role].keys():
+                    retcode = federated_response[dest_role][dest_party_id]["code"]
+                    if retcode == ReturnCode.TASK.SUCCESS:
+                        rollback_party.append({"role": dest_role, "party_id": [dest_party_id]})
+                    else:
+                        failed_party.append({"role": dest_role, "party_id": [dest_party_id]})
+            schedule_logger(job.f_job_id).info("task apply resource failed on {}, rollback {}".format(failed_party,
+                                                                                                      rollback_party))
+            if rollback_party:
+                return_status_code, federated_response = FederatedScheduler.resource_for_task(
+                    task_id=task.f_task_id,
+                    roles=rollback_party,
+                    operation_type=ResourceOperation.RETURN.value
+                )
+                if return_status_code != FederatedSchedulingStatusCode.SUCCESS:
+                    schedule_logger(job.f_job_id).info(f"task return resource failed:\n{federated_response}")
+            else:
+                schedule_logger(job.f_job_id).info("task no party should be rollback resource")
+        return False
 
     @classmethod
     def collect_task_of_all_party(cls, job, task, set_status=None):

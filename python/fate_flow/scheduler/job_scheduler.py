@@ -172,47 +172,51 @@ class DAGScheduler(Cron):
         schedule_logger().info("schedule end status jobs finished")
 
     @classmethod
-    def schedule_waiting_jobs(cls, job: ScheduleJob):
-        job_id = job.f_job_id
-        if job.f_cancel_signal:
-            FederatedScheduler.sync_job_status(job_id=job.f_job_id, roles=job.f_parties,
-                                               job_info={"job_id": job.f_job_id, "status": JobStatus.CANCELED})
-            ScheduleJobSaver.update_job_status({"job_id": job.f_job_id, "status": JobStatus.CANCELED})
-            schedule_logger(job.job_id).info("job have cancel signal")
-            return
+    def apply_job_resource(cls, job):
         apply_status_code, federated_response = FederatedScheduler.resource_for_job(
             job_id=job.f_job_id,
             roles=job.f_parties,
             operation_type=ResourceOperation.APPLY.value
         )
         if apply_status_code == FederatedSchedulingStatusCode.SUCCESS:
-            cls.start_job(job_id=job_id, roles=job.f_parties)
+            return True
         else:
             # rollback resource
             rollback_party = []
             failed_party = []
             for dest_role in federated_response.keys():
                 for dest_party_id in federated_response[dest_role].keys():
-                    retcode = federated_response[dest_role][dest_party_id]["retcode"]
-                    if retcode == 0:
-                        rollback_party.append({"role": dest_role, "party_id": dest_party_id})
+                    retcode = federated_response[dest_role][dest_party_id]["code"]
+                    if retcode == ReturnCode.JOB.SUCCESS:
+                        rollback_party.append({"role": dest_role, "party_id": [dest_party_id]})
                     else:
-                        failed_party.append({"role": dest_role, "party_id": dest_party_id})
-            schedule_logger(job_id).info("job apply resource failed on {}, rollback {}".format(failed_party,
+                        failed_party.append({"role": dest_role, "party_id": [dest_party_id]})
+            schedule_logger(job.f_job_id).info("job apply resource failed on {}, rollback {}".format(failed_party,
                                                                                                rollback_party))
             if rollback_party:
                 return_status_code, federated_response = FederatedScheduler.resource_for_job(
-                    job_id=job_id,
+                    job_id=job.f_job_id,
                     roles=rollback_party,
                     operation_type=ResourceOperation.RETURN.value
                 )
                 if return_status_code != FederatedSchedulingStatusCode.SUCCESS:
-                    schedule_logger(job_id).info(f"job return resource failed:\n{federated_response}")
+                    schedule_logger(job.f_job_id).info(f"job return resource failed:\n{federated_response}")
             else:
-                schedule_logger(job_id).info("job no party should be rollback resource")
-            if apply_status_code == FederatedSchedulingStatusCode.FAILED:
-                cls.stop_job(job_id=job_id, stop_status=JobStatus.FAILED)
-                schedule_logger(job_id).info("apply resource error, stop job")
+                schedule_logger(job.f_job_id).info("job no party should be rollback resource")
+        return False
+
+    @classmethod
+    def schedule_waiting_jobs(cls, job: ScheduleJob):
+        job_id = job.f_job_id
+        if job.f_cancel_signal:
+            FederatedScheduler.sync_job_status(job_id=job.f_job_id, roles=job.f_parties,
+                                               job_info={"job_id": job.f_job_id, "status": JobStatus.CANCELED})
+            ScheduleJobSaver.update_job_status({"job_id": job.f_job_id, "status": JobStatus.CANCELED})
+            schedule_logger(job.f_job_id).info("job have cancel signal")
+            return
+        status = cls.apply_job_resource(job)
+        if status:
+            cls.start_job(job_id=job.f_job_id, roles=job.f_parties)
 
     def schedule_running_job(self, job: ScheduleJob, force_sync_status=False):
         schedule_logger(job.f_job_id).info("scheduling running job")
@@ -376,7 +380,7 @@ class DAGScheduler(Cron):
             schedule_logger(job_id).info(f"require {[task.f_task_name for task in tasks]} to rerun")
         else:
             # todo: get_need_revisit_nodes
-            tasks = ScheduleJobSaver.query_task(status=TaskStatus.FAILED, scheduler_status=True)
+            tasks = ScheduleJobSaver.query_task(job_id=job_id, status=TaskStatus.CANCELED, scheduler_status=True)
         job_can_rerun = any([TaskController.prepare_rerun_task(
             job=job, task=task, auto=auto, force=force,
         ) for task in tasks])

@@ -57,6 +57,12 @@ LoggerFactory.set_directory(os.path.join(get_fate_flow_directory(), "logs", "fat
 # {CRITICAL: 50, FATAL:50, ERROR:40, WARNING:30, WARN:30, INFO:20, DEBUG:10, NOTSET:0}
 LoggerFactory.LEVEL = 10
 
+IGNORE_RESOURCE_ROLES = {"arbiter"}
+
+SUPPORT_IGNORE_RESOURCE_ENGINES = {
+    ComputingEngine.EGGROLL, ComputingEngine.STANDALONE
+}
+
 stat_logger = getLogger("fate_flow_stat")
 detect_logger = getLogger("fate_flow_detect")
 access_logger = getLogger("fate_flow_access")

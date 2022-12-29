@@ -25,7 +25,7 @@ from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
 from arch import proxy_pb2_grpc
 from fate_flow.apps import app
-from fate_flow.runtime.job_default_config import JobDefaultConfig
+from fate_flow.db.config_manager import ConfigManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.db.base_models import init_database_tables as init_flow_db
 from fate_flow.detection.detector import Detector, FederatedDetector
@@ -61,8 +61,8 @@ if __name__ == '__main__':
         stat_logger.info("run on debug mode")
     RuntimeConfig.init_env()
     RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
-    JobDefaultConfig.load()
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
+    ConfigManager.load()
     init_scheduler()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     FederatedDetector(interval=10 * 1000, logger=detect_logger).start()
