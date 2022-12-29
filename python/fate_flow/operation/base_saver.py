@@ -188,19 +188,19 @@ class BaseSaver(BaseModelOperate):
 
     @classmethod
     @DB.connection_context()
-    def _query_task(cls, task_obj, only_latest=True, reverse=None, order_by=None, **kwargs):
+    def _query_task(cls, task_obj, only_latest=True, reverse=None, order_by=None, scheduler_status=False, **kwargs):
         tasks = task_obj.query(reverse=reverse, order_by=order_by, **kwargs)
         if only_latest:
-            tasks_group = cls.get_latest_tasks(tasks=tasks)
+            tasks_group = cls.get_latest_tasks(tasks=tasks, scheduler_status=scheduler_status)
             return list(tasks_group.values())
         else:
             return tasks
 
     @classmethod
-    def get_latest_tasks(cls, tasks, status_scheduler=False):
+    def get_latest_tasks(cls, tasks, scheduler_status=False):
         tasks_group = {}
         for task in tasks:
-            task_key = cls.task_key(task_id=task.f_task_id, role=task.f_role, party_id=task.f_party_id) if not status_scheduler else task.f_task_name
+            task_key = cls.task_key(task_id=task.f_task_id, role=task.f_role, party_id=task.f_party_id) if not scheduler_status else task.f_task_name
             if task_key not in tasks_group:
                 tasks_group[task_key] = task
             elif task.f_task_version > tasks_group[task_key].f_task_version:

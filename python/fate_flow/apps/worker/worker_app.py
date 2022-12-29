@@ -54,7 +54,7 @@ def log_output_artifacts(execution_id, meta_data, type, uri, output_key):
             "task_name": task.f_task_name
         }
         OutputDataTracking.create(data_info)
-        return get_json_result()
+        return get_json_result(code=ReturnCode.TASK.SUCCESS, message="success")
     return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
 
 

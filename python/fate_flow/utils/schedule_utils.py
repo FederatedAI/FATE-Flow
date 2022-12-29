@@ -22,3 +22,15 @@ from fate_flow.utils.base_utils import current_timestamp
 def cancel_signal(job_id, set_or_reset: bool):
     update_status = ScheduleJob.update({ScheduleJob.f_cancel_signal: set_or_reset, ScheduleJob.f_cancel_time: current_timestamp()}).where(ScheduleJob.f_job_id == job_id).execute() > 0
     return update_status
+
+
+@DB.connection_context()
+def rerun_signal(job_id, set_or_reset: bool):
+    if set_or_reset is True:
+        update_fields = {ScheduleJob.f_rerun_signal: True, ScheduleJob.f_cancel_signal: False, ScheduleJob.f_end_scheduling_updates: 0}
+    elif set_or_reset is False:
+        update_fields = {ScheduleJob.f_rerun_signal: False}
+    else:
+        raise RuntimeError(f"can not support rereun signal {set_or_reset}")
+    update_status = ScheduleJob.update(update_fields).where(ScheduleJob.f_job_id == job_id).execute() > 0
+    return update_status

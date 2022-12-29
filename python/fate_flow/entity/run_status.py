@@ -125,12 +125,6 @@ class SuccessStatus(BaseStatus):
     SUCCESS = StatusSet.SUCCESS
 
 
-class LinkisJobStatus(BaseStatus):
-    FAILED = "Failed"
-    SUCCESS = "Success"
-    RUNNING = "Running"
-
-
 class AutoRerunStatus(BaseStatus):
     TIMEOUT = StatusSet.TIMEOUT
     FAILED = StatusSet.FAILED
@@ -147,7 +141,4 @@ class SchedulingStatusCode(object):
 
 class FederatedSchedulingStatusCode(object):
     SUCCESS = 0
-    PARTIAL = 1
-    FAILED = 2
-    ERROR = 3
-    NOT_EFFECTIVE = 4
+    FAILED = 1

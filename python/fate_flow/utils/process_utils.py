@@ -94,7 +94,11 @@ def check_process(pid, task: Task = None, expected_cmdline: list = None):
         return is_task_executor_process(task=task, process=p)
     elif ret and expected_cmdline is not None:
         p = get_process_instance(pid)
-        return check_process_by_cmdline(actual=p.cmdline(), expected=expected_cmdline)
+        try:
+            return check_process_by_cmdline(actual=p.cmdline(), expected=expected_cmdline)
+        except psutil.NoSuchProcess:
+            stat_logger.warning(f"no such process {pid}")
+            return False
     else:
         return ret
 

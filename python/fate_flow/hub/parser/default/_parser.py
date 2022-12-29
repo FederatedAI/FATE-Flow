@@ -1,5 +1,4 @@
 import os
-from copy import deepcopy
 
 import networkx as nx
 import copy
@@ -7,7 +6,7 @@ import copy
 from pydantic import BaseModel
 from typing import Dict, Union
 
-from ._structures import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, DAGSchema, \
+from ._structures import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, DAGSchema,\
     RuntimeTaskOutputChannelSpec, TaskScheduleSpec, TaskRuntimeInputSpec, IOArtifact, OutputSpec, \
     OutputMetricSpec, OutputModelSpec, OutputDataSpec, MLMDSpec, LOGGERSpec, ComputingBackendSpec, \
     FederationBackendSpec, RuntimeConfSpec
@@ -16,7 +15,7 @@ from fate_flow.entity.types import ArtifactSourceType
 from fate_flow.manager.output_manager import OutputDataTracking
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, HOST, HTTP_PORT, API_VERSION
+from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI
 from fate_flow.utils import job_utils
 from fate_flow.entity.engine_types import StorageEngine, EngineType
 from fate_flow.entity.scheduler_structures import SchedulerInfoSpec
@@ -189,40 +188,46 @@ class TaskParser(TaskParserABC):
         )
 
     def get_output_model_store_conf(self):
-        model_conf = deepcopy(JobDefaultConfig.task_default_conf.get("output", {}).get("model", {}))
-        if model_conf.get("metadata"):
-            model_id, model_version = job_utils.generate_model_info(job_id=self.job_id)
-            uri = model_conf["metadata"].get("uri"). \
-                replace("task_name", self.task_name). \
-                replace("model_id", model_id). \
-                replace("model_version", str(model_version)). \
-                replace("role", self.role). \
-                replace("party_id", self.party_id). \
-                replace("component", self.component_ref). \
-                replace("task_name", self.task_name)
-            model_conf["metadata"]["uri"] = f'http://{HOST}:{HTTP_PORT}/{API_VERSION}{uri}'
-        return OutputModelSpec(**model_conf)
+        model_id, model_version = job_utils.generate_model_info(job_id=self.job_id)
+        _type = JobDefaultConfig.task_default_conf.get("output").get("model").get("type")
+        _format = JobDefaultConfig.task_default_conf.get("output").get("model").get("format")
+
+        return OutputModelSpec(
+            type=_type,
+            metadata={
+                "uri": f"{BASE_URI}/worker/task/model/{self.role}/{self.party_id}/{model_id}/{str(model_version)}/{self.component_ref}/{self.task_name}",
+                "format": _format
+            }
+        )
 
     def get_output_data_store_conf(self):
-        data_conf = deepcopy(JobDefaultConfig.task_default_conf.get("output", {}).get("data", {}))
+        _type = JobDefaultConfig.task_default_conf.get("output").get("data").get("type")
+        _format = JobDefaultConfig.task_default_conf.get("output").get("data").get("format")
+
         if ENGINES.get(EngineType.STORAGE) in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
-            os.makedirs(LOCAL_DATA_STORE_PATH, exist_ok=True)
-            return OutputDataSpec(type="directory", metadata={"uri": f"file:///{LOCAL_DATA_STORE_PATH}", "format": "dataframe"})
+            os.makedirs(os.path.join(LOCAL_DATA_STORE_PATH, self.task_id), exist_ok=True)
+            return OutputDataSpec(type=_type, metadata={
+                "uri": f"file://{LOCAL_DATA_STORE_PATH}/{self.task_id}",
+                "format": _format
+            })
 
     def get_output_data_metric_conf(self):
+        _type = JobDefaultConfig.task_default_conf.get("output").get("metric").get("type")
+        _format = JobDefaultConfig.task_default_conf.get("output").get("metric").get("format")
+
         return OutputMetricSpec(
-            type="directory",
+            type=_type,
             metadata={
-                "uri": f"http://{HOST}:{HTTP_PORT}/{API_VERSION}/worker/task/metric/{self.job_id}/{self.role}/"
+                "uri": f"{BASE_URI}/worker/task/metric/{self.job_id}/{self.role}/"
                        f"{self.party_id}/{self.task_name}/{self.task_id}/{self.task_version}",
-                "format": "json"
+                "format": _format
             })
 
     @staticmethod
     def generate_mlmd():
-        _type = JobDefaultConfig.task_default_conf.get("mlmd", {}).get("type")
-        _statu_uri = f'http://{HOST}:{HTTP_PORT}/{API_VERSION}{JobDefaultConfig.task_default_conf.get("mlmd", {}).get("metadata", {}).get("statu_uri", "")}'
-        _tracking_uri = f'http://{HOST}:{HTTP_PORT}/{API_VERSION}{JobDefaultConfig.task_default_conf.get("mlmd", {}).get("metadata", {}).get("tracking_uri", "")}'
+        _type = "flow"
+        _statu_uri = f"{BASE_URI}/worker/task/report"
+        _tracking_uri = f'{BASE_URI}/worker/task/output/tracking'
         return MLMDSpec(
             type=_type,
             metadata={
@@ -242,17 +247,23 @@ class TaskParser(TaskParserABC):
         return JobDefaultConfig.task_default_conf.get("device")
 
     def generate_computing_conf(self):
-        return ComputingBackendSpec(type="standalone", metadata={"computing_id": self.computing_id})
+        return ComputingBackendSpec(type=ENGINES.get(EngineType.STORAGE).lower(), metadata={"computing_id": self.computing_id})
 
     def generate_federation_conf(self):
         parties = []
         for party in self.parties:
             for _party_id in party.party_id:
                 parties.append({"role": party.role, "partyid": _party_id})
-        return FederationBackendSpec(type="standalone", metadata={"federation_id": self.federation_id, "parties": {
-            "local": {"role": self.role, "partyid": self.party_id},
-            "parties": parties
-        }})
+        return FederationBackendSpec(
+            type=ENGINES.get(EngineType.STORAGE).lower(),
+            metadata={
+                "federation_id": self.federation_id,
+                "parties": {
+                    "local": {"role": self.role, "partyid": self.party_id},
+                    "parties": parties
+                }
+            }
+        )
 
     @property
     def task_conf(self):
@@ -469,5 +480,3 @@ class DagSchemaParser(object):
             model_id=self.dag_schema.dag.conf.model_id,
             model_version=self.dag_schema.dag.conf.model_version
         )
-
-

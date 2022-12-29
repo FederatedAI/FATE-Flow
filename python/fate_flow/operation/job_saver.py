@@ -52,11 +52,11 @@ class JobSaver(BaseSaver):
 
     @classmethod
     def update_task_status(cls, task_info):
-        cls._update_task_status(Task, task_info)
+        return cls._update_task_status(Task, task_info)
 
     @classmethod
     def update_task(cls, task_info, report=False):
-        cls._update_task(Task, task_info, report)
+        return cls._update_task(Task, task_info, report)
 
     @classmethod
     def task_key(cls, task_id, role, party_id):
@@ -89,8 +89,13 @@ class ScheduleJobSaver(BaseSaver):
         return cls._query_job(ScheduleJob, reverse, order_by, **kwargs)
 
     @classmethod
-    def query_task(cls, only_latest=True, reverse=None, order_by=None, **kwargs):
-        return cls._query_task(ScheduleTask, only_latest=only_latest, reverse=reverse, order_by=order_by, **kwargs)
+    def query_task(cls, only_latest=True, reverse=None, order_by=None, scheduler_status=False, **kwargs):
+        if not scheduler_status:
+            obj = ScheduleTask
+        else:
+            obj = ScheduleTaskStatus
+        return cls._query_task(obj, only_latest=only_latest, reverse=reverse, order_by=order_by,
+                               scheduler_status=scheduler_status, **kwargs)
 
     @classmethod
     def update_task_status(cls, task_info, scheduler_status=False):
@@ -109,7 +114,7 @@ class ScheduleJobSaver(BaseSaver):
     @DB.connection_context()
     def get_status_tasks_asc(cls, job_id):
         tasks = ScheduleTaskStatus.query(order_by="create_time", reverse=False, job_id=job_id)
-        tasks_group = cls.get_latest_tasks(tasks=tasks, status_scheduler=True)
+        tasks_group = cls.get_latest_tasks(tasks=tasks, scheduler_status=True)
         return tasks_group
 
     @classmethod

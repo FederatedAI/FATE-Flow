@@ -36,3 +36,8 @@ class CoordinationProxyService(object):
     NGINX = "nginx"
     FATEFLOW = "fateflow"
     FIREWORK = "firework"
+
+
+class FederatedCommunicationType(object):
+    PUSH = "PUSH"
+    PULL = "PULL"

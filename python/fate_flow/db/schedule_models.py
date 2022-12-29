@@ -60,7 +60,6 @@ class ScheduleTask(DataBaseModel):
     f_task_version = BigIntegerField()
     f_parties = JSONField()
     f_error_report = TextField(default="")
-    f_auto_retries = IntegerField(default=0)
     f_status = CharField(max_length=50)
 
     f_start_time = BigIntegerField(null=True)
@@ -80,6 +79,8 @@ class ScheduleTaskStatus(DataBaseModel):
     f_task_id = CharField(max_length=100)
     f_task_version = BigIntegerField()
     f_status = CharField(max_length=50)
+    f_auto_retries = IntegerField(default=0)
+    f_federated_status_collect_type = CharField(max_length=10)
 
     class Meta:
         db_table = "t_schedule_task_status"
