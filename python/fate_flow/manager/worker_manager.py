@@ -98,9 +98,8 @@ class WorkerManager:
     def get_env(cls, job_id, provider_info):
         # todo: get env by provider
         env = {
-            "PYTHONPATH":  "/Users/tonly/FATE_1/python:/Users/tonly/FATE_1/fateflow/python",
-            "FATE_JOB_ID": job_id,
-            "PYTHON_ENV": "/Users/tonly/opt/anaconda3/envs/fate3.8/bin/python"
+            "PYTHONPATH":   os.getenv("PYTHONPATH"),
+            "FATE_JOB_ID": job_id
         }
         return env
 

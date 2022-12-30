@@ -32,9 +32,9 @@ zookeeper:
   password: fate
 # engine services
 default_engines:
-  computing: spark
-  federation: pulsar
-  storage: localfs
+  computing: standalone
+  federation: standalone
+  storage: standalone
 fate_on_standalone:
   standalone:
     cores_per_node: 20
