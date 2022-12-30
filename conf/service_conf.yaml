@@ -1,8 +1,4 @@
-use_registry: false
-dependent_distribution: false
-encrypt_password: false
-encrypt_module: fate_arch.common.encrypt_utils#pwdecrypt
-private_key:
+force_use_sqlite: true
 party_id: "10000"
 fateflow:
   # you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported
@@ -36,9 +32,9 @@ zookeeper:
   password: fate
 # engine services
 default_engines:
-  computing: standalone
-  federation: standalone
-  storage: standalone
+  computing: spark
+  federation: pulsar
+  storage: localfs
 fate_on_standalone:
   standalone:
     cores_per_node: 20

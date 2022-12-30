@@ -255,7 +255,7 @@ class TaskParser(TaskParserABC):
             for _party_id in party.party_id:
                 parties.append({"role": party.role, "partyid": _party_id})
         return FederationBackendSpec(
-            type=ENGINES.get(EngineType.STORAGE).lower(),
+            type=ENGINES.get(EngineType.FEDERATION).lower(),
             metadata={
                 "federation_id": self.federation_id,
                 "parties": {

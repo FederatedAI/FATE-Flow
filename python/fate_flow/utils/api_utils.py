@@ -111,15 +111,15 @@ def get_federated_proxy_address():
             port,
             protocol,
         )
-
     if PROXY == CoordinationProxyService.ROLLSITE:
-        proxy_address = ServerRegistry.FATE_ON_EGGROLL[CoordinationProxyService.ROLLSITE]
-
-        return (
-            proxy_address["host"],
-            proxy_address.get("grpc_port", proxy_address["port"]),
-            CoordinationCommunicationProtocol.GRPC,
-        )
+        # proxy_address = ServerRegistry.FATE_ON_EGGROLL[CoordinationProxyService.ROLLSITE]
+        #
+        # return (
+        #     proxy_address["host"],
+        #     proxy_address.get("grpc_port", proxy_address["port"]),
+        #     CoordinationCommunicationProtocol.GRPC,
+        # )
+        return None, None, protocol
 
     if PROXY == CoordinationProxyService.NGINX:
         proxy_address = ServerRegistry.FATE_ON_SPARK[CoordinationProxyService.NGINX]
