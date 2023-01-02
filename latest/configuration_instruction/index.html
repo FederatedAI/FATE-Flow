@@ -929,198 +929,198 @@
 <li>Description: Commonly used configuration, generally needed to determine when deploying</li>
 <li>Note: Configuration items that are not listed below in the configuration file are internal system parameters and are not recommended to be modified</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c1"># If FATEFlow uses the registry, FATEFlow will register the FATEFlow Server address and the published model download address to the registry for the online system FATEServing; it will also get the FATEServing address from the registry.</span><span class="w"></span>
-<span class="nt">use_registry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># Whether to enable higher security serialization mode</span><span class="w"></span>
-<span class="nt">use_deserialize_safe_module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="nt">dependent_distribution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># party id： required for site authentication</span><span class="w"></span>
-<span class="nt">party_id</span><span class="p">:</span><span class="w"></span>
-<span class="c1"># Hook module configuration</span><span class="w"></span>
-<span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># Client authentication hooks</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># site-side authentication hooks</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># Permission authentication hooks</span><span class="w"></span>
-<span class="w">  </span><span class="nt">permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.permission</span><span class="w"></span>
-<span class="c1"># In addition to using flow&#39;s hooks for authentication and authentication, we also support authentication and authentication interfaces registered with third-party services</span><span class="w"></span>
-<span class="c1"># The name of the service registered by the third-party authentication and authentication service</span><span class="w"></span>
-<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"></span>
-<span class="c1"># Authentication</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># Client authentication configuration</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># Client authentication switch</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># Site authentication configuration</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># Authentication switch</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># Authentication</span><span class="w"></span>
-<span class="nt">permission</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># Authentication switch</span><span class="w"></span>
-<span class="w">  </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># Component authentication switch</span><span class="w"></span>
-<span class="w">  </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># Data set authentication switch</span><span class="w"></span>
-<span class="w">  </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="nt">fateflow</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported</span><span class="w"></span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9380</span><span class="w"></span>
-<span class="w">  </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9360</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># The nginx address needs to be configured for high availability</span><span class="w"></span>
-<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_port</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># use random instance_id instead of {host}:{http_port}</span><span class="w"></span>
-<span class="w">  </span><span class="nt">random_instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># support rollsite/nginx/fateflow as a coordination proxy</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># rollsite support fate on eggroll, use grpc protocol</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># nginx support fate on eggroll and fate on spark, use http or grpc protocol, default is http</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># fateflow support fate on eggroll and fate on spark, use http protocol, but not support exchange network mode</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1"># If FATEFlow uses the registry, FATEFlow will register the FATEFlow Server address and the published model download address to the registry for the online system FATEServing; it will also get the FATEServing address from the registry.</span>
+<span class="nt">use_registry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># Whether to enable higher security serialization mode</span>
+<span class="nt">use_deserialize_safe_module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="nt">dependent_distribution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># party id： required for site authentication</span>
+<span class="nt">party_id</span><span class="p">:</span>
+<span class="c1"># Hook module configuration</span>
+<span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Client authentication hooks</span>
+<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span>
+<span class="w">  </span><span class="c1"># site-side authentication hooks</span>
+<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span>
+<span class="w">  </span><span class="c1"># Permission authentication hooks</span>
+<span class="w">  </span><span class="nt">permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.permission</span>
+<span class="c1"># In addition to using flow&#39;s hooks for authentication and authentication, we also support authentication and authentication interfaces registered with third-party services</span>
+<span class="c1"># The name of the service registered by the third-party authentication and authentication service</span>
+<span class="nt">hook_server_name</span><span class="p">:</span>
+<span class="c1"># Authentication</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Client authentication configuration</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># Client authentication switch</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Site authentication configuration</span>
+<span class="w">  </span><span class="nt">site</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># Authentication switch</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># Authentication</span>
+<span class="nt">permission</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Authentication switch</span>
+<span class="w">  </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># Component authentication switch</span>
+<span class="w">  </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># Data set authentication switch</span>
+<span class="w">  </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="nt">fateflow</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported</span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">  </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9380</span>
+<span class="w">  </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9360</span>
+<span class="w">  </span><span class="c1"># The nginx address needs to be configured for high availability</span>
+<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">http_port</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grpc_port</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># use random instance_id instead of {host}:{http_port}</span>
+<span class="w">  </span><span class="nt">random_instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># support rollsite/nginx/fateflow as a coordination proxy</span>
+<span class="w">  </span><span class="c1"># rollsite support fate on eggroll, use grpc protocol</span>
+<span class="w">  </span><span class="c1"># nginx support fate on eggroll and fate on spark, use http or grpc protocol, default is http</span>
+<span class="w">  </span><span class="c1"># fateflow support fate on eggroll and fate on spark, use http protocol, but not support exchange network mode</span>
 
-<span class="w">  </span><span class="c1"># format(proxy: rollsite) means rollsite use the rollsite configuration of fate_one_eggroll and nginx use the nginx configuration of fate_one_spark</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># you also can customize the config like this(set fateflow of the opposite party as proxy):</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># proxy:</span><span class="w"></span>
-<span class="w">  </span><span class="c1">#   name: fateflow</span><span class="w"></span>
-<span class="w">  </span><span class="c1">#   host: xx</span><span class="w"></span>
-<span class="w">  </span><span class="c1">#   http_port: xx</span><span class="w"></span>
-<span class="w">  </span><span class="c1">#   grpc_port: xx</span><span class="w"></span>
-<span class="w">  </span><span class="nt">proxy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rollsite</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># support default/http/grpc</span><span class="w"></span>
-<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"></span>
-<span class="nt">database</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow</span><span class="w"></span>
-<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">passwd</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3306</span><span class="w"></span>
-<span class="w">  </span><span class="nt">max_connections</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w"></span>
-<span class="w">  </span><span class="nt">stale_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span><span class="w"></span>
-<span class="c1"># The registry address and its authentication parameters</span><span class="w"></span>
-<span class="nt">zookeeper</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span><span class="w"></span>
-<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="c1"># engine services</span><span class="w"></span>
-<span class="nt">default_engines</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">computing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span><span class="w"></span>
-<span class="w">  </span><span class="nt">federation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span><span class="w"></span>
-<span class="w">  </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span><span class="w"></span>
-<span class="nt">fate_on_standalone</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">standalone</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="nt">fate_on_eggroll</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">clustermanager</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># CPU cores of the machine where eggroll nodemanager service is running</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># the number of eggroll nodemanager machine</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">rollsite</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9370</span><span class="w"></span>
-<span class="nt">fate_on_spark</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">spark</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># default use SPARK_HOME environment variable</span><span class="w"></span>
-<span class="w">    </span><span class="nt">home</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
-<span class="w">  </span><span class="nt">linkis_spark</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9001</span><span class="w"></span>
-<span class="w">    </span><span class="nt">token_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MLSS</span><span class="w"></span>
-<span class="w">    </span><span class="nt">python_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/projects/fate/python</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hive</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span><span class="w"></span>
-<span class="w">    </span><span class="nt">auth_mechanism</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">linkis_hive</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9001</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hdfs</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hdfs://fate-cluster</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># default /</span><span class="w"></span>
-<span class="w">    </span><span class="nt">path_prefix</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">rabbitmq</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.0.4</span><span class="w"></span>
-<span class="w">    </span><span class="nt">mng_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12345</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5672</span><span class="w"></span>
-<span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># default conf/rabbitmq_route_table.yaml</span><span class="w"></span>
-<span class="w">    </span><span class="nt">route_table</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">pulsar</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.0.5</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6650</span><span class="w"></span>
-<span class="w">    </span><span class="nt">mng_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># all parties should use a same tenant</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tenant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fl-tenant</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># message ttl in minutes</span><span class="w"></span>
-<span class="w">    </span><span class="nt">topic_ttl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># default conf/pulsar_route_table.yaml</span><span class="w"></span>
-<span class="w">    </span><span class="nt">route_table</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9300</span><span class="w"></span>
-<span class="w">    </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9310</span><span class="w"></span>
-<span class="c1"># external services</span><span class="w"></span>
-<span class="nt">fateboard</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span><span class="w"></span>
+<span class="w">  </span><span class="c1"># format(proxy: rollsite) means rollsite use the rollsite configuration of fate_one_eggroll and nginx use the nginx configuration of fate_one_spark</span>
+<span class="w">  </span><span class="c1"># you also can customize the config like this(set fateflow of the opposite party as proxy):</span>
+<span class="w">  </span><span class="c1"># proxy:</span>
+<span class="w">  </span><span class="c1">#   name: fateflow</span>
+<span class="w">  </span><span class="c1">#   host: xx</span>
+<span class="w">  </span><span class="c1">#   http_port: xx</span>
+<span class="w">  </span><span class="c1">#   grpc_port: xx</span>
+<span class="w">  </span><span class="nt">proxy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rollsite</span>
+<span class="w">  </span><span class="c1"># support default/http/grpc</span>
+<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="nt">database</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow</span>
+<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">  </span><span class="nt">passwd</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3306</span>
+<span class="w">  </span><span class="nt">max_connections</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="w">  </span><span class="nt">stale_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="c1"># The registry address and its authentication parameters</span>
+<span class="nt">zookeeper</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span>
+<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="c1"># engine services</span>
+<span class="nt">default_engines</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">computing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span>
+<span class="w">  </span><span class="nt">federation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span>
+<span class="w">  </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span>
+<span class="nt">fate_on_standalone</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">standalone</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="nt">fate_on_eggroll</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">clustermanager</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># CPU cores of the machine where eggroll nodemanager service is running</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+<span class="w">    </span><span class="c1"># the number of eggroll nodemanager machine</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">rollsite</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9370</span>
+<span class="nt">fate_on_spark</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">spark</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># default use SPARK_HOME environment variable</span>
+<span class="w">    </span><span class="nt">home</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">  </span><span class="nt">linkis_spark</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9001</span>
+<span class="w">    </span><span class="nt">token_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MLSS</span>
+<span class="w">    </span><span class="nt">python_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/projects/fate/python</span>
+<span class="w">  </span><span class="nt">hive</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span>
+<span class="w">    </span><span class="nt">auth_mechanism</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">username</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">linkis_hive</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9001</span>
+<span class="w">  </span><span class="nt">hdfs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hdfs://fate-cluster</span>
+<span class="w">    </span><span class="c1"># default /</span>
+<span class="w">    </span><span class="nt">path_prefix</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">rabbitmq</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.0.4</span>
+<span class="w">    </span><span class="nt">mng_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12345</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5672</span>
+<span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">    </span><span class="c1"># default conf/rabbitmq_route_table.yaml</span>
+<span class="w">    </span><span class="nt">route_table</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pulsar</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.0.5</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6650</span>
+<span class="w">    </span><span class="nt">mng_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span>
+<span class="w">    </span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span>
+<span class="w">    </span><span class="c1"># all parties should use a same tenant</span>
+<span class="w">    </span><span class="nt">tenant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fl-tenant</span>
+<span class="w">    </span><span class="c1"># message ttl in minutes</span>
+<span class="w">    </span><span class="nt">topic_ttl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">    </span><span class="c1"># default conf/pulsar_route_table.yaml</span>
+<span class="w">    </span><span class="nt">route_table</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9300</span>
+<span class="w">    </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9310</span>
+<span class="c1"># external services</span>
+<span class="nt">fateboard</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span>
 
-<span class="c1"># on API `/model/load` and `/model/load/do`</span><span class="w"></span>
-<span class="c1"># automatic upload models to the model store if it exists locally but does not exist in the model storage</span><span class="w"></span>
-<span class="c1"># or download models from the model store if it does not exist locally but exists in the model storage</span><span class="w"></span>
-<span class="c1"># this config will not affect API `/model/store` or `/model/restore`</span><span class="w"></span>
-<span class="nt">enable_model_store</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># default address for export model</span><span class="w"></span>
-<span class="nt">model_store_address</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># use mysql as the model store engine</span><span class="w"></span>
-<span class="c1">#  storage: mysql</span><span class="w"></span>
-<span class="c1">#  database: fate_model</span><span class="w"></span>
-<span class="c1">#  user: fate</span><span class="w"></span>
-<span class="c1">#  password: fate</span><span class="w"></span>
-<span class="c1">#  host: 127.0.0.1</span><span class="w"></span>
-<span class="c1">#  port: 3306</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># other optional configs send to the engine</span><span class="w"></span>
-<span class="c1">#  max_connections: 10</span><span class="w"></span>
-<span class="c1">#  stale_timeout: 10</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># use redis as the model store engine</span><span class="w"></span>
-<span class="c1">#  storage: redis</span><span class="w"></span>
-<span class="c1">#  host: 127.0.0.1</span><span class="w"></span>
-<span class="c1">#  port: 6379</span><span class="w"></span>
-<span class="c1">#  db: 0</span><span class="w"></span>
-<span class="c1">#  password:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># the expiry time of keys, in seconds. defaults None (no expiry time)</span><span class="w"></span>
-<span class="c1">#  ex:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># use tencent cos as model store engine</span><span class="w"></span>
-<span class="w">  </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tencent_cos</span><span class="w"></span>
-<span class="w">  </span><span class="nt">Region</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">SecretId</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">SecretKey</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">Bucket</span><span class="p">:</span><span class="w"></span>
+<span class="c1"># on API `/model/load` and `/model/load/do`</span>
+<span class="c1"># automatic upload models to the model store if it exists locally but does not exist in the model storage</span>
+<span class="c1"># or download models from the model store if it does not exist locally but exists in the model storage</span>
+<span class="c1"># this config will not affect API `/model/store` or `/model/restore`</span>
+<span class="nt">enable_model_store</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># default address for export model</span>
+<span class="nt">model_store_address</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># use mysql as the model store engine</span>
+<span class="c1">#  storage: mysql</span>
+<span class="c1">#  database: fate_model</span>
+<span class="c1">#  user: fate</span>
+<span class="c1">#  password: fate</span>
+<span class="c1">#  host: 127.0.0.1</span>
+<span class="c1">#  port: 3306</span>
+<span class="w">  </span><span class="c1"># other optional configs send to the engine</span>
+<span class="c1">#  max_connections: 10</span>
+<span class="c1">#  stale_timeout: 10</span>
+<span class="w">  </span><span class="c1"># use redis as the model store engine</span>
+<span class="c1">#  storage: redis</span>
+<span class="c1">#  host: 127.0.0.1</span>
+<span class="c1">#  port: 6379</span>
+<span class="c1">#  db: 0</span>
+<span class="c1">#  password:</span>
+<span class="w">  </span><span class="c1"># the expiry time of keys, in seconds. defaults None (no expiry time)</span>
+<span class="c1">#  ex:</span>
+<span class="w">  </span><span class="c1"># use tencent cos as model store engine</span>
+<span class="w">  </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tencent_cos</span>
+<span class="w">  </span><span class="nt">Region</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">SecretId</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">SecretKey</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">Bucket</span><span class="p">:</span>
 
-<span class="c1"># The address of the FATE Serving Server needs to be configured if the registry is not used</span><span class="w"></span>
-<span class="nt">servings</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:8000</span><span class="w"></span>
-<span class="nt">fatemanager</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8001</span><span class="w"></span>
-<span class="w">  </span><span class="nt">federatedId</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w"></span>
+<span class="c1"># The address of the FATE Serving Server needs to be configured if the registry is not used</span>
+<span class="nt">servings</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:8000</span>
+<span class="nt">fatemanager</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8001</span>
+<span class="w">  </span><span class="nt">federatedId</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 </code></pre></div>
 <h2 id="3-fate-flow-configuration">3. FATE Flow Configuration<a class="headerlink" href="#3-fate-flow-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="31-fate-flow-server-configuration">3.1 FATE Flow Server Configuration<a class="headerlink" href="#31-fate-flow-server-configuration" title="Permanent link">&para;</a></h3>
@@ -1149,43 +1149,43 @@
 <li>Note: Configuration items that are not listed below in the configuration file are internal system parameters and are not recommended to be modified</li>
 <li>Take effect: use flow server reload or restart fate flow server</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c1"># component provider, relative path to get_fate_python_directory</span><span class="w"></span>
-<span class="nt">default_component_provider_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">federatedml</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1"># component provider, relative path to get_fate_python_directory</span>
+<span class="nt">default_component_provider_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">federatedml</span>
 
-<span class="c1"># resource</span><span class="w"></span>
-<span class="c1"># total_cores_overweight_percent</span><span class="w"></span>
-<span class="nt">total_cores_overweight_percent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1"># 1 means no overweight</span><span class="w"></span>
-<span class="nt">total_memory_overweight_percent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1"># 1 means no overweight</span><span class="w"></span>
-<span class="c1"># Default task parallelism per job, you can configure a custom value using job_parameters:task_parallelism when submitting the job configuration</span><span class="w"></span>
-<span class="nt">task_parallelism</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="c1"># The default number of CPU cores per task per job, which can be configured using job_parameters:task_cores when submitting the job configuration</span><span class="w"></span>
-<span class="nt">task_cores</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span><span class="w"></span>
-<span class="c1"># This configuration does not take effect as memory resources are not supported for scheduling at the moment</span><span class="w"></span>
-<span class="nt">task_memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w"> </span><span class="c1"># mb</span><span class="w"></span>
-<span class="c1"># The ratio of the maximum number of CPU cores allowed for a job to the total number of resources, e.g., if the total resources are 10 and the value is 0.5, then a job is allowed to request up to 5 CPUs, i.e., task_cores * task_parallelism &lt;= 10 * 0.5</span><span class="w"></span>
-<span class="nt">max_cores_percent_per_job</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1"># 1 means total</span><span class="w"></span>
+<span class="c1"># resource</span>
+<span class="c1"># total_cores_overweight_percent</span>
+<span class="nt">total_cores_overweight_percent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1"># 1 means no overweight</span>
+<span class="nt">total_memory_overweight_percent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1"># 1 means no overweight</span>
+<span class="c1"># Default task parallelism per job, you can configure a custom value using job_parameters:task_parallelism when submitting the job configuration</span>
+<span class="nt">task_parallelism</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="c1"># The default number of CPU cores per task per job, which can be configured using job_parameters:task_cores when submitting the job configuration</span>
+<span class="nt">task_cores</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="c1"># This configuration does not take effect as memory resources are not supported for scheduling at the moment</span>
+<span class="nt">task_memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w"> </span><span class="c1"># mb</span>
+<span class="c1"># The ratio of the maximum number of CPU cores allowed for a job to the total number of resources, e.g., if the total resources are 10 and the value is 0.5, then a job is allowed to request up to 5 CPUs, i.e., task_cores * task_parallelism &lt;= 10 * 0.5</span>
+<span class="nt">max_cores_percent_per_job</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1"># 1 means total</span>
 
-<span class="c1"># scheduling</span><span class="w"></span>
-<span class="c1"># Default job execution timeout, you can configure a custom value using job_parameters:timeout when submitting the job configuration</span><span class="w"></span>
-<span class="nt">job_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">259200</span><span class="w"> </span><span class="c1"># s</span><span class="w"></span>
-<span class="c1"># Timeout for communication when sending cross-participant scheduling commands or status</span><span class="w"></span>
-<span class="nt">remote_request_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30000</span><span class="w"> </span><span class="c1"># ms</span><span class="w"></span>
-<span class="c1"># Number of retries to send cross-participant scheduling commands or status</span><span class="w"></span>
-<span class="nt">federated_command_trys</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w"></span>
-<span class="nt">end_status_job_scheduling_time_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300000</span><span class="w"> </span><span class="c1"># ms</span><span class="w"></span>
-<span class="nt">end_status_job_scheduling_updates</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="c1"># Default number of auto retries, you can configure a custom value using job_parameters:auto_retries when submitting the job configuration</span><span class="w"></span>
-<span class="nt">auto_retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w"></span>
-<span class="c1"># Default retry interval</span><span class="w"></span>
-<span class="nt">auto_retry_delay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1">#seconds</span><span class="w"></span>
-<span class="c1"># Default multiparty status collection method, supports PULL and PUSH; you can also specify the current job collection mode in the job configuration</span><span class="w"></span>
-<span class="nt">federated_status_collect_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUSH</span><span class="w"></span>
+<span class="c1"># scheduling</span>
+<span class="c1"># Default job execution timeout, you can configure a custom value using job_parameters:timeout when submitting the job configuration</span>
+<span class="nt">job_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">259200</span><span class="w"> </span><span class="c1"># s</span>
+<span class="c1"># Timeout for communication when sending cross-participant scheduling commands or status</span>
+<span class="nt">remote_request_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30000</span><span class="w"> </span><span class="c1"># ms</span>
+<span class="c1"># Number of retries to send cross-participant scheduling commands or status</span>
+<span class="nt">federated_command_trys</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="nt">end_status_job_scheduling_time_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300000</span><span class="w"> </span><span class="c1"># ms</span>
+<span class="nt">end_status_job_scheduling_updates</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="c1"># Default number of auto retries, you can configure a custom value using job_parameters:auto_retries when submitting the job configuration</span>
+<span class="nt">auto_retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="c1"># Default retry interval</span>
+<span class="nt">auto_retry_delay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"> </span><span class="c1">#seconds</span>
+<span class="c1"># Default multiparty status collection method, supports PULL and PUSH; you can also specify the current job collection mode in the job configuration</span>
+<span class="nt">federated_status_collect_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUSH</span>
 
-<span class="c1"># upload</span><span class="w"></span>
-<span class="nt">upload_max_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">104857600</span><span class="w"> </span><span class="c1"># bytes</span><span class="w"></span>
+<span class="c1"># upload</span>
+<span class="nt">upload_max_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">104857600</span><span class="w"> </span><span class="c1"># bytes</span>
 
-<span class="c1">#component output</span><span class="w"></span>
-<span class="nt">output_data_summary_count_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w"></span>
+<span class="c1">#component output</span>
+<span class="nt">output_data_summary_count_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
 </code></pre></div>
 <h2 id="4-fate-board-configuration">4. FATE Board Configuration<a class="headerlink" href="#4-fate-board-configuration" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1193,30 +1193,30 @@
 <li>Description: Commonly used configuration, generally needed to determine when deploying</li>
 <li>Note: Configuration items that are not listed below in the configuration file are internal system parameters and are not recommended to be modified</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c"># Service listening port</span><span class="w"></span>
-<span class="na">server.port</span><span class="o">=</span><span class="s">8080</span><span class="w"></span>
-<span class="c"># fateflow address, referring to the http port address of fateflow</span><span class="w"></span>
-<span class="na">fateflow.url</span><span class="o">=</span><span class="s">=http://127.0.0.1:9380</span><span class="w"></span>
-<span class="c"># db address, same as the above global configuration service_conf.yaml inside the database configuration</span><span class="w"></span>
-<span class="na">fateboard.datasource.jdbc-url</span><span class="o">=</span><span class="s">jdbc:mysql://localhost:3306/fate_flow?characterEncoding=utf8&amp;characterSetResults=utf8&amp;autoReconnect= true&amp;failOverReadOnly=false&amp;serverTimezone=GMT%2B8</span><span class="w"></span>
-<span class="c"># db configuration, same as the above global configuration service_conf.yaml inside the database configuration</span><span class="w"></span>
-<span class="na">fateboard.datasource.username</span><span class="o">=</span><span class="w"></span>
-<span class="c"># db configuration, same as the above global configuration service_conf.yaml inside the database configuration</span><span class="w"></span>
-<span class="na">fateboard.datasource.password</span><span class="o">=</span><span class="w"></span>
-<span class="na">server.tomcat.max-threads</span><span class="o">=</span><span class="s">1000</span><span class="w"></span>
-<span class="na">server.tomcat.max-connections</span><span class="o">=</span><span class="s">20000</span><span class="w"></span>
-<span class="na">spring.servlet.multipart.max-file-size</span><span class="o">=</span><span class="s">10MB</span><span class="w"></span>
-<span class="na">spring.servlet.multipart.max-request-size</span><span class="o">=</span><span class="s">100MB</span><span class="w"></span>
-<span class="c"># Administrator account configuration</span><span class="w"></span>
-<span class="na">server.board.login.username</span><span class="o">=</span><span class="s">admin</span><span class="w"></span>
-<span class="na">server.board.login.password</span><span class="o">=</span><span class="s">admin</span><span class="w"></span>
-<span class="na">server.ssl.key-store</span><span class="o">=</span><span class="s">classpath:</span><span class="w"></span>
-<span class="na">server.ssl.key-store-password</span><span class="o">=</span><span class="w"></span>
-<span class="na">server.ssl.key-password</span><span class="o">=</span><span class="w"></span>
-<span class="na">server.ssl.key-alias</span><span class="o">=</span><span class="w"></span>
-<span class="c"># When fateflo server enables api access authentication, you need to configure</span><span class="w"></span>
-<span class="na">HTTP_APP_KEY</span><span class="o">=</span><span class="w"></span>
-<span class="na">HTTP_SECRET_KEY</span><span class="o">=</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1"># Service listening port</span>
+<span class="na">server.port</span><span class="o">=</span><span class="s">8080</span>
+<span class="c1"># fateflow address, referring to the http port address of fateflow</span>
+<span class="na">fateflow.url</span><span class="o">==</span><span class="s">http://127.0.0.1:9380</span>
+<span class="c1"># db address, same as the above global configuration service_conf.yaml inside the database configuration</span>
+<span class="na">fateboard.datasource.jdbc-url</span><span class="o">=</span><span class="s">jdbc:mysql://localhost:3306/fate_flow?characterEncoding=utf8&amp;characterSetResults=utf8&amp;autoReconnect= true&amp;failOverReadOnly=false&amp;serverTimezone=GMT%2B8</span>
+<span class="c1"># db configuration, same as the above global configuration service_conf.yaml inside the database configuration</span>
+<span class="na">fateboard.datasource.username</span><span class="o">=</span>
+<span class="c1"># db configuration, same as the above global configuration service_conf.yaml inside the database configuration</span>
+<span class="na">fateboard.datasource.password</span><span class="o">=</span>
+<span class="na">server.tomcat.max-threads</span><span class="o">=</span><span class="s">1000</span>
+<span class="na">server.tomcat.max-connections</span><span class="o">=</span><span class="s">20000</span>
+<span class="na">spring.servlet.multipart.max-file-size</span><span class="o">=</span><span class="s">10MB</span>
+<span class="na">spring.servlet.multipart.max-request-size</span><span class="o">=</span><span class="s">100MB</span>
+<span class="c1"># Administrator account configuration</span>
+<span class="na">server.board.login.username</span><span class="o">=</span><span class="s">admin</span>
+<span class="na">server.board.login.password</span><span class="o">=</span><span class="s">admin</span>
+<span class="na">server.ssl.key-store</span><span class="o">=</span><span class="s">classpath:</span>
+<span class="na">server.ssl.key-store-password</span><span class="o">=</span>
+<span class="na">server.ssl.key-password</span><span class="o">=</span>
+<span class="na">server.ssl.key-alias</span><span class="o">=</span>
+<span class="c1"># When fateflo server enables api access authentication, you need to configure</span>
+<span class="na">HTTP_APP_KEY</span><span class="o">=</span>
+<span class="na">HTTP_SECRET_KEY</span><span class="o">=</span>
 </code></pre></div>
 <h2 id="5-eggroll">5. EggRoll<a class="headerlink" href="#5-eggroll" title="Permanent link">&para;</a></h2>
 <h3 id="51-system-configuration">5.1 System configuration<a class="headerlink" href="#51-system-configuration" title="Permanent link">&para;</a></h3>
@@ -1225,52 +1225,52 @@
 <li>Description: Commonly used configuration, generally needed to determine when deploying</li>
 <li>Note: Configuration items that are not listed below in the configuration file are internal system parameters and are not recommended to be modified</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="err">[eggroll]</span><span class="w"></span>
-<span class="c"># core</span><span class="w"></span>
-<span class="c"># MySQL connection configuration, generally required for production applications</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.jdbc.driver.class.name</span><span class="o">=</span><span class="s">com.mysql.cj.jdbc.</span><span class="w"></span>
-<span class="c"># MySQL connection configuration, generally required for production applications</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.jdbc.url</span><span class="o">=</span><span class="s">jdbc:mysql://localhost:3306/eggroll_meta?useSSL=false&amp;serverTimezone=UTC&amp; characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</span><span class="w"></span>
-<span class="c"># Connect to MySQL account, this configuration is required for general production applications</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.jdbc.username</span><span class="o">=</span><span class="w"></span>
-<span class="c"># Connect to MySQL password, generally required for production applications</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.jdbc.password</span><span class="o">=</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="na">[eggroll]</span>
+<span class="c1"># core</span>
+<span class="c1"># MySQL connection configuration, generally required for production applications</span>
+<span class="na">eggroll.resourcemanager.clustermanager.jdbc.driver.class.name</span><span class="o">=</span><span class="s">com.mysql.cj.jdbc.</span>
+<span class="c1"># MySQL connection configuration, generally required for production applications</span>
+<span class="na">eggroll.resourcemanager.clustermanager.jdbc.url</span><span class="o">=</span><span class="s">jdbc:mysql://localhost:3306/eggroll_meta?useSSL=false&amp;serverTimezone=UTC&amp; characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</span>
+<span class="c1"># Connect to MySQL account, this configuration is required for general production applications</span>
+<span class="na">eggroll.resourcemanager.clustermanager.jdbc.username</span><span class="o">=</span>
+<span class="c1"># Connect to MySQL password, generally required for production applications</span>
+<span class="na">eggroll.resourcemanager.clustermanager.jdbc.password</span><span class="o">=</span>
 
-<span class="c"># Data storage directory</span><span class="w"></span>
-<span class="na">eggroll.data.dir</span><span class="o">=</span><span class="s">data/</span><span class="w"></span>
-<span class="c"># Log storage directory</span><span class="w"></span>
-<span class="na">eggroll.logs.dir</span><span class="o">=</span><span class="s">logs/</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.host</span><span class="o">=</span><span class="s">127.0.0.1</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.port</span><span class="o">=</span><span class="s">4670</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.nodemanager.port</span><span class="o">=</span><span class="s">4670</span><span class="w"></span>
+<span class="c1"># Data storage directory</span>
+<span class="na">eggroll.data.dir</span><span class="o">=</span><span class="s">data/</span>
+<span class="c1"># Log storage directory</span>
+<span class="na">eggroll.logs.dir</span><span class="o">=</span><span class="s">logs/</span>
+<span class="na">eggroll.resourcemanager.clustermanager.host</span><span class="o">=</span><span class="s">127.0.0.1</span>
+<span class="na">eggroll.resourcemanager.clustermanager.port</span><span class="o">=</span><span class="s">4670</span>
+<span class="na">eggroll.resourcemanager.nodemanager.port</span><span class="o">=</span><span class="s">4670</span>
 
-<span class="c"># python path</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.bootstrap.eggg_pair.venv</span><span class="o">=</span><span class="w"></span>
-<span class="c"># pythonpath, usually you need to specify the python directory of eggroll and the python directory of fate</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.bootstrap.eggg_pair.pythonpath</span><span class="o">=</span><span class="s">python</span><span class="w"></span>
+<span class="c1"># python path</span>
+<span class="na">eggroll.resourcemanager.bootstrap.eggg_pair.venv</span><span class="o">=</span>
+<span class="c1"># pythonpath, usually you need to specify the python directory of eggroll and the python directory of fate</span>
+<span class="na">eggroll.resourcemanager.bootstrap.eggg_pair.pythonpath</span><span class="o">=</span><span class="s">python</span>
 
-<span class="c"># java path</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.bootstrap.eggg_frame.javahome</span><span class="o">=</span><span class="w"></span>
-<span class="c"># java service startup parameters, no special needs, no need to configure</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.bootstrap.eggg_frame.jvm.options</span><span class="o">=</span><span class="w"></span>
-<span class="c"># grpc connection hold time for multi-party communication</span><span class="w"></span>
-<span class="na">eggroll.core.grpc.channel.keepalive.timeout.sec</span><span class="o">=</span><span class="s">20</span><span class="w"></span>
+<span class="c1"># java path</span>
+<span class="na">eggroll.resourcemanager.bootstrap.eggg_frame.javahome</span><span class="o">=</span>
+<span class="c1"># java service startup parameters, no special needs, no need to configure</span>
+<span class="na">eggroll.resourcemanager.bootstrap.eggg_frame.jvm.options</span><span class="o">=</span>
+<span class="c1"># grpc connection hold time for multi-party communication</span>
+<span class="na">eggroll.core.grpc.channel.keepalive.timeout.sec</span><span class="o">=</span><span class="s">20</span>
 
-<span class="c"># session</span><span class="w"></span>
-<span class="c"># Number of computing processes started per nodemanager in an eggroll session; replaced by the default parameters of the fate flow if using fate for committing tasks</span><span class="w"></span>
-<span class="na">eggroll.session.processors.per.node</span><span class="o">=</span><span class="s">4</span><span class="w"></span>
+<span class="c1"># session</span>
+<span class="c1"># Number of computing processes started per nodemanager in an eggroll session; replaced by the default parameters of the fate flow if using fate for committing tasks</span>
+<span class="na">eggroll.session.processors.per.node</span><span class="o">=</span><span class="s">4</span>
 
-<span class="c"># rollsite</span><span class="w"></span>
-<span class="na">eggroll.rollsite.coordinator</span><span class="o">=</span><span class="s">webank</span><span class="w"></span>
-<span class="na">eggroll.rollsite.host</span><span class="o">=</span><span class="s">127.0.0.1</span><span class="w"></span>
-<span class="na">eggroll.rollsite.port</span><span class="o">=</span><span class="s">9370</span><span class="w"></span>
-<span class="na">eggroll.rollsite.party.id</span><span class="o">=</span><span class="s">10001</span><span class="w"></span>
-<span class="na">eggroll.rollsite.route.table.path</span><span class="o">=</span><span class="s">conf/route_table.json</span><span class="w"></span>
+<span class="c1"># rollsite</span>
+<span class="na">eggroll.rollsite.coordinator</span><span class="o">=</span><span class="s">webank</span>
+<span class="na">eggroll.rollsite.host</span><span class="o">=</span><span class="s">127.0.0.1</span>
+<span class="na">eggroll.rollsite.port</span><span class="o">=</span><span class="s">9370</span>
+<span class="na">eggroll.rollsite.party.id</span><span class="o">=</span><span class="s">10001</span>
+<span class="na">eggroll.rollsite.route.table.path</span><span class="o">=</span><span class="s">conf/route_table.json</span>
 
-<span class="na">eggroll.rollsite.push.max.retry</span><span class="o">=</span><span class="s">3</span><span class="w"></span>
-<span class="na">eggroll.rollsite.push.long.retry</span><span class="o">=</span><span class="s">2</span><span class="w"></span>
-<span class="na">eggroll.rollsite.push.batches.per.stream</span><span class="o">=</span><span class="s">10</span><span class="w"></span>
-<span class="na">eggroll.rollsite.adapter.sendbuf.size</span><span class="o">=</span><span class="s">100000</span><span class="w"></span>
+<span class="na">eggroll.rollsite.push.max.retry</span><span class="o">=</span><span class="s">3</span>
+<span class="na">eggroll.rollsite.push.long.retry</span><span class="o">=</span><span class="s">2</span>
+<span class="na">eggroll.rollsite.push.batches.per.stream</span><span class="o">=</span><span class="s">10</span>
+<span class="na">eggroll.rollsite.adapter.sendbuf.size</span><span class="o">=</span><span class="s">100000</span>
 </code></pre></div>
 <h3 id="52-routing-table-configuration">5.2 Routing table configuration<a class="headerlink" href="#52-routing-table-configuration" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1281,39 +1281,39 @@
 <li>The second level represents the service, if you can not find the corresponding target service, then use <strong>default</strong></li>
 <li>The second level, usually set <strong>default</strong> as the address of our <strong>rollsite</strong> service, and <strong>fateflow</strong> as the grpc address of our <strong>fate flow server</strong> service</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;route_table&quot;</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;10001&quot;</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9370</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">      </span><span class="p">],</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;fateflow&quot;</span><span class="p">:[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9360</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">      </span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;10002&quot;</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9470</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">      </span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="p">},</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;permission&quot;</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;default_allow&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;route_table&quot;</span><span class="p">:</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;10001&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9370</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;fateflow&quot;</span><span class="p">:[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9360</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;10002&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9470</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;permission&quot;</span><span class="p">:</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;default_allow&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 
 

@@ -930,7 +930,7 @@
 <li>规则：目录以<span class="arithmatex"><span class="MathJax_Preview">jobid开头，清理</span><script type="math/tex">jobid开头，清理</script></span>jobid为**N天**前的数据</li>
 <li>参考命令：</li>
 </ul>
-<div class="highlight"><pre><span></span><code>rm -rf <span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/fateflow/logs/20200417*
+<div class="highlight"><pre><span></span><code>rm<span class="w"> </span>-rf<span class="w"> </span><span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/fateflow/logs/20200417*
 </code></pre></div>
 <h3 id="22-eggroll-sessionn14">2.2 EggRoll Session日志(N=14天)<a class="headerlink" href="#22-eggroll-sessionn14" title="Permanent link">&para;</a></h3>
 <ul>
@@ -939,7 +939,7 @@
 <li>规则：目录以<span class="arithmatex"><span class="MathJax_Preview">jobid开头，清理</span><script type="math/tex">jobid开头，清理</script></span>jobid为**N天**前的数据</li>
 <li>参考命令：</li>
 </ul>
-<div class="highlight"><pre><span></span><code>rm -rf <span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/eggroll/logs/20200417*
+<div class="highlight"><pre><span></span><code>rm<span class="w"> </span>-rf<span class="w"> </span><span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/eggroll/logs/20200417*
 </code></pre></div>
 <h3 id="23-fateflow-n14">2.3 fateflow 系统日志(N=14天)<a class="headerlink" href="#23-fateflow-n14" title="Permanent link">&para;</a></h3>
 <ul>
@@ -949,7 +949,7 @@
 <li>归档：日志文件以yyyy-dd-mm结尾，归档保留180天的日志</li>
 <li>参考命令：</li>
 </ul>
-<div class="highlight"><pre><span></span><code>rm -rf <span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/logs/fate_flow/fate_flow_stat.log.2020-12-15
+<div class="highlight"><pre><span></span><code>rm<span class="w"> </span>-rf<span class="w"> </span><span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/logs/fate_flow/fate_flow_stat.log.2020-12-15
 </code></pre></div>
 <h3 id="24-eggroll-n14">2.4 EggRoll 系统日志(N=14天)<a class="headerlink" href="#24-eggroll-n14" title="Permanent link">&para;</a></h3>
 <ul>
@@ -959,7 +959,7 @@
 <li>归档：目录为yyyy/mm/dd，归档保留180天的日志</li>
 <li>参考命令：</li>
 </ul>
-<div class="highlight"><pre><span></span><code>rm -rf <span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/eggroll/logs/2020/12/15/
+<div class="highlight"><pre><span></span><code>rm<span class="w"> </span>-rf<span class="w"> </span><span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/eggroll/logs/2020/12/15/
 </code></pre></div>
 <h2 id="3">3. 数据清理<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <h3 id="31-n2">3.1 计算临时数据(N=2天)<a class="headerlink" href="#31-n2" title="Permanent link">&para;</a></h3>
@@ -969,7 +969,7 @@
 <li>规则：namespace以<span class="arithmatex"><span class="MathJax_Preview">jobid开头，清理</span><script type="math/tex">jobid开头，清理</script></span>jobid为**N天**前的数据</li>
 <li>参考命令：</li>
 </ul>
-<div class="highlight"><pre><span></span><code>rm -rf <span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/eggroll/data/IN_MEMORY/20200417*
+<div class="highlight"><pre><span></span><code>rm<span class="w"> </span>-rf<span class="w"> </span><span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/eggroll/data/IN_MEMORY/20200417*
 </code></pre></div>
 <h3 id="32-n14">3.2 组件输出数据(N=14天)<a class="headerlink" href="#32-n14" title="Permanent link">&para;</a></h3>
 <ul>
@@ -978,7 +978,7 @@
 <li>规则：namespace以output_data_<span class="arithmatex"><span class="MathJax_Preview">jobid开头，清理</span><script type="math/tex">jobid开头，清理</script></span>jobid为**N天**前的数据</li>
 <li>参考命令：</li>
 </ul>
-<div class="highlight"><pre><span></span><code>rm -rf <span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/eggroll/data/LMDB/output_data_20200417*
+<div class="highlight"><pre><span></span><code>rm<span class="w"> </span>-rf<span class="w"> </span><span class="si">${</span><span class="nv">FATE_PROJECT_BASE</span><span class="si">}</span>/eggroll/data/LMDB/output_data_20200417*
 </code></pre></div>
 
 

@@ -860,12 +860,12 @@
 <h3 id="12-high-availability">1.2 High Availability<a class="headerlink" href="#12-high-availability" title="Permanent link">&para;</a></h3>
 <p>FATE-Flow implements automatic discovery of multiple nodes in the same party by registering its own IP and port with Apache ZooKeeper.</p>
 <h2 id="2-configuring-the-zookeeper-service">2. Configuring the ZooKeeper service<a class="headerlink" href="#2-configuring-the-zookeeper-service" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="nt">zookeeper</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span><span class="w"></span>
-<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">zookeeper</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span>
+<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
 </code></pre></div>
 <h2 id="3-znode">3. ZNode<a class="headerlink" href="#3-znode" title="Permanent link">&para;</a></h2>
 <ul>

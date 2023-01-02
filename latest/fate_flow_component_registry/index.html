@@ -837,7 +837,7 @@
 <p>Deploying a <code>FATE</code> cluster will include a default component provider, which is usually found in the <code>${FATE_PROJECT_BASE}/python/federatedml</code> directory</p>
 <h2 id="3-current-component-provider">3. current component provider<a class="headerlink" href="#3-current-component-provider" title="Permanent link">&para;</a></h2>
 <p>List all current component providers and information about the components they provide</p>
-<div class="highlight"><pre><span></span><code>flow provider list <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
 <p><strong>Options</strong></p>
 <p><strong>Returns</strong></p>
@@ -869,110 +869,110 @@
 </table>
 <p><strong>Example</strong></p>
 <p>output:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;fate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;1.9.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;class_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;anonymous_generator&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.anonymous_generator_util.Anonymous&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;data_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.data_format_preprocess.DataFormatPreProcess&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;feature_instance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.instance.Instance&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;feature_vector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.sparse_vector.SparseVector&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;hetero_model_merge&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_merge.merge_hetero_models.hetero_model_merge&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;homo_model_convert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.homo_model_convert.homo_model_convert&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;components.components.Components&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.generated&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;model_migrate&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_migrate.model_migrate&quot;</span><span class="w"></span>
-<span class="w">                </span><span class="p">},</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;components&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterodatasplit&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;psi&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterofastsecureboost&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterofeaturebinning&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;scorecard&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;sampleweight&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homosecureboost&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;onehotencoder&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;secureinformationretrieval&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homoonehotencoder&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;datatransform&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;dataio&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterosshelinr&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;intersection&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homofeaturebinning&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;secureaddexample&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;union&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;datastatistics&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;columnexpand&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homonn&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;labeltransform&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterosecureboost&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterofeatureselection&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterolr&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;feldmanverifiablesum&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heteropoisson&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;evaluation&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;federatedsample&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homodatasplit&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;ftl&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;localbaseline&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;featurescale&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;featureimputation&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heteropearson&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterokmeans&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heteronn&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterolinr&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;spdztest&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;heterosshelr&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;homolr&quot;</span><span class="w"></span>
-<span class="w">                </span><span class="p">],</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${FATE_PROJECT_BASE}/python/federatedml&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;python&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="p">},</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.9.0&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="p">}</span><span class="w"></span>
-<span class="w">        </span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;fate_flow&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;1.9.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;class_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;anonymous_generator&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.anonymous_generator_util.Anonymous&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;data_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.data_format_preprocess.DataFormatPreProcess&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;feature_instance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.instance.Instance&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;feature_vector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.sparse_vector.SparseVector&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;hetero_model_merge&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_merge.merge_hetero_models.hetero_model_merge&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;homo_model_convert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.homo_model_convert.homo_model_convert&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;components.components.Components&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.generated&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;model_migrate&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_migrate.model_migrate&quot;</span><span class="w"></span>
-<span class="w">                </span><span class="p">},</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;components&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;writer&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;modelrestore&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;upload&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;apireader&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;modelstore&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;cacheloader&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;modelloader&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;download&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                    </span><span class="s2">&quot;reader&quot;</span><span class="w"></span>
-<span class="w">                </span><span class="p">],</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${FATE_FLOW_BASE}/python/fate_flow&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;python&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="p">},</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.9.0&quot;</span><span class="w"></span>
-<span class="w">            </span><span class="p">}</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;fate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;1.9.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;class_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;anonymous_generator&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.anonymous_generator_util.Anonymous&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;data_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.data_format_preprocess.DataFormatPreProcess&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;feature_instance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.instance.Instance&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;feature_vector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.sparse_vector.SparseVector&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;hetero_model_merge&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_merge.merge_hetero_models.hetero_model_merge&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;homo_model_convert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.homo_model_convert.homo_model_convert&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;components.components.Components&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.generated&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;model_migrate&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_migrate.model_migrate&quot;</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="nt">&quot;components&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                    </span><span class="s2">&quot;heterodatasplit&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;psi&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heterofastsecureboost&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heterofeaturebinning&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;scorecard&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;sampleweight&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;homosecureboost&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;onehotencoder&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;secureinformationretrieval&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;homoonehotencoder&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;datatransform&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;dataio&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heterosshelinr&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;intersection&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;homofeaturebinning&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;secureaddexample&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;union&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;datastatistics&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;columnexpand&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;homonn&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;labeltransform&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heterosecureboost&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heterofeatureselection&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heterolr&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;feldmanverifiablesum&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heteropoisson&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;evaluation&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;federatedsample&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;homodatasplit&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;ftl&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;localbaseline&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;featurescale&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;featureimputation&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heteropearson&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heterokmeans&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heteronn&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heterolinr&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;spdztest&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;heterosshelr&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;homolr&quot;</span>
+<span class="w">                </span><span class="p">],</span>
+<span class="w">                </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${FATE_PROJECT_BASE}/python/federatedml&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;python&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.9.0&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;fate_flow&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;1.9.0&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;class_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;anonymous_generator&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.anonymous_generator_util.Anonymous&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;data_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;util.data_format_preprocess.DataFormatPreProcess&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;feature_instance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.instance.Instance&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;feature_vector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;feature.sparse_vector.SparseVector&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;hetero_model_merge&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_merge.merge_hetero_models.hetero_model_merge&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;homo_model_convert&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.homo_model_convert.homo_model_convert&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;components.components.Components&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.generated&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">&quot;model_migrate&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;protobuf.model_migrate.model_migrate&quot;</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="nt">&quot;components&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                    </span><span class="s2">&quot;writer&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;modelrestore&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;upload&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;apireader&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;modelstore&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;cacheloader&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;modelloader&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;download&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s2">&quot;reader&quot;</span>
+<span class="w">                </span><span class="p">],</span>
+<span class="w">                </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${FATE_FLOW_BASE}/python/fate_flow&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;python&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.9.0&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>Contains the <code>name</code>, <code>version number</code>, <code>codepath</code>, <code>list of provided components</code></p>
 <h2 id="4-new-component-provider">4. new component provider<a class="headerlink" href="#4-new-component-provider" title="Permanent link">&para;</a></h2>
 <p>Register a component provider</p>
-<div class="highlight"><pre><span></span><code>flow provider register <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>register<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
 <p><strong>Options</strong></p>
 <table>
@@ -1016,26 +1016,26 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow provider register -c <span class="nv">$FATE_FLOW_BASE</span>/examples/other/register_provider.json
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>register<span class="w"> </span>-c<span class="w"> </span><span class="nv">$FATE_FLOW_BASE</span>/examples/other/register_provider.json
 </code></pre></div>
 <p>conf:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.1&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${FATE_FLOW_BASE}/python/component_plugins/fateb/python/federatedml&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${FATE_FLOW_BASE}/python/component_plugins/fateb/python/federatedml&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>output:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;flow-xxx-9380&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;flow-xxx-9380&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 
 

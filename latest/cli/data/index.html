@@ -776,7 +776,7 @@
 <h2 id="data">Data<a class="headerlink" href="#data" title="Permanent link">&para;</a></h2>
 <h3 id="upload">upload<a class="headerlink" href="#upload" title="Permanent link">&para;</a></h3>
 <p>Used to upload the input data for the modeling task to the storage system supported by fate</p>
-<div class="highlight"><pre><span></span><code>flow data upload -c <span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>upload<span class="w"> </span>-c<span class="w"> </span><span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
 </code></pre></div>
 <p>Note: conf_path is the parameter path, the specific parameters are as follows</p>
 <p><strong>Options</strong></p>
@@ -954,41 +954,41 @@
 <ul>
 <li>eggroll</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;examples/data/breast_hetero_guest.csv&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;id_delimiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;,&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;head&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;partition&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;storage_engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EGGROLL&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;examples/data/breast_hetero_guest.csv&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;id_delimiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;head&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;partition&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;storage_engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EGGROLL&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <ul>
 <li>hdfs</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;examples/data/breast_hetero_guest.csv&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;id_delimiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;,&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;head&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;partition&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;storage_engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HDFS&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;examples/data/breast_hetero_guest.csv&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;id_delimiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;head&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;partition&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;storage_engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HDFS&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <ul>
 <li>localfs</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;examples/data/breast_hetero_guest.csv&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;id_delimiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;,&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;head&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;partition&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;storage_engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LOCALFS&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;examples/data/breast_hetero_guest.csv&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;id_delimiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;head&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;partition&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;storage_engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LOCALFS&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <p><strong>return parameters</strong> </p>
 <table>
@@ -1024,27 +1024,27 @@
 </table>
 <p><strong>Example</strong> </p>
 <div class="highlight"><pre><span></span><code><span class="o">{</span>
-    <span class="s2">&quot;data&quot;</span>: <span class="o">{</span>
-        <span class="s2">&quot;board_url&quot;</span>: <span class="s2">&quot;http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202111081218319075660&amp;role=local&amp;party_id=0&quot;</span>,
-        <span class="s2">&quot;code&quot;</span>: <span class="m">0</span>,
-        <span class="s2">&quot;dsl_path&quot;</span>: <span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/job_dsl.json&quot;</span>,
-        <span class="s2">&quot;job_id&quot;</span>: <span class="s2">&quot;202111081218319075660&quot;</span>,
-        <span class="s2">&quot;logs_directory&quot;</span>: <span class="s2">&quot;/data/projects/fate/logs/202111081218319075660&quot;</span>,
-        <span class="s2">&quot;message&quot;</span>: <span class="s2">&quot;success&quot;</span>,
-        <span class="s2">&quot;model_info&quot;</span>: <span class="o">{</span>
-            <span class="s2">&quot;model_id&quot;</span>: <span class="s2">&quot;local-0#model&quot;</span>,
-            <span class="s2">&quot;model_version&quot;</span>: <span class="s2">&quot;202111081218319075660&quot;</span>
-        <span class="o">}</span>,
-        <span class="s2">&quot;namespace&quot;</span>: <span class="s2">&quot;experiment&quot;</span>,
-        <span class="s2">&quot;pipeline_dsl_path&quot;</span>: <span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/pipeline_dsl.json&quot;</span>,
-        <span class="s2">&quot;runtime_conf_on_party_path&quot;</span>: <span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/local/0/job_runtime_on_party_conf.json&quot;</span>,
-        <span class="s2">&quot;runtime_conf_path&quot;</span>:<span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/job_runtime_conf.json&quot;</span>,
-        <span class="s2">&quot;table_name&quot;</span>: <span class="s2">&quot;breast_hetero_host&quot;</span>,
-        <span class="s2">&quot;train_runtime_conf_path&quot;</span>:<span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/train_runtime_conf.json&quot;</span>
-    <span class="o">}</span>,
-    <span class="s2">&quot;jobId&quot;</span>: <span class="s2">&quot;202111081218319075660&quot;</span>,
-    <span class="s2">&quot;retcode&quot;</span>: <span class="m">0</span>,
-    <span class="s2">&quot;retmsg&quot;</span>: <span class="s2">&quot;success&quot;</span>
+<span class="w">    </span><span class="s2">&quot;data&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;board_url&quot;</span>:<span class="w"> </span><span class="s2">&quot;http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202111081218319075660&amp;role=local&amp;party_id=0&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;code&quot;</span>:<span class="w"> </span><span class="m">0</span>,
+<span class="w">        </span><span class="s2">&quot;dsl_path&quot;</span>:<span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/job_dsl.json&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;job_id&quot;</span>:<span class="w"> </span><span class="s2">&quot;202111081218319075660&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;logs_directory&quot;</span>:<span class="w"> </span><span class="s2">&quot;/data/projects/fate/logs/202111081218319075660&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;message&quot;</span>:<span class="w"> </span><span class="s2">&quot;success&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;model_info&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">            </span><span class="s2">&quot;model_id&quot;</span>:<span class="w"> </span><span class="s2">&quot;local-0#model&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;model_version&quot;</span>:<span class="w"> </span><span class="s2">&quot;202111081218319075660&quot;</span>
+<span class="w">        </span><span class="o">}</span>,
+<span class="w">        </span><span class="s2">&quot;namespace&quot;</span>:<span class="w"> </span><span class="s2">&quot;experiment&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;pipeline_dsl_path&quot;</span>:<span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/pipeline_dsl.json&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;runtime_conf_on_party_path&quot;</span>:<span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/local/0/job_runtime_on_party_conf.json&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;runtime_conf_path&quot;</span>:<span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/job_runtime_conf.json&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;table_name&quot;</span>:<span class="w"> </span><span class="s2">&quot;breast_hetero_host&quot;</span>,
+<span class="w">        </span><span class="s2">&quot;train_runtime_conf_path&quot;</span>:<span class="s2">&quot;/data/projects/fate/jobs/202111081218319075660/train_runtime_conf.json&quot;</span>
+<span class="w">    </span><span class="o">}</span>,
+<span class="w">    </span><span class="s2">&quot;jobId&quot;</span>:<span class="w"> </span><span class="s2">&quot;202111081218319075660&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;retcode&quot;</span>:<span class="w"> </span><span class="m">0</span>,
+<span class="w">    </span><span class="s2">&quot;retmsg&quot;</span>:<span class="w"> </span><span class="s2">&quot;success&quot;</span>
 <span class="o">}</span>
 </code></pre></div>
 <h3 id="upload-history">upload-history<a class="headerlink" href="#upload-history" title="Permanent link">&para;</a></h3>
@@ -1086,7 +1086,7 @@ flow data upload-history --job-id $JOB_ID
 <h3 id="download">download<a class="headerlink" href="#download" title="Permanent link">&para;</a></h3>
 <p><strong>Brief description:</strong> </p>
 <p>Used to download data from within the fate storage engine to file format data</p>
-<div class="highlight"><pre><span></span><code>flow data download -c <span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>download<span class="w"> </span>-c<span class="w"> </span><span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
 </code></pre></div>
 <p>Note: conf_path is the parameter path, the specific parameters are as follows</p>
 <p><strong>Options</strong></p>
@@ -1121,11 +1121,11 @@ flow data upload-history --job-id $JOB_ID
 </tbody>
 </table>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;output_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/breast_hetero_guest.csv&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;output_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/breast_hetero_guest.csv&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <p><strong>return parameters</strong> </p>
 <table>
@@ -1160,32 +1160,32 @@ flow data upload-history --job-id $JOB_ID
 </tbody>
 </table>
 <p><strong>Example</strong> </p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202111081457135282090&amp;role=local&amp;party_id=0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/job_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081457135282090&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/logs/202111081457135282090&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local-0#model&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081457135282090&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/pipeline_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/local/0/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/job_runtime_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/train_runtime_conf.json&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081457135282090&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202111081457135282090&amp;role=local&amp;party_id=0&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/job_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081457135282090&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/logs/202111081457135282090&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local-0#model&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081457135282090&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/pipeline_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/local/0/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/job_runtime_conf.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/jobs/202111081457135282090/train_runtime_conf.json&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081457135282090&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="writer">writer<a class="headerlink" href="#writer" title="Permanent link">&para;</a></h3>
 <p><strong>Brief description:</strong> </p>
 <p>Used to download data from the fate storage engine to the external engine or to save data as a new table</p>
-<div class="highlight"><pre><span></span><code>flow data writer -c <span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>writer<span class="w"> </span>-c<span class="w"> </span><span class="si">${</span><span class="nv">conf_path</span><span class="si">}</span>
 </code></pre></div>
 <p>Note: conf_path is the parameter path, the specific parameters are as follows</p>
 <p><strong>Options</strong> </p>
@@ -1250,12 +1250,12 @@ flow data upload-history --job-id $JOB_ID
 </tbody>
 </table>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name1&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace1&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;output_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name2&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;output_namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace2&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;table_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;output_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name2&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;output_namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace2&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <p><strong>return</strong></p>
 <table>
@@ -1290,27 +1290,27 @@ flow data upload-history --job-id $JOB_ID
 </tbody>
 </table>
 <p><strong>Example</strong> </p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202201121235115028490&amp;role=local&amp;party_id=0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/job_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/logs/202201121235115028490&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local-0#model&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/pipeline_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/local/0/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/job_runtime_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/train_runtime_conf.json&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://xxx.xxx.xxx.xxx:8080/index.html#/dashboard?job_id=202201121235115028490&amp;role=local&amp;party_id=0&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/job_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/logs/202201121235115028490&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local-0#model&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/pipeline_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/local/0/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/job_runtime_conf.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/data/projects/fate/fateflow/jobs/202201121235115028490/train_runtime_conf.json&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202201121235115028490&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 
 

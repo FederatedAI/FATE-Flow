@@ -762,7 +762,7 @@
 <h2 id="server">Server<a class="headerlink" href="#server" title="Permanent link">&para;</a></h2>
 <h3 id="versions">versions<a class="headerlink" href="#versions" title="Permanent link">&para;</a></h3>
 <p>List all relevant system version numbers</p>
-<div class="highlight"><pre><span></span><code>flow server versions
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>server<span class="w"> </span>versions
 </code></pre></div>
 <p><strong>Options</strong></p>
 <p>None</p>
@@ -799,26 +799,26 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow server versions
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>server<span class="w"> </span>versions
 </code></pre></div>
 <p>Output:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;API&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;CENTOS&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;7.2&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;EGGROLL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.4.0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;FATE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;FATEBoard&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;FATEFlow&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;JDK&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;MAVEN&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3.6.3&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;PYTHON&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3.6.5&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;SPARK&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.4.1&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;UBUNTU&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;16.04&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;API&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;CENTOS&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;7.2&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;EGGROLL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.4.0&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;FATE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;FATEBoard&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;FATEFlow&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.7.0&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;JDK&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;MAVEN&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3.6.3&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;PYTHON&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3.6.5&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;SPARK&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.4.1&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;UBUNTU&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;16.04&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="reload">reload<a class="headerlink" href="#reload" title="Permanent link">&para;</a></h3>
 <p>The following configuration items will take effect again after <code>reload</code></p>
@@ -826,7 +826,7 @@
 <li>All configurations after # engine services in $FATE_PROJECT_BASE/conf/service_conf.yaml</li>
 <li>All configurations in $FATE_FLOW_BASE/python/fate_flow/job_default_config.yaml</li>
 </ul>
-<div class="highlight"><pre><span></span><code>flow server reload
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>server<span class="w"> </span>reload
 </code></pre></div>
 <p><strong>Options</strong></p>
 <p>None</p>
@@ -863,35 +863,35 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow server reload
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>server<span class="w"> </span>reload
 </code></pre></div>
 <p>Output:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;job_default_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;auto_retries&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;auto_retry_delay&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;default_component_provider_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;component_plugins/fate/python/federatedml&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;end_status_job_scheduling_time_limit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300000</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;end_status_job_scheduling_updates&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;federated_command_trys&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;federated_status_collect_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PUSH&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;job_timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">259200</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;max_cores_percent_per_job&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;output_data_summary_count_limit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;remote_request_timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;task_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;task_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;task_parallelism&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;total_cores_overweight_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;total_memory_overweight_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;upload_max_bytes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4194304000</span><span class="w"></span>
-<span class="w">        </span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;service_registry&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;job_default_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;auto_retries&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;auto_retry_delay&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;default_component_provider_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;component_plugins/fate/python/federatedml&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;end_status_job_scheduling_time_limit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300000</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;end_status_job_scheduling_updates&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;federated_command_trys&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;federated_status_collect_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PUSH&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;job_timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">259200</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;max_cores_percent_per_job&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;output_data_summary_count_limit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;remote_request_timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;task_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;task_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;task_parallelism&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;total_cores_overweight_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;total_memory_overweight_percent&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;upload_max_bytes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4194304000</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;service_registry&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 
 

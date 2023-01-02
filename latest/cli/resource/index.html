@@ -762,7 +762,7 @@
 <h2 id="resource">Resource<a class="headerlink" href="#resource" title="Permanent link">&para;</a></h2>
 <h3 id="query">query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h3>
 <p>For querying fate system resources</p>
-<div class="highlight"><pre><span></span><code>flow resource query
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>resource<span class="w"> </span>query
 </code></pre></div>
 <p><strong>Options</strong> </p>
 <p><strong>Returns</strong></p>
@@ -793,35 +793,35 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;computing_engine_resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_create_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-09-21 19:32:59&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1632223979564</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_engine_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;cores_per_node&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<span class="w">            </span><span class="p">},</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_engine_entrance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate_on_eggroll&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_engine_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EGGROLL&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_engine_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computing&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_remaining_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_remaining_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_update_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-11-08 16:56:38&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_update_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1636361798812</span><span class="w"></span>
-<span class="w">        </span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;use_resource_job&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;computing_engine_resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;f_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_create_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-09-21 19:32:59&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1632223979564</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_engine_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;cores_per_node&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;f_engine_entrance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate_on_eggroll&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_engine_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EGGROLL&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_engine_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computing&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_remaining_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_remaining_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_update_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-11-08 16:56:38&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_update_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1636361798812</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;use_resource_job&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="return">return<a class="headerlink" href="#return" title="Permanent link">&para;</a></h3>
 <p>Resources for returning a job</p>
-<div class="highlight"><pre><span></span><code>flow resource <span class="k">return</span> <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>resource<span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
 <p><strong>Options</strong> </p>
 <table>
@@ -870,19 +870,19 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081612427726750&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8888&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;resource_in_use&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;resource_return_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">],</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081612427726750&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8888&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;resource_in_use&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;resource_return_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 
 

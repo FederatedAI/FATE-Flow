@@ -818,7 +818,7 @@
 <h2 id="job">Job<a class="headerlink" href="#job" title="Permanent link">&para;</a></h2>
 <h3 id="submit">submit<a class="headerlink" href="#submit" title="Permanent link">&para;</a></h3>
 <p>Build a federated learning job with two configuration files: job dsl and job conf, and submit it to the scheduler for execution</p>
-<div class="highlight"><pre><span></span><code>flow job submit <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>submit<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
 <p><strong>Options</strong></p>
 <table>
@@ -903,31 +903,31 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8080/index.html#/dashboard?job_id=202111061608424372620&amp;role=guest&amp;party_id=9999&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_PROJECT_BASE/jobs/202111061608424372620/job_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111061608424372620&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_PROJECT_BASE/logs/202111061608424372620&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;arbiter-10000#guest-9999#host-10000#model&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111061608424372620&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_PROJECT_BASE/jobs/202111061608424372620/pipeline_dsl.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_FATE_PROJECT_BASE/jobs/202111061608424372620/guest/9999/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="s2">&quot;$FATE_PROJECT_BASE/jobs/202111061608424372620/job_runtime_conf.json&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_PROJECT_BASE/jobs/202111061608424372620/train_runtime_conf.json&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111061608424372620&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8080/index.html#/dashboard?job_id=202111061608424372620&amp;role=guest&amp;party_id=9999&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_PROJECT_BASE/jobs/202111061608424372620/job_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111061608424372620&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_PROJECT_BASE/logs/202111061608424372620&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;arbiter-10000#guest-9999#host-10000#model&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111061608424372620&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_PROJECT_BASE/jobs/202111061608424372620/pipeline_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_FATE_PROJECT_BASE/jobs/202111061608424372620/guest/9999/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="s2">&quot;$FATE_PROJECT_BASE/jobs/202111061608424372620/job_runtime_conf.json&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$FATE_PROJECT_BASE/jobs/202111061608424372620/train_runtime_conf.json&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111061608424372620&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="rerun">rerun<a class="headerlink" href="#rerun" title="Permanent link">&para;</a></h3>
 <p>Rerun a job</p>
-<div class="highlight"><pre><span></span><code>flow job rerun <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>rerun<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
 <p><strong>Options</strong></p>
 <p>| parameter name | required | type | description |
@@ -968,15 +968,15 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow job rerun -j <span class="m">202111031100369723120</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>rerun<span class="w"> </span>-j<span class="w"> </span><span class="m">202111031100369723120</span>
 </code></pre></div>
-<div class="highlight"><pre><span></span><code>flow job rerun -j <span class="m">202111031100369723120</span> -cpn hetero_lr_0
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>rerun<span class="w"> </span>-j<span class="w"> </span><span class="m">202111031100369723120</span><span class="w"> </span>-cpn<span class="w"> </span>hetero_lr_0
 </code></pre></div>
-<div class="highlight"><pre><span></span><code>flow job rerun -j <span class="m">202111031100369723120</span> -cpn hetero_lr_0 --force 
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>rerun<span class="w"> </span>-j<span class="w"> </span><span class="m">202111031100369723120</span><span class="w"> </span>-cpn<span class="w"> </span>hetero_lr_0<span class="w"> </span>--force<span class="w"> </span>
 </code></pre></div>
 <h3 id="parameter-update">parameter-update<a class="headerlink" href="#parameter-update" title="Permanent link">&para;</a></h3>
 <p>Update the job parameters</p>
-<div class="highlight"><pre><span></span><code>flow job parameter-update <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>parameter-update<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
 <p><strong>Options</strong></p>
 <table>
@@ -1038,23 +1038,23 @@
 <p><strong>Example</strong></p>
 <p>Assuming that the job is updated with some of the execution parameters of the hetero_lr_0 component, the configuration file is as follows.
 <div class="highlight"><pre><span></span><code><span class="o">{</span>
-  <span class="s2">&quot;job_parameters&quot;</span>: <span class="o">{</span>
-  <span class="o">}</span>,
-  <span class="s2">&quot;component_parameters&quot;</span>: <span class="o">{</span>
-    <span class="s2">&quot;common&quot;</span>: <span class="o">{</span>
-      <span class="s2">&quot;hetero_lr_0&quot;</span>: <span class="o">{</span>
-        <span class="s2">&quot;alpha&quot;</span>: <span class="m">0</span>.02,
-        <span class="s2">&quot;max_iter&quot;</span>: <span class="m">5</span>
-      <span class="o">}</span>
-    <span class="o">}</span>
-  <span class="o">}</span>
+<span class="w">  </span><span class="s2">&quot;job_parameters&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">  </span><span class="o">}</span>,
+<span class="w">  </span><span class="s2">&quot;component_parameters&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;common&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">      </span><span class="s2">&quot;hetero_lr_0&quot;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s2">&quot;alpha&quot;</span>:<span class="w"> </span><span class="m">0</span>.02,
+<span class="w">        </span><span class="s2">&quot;max_iter&quot;</span>:<span class="w"> </span><span class="m">5</span>
+<span class="w">      </span><span class="o">}</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">  </span><span class="o">}</span>
 <span class="o">}</span>
 </code></pre></div></p>
 <p>Execution of the following command takes effect.</p>
-<div class="highlight"><pre><span></span><code>flow job parameter-update -j <span class="m">202111061957421943730</span> -c examples/other/update_parameters.json
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>parameter-update<span class="w"> </span>-j<span class="w"> </span><span class="m">202111061957421943730</span><span class="w"> </span>-c<span class="w"> </span>examples/other/update_parameters.json
 </code></pre></div>
 <p>Execute the following command to rerun.</p>
-<div class="highlight"><pre><span></span><code>flow job rerun -j <span class="m">202111061957421943730</span> -cpn hetero_lr_0 --force 
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>rerun<span class="w"> </span>-j<span class="w"> </span><span class="m">202111061957421943730</span><span class="w"> </span>-cpn<span class="w"> </span>hetero_lr_0<span class="w"> </span>--force<span class="w"> </span>
 </code></pre></div>
 <h3 id="stop">stop<a class="headerlink" href="#stop" title="Permanent link">&para;</a></h3>
 <p>Cancels or terminates the specified job</p>
@@ -1082,7 +1082,7 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow job stop -j <span class="nv">$JOB_ID</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>stop<span class="w"> </span>-j<span class="w"> </span><span class="nv">$JOB_ID</span>
 </code></pre></div>
 <h3 id="query">query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h3>
 <p>Retrieve task information.
@@ -1134,8 +1134,8 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow job query -r guest -p <span class="m">9999</span> -s <span class="nb">complete</span>
-flow job query -j <span class="nv">$JOB_ID</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>query<span class="w"> </span>-r<span class="w"> </span>guest<span class="w"> </span>-p<span class="w"> </span><span class="m">9999</span><span class="w"> </span>-s<span class="w"> </span><span class="nb">complete</span>
+flow<span class="w"> </span>job<span class="w"> </span>query<span class="w"> </span>-j<span class="w"> </span><span class="nv">$JOB_ID</span>
 </code></pre></div>
 <h3 id="view">view<a class="headerlink" href="#view" title="Permanent link">&para;</a></h3>
 <p>Retrieve the job data view.
@@ -1187,7 +1187,7 @@ flow job query -j <span class="nv">$JOB_ID</span>
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow job view -j <span class="nv">$JOB_ID</span> -s <span class="nb">complete</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>view<span class="w"> </span>-j<span class="w"> </span><span class="nv">$JOB_ID</span><span class="w"> </span>-s<span class="w"> </span><span class="nb">complete</span>
 </code></pre></div>
 <h3 id="config">config<a class="headerlink" href="#config" title="Permanent link">&para;</a></h3>
 <p>Download the configuration file for the specified job to the specified directory.</p>
@@ -1239,7 +1239,7 @@ flow job query -j <span class="nv">$JOB_ID</span>
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow job config -j <span class="nv">$JOB_ID</span> -r host -p <span class="m">10000</span> --output-path . /examples/
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>config<span class="w"> </span>-j<span class="w"> </span><span class="nv">$JOB_ID</span><span class="w"> </span>-r<span class="w"> </span>host<span class="w"> </span>-p<span class="w"> </span><span class="m">10000</span><span class="w"> </span>--output-path<span class="w"> </span>.<span class="w"> </span>/examples/
 </code></pre></div>
 <h3 id="log">log<a class="headerlink" href="#log" title="Permanent link">&para;</a></h3>
 <p>Download the log file of the specified job to the specified directory.
@@ -1275,7 +1275,7 @@ flow job query -j <span class="nv">$JOB_ID</span>
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow job log -j JOB_ID --output-path . /examples/
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>log<span class="w"> </span>-j<span class="w"> </span>JOB_ID<span class="w"> </span>--output-path<span class="w"> </span>.<span class="w"> </span>/examples/
 </code></pre></div>
 <h3 id="list">list<a class="headerlink" href="#list" title="Permanent link">&para;</a></h3>
 <p>Show the list of jobs.
@@ -1303,8 +1303,8 @@ flow job query -j <span class="nv">$JOB_ID</span>
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow job list
-flow job list -l <span class="m">30</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>list
+flow<span class="w"> </span>job<span class="w"> </span>list<span class="w"> </span>-l<span class="w"> </span><span class="m">30</span>
 </code></pre></div>
 <h3 id="dsl">dsl<a class="headerlink" href="#dsl" title="Permanent link">&para;</a></h3>
 <p>Predictive DSL file generator.
@@ -1356,13 +1356,13 @@ flow job list -l <span class="m">30</span>
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code>flow job dsl --cpn-path fate_flow/examples/component_list.txt --train-dsl-path fate_flow/examples/test_hetero_lr_job_dsl.json
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>dsl<span class="w"> </span>--cpn-path<span class="w"> </span>fate_flow/examples/component_list.txt<span class="w"> </span>--train-dsl-path<span class="w"> </span>fate_flow/examples/test_hetero_lr_job_dsl.json
 
-flow job dsl --cpn-path fate_flow/examples/component_list.txt --train-dsl-path fate_flow/examples/test_hetero_lr_job_dsl.json -o fate_flow /examples/
+flow<span class="w"> </span>job<span class="w"> </span>dsl<span class="w"> </span>--cpn-path<span class="w"> </span>fate_flow/examples/component_list.txt<span class="w"> </span>--train-dsl-path<span class="w"> </span>fate_flow/examples/test_hetero_lr_job_dsl.json<span class="w"> </span>-o<span class="w"> </span>fate_flow<span class="w"> </span>/examples/
 
-flow job dsl --cpn-list <span class="s2">&quot;dataio_0, hetero_feature_binning_0, hetero_feature_selection_0, evaluation_0&quot;</span> --train-dsl-path fate_flow/examples/ test_hetero_lr_job_dsl.json -o fate_flow/examples/
+flow<span class="w"> </span>job<span class="w"> </span>dsl<span class="w"> </span>--cpn-list<span class="w"> </span><span class="s2">&quot;dataio_0, hetero_feature_binning_0, hetero_feature_selection_0, evaluation_0&quot;</span><span class="w"> </span>--train-dsl-path<span class="w"> </span>fate_flow/examples/<span class="w"> </span>test_hetero_lr_job_dsl.json<span class="w"> </span>-o<span class="w"> </span>fate_flow/examples/
 
-flow job dsl --cpn-list <span class="o">[</span>dataio_0,hetero_feature_binning_0,hetero_feature_selection_0,evaluation_0<span class="o">]</span> --train-dsl-path fate_flow/examples/ test_hetero_lr_job_dsl.json -o fate_flow/examples/
+flow<span class="w"> </span>job<span class="w"> </span>dsl<span class="w"> </span>--cpn-list<span class="w"> </span><span class="o">[</span>dataio_0,hetero_feature_binning_0,hetero_feature_selection_0,evaluation_0<span class="o">]</span><span class="w"> </span>--train-dsl-path<span class="w"> </span>fate_flow/examples/<span class="w"> </span>test_hetero_lr_job_dsl.json<span class="w"> </span>-o<span class="w"> </span>fate_flow/examples/
 </code></pre></div>
 
 

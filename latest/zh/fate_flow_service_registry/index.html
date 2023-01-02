@@ -860,12 +860,12 @@
 <h3 id="12">1.2 高可用<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
 <p>FATE-Flow 通过向 Apache ZooKeeper 注册自身的 IP 和端口实现同一 party 内多节点的自动发现。</p>
 <h2 id="2-zookeeper">2. 配置 ZooKeeper 服务<a class="headerlink" href="#2-zookeeper" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="nt">zookeeper</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span><span class="w"></span>
-<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">zookeeper</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span>
+<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
 </code></pre></div>
 <h2 id="3-znode">3. ZNode<a class="headerlink" href="#3-znode" title="Permanent link">&para;</a></h2>
 <ul>

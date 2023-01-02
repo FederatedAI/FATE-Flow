@@ -929,205 +929,205 @@
 <li>说明：常用配置，一般部署时需要确定</li>
 <li>注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c1"># FATEFlow是否使用注册中心，使用注册中心的情况下，FATEFlow会注册FATEFlow Server地址以及发布的模型下载地址到注册中心以供在线系统FATEServing使用；同时也会从注册中心获取FATEServing地址</span><span class="w"></span>
-<span class="nt">use_registry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># 是否启用更高安全级别的序列化模式</span><span class="w"></span>
-<span class="nt">use_deserialize_safe_module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># fate on spark模式下是否启动依赖分发</span><span class="w"></span>
-<span class="nt">dependent_distribution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># 是否启动密码加密(数据库密码)，开启后配置encrypt_module和private_key才生效</span><span class="w"></span>
-<span class="nt">encrypt_password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># 加密包及加密函数(“#”号拼接)</span><span class="w"></span>
-<span class="nt">encrypt_module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_arch.common.encrypt_utils#pwdecrypt</span><span class="w"></span>
-<span class="c1"># 加密私钥</span><span class="w"></span>
-<span class="nt">private_key</span><span class="p">:</span><span class="w"></span>
-<span class="c1"># 站点id，站点鉴权时需要配置</span><span class="w"></span>
-<span class="nt">party_id</span><span class="p">:</span><span class="w"></span>
-<span class="c1"># 钩子模块配置</span><span class="w"></span>
-<span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 客户端认证钩子</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 站点端认证钩子</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 权限认证钩子</span><span class="w"></span>
-<span class="w">  </span><span class="nt">permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.permission</span><span class="w"></span>
-<span class="c1"># 除了支持使用flow的钩子进行认证、鉴权，也支持使用第三方服务注册的认证和鉴权接口</span><span class="w"></span>
-<span class="c1"># 第三方认证、鉴权服务注册的服务名</span><span class="w"></span>
-<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"></span>
-<span class="c1"># 认证</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 客户端认证配置</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># 客户端认证开关</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 站点认证配置</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># 认证开关</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># 鉴权</span><span class="w"></span>
-<span class="nt">permission</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 鉴权开关</span><span class="w"></span>
-<span class="w">  </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 组件鉴权开关</span><span class="w"></span>
-<span class="w">  </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 数据集鉴权开关</span><span class="w"></span>
-<span class="w">  </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="nt">fateflow</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 必须使用真实绑定的ip地址，避免因为多网卡/多IP引发的额外问题</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported</span><span class="w"></span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9380</span><span class="w"></span>
-<span class="w">  </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9360</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 高可用性时需要配置nginx地址</span><span class="w"></span>
-<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_port</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 实例id默认为{host}:{http_port}，可以通过random_instance_id配置生成随机id</span><span class="w"></span>
-<span class="w">  </span><span class="nt">random_instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 支持使用rollsite/nginx/fateflow作为多方任务协调通信代理</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># rollsite支持fate on eggroll的场景，仅支持grpc协议，支持P2P组网及星型组网模式</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># nginx支持所有引擎场景，支持http与grpc协议，默认为http，支持P2P组网及星型组网模式</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># fateflow支持所有引擎场景，支持http与grpc协议，默认为http，仅支持P2P组网模式，也即只支持互相配置对端fateflow地址</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 格式(proxy: rollsite)表示使用rollsite并使用下方fate_one_eggroll配置大类中的rollsite配置；配置nginx表示使用下方fate_one_spark配置大类中的nginx配置</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># 也可以直接配置对端fateflow的地址，如下所示：</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># proxy:</span><span class="w"></span>
-<span class="w">  </span><span class="c1">#   name: fateflow</span><span class="w"></span>
-<span class="w">  </span><span class="c1">#   host: xx</span><span class="w"></span>
-<span class="w">  </span><span class="c1">#   http_port: xx</span><span class="w"></span>
-<span class="w">  </span><span class="c1">#   grpc_port: xx</span><span class="w"></span>
-<span class="w">  </span><span class="nt">proxy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rollsite</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># support default/http/grpc</span><span class="w"></span>
-<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"></span>
-<span class="nt">database</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow</span><span class="w"></span>
-<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">passwd</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3306</span><span class="w"></span>
-<span class="w">  </span><span class="nt">max_connections</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w"></span>
-<span class="w">  </span><span class="nt">stale_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span><span class="w"></span>
-<span class="c1"># 注册中心地址及其身份认证参数</span><span class="w"></span>
-<span class="nt">zookeeper</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span><span class="w"></span>
-<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="c1"># engine services</span><span class="w"></span>
-<span class="nt">default_engines</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">computing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span><span class="w"></span>
-<span class="w">  </span><span class="nt">federation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span><span class="w"></span>
-<span class="w">  </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span><span class="w"></span>
-<span class="nt">fate_on_standalone</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">standalone</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="nt">fate_on_eggroll</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">clustermanager</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># eggroll nodemanager服务所在机器的CPU核数</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># eggroll nodemanager服务的机器数量</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">rollsite</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9370</span><span class="w"></span>
-<span class="nt">fate_on_spark</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">spark</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># default use SPARK_HOME environment variable</span><span class="w"></span>
-<span class="w">    </span><span class="nt">home</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
-<span class="w">  </span><span class="nt">linkis_spark</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9001</span><span class="w"></span>
-<span class="w">    </span><span class="nt">token_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MLSS</span><span class="w"></span>
-<span class="w">    </span><span class="nt">python_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/projects/fate/python</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hive</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span><span class="w"></span>
-<span class="w">    </span><span class="nt">auth_mechanism</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">linkis_hive</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9001</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hdfs</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hdfs://fate-cluster</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># default /</span><span class="w"></span>
-<span class="w">    </span><span class="nt">path_prefix</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">rabbitmq</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.0.4</span><span class="w"></span>
-<span class="w">    </span><span class="nt">mng_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12345</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5672</span><span class="w"></span>
-<span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># default conf/rabbitmq_route_table.yaml</span><span class="w"></span>
-<span class="w">    </span><span class="nt">route_table</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">pulsar</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.0.5</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6650</span><span class="w"></span>
-<span class="w">    </span><span class="nt">mng_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># all parties should use a same tenant</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tenant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fl-tenant</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># message ttl in minutes</span><span class="w"></span>
-<span class="w">    </span><span class="nt">topic_ttl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># default conf/pulsar_route_table.yaml</span><span class="w"></span>
-<span class="w">    </span><span class="nt">route_table</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9300</span><span class="w"></span>
-<span class="w">    </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9310</span><span class="w"></span>
-<span class="c1"># external services</span><span class="w"></span>
-<span class="nt">fateboard</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1"># FATEFlow是否使用注册中心，使用注册中心的情况下，FATEFlow会注册FATEFlow Server地址以及发布的模型下载地址到注册中心以供在线系统FATEServing使用；同时也会从注册中心获取FATEServing地址</span>
+<span class="nt">use_registry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># 是否启用更高安全级别的序列化模式</span>
+<span class="nt">use_deserialize_safe_module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># fate on spark模式下是否启动依赖分发</span>
+<span class="nt">dependent_distribution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># 是否启动密码加密(数据库密码)，开启后配置encrypt_module和private_key才生效</span>
+<span class="nt">encrypt_password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># 加密包及加密函数(“#”号拼接)</span>
+<span class="nt">encrypt_module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_arch.common.encrypt_utils#pwdecrypt</span>
+<span class="c1"># 加密私钥</span>
+<span class="nt">private_key</span><span class="p">:</span>
+<span class="c1"># 站点id，站点鉴权时需要配置</span>
+<span class="nt">party_id</span><span class="p">:</span>
+<span class="c1"># 钩子模块配置</span>
+<span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># 客户端认证钩子</span>
+<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span>
+<span class="w">  </span><span class="c1"># 站点端认证钩子</span>
+<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span>
+<span class="w">  </span><span class="c1"># 权限认证钩子</span>
+<span class="w">  </span><span class="nt">permission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.permission</span>
+<span class="c1"># 除了支持使用flow的钩子进行认证、鉴权，也支持使用第三方服务注册的认证和鉴权接口</span>
+<span class="c1"># 第三方认证、鉴权服务注册的服务名</span>
+<span class="nt">hook_server_name</span><span class="p">:</span>
+<span class="c1"># 认证</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># 客户端认证配置</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># 客户端认证开关</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># 站点认证配置</span>
+<span class="w">  </span><span class="nt">site</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># 认证开关</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># 鉴权</span>
+<span class="nt">permission</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># 鉴权开关</span>
+<span class="w">  </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># 组件鉴权开关</span>
+<span class="w">  </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># 数据集鉴权开关</span>
+<span class="w">  </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="nt">fateflow</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># 必须使用真实绑定的ip地址，避免因为多网卡/多IP引发的额外问题</span>
+<span class="w">  </span><span class="c1"># you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported</span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">  </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9380</span>
+<span class="w">  </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9360</span>
+<span class="w">  </span><span class="c1"># 高可用性时需要配置nginx地址</span>
+<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">http_port</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">grpc_port</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># 实例id默认为{host}:{http_port}，可以通过random_instance_id配置生成随机id</span>
+<span class="w">  </span><span class="nt">random_instance_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># 支持使用rollsite/nginx/fateflow作为多方任务协调通信代理</span>
+<span class="w">  </span><span class="c1"># rollsite支持fate on eggroll的场景，仅支持grpc协议，支持P2P组网及星型组网模式</span>
+<span class="w">  </span><span class="c1"># nginx支持所有引擎场景，支持http与grpc协议，默认为http，支持P2P组网及星型组网模式</span>
+<span class="w">  </span><span class="c1"># fateflow支持所有引擎场景，支持http与grpc协议，默认为http，仅支持P2P组网模式，也即只支持互相配置对端fateflow地址</span>
+<span class="w">  </span><span class="c1"># 格式(proxy: rollsite)表示使用rollsite并使用下方fate_one_eggroll配置大类中的rollsite配置；配置nginx表示使用下方fate_one_spark配置大类中的nginx配置</span>
+<span class="w">  </span><span class="c1"># 也可以直接配置对端fateflow的地址，如下所示：</span>
+<span class="w">  </span><span class="c1"># proxy:</span>
+<span class="w">  </span><span class="c1">#   name: fateflow</span>
+<span class="w">  </span><span class="c1">#   host: xx</span>
+<span class="w">  </span><span class="c1">#   http_port: xx</span>
+<span class="w">  </span><span class="c1">#   grpc_port: xx</span>
+<span class="w">  </span><span class="nt">proxy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rollsite</span>
+<span class="w">  </span><span class="c1"># support default/http/grpc</span>
+<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="nt">database</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow</span>
+<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">  </span><span class="nt">passwd</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3306</span>
+<span class="w">  </span><span class="nt">max_connections</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="w">  </span><span class="nt">stale_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="c1"># 注册中心地址及其身份认证参数</span>
+<span class="nt">zookeeper</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:2181</span>
+<span class="w">  </span><span class="nt">use_acl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="c1"># engine services</span>
+<span class="nt">default_engines</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">computing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span>
+<span class="w">  </span><span class="nt">federation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span>
+<span class="w">  </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span>
+<span class="nt">fate_on_standalone</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">standalone</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="nt">fate_on_eggroll</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">clustermanager</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># eggroll nodemanager服务所在机器的CPU核数</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+<span class="w">    </span><span class="c1"># eggroll nodemanager服务的机器数量</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">rollsite</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9370</span>
+<span class="nt">fate_on_spark</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">spark</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># default use SPARK_HOME environment variable</span>
+<span class="w">    </span><span class="nt">home</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">  </span><span class="nt">linkis_spark</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9001</span>
+<span class="w">    </span><span class="nt">token_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MLSS</span>
+<span class="w">    </span><span class="nt">python_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/projects/fate/python</span>
+<span class="w">  </span><span class="nt">hive</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span>
+<span class="w">    </span><span class="nt">auth_mechanism</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">username</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">linkis_hive</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9001</span>
+<span class="w">  </span><span class="nt">hdfs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hdfs://fate-cluster</span>
+<span class="w">    </span><span class="c1"># default /</span>
+<span class="w">    </span><span class="nt">path_prefix</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">rabbitmq</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.0.4</span>
+<span class="w">    </span><span class="nt">mng_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12345</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5672</span>
+<span class="w">    </span><span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="w">    </span><span class="c1"># default conf/rabbitmq_route_table.yaml</span>
+<span class="w">    </span><span class="nt">route_table</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pulsar</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.0.5</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6650</span>
+<span class="w">    </span><span class="nt">mng_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span>
+<span class="w">    </span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span>
+<span class="w">    </span><span class="c1"># all parties should use a same tenant</span>
+<span class="w">    </span><span class="nt">tenant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fl-tenant</span>
+<span class="w">    </span><span class="c1"># message ttl in minutes</span>
+<span class="w">    </span><span class="nt">topic_ttl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">    </span><span class="c1"># default conf/pulsar_route_table.yaml</span>
+<span class="w">    </span><span class="nt">route_table</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9300</span>
+<span class="w">    </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9310</span>
+<span class="c1"># external services</span>
+<span class="nt">fateboard</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span>
 
-<span class="c1"># on API `/model/load` and `/model/load/do`</span><span class="w"></span>
-<span class="c1"># automatic upload models to the model store if it exists locally but does not exist in the model storage</span><span class="w"></span>
-<span class="c1"># or download models from the model store if it does not exist locally but exists in the model storage</span><span class="w"></span>
-<span class="c1"># this config will not affect API `/model/store` or `/model/restore`</span><span class="w"></span>
-<span class="nt">enable_model_store</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="c1"># 模型导出(export model)操作默认的导出地址</span><span class="w"></span>
-<span class="nt">model_store_address</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># use mysql as the model store engine</span><span class="w"></span>
-<span class="c1">#  storage: mysql</span><span class="w"></span>
-<span class="c1">#  database: fate_model</span><span class="w"></span>
-<span class="c1">#  user: fate</span><span class="w"></span>
-<span class="c1">#  password: fate</span><span class="w"></span>
-<span class="c1">#  host: 127.0.0.1</span><span class="w"></span>
-<span class="c1">#  port: 3306</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># other optional configs send to the engine</span><span class="w"></span>
-<span class="c1">#  max_connections: 10</span><span class="w"></span>
-<span class="c1">#  stale_timeout: 10</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># use redis as the model store engine</span><span class="w"></span>
-<span class="c1">#  storage: redis</span><span class="w"></span>
-<span class="c1">#  host: 127.0.0.1</span><span class="w"></span>
-<span class="c1">#  port: 6379</span><span class="w"></span>
-<span class="c1">#  db: 0</span><span class="w"></span>
-<span class="c1">#  password:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># the expiry time of keys, in seconds. defaults None (no expiry time)</span><span class="w"></span>
-<span class="c1">#  ex:</span><span class="w"></span>
-<span class="w">  </span><span class="c1"># use tencent cos as model store engine</span><span class="w"></span>
-<span class="w">  </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tencent_cos</span><span class="w"></span>
-<span class="w">  </span><span class="nt">Region</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">SecretId</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">SecretKey</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">Bucket</span><span class="p">:</span><span class="w"></span>
+<span class="c1"># on API `/model/load` and `/model/load/do`</span>
+<span class="c1"># automatic upload models to the model store if it exists locally but does not exist in the model storage</span>
+<span class="c1"># or download models from the model store if it does not exist locally but exists in the model storage</span>
+<span class="c1"># this config will not affect API `/model/store` or `/model/restore`</span>
+<span class="nt">enable_model_store</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="c1"># 模型导出(export model)操作默认的导出地址</span>
+<span class="nt">model_store_address</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># use mysql as the model store engine</span>
+<span class="c1">#  storage: mysql</span>
+<span class="c1">#  database: fate_model</span>
+<span class="c1">#  user: fate</span>
+<span class="c1">#  password: fate</span>
+<span class="c1">#  host: 127.0.0.1</span>
+<span class="c1">#  port: 3306</span>
+<span class="w">  </span><span class="c1"># other optional configs send to the engine</span>
+<span class="c1">#  max_connections: 10</span>
+<span class="c1">#  stale_timeout: 10</span>
+<span class="w">  </span><span class="c1"># use redis as the model store engine</span>
+<span class="c1">#  storage: redis</span>
+<span class="c1">#  host: 127.0.0.1</span>
+<span class="c1">#  port: 6379</span>
+<span class="c1">#  db: 0</span>
+<span class="c1">#  password:</span>
+<span class="w">  </span><span class="c1"># the expiry time of keys, in seconds. defaults None (no expiry time)</span>
+<span class="c1">#  ex:</span>
+<span class="w">  </span><span class="c1"># use tencent cos as model store engine</span>
+<span class="w">  </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tencent_cos</span>
+<span class="w">  </span><span class="nt">Region</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">SecretId</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">SecretKey</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">Bucket</span><span class="p">:</span>
 
-<span class="c1"># 不使用注册中心的情况下，需要配置FATE Serving Server的地址</span><span class="w"></span>
-<span class="nt">servings</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:8000</span><span class="w"></span>
-<span class="nt">fatemanager</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8001</span><span class="w"></span>
-<span class="w">  </span><span class="nt">federatedId</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w"></span>
+<span class="c1"># 不使用注册中心的情况下，需要配置FATE Serving Server的地址</span>
+<span class="nt">servings</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">hosts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:8000</span>
+<span class="nt">fatemanager</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8001</span>
+<span class="w">  </span><span class="nt">federatedId</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 </code></pre></div>
 <h2 id="3-fate-flow">3. FATE Flow配置<a class="headerlink" href="#3-fate-flow" title="Permanent link">&para;</a></h2>
 <h3 id="31-fate-flow-server">3.1 FATE Flow Server配置<a class="headerlink" href="#31-fate-flow-server" title="Permanent link">&para;</a></h3>
@@ -1156,43 +1156,43 @@
 <li>注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改</li>
 <li>生效：使用flow server reload或者重启fate flow server</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c1"># component provider, relative path to get_fate_python_directory</span><span class="w"></span>
-<span class="nt">default_component_provider_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">federatedml</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1"># component provider, relative path to get_fate_python_directory</span>
+<span class="nt">default_component_provider_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">federatedml</span>
 
-<span class="c1"># resource</span><span class="w"></span>
-<span class="c1"># 总资源超配百分比</span><span class="w"></span>
-<span class="nt">total_cores_overweight_percent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># 1 means no overweight</span><span class="w"></span>
-<span class="nt">total_memory_overweight_percent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># 1 means no overweight</span><span class="w"></span>
-<span class="c1"># 默认的每个作业的任务并行度，可以在提交作业配置时使用job_parameters:task_parallelism配置自定义值</span><span class="w"></span>
-<span class="nt">task_parallelism</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="c1"># 默认的每个作业中每个任务使用的CPU核数，可以在提交作业配置时使用job_parameters:task_cores配置自定义值</span><span class="w"></span>
-<span class="nt">task_cores</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span><span class="w"></span>
-<span class="c1"># 暂时不支持内存资源的调度，该配置不生效</span><span class="w"></span>
-<span class="nt">task_memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># mb</span><span class="w"></span>
-<span class="c1"># 一个作业最大允许申请的CPU核数占总资源数量的比例，如总资源为10，此值为0.5，则表示一个作业最多允许申请5个CPU，也即task_cores * task_parallelism &lt;= 10 * 0.5</span><span class="w"></span>
-<span class="nt">max_cores_percent_per_job</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># 1 means total</span><span class="w"></span>
+<span class="c1"># resource</span>
+<span class="c1"># 总资源超配百分比</span>
+<span class="nt">total_cores_overweight_percent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># 1 means no overweight</span>
+<span class="nt">total_memory_overweight_percent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># 1 means no overweight</span>
+<span class="c1"># 默认的每个作业的任务并行度，可以在提交作业配置时使用job_parameters:task_parallelism配置自定义值</span>
+<span class="nt">task_parallelism</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="c1"># 默认的每个作业中每个任务使用的CPU核数，可以在提交作业配置时使用job_parameters:task_cores配置自定义值</span>
+<span class="nt">task_cores</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="c1"># 暂时不支持内存资源的调度，该配置不生效</span>
+<span class="nt">task_memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># mb</span>
+<span class="c1"># 一个作业最大允许申请的CPU核数占总资源数量的比例，如总资源为10，此值为0.5，则表示一个作业最多允许申请5个CPU，也即task_cores * task_parallelism &lt;= 10 * 0.5</span>
+<span class="nt">max_cores_percent_per_job</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># 1 means total</span>
 
-<span class="c1"># scheduling</span><span class="w"></span>
-<span class="c1"># 默认的作业执行超时时间，可以在提交作业配置时使用job_parameters:timeout配置自定义值</span><span class="w"></span>
-<span class="nt">job_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">259200</span><span class="w"> </span><span class="c1"># s</span><span class="w"></span>
-<span class="c1"># 发送跨参与方调度命令或者状态时，通信的超时时间</span><span class="w"></span>
-<span class="nt">remote_request_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30000</span><span class="w">  </span><span class="c1"># ms</span><span class="w"></span>
-<span class="c1"># 发送跨参与方调度命令或者状态时，通信的重试次数</span><span class="w"></span>
-<span class="nt">federated_command_trys</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w"></span>
-<span class="nt">end_status_job_scheduling_time_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300000</span><span class="w"> </span><span class="c1"># ms</span><span class="w"></span>
-<span class="nt">end_status_job_scheduling_updates</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="c1"># 默认自动重试次数, 可以在提交作业配置时使用job_parameters:auto_retries配置自定义值</span><span class="w"></span>
-<span class="nt">auto_retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w"></span>
-<span class="c1"># 默认重试次数间隔</span><span class="w"></span>
-<span class="nt">auto_retry_delay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1">#seconds</span><span class="w"></span>
-<span class="c1"># 默认的多方状态收集方式，支持PULL和PUSH；也可在作业配置指定当前作业的收集模式</span><span class="w"></span>
-<span class="nt">federated_status_collect_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUSH</span><span class="w"></span>
+<span class="c1"># scheduling</span>
+<span class="c1"># 默认的作业执行超时时间，可以在提交作业配置时使用job_parameters:timeout配置自定义值</span>
+<span class="nt">job_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">259200</span><span class="w"> </span><span class="c1"># s</span>
+<span class="c1"># 发送跨参与方调度命令或者状态时，通信的超时时间</span>
+<span class="nt">remote_request_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30000</span><span class="w">  </span><span class="c1"># ms</span>
+<span class="c1"># 发送跨参与方调度命令或者状态时，通信的重试次数</span>
+<span class="nt">federated_command_trys</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="nt">end_status_job_scheduling_time_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300000</span><span class="w"> </span><span class="c1"># ms</span>
+<span class="nt">end_status_job_scheduling_updates</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="c1"># 默认自动重试次数, 可以在提交作业配置时使用job_parameters:auto_retries配置自定义值</span>
+<span class="nt">auto_retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="c1"># 默认重试次数间隔</span>
+<span class="nt">auto_retry_delay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1">#seconds</span>
+<span class="c1"># 默认的多方状态收集方式，支持PULL和PUSH；也可在作业配置指定当前作业的收集模式</span>
+<span class="nt">federated_status_collect_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PUSH</span>
 
-<span class="c1"># upload</span><span class="w"></span>
-<span class="nt">upload_max_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">104857600</span><span class="w"> </span><span class="c1"># bytes</span><span class="w"></span>
+<span class="c1"># upload</span>
+<span class="nt">upload_max_bytes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">104857600</span><span class="w"> </span><span class="c1"># bytes</span>
 
-<span class="c1">#component output</span><span class="w"></span>
-<span class="nt">output_data_summary_count_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w"></span>
+<span class="c1">#component output</span>
+<span class="nt">output_data_summary_count_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
 </code></pre></div>
 <h2 id="4-fate-board">4. FATE Board配置<a class="headerlink" href="#4-fate-board" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1200,30 +1200,30 @@
 <li>说明：常用配置，一般部署时需要确定</li>
 <li>注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c"># 服务监听端口</span><span class="w"></span>
-<span class="na">server.port</span><span class="o">=</span><span class="s">8080</span><span class="w"></span>
-<span class="c"># fateflow地址，指fateflow的http端口地址</span><span class="w"></span>
-<span class="na">fateflow.url</span><span class="o">=</span><span class="s">=http://127.0.0.1:9380</span><span class="w"></span>
-<span class="c"># db地址，同上述全局配置service_conf.yaml里面的database配置</span><span class="w"></span>
-<span class="na">fateboard.datasource.jdbc-url</span><span class="o">=</span><span class="s">jdbc:mysql://localhost:3306/fate_flow?characterEncoding=utf8&amp;characterSetResults=utf8&amp;autoReconnect=true&amp;failOverReadOnly=false&amp;serverTimezone=GMT%2B8</span><span class="w"></span>
-<span class="c"># db配置，同上述全局配置service_conf.yaml里面的database配置</span><span class="w"></span>
-<span class="na">fateboard.datasource.username</span><span class="o">=</span><span class="w"></span>
-<span class="c"># db配置，同上述全局配置service_conf.yaml里面的database配置</span><span class="w"></span>
-<span class="na">fateboard.datasource.password</span><span class="o">=</span><span class="w"></span>
-<span class="na">server.tomcat.max-threads</span><span class="o">=</span><span class="s">1000</span><span class="w"></span>
-<span class="na">server.tomcat.max-connections</span><span class="o">=</span><span class="s">20000</span><span class="w"></span>
-<span class="na">spring.servlet.multipart.max-file-size</span><span class="o">=</span><span class="s">10MB</span><span class="w"></span>
-<span class="na">spring.servlet.multipart.max-request-size</span><span class="o">=</span><span class="s">100MB</span><span class="w"></span>
-<span class="c"># 管理员账号配置</span><span class="w"></span>
-<span class="na">server.board.login.username</span><span class="o">=</span><span class="s">admin</span><span class="w"></span>
-<span class="na">server.board.login.password</span><span class="o">=</span><span class="s">admin</span><span class="w"></span>
-<span class="na">server.ssl.key-store</span><span class="o">=</span><span class="s">classpath:</span><span class="w"></span>
-<span class="na">server.ssl.key-store-password</span><span class="o">=</span><span class="w"></span>
-<span class="na">server.ssl.key-password</span><span class="o">=</span><span class="w"></span>
-<span class="na">server.ssl.key-alias</span><span class="o">=</span><span class="w"></span>
-<span class="c"># 当fateflo server开启api访问鉴权时，需要配置</span><span class="w"></span>
-<span class="na">HTTP_APP_KEY</span><span class="o">=</span><span class="w"></span>
-<span class="na">HTTP_SECRET_KEY</span><span class="o">=</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1"># 服务监听端口</span>
+<span class="na">server.port</span><span class="o">=</span><span class="s">8080</span>
+<span class="c1"># fateflow地址，指fateflow的http端口地址</span>
+<span class="na">fateflow.url</span><span class="o">==</span><span class="s">http://127.0.0.1:9380</span>
+<span class="c1"># db地址，同上述全局配置service_conf.yaml里面的database配置</span>
+<span class="na">fateboard.datasource.jdbc-url</span><span class="o">=</span><span class="s">jdbc:mysql://localhost:3306/fate_flow?characterEncoding=utf8&amp;characterSetResults=utf8&amp;autoReconnect=true&amp;failOverReadOnly=false&amp;serverTimezone=GMT%2B8</span>
+<span class="c1"># db配置，同上述全局配置service_conf.yaml里面的database配置</span>
+<span class="na">fateboard.datasource.username</span><span class="o">=</span>
+<span class="c1"># db配置，同上述全局配置service_conf.yaml里面的database配置</span>
+<span class="na">fateboard.datasource.password</span><span class="o">=</span>
+<span class="na">server.tomcat.max-threads</span><span class="o">=</span><span class="s">1000</span>
+<span class="na">server.tomcat.max-connections</span><span class="o">=</span><span class="s">20000</span>
+<span class="na">spring.servlet.multipart.max-file-size</span><span class="o">=</span><span class="s">10MB</span>
+<span class="na">spring.servlet.multipart.max-request-size</span><span class="o">=</span><span class="s">100MB</span>
+<span class="c1"># 管理员账号配置</span>
+<span class="na">server.board.login.username</span><span class="o">=</span><span class="s">admin</span>
+<span class="na">server.board.login.password</span><span class="o">=</span><span class="s">admin</span>
+<span class="na">server.ssl.key-store</span><span class="o">=</span><span class="s">classpath:</span>
+<span class="na">server.ssl.key-store-password</span><span class="o">=</span>
+<span class="na">server.ssl.key-password</span><span class="o">=</span>
+<span class="na">server.ssl.key-alias</span><span class="o">=</span>
+<span class="c1"># 当fateflo server开启api访问鉴权时，需要配置</span>
+<span class="na">HTTP_APP_KEY</span><span class="o">=</span>
+<span class="na">HTTP_SECRET_KEY</span><span class="o">=</span>
 </code></pre></div>
 <h2 id="5-eggroll">5. EggRoll<a class="headerlink" href="#5-eggroll" title="Permanent link">&para;</a></h2>
 <h3 id="51">5.1 系统配置<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
@@ -1232,52 +1232,52 @@
 <li>说明：常用配置，一般部署时需要确定</li>
 <li>注意：配置文件中未被列举如下的配置项属于系统内部参数，不建议修改</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="err">[eggroll]</span><span class="w"></span>
-<span class="c"># core</span><span class="w"></span>
-<span class="c"># 连接MySQL配置，一般生产应用需要此配置</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.jdbc.driver.class.name</span><span class="o">=</span><span class="s">com.mysql.cj.jdbc.Driver</span><span class="w"></span>
-<span class="c"># 连接MySQL配置，一般生产应用需要此配置</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.jdbc.url</span><span class="o">=</span><span class="s">jdbc:mysql://localhost:3306/eggroll_meta?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</span><span class="w"></span>
-<span class="c"># 连接MySQL账户，一般生产应用需要此配置</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.jdbc.username</span><span class="o">=</span><span class="w"></span>
-<span class="c"># 连接MySQL密码，一般生产应用需要此配置</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.jdbc.password</span><span class="o">=</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="na">[eggroll]</span>
+<span class="c1"># core</span>
+<span class="c1"># 连接MySQL配置，一般生产应用需要此配置</span>
+<span class="na">eggroll.resourcemanager.clustermanager.jdbc.driver.class.name</span><span class="o">=</span><span class="s">com.mysql.cj.jdbc.Driver</span>
+<span class="c1"># 连接MySQL配置，一般生产应用需要此配置</span>
+<span class="na">eggroll.resourcemanager.clustermanager.jdbc.url</span><span class="o">=</span><span class="s">jdbc:mysql://localhost:3306/eggroll_meta?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</span>
+<span class="c1"># 连接MySQL账户，一般生产应用需要此配置</span>
+<span class="na">eggroll.resourcemanager.clustermanager.jdbc.username</span><span class="o">=</span>
+<span class="c1"># 连接MySQL密码，一般生产应用需要此配置</span>
+<span class="na">eggroll.resourcemanager.clustermanager.jdbc.password</span><span class="o">=</span>
 
-<span class="c"># 数据存储目录</span><span class="w"></span>
-<span class="na">eggroll.data.dir</span><span class="o">=</span><span class="s">data/</span><span class="w"></span>
-<span class="c"># 日志存储目录</span><span class="w"></span>
-<span class="na">eggroll.logs.dir</span><span class="o">=</span><span class="s">logs/</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.host</span><span class="o">=</span><span class="s">127.0.0.1</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.clustermanager.port</span><span class="o">=</span><span class="s">4670</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.nodemanager.port</span><span class="o">=</span><span class="s">4670</span><span class="w"></span>
+<span class="c1"># 数据存储目录</span>
+<span class="na">eggroll.data.dir</span><span class="o">=</span><span class="s">data/</span>
+<span class="c1"># 日志存储目录</span>
+<span class="na">eggroll.logs.dir</span><span class="o">=</span><span class="s">logs/</span>
+<span class="na">eggroll.resourcemanager.clustermanager.host</span><span class="o">=</span><span class="s">127.0.0.1</span>
+<span class="na">eggroll.resourcemanager.clustermanager.port</span><span class="o">=</span><span class="s">4670</span>
+<span class="na">eggroll.resourcemanager.nodemanager.port</span><span class="o">=</span><span class="s">4670</span>
 
-<span class="c"># python路径</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.bootstrap.egg_pair.venv</span><span class="o">=</span><span class="w"></span>
-<span class="c"># pythonpath, 一般需要指定eggroll的python目录以及fate的python目录</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.bootstrap.egg_pair.pythonpath</span><span class="o">=</span><span class="s">python</span><span class="w"></span>
+<span class="c1"># python路径</span>
+<span class="na">eggroll.resourcemanager.bootstrap.egg_pair.venv</span><span class="o">=</span>
+<span class="c1"># pythonpath, 一般需要指定eggroll的python目录以及fate的python目录</span>
+<span class="na">eggroll.resourcemanager.bootstrap.egg_pair.pythonpath</span><span class="o">=</span><span class="s">python</span>
 
-<span class="c"># java路径</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.bootstrap.egg_frame.javahome</span><span class="o">=</span><span class="w"></span>
-<span class="c"># java服务启动参数，无特别需要，无需配置</span><span class="w"></span>
-<span class="na">eggroll.resourcemanager.bootstrap.egg_frame.jvm.options</span><span class="o">=</span><span class="w"></span>
-<span class="c"># 多方通信时，grpc连接保持时间</span><span class="w"></span>
-<span class="na">eggroll.core.grpc.channel.keepalive.timeout.sec</span><span class="o">=</span><span class="s">20</span><span class="w"></span>
+<span class="c1"># java路径</span>
+<span class="na">eggroll.resourcemanager.bootstrap.egg_frame.javahome</span><span class="o">=</span>
+<span class="c1"># java服务启动参数，无特别需要，无需配置</span>
+<span class="na">eggroll.resourcemanager.bootstrap.egg_frame.jvm.options</span><span class="o">=</span>
+<span class="c1"># 多方通信时，grpc连接保持时间</span>
+<span class="na">eggroll.core.grpc.channel.keepalive.timeout.sec</span><span class="o">=</span><span class="s">20</span>
 
-<span class="c"># session</span><span class="w"></span>
-<span class="c"># 一个eggroll会话中，每个nodemanager启动的计算进程数量;若使用fate进行提交任务，则会被fate flow的默认参数所代替</span><span class="w"></span>
-<span class="na">eggroll.session.processors.per.node</span><span class="o">=</span><span class="s">4</span><span class="w"></span>
+<span class="c1"># session</span>
+<span class="c1"># 一个eggroll会话中，每个nodemanager启动的计算进程数量;若使用fate进行提交任务，则会被fate flow的默认参数所代替</span>
+<span class="na">eggroll.session.processors.per.node</span><span class="o">=</span><span class="s">4</span>
 
-<span class="c"># rollsite</span><span class="w"></span>
-<span class="na">eggroll.rollsite.coordinator</span><span class="o">=</span><span class="s">webank</span><span class="w"></span>
-<span class="na">eggroll.rollsite.host</span><span class="o">=</span><span class="s">127.0.0.1</span><span class="w"></span>
-<span class="na">eggroll.rollsite.port</span><span class="o">=</span><span class="s">9370</span><span class="w"></span>
-<span class="na">eggroll.rollsite.party.id</span><span class="o">=</span><span class="s">10001</span><span class="w"></span>
-<span class="na">eggroll.rollsite.route.table.path</span><span class="o">=</span><span class="s">conf/route_table.json</span><span class="w"></span>
+<span class="c1"># rollsite</span>
+<span class="na">eggroll.rollsite.coordinator</span><span class="o">=</span><span class="s">webank</span>
+<span class="na">eggroll.rollsite.host</span><span class="o">=</span><span class="s">127.0.0.1</span>
+<span class="na">eggroll.rollsite.port</span><span class="o">=</span><span class="s">9370</span>
+<span class="na">eggroll.rollsite.party.id</span><span class="o">=</span><span class="s">10001</span>
+<span class="na">eggroll.rollsite.route.table.path</span><span class="o">=</span><span class="s">conf/route_table.json</span>
 
-<span class="na">eggroll.rollsite.push.max.retry</span><span class="o">=</span><span class="s">3</span><span class="w"></span>
-<span class="na">eggroll.rollsite.push.long.retry</span><span class="o">=</span><span class="s">2</span><span class="w"></span>
-<span class="na">eggroll.rollsite.push.batches.per.stream</span><span class="o">=</span><span class="s">10</span><span class="w"></span>
-<span class="na">eggroll.rollsite.adapter.sendbuf.size</span><span class="o">=</span><span class="s">100000</span><span class="w"></span>
+<span class="na">eggroll.rollsite.push.max.retry</span><span class="o">=</span><span class="s">3</span>
+<span class="na">eggroll.rollsite.push.long.retry</span><span class="o">=</span><span class="s">2</span>
+<span class="na">eggroll.rollsite.push.batches.per.stream</span><span class="o">=</span><span class="s">10</span>
+<span class="na">eggroll.rollsite.adapter.sendbuf.size</span><span class="o">=</span><span class="s">100000</span>
 </code></pre></div>
 <h3 id="52">5.2 路由表配置<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1288,39 +1288,39 @@
 <li>第二级表示服务，若找不到对应的目标服务，则使用**default**</li>
 <li>第二级，通常将**default**设为本方**rollsite**服务地址，将**fateflow**设为本方**fate flow server**服务的grpc地址</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;route_table&quot;</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;10001&quot;</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9370</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">      </span><span class="p">],</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;fateflow&quot;</span><span class="p">:[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9360</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">      </span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;10002&quot;</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9470</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">      </span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="p">},</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;permission&quot;</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;default_allow&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;route_table&quot;</span><span class="p">:</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;10001&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9370</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;fateflow&quot;</span><span class="p">:[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9360</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;10002&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;default&quot;</span><span class="p">:[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9470</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;ip&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;127.0.0.1&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;permission&quot;</span><span class="p">:</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;default_allow&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 
 

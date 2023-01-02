@@ -906,42 +906,42 @@
 </ul>
 <p><strong>Example</strong></p>
 <p>fate_on_standalone: is for executing a standalone engine on the same machine as <code>FATE Flow Server</code>, generally used for fast experiments, <code>nodes</code> is generally set to 1, <code>cores_per_node</code> is generally the number of CPU cores of the machine, also can be moderately over-provisioned</p>
-<div class="highlight"><pre><span></span><code><span class="nt">fate_on_standalone</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">standalone</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">fate_on_standalone</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">standalone</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 </code></pre></div>
 <p>fate_on_eggroll: configured based on the actual deployment of <code>EggRoll</code> cluster, <code>nodes</code> denotes the number of <code>node manager</code> machines, <code>cores_per_node</code> denotes the average number of CPU cores per <code>node manager</code> machine</p>
-<div class="highlight"><pre><span></span><code><span class="nt">fate_on_eggroll</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">clustermanager</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">rollsite</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9370</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">fate_on_eggroll</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">clustermanager</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">rollsite</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9370</span>
 </code></pre></div>
 <p>fate_on_spark: configured based on the resources allocated to the <code>FATE</code> cluster in the <code>Spark</code> cluster, <code>nodes</code> indicates the number of <code>Spark</code> nodes, <code>cores_per_node</code> indicates the average number of CPU cores per node allocated to the <code>FATE</code> cluster</p>
-<div class="highlight"><pre><span></span><code><span class="nt">fate_on_spark</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">spark</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># default use SPARK_HOME environment variable</span><span class="w"></span>
-<span class="w">    </span><span class="nt">home</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
-<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">fate_on_spark</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">spark</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># default use SPARK_HOME environment variable</span>
+<span class="w">    </span><span class="nt">home</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cores_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 </code></pre></div>
 <p>Note: Please make sure that the <code>Spark</code> cluster allocates the corresponding amount of resources to the <code>FATE</code> cluster, if the <code>Spark</code> cluster allocates less resources than the resources configured in <code>FATE</code> here, then it will be possible to submit the <code>FATE</code> job, but when <code>FATE Flow</code> submits the task to the <code>Spark</code> cluster, the task will not actually execute because the <code>Spark</code> cluster has insufficient resources. Insufficient resources, the task is not actually executed</p>
 <h2 id="3-job-request-resource-configuration">3. Job request resource configuration<a class="headerlink" href="#3-job-request-resource-configuration" title="Permanent link">&para;</a></h2>
 <p>We generally use <code>task_cores`'' and</code>task_parallelism`' to configure job request resources, such as</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;common&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;job_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;train&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;task_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;task_parallelism&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;computing_partitions&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">36000</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="nt">&quot;job_parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;common&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;job_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;train&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;task_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;task_parallelism&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;computing_partitions&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">36000</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>The total resources requested by the job are <code>task_cores</code> * <code>task_parallelism</code>. When creating a job, <code>FATE Flow</code> will distribute the job to each <code>party</code> based on the above configuration, running role, and the engine used by the party (via <code>$FATE_PROJECT_BASE/conf/service_conf .yaml#default_engines</code>), the actual parameters will be calculated as follows</p>
 <h2 id="4-the-process-of-calculating-the-actual-parameter-adaptation-for-resource-requests">4. The process of calculating the actual parameter adaptation for resource requests<a class="headerlink" href="#4-the-process-of-calculating-the-actual-parameter-adaptation-for-resource-requests" title="Permanent link">&para;</a></h2>
@@ -998,7 +998,7 @@
 <h2 id="6-related-commands">6. Related commands<a class="headerlink" href="#6-related-commands" title="Permanent link">&para;</a></h2>
 <h3 id="query">query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h3>
 <p>For querying fate system resources</p>
-<div class="highlight"><pre><span></span><code>flow resource query
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>resource<span class="w"> </span>query
 </code></pre></div>
 <p><strong>Options</strong> </p>
 <p><strong>Returns</strong></p>
@@ -1029,35 +1029,35 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;computing_engine_resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_create_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-09-21 19:32:59&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1632223979564</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_engine_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;cores_per_node&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<span class="w">            </span><span class="p">},</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_engine_entrance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate_on_eggroll&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_engine_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EGGROLL&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_engine_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computing&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_remaining_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_remaining_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_update_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-11-08 16:56:38&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;f_update_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1636361798812</span><span class="w"></span>
-<span class="w">        </span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;use_resource_job&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;computing_engine_resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;f_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_create_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-09-21 19:32:59&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1632223979564</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_engine_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;cores_per_node&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;f_engine_entrance&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate_on_eggroll&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_engine_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EGGROLL&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_engine_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;computing&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_remaining_cores&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_remaining_memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_update_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-11-08 16:56:38&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;f_update_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1636361798812</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;use_resource_job&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="return">return<a class="headerlink" href="#return" title="Permanent link">&para;</a></h3>
 <p>Resources for returning a job</p>
-<div class="highlight"><pre><span></span><code>flow resource <span class="k">return</span> <span class="o">[</span>options<span class="o">]</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>resource<span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </code></pre></div>
 <p><strong>Options</strong> </p>
 <table>
@@ -1106,19 +1106,19 @@
 </tbody>
 </table>
 <p><strong>Example</strong></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081612427726750&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8888&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;resource_in_use&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;resource_return_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">],</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111081612427726750&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;8888&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;resource_in_use&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;resource_return_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 
 

@@ -769,7 +769,7 @@
 <h2 id="key">Key<a class="headerlink" href="#key" title="Permanent link">&para;</a></h2>
 <h3 id="query">query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h3>
 <p>Query the public key information of our or partner's fate site</p>
-<p><div class="highlight"><pre><span></span><code>flow key query -p <span class="m">9999</span>
+<p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>key<span class="w"> </span>query<span class="w"> </span>-p<span class="w"> </span><span class="m">9999</span>
 </code></pre></div>
 <strong>Options</strong> </p>
 <table>
@@ -822,15 +822,15 @@
 </tbody>
 </table>
 <p>Sample</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzxgbxa3cfhvwbu0AFfY/\ nkm7uFZ17J0EEDgaIWlrLakds7XboU5iOT0eReQp/KG3R0fVM9rBtdj8NcBcArtZ9\n2242Atls3jiuza/MPPo9XACnedGW7O+ VAfvVmq2sdmKZMX5l7krEXYN645UZAd8b\nhIh+xf0qGW6IgxyKvqF13VxxB7OMUzUwyY/ZcN2rW1urfdXsCNoQ1cFl3KaarkHl\nn/ gBMcCDvACXoKysFnFE7L4E7CGglYaDBJrfIyti+sbSVNxUDx2at2VXqj/PohTa\nkBKfrgK7sT85gz1sc9uRwhwF4nOY7izq367S7t/W8BJ75gWsr+lhhiIfE19RBbBQ\n /wIDAQAB\n-----END PUBLIC KEY-----&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzxgbxa3cfhvwbu0AFfY/\ nkm7uFZ17J0EEDgaIWlrLakds7XboU5iOT0eReQp/KG3R0fVM9rBtdj8NcBcArtZ9\n2242Atls3jiuza/MPPo9XACnedGW7O+ VAfvVmq2sdmKZMX5l7krEXYN645UZAd8b\nhIh+xf0qGW6IgxyKvqF13VxxB7OMUzUwyY/ZcN2rW1urfdXsCNoQ1cFl3KaarkHl\nn/ gBMcCDvACXoKysFnFE7L4E7CGglYaDBJrfIyti+sbSVNxUDx2at2VXqj/PohTa\nkBKfrgK7sT85gz1sc9uRwhwF4nOY7izq367S7t/W8BJ75gWsr+lhhiIfE19RBbBQ\n /wIDAQAB\n-----END PUBLIC KEY-----&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="save">save<a class="headerlink" href="#save" title="Permanent link">&para;</a></h3>
 <p>Used to save other fate site public key information, that is, for cooperation with other sites</p>
-<div class="highlight"><pre><span></span><code>flow key save -c fateflow/examples/key/save_public_key.json
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>key<span class="w"> </span>save<span class="w"> </span>-c<span class="w"> </span>fateflow/examples/key/save_public_key.json
 </code></pre></div>
 <p><strong>Options</strong> </p>
 <table>
@@ -903,14 +903,14 @@
 </tbody>
 </table>
 <p>Sample</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="delete">delete<a class="headerlink" href="#delete" title="Permanent link">&para;</a></h3>
 <p>Delete the partner site public key, i.e. cancel the partnership</p>
-<div class="highlight"><pre><span></span><code>flow key delete -p <span class="m">9999</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>key<span class="w"> </span>delete<span class="w"> </span>-p<span class="w"> </span><span class="m">9999</span>
 </code></pre></div>
 <p><strong>Options</strong> </p>
 <table>
@@ -958,10 +958,10 @@
 </tbody>
 </table>
 <p>Sample</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 
 

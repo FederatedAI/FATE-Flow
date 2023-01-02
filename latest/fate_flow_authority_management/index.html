@@ -1104,23 +1104,23 @@
 <p>Authentication configuration: <code>$FATE_BASE/conf/service_conf.yaml</code>.</p>
 </li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c1">## Site authentication requires configuration of the party site id</span><span class="w"></span>
-<span class="nt">party_id</span><span class="p">:</span><span class="w"></span>
-<span class="c1"># Hook module, need to configure different hooks according to different scenarios</span><span class="w"></span>
-<span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span><span class="w"></span>
-<span class="c1"># Third-party authentication service name</span><span class="w"></span>
-<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># Client authentication switch</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># Site authentication switch</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1">## Site authentication requires configuration of the party site id</span>
+<span class="nt">party_id</span><span class="p">:</span>
+<span class="c1"># Hook module, need to configure different hooks according to different scenarios</span>
+<span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span>
+<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span>
+<span class="c1"># Third-party authentication service name</span>
+<span class="nt">hook_server_name</span><span class="p">:</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># Client authentication switch</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">site</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># Site authentication switch</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </code></pre></div>
 <ul>
 <li>Authentication method: Support flow's own authentication module authentication and third-party service authentication. The authentication hooks can be modified by hook_module, currently the following hooks are supported.</li>
@@ -1130,13 +1130,13 @@
 <h2 id="2-client-authentication">2. client authentication<a class="headerlink" href="#2-client-authentication" title="Permanent link">&para;</a></h2>
 <h3 id="21-flow-authentication">2.1 flow authentication<a class="headerlink" href="#21-flow-authentication" title="Permanent link">&para;</a></h3>
 <h4 id="211-configuration">2.1.1 Configuration<a class="headerlink" href="#211-configuration" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
+<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
 </code></pre></div>
 <h4 id="222-interface-authentication-method">2.2.2 Interface Authentication Method<a class="headerlink" href="#222-interface-authentication-method" title="Permanent link">&para;</a></h4>
 <p>All client requests sent to Flow need to add the following header
@@ -1173,12 +1173,12 @@
 <p>You can refer to <a href="https://github.com/FederatedAI/FATE/blob/master/python/fate_client/flow_sdk/client/base.py#L63">Fate SDK</a></p>
 <h3 id="22-third-party-service-authentication">2.2 Third party service authentication<a class="headerlink" href="#22-third-party-service-authentication" title="Permanent link">&para;</a></h3>
 <h4 id="221-configuration">2.2.1 Configuration<a class="headerlink" href="#221-configuration" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.api.client_authentication</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.api.client_authentication</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
 </code></pre></div>
 <h4 id="222-interface-authentication-method_1">2.2.2 Interface Authentication Method<a class="headerlink" href="#222-interface-authentication-method_1" title="Permanent link">&para;</a></h4>
 <ul>
@@ -1188,14 +1188,14 @@
 <h2 id="3-site-authentication">3. Site Authentication<a class="headerlink" href="#3-site-authentication" title="Permanent link">&para;</a></h2>
 <h3 id="31-flow-authentication">3.1 flow authentication<a class="headerlink" href="#31-flow-authentication" title="Permanent link">&para;</a></h3>
 <h4 id="311-configuration">3.1.1 Configuration<a class="headerlink" href="#311-configuration" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nt">party_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9999</span><span class="w"></span>
-<span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">party_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9999</span>
+<span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
+<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
 </code></pre></div>
 <h4 id="312-authentication-scheme">3.1.2 Authentication scheme<a class="headerlink" href="#312-authentication-scheme" title="Permanent link">&para;</a></h4>
 <ul>
@@ -1207,7 +1207,7 @@
 <li>Add the partner's public key</li>
 </ul>
 <p>Used to save other fate site public key information, that is, for cooperation with other sites</p>
-<div class="highlight"><pre><span></span><code>flow key save -c fateflow/examples/key/save_public_key.json
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>key<span class="w"> </span>save<span class="w"> </span>-c<span class="w"> </span>fateflow/examples/key/save_public_key.json
 </code></pre></div>
 <p><strong>Options</strong> </p>
 <table>
@@ -1280,16 +1280,16 @@
 </tbody>
 </table>
 <p>Sample</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <ul>
 <li>Delete a partner's public key</li>
 </ul>
 <p>Delete the partner site public key, i.e. cancel the partnership</p>
-<div class="highlight"><pre><span></span><code>flow key delete -p <span class="m">9999</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>key<span class="w"> </span>delete<span class="w"> </span>-p<span class="w"> </span><span class="m">9999</span>
 </code></pre></div>
 <p><strong>Options</strong> </p>
 <table>
@@ -1337,16 +1337,16 @@
 </tbody>
 </table>
 <p>Sample</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <ul>
 <li>Query the co-key</li>
 </ul>
 <p>Query the public key information of our or partner's fate site</p>
-<p><div class="highlight"><pre><span></span><code>flow key query -p <span class="m">9999</span>
+<p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>key<span class="w"> </span>query<span class="w"> </span>-p<span class="w"> </span><span class="m">9999</span>
 </code></pre></div>
 <strong>Options</strong> </p>
 <table>
@@ -1399,20 +1399,20 @@
 </tbody>
 </table>
 <p>Sample</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzxgbxa3cfhvwbu0AFfY/\ nkm7uFZ17J0EEDgaIWlrLakds7XboU5iOT0eReQp/KG3R0fVM9rBtdj8NcBcArtZ9\n2242Atls3jiuza/MPPo9XACnedGW7O+ VAfvVmq2sdmKZMX5l7krEXYN645UZAd8b\nhIh+xf0qGW6IgxyKvqF13VxxB7OMUzUwyY/ZcN2rW1urfdXsCNoQ1cFl3KaarkHl\nn/ gBMcCDvACXoKysFnFE7L4E7CGglYaDBJrfIyti+sbSVNxUDx2at2VXqj/PohTa\nkBKfrgK7sT85gz1sc9uRwhwF4nOY7izq367S7t/W8BJ75gWsr+lhhiIfE19RBbBQ\n /wIDAQAB\n-----END PUBLIC KEY-----&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzxgbxa3cfhvwbu0AFfY/\ nkm7uFZ17J0EEDgaIWlrLakds7XboU5iOT0eReQp/KG3R0fVM9rBtdj8NcBcArtZ9\n2242Atls3jiuza/MPPo9XACnedGW7O+ VAfvVmq2sdmKZMX5l7krEXYN645UZAd8b\nhIh+xf0qGW6IgxyKvqF13VxxB7OMUzUwyY/ZcN2rW1urfdXsCNoQ1cFl3KaarkHl\nn/ gBMcCDvACXoKysFnFE7L4E7CGglYaDBJrfIyti+sbSVNxUDx2at2VXqj/PohTa\nkBKfrgK7sT85gz1sc9uRwhwF4nOY7izq367S7t/W8BJ75gWsr+lhhiIfE19RBbBQ\n /wIDAQAB\n-----END PUBLIC KEY-----&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="32-third-party-service-authentication">3.2 Third-party service authentication<a class="headerlink" href="#32-third-party-service-authentication" title="Permanent link">&para;</a></h3>
 <h4 id="321-configuration">3.2.1 Configuration<a class="headerlink" href="#321-configuration" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.api.site_authentication</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.api.site_authentication</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">site</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
 </code></pre></div>
 <h4 id="322-interface-authentication-method">3.2.2 Interface Authentication Method<a class="headerlink" href="#322-interface-authentication-method" title="Permanent link">&para;</a></h4>
 <ul>

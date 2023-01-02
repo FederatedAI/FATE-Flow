@@ -1104,23 +1104,23 @@
 <p>认证配置: <code>$FATE_BASE/conf/service_conf.yaml</code>：</p>
 </li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c1"># 站点鉴权时需要配置本方站点id</span><span class="w"></span>
-<span class="nt">party_id</span><span class="p">:</span><span class="w"></span>
-<span class="c1"># 钩子模块，需要根据不同场景配置不同的钩子</span><span class="w"></span>
-<span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span><span class="w"></span>
-<span class="c1"># 第三方认证服务名</span><span class="w"></span>
-<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># 客户端认证开关</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># 站点认证开关</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1"># 站点鉴权时需要配置本方站点id</span>
+<span class="nt">party_id</span><span class="p">:</span>
+<span class="c1"># 钩子模块，需要根据不同场景配置不同的钩子</span>
+<span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span>
+<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span>
+<span class="c1"># 第三方认证服务名</span>
+<span class="nt">hook_server_name</span><span class="p">:</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># 客户端认证开关</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">site</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># 站点认证开关</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </code></pre></div>
 <ul>
 <li>认证方式：支持flow自带的认证模块认证和第三方服务认证。可通过hook_module修改认证钩子，当前支持如下钩子：</li>
@@ -1130,13 +1130,13 @@
 <h2 id="2">2. 客户端认证<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
 <h3 id="21-flow">2.1 flow认证<a class="headerlink" href="#21-flow" title="Permanent link">&para;</a></h3>
 <h4 id="211">2.1.1 配置<a class="headerlink" href="#211" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.client_authentication</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
+<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
 </code></pre></div>
 <h4 id="222">2.2.2 接口鉴权方式<a class="headerlink" href="#222" title="Permanent link">&para;</a></h4>
 <p>则所有客户端发送到 Flow 的请求都需要增加以下 header</p>
@@ -1169,12 +1169,12 @@
 <p>可以参考 <a href="https://github.com/FederatedAI/FATE/blob/master/python/fate_client/flow_sdk/client/base.py#L63">Fate SDK</a> </p>
 <h3 id="22">2.2 第三方服务认证<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
 <h4 id="221">2.2.1 配置<a class="headerlink" href="#221" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.api.client_authentication</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.api.client_authentication</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
 </code></pre></div>
 <h4 id="222_1">2.2.2 接口鉴权方式<a class="headerlink" href="#222_1" title="Permanent link">&para;</a></h4>
 <ul>
@@ -1184,14 +1184,14 @@
 <h2 id="3">3. 站点认证<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <h3 id="31-flow">3.1 flow认证<a class="headerlink" href="#31-flow" title="Permanent link">&para;</a></h3>
 <h4 id="311">3.1.1 配置<a class="headerlink" href="#311" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nt">party_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9999</span><span class="w"></span>
-<span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">client</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">party_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9999</span>
+<span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.flow.site_authentication</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">client</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">http_app_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
+<span class="w">    </span><span class="nt">http_secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
 </code></pre></div>
 <h4 id="312">3.1.2 认证方案<a class="headerlink" href="#312" title="Permanent link">&para;</a></h4>
 <ul>
@@ -1203,7 +1203,7 @@
 <li>添加合作方公钥</li>
 </ul>
 <p>用于保存其它fate站点公钥信息，即为和其他站点合作</p>
-<div class="highlight"><pre><span></span><code>flow key save -c fateflow/examples/key/save_public_key.json
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>key<span class="w"> </span>save<span class="w"> </span>-c<span class="w"> </span>fateflow/examples/key/save_public_key.json
 </code></pre></div>
 <p><strong>选项</strong> </p>
 <table>
@@ -1276,16 +1276,16 @@
 </tbody>
 </table>
 <p>样例</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <ul>
 <li>删除合作方公钥</li>
 </ul>
 <p>删除合作方站点公钥，即为取消合作关系</p>
-<div class="highlight"><pre><span></span><code>flow key delete -p <span class="m">9999</span>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>key<span class="w"> </span>delete<span class="w"> </span>-p<span class="w"> </span><span class="m">9999</span>
 </code></pre></div>
 <p><strong>选项</strong> </p>
 <table>
@@ -1333,16 +1333,16 @@
 </tbody>
 </table>
 <p>样例</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <ul>
 <li>查询共钥</li>
 </ul>
 <p>用于查询本方或合作方fate站点公钥信息</p>
-<p><div class="highlight"><pre><span></span><code>flow key query -p <span class="m">9999</span>
+<p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>key<span class="w"> </span>query<span class="w"> </span>-p<span class="w"> </span><span class="m">9999</span>
 </code></pre></div>
 <strong>选项</strong> </p>
 <table>
@@ -1395,20 +1395,20 @@
 </tbody>
 </table>
 <p>样例</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzxgbxa3cfhvwbu0AFfY/\nkm7uFZ17J0EEDgaIWlrLakds7XboU5iOT0eReQp/KG3R0fVM9rBtdj8NcBcArtZ9\n2242Atls3jiuza/MPPo9XACnedGW7O+VAfvVmq2sdmKZMX5l7krEXYN645UZAd8b\nhIh+xf0qGW6IgxyKvqF13VxxB7OMUzUwyY/ZcN2rW1urfdXsCNoQ1cFl3KaarkHl\nn/gBMcCDvACXoKysFnFE7L4E7CGglYaDBJrfIyti+sbSVNxUDx2at2VXqj/PohTa\nkBKfrgK7sT85gz1sc9uRwhwF4nOY7izq367S7t/W8BJ75gWsr+lhhiIfE19RBbBQ\n/wIDAQAB\n-----END PUBLIC KEY-----&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzxgbxa3cfhvwbu0AFfY/\nkm7uFZ17J0EEDgaIWlrLakds7XboU5iOT0eReQp/KG3R0fVM9rBtdj8NcBcArtZ9\n2242Atls3jiuza/MPPo9XACnedGW7O+VAfvVmq2sdmKZMX5l7krEXYN645UZAd8b\nhIh+xf0qGW6IgxyKvqF13VxxB7OMUzUwyY/ZcN2rW1urfdXsCNoQ1cFl3KaarkHl\nn/gBMcCDvACXoKysFnFE7L4E7CGglYaDBJrfIyti+sbSVNxUDx2at2VXqj/PohTa\nkBKfrgK7sT85gz1sc9uRwhwF4nOY7izq367S7t/W8BJ75gWsr+lhhiIfE19RBbBQ\n/wIDAQAB\n-----END PUBLIC KEY-----&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="32">3.2 第三方服务认证<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
 <h4 id="321">3.2.1 配置<a class="headerlink" href="#321" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.api.site_authentication</span><span class="w"></span>
-<span class="nt">authentication</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">site</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">hook_module</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">site_authentication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_flow.hook.api.site_authentication</span>
+<span class="nt">authentication</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">site</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">switch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">hook_server_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;xxx&quot;</span>
 </code></pre></div>
 <h4 id="322">3.2.2 接口鉴权方式<a class="headerlink" href="#322" title="Permanent link">&para;</a></h4>
 <ul>
