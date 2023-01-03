@@ -15,8 +15,8 @@
 #
 from fate.arch.common import EngineType
 from fate_flow.engine.computing._eggroll import EggrollEngine
+from fate_flow.engine.computing._spark import SparkEngine
 from fate_flow.entity.engine_types import ComputingEngine
-
 from fate_flow.settings import ENGINES
 
 
@@ -25,6 +25,8 @@ def build_engine(computing_engine=None):
         computing_engine = ENGINES.get(EngineType.COMPUTING)
     if computing_engine in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
         engine_session = EggrollEngine()
+    elif computing_engine == ComputingEngine.SPARK:
+        engine_session = SparkEngine()
     else:
         raise ValueError(f"{computing_engine} is not supported")
     return engine_session

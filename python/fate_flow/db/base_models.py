@@ -35,14 +35,14 @@ from peewee import (
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.settings import DATABASE, IS_STANDALONE, stat_logger
+from fate_flow.settings import DATABASE, IS_STANDALONE, stat_logger, FORCE_USE_SQLITE
 from fate_flow.utils.base_utils import serialize_b64, json_dumps, deserialize_b64, json_loads, date_string_to_timestamp, \
     current_timestamp, timestamp_to_date
 from fate_flow.utils.file_utils import get_project_base_directory
 from fate_flow.utils.log_utils import getLogger, sql_logger
 from fate_flow.utils.object_utils import from_dict_hook
 
-if IS_STANDALONE:
+if IS_STANDALONE or FORCE_USE_SQLITE:
     from playhouse.apsw_ext import DateTimeField
 else:
     from peewee import DateTimeField
@@ -186,7 +186,7 @@ class BaseDataBase:
     def __init__(self):
         database_config = DATABASE.copy()
         db_name = database_config.pop("name")
-        if IS_STANDALONE and not bool(int(os.environ.get("FORCE_USE_MYSQL", 0))):
+        if IS_STANDALONE or FORCE_USE_SQLITE:
             # sqlite does not support other options
             Insert.on_conflict = lambda self, *args, **kwargs: self.on_conflict_replace()
 

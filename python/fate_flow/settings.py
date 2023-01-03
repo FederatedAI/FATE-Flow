@@ -47,6 +47,7 @@ PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol", "http")
 PROXY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol", "http")
 
+FORCE_USE_SQLITE = get_base_config("force_use_sqlite")
 ENGINES = engine_utils.get_engines()
 IS_STANDALONE = engine_utils.is_standalone()
 

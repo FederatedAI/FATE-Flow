@@ -1,8 +1,4 @@
-use_registry: false
-dependent_distribution: false
-encrypt_password: false
-encrypt_module: fate_arch.common.encrypt_utils#pwdecrypt
-private_key:
+force_use_sqlite: true
 party_id: "10000"
 fateflow:
   # you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported

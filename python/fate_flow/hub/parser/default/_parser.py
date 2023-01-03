@@ -204,7 +204,7 @@ class TaskParser(TaskParserABC):
         _type = JobDefaultConfig.task_default_conf.get("output").get("data").get("type")
         _format = JobDefaultConfig.task_default_conf.get("output").get("data").get("format")
 
-        if ENGINES.get(EngineType.STORAGE) in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
+        if ENGINES.get(EngineType.STORAGE).upper() in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
             os.makedirs(os.path.join(LOCAL_DATA_STORE_PATH, self.task_id), exist_ok=True)
             return OutputDataSpec(type=_type, metadata={
                 "uri": f"file://{LOCAL_DATA_STORE_PATH}/{self.task_id}",
@@ -255,7 +255,7 @@ class TaskParser(TaskParserABC):
             for _party_id in party.party_id:
                 parties.append({"role": party.role, "partyid": _party_id})
         return FederationBackendSpec(
-            type=ENGINES.get(EngineType.STORAGE).lower(),
+            type=ENGINES.get(EngineType.FEDERATION).lower(),
             metadata={
                 "federation_id": self.federation_id,
                 "parties": {
