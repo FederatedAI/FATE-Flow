@@ -22,9 +22,9 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs
 from werkzeug.http import HTTP_STATUS_CODES
 
-from fate_flow.entity.engine_types import CoordinationProxyService
+from fate_flow.entity.engine_types import CoordinationProxyService, GRPCChannel
 from fate_flow.entity.types import RetCode, CoordinationCommunicationProtocol, FederatedMode
-from fate_flow.settings import stat_logger, PROXY_PROTOCOL, PROXY, ENGINES
+from fate_flow.settings import stat_logger, PROXY_NAME, ENGINES, PROXY
 
 
 def get_json_result(code=RetCode.SUCCESS, message='success', data=None, job_id=None, meta=None):
@@ -96,39 +96,25 @@ def validate_request_headers(**kwargs):
 
 
 def get_federated_proxy_address():
-
-    if PROXY_PROTOCOL == "default":
-        protocol = CoordinationCommunicationProtocol.HTTP
-    else:
-        protocol = PROXY_PROTOCOL
+    grpc_channel = GRPCChannel.DEFAULT
+    # protocol = CoordinationCommunicationProtocol.HTTP
     if ENGINES.get("federated_mode") == FederatedMode.SINGLE:
-        return None, None, protocol
-    if isinstance(PROXY, dict):
-        host = PROXY["host"]
-        port = PROXY[f"{protocol}_port"]
-        return (
-            host,
-            port,
-            protocol,
-        )
-    if PROXY == CoordinationProxyService.ROLLSITE:
-        # proxy_address = ServerRegistry.FATE_ON_EGGROLL[CoordinationProxyService.ROLLSITE]
-        #
-        # return (
-        #     proxy_address["host"],
-        #     proxy_address.get("grpc_port", proxy_address["port"]),
-        #     CoordinationCommunicationProtocol.GRPC,
-        # )
-        return None, None, protocol
+        return "127.0.0.1", 9360, CoordinationCommunicationProtocol.GRPC, GRPCChannel.OSX
+    if PROXY_NAME == CoordinationProxyService.OSX:
+        grpc_channel = GRPCChannel.OSX
+        host = PROXY.get(PROXY_NAME).get("host")
+        port = PROXY.get(PROXY_NAME).get("port")
+        protocol = CoordinationCommunicationProtocol.GRPC
 
-    if PROXY == CoordinationProxyService.NGINX:
-        proxy_address = ServerRegistry.FATE_ON_SPARK[CoordinationProxyService.NGINX]
+    elif PROXY_NAME == CoordinationProxyService.ROLLSITE:
+        host = PROXY.get(PROXY_NAME).get("host")
+        port = PROXY.get(PROXY_NAME).get("port")
+        protocol = CoordinationCommunicationProtocol.GRPC
 
-        return (
-            proxy_address["host"],
-            proxy_address[f"{protocol}_port"],
-            protocol,
-        )
-
-    raise RuntimeError(f"can not support coordinate proxy {PROXY}")
-
+    elif PROXY_NAME == CoordinationProxyService.NGINX:
+        host = PROXY.get(PROXY_NAME).get("grpc_host")
+        port = PROXY.get(PROXY_NAME).get("port")
+        protocol = CoordinationCommunicationProtocol.GRPC
+    else:
+        raise RuntimeError(f"can not support coordinate proxy {PROXY}")
+    return host, port, protocol, grpc_channel

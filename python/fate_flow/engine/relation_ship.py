@@ -13,7 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
+from fate_flow.entity.address_types import StandaloneAddress, EggRollAddress, HDFSAddress, MysqlAddress, HiveAddress, LocalFSAddress, PathAddress, \
+    ApiAddress
 from fate_flow.entity.engine_types import ComputingEngine, StorageEngine, FederationEngine, EngineType
 
 
@@ -30,6 +31,7 @@ class Relationship(object):
                     FederationEngine.STANDALONE,
                     FederationEngine.RABBITMQ,
                     FederationEngine.PULSAR,
+                    FederationEngine.OSX
                 ],
             },
         },
@@ -39,11 +41,12 @@ class Relationship(object):
                 "support": [StorageEngine.EGGROLL],
             },
             EngineType.FEDERATION: {
-                "default": FederationEngine.EGGROLL,
+                "default": FederationEngine.ROLLSITE,
                 "support": [
-                    FederationEngine.EGGROLL,
+                    FederationEngine.ROLLSITE,
                     FederationEngine.RABBITMQ,
                     FederationEngine.PULSAR,
+                    FederationEngine.OSX
                 ],
             },
         },
@@ -58,47 +61,19 @@ class Relationship(object):
             },
             EngineType.FEDERATION: {
                 "default": FederationEngine.RABBITMQ,
-                "support": [FederationEngine.PULSAR, FederationEngine.RABBITMQ],
+                "support": [FederationEngine.PULSAR, FederationEngine.RABBITMQ, FederationEngine.OSX],
             },
-        },
-        ComputingEngine.LINKIS_SPARK: {
-            EngineType.STORAGE: {
-                "default": StorageEngine.LINKIS_HIVE,
-                "support": [StorageEngine.LINKIS_HIVE],
-            },
-            EngineType.FEDERATION: {
-                "default": FederationEngine.RABBITMQ,
-                "support": [FederationEngine.PULSAR, FederationEngine.RABBITMQ],
-            },
-        },
+        }
     }
 
-
-    EngineConfMap = {
-        "fate_on_standalone": {
-            EngineType.COMPUTING: [(ComputingEngine.STANDALONE, "standalone")],
-            EngineType.STORAGE: [(StorageEngine.STANDALONE, "standalone")],
-            EngineType.FEDERATION: [(FederationEngine.STANDALONE, "standalone")],
-        },
-        "fate_on_eggroll": {
-            EngineType.COMPUTING: [(ComputingEngine.EGGROLL, "clustermanager")],
-            EngineType.STORAGE: [(StorageEngine.EGGROLL, "clustermanager")],
-            EngineType.FEDERATION: [(FederationEngine.EGGROLL, "rollsite")],
-        },
-        "fate_on_spark": {
-            EngineType.COMPUTING: [
-                (ComputingEngine.SPARK, "spark"),
-                (ComputingEngine.LINKIS_SPARK, "linkis_spark"),
-            ],
-            EngineType.STORAGE: [
-                (StorageEngine.HDFS, "hdfs"),
-                (StorageEngine.HIVE, "hive"),
-                (StorageEngine.LINKIS_HIVE, "linkis_hive"),
-                (StorageEngine.LOCALFS, "localfs"),
-            ],
-            EngineType.FEDERATION: [
-                (FederationEngine.RABBITMQ, "rabbitmq"),
-                (FederationEngine.PULSAR, "pulsar"),
-            ],
-        },
+    EngineToAddress = {
+        StorageEngine.STANDALONE: StandaloneAddress,
+        StorageEngine.EGGROLL: EggRollAddress,
+        StorageEngine.HDFS: HDFSAddress,
+        StorageEngine.MYSQL: MysqlAddress,
+        StorageEngine.HIVE: HiveAddress,
+        StorageEngine.LOCALFS: LocalFSAddress,
+        StorageEngine.PATH: PathAddress,
+        StorageEngine.API: ApiAddress
     }
+

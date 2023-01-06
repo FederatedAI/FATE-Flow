@@ -73,7 +73,8 @@ class RuntimeConfSpec(BaseModel):
 
 
 class TaskScheduleSpec(BaseModel):
-    taskid: Optional[str]
+    task_id: Optional[str]
+    party_task_id: Optional[str]
     component: Optional[str]
     role: Optional[str]
     stage: Optional[str]
@@ -133,6 +134,7 @@ class PartySpec(BaseModel):
 class RuntimeTaskOutputChannelSpec(BaseModel):
     producer_task: str
     output_artifact_key: str
+    roles: Optional[List[Literal["guest", "host", "arbiter"]]]
 
 
 class ModelWarehouseChannelSpec(BaseModel):

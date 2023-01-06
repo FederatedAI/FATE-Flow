@@ -46,19 +46,37 @@ class SparkEngine(EngineABC):
             raise ValueError(f"deploy mode {deploy_mode} not supported")
 
         spark_submit_cmd = os.path.join(spark_home, "bin/spark-submit")
-        executable = [spark_submit_cmd, f"--name={task.f_task_id}#{task.f_role}"]
+        process_cmd = [spark_submit_cmd, f"--name={task.f_task_id}#{task.f_role}"]
         for k, v in spark_submit_config.items():
             if k != "conf":
-                executable.append(f"--{k}={v}")
+                process_cmd.append(f"--{k}={v}")
         if "conf" in spark_submit_config:
             for ck, cv in spark_submit_config["conf"].items():
-                executable.append(f"--conf")
-                executable.append(f"{ck}={cv}")
-        extra_env = {}
-        extra_env["SPARK_HOME"] = spark_home
-        return WorkerManager.start_task_worker(worker_name=WorkerName.TASK_EXECUTOR, task=task,
-                                               task_parameters=run_parameters, executable=executable,
-                                               extra_env=extra_env)
+                process_cmd.append(f"--conf")
+                process_cmd.append(f"{ck}={cv}")
+        extra_env = {"SPARK_HOME": spark_home}
+        worker_name = WorkerName.TASK_EXECUTOR
+        worker_id, config_dir, _ = WorkerManager.get_process_dirs(worker_name=worker_name,
+                                                                  job_id=task.f_job_id,
+                                                                  role=task.f_role,
+                                                                  party_id=task.f_party_id,
+                                                                  task=task)
+        config_path, _ = WorkerManager.get_config(config_dir=config_dir, config=run_parameters)
+        # todo: generate main path
+        main_path = "/data/projects/fate/python/fate/components/__main__.py"
+        cmd = [
+            main_path,
+            "component",
+            "execute",
+            "--process-tag",
+            task.f_execution_id,
+            "--config",
+            config_path
+        ]
+        process_cmd.extend(cmd)
+        return WorkerManager.start_task_worker(worker_name=worker_name, task=task,
+                                               task_parameters=run_parameters,
+                                               extra_env=extra_env, process_cmd=process_cmd, worker_id=worker_id)
 
     def kill(self, task):
         kill_status_code = process_utils.kill_task_executor_process(task)

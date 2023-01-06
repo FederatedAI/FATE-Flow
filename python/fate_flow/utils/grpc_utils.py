@@ -15,19 +15,14 @@
 #
 import grpc
 
-from arch import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
+from protobuf.python import osx_pb2, osx_pb2_grpc
+from protobuf.python import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HOST, REMOTE_REQUEST_TIMEOUT
 from fate_flow.utils.base_utils import json_loads, json_dumps
 from fate_flow.utils.log_utils import audit_logger
 from fate_flow.utils.requests_utils import request
-
-
-def get_command_federation_channel(host, port):
-    channel = grpc.insecure_channel(f"{host}:{port}")
-    stub = proxy_pb2_grpc.DataTransferServiceStub(channel)
-    return channel, stub
 
 
 def gen_routing_metadata(src_party_id, dest_party_id):
@@ -60,8 +55,7 @@ def get_url(_suffix):
 
 
 class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
-    @staticmethod
-    def unaryCall(_request, context):
+    def unaryCall(self, _request, context):
         packet = _request
         header = packet.header
         _suffix = packet.body.key
@@ -89,15 +83,35 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
         return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)
 
 
-def forward_grpc_packet(_json_body, _method, _url, _src_party_id, _dst_party_id, role, job_id=None,
-                        overall_timeout=None):
-    overall_timeout = REMOTE_REQUEST_TIMEOUT if overall_timeout is None else overall_timeout
-    _src_end_point = basic_meta_pb2.Endpoint(ip=HOST, port=GRPC_PORT)
-    _src = proxy_pb2.Topic(name=job_id, partyId="{}".format(_src_party_id), role=FATE_FLOW_SERVICE_NAME, callback=_src_end_point)
-    _dst = proxy_pb2.Topic(name=job_id, partyId="{}".format(_dst_party_id), role=role, callback=None)
-    _task = proxy_pb2.Task(taskId=job_id)
-    _command = proxy_pb2.Command(name=_url)
-    _conf = proxy_pb2.Conf(overallTimeout=overall_timeout)
-    _meta = proxy_pb2.Metadata(src=_src, dst=_dst, task=_task, command=_command, operator=_method, conf=_conf)
-    _data = proxy_pb2.Data(key=_url, value=bytes(json_dumps(_json_body), 'utf-8'))
-    return proxy_pb2.Packet(header=_meta, body=_data)
+class UnaryServiceOSX(osx_pb2_grpc.PrivateTransferProtocolServicer):
+    def invoke(self, _request, context):
+        packet = _request
+        metadata = packet.metadata
+        payload = packet.payload
+        request_info = json_loads(bytes.decode(payload))
+        job_id = metadata.get("JobId")
+        audit_logger(job_id).info(f"rpc receive metadata: {metadata}")
+        audit_logger(job_id).info(f"rpc receive request_info: {request_info}")
+        source_node_id = metadata.get("TargetNodeID")
+        target_node_id = metadata.get("SourceNodeID")
+        _routing_metadata = gen_routing_metadata(src_party_id=source_node_id, dest_party_id=target_node_id)
+        audit_logger(job_id).info(f'start request：{request_info.get("method")}, {get_url(request_info.get("uri"))},'
+                                  f'{request_info.get("json_body")}, {request_info.get("headers")}')
+        resp = request(method=request_info.get("method"), url=get_url(request_info.get("uri")),
+                       json=request_info.get("json_body"), headers=request_info.get("headers", {}))
+        audit_logger(job_id).info(f"resp: {resp.text}")
+        resp_json = resp.json()
+        _meta = {
+            "TechProviderCode": metadata.get("TechProviderCode", ""),
+            "SourceInstID": metadata.get("TargetInstID", ""),
+            "TargetInstID": metadata.get("SourceInstID", ""),
+            "SourceNodeID": source_node_id,
+            "TargetNodeID": target_node_id,
+            "TargetComponentName": FATE_FLOW_SERVICE_NAME,
+            "TargetMethod": metadata.get("TargetMethod", ""),
+            "JobId": job_id
+        }
+        _data = bytes(json_dumps(resp_json), 'utf-8')
+        res = osx_pb2.Outbound(metadata=_meta, payload=_data)
+        audit_logger(job_id).info(f"response: {res}")
+        return res

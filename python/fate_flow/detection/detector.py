@@ -37,6 +37,7 @@ class Detector(Cron):
         count = 0
         try:
             running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING)
+            detect_logger().info(f'running task test: {running_tasks}')
             stop_job_ids = set()
             for task in running_tasks:
                 if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST:

@@ -34,17 +34,17 @@ def get_engines():
             f"{EngineType.COMPUTING} is None,"
             f"Please check default_engines on conf/service_conf.yaml"
         )
-    engines[EngineType.COMPUTING] = default_engines[EngineType.COMPUTING].upper()
+    engines[EngineType.COMPUTING] = default_engines[EngineType.COMPUTING].lower()
     if engines[EngineType.COMPUTING] not in get_engine_class_members(ComputingEngine):
         raise RuntimeError(f"{engines[EngineType.COMPUTING]} is illegal")
 
     # federation engine
     if default_engines.get(EngineType.FEDERATION) is not None:
-        engines[EngineType.FEDERATION] = default_engines[EngineType.FEDERATION].upper()
+        engines[EngineType.FEDERATION] = default_engines[EngineType.FEDERATION].lower()
 
     # storage engine
     if default_engines.get(EngineType.STORAGE) is not None:
-        engines[EngineType.STORAGE] = default_engines[EngineType.STORAGE].upper()
+        engines[EngineType.STORAGE] = default_engines[EngineType.STORAGE].lower()
 
     # set default storage engine and federation engine by computing engine
     for t in (EngineType.STORAGE, EngineType.FEDERATION):
@@ -80,31 +80,18 @@ def get_engines():
 
 def is_standalone():
     return (
-        get_engines().get(EngineType.FEDERATION).upper() == FederationEngine.STANDALONE
+        get_engines().get(EngineType.FEDERATION).lower() == FederationEngine.STANDALONE
     )
 
 
 def get_engines_config_from_conf(group_map=False):
     engines_config = {}
-    engine_group_map = {}
     for engine_type in {
         EngineType.COMPUTING,
         EngineType.FEDERATION,
         EngineType.STORAGE,
     }:
-        engines_config[engine_type] = {}
-        engine_group_map[engine_type] = {}
-    for group_name, engine_map in Relationship.EngineConfMap.items():
-        for engine_type, name_maps in engine_map.items():
-            for name_map in name_maps:
-                single_engine_config = conf_utils.get_base_config(group_name, {}).get(
-                    name_map[1], {}
-                )
-                if single_engine_config:
-                    engine_name = name_map[0]
-                    engines_config[engine_type][engine_name] = single_engine_config
-                    engine_group_map[engine_type][engine_name] = group_name
-    if not group_map:
-        return engines_config
-    else:
-        return engines_config, engine_group_map
+      engines_config[engine_type] = {}
+      for _name, _conf in conf_utils.get_base_config(engine_type, {}).items():
+          engines_config[engine_type][_name] = _conf
+    return engines_config
