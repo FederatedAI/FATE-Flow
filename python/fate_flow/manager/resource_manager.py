@@ -20,7 +20,7 @@ from fate_flow.db.db_models import EngineRegistry, Job
 from fate_flow.entity.engine_types import EngineType
 from fate_flow.entity.types import ResourceOperation
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, SUPPORT_IGNORE_RESOURCE_ENGINES, ENGINES
+from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, ENGINES
 from fate_flow.utils import engine_utils, base_utils, job_utils
 from fate_flow.utils.log_utils import schedule_logger
 
@@ -28,14 +28,14 @@ from fate_flow.utils.log_utils import schedule_logger
 class ResourceManager(object):
     @classmethod
     def initialize(cls):
-        engines_config, engine_group_map = engine_utils.get_engines_config_from_conf(group_map=True)
+        engines_config = engine_utils.get_engines_config_from_conf(group_map=True)
         for engine_type, engine_configs in engines_config.items():
             for engine_name, engine_config in engine_configs.items():
-                cls.register_engine(engine_type=engine_type, engine_name=engine_name, engine_entrance=engine_group_map[engine_type][engine_name], engine_config=engine_config)
+                cls.register_engine(engine_type=engine_type, engine_name=engine_name, engine_config=engine_config)
 
     @classmethod
     @DB.connection_context()
-    def register_engine(cls, engine_type, engine_name, engine_entrance, engine_config):
+    def register_engine(cls, engine_type, engine_name, engine_config):
         nodes = engine_config.get("nodes", 1)
         cores = engine_config.get("cores_per_node", 0) * nodes * JobDefaultConfig.total_cores_overweight_percent
         memory = engine_config.get("memory_per_node", 0) * nodes * JobDefaultConfig.total_memory_overweight_percent
@@ -55,15 +55,14 @@ class ResourceManager(object):
             operate = EngineRegistry.update(update_fields).where(*filters)
             update_status = operate.execute() > 0
             if update_status:
-                stat_logger.info(f"update {engine_type} engine {engine_name} {engine_entrance} registration information")
+                stat_logger.info(f"update {engine_type} engine {engine_name} registration information")
             else:
-                stat_logger.info(f"update {engine_type} engine {engine_name} {engine_entrance} registration information takes no effect")
+                stat_logger.info(f"update {engine_type} engine {engine_name} registration information takes no effect")
         else:
             resource = EngineRegistry()
             resource.f_create_time = base_utils.current_timestamp()
             resource.f_engine_type = engine_type
             resource.f_engine_name = engine_name
-            resource.f_engine_entrance = engine_entrance
             resource.f_engine_config = engine_config
 
             resource.f_cores = cores
@@ -75,7 +74,7 @@ class ResourceManager(object):
                 resource.save(force_insert=True)
             except Exception as e:
                 stat_logger.warning(e)
-            stat_logger.info(f"create {engine_type} engine {engine_name} {engine_entrance} registration information")
+            stat_logger.info(f"create {engine_type} engine {engine_name} registration information")
 
 
     @classmethod

@@ -13,9 +13,7 @@ fateflow:
     grpc_port:
   # use random instance_id instead of {host}:{http_port}
   random_instance_id: false
-  proxy: rollsite
-  # support default/http/grpc
-  protocol: http
+  proxy_name: osx
 database:
   name: fate_flow
   user: fate
@@ -35,44 +33,7 @@ default_engines:
   computing: standalone
   federation: standalone
   storage: standalone
-fate_on_standalone:
-  standalone:
-    cores_per_node: 20
-    nodes: 1
-fate_on_eggroll:
-  clustermanager:
-    cores_per_node: 16
-    nodes: 1
-  rollsite:
-    host: 127.0.0.1
-    port: 9370
-fate_on_spark:
-  spark:
-    # default use SPARK_HOME environment variable
-    home:
-    cores_per_node: 20
-    nodes: 2
-  hive:
-    host: 127.0.0.1
-    port: 10000
-    auth_mechanism:
-    username:
-    password:
-  hdfs:
-    name_node: hdfs://fate-cluster
-    # default /
-    path_prefix:
-  rabbitmq:
-    host: 192.168.0.4
-    mng_port: 12345
-    port: 5672
-    user: fate
-    password: fate
-    # default conf/rabbitmq_route_table.yaml
-    route_table:
-    # mode: replication / client, default: replication
-    mode: replication
-    max_message_size: 1048576
+federation:
   pulsar:
     host: 192.168.0.5
     port: 6650
@@ -84,16 +45,42 @@ fate_on_spark:
     topic_ttl: 30
     # default conf/pulsar_route_table.yaml
     route_table:
-   # mode: replication / client, default: replication
+    # mode: replication / client, default: replication
     mode: replication
     max_message_size: 1048576
   nginx:
     host: 127.0.0.1
     http_port: 9300
     grpc_port: 9310
-fateboard:
-  host: 127.0.0.1
-  port: 8080
+  rabbitmq:
+    host: 192.168.0.4
+    mng_port: 12345
+    port: 5672
+    user: fate
+    password: fate
+    # default conf/rabbitmq_route_table.yaml
+    route_table:
+    # mode: replication / client, default: replication
+    mode: replication
+    max_message_size: 1048576
+  rollsite:
+    host: 127.0.0.1
+    port: 9370
+  osx:
+    host: 127.0.0.1
+    port: 9370
+computing:
+  standalone:
+    cores_per_node: 20
+    nodes: 1
+  eggroll:
+    cores_per_node: 16
+    nodes: 1
+  spark:
+    # default use SPARK_HOME environment variable
+    home:
+    cores_per_node: 20
+    nodes: 2
 servings:
   hosts:
     - 127.0.0.1:8000

@@ -23,7 +23,6 @@ import traceback
 import grpc
 from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
-from arch import proxy_pb2_grpc
 from fate_flow.apps import app
 from fate_flow.db.config_manager import ConfigManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
@@ -36,11 +35,11 @@ from fate_flow.settings import (
     GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT, detect_logger, stat_logger,
 )
 from fate_flow.utils import process_utils
-from fate_flow.utils.grpc_utils import UnaryService
+from fate_flow.utils.grpc_utils import UnaryService, UnaryServiceOSX
 from fate_flow.utils.log_utils import schedule_logger, getLogger
 from fate_flow.utils.version import get_versions
 from fate_flow.utils.xthread import ThreadPoolExecutor
-
+from protobuf.python import proxy_pb2_grpc, osx_pb2_grpc
 
 if __name__ == '__main__':
     # init db
@@ -72,7 +71,7 @@ if __name__ == '__main__':
     server = grpc.server(thread_pool=thread_pool_executor,
                          options=[(cygrpc.ChannelArgKey.max_send_message_length, -1),
                                   (cygrpc.ChannelArgKey.max_receive_message_length, -1)])
-
+    osx_pb2_grpc.add_PrivateTransferProtocolServicer_to_server(UnaryServiceOSX(), server)
     proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
     server.add_insecure_port(f"{HOST}:{GRPC_PORT}")
     server.start()

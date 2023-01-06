@@ -13,4 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.db import *
+from fate_flow.engine.storage.eggroll._table import StorageTable
+from fate_flow.engine.storage.eggroll._session import StorageSession
+
+__all__ = ["StorageTable", "StorageSession"]

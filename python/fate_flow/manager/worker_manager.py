@@ -33,33 +33,35 @@ class WorkerManager:
         pass
 
     @classmethod
-    def start_task_worker(cls, worker_name, task: Task, task_parameters,
-                          executable: list = None, extra_env: dict = None, **kwargs):
-        worker_id, config_dir, log_dir = cls.get_process_dirs(worker_name=worker_name,
-                                                              job_id=task.f_job_id,
-                                                              role=task.f_role,
-                                                              party_id=task.f_party_id,
-                                                              task=task)
+    def start_task_worker(cls, worker_name, task: Task, task_parameters, executable: list = None,
+                          extra_env: dict = None, process_cmd=None, worker_id=None, **kwargs):
+        worker_id, config_dir, log_dir = cls.get_process_dirs(
+            worker_id=worker_id,
+            worker_name=worker_name,
+            job_id=task.f_job_id,
+            role=task.f_role,
+            party_id=task.f_party_id,
+            task=task)
         env = cls.get_env(task.f_job_id, task.f_provider_info)
-        config_path, result_path = cls.get_config(config_dir=config_dir, config=task_parameters, log_dir=log_dir)
+        config_path, result_path = cls.get_config(config_dir=config_dir, config=task_parameters)
         specific_cmd = []
-        if executable:
-            process_cmd = executable
-        else:
-            process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
-        common_cmd = [
-            "-m",
-            "fate.components",
-            "component",
-            "execute",
-            "--process-tag",
-            task.f_execution_id,
-            "--config",
-            config_path
-        ]
-        process_cmd.extend(common_cmd)
-        process_cmd.extend(specific_cmd)
-
+        if not process_cmd:
+            if executable:
+                process_cmd = executable
+            else:
+                process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
+            common_cmd = [
+                "-m",
+                "fate.components",
+                "component",
+                "execute",
+                "--process-tag",
+                task.f_execution_id,
+                "--config",
+                config_path
+            ]
+            process_cmd.extend(common_cmd)
+            process_cmd.extend(specific_cmd)
         p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
                                          process_id=worker_id)
@@ -67,11 +69,12 @@ class WorkerManager:
                              run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=task_parameters,
                              cmd=process_cmd)
         schedule_logger(job_id=task.f_job_id).info(f"start task worker, executor id {task.f_execution_id}...")
-        return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd}
+        return {"run_pid": p.pid, "run_ip": RuntimeConfig.JOB_SERVER_HOST, "worker_id": worker_id, "cmd": process_cmd}
 
     @classmethod
-    def get_process_dirs(cls, worker_name: WorkerName, job_id=None, role=None, party_id=None, task: Task = None):
-        worker_id = uuid1().hex
+    def get_process_dirs(cls, worker_name: WorkerName, worker_id=None, job_id=None, role=None, party_id=None, task: Task = None):
+        if not worker_id:
+            worker_id = uuid1().hex
         party_id = str(party_id)
         if task:
             config_dir = job_utils.get_job_directory(job_id, role, party_id, task.f_task_name, task.f_task_id,
@@ -87,7 +90,7 @@ class WorkerManager:
         return worker_id, config_dir, log_dir
 
     @classmethod
-    def get_config(cls, config_dir, config, log_dir):
+    def get_config(cls, config_dir, config):
         config_path = os.path.join(config_dir, "config.json")
         with open(config_path, 'w') as fw:
             fw.write(json_dumps(config))

@@ -5,30 +5,29 @@ class EngineType(object):
 
 
 class FederationEngine(object):
-    EGGROLL = "EGGROLL"
-    RABBITMQ = "RABBITMQ"
-    STANDALONE = "STANDALONE"
-    PULSAR = "PULSAR"
+    ROLLSITE = "rollsite"
+    RABBITMQ = "rabbitmq"
+    STANDALONE = "standalone"
+    PULSAR = "pulsar"
+    OSX = "osx"
 
 
 class ComputingEngine(object):
-    EGGROLL = "EGGROLL"
-    SPARK = "SPARK"
-    LINKIS_SPARK = "LINKIS_SPARK"
-    STANDALONE = "STANDALONE"
+    EGGROLL = "eggroll"
+    SPARK = "spark"
+    STANDALONE = "standalone"
 
 
 class StorageEngine(object):
-    STANDALONE = "STANDALONE"
-    EGGROLL = "EGGROLL"
-    HDFS = "HDFS"
-    MYSQL = "MYSQL"
-    SIMPLE = "SIMPLE"
-    PATH = "PATH"
-    HIVE = "HIVE"
-    LINKIS_HIVE = "LINKIS_HIVE"
-    LOCALFS = "LOCALFS"
-    API = "API"
+    STANDALONE = "standalone"
+    EGGROLL = "eggroll"
+    HDFS = "hdfs"
+    MYSQL = "mysql"
+    SIMPLE = "simple"
+    PATH = "path"
+    HIVE = "hive"
+    LOCALFS = "localfs"
+    API = "api"
 
 
 class CoordinationProxyService(object):
@@ -36,8 +35,14 @@ class CoordinationProxyService(object):
     NGINX = "nginx"
     FATEFLOW = "fateflow"
     FIREWORK = "firework"
+    OSX = "osx"
 
 
 class FederatedCommunicationType(object):
     PUSH = "PUSH"
     PULL = "PULL"
+
+
+class GRPCChannel(object):
+    DEFAULT = "default"
+    OSX = "osx"

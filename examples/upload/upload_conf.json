@@ -1,0 +1,12 @@
+{
+  "file": "/Users/tonly/FATE_1/fateflow/examples/upload/data/breast_hetero_guest.csv",
+  "delimiter": ",",
+  "head": 1,
+  "partitions": 4,
+  "namespace": "experiment",
+  "name": "breast_hetero_guest",
+  "storage_engine": "standalone",
+  "meta": {
+    "test": 1
+  }
+}

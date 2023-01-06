@@ -11,7 +11,7 @@ FEDERATED_ERROR = 104
 
 class APIClient(requests.Session):
     def __init__(self, host="127.0.0.1", port=9380, protocol="http", api_version=None, timeout=60,
-                 remote_protocol="http", remote_host=None, remote_port=None):
+                 remote_protocol="http", remote_host=None, remote_port=None, grpc_channel="default"):
         super().__init__()
         self.host = host
         self.port = port
@@ -21,6 +21,7 @@ class APIClient(requests.Session):
         self.remote_protocol = remote_protocol
         self.remote_host = remote_host
         self.remote_port = remote_port
+        self.grpc_channel = grpc_channel
 
     @property
     def base_url(self):
@@ -93,7 +94,10 @@ class APIClient(requests.Session):
             if self.remote_protocol == "http":
                 return self.remote_on_http(**kwargs)
             if self.remote_protocol == "grpc":
-                return self.remote_on_grpc(**kwargs)
+                if self.grpc_channel == "default":
+                    return self.remote_on_grpc_proxy(**kwargs)
+                elif self.grpc_channel == "osx":
+                    return self.remote_on_grpc_osx(**kwargs)
             else:
                 raise Exception(f'{self.remote_protocol} coordination communication protocol is not supported.')
         else:
@@ -117,8 +121,8 @@ class APIClient(requests.Session):
             # time.sleep(get_exponential_backoff_interval(t))
 
     @staticmethod
-    def remote_on_grpc(job_id, method, host, port, endpoint, src_party_id, dest_party_id, json_body,
-                       try_times=3, timeout=10, headers=None, source_host=None, source_port=None):
+    def remote_on_grpc_proxy(job_id, method, host, port, endpoint, src_party_id, dest_party_id, json_body,
+                             try_times=3, timeout=10, headers=None, source_host=None, source_port=None, **kwargs):
         _packet = wrap_grpc_packet(
             json_body=json_body, http_method=method, url=endpoint,
             src_party_id=src_party_id, dst_party_id=dest_party_id,
@@ -128,12 +132,11 @@ class APIClient(requests.Session):
         _routing_metadata = gen_routing_metadata(
             src_party_id=src_party_id, dest_party_id=dest_party_id,
         )
-
         for t in range(try_times):
             channel, stub = get_command_federation_channel(host, port)
 
             try:
-                _return, _call = stub.unaryCall.with_call(
+                _return, _call = stub.invoke.with_call(
                     _packet, metadata=_routing_metadata,
                     timeout=timeout or None,
                 )
@@ -141,7 +144,37 @@ class APIClient(requests.Session):
                 if t >= try_times - 1:
                     raise e
             else:
-                return json.loads(_return.body.value)
+                return json.loads(bytes.decode(_return.payload))
+            finally:
+                channel.close()
+
+    @staticmethod
+    def remote_on_grpc_osx(job_id, method, host, port, endpoint, src_party_id, dest_party_id, json_body,
+                           try_times=3, timeout=10, headers=None, source_host=None, source_port=None, **kwargs):
+        _packet = wrap_grpc_packet(
+            json_body=json_body, http_method=method, url=endpoint,
+            src_party_id=src_party_id, dst_party_id=dest_party_id,
+            job_id=job_id, headers=headers, overall_timeout=timeout,
+            source_host=source_host, source_port=source_port
+        )
+        _routing_metadata = gen_routing_metadata(
+            src_party_id=src_party_id, dest_party_id=dest_party_id,
+        )
+        for t in range(try_times):
+            from fate_flow.utils.log_utils import schedule_logger
+            schedule_logger('wzh').info("start")
+            channel, stub = get_command_federation_channel(host, port)
+            schedule_logger('wzh').info("end")
+            try:
+                _return, _call = stub.invoke.with_call(
+                    _packet, metadata=_routing_metadata,
+                    timeout=timeout or None,
+                )
+            except Exception as e:
+                if t >= try_times - 1:
+                    raise Exception(str(e))
+            else:
+                return json.loads(bytes.decode(_return.payload))
             finally:
                 channel.close()
 
@@ -164,8 +197,8 @@ class BaseAPI:
                 return response
         except Exception as e:
             response = {
-                "retcode": FEDERATED_ERROR,
-                "retmsg": "Federated schedule error, {}".format(e)
+                "code": FEDERATED_ERROR,
+                "message": "Federated schedule error, {}".format(e)
             }
         federated_response[dest_role][dest_party_id] = response
 
@@ -239,7 +272,7 @@ class BaseAPI:
                                               )
         except Exception as e:
             response = {
-                "retcode": FEDERATED_ERROR,
-                "retmsg": "Federated schedule error, {}".format(e)
+                "code": FEDERATED_ERROR,
+                "message": "Federated schedule error, {}".format(e)
             }
         return response

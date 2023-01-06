@@ -13,4 +13,5 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate.arch.protobuf.python import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
+from protobuf.python import osx_pb2, osx_pb2_grpc
+from protobuf.python import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2

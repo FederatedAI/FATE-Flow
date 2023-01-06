@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #
 #  Copyright 2019 The FATE Authors. All Rights Reserved.
 #
@@ -13,4 +15,26 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.db import *
+
+BASEDIR=$(dirname "$0")
+cd "$BASEDIR" || exit
+
+PROTO_DIR="proto"
+TARGER_DIR="generated"
+
+generate() {
+  python -m .protoc -I./$PROTO_DIR --python_out=./$TARGER_DIR "$1"
+}
+
+generate_all() {
+  for proto in "$PROTO_DIR"/*.proto; do
+    echo "protoc: $proto"
+    generate "$proto"
+  done
+}
+
+if [ $# -gt 0 ]; then
+  generate "$1"
+else
+  generate_all
+fi

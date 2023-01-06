@@ -6,6 +6,8 @@ import copy
 from pydantic import BaseModel
 from typing import Dict, Union
 
+from ._federation import StandaloneFederationSpec, RollsiteFederationSpec, OSXFederationSpec, PulsarFederationSpec, \
+    RabbitMQFederationSpec
 from ._structures import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, DAGSchema,\
     RuntimeTaskOutputChannelSpec, TaskScheduleSpec, TaskRuntimeInputSpec, IOArtifact, OutputSpec, \
     OutputMetricSpec, OutputModelSpec, OutputDataSpec, MLMDSpec, LOGGERSpec, ComputingBackendSpec, \
@@ -15,9 +17,9 @@ from fate_flow.entity.types import ArtifactSourceType
 from fate_flow.manager.output_manager import OutputDataTracking
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI
+from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY
 from fate_flow.utils import job_utils
-from fate_flow.entity.engine_types import StorageEngine, EngineType
+from fate_flow.entity.engine_types import StorageEngine, EngineType, FederationEngine
 from fate_flow.entity.scheduler_structures import SchedulerInfoSpec
 from fate_flow.utils.log_utils import schedule_logger
 from .. import TaskParserABC, JobParserABC
@@ -57,6 +59,14 @@ class TaskNodeInfo(object):
     @runtime_parties.setter
     def runtime_parties(self, runtime_parties):
         self._runtime_parties = runtime_parties
+
+    @property
+    def runtime_roles(self) -> list:
+        roles = set()
+        for party_spec in self._runtime_parties:
+            roles.add(party_spec.role)
+
+        return list(roles)
 
     @property
     def upstream_inputs(self):
@@ -204,10 +214,15 @@ class TaskParser(TaskParserABC):
         _type = JobDefaultConfig.task_default_conf.get("output").get("data").get("type")
         _format = JobDefaultConfig.task_default_conf.get("output").get("data").get("format")
 
-        if ENGINES.get(EngineType.STORAGE).upper() in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
+        if ENGINES.get(EngineType.STORAGE) in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
             os.makedirs(os.path.join(LOCAL_DATA_STORE_PATH, self.task_id), exist_ok=True)
             return OutputDataSpec(type=_type, metadata={
                 "uri": f"file://{LOCAL_DATA_STORE_PATH}/{self.task_id}",
+                "format": _format
+            })
+        elif ENGINES.get(EngineType.STORAGE) == StorageEngine.EGGROLL:
+            return OutputDataSpec(type=_type, metadata={
+                "uri": f"eggroll://{self.task_id}",
                 "format": _format
             })
 
@@ -247,23 +262,49 @@ class TaskParser(TaskParserABC):
         return JobDefaultConfig.task_default_conf.get("device")
 
     def generate_computing_conf(self):
-        return ComputingBackendSpec(type=ENGINES.get(EngineType.STORAGE).lower(), metadata={"computing_id": self.computing_id})
+        return ComputingBackendSpec(type=ENGINES.get(EngineType.COMPUTING).lower(), metadata={"computing_id": self.computing_id})
 
     def generate_federation_conf(self):
-        parties = []
+        parties_info = []
         for party in self.parties:
             for _party_id in party.party_id:
-                parties.append({"role": party.role, "partyid": _party_id})
-        return FederationBackendSpec(
-            type=ENGINES.get(EngineType.FEDERATION).lower(),
-            metadata={
-                "federation_id": self.federation_id,
-                "parties": {
-                    "local": {"role": self.role, "partyid": self.party_id},
-                    "parties": parties
-                }
-            }
-        )
+                parties_info.append({"role": party.role, "partyid": _party_id})
+        parties = {
+            "local": {"role": self.role, "partyid": self.party_id},
+            "parties": parties_info
+        }
+        engine_name = ENGINES.get(EngineType.FEDERATION).lower()
+        proxy_conf = PROXY.get(engine_name, {})
+        if engine_name == FederationEngine.STANDALONE:
+            spec = StandaloneFederationSpec(type=engine_name, metadata=StandaloneFederationSpec.MetadataSpec(
+                federation_id=self.federation_id, parties=parties))
+        elif engine_name == FederationEngine.ROLLSITE:
+            spec = RollsiteFederationSpec(type=engine_name, metadata=RollsiteFederationSpec.MetadataSpec(
+                federation_id=self.federation_id,
+                parties=parties,
+                rollsite_config=RollsiteFederationSpec.MetadataSpec.RollsiteConfig(**proxy_conf)
+            ))
+        elif engine_name == FederationEngine.OSX:
+            spec = OSXFederationSpec(type=engine_name, metadata=OSXFederationSpec.MetadataSpec(
+                federation_id=self.federation_id,
+                parties=parties,
+                osx_config=OSXFederationSpec.MetadataSpec.osx_config(**proxy_conf)
+            ))
+        elif engine_name == FederationEngine.PULSAR:
+            spec = PulsarFederationSpec(type=engine_name, metadata=PulsarFederationSpec.MetadataSpec(
+                federation_id=self.federation_id,
+                parties=parties,
+                pulsar_config=PulsarFederationSpec.MetadataSpec.pulsar_config(**proxy_conf)
+            ))
+        elif engine_name == FederationEngine.RABBITMQ:
+            spec = RabbitMQFederationSpec(type=engine_name, metadata=RabbitMQFederationSpec.MetadataSpec(
+                federation_id=self.federation_id,
+                parties=parties,
+                rabbitmq_config=RabbitMQFederationSpec.MetadataSpec.rabbitmq_config(**proxy_conf)
+            ))
+        else:
+            raise RuntimeError(f"federation engine {engine_name} is not supported")
+        return spec
 
     @property
     def task_conf(self):
@@ -279,7 +320,8 @@ class TaskParser(TaskParserABC):
     @property
     def task_parameters(self) -> TaskScheduleSpec:
         return TaskScheduleSpec(
-            taskid=self.execution_id,
+            task_id=self.task_id,
+            party_task_id=self.execution_id,
             component=self.component_ref,
             role=self.role,
             stage=self.stage,
@@ -333,6 +375,7 @@ class JobParser(JobParserABC):
                 continue
 
             upstream_inputs = dict()
+            runtime_roles = self._tasks[name].runtime_roles
             for input_key, output_specs_dict in task_spec.inputs.artifacts.items():
                 upstream_inputs[input_key] = dict()
                 for artifact_source, channel_spec_list in output_specs_dict.items():
@@ -369,7 +412,22 @@ class JobParser(JobParserABC):
                         dependent_task = channel_spec.producer_task
                         self._add_edge(dependent_task, name)
 
+            upstream_inputs = self.check_and_add_runtime_roles(upstream_inputs, runtime_roles)
             self._tasks[name].upstream_inputs = upstream_inputs
+
+    @staticmethod
+    def check_and_add_runtime_roles(upstream_inputs, runtime_roles):
+        correct_inputs = copy.deepcopy(upstream_inputs)
+        for input_key, channel_list in upstream_inputs.items():
+            if isinstance(channel_list, list):
+                for idx, channel in enumerate(channel_list):
+                    if channel.roles is None:
+                        correct_inputs[input_key][idx].roles = runtime_roles
+            else:
+                if channel_list.roles is None:
+                    correct_inputs[input_key].roles = runtime_roles
+
+        return correct_inputs
 
     def _add_edge(self, src, dst, attrs=None):
         if not attrs:
