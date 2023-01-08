@@ -139,9 +139,10 @@ class RuntimeTaskOutputChannelSpec(BaseModel):
 
 class ModelWarehouseChannelSpec(BaseModel):
     model_id: Optional[str]
-    model_version: Optional[str]
+    model_version: Optional[Union[str, int]]
     producer_task: str
     output_artifact_key: str
+    roles: Optional[List[Literal["guest", "host", "arbiter"]]]
 
 
 InputChannelSpec = TypeVar("InputChannelSpec", RuntimeTaskOutputChannelSpec, ModelWarehouseChannelSpec)

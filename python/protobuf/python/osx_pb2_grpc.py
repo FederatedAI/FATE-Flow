@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from . import osx_pb2 as osx__pb2
+import osx_pb2 as osx__pb2
 
 
 class PrivateTransferProtocolStub(object):

@@ -59,17 +59,18 @@ def log_output_artifacts(execution_id, meta_data, type, uri, output_key):
 
 
 @manager.route('/task/model/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['POST'])
-@validate_request_json(data=fields.Dict(required=True))
-def save_output_model(role, party_id, model_id, model_version, component, task_name, model_name, data):
+def save_output_model(role, party_id, model_id, model_version, component, task_name, model_name):
+    from flask import request
+    file = request.files['file']
     PipelinedModel(model_id=model_id, model_version=model_version, role=role, party_id=party_id).save_output_model(
-        task_name, model_name, component, data)
+        task_name, model_name, component, model_file=file)
     return get_json_result()
 
 
 @manager.route('/task/model/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['GET'])
 def get_output_model(role, party_id, model_id, model_version, component, task_name, model_name):
-    data = PipelinedModel(model_id=model_id, model_version=model_version, role=role, party_id=party_id).read_output_model(task_name, model_name)
-    return get_json_result(data=data)
+    return PipelinedModel(model_id=model_id, model_version=model_version, role=role, party_id=party_id).read_output_model(task_name, model_name)
+
 
 
 @manager.route('/task/metric/<job_id>/<role>/<party_id>/<task_name>/<task_id>/<task_version>/<name>', methods=["POST"])

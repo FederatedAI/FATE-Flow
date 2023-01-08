@@ -1,6 +1,8 @@
 import json
 import os.path
 
+from flask import send_file
+
 from fate_flow.db.base_models import DB, BaseModelOperate
 from fate_flow.db.db_models import PipelineModelMeta
 from fate_flow.settings import MODEL_STORE_PATH
@@ -20,8 +22,8 @@ class PipelinedModel(object):
         if handle_type == "file":
             return FileHandle()
 
-    def save_output_model(self, task_name, model_name, component, model_data):
-        self.handle.write(self.model_id, self.model_version, self.role, self.party_id, task_name, model_name, model_data)
+    def save_output_model(self, task_name, model_name, component, model_file):
+        self.handle.write(self.model_id, self.model_version, self.role, self.party_id, task_name, model_name, model_file)
         self.meta_manager.save(task_name=task_name, component=component)
 
     def read_output_model(self, task_name, model_name):
@@ -60,13 +62,11 @@ class IOHandle:
 
 
 class FileHandle(IOHandle):
-    def write(self, model_id, model_version, role, party_id, task_name, model_name, model_data):
+    def write(self, model_id, model_version, role, party_id, task_name, model_name, model_file):
         base_path = os.path.join(MODEL_STORE_PATH, model_id, model_version, role, party_id, task_name)
         os.makedirs(base_path, exist_ok=True)
-        with open(os.path.join(base_path, model_name), "w") as fw:
-            json.dump(model_data, fw)
+        model_file.save(os.path.join(base_path, model_name))
 
     def read(self, model_id, model_version, role, party_id, task_name, model_name):
         model_path = os.path.join(MODEL_STORE_PATH, model_id, model_version, role, party_id, task_name, model_name)
-        with open(model_path, "r") as fr:
-            return json.load(fr)
+        return send_file(model_path, attachment_filename=model_name, as_attachment=True)
