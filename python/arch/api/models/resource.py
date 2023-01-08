@@ -161,10 +161,7 @@ class APIClient(requests.Session):
             src_party_id=src_party_id, dest_party_id=dest_party_id,
         )
         for t in range(try_times):
-            from fate_flow.utils.log_utils import schedule_logger
-            schedule_logger('wzh').info("start")
             channel, stub = get_command_federation_channel(host, port)
-            schedule_logger('wzh').info("end")
             try:
                 _return, _call = stub.invoke.with_call(
                     _packet, metadata=_routing_metadata,

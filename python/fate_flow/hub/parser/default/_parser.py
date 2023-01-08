@@ -215,14 +215,14 @@ class TaskParser(TaskParserABC):
         _format = JobDefaultConfig.task_default_conf.get("output").get("data").get("format")
 
         if ENGINES.get(EngineType.STORAGE) in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
-            os.makedirs(os.path.join(LOCAL_DATA_STORE_PATH, self.task_id), exist_ok=True)
+            os.makedirs(os.path.join(LOCAL_DATA_STORE_PATH, self.execution_id), exist_ok=True)
             return OutputDataSpec(type=_type, metadata={
-                "uri": f"file://{LOCAL_DATA_STORE_PATH}/{self.task_id}",
+                "uri": f"file:///{LOCAL_DATA_STORE_PATH}/{self.execution_id}",
                 "format": _format
             })
         elif ENGINES.get(EngineType.STORAGE) == StorageEngine.EGGROLL:
             return OutputDataSpec(type=_type, metadata={
-                "uri": f"eggroll://{self.task_id}",
+                "uri": f"eggroll:///{self.execution_id}",
                 "format": _format
             })
 
@@ -288,19 +288,19 @@ class TaskParser(TaskParserABC):
             spec = OSXFederationSpec(type=engine_name, metadata=OSXFederationSpec.MetadataSpec(
                 federation_id=self.federation_id,
                 parties=parties,
-                osx_config=OSXFederationSpec.MetadataSpec.osx_config(**proxy_conf)
+                osx_config=OSXFederationSpec.MetadataSpec.OSXConfig(**proxy_conf)
             ))
         elif engine_name == FederationEngine.PULSAR:
             spec = PulsarFederationSpec(type=engine_name, metadata=PulsarFederationSpec.MetadataSpec(
                 federation_id=self.federation_id,
                 parties=parties,
-                pulsar_config=PulsarFederationSpec.MetadataSpec.pulsar_config(**proxy_conf)
+                pulsar_config=PulsarFederationSpec.MetadataSpec.PulsarConfig(**proxy_conf)
             ))
         elif engine_name == FederationEngine.RABBITMQ:
             spec = RabbitMQFederationSpec(type=engine_name, metadata=RabbitMQFederationSpec.MetadataSpec(
                 federation_id=self.federation_id,
                 parties=parties,
-                rabbitmq_config=RabbitMQFederationSpec.MetadataSpec.rabbitmq_config(**proxy_conf)
+                rabbitmq_config=RabbitMQFederationSpec.MetadataSpec.RabbitMQConfig(**proxy_conf)
             ))
         else:
             raise RuntimeError(f"federation engine {engine_name} is not supported")

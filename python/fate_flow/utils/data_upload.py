@@ -18,6 +18,8 @@ import json
 import os
 import time
 
+from pydantic import typing
+
 from fate_flow.engine.storage import Session, EggRollStoreType, StorageEngine, StorageTableMeta, StorageTableOrigin
 from fate_flow.utils.base_utils import json_dumps
 from fate_flow.utils.file_utils import get_fate_flow_directory
@@ -37,36 +39,18 @@ class Param(object):
 
 class MetaParam(Param):
     def __init__(self,
-                 delimiter=",",
-                 input_format="dense",
-                 tag_with_value=False,
-                 tag_value_delimiter=":",
-                 with_match_id=False,
-                 id_list=None,
-                 id_range=0,
-                 exclusive_data_type=None,
-                 data_type="float64",
-                 with_label=False,
-                 label_name="y",
-                 label_type="int"):
-        self.input_format = input_format
+                 delimiter: str = ",",
+                 label_name: typing.Union[None, str] = None,
+                 label_type: str = "int",
+                 weight_name: typing.Union[None, str] = None,
+                 dtype: str = "float32",
+                 input_format: str = "dense"):
         self.delimiter = delimiter
-        self.tag_with_value = tag_with_value
-        self.tag_value_delimiter = tag_value_delimiter
-        self.with_match_id = with_match_id
-        self.id_list = id_list
-        self.id_range = id_range
-        self.exclusive_data_type = exclusive_data_type
-        self.data_type = data_type
-        self.with_label = with_label
         self.label_name = label_name
         self.label_type = label_type
-        self.adapter_param()
-
-    def adapter_param(self):
-        if not self.with_label:
-            self.label_name = None
-            self.label_type = None
+        self.weight_name = weight_name
+        self.dtype = dtype
+        self.input_format = input_format
 
 
 class UploadParam(Param):
@@ -92,7 +76,7 @@ class UploadParam(Param):
         self.engine = storage_engine
         self.storage_address = storage_address
         self.destroy = destroy
-        self.meta = MetaParam(**meta) if meta else {}
+        self.meta = MetaParam(**meta)
 
 
 class Upload:
@@ -165,7 +149,7 @@ class Upload:
             address = StorageTableMeta.create_address(
                 storage_engine=storage_engine, address_dict=address_dict
             )
-            self.table = storage_session.create_table(address=address, origin=StorageTableOrigin.UPLOAD, **self.parameters.__dict__)
+            self.table = storage_session.create_table(address=address, origin=StorageTableOrigin.UPLOAD, **self.parameters.to_dict())
 
             data_table_count = self.save_data_table(head)
 
@@ -241,8 +225,8 @@ class Upload:
             delimiter=self.parameters.delimiter
         )
         self.schema.update(schema)
-        self.schema.update(self.parameters.meta)
-        self.table.put_meta([("schema", json_dumps(self.schema))])
+        self.schema.update(self.parameters.meta.to_dict())
+        self.table.put_meta([("schema", self.schema)])
 
     def get_header_schema(self, header_line, delimiter):
         header_source_item = header_line.split(delimiter)
