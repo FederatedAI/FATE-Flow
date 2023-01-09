@@ -614,6 +614,13 @@ def query_model():
     return Response(json.dumps(result, sort_keys=False, cls=DatetimeEncoder), mimetype="application/json")
 
 
+@manager.route('/query/detail', methods=['POST'])
+def query_model_detail():
+    retcode, retmsg, data = model_utils.query_model_detail(**request.json)
+    result = {"retcode": retcode, "retmsg": retmsg, "data": data}
+    return Response(json.dumps(result, sort_keys=False, cls=DatetimeEncoder), mimetype="application/json")
+
+
 @manager.route('/deploy', methods=['POST'])
 @api_utils.validate_request('model_id', 'model_version')
 def deploy():

@@ -26,6 +26,7 @@ from fate_flow.settings import stat_logger
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.pipelined_model.pipelined_model import PipelinedModel
 from fate_flow.db.db_models import DB, MachineLearningModelInfo as MLModel
+from fate_flow.utils import schedule_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import sql_logger
 
@@ -154,6 +155,36 @@ def gather_model_info_data(model: PipelinedModel, query_filters=None):
                     model_info["f_" + attr.name] = field
         return model_info
     return []
+
+
+def query_model_detail(model_id, model_version, **kwargs):
+    model_detail = {}
+    retcode, retmsg, model_infos = query_model_info(model_id=model_id, model_version=model_version)
+    if not model_infos:
+        return retcode, retmsg, model_detail
+    model_info = model_infos[0]
+    model_detail["runtime_conf"] = model_info.get("f_runtime_conf")
+    model_detail["dsl"] = model_info.get("f_train_dsl")
+    model_detail["inference_dsl"] = model_info.get("f_inference_dsl", {})
+    model_detail["component_info"] = get_component_list(model_detail["runtime_conf"], model_detail["dsl"])
+    model_detail["inference_component_info"] = get_component_list(model_detail["runtime_conf"], model_detail["inference_dsl"])
+    return retcode, retmsg, model_detail
+
+
+def get_component_list(conf, dsl):
+    dsl_parser = schedule_utils.get_job_dsl_parser(dsl=dsl,
+                                                   runtime_conf=conf,
+                                                   train_runtime_conf=conf
+                                                   )
+    name_component_maps, hierarchical_structure = dsl_parser.get_dsl_hierarchical_structure()
+    return [{"component_name": k, "module": v["module"], "index": get_component_index(k, hierarchical_structure)}
+            for k, v in dsl.get("components", {}).items()]
+
+
+def get_component_index(component_name, hierarchical_structure):
+    for index, cpn_list in enumerate(hierarchical_structure):
+        if component_name in cpn_list:
+            return index
 
 
 def query_model_info(model_version, role=None, party_id=None, model_id=None, query_filters=None, **kwargs):
