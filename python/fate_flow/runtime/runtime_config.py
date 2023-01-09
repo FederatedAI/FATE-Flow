@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from arch.api.client import FlowSchedulerApi
+from ofx.api.client import FlowSchedulerApi
 from fate_flow.entity.types import ProcessRole
 
 from fate_flow.runtime.reload_config_base import ReloadConfigBase

@@ -1,4 +1,4 @@
-from arch.api.client import FlowSchedulerApi
+from ofx.api.client import FlowSchedulerApi
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.settings import HOST, HTTP_PORT, PROXY_PROTOCOL, API_VERSION, HTTP_REQUEST_TIMEOUT
 from fate_flow.utils.api_utils import get_federated_proxy_address

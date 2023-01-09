@@ -15,8 +15,8 @@
 #
 import grpc
 
-from protobuf.python import osx_pb2, osx_pb2_grpc
-from protobuf.python import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
+from fate_flow.proto.osx import osx_pb2, osx_pb2_grpc
+from fate_flow.proto.rollsite import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HOST, REMOTE_REQUEST_TIMEOUT

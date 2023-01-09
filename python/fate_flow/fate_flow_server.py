@@ -39,7 +39,8 @@ from fate_flow.utils.grpc_utils import UnaryService, UnaryServiceOSX
 from fate_flow.utils.log_utils import schedule_logger, getLogger
 from fate_flow.utils.version import get_versions
 from fate_flow.utils.xthread import ThreadPoolExecutor
-from protobuf.python import proxy_pb2_grpc, osx_pb2_grpc
+from fate_flow.proto.rollsite import proxy_pb2_grpc
+from fate_flow.proto.osx import osx_pb2_grpc
 
 if __name__ == '__main__':
     # init db
