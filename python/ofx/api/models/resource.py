@@ -3,8 +3,8 @@ import threading
 import json
 import requests
 
-from ..utils.grpc_utils import wrap_grpc_packet
-from ..utils.grpc_utils import gen_routing_metadata, get_command_federation_channel
+from ..utils.grpc_utils import wrap_osx_grpc_packet, wrap_proxy_grpc_packet
+from ..utils.grpc_utils import gen_routing_metadata, get_osx_channel, get_proxy_channel
 
 FEDERATED_ERROR = 104
 
@@ -123,7 +123,7 @@ class APIClient(requests.Session):
     @staticmethod
     def remote_on_grpc_proxy(job_id, method, host, port, endpoint, src_party_id, dest_party_id, json_body,
                              try_times=3, timeout=10, headers=None, source_host=None, source_port=None, **kwargs):
-        _packet = wrap_grpc_packet(
+        _packet = wrap_proxy_grpc_packet(
             json_body=json_body, http_method=method, url=endpoint,
             src_party_id=src_party_id, dst_party_id=dest_party_id,
             job_id=job_id, headers=headers, overall_timeout=timeout,
@@ -133,7 +133,7 @@ class APIClient(requests.Session):
             src_party_id=src_party_id, dest_party_id=dest_party_id,
         )
         for t in range(try_times):
-            channel, stub = get_command_federation_channel(host, port)
+            channel, stub = get_proxy_channel(host, port)
 
             try:
                 _return, _call = stub.invoke.with_call(
@@ -151,7 +151,7 @@ class APIClient(requests.Session):
     @staticmethod
     def remote_on_grpc_osx(job_id, method, host, port, endpoint, src_party_id, dest_party_id, json_body,
                            try_times=3, timeout=10, headers=None, source_host=None, source_port=None, **kwargs):
-        _packet = wrap_grpc_packet(
+        _packet = wrap_osx_grpc_packet(
             json_body=json_body, http_method=method, url=endpoint,
             src_party_id=src_party_id, dst_party_id=dest_party_id,
             job_id=job_id, headers=headers, overall_timeout=timeout,
@@ -161,7 +161,7 @@ class APIClient(requests.Session):
             src_party_id=src_party_id, dest_party_id=dest_party_id,
         )
         for t in range(try_times):
-            channel, stub = get_command_federation_channel(host, port)
+            channel, stub = get_osx_channel(host, port)
             try:
                 _return, _call = stub.invoke.with_call(
                     _packet, metadata=_routing_metadata,
