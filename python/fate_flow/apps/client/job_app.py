@@ -34,7 +34,8 @@ def query_job(job_id=None, role=None, party_id=None, status=None):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id, status=status)
     if not jobs:
         return get_json_result(code=ReturnCode.JOB.NO_FOUND, message="no found job")
-    return get_json_result(code=ReturnCode.JOB.SUCCESS, message="success", data=[job.to_human_model_dict() for job in jobs])
+    return get_json_result(code=ReturnCode.JOB.SUCCESS, message="success",
+                           data=[job.to_human_model_dict() for job in jobs])
 
 
 @manager.route('/task/query', methods=['POST'])

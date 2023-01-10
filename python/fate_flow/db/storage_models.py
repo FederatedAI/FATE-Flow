@@ -21,7 +21,7 @@ class StorageTableMetaModel(DataBaseModel):
     f_options = JSONField()
     f_partitions = IntegerField(null=True)
 
-    f_id_delimiter = CharField(null=True)
+    f_delimiter = CharField(null=True)
     f_in_serialized = BooleanField(default=True)
     f_have_head = BooleanField(default=True)
     f_extend_sid = BooleanField(default=False)

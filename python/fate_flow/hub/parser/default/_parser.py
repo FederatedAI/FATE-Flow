@@ -205,7 +205,7 @@ class TaskParser(TaskParserABC):
         return OutputModelSpec(
             type=_type,
             metadata={
-                "uri": f"{BASE_URI}/worker/task/model/{self.role}/{self.party_id}/{model_id}/{str(model_version)}/{self.component_ref}/{self.task_name}",
+                "uri": f"{BASE_URI}/worker/task/model/{self.job_id}/{self.role}/{self.party_id}/{model_id}/{str(model_version)}/{self.component_ref}/{self.task_name}",
                 "format": _format
             }
         )

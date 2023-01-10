@@ -71,6 +71,7 @@ database_logger = getLogger("fate_flow_database")
 
 PARTY_ID = get_base_config("party_id", "")
 
-MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model")
+SOURCE_MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model", "source")
+CACHE_MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model", "cache")
 LOCAL_DATA_STORE_PATH = os.path.join(get_fate_flow_directory(), "data")
 BASE_URI = f"{PROTOCOL}://{HOST}:{HTTP_PORT}/{API_VERSION}"

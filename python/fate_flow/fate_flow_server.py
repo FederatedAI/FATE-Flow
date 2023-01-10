@@ -24,7 +24,7 @@ import grpc
 from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
 from fate_flow.apps import app
-from fate_flow.db.config_manager import ConfigManager
+from fate_flow.controller.config_manager import ConfigManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.db.base_models import init_database_tables as init_flow_db
 from fate_flow.detection.detector import Detector, FederatedDetector

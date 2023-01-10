@@ -1,3 +1,4 @@
+from flask import request
 from webargs import fields
 
 from fate_flow.controller.task_controller import TaskController
@@ -58,19 +59,19 @@ def log_output_artifacts(execution_id, meta_data, type, uri, output_key):
     return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
 
 
-@manager.route('/task/model/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['POST'])
-def save_output_model(role, party_id, model_id, model_version, component, task_name, model_name):
-    from flask import request
+@manager.route('/task/model/<job_id>/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['POST'])
+def save_output_model(job_id, role, party_id, model_id, model_version, component, task_name, model_name):
     file = request.files['file']
-    PipelinedModel(model_id=model_id, model_version=model_version, role=role, party_id=party_id).save_output_model(
+    PipelinedModel(job_id=job_id, model_id=model_id, model_version=model_version, role=role, party_id=party_id).save_output_model(
         task_name, model_name, component, model_file=file)
     return get_json_result()
 
 
-@manager.route('/task/model/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['GET'])
-def get_output_model(role, party_id, model_id, model_version, component, task_name, model_name):
-    return PipelinedModel(model_id=model_id, model_version=model_version, role=role, party_id=party_id).read_output_model(task_name, model_name)
-
+@manager.route('/task/model/<job_id>/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['GET'])
+def get_output_model(job_id, role, party_id, model_id, model_version, component, task_name, model_name):
+    return PipelinedModel(
+        model_id=model_id, model_version=model_version, job_id=job_id, role=role, party_id=party_id
+    ).read_output_model(task_name, model_name)
 
 
 @manager.route('/task/metric/<job_id>/<role>/<party_id>/<task_name>/<task_id>/<task_version>/<name>', methods=["POST"])

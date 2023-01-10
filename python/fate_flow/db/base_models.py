@@ -38,7 +38,7 @@ from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.settings import DATABASE, IS_STANDALONE, stat_logger, FORCE_USE_SQLITE
 from fate_flow.utils.base_utils import serialize_b64, json_dumps, deserialize_b64, json_loads, date_string_to_timestamp, \
     current_timestamp, timestamp_to_date
-from fate_flow.utils.file_utils import get_project_base_directory
+from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import getLogger, sql_logger
 from fate_flow.utils.object_utils import from_dict_hook
 
@@ -191,7 +191,7 @@ class BaseDataBase:
             Insert.on_conflict = lambda self, *args, **kwargs: self.on_conflict_replace()
 
             from playhouse.apsw_ext import APSWDatabase
-            self.database_connection = APSWDatabase(get_project_base_directory("fate_sqlite.db"))
+            self.database_connection = APSWDatabase(get_fate_flow_directory("fate_sqlite.db"))
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
             stat_logger.info('init sqlite database on standalone mode successfully')
         else:

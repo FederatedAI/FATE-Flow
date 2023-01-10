@@ -122,7 +122,12 @@ class TaskCode(Code):
     APPLY_RESOURCE_FAILED = 2005
 
 
+class SiteCode(Code):
+    IS_STANDALONE = 3000
+
+
 class ReturnCode:
     JOB = JobCode
     TASK = TaskCode
+    SITE = SiteCode
 
