@@ -27,7 +27,7 @@ page_name = "data"
                        namespace=fields.String(required=True), name=fields.String(required=True),
                        partitions=fields.Integer(required=True), storage_engine=fields.String(required=False),
                        destroy=fields.Bool(required=False), meta=fields.Dict(required=True))
-def upload_data(file, head, partitions, namespace, name, storage_engine, destroy, meta):
+def upload_data(file, head, partitions, namespace, name, meta, destroy=False, storage_engine=""):
     data = Upload().run(parameters=UploadParam(file=file, head=head, partitions=partitions, namespace=namespace,
                                                name=name, storage_engine=storage_engine, meta=meta, destroy=destroy))
     return get_json_result(code=Code.SUCCESS, message="success", data=data)
