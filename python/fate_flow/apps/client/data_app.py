@@ -15,9 +15,8 @@
 #
 from webargs import fields
 
-from fate_flow.engine import storage
 from fate_flow.entity.types import Code
-from fate_flow.utils.api_utils import get_json_result, validate_request_json
+from fate_flow.utils.api_utils import get_json_result, validate_request_json, validate_request_params
 from fate_flow.utils.data_upload import Upload, UploadParam
 
 page_name = "data"
@@ -27,21 +26,14 @@ page_name = "data"
 @validate_request_json(file=fields.String(required=True), head=fields.Bool(required=True),
                        namespace=fields.String(required=True), name=fields.String(required=True),
                        partitions=fields.Integer(required=True), storage_engine=fields.String(required=False),
-                       meta=fields.Dict(required=True))
-def upload_data(file, head, partitions, namespace, name, storage_engine, meta):
+                       destroy=fields.Bool(required=False), meta=fields.Dict(required=True))
+def upload_data(file, head, partitions, namespace, name, meta, destroy=False, storage_engine=""):
     data = Upload().run(parameters=UploadParam(file=file, head=head, partitions=partitions, namespace=namespace,
-                                               name=name, storage_engine=storage_engine, meta=meta))
+                                               name=name, storage_engine=storage_engine, meta=meta, destroy=destroy))
     return get_json_result(code=Code.SUCCESS, message="success", data=data)
 
 
 @manager.route('/download', methods=['GET'])
-@validate_request_json(name=fields.String(required=True), namespace=fields.String(required=True))
+@validate_request_params(name=fields.String(required=True), namespace=fields.String(required=True))
 def download(name, namespace):
-    data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
-    if not data_table_meta:
-        return error_response(response_code=210, retmsg=f'no found table:{request_data.get("namespace")}, {request_data.get("name")}')
-    tar_file_name = 'table_{}_{}.tar.gz'.format(request_data.get("namespace"), request_data.get("name"))
-    return TableStorage.send_table(
-        output_tables_meta={"table": data_table_meta},
-        tar_file_name=tar_file_name,
-    )
+    return get_json_result(code=Code.SUCCESS, message="success")
