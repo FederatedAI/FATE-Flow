@@ -198,7 +198,7 @@ class StorageTableMeta(StorageTableMetaABC):
         self.partitions = None
         self.in_serialized = None
         self.have_head = None
-        self.id_delimiter = None
+        self.delimiter = None
         self.extend_sid = False
         self.auto_increasing_sid = None
         self.schema = None
@@ -381,7 +381,7 @@ class StorageTableMeta(StorageTableMetaABC):
         return self.in_serialized
 
     def get_id_delimiter(self):
-        return self.id_delimiter
+        return self.delimiter
 
     def get_extend_sid(self):
         return self.extend_sid

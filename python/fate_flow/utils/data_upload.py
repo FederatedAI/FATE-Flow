@@ -21,11 +21,16 @@ import time
 from pydantic import typing
 
 from fate_flow.engine.storage import Session, EggRollStoreType, StorageEngine, StorageTableMeta, StorageTableOrigin
-from fate_flow.utils.base_utils import json_dumps
+from fate_flow.entity.engine_types import EngineType
+from fate_flow.settings import ENGINES
 from fate_flow.utils.file_utils import get_fate_flow_directory
+from fate_flow.utils.log import getLogger
+
+logger = getLogger("upload")
 
 DEFAULT_ID_DELIMITER = ","
 upload_block_max_bytes = 104857600
+
 
 class Param(object):
     def to_dict(self):
@@ -58,7 +63,6 @@ class UploadParam(Param):
             self,
             file="",
             head=1,
-            delimiter=DEFAULT_ID_DELIMITER,
             partitions=10,
             namespace="",
             name="",
@@ -69,7 +73,7 @@ class UploadParam(Param):
     ):
         self.file = file
         self.head = head
-        self.delimiter = delimiter
+        self.delimiter = None
         self.partitions = partitions
         self.namespace = namespace
         self.name = name
@@ -88,13 +92,14 @@ class Upload:
         self.is_block = False
         self.session_id = None
         self.session = None
-        self.storage_engine = None
         self.schema = {}
 
     def run(self, parameters: UploadParam):
-        print(self.parameters)
         self.parameters = parameters
-
+        self.parameters.delimiter = self.parameters.meta.delimiter
+        if not self.parameters.engine:
+            self.parameters.engine = ENGINES.get(EngineType.STORAGE)
+        logger.info(self.parameters.to_dict())
         storage_engine = parameters.engine
         storage_address = parameters.storage_address
         if not storage_address:
@@ -121,15 +126,15 @@ class Upload:
             if self.parameters.destroy:
                 table = sess.get_table(namespace=namespace, name=name)
                 if table:
-                    print(
+                    logger.info(
                         f"destroy table name: {name} namespace: {namespace} engine: {table.engine}"
                     )
                     try:
                         table.destroy()
                     except Exception as e:
-                        print(e)
+                        logger.error(e)
                 else:
-                    print(
+                    logger.info(
                         f"can not found table name: {name} namespace: {namespace}, pass destroy"
                     )
             address_dict = storage_address.copy()
@@ -145,7 +150,7 @@ class Upload:
             else:
                 raise RuntimeError(f"can not support this storage engine: {storage_engine}")
             address_dict.update(upload_address)
-            print(f"upload to {storage_engine} storage, address: {address_dict}")
+            logger.info(f"upload to {storage_engine} storage, address: {address_dict}")
             address = StorageTableMeta.create_address(
                 storage_engine=storage_engine, address_dict=address_dict
             )
@@ -154,11 +159,12 @@ class Upload:
             data_table_count = self.save_data_table(head)
 
             self.table.meta.update_metas(in_serialized=True)
-            print("------------load data finish!-----------------")
+            logger.info("------------load data finish!-----------------")
             # rm tmp file
-            print("file: {}".format(self.parameters.file))
-            print("total data_count: {}".format(data_table_count))
-            print("table name: {}, table namespace: {}".format(name, namespace))
+            logger.info("file: {}".format(self.parameters.file))
+            logger.info("total data_count: {}".format(data_table_count))
+            logger.info("table name: {}, table namespace: {}".format(name, namespace))
+            return {"name": name, "namespace": namespace, "count": data_table_count}
 
     def save_data_table(self,  head=True):
         input_file = self.parameters.file
@@ -188,7 +194,7 @@ class Upload:
             while True:
                 data = list()
                 lines = fin.readlines(upload_block_max_bytes)
-                print(upload_block_max_bytes)
+                logger.info(upload_block_max_bytes)
                 if lines:
                     # self.append_data_line(lines, data, n)
                     for line in lines:
@@ -219,7 +225,7 @@ class Upload:
         return file_name, str_time
 
     def update_table_meta(self, data_head):
-        print(f"data head: {data_head}")
+        logger.info(f"data head: {data_head}")
         schema = self.get_header_schema(
             header_line=data_head,
             delimiter=self.parameters.delimiter
@@ -241,6 +247,7 @@ class Upload:
     def list_to_str(input_list, delimiter):
         return delimiter.join(list(map(str, input_list)))
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', required=True, type=str, help="runtime conf path")
@@ -248,5 +255,5 @@ if __name__ == "__main__":
     path = args.config
     with open(args.config, "r") as f:
         conf = json.load(f)
-        print(conf)
+        logger.info(conf)
     Upload().run(parameters=UploadParam(**conf))

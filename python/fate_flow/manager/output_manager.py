@@ -1,3 +1,5 @@
+import operator
+
 from fate_flow.db.base_models import DB, BaseModelOperate
 from fate_flow.db.db_models import TrackingOutputInfo, Metric
 from fate_flow.entity.output_types import MetricData
@@ -71,22 +73,49 @@ class OutputMetric:
                 ))
 
     @DB.connection_context()
-    def read_metrics_from_db(self, namespace, name, type, **kwargs):
+    def read_metrics(self, filters_args: dict = None):
         try:
-            metric_model = self.get_model_class()
-            metrics = metric_model.select(
-                metric_model.f_data,
-                metric_model.f_meta,
-                metric_model.f_incomplete
+            if not filters_args:
+                filters_args = {}
+            tracking_metric_model = self.get_model_class()
+            key_list = ["namespace", "name", "type", "groups", "incomplete"]
+            filters = [
+                tracking_metric_model.f_job_id == self.job_id,
+                tracking_metric_model.f_role == self.role,
+                tracking_metric_model.f_party_id == self.party_id,
+                tracking_metric_model.f_task_id == self.task_id,
+                tracking_metric_model.f_task_version == self.task_version
+            ]
+            for k, v in filters_args.items():
+                if k in key_list:
+                    if v is not None:
+                        filters.append(operator.attrgetter(f"f_{k}")(tracking_metric_model) == v)
+            metrics = tracking_metric_model.select(
+                tracking_metric_model.f_data, tracking_metric_model.f_metadata
+            ).where(*filters)
+            return [metric.to_human_model_dict() for metric in metrics]
+        except Exception as e:
+            schedule_logger(self.job_id).exception(e)
+            raise e
+
+    @DB.connection_context()
+    def query_metric_keys(self):
+        try:
+            tracking_metric_model = self.get_model_class()
+            metrics = tracking_metric_model.select(
+                tracking_metric_model.f_namespace,
+                tracking_metric_model.f_name,
+                tracking_metric_model.f_type,
+                tracking_metric_model.f_groups,
+                tracking_metric_model.f_incomplete
             ).where(
-                metric_model.f_job_id == self.job_id,
-                metric_model.f_role == self.role,
-                metric_model.f_party_id == self.party_id,
-                metric_model.f_namespace == namespace,
-                metric_model.f_name == name,
-                metric_model.f_type == type
-            )
-            return [metric for metric in metrics]
+                tracking_metric_model.f_job_id == self.job_id,
+                tracking_metric_model.f_role == self.role,
+                tracking_metric_model.f_party_id == self.party_id,
+                tracking_metric_model.f_task_id == self.task_id,
+                tracking_metric_model.f_task_version == self.task_version
+            ).distinct()
+            return [metric.to_human_model_dict() for metric in metrics]
         except Exception as e:
             schedule_logger(self.job_id).exception(e)
             raise e
@@ -101,25 +130,6 @@ class OutputMetric:
             tracking_metric_model.f_party_id == self.party_id
         )
         return operate.execute() > 0
-
-    @DB.connection_context()
-    def read_component_metrics(self):
-        try:
-            tracking_metric_model = self.get_model_class()
-            tracking_metrics = tracking_metric_model.select().where(
-                tracking_metric_model.f_job_id == self.job_id,
-                tracking_metric_model.f_role == self.role,
-                tracking_metric_model.f_party_id == self.party_id,
-                tracking_metric_model.f_task_version == self.task_version
-            )
-            return [tracking_metric for tracking_metric in tracking_metrics]
-        except Exception as e:
-            schedule_logger(self.job_id).exception(e)
-            raise e
-
-    @DB.connection_context()
-    def reload_metric(self, source_metric_manager):
-        pass
 
     def get_model_class(self):
         return db_utils.get_dynamic_db_model(Metric, self.job_id)

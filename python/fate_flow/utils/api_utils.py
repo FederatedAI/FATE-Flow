@@ -71,6 +71,10 @@ def validate_request_json(**kwargs):
     return use_kwargs(kwargs, location='json')
 
 
+def validate_request_params(**kwargs):
+    return use_kwargs(kwargs, location='querystring')
+
+
 def job_request_json(**kwargs):
     return validate_request_json(
         job_id=fields.String(required=True),

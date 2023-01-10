@@ -15,11 +15,14 @@
 #
 from webargs import fields
 
-from fate_flow.entity.types import Code
-from fate_flow.settings import PARTY_ID
+from fate_flow.entity.types import Code, SiteCode, ReturnCode
+from fate_flow.settings import PARTY_ID, IS_STANDALONE
 from fate_flow.utils.api_utils import get_json_result
 
 
 @manager.route('/info/query', methods=['GET'])
 def query_site_info():
-    return get_json_result(code=Code.SUCCESS, message="success", data={"party_id": PARTY_ID})
+    if not IS_STANDALONE:
+        return get_json_result(code=ReturnCode.SITE.SUCCESS, message="success", data={"party_id": PARTY_ID})
+    else:
+        return get_json_result(code=ReturnCode.SITE.IS_STANDALONE, message="site is standalone")

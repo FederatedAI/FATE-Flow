@@ -119,7 +119,7 @@ class PipelineModelInfo(DataBaseModel):
     f_party_id = CharField(max_length=50)
     f_job_id = CharField(max_length=25, index=True)
     f_model_id = CharField(max_length=100, index=True)
-    f_model_version = CharField(max_length=100, index=True)
+    f_model_version = IntegerField(index=True)
 
     class Meta:
         db_table = "t_model_info"
@@ -127,16 +127,18 @@ class PipelineModelInfo(DataBaseModel):
 
 
 class PipelineModelMeta(DataBaseModel):
-    f_model_id = CharField(max_length=100, index=True)
-    f_model_version = CharField(max_length=100, index=True)
+    f_model_id = CharField(max_length=100)
+    f_model_version = IntegerField()
+    f_job_id = CharField(max_length=100, index=True)
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=50, index=True)
     f_task_name = CharField(max_length=100, index=True)
     f_component = CharField(max_length=30, null=True)
+    f_model_name = CharField(max_length=30, null=True)
 
     class Meta:
         db_table = 't_model_meta'
-        primary_key = CompositeKey('f_role', 'f_party_id', 'f_model_id', 'f_model_version', 'f_task_name')
+        primary_key = CompositeKey('f_job_id', 'f_role', 'f_party_id', 'f_task_name', 'f_model_name')
 
 
 class EngineRegistry(DataBaseModel):
