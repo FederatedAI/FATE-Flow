@@ -13,7 +13,7 @@ fateflow:
     grpc_port:
   # use random instance_id instead of {host}:{http_port}
   random_instance_id: false
-  proxy_name: osx
+  proxy_name: rollsite
 database:
   name: fate_flow
   user: fate

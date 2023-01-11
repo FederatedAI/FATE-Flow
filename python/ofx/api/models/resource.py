@@ -94,10 +94,10 @@ class APIClient(requests.Session):
             if self.remote_protocol == "http":
                 return self.remote_on_http(**kwargs)
             if self.remote_protocol == "grpc":
-                if self.grpc_channel == "default":
-                    return self.remote_on_grpc_proxy(**kwargs)
-                elif self.grpc_channel == "osx":
+                if self.grpc_channel == "osx":
                     return self.remote_on_grpc_osx(**kwargs)
+                else:
+                    return self.remote_on_grpc_proxy(**kwargs)
             else:
                 raise Exception(f'{self.remote_protocol} coordination communication protocol is not supported.')
         else:
@@ -136,7 +136,7 @@ class APIClient(requests.Session):
             channel, stub = get_proxy_channel(host, port)
 
             try:
-                _return, _call = stub.invoke.with_call(
+                _return, _call = stub.unaryCall.with_call(
                     _packet, metadata=_routing_metadata,
                     timeout=timeout or None,
                 )
@@ -144,7 +144,8 @@ class APIClient(requests.Session):
                 if t >= try_times - 1:
                     raise e
             else:
-                return json.loads(bytes.decode(_return.payload))
+                return json.loads(bytes.decode(_return.body.value))
+                # return json.loads(bytes.decode(_return.payload))
             finally:
                 channel.close()
 
