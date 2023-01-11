@@ -22,7 +22,7 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs
 from werkzeug.http import HTTP_STATUS_CODES
 
-from fate_flow.entity.engine_types import CoordinationProxyService, GRPCChannel
+from fate_flow.entity.engine_types import CoordinationProxyService
 from fate_flow.entity.types import RetCode, CoordinationCommunicationProtocol, FederatedMode
 from fate_flow.settings import stat_logger, PROXY_NAME, ENGINES, PROXY
 
@@ -100,12 +100,10 @@ def validate_request_headers(**kwargs):
 
 
 def get_federated_proxy_address():
-    grpc_channel = GRPCChannel.DEFAULT
     # protocol = CoordinationCommunicationProtocol.HTTP
     if ENGINES.get("federated_mode") == FederatedMode.SINGLE:
-        return "127.0.0.1", 9360, CoordinationCommunicationProtocol.GRPC, GRPCChannel.OSX
+        return "127.0.0.1", 9360, CoordinationCommunicationProtocol.GRPC, PROXY_NAME
     if PROXY_NAME == CoordinationProxyService.OSX:
-        grpc_channel = GRPCChannel.OSX
         host = PROXY.get(PROXY_NAME).get("host")
         port = PROXY.get(PROXY_NAME).get("port")
         protocol = CoordinationCommunicationProtocol.GRPC
@@ -120,5 +118,5 @@ def get_federated_proxy_address():
         port = PROXY.get(PROXY_NAME).get("port")
         protocol = CoordinationCommunicationProtocol.GRPC
     else:
-        raise RuntimeError(f"can not support coordinate proxy {PROXY}")
-    return host, port, protocol, grpc_channel
+        raise RuntimeError(f"can not support coordinate proxy {PROXY_NAME}， all proxy {PROXY.keys()}")
+    return host, port, protocol, PROXY_NAME

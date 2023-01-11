@@ -36,7 +36,7 @@ from playhouse.pool import PooledMySQLDatabase
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.settings import DATABASE, IS_STANDALONE, stat_logger, FORCE_USE_SQLITE
-from fate_flow.utils.base_utils import serialize_b64, json_dumps, deserialize_b64, json_loads, date_string_to_timestamp, \
+from fate_flow.utils.base_utils import json_dumps, json_loads, date_string_to_timestamp, \
     current_timestamp, timestamp_to_date
 from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import getLogger, sql_logger
@@ -111,9 +111,7 @@ class SerializedField(LongTextField):
         super().__init__(**kwargs)
 
     def db_value(self, value):
-        if self._serialized_type == SerializedType.PICKLE:
-            return serialize_b64(value, to_str=True)
-        elif self._serialized_type == SerializedType.JSON:
+        if self._serialized_type == SerializedType.JSON:
             if value is None:
                 return None
             return json_dumps(value, with_type=True)
@@ -123,9 +121,7 @@ class SerializedField(LongTextField):
             )
 
     def python_value(self, value):
-        if self._serialized_type == SerializedType.PICKLE:
-            return deserialize_b64(value)
-        elif self._serialized_type == SerializedType.JSON:
+        if self._serialized_type == SerializedType.JSON:
             if value is None:
                 return {}
             return json_loads(

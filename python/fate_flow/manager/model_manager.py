@@ -137,7 +137,6 @@ class FileModelParser:
         for model in model_meta.party.models:
             if model.file_format == "json":
                 model_file_name = os.path.join(base_path, model.name)
-                stat_logger.exception(model_file_name)
                 if os.path.exists(model_file_name):
                     with open(model_file_name, "r") as f:
                         model_cache[model.name] = json.load(f)

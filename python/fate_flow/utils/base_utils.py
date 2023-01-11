@@ -13,12 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import base64
 import datetime
-import io
 import json
 import os
-import pickle
 import socket
 import time
 import uuid
@@ -122,38 +119,6 @@ def date_string_to_timestamp(time_str, format_string="%Y-%m-%d %H:%M:%S"):
     time_array = time.strptime(time_str, format_string)
     time_stamp = int(time.mktime(time_array) * 1000)
     return time_stamp
-
-
-def serialize_b64(src, to_str=False):
-    dest = base64.b64encode(pickle.dumps(src))
-    if not to_str:
-        return dest
-    else:
-        return bytes_to_string(dest)
-
-
-def deserialize_b64(src):
-    src = base64.b64decode(string_to_bytes(src) if isinstance(src, str) else src)
-    return pickle.loads(src)
-
-
-safe_module = {"federatedml", "numpy", "fate_flow"}
-
-
-class RestrictedUnpickler(pickle.Unpickler):
-    def find_class(self, module, name):
-        import importlib
-
-        if module.split(".")[0] in safe_module:
-            _module = importlib.import_module(module)
-            return getattr(_module, name)
-        # Forbid everything else.
-        raise pickle.UnpicklingError("global '%s.%s' is forbidden" % (module, name))
-
-
-def restricted_loads(src):
-    """Helper function analogous to pickle.loads()."""
-    return RestrictedUnpickler(io.BytesIO(src)).load()
 
 
 def get_lan_ip():

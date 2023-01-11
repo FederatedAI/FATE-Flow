@@ -1,5 +1,7 @@
 dag:
   conf:
+    model_id: '202301091713489205530'
+    model_version: '0'
     task_parallelism: 1
   parties:
   - party_id:
@@ -7,7 +9,6 @@ dag:
     role: guest
   - party_id:
     - '10000'
-    - '10001'
     role: host
   - party_id:
     - '10001'
@@ -19,7 +20,7 @@ dag:
         - '9999'
         role: guest
       tasks:
-        reader_0:
+        reader_1:
           inputs:
             parameters:
               delimiter: ','
@@ -28,14 +29,14 @@ dag:
               id_name: id
               label_name: y
               label_type: float32
-              path: examples/data/breast_hetero_guest.csv
+              path: file:///Users/tonly/FATE/examples/data/breast_hetero_guest.csv
     host_10000:
       parties:
       - party_id:
         - '10000'
         role: host
       tasks:
-        reader_0:
+        reader_1:
           inputs:
             parameters:
               delimiter: ','
@@ -43,55 +44,20 @@ dag:
               format: csv
               id_name: id
               label_name: null
-              path: examples/data/breast_hetero_host.csv
-    host_10001:
-      parties:
-      - party_id:
-        - '10001'
-        role: host
-      tasks:
-        reader_0:
-          inputs:
-            parameters:
-              delimiter: ','
-              dtype: float32
-              format: csv
-              id_name: id
-              label_name: null
-              path: examples/data/breast_hetero_host.csv
+              path: file:///Users/tonly/FATE/examples/data/breast_hetero_host.csv
   scheduler_party_id: '10001'
-  stage: train
+  stage: predict
   tasks:
-    feature_scale_0:
-      component_ref: feature_scale
-      dependent_tasks:
-      - intersection_0
-      inputs:
-        artifacts:
-          train_data:
-            task_output_artifact:
-              output_artifact_key: output_data
-              producer_task: intersection_0
-        parameters:
-          method: standard
-      parties:
-      - party_id:
-        - '9999'
-        role: guest
-      - party_id:
-        - '10000'
-        - '10001'
-        role: host
     intersection_0:
       component_ref: intersection
       dependent_tasks:
-      - reader_0
+      - reader_1
       inputs:
         artifacts:
           input_data:
             task_output_artifact:
               output_artifact_key: output_data
-              producer_task: reader_0
+              producer_task: reader_1
         parameters:
           method: raw
       parties:
@@ -100,10 +66,35 @@ dag:
         role: guest
       - party_id:
         - '10000'
-        - '10001'
         role: host
       stage: default
-    reader_0:
+    lr_0:
+      component_ref: hetero_lr
+      conf:
+        backend: gpu
+      dependent_tasks:
+      - intersection_0
+      inputs:
+        artifacts:
+          input_model:
+            model_warehouse:
+              output_artifact_key: output_model
+              producer_task: lr_0
+              roles:
+              - guest
+              - host
+          test_data:
+            task_output_artifact:
+              output_artifact_key: output_data
+              producer_task: intersection_0
+              roles:
+              - guest
+              - host
+        parameters:
+          batch_size: 100
+          learning_rate: 0.01
+          max_iter: 1
+    reader_1:
       component_ref: reader
       parties:
       - party_id:
@@ -111,7 +102,7 @@ dag:
         role: guest
       - party_id:
         - '10000'
-        - '10001'
         role: host
       stage: default
 schema_version: 2.0.0.alpha
+

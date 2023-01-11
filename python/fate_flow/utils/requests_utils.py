@@ -26,6 +26,7 @@ def request(**kwargs):
     sess = requests.Session()
     stream = kwargs.pop('stream', sess.stream)
     timeout = kwargs.pop('timeout', None)
-    kwargs['headers'] = {k.replace('_', '-').upper(): v for k, v in kwargs.get('headers', {}).items()}
+    if kwargs.get('headers'):
+        kwargs['headers'] = {k.replace('_', '-').upper(): v for k, v in kwargs.get('headers', {}).items()}
     prepped = requests.Request(**kwargs).prepare()
     return sess.send(prepped, stream=stream, timeout=timeout)

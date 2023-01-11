@@ -22,7 +22,9 @@ def wrap_osx_grpc_packet(job_id, json_body, http_method, url, src_party_id, dst_
 
 
 def wrap_proxy_grpc_packet(json_body, http_method, url, src_party_id, dst_party_id, job_id=None, headers=None,
-                     overall_timeout=None, role="fateflow", source_host=None, source_port=None):
+                           overall_timeout=None, role="fateflow", source_host=None, source_port=None):
+    if not headers:
+        headers = {}
     _src_end_point = basic_meta_pb2.Endpoint(ip=source_host, port=source_port)
     _src = proxy_pb2.Topic(name=job_id, partyId="{}".format(src_party_id), role=role,
                            callback=_src_end_point)

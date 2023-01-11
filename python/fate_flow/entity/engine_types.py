@@ -55,8 +55,3 @@ class CoordinationProxyService(object):
 class FederatedCommunicationType(object):
     PUSH = "PUSH"
     PULL = "PULL"
-
-
-class GRPCChannel(object):
-    DEFAULT = "default"
-    OSX = "osx"
