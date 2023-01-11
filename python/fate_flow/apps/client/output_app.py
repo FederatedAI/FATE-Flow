@@ -23,8 +23,8 @@ from fate_flow.utils.api_utils import get_json_result, validate_request_json, va
 
 
 @manager.route('/metric/key/query', methods=['GET'])
-@validate_request_json(job_id=fields.String(required=True), role=fields.String(required=True),
-                       party_id=fields.String(required=True), task_name=fields.String(required=True))
+@validate_request_params(job_id=fields.String(required=True), role=fields.String(required=True),
+                         party_id=fields.String(required=True), task_name=fields.String(required=True))
 def query_metric_key(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
@@ -35,10 +35,9 @@ def query_metric_key(job_id, role, party_id, task_name):
 
 
 @manager.route('/metric/query', methods=['GET'])
-@validate_request_json(job_id=fields.String(required=True), role=fields.String(required=True),
-                       party_id=fields.String(required=True), task_name=fields.String(required=True),
-                       filters=fields.Dict(required=False)
-                       )
+@validate_request_params(job_id=fields.String(required=True), role=fields.String(required=True),
+                         party_id=fields.String(required=True), task_name=fields.String(required=True),
+                         filters=fields.Dict(required=False))
 def query_metric(job_id, role, party_id, task_name, filters=None):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
