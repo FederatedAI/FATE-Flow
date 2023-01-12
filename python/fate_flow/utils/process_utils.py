@@ -91,7 +91,10 @@ def check_process(pid, task: Task = None, expected_cmdline: list = None):
         ret = True
     if ret and task is not None:
         p = get_process_instance(pid)
-        return is_task_executor_process(task=task, process=p)
+        if p:
+            return True
+        else:
+            return False
     elif ret and expected_cmdline is not None:
         p = get_process_instance(pid)
         try:

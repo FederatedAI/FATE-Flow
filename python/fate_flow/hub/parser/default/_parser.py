@@ -20,7 +20,7 @@ import copy
 from pydantic import BaseModel
 from typing import Dict, Union
 
-from ._federation import StandaloneFederationSpec, RollsiteFederationSpec, OSXFederationSpec, PulsarFederationSpec, \
+from ._federation import StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, PulsarFederationSpec, \
     RabbitMQFederationSpec
 from ._structures import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, DAGSchema,\
     RuntimeTaskOutputChannelSpec, TaskScheduleSpec, TaskRuntimeInputSpec, IOArtifact, OutputSpec, \
@@ -31,8 +31,8 @@ from fate_flow.entity.types import ArtifactSourceType
 from fate_flow.manager.output_manager import OutputDataTracking
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY
-from fate_flow.utils import job_utils
+from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY, FATE_FLOW_CONF_PATH
+from fate_flow.utils import job_utils, file_utils
 from fate_flow.entity.engine_types import StorageEngine, EngineType, FederationEngine
 from fate_flow.entity.scheduler_structures import SchedulerInfoSpec
 from fate_flow.utils.log_utils import schedule_logger
@@ -229,9 +229,9 @@ class TaskParser(TaskParserABC):
         _format = JobDefaultConfig.task_default_conf.get("output").get("data").get("format")
 
         if ENGINES.get(EngineType.STORAGE) in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
-            os.makedirs(os.path.join(LOCAL_DATA_STORE_PATH, self.execution_id), exist_ok=True)
+            os.makedirs(os.path.join(LOCAL_DATA_STORE_PATH, self.job_id, self.execution_id), exist_ok=True)
             return OutputDataSpec(type=_type, metadata={
-                "uri": f"file:///{LOCAL_DATA_STORE_PATH}/{self.execution_id}",
+                "uri": f"file:///{LOCAL_DATA_STORE_PATH}/{self.job_id}/{self.execution_id}",
                 "format": _format
             })
         elif ENGINES.get(EngineType.STORAGE) == StorageEngine.EGGROLL:
@@ -293,10 +293,10 @@ class TaskParser(TaskParserABC):
             spec = StandaloneFederationSpec(type=engine_name, metadata=StandaloneFederationSpec.MetadataSpec(
                 federation_id=self.federation_id, parties=parties))
         elif engine_name == FederationEngine.ROLLSITE:
-            spec = RollsiteFederationSpec(type=engine_name, metadata=RollsiteFederationSpec.MetadataSpec(
+            spec = RollSiteFederationSpec(type=engine_name, metadata=RollSiteFederationSpec.MetadataSpec(
                 federation_id=self.federation_id,
                 parties=parties,
-                rollsite_config=RollsiteFederationSpec.MetadataSpec.RollsiteConfig(**proxy_conf)
+                rollsite_config=RollSiteFederationSpec.MetadataSpec.RollSiteConfig(**proxy_conf)
             ))
         elif engine_name == FederationEngine.OSX:
             spec = OSXFederationSpec(type=engine_name, metadata=OSXFederationSpec.MetadataSpec(
@@ -305,15 +305,25 @@ class TaskParser(TaskParserABC):
                 osx_config=OSXFederationSpec.MetadataSpec.OSXConfig(**proxy_conf)
             ))
         elif engine_name == FederationEngine.PULSAR:
+            route_table_path = os.path.join(FATE_FLOW_CONF_PATH, "pulsar_route_table.yaml")
+            route_table = file_utils.load_yaml_conf(conf_path=route_table_path)
+
             spec = PulsarFederationSpec(type=engine_name, metadata=PulsarFederationSpec.MetadataSpec(
                 federation_id=self.federation_id,
                 parties=parties,
+                route_table=PulsarFederationSpec.MetadataSpec.RouteTable(
+                    route={k: PulsarFederationSpec.MetadataSpec.RouteTable.Route(**v) for k, v in route_table.items() if k!= "default"},
+                    default=PulsarFederationSpec.MetadataSpec.RouteTable.Default(**route_table.get("default", {})) if route_table.get("default") else None
+                ),
                 pulsar_config=PulsarFederationSpec.MetadataSpec.PulsarConfig(**proxy_conf)
             ))
         elif engine_name == FederationEngine.RABBITMQ:
+            route_table_path = os.path.join(FATE_FLOW_CONF_PATH, "rabbitmq_route_table.yaml")
+            route_table = file_utils.load_yaml_conf(conf_path=route_table_path)
             spec = RabbitMQFederationSpec(type=engine_name, metadata=RabbitMQFederationSpec.MetadataSpec(
                 federation_id=self.federation_id,
                 parties=parties,
+                route_table={k: RabbitMQFederationSpec.MetadataSpec.RouteTable(**v) for k, v in route_table.items()},
                 rabbitmq_config=RabbitMQFederationSpec.MetadataSpec.RabbitMQConfig(**proxy_conf)
             ))
         else:

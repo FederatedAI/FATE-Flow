@@ -92,7 +92,7 @@ class TaskScheduleSpec(BaseModel):
     component: Optional[str]
     role: Optional[str]
     stage: Optional[str]
-    party_id: Optional[Union[str, int]]
+    party_id: Optional[str]
     inputs: Optional[TaskRuntimeInputSpec]
     conf: RuntimeConfSpec
 
@@ -142,7 +142,7 @@ class RuntimeInputDefinition(BaseModel):
 # dag
 class PartySpec(BaseModel):
     role: Union[Literal["guest", "host", "arbiter"]]
-    party_id: List[Union[str, int]]
+    party_id: List[str]
 
 
 class RuntimeTaskOutputChannelSpec(BaseModel):
@@ -193,8 +193,8 @@ class TaskConfSpec(BaseModel):
 
 
 class JobConfSpec(BaseModel):
-    scheduler_party_id: Optional[Union[str, int]]
-    initiator_party_id: Optional[Union[str, int]]
+    scheduler_party_id: Optional[str]
+    initiator_party_id: Optional[str]
     inherit: Optional[Dict[str, Any]]
     task_parallelism: Optional[int]
     task_cores: Optional[int]
