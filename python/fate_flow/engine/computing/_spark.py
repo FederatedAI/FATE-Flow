@@ -55,28 +55,9 @@ class SparkEngine(EngineABC):
                 process_cmd.append(f"--conf")
                 process_cmd.append(f"{ck}={cv}")
         extra_env = {"SPARK_HOME": spark_home}
-        worker_name = WorkerName.TASK_EXECUTOR
-        worker_id, config_dir, _ = WorkerManager.get_process_dirs(worker_name=worker_name,
-                                                                  job_id=task.f_job_id,
-                                                                  role=task.f_role,
-                                                                  party_id=task.f_party_id,
-                                                                  task=task)
-        config_path, _ = WorkerManager.get_config(config_dir=config_dir, config=run_parameters)
-        # todo: generate main path
-        main_path = "/data/projects/fate/python/fate/components/__main__.py"
-        cmd = [
-            main_path,
-            "component",
-            "execute",
-            "--process-tag",
-            task.f_execution_id,
-            "--config",
-            config_path
-        ]
-        process_cmd.extend(cmd)
-        return WorkerManager.start_task_worker(worker_name=worker_name, task=task,
+        return WorkerManager.start_task_worker(worker_name=WorkerName.TASK_EXECUTOR, task=task,
                                                task_parameters=run_parameters,
-                                               extra_env=extra_env, process_cmd=process_cmd, worker_id=worker_id)
+                                               extra_env=extra_env, executable=process_cmd)
 
     def kill(self, task):
         kill_status_code = process_utils.kill_task_executor_process(task)

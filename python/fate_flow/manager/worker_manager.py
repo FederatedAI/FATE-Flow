@@ -34,9 +34,8 @@ class WorkerManager:
 
     @classmethod
     def start_task_worker(cls, worker_name, task: Task, task_parameters, executable: list = None,
-                          extra_env: dict = None, process_cmd=None, worker_id=None, **kwargs):
+                          extra_env: dict = None, **kwargs):
         worker_id, config_dir, log_dir = cls.get_process_dirs(
-            worker_id=worker_id,
             worker_name=worker_name,
             job_id=task.f_job_id,
             role=task.f_role,
@@ -45,23 +44,26 @@ class WorkerManager:
         env = cls.get_env(task.f_job_id, task.f_provider_info)
         config_path, result_path = cls.get_config(config_dir=config_dir, config=task_parameters)
         specific_cmd = []
-        if not process_cmd:
-            if executable:
-                process_cmd = executable
-            else:
-                process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
-            common_cmd = [
-                "-m",
-                "fate.components",
-                "component",
-                "execute",
-                "--process-tag",
-                task.f_execution_id,
-                "--config",
-                config_path
-            ]
-            process_cmd.extend(common_cmd)
-            process_cmd.extend(specific_cmd)
+        if worker_name is WorkerName.TASK_EXECUTOR:
+            from fate_flow.worker.executor import Submit
+            module_file_path = sys.modules[Submit.__module__].__file__
+        else:
+            raise Exception(f"not support {worker_name} worker")
+        if executable:
+            process_cmd = executable
+        else:
+            process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
+        common_cmd = [
+            module_file_path,
+            "component",
+            "execute",
+            "--process-tag",
+            task.f_execution_id,
+            "--config",
+            config_path
+        ]
+        process_cmd.extend(common_cmd)
+        process_cmd.extend(specific_cmd)
         p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
                                          process_id=worker_id)
