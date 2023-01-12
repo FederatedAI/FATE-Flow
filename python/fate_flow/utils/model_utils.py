@@ -163,18 +163,24 @@ def query_model_detail(model_id, model_version, **kwargs):
     if not model_infos:
         return retcode, retmsg, model_detail
     model_info = model_infos[0]
-    model_detail["runtime_conf"] = model_info.get("f_runtime_conf")
+    model_detail["runtime_conf"] = model_info.get("f_runtime_conf") or model_info.get("f_train_runtime_conf")
     model_detail["dsl"] = model_info.get("f_train_dsl")
     model_detail["inference_dsl"] = model_info.get("f_inference_dsl", {})
-    model_detail["component_info"] = get_component_list(model_detail["runtime_conf"], model_detail["dsl"])
-    model_detail["inference_component_info"] = get_component_list(model_detail["runtime_conf"], model_detail["inference_dsl"])
+    is_parent = model_info.get("f_parent")
+    model_detail["component_info"] = get_component_list(model_detail["runtime_conf"], model_detail["dsl"], is_parent)
+    model_detail["inference_component_info"] = get_component_list(model_detail["runtime_conf"], model_detail["inference_dsl"], is_parent)
+
     return retcode, retmsg, model_detail
 
 
-def get_component_list(conf, dsl):
+def get_component_list(conf, dsl, is_train):
+    job_type = "train"
+    if not is_train:
+        job_type = "predict"
     dsl_parser = schedule_utils.get_job_dsl_parser(dsl=dsl,
                                                    runtime_conf=conf,
-                                                   train_runtime_conf=conf
+                                                   train_runtime_conf=conf,
+                                                   job_type=job_type
                                                    )
     name_component_maps, hierarchical_structure = dsl_parser.get_dsl_hierarchical_structure()
     return [{"component_name": k, "module": v["module"], "index": get_component_index(k, hierarchical_structure)}
