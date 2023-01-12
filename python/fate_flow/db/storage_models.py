@@ -41,9 +41,9 @@ class StorageTableMetaModel(DataBaseModel):
     f_extend_sid = BooleanField(default=False)
     f_auto_increasing_sid = BooleanField(default=False)
 
-    f_schema = SerializedField()
+    f_schema = JSONField()
     f_count = BigIntegerField(null=True)
-    f_part_of_data = SerializedField()
+    f_part_of_data = JSONField()
     f_origin = CharField(max_length=50, default='')
     f_disable = BooleanField(default=False)
     f_description = TextField(default='')
