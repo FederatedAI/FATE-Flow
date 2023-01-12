@@ -31,8 +31,8 @@ from fate_flow.entity.types import ArtifactSourceType
 from fate_flow.manager.output_manager import OutputDataTracking
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY
-from fate_flow.utils import job_utils
+from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY, FATE_FLOW_CONF_PATH
+from fate_flow.utils import job_utils, file_utils
 from fate_flow.entity.engine_types import StorageEngine, EngineType, FederationEngine
 from fate_flow.entity.scheduler_structures import SchedulerInfoSpec
 from fate_flow.utils.log_utils import schedule_logger
@@ -305,15 +305,21 @@ class TaskParser(TaskParserABC):
                 osx_config=OSXFederationSpec.MetadataSpec.OSXConfig(**proxy_conf)
             ))
         elif engine_name == FederationEngine.PULSAR:
+            route_table_path = os.path.join(FATE_FLOW_CONF_PATH, "pulsar_route_table.yaml")
+            route_table = file_utils.load_yaml_conf(conf_path=route_table_path)
             spec = PulsarFederationSpec(type=engine_name, metadata=PulsarFederationSpec.MetadataSpec(
                 federation_id=self.federation_id,
                 parties=parties,
+                route_table=route_table,
                 pulsar_config=PulsarFederationSpec.MetadataSpec.PulsarConfig(**proxy_conf)
             ))
         elif engine_name == FederationEngine.RABBITMQ:
+            route_table_path = os.path.join(FATE_FLOW_CONF_PATH, "rabbitmq_route_table.yaml")
+            route_table = file_utils.load_yaml_conf(conf_path=route_table_path)
             spec = RabbitMQFederationSpec(type=engine_name, metadata=RabbitMQFederationSpec.MetadataSpec(
                 federation_id=self.federation_id,
                 parties=parties,
+                route_table=route_table,
                 rabbitmq_config=RabbitMQFederationSpec.MetadataSpec.RabbitMQConfig(**proxy_conf)
             ))
         else:
