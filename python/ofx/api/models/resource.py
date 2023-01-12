@@ -212,6 +212,8 @@ class BaseAPI:
                 "code": FEDERATED_ERROR,
                 "message": "Federated schedule error, {}".format(e)
             }
+        if only_scheduler:
+            return response
         federated_response[dest_role][dest_party_id] = response
 
     def job_command(self, job_id, roles, command, command_body=None, parallel=False):
