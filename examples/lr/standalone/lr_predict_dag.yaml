@@ -1,6 +1,6 @@
 dag:
   conf:
-    model_id: '202301091713489205530'
+    model_id: 'xxx'
     model_version: '0'
     task_parallelism: 1
   parties:
@@ -45,7 +45,6 @@ dag:
               id_name: id
               label_name: null
               path: file:///Users/tonly/FATE/examples/data/breast_hetero_host.csv
-  scheduler_party_id: '10001'
   stage: predict
   tasks:
     intersection_0:
