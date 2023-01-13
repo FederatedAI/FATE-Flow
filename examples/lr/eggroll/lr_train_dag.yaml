@@ -1,6 +1,7 @@
 dag:
   conf:
     task_parallelism: 1
+        scheduler_party_id: '9999'
   parties:
   - party_id:
     - '9999'
@@ -9,7 +10,7 @@ dag:
     - '10000'
     role: host
   - party_id:
-    - '10001'
+    - '10000'
     role: arbiter
   party_tasks:
     guest_9999:
@@ -38,7 +39,6 @@ dag:
             parameters:
               path: eggroll:///experiment/host
               format: raw_table
-  scheduler_party_id: '10001'
   stage: train
   tasks:
     evaluation_0:

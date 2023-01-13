@@ -47,7 +47,6 @@ dag:
               id_name: id
               label_name: null
               path: file:///Users/tonly/FATE/examples/data/breast_hetero_host.csv
-  scheduler_party_id: '10001'
   stage: train
   tasks:
     evaluation_0:
