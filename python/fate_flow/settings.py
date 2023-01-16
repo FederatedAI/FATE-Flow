@@ -50,6 +50,7 @@ PROXY = get_base_config("federation")
 FORCE_USE_SQLITE = get_base_config("force_use_sqlite")
 ENGINES = engine_utils.get_engines()
 IS_STANDALONE = engine_utils.is_standalone()
+WORKER = get_base_config("worker", {})
 
 DATABASE = decrypt_database_config()
 

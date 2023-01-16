@@ -84,3 +84,14 @@ computing:
 servings:
   hosts:
     - 127.0.0.1:8000
+worker:
+  type: native
+  fate_root: /data/projects/fate
+  docker:
+    config:
+      # https://docker-py.readthedocs.io/en/stable/client.html#docker.client.DockerClient
+      base_url: unix:///var/run/docker.sock
+    image: federatedai/fate_algorithm:2.0-alpha
+  k8s:
+    config:
+    image:
