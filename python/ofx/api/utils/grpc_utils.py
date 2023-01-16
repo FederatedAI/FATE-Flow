@@ -20,13 +20,14 @@ from ..proto.osx import osx_pb2, osx_pb2_grpc
 from ..proto.rollsite import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
 
 
-def wrap_osx_grpc_packet(job_id, json_body, http_method, url, src_party_id, dst_party_id, headers=None, role="fateflow", **kwargs):
+def wrap_osx_grpc_packet(job_id, json_body, http_method, url, src_party_id, dst_party_id, headers=None, provider="FATE",
+                         role="fateflow", target_method="UNARY_CALL", **kwargs):
     _meta = {
-        "TechProviderCode": "FT",
+        "TechProviderCode": provider,
         "SourceNodeID": src_party_id,
         "TargetNodeID": dst_party_id,
         "TargetComponentName": role,
-        "TargetMethod": "UNARY_CALL",
+        "TargetMethod": target_method,
         "JobId": job_id
     }
     if not headers:

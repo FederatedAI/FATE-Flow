@@ -81,7 +81,7 @@ class APIClient(requests.Session):
     def _set_url(self, endpoint):
         return f"{self._url}/{endpoint}"
 
-    def remote(self, job_id, method, endpoint, src_party_id, dest_party_id, src_role, json_body, local=False):
+    def remote(self, job_id, method, endpoint, src_party_id, dest_party_id, src_role, json_body, local=False, extra_params=None):
         if self.version:
             endpoint = f"/{self.version}{endpoint}"
         kwargs = {
@@ -94,6 +94,8 @@ class APIClient(requests.Session):
             'json_body': json_body,
 
         }
+        if extra_params:
+            kwargs.update(extra_params)
         if not self.remote_host and not self.remote_port and self.remote_protocol == "grpc":
             raise Exception(f'{self.remote_protocol} coordination communication protocol need remote host and remote port.')
         kwargs.update({
@@ -118,14 +120,17 @@ class APIClient(requests.Session):
             return self.remote_on_http(**kwargs)
 
     def remote_on_http(self, method, endpoint, host=None, port=None, try_times=3, timeout=10,
-                       json_body=None, **kwargs):
+                       json_body=None, dest_party_id=None, service_name="fateflow", **kwargs):
         if host and port:
             url = f"{self.remote_protocol}://{host}:{port}{endpoint}"
         else:
             url = f"{self.base_url}{endpoint}"
         for t in range(try_times):
             try:
-                response = requests.request(method=method, url=url, timeout=timeout, json=json_body)
+                response = requests.request(method=method, url=url, timeout=timeout, json=json_body, headers={
+                    "dest-party-id": dest_party_id,
+                    "service": service_name
+                })
                 response.raise_for_status()
             except Exception as e:
                 if t >= try_times - 1:
@@ -170,7 +175,7 @@ class APIClient(requests.Session):
             json_body=json_body, http_method=method, url=endpoint,
             src_party_id=src_party_id, dst_party_id=dest_party_id,
             job_id=job_id, headers=headers, overall_timeout=timeout,
-            source_host=source_host, source_port=source_port
+            source_host=source_host, source_port=source_port, **kwargs
         )
         _routing_metadata = gen_routing_metadata(
             src_party_id=src_party_id, dest_party_id=dest_party_id,
@@ -196,7 +201,7 @@ class BaseAPI:
         self.client = client
 
     def federated_command(self, job_id, src_role, src_party_id, dest_role, dest_party_id, endpoint, body,
-                          federated_response, method='POST', only_scheduler=False):
+                          federated_response, method='POST', only_scheduler=False, extra_params=None):
         try:
             response = self.client.remote(job_id=job_id,
                                           method=method,
@@ -204,7 +209,8 @@ class BaseAPI:
                                           src_role=src_role,
                                           src_party_id=src_party_id,
                                           dest_party_id=dest_party_id,
-                                          json_body=body if body else {})
+                                          json_body=body if body else {},
+                                          extra_params=extra_params)
             if only_scheduler:
                 return response
         except Exception as e:
