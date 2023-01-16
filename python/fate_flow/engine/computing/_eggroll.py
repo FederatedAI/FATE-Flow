@@ -13,11 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
 from fate_flow.db.db_models import Task
 from fate_flow.engine.computing._base import EngineABC
 from fate_flow.entity.run_status import TaskStatus
-from fate_flow.entity.types import WorkerName, KillProcessRetCode
+from fate_flow.entity.types import KillProcessRetCode, WorkerName
+from fate_flow.manager.containerd_worker_manager import ContainerdWorkerManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.utils import job_utils, process_utils
 
@@ -35,3 +35,7 @@ class EggrollEngine(EngineABC):
 
     def is_alive(self, task):
         return process_utils.check_process(pid=int(task.f_run_pid), task=task)
+
+
+class ContainerdEggrollEngine(ContainerdWorkerManager):
+    pass
