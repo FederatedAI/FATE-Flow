@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 The Eggroll Authors. All Rights Reserved.
+ * Copyright 2019 The FATE Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 syntax = "proto3";
 
 package org.ppc.ptp;
-
 
 message Message{
   string msgId = 1;//消息ID
@@ -75,18 +73,6 @@ message Outbound {
 // 互联互通如果使用异步传输协议作为标准参考，Header会复用metadata传输互联互通协议报头，且metadata中会传输异步场景下的消息相关属性
 // 互联互通如果使用其他协议作为参考标准，Header会复用metadata传输互联互通协议报头
 // 互联互通如果使用GRPC作为参考标准，Header会复用HTTP2的报头传输互联互通协议报头
-
-//service PPCTransferService {
-//  rpc push (stream Inbound) returns (Outbound);
-////  rpc pull (Metadata) returns (stream Packet);
-//  rpc unaryCall (Inbound) returns (Outbound);
-// // rpc polling (stream PollingFrame) returns (stream PollingFrame);
-//
-//
-//
-//
-//}
-
 
 service PrivateTransferProtocol {
   rpc transport (stream Inbound) returns (stream Outbound);
