@@ -25,9 +25,7 @@ federation:
     port: 6650
     mng_port: 8080
     cluster: standalone
-    # all parties should use a same tenant
     tenant: fl-tenant
-    # message ttl in minutes
     topic_ttl: 30
     # default conf/pulsar_route_table.yaml
     route_table:
@@ -38,6 +36,8 @@ federation:
     host: 127.0.0.1
     http_port: 9300
     grpc_port: 9310
+    # http or grpc
+    protocol: http
   rabbitmq:
     host: 192.168.0.4
     mng_port: 12345
