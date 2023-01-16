@@ -52,7 +52,7 @@ class WorkerManager:
         if executable:
             process_cmd = executable
         else:
-            process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
+            process_cmd = [env.get("EXECUTOR_ENV") or sys.executable or "python3"]
         common_cmd = [
             module_file_path,
             "component",
@@ -103,7 +103,8 @@ class WorkerManager:
     def get_env(cls, job_id, provider_info):
         # todo: get env by provider
         env = {
-            "PYTHONPATH":   os.getenv("PYTHONPATH"),
+            "PYTHONPATH":  os.getenv("PYTHONPATH"),
+            "EXECUTOR_ENV": os.getenv("EXECUTOR_ENV"),
             "FATE_JOB_ID": job_id
         }
         return env
