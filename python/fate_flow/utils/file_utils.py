@@ -133,5 +133,3 @@ def rewrite_json_file(filepath, json_data):
     with open(filepath, "w") as f:
         json.dump(json_data, f, indent=4, separators=(",", ": "))
     f.close()
-
-print(get_project_base_directory())

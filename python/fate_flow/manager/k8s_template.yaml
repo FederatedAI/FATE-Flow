@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ''
+  namespace: fate-9999
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ''
+          image: ''
+          imagePullPolicy: IfNotPresent
+          command: []
+          env: []
+      serviceAccountName: flow

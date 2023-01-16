@@ -29,7 +29,7 @@ dag:
               id_name: id
               label_name: y
               label_type: float32
-              path: file:///Users/tonly/FATE/examples/data/breast_hetero_guest.csv
+              path: file:///data/projects/fate/examples/data/breast_hetero_guest.csv
     host_10000:
       conf:
         test_reader_guest: 2
@@ -46,7 +46,7 @@ dag:
               format: csv
               id_name: id
               label_name: null
-              path: file:///Users/tonly/FATE/examples/data/breast_hetero_host.csv
+              path: file:///data/projects/fate/examples/data/breast_hetero_host.csv
   scheduler_party_id: '10001'
   stage: train
   tasks:
@@ -142,4 +142,3 @@ dag:
         role: host
       stage: default
 schema_version: 2.0.0.alpha
-
