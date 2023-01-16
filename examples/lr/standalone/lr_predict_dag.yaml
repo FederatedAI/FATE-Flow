@@ -1,6 +1,6 @@
 dag:
   conf:
-    model_id: '202301091713489205530'
+    model_id: 'xxx'
     model_version: '0'
     task_parallelism: 1
   parties:
@@ -105,3 +105,4 @@ dag:
         role: host
       stage: default
 schema_version: 2.0.0.alpha
+

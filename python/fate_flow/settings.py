@@ -65,6 +65,12 @@ SUPPORT_IGNORE_RESOURCE_ENGINES = {
     ComputingEngine.EGGROLL, ComputingEngine.STANDALONE
 }
 
+HEADERS = {
+    "Content-Type": "application/json",
+    "Connection": "close",
+    "service": FATE_FLOW_SERVICE_NAME
+}
+
 stat_logger = getLogger("fate_flow_stat")
 detect_logger = getLogger("fate_flow_detect")
 access_logger = getLogger("fate_flow_access")
