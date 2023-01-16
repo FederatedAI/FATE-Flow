@@ -114,9 +114,9 @@ def get_federated_proxy_address():
         protocol = CoordinationCommunicationProtocol.GRPC
 
     elif PROXY_NAME == CoordinationProxyService.NGINX:
-        host = PROXY.get(PROXY_NAME).get("grpc_host")
-        port = PROXY.get(PROXY_NAME).get("port")
-        protocol = CoordinationCommunicationProtocol.GRPC
+        protocol = PROXY.get(PROXY_NAME).get("protocol", "http")
+        host = PROXY.get(PROXY_NAME).get(f"host")
+        port = PROXY.get(PROXY_NAME).get(f"{protocol}_port")
     else:
         raise RuntimeError(f"can not support coordinate proxy {PROXY_NAME}， all proxy {PROXY.keys()}")
     return host, port, protocol, PROXY_NAME
