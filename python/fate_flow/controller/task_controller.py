@@ -18,7 +18,7 @@ import os
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
 from fate_flow.engine.computing import build_engine
-from fate_flow.hub.parser.default import DAGSchema
+from fate_flow.entity.dag_structures import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
@@ -149,7 +149,7 @@ class TaskController(object):
             os.makedirs(config_dir, exist_ok=True)
             run_parameters_path = os.path.join(config_dir, 'task_parameters.json')
             with open(run_parameters_path, 'w') as fw:
-                fw.write(json_dumps(run_parameters))
+                fw.write(json_dumps(run_parameters, indent=True))
             backend_engine = build_engine()
             run_info = backend_engine.run(task=task,
                                           run_parameters=run_parameters,
