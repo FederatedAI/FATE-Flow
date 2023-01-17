@@ -17,8 +17,7 @@ from fate_flow.db.db_models import Task
 from fate_flow.manager.docker_manager import DockerManager
 from fate_flow.manager.k8s_manager import K8sManager
 from fate_flow.settings import WORKER
-from fate_flow.utils.file_utils import get_fate_flow_directory
-from fate_flow.utils.job_utils import get_task_directory
+from fate_flow.utils.base_utils import json_dumps
 
 
 class ContainerdWorkerManager:
@@ -37,42 +36,27 @@ class ContainerdWorkerManager:
         return f'{Task.f_role}#{Task.f_party_id}#{Task.f_job_id}#{Task.f_task_id}#{Task.f_task_version}'
 
     def get_command(self, task: Task):
-        config_dir = get_task_directory(
-            task.f_job_id,
-            task.f_role,
-            task.f_party_id,
-            task.f_task_name,
-            task.f_task_id,
-            task.f_task_version,
-        )
-
         return [
             f'{self.fate_root}/fateflow/python/fate_flow/worker/executor.py',
             'component',
             'execute',
             '--process-tag',
             task.f_execution_id,
-            '--config',
-            f'{config_dir}/task_parameters.json',
+            '--env_name',
+            'FATE_TASK_CONFIG',
         ]
 
-    def get_environment(self, task: Task):
+    def get_environment(self, task: Task, run_parameters):
         return {
             'FATE_JOB_ID': task.f_job_id,
+            'FATE_TASK_CONFIG': json_dumps(run_parameters),
         }
-
-    def get_volumes(self, task: Task):
-        return [
-            f'{get_fate_flow_directory("jobs")}:{self.fate_root}/fateflow/jobs',
-            f'{get_fate_flow_directory("logs")}:{self.fate_root}/fateflow/logs',
-        ]
 
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
         return self.manager.start(
             self.get_name(task),
             self.get_command(task),
-            self.get_environment(task),
-            self.get_volumes(task),
+            self.get_environment(task, run_parameters),
         )
 
     def kill(self, task):
