@@ -42,7 +42,7 @@ class WorkerManager:
             party_id=task.f_party_id,
             task=task)
         env = cls.get_env(task.f_job_id, task.f_provider_info, task_parameters)
-        config_path, result_path = cls.get_config(config_dir=config_dir, config=task_parameters)
+        # config_path, result_path = cls.get_config(config_dir=config_dir, config=task_parameters)
         specific_cmd = []
         if worker_name is WorkerName.TASK_EXECUTOR:
             from fate_flow.worker.executor import Submit

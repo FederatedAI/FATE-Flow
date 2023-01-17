@@ -33,7 +33,7 @@ class ContainerdWorkerManager:
             raise ValueError(f'worker "{self.worker_type}" is not supported')
 
     def get_name(task: Task):
-        return f'{Task.f_role}#{Task.f_party_id}#{Task.f_job_id}#{Task.f_task_id}#{Task.f_task_version}'
+        return f'{Task.f_role}#{Task.f_party_id}#{Task.f_task_id}#{Task.f_task_version}'
 
     def get_command(self, task: Task):
         return [
