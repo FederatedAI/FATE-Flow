@@ -21,7 +21,7 @@ from fate_flow.entity import RunParameters
 from fate_flow.manager.data_manager import DataTableTracker, TableStorage, SchemaMetaParam, AnonymousGenerator
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.operation.job_tracker import Tracker
-from fate_flow.utils.data_utils import get_extend_id_name
+from fate_flow.utils.data_utils import get_extend_id_name, address_filter
 from fate_flow.worker.task_executor import TaskExecutor
 from fate_flow.utils.api_utils import get_json_result, error_response, validate_request
 from fate_flow.utils import job_utils, schedule_utils
@@ -242,7 +242,7 @@ def table_api(table_func):
             table_schema = table_meta.get_schema()
             extend_sid = table_meta.get_extend_sid()
             table_schema.update()
-            address = table_meta.get_address().__dict__
+            address = address_filter(table_meta.get_address())
             enable = not table_meta.get_disable()
             origin = table_meta.get_origin()
             exist = 1
