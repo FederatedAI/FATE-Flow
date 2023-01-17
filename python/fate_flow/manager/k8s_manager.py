@@ -15,8 +15,8 @@
 import copy
 from pathlib import Path
 
-import yaml
 from kubernetes import client, config
+from ruamel import yaml
 
 from fate_flow.settings import WORKER
 
