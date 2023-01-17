@@ -13,11 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from ruamel import yaml
+
 from fate_flow.db.db_models import Task
 from fate_flow.manager.docker_manager import DockerManager
 from fate_flow.manager.k8s_manager import K8sManager
 from fate_flow.settings import WORKER
-from fate_flow.utils.base_utils import json_dumps
 
 
 class ContainerdWorkerManager:
@@ -49,7 +50,7 @@ class ContainerdWorkerManager:
     def get_environment(self, task: Task, run_parameters):
         return {
             'FATE_JOB_ID': task.f_job_id,
-            'FATE_TASK_CONFIG': json_dumps(run_parameters),
+            'FATE_TASK_CONFIG': yaml.dump(run_parameters),
         }
 
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):

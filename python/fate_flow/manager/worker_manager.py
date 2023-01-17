@@ -17,6 +17,8 @@ import os
 import sys
 from uuid import uuid1
 
+from ruamel import yaml
+
 from fate_flow.db.base_models import DB, auto_date_timestamp_db_field
 from fate_flow.db.db_models import Task, WorkerInfo
 from fate_flow.entity.types import WorkerName
@@ -105,7 +107,7 @@ class WorkerManager:
         env = {
             "PYTHONPATH":  os.getenv("PYTHONPATH"),
             "FATE_JOB_ID": job_id,
-            "FATE_TASK_CONFIG": json_dumps(task_parameters),
+            "FATE_TASK_CONFIG": yaml.dump(task_parameters),
         }
         if os.getenv("EXECUTOR_ENV"):
             env["EXECUTOR_ENV"] = os.getenv("EXECUTOR_ENV")
