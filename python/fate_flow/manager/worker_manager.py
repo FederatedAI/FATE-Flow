@@ -104,9 +104,10 @@ class WorkerManager:
         # todo: get env by provider
         env = {
             "PYTHONPATH":  os.getenv("PYTHONPATH"),
-            "EXECUTOR_ENV": os.getenv("EXECUTOR_ENV"),
             "FATE_JOB_ID": job_id
         }
+        if os.getenv("EXECUTOR_ENV"):
+            env["EXECUTOR_ENV"] = os.getenv("EXECUTOR_ENV")
         return env
 
     @classmethod
