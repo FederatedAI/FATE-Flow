@@ -13,10 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from fate_flow.hub.parser.default._parser import TaskNodeInfo, JobParser, TaskParser, DagSchemaParser
-from fate_flow.hub.parser.default._structures import DAGSchema, JobConfSpec
 
 __all__ = [
-    "TaskNodeInfo", "JobParser", "TaskParser", "DagSchemaParser", "DAGSchema", "JobConfSpec"
+    "TaskNodeInfo", "JobParser", "TaskParser", "DagSchemaParser"
 ]
 
 

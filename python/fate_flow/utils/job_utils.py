@@ -18,7 +18,7 @@ import threading
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job
-from fate_flow.hub.parser.default import DAGSchema
+from fate_flow.entity.dag_structures import DAGSchema
 from fate_flow.utils.base_utils import fate_uuid
 from fate_flow.utils.file_utils import get_fate_flow_directory
 
