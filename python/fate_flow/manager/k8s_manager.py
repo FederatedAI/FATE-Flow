@@ -22,12 +22,10 @@ from fate_flow.settings import WORKER
 
 
 class K8sManager:
-    config = WORKER.get('k8s', {}).get('config', {})
     image = WORKER.get('k8s', {}).get('image', '')
 
     def __init__(self):
-        config.load_kube_config_from_dict(self.config)
-
+        config.load_incluster_config()
         self.job_template = yaml.safe_load(
             (Path(__file__).parent / 'k8s_template.yaml').read_text('utf-8')
         )
@@ -35,7 +33,6 @@ class K8sManager:
     @property
     def namespace(self):
         # In below file, the pod can read its K8s namespace
-        return "fate-9999"
         with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace") as f:
             namespace = f.readline()
         return namespace
