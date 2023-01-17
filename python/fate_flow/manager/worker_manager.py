@@ -17,6 +17,8 @@ import os
 import sys
 from uuid import uuid1
 
+from ruamel import yaml
+
 from fate_flow.db.base_models import DB, auto_date_timestamp_db_field
 from fate_flow.db.db_models import Task, WorkerInfo
 from fate_flow.entity.types import WorkerName
@@ -41,8 +43,8 @@ class WorkerManager:
             role=task.f_role,
             party_id=task.f_party_id,
             task=task)
-        env = cls.get_env(task.f_job_id, task.f_provider_info)
-        config_path, result_path = cls.get_config(config_dir=config_dir, config=task_parameters)
+        env = cls.get_env(task.f_job_id, task.f_provider_info, task_parameters)
+        # config_path, result_path = cls.get_config(config_dir=config_dir, config=task_parameters)
         specific_cmd = []
         if worker_name is WorkerName.TASK_EXECUTOR:
             from fate_flow.worker.executor import Submit
@@ -59,8 +61,8 @@ class WorkerManager:
             "execute",
             "--process-tag",
             task.f_execution_id,
-            "--config",
-            config_path
+            "--env-name",
+            "FATE_TASK_CONFIG",
         ]
         process_cmd.extend(common_cmd)
         process_cmd.extend(specific_cmd)
@@ -100,11 +102,12 @@ class WorkerManager:
         return config_path, result_path
 
     @classmethod
-    def get_env(cls, job_id, provider_info):
+    def get_env(cls, job_id, provider_info, task_parameters):
         # todo: get env by provider
         env = {
             "PYTHONPATH":  os.getenv("PYTHONPATH"),
-            "FATE_JOB_ID": job_id
+            "FATE_JOB_ID": job_id,
+            "FATE_TASK_CONFIG": yaml.dump(task_parameters),
         }
         if os.getenv("EXECUTOR_ENV"):
             env["EXECUTOR_ENV"] = os.getenv("EXECUTOR_ENV")

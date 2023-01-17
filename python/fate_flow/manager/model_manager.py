@@ -17,14 +17,18 @@ import os.path
 import tarfile
 import traceback
 
-import yaml
 from flask import send_file
+from ruamel import yaml
 from werkzeug.datastructures import FileStorage
 
 from fate_flow.db.base_models import BaseModelOperate
 from fate_flow.db.db_models import PipelineModelMeta
 from fate_flow.entity.model_spc import MLModelSpec
-from fate_flow.settings import SOURCE_MODEL_STORE_PATH, CACHE_MODEL_STORE_PATH, stat_logger
+from fate_flow.settings import (
+    CACHE_MODEL_STORE_PATH,
+    SOURCE_MODEL_STORE_PATH,
+    stat_logger,
+)
 
 
 class PipelinedModel(object):
