@@ -22,10 +22,10 @@ from typing import Dict, Union
 
 from ._federation import StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, PulsarFederationSpec, \
     RabbitMQFederationSpec
-from ._structures import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, DAGSchema,\
+from fate_flow.entity.dag_structures import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, DAGSchema,\
     RuntimeTaskOutputChannelSpec, TaskScheduleSpec, TaskRuntimeInputSpec, IOArtifact, OutputSpec, \
     OutputMetricSpec, OutputModelSpec, OutputDataSpec, MLMDSpec, LOGGERSpec, ComputingBackendSpec, \
-    FederationBackendSpec, RuntimeConfSpec
+    RuntimeConfSpec
 
 from fate_flow.entity.types import ArtifactSourceType
 from fate_flow.manager.output_manager import OutputDataTracking
@@ -236,7 +236,7 @@ class TaskParser(TaskParserABC):
             })
         elif ENGINES.get(EngineType.STORAGE) == StorageEngine.EGGROLL:
             return OutputDataSpec(type=_type, metadata={
-                "uri": f"eggroll:///{self.execution_id}",
+                "uri": f"eggroll:///output_data_{self.execution_id}",
                 "format": _format
             })
 
