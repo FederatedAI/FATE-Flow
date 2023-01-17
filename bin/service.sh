@@ -55,7 +55,7 @@ parse_yaml() {
 }
 
 getport() {
-    service_conf_path=${PROJECT_BASE}/conf/service_conf.yaml
+    service_conf_path=${PROJECT_BASE}/fateflow/conf/service_conf.yaml
     if test -f "${service_conf_path}"; then
       echo "found service conf: ${service_conf_path}"
       eval $(parse_yaml ${service_conf_path} "service_config_")
