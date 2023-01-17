@@ -15,8 +15,8 @@
 import copy
 from pathlib import Path
 
-import yaml
 from kubernetes import client, config
+from ruamel import yaml
 
 from fate_flow.settings import WORKER
 
@@ -40,7 +40,7 @@ class K8sManager:
             namespace = f.readline()
         return namespace
 
-    def populate_yaml_template(self, name, command, environment, volumes):
+    def populate_yaml_template(self, name, command, environment):
         job_conf = copy.deepcopy(self.job_template)
         metadata = job_conf['metadata']
         container_spec = job_conf['spec']['template']['spec']['containers'][0]
@@ -52,8 +52,8 @@ class K8sManager:
         container_spec['env'] = [{'name': k, 'value': v} for k, v in environment.items()]
         return job_conf
 
-    def start(self, name, command, environment, volumes):
-        job_conf = self.populate_yaml_template(name, command, environment, volumes)
+    def start(self, name, command, environment):
+        job_conf = self.populate_yaml_template(name, command, environment)
         client.BatchV1Api().create_namespaced_job(self.namespace, job_conf)
 
     def stop(self, name):
