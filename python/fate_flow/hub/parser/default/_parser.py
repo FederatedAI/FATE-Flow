@@ -255,7 +255,7 @@ class TaskParser(TaskParserABC):
     @staticmethod
     def generate_mlmd():
         _type = "flow"
-        _statu_uri = f"{BASE_URI}/worker/task/report"
+        _statu_uri = f"{BASE_URI}/worker/task/status"
         _tracking_uri = f'{BASE_URI}/worker/task/output/tracking'
         return MLMDSpec(
             type=_type,

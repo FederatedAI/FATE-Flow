@@ -20,15 +20,15 @@ from fate_flow.entity.types import ReturnCode
 from fate_flow.manager.model_manager import PipelinedModel
 from fate_flow.manager.output_manager import OutputDataTracking, OutputMetric
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.utils.api_utils import get_json_result, validate_request_json
+from fate_flow.utils.api_utils import get_json_result, validate_request_json, validate_request_params
 
 page_name = 'worker'
 
 
-@manager.route('/task/report', methods=['POST'])
+@manager.route('/task/status', methods=['POST'])
 @validate_request_json(status=fields.String(required=True), execution_id=fields.String(required=True),
                        error=fields.String(required=False))
-def report_task(status, execution_id, error=None):
+def report_task_status(status, execution_id, error=None):
     tasks = JobSaver.query_task(execution_id=execution_id)
     if tasks:
         task = tasks[0]
@@ -45,6 +45,18 @@ def report_task(status, execution_id, error=None):
             task_info.update({"error_report": error})
             TaskController.update_task(task_info)
         return get_json_result()
+    return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
+
+
+@manager.route('/task/status', methods=['GET'])
+@validate_request_params(execution_id=fields.String(required=True))
+def query_task_status(execution_id):
+    tasks = JobSaver.query_task(execution_id=execution_id)
+    if tasks:
+        task_info = {
+            "status": tasks[0].f_status,
+        }
+        return get_json_result(code=ReturnCode.TASK.SUCCESS, message="success", data=task_info)
     return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
 
 
