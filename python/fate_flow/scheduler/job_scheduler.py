@@ -16,11 +16,11 @@
 from pydantic import typing
 
 from fate_flow.controller.task_controller import TaskController
+from fate_flow.entity.dag_structures import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.scheduler.task_scheduler import TaskScheduler
 from fate_flow.db.base_models import DB
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
-from fate_flow.hub.parser.default import DAGSchema
 from fate_flow.entity.run_status import StatusSet, FederatedSchedulingStatusCode, JobStatus, TaskStatus, EndStatus, \
     SchedulingStatusCode, InterruptStatus
 from fate_flow.entity.types import ResourceOperation, ReturnCode

@@ -95,7 +95,7 @@ class WorkerManager:
     def get_config(cls, config_dir, config):
         config_path = os.path.join(config_dir, "config.json")
         with open(config_path, 'w') as fw:
-            fw.write(json_dumps(config))
+            fw.write(json_dumps(config, indent=True))
         result_path = os.path.join(config_dir, "result.json")
         return config_path, result_path
 
