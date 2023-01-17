@@ -24,11 +24,11 @@ class DockerManager:
     def __init__(self):
         self.client = docker.DockerClient(**self.config)
 
-    def start(self, name, command, environment, volumes):
+    def start(self, name, command, environment):
         self.client.containers.run(
             self.image, command,
-            auto_remove=True, detach=True, environment=environment,
-            name=name, volumes=volumes,
+            auto_remove=True, detach=True,
+            environment=environment, name=name,
         )
 
     def stop(self, name):
