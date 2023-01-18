@@ -16,6 +16,8 @@
 import errno
 import os
 import subprocess
+import time
+
 import psutil
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import Task
@@ -202,15 +204,29 @@ def kill_task_executor_process(task: Task, only_child=False):
             return KillProcessRetCode.ERROR_PID
         for child in p.children(recursive=True):
             if check_process(pid=child.pid, task=task):
-                child.terminate()
+                kill(p)
         if not only_child:
             if check_process(pid, task=task):
-                p.terminate()
+                kill(p)
         schedule_logger(task.f_job_id).info("successfully stop task {} {} {} process pid:{}".format(
             task.f_task_id, task.f_role, task.f_party_id, pid))
         return KillProcessRetCode.KILLED
     except Exception as e:
         raise e
+
+
+def kill(p):
+    try:
+        p.terminate()
+    except:
+        pass
+    finally:
+        time.sleep(3)
+        if p.is_running():
+            try:
+                p.kill()
+            except:
+                pass
 
 
 def kill_process(process: psutil.Process = None, pid: int = None, expected_cmdline: list = None):
