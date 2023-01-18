@@ -1,5 +1,10 @@
 # Release 1.10.0
 ## Major Features and Improvements
+* Optimize table info API
+
+
+# Release 1.10.0
+## Major Features and Improvements
 * Add connection test API
 * May configure gRPC message size limit 
 ## Bug Fixes
