@@ -215,18 +215,32 @@ def kill_task_executor_process(task: Task, only_child=False):
         raise e
 
 
-def kill(p):
+def kill(p, wait_before_terminate=10, wait_before_kill=10):
+    # wait and check
+    for _ in range(wait_before_terminate):
+        if p.is_running():
+            time.sleep(1)
+        else:
+            break
     try:
-        p.terminate()
+        # send sigterm, gracefully stop
+        if p.is_running():
+            p.terminate()
     except:
         pass
     finally:
-        time.sleep(3)
-        if p.is_running():
-            try:
+        # gracefully stop may takes few seconds, wati and check again
+        for _ in range(wait_before_kill):
+            if p.is_running():
+                time.sleep(1)
+            else:
+                break
+        try:
+            # nothing could do now, kill anyway
+            if p.is_running():
                 p.kill()
-            except:
-                pass
+        except:
+            pass
 
 
 def kill_process(process: psutil.Process = None, pid: int = None, expected_cmdline: list = None):
