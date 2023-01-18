@@ -1,3 +1,8 @@
+# Release 1.10.1
+## Major Features and Improvements
+* Optimize table info API
+
+
 # Release 1.10.0
 ## Major Features and Improvements
 * Add connection test API
