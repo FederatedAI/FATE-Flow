@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 from fate_arch.abc import StorageTableMetaABC, AddressABC
+from fate_arch.common.address import MysqlAddress, HiveAddress
 from fate_arch.common.data_utils import default_output_fs_path
 from fate_arch.computing import ComputingEngine
 from fate_arch.storage import StorageEngine, StorageTableMeta
@@ -155,3 +156,11 @@ def get_input_search_type(parameters):
         return InputSearchType.JOB_COMPONENT_OUTPUT
     else:
         return InputSearchType.UNKNOWN
+
+
+def address_filter(address):
+    if isinstance(address, MysqlAddress):
+        address.passwd = None
+    if isinstance(address, HiveAddress):
+        address.password = None
+    return address.__dict__
