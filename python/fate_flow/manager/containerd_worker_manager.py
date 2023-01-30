@@ -16,8 +16,6 @@
 from ruamel import yaml
 
 from fate_flow.db.db_models import Task
-from fate_flow.manager.docker_manager import DockerManager
-from fate_flow.manager.k8s_manager import K8sManager
 from fate_flow.settings import WORKER
 
 
@@ -27,8 +25,10 @@ class ContainerdWorkerManager:
 
     def __init__(self):
         if self.worker_type == 'docker':
+            from fate_flow.manager.docker_manager import DockerManager
             self.manager = DockerManager()
         elif self.worker_type == 'k8s':
+            from fate_flow.manager.k8s_manager import K8sManager
             self.manager = K8sManager()
         else:
             raise ValueError(f'worker "{self.worker_type}" is not supported')
