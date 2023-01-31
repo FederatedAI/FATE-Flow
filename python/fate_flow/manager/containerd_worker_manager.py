@@ -16,6 +16,7 @@
 from ruamel import yaml
 
 from fate_flow.db.db_models import Task
+from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.settings import LOCAL_DATA_STORE_PATH, LOG_DIRECTORY, WORKER
 
 
@@ -64,7 +65,9 @@ class ContainerdWorkerManager:
                 f'{LOG_DIRECTORY}:{LOG_DIRECTORY}',
             ],
         )
-        return {}
+        return {
+            'run_ip': RuntimeConfig.JOB_SERVER_HOST,
+        }
 
     def kill(self, task):
         self.manager.stop(self.get_name(task))
