@@ -24,7 +24,7 @@ from werkzeug.http import HTTP_STATUS_CODES
 
 from fate_flow.entity.engine_types import CoordinationProxyService
 from fate_flow.entity.types import RetCode, CoordinationCommunicationProtocol, FederatedMode
-from fate_flow.settings import stat_logger, PROXY_NAME, ENGINES, PROXY
+from fate_flow.settings import stat_logger, PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
 
 
 def get_json_result(code=RetCode.SUCCESS, message='success', data=None, job_id=None, meta=None):
@@ -102,7 +102,7 @@ def validate_request_headers(**kwargs):
 def get_federated_proxy_address():
     # protocol = CoordinationCommunicationProtocol.HTTP
     if ENGINES.get("federated_mode") == FederatedMode.SINGLE:
-        return "127.0.0.1", 9360, CoordinationCommunicationProtocol.GRPC, PROXY_NAME
+        return HOST, HTTP_PORT, CoordinationCommunicationProtocol.HTTP, PROXY_NAME
     if PROXY_NAME == CoordinationProxyService.OSX:
         host = PROXY.get(PROXY_NAME).get("host")
         port = PROXY.get(PROXY_NAME).get("port")
