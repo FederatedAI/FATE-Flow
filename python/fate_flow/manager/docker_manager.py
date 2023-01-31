@@ -14,22 +14,33 @@
 #  limitations under the License.
 import docker
 
-from fate_flow.settings import WORKER
+from fate_flow.settings import LOG_DIRECTORY, WORKER
 
 
 class DockerManager:
     config = WORKER.get('docker', {}).get('config', {})
     image = WORKER.get('docker', {}).get('image', '')
+    fate_root_dir = WORKER.get('docker', {}).get('fate_root_dir', '')
+    eggroll_conf_dir = WORKER.get('docker', {}).get('eggroll_conf_dir', '')
 
     def __init__(self):
         self.client = docker.DockerClient(**self.config)
 
-    def start(self, name, command, environment, volumes):
+    def start(self, name, command, environment):
         self.client.containers.run(
             self.image, command,
             auto_remove=False, detach=True,
             environment=environment, name=name,
-            network_mode='host', volumes=volumes,
+            network_mode='host', volumes={
+                LOG_DIRECTORY: {
+                    'bind': LOG_DIRECTORY,
+                    'mode': 'rw',
+                },
+                self.eggroll_conf_dir: {
+                    'bind': f'{self.fate_root_dir}/eggroll/conf',
+                    'mode': 'ro',
+                },
+            },
         )
 
     def stop(self, name):

@@ -17,7 +17,7 @@ from ruamel import yaml
 
 from fate_flow.db.db_models import Task
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.settings import LOCAL_DATA_STORE_PATH, LOG_DIRECTORY, WORKER
+from fate_flow.settings import WORKER
 
 
 class ContainerdWorkerManager:
@@ -52,7 +52,6 @@ class ContainerdWorkerManager:
         return {
             'FATE_JOB_ID': task.f_job_id,
             'FATE_TASK_CONFIG': yaml.dump(run_parameters),
-            'STANDALONE_DATA_PATH': f'{LOCAL_DATA_STORE_PATH}/__standalone_data__',
         }
 
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
@@ -60,11 +59,8 @@ class ContainerdWorkerManager:
             self.get_name(task),
             self.get_command(task),
             self.get_environment(task, run_parameters),
-            volumes=[
-                f'{LOCAL_DATA_STORE_PATH}:{LOCAL_DATA_STORE_PATH}',
-                f'{LOG_DIRECTORY}:{LOG_DIRECTORY}',
-            ],
         )
+
         return {
             'run_ip': RuntimeConfig.JOB_SERVER_HOST,
         }
