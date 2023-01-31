@@ -27,3 +27,9 @@ def query_task(job_id, role, party_id, task_name):
     uri = "/job/task/query"
     response = requests.post(base+uri,  json={"job_id": job_id, "role": role, "party_id": party_id, "task_name": task_name})
     print(response.text)
+
+
+def rerun_job(job_id):
+    uri = "/job/rerun"
+    response = requests.post(base+uri,  json={"job_id": job_id})
+    print(response.text)
