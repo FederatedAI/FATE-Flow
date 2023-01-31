@@ -65,8 +65,8 @@ class ContainerdWorkerManager:
             'run_ip': RuntimeConfig.JOB_SERVER_HOST,
         }
 
-    def kill(self, task):
+    def kill(self, task: Task):
         self.manager.stop(self.get_name(task))
 
-    def is_alive(self, task):
+    def is_alive(self, task: Task):
         return self.manager.is_running(self.get_name(task))
