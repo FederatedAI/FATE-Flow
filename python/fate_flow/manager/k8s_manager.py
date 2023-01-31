@@ -49,7 +49,7 @@ class K8sManager:
         container_spec['env'] = [{'name': k, 'value': v} for k, v in environment.items()]
         return job_conf
 
-    def start(self, name, command, environment):
+    def start(self, name, command, environment, volumes):
         job_conf = self.populate_yaml_template(name, command, environment)
         client.BatchV1Api().create_namespaced_job(self.namespace, job_conf)
 
