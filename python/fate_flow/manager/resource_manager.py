@@ -20,14 +20,12 @@ from fate_flow.db.db_models import EngineRegistry, Job
 from fate_flow.entity.engine_types import EngineType
 from fate_flow.entity.types import ResourceOperation
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, ENGINES, WORKER
+from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, ENGINES
 from fate_flow.utils import engine_utils, base_utils, job_utils
 from fate_flow.utils.log_utils import schedule_logger
 
 
 class ResourceManager(object):
-    worker_type = WORKER.get('type', '')
-
     @classmethod
     def initialize(cls):
         engines_config = engine_utils.get_engines_config_from_conf(group_map=True)
@@ -197,7 +195,7 @@ class ResourceManager(object):
     def calculate_job_resource(cls, job_id, role, party_id):
         cores = 0
         memory = 0
-        if cls.worker_type in {'docker', 'k8s'} or role in IGNORE_RESOURCE_ROLES:
+        if role in IGNORE_RESOURCE_ROLES:
             return cores, memory
         task_cores, task_parallelism = job_utils.get_job_resource_info(job_id, role, party_id)
         if not task_cores:
@@ -212,7 +210,7 @@ class ResourceManager(object):
     def calculate_task_resource(cls, task_info: dict = None):
         cores_per_task = 0
         memory_per_task = 0
-        if cls.worker_type in {'docker', 'k8s'} or task_info["role"] in IGNORE_RESOURCE_ROLES:
+        if task_info["role"] in IGNORE_RESOURCE_ROLES:
             return cores_per_task, memory_per_task
         cores_per_task, task_parallelism = job_utils.get_job_resource_info(task_info["job_id"], task_info["role"], task_info["party_id"])
         if not cores_per_task:
