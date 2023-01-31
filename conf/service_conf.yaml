@@ -73,7 +73,11 @@ worker:
     config:
       # https://docker-py.readthedocs.io/en/stable/client.html#docker.client.DockerClient
       base_url: unix:///var/run/docker.sock
-    image: ccr.ccs.tencentyun.com/federatedai/standalone_fate:2.0.0-alpha
+    image: ccr.ccs.tencentyun.com/federatedai/fate_algorithm:2.0.0-alpha
+    # on container
+    fate_root_dir: /data/projects/fate
+    # on host
+    eggroll_conf_dir:
   k8s:
     config:
     image:
