@@ -55,7 +55,8 @@ WORKER = get_base_config("worker", {})
 DATABASE = decrypt_database_config()
 
 # Logger
-LoggerFactory.set_directory(os.path.join(get_fate_flow_directory(), "logs", "fate_flow"))
+LOG_DIRECTORY = get_fate_flow_directory("logs")
+LoggerFactory.set_directory(os.path.join(LOG_DIRECTORY, "fate_flow"))
 # {CRITICAL: 50, FATAL:50, ERROR:40, WARNING:30, WARN:30, INFO:20, DEBUG:10, NOTSET:0}
 LoggerFactory.LEVEL = 10
 
