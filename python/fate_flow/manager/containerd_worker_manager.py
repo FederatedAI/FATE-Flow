@@ -38,7 +38,8 @@ class ContainerdWorkerManager:
 
     def get_command(self, task: Task):
         return [
-            f'{self.fate_root}/fateflow/python/fate_flow/worker/executor.py',
+            '-m',
+            "fate.components"
             'component',
             'execute',
             '--process-tag',
