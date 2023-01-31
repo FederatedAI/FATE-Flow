@@ -21,13 +21,14 @@ if [[ -z "${FATE_PROJECT_BASE}" ]]; then
 else
     PROJECT_BASE="${FATE_PROJECT_BASE}"
 fi
-FATE_FLOW_BASE=${PROJECT_BASE}/fateflow
+FATE_FLOW_BASE=${PROJECT_BASE}/fate_flow
 echo "PROJECT_BASE: "${PROJECT_BASE}
 
 # source init_env.sh
-INI_ENV_SCRIPT=${PROJECT_BASE}/bin/init_env.sh
+INI_ENV_SCRIPT=${FATE_FLOW_BASE}/bin/init_env.sh
+echo $INI_ENV_SCRIPT
 if test -f "${INI_ENV_SCRIPT}"; then
-  source ${PROJECT_BASE}/bin/init_env.sh
+  source ${$INI_ENV_SCRIPT}/bin/init_env.sh
   echo "PYTHONPATH: "${PYTHONPATH}
 else
   echo "file not found: ${INI_ENV_SCRIPT}"
@@ -55,7 +56,7 @@ parse_yaml() {
 }
 
 getport() {
-    service_conf_path=${PROJECT_BASE}/fateflow/conf/service_conf.yaml
+    service_conf_path=${PROJECT_BASE}/fate_flow/conf/service_conf.yaml
     if test -f "${service_conf_path}"; then
       echo "found service conf: ${service_conf_path}"
       eval $(parse_yaml ${service_conf_path} "service_config_")

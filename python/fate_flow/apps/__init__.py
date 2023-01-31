@@ -40,7 +40,7 @@ app.json_encoder = CustomJSONEncoder
 
 def register_page(page_path):
     page_name = page_path.stem.rstrip('_app')
-    module_name = '.'.join(page_path.parts[page_path.parts.index('fate_flow'):-1] + (page_name, ))
+    module_name = '.'.join(page_path.parts[page_path.parts.index('apps')-1:-1] + (page_name, ))
 
     spec = spec_from_file_location(module_name, page_path)
     page = module_from_spec(spec)
