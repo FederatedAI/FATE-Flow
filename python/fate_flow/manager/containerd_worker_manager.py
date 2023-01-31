@@ -38,7 +38,7 @@ class ContainerdWorkerManager:
     def get_command(self, task: Task):
         return [
             '-m',
-            "fate.components"
+            'fate.components',
             'component',
             'execute',
             '--process-tag',
