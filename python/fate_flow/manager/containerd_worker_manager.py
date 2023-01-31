@@ -16,12 +16,11 @@
 from ruamel import yaml
 
 from fate_flow.db.db_models import Task
-from fate_flow.settings import WORKER
+from fate_flow.settings import LOCAL_DATA_STORE_PATH, LOG_DIRECTORY, WORKER
 
 
 class ContainerdWorkerManager:
     worker_type = WORKER.get('type', '')
-    fate_root = WORKER.get('fate_root', '')
 
     def __init__(self):
         if self.worker_type == 'docker':
@@ -33,8 +32,8 @@ class ContainerdWorkerManager:
         else:
             raise ValueError(f'worker "{self.worker_type}" is not supported')
 
-    def get_name(task: Task):
-        return f'{Task.f_role}#{Task.f_party_id}#{Task.f_task_id}#{Task.f_task_version}'
+    def get_name(self, task: Task):
+        return f'{task.f_role}-{task.f_party_id}-{task.f_task_id}-{task.f_task_version}'
 
     def get_command(self, task: Task):
         return [
@@ -44,7 +43,7 @@ class ContainerdWorkerManager:
             'execute',
             '--process-tag',
             task.f_execution_id,
-            '--env_name',
+            '--env-name',
             'FATE_TASK_CONFIG',
         ]
 
@@ -52,17 +51,23 @@ class ContainerdWorkerManager:
         return {
             'FATE_JOB_ID': task.f_job_id,
             'FATE_TASK_CONFIG': yaml.dump(run_parameters),
+            'STANDALONE_DATA_PATH': f'{LOCAL_DATA_STORE_PATH}/__standalone_data__',
         }
 
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
-        return self.manager.start(
+        self.manager.start(
             self.get_name(task),
             self.get_command(task),
             self.get_environment(task, run_parameters),
+            volumes=[
+                f'{LOCAL_DATA_STORE_PATH}:{LOCAL_DATA_STORE_PATH}',
+                f'{LOG_DIRECTORY}:{LOG_DIRECTORY}',
+            ],
         )
+        return {}
 
     def kill(self, task):
-        return self.manager.stop(self._get_name(task))
+        self.manager.stop(self.get_name(task))
 
     def is_alive(self, task):
-        return self.manager.is_running(self._get_name(task))
+        return self.manager.is_running(self.get_name(task))
