@@ -87,6 +87,7 @@ class ResourceManager(object):
                                     operation_type=ResourceOperation.RETURN)
 
     @classmethod
+    @DB.connection_context()
     def resource_for_job(cls, job_id, role, party_id, operation_type: ResourceOperation):
         operate_status = False
         cores, memory = cls.calculate_job_resource(job_id=job_id, role=role, party_id=party_id)
@@ -159,6 +160,7 @@ class ResourceManager(object):
         return ResourceManager.resource_for_task(task_info=task_info, operation_type=ResourceOperation.RETURN)
 
     @classmethod
+    @DB.connection_context()
     def resource_for_task(cls, task_info, operation_type):
         cores_per_task, memory_per_task = cls.calculate_task_resource(task_info=task_info)
         schedule_logger(task_info["job_id"]).info(f"cores_per_task:{cores_per_task}, memory_per_task:{memory_per_task}")
@@ -235,7 +237,6 @@ class ResourceManager(object):
         return filters, updates
 
     @classmethod
-    @DB.connection_context()
     def get_remaining_resource(cls, resource_model: typing.Union[EngineRegistry, Job], filters):
         remaining_cores, remaining_memory = None, None
         try:

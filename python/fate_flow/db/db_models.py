@@ -106,7 +106,7 @@ class TrackingOutputInfo(DataBaseModel):
     f_party_id = CharField(max_length=50, index=True)
     f_output_key = CharField(max_length=30)
     f_type = CharField(max_length=10, null=True)
-    f_uri = CharField(max_length=100, null=True)
+    f_uri = CharField(max_length=200, null=True)
     f_meta = JSONField()
 
     class Meta:
