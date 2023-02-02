@@ -13,5 +13,21 @@ spec:
           image: ''
           imagePullPolicy: IfNotPresent
           command: []
+          args: []
           env: []
-      serviceAccountName: flow
+          volumeMounts:
+          - mountPath: /data/projects/fate/eggroll/conf/
+            name: service-conf
+          - mountPath: /data/projects/fate/fate_flow/logs/
+            name: local-path
+            subPath: logs
+          - mountPath: /data/projects/fate/fate_flow/data/
+            name: local-path
+            subPath: data
+      volumes:
+      - name: service-conf
+        configMap:
+          name: service-conf
+      - name: local-path
+        hostPath:
+          path: /data/projects/fate/fate_flow
