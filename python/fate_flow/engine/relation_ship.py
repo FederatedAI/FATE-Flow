@@ -31,7 +31,8 @@ class Relationship(object):
                     FederationEngine.STANDALONE,
                     FederationEngine.RABBITMQ,
                     FederationEngine.PULSAR,
-                    FederationEngine.OSX
+                    FederationEngine.OSX,
+                    FederationEngine.ROLLSITE
                 ],
             },
         },
