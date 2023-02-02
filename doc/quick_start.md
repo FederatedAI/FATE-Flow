@@ -31,6 +31,7 @@ bash Miniconda3-py38_4.12.0-Linux-x86_64.sh -b -p /data/projects/fate2.0/common/
 ##### 1.2.2 依赖安装
 ```shell
 source /data/projects/fate2.0/common/python/venv/bin/activate
+cd /data/projects/fate2.0/fate_flow/python
 pip install -r requirements.txt
 ```
 详细依赖参考： [requirements.txt](../python/requirements.txt)
@@ -57,8 +58,6 @@ federation: 通信服务详细地址
 - 根据实际部署情况修改系统配置service_conf.yaml
 - 修改fate_flow/bin/init_env.sh, 参考如下：
 ```yaml
-export FATE_PROJECT_BASE=/data/projects/fate2.0
-export FATE_DEPLOY_BASE=/data/projects/fate2.0
 export EGGROLL_HOME=/data/projects/fate/eggroll
 export PYTHONPATH=/data/projects/fate2.0/python:/data/projects/fate2.0/fate_flow/python:/data/projects/fate/eggroll/python
 venv=/data/projects/fate2.0/common/python/venv
