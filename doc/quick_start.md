@@ -89,7 +89,7 @@ source ${venv}/bin/activate
 
 ### 2. 使用指南
 #### 2.1 数据上传
-- 若计算引擎使用standalone，reader组件参数支持配置文件路径，数据无需上传，使用时配置如下：
+- 若计算引擎使用standalone，reader组件参数支持配置文件路径，数据无需上传。提交任务时reader参数如下：
 ```yaml
 reader_0:
   inputs:
@@ -102,7 +102,7 @@ reader_0:
       label_type: float32
       path: file:///data/projects/fate/fateflow/examples/data/breast_hetero_guest.csv
 ```
-- 若计算引擎使用eggroll，需要先将数据上传至eggroll中，可参考：[eggroll数据上传](../examples/test/data.py)、[上传参数](../examples/upload/upload_guest.json), 使用时配置如下：
+- 若计算引擎使用eggroll，需要先将数据上传至eggroll中，可参考：[eggroll数据上传](../examples/test/data.py)、[上传参数](../examples/upload/upload_guest.json)。 提交任务时reader参数：
 ```yaml
 reader_0:
   inputs:
