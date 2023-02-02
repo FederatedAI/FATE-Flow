@@ -14,7 +14,7 @@
 #  limitations under the License.
 import docker
 
-from fate_flow.settings import LOG_DIRECTORY, WORKER
+from fate_flow.settings import LOG_DIRECTORY, WORKER, LOCAL_DATA_STORE_PATH
 
 
 class DockerManager:
@@ -40,6 +40,10 @@ class DockerManager:
                     'bind': f'{self.fate_root_dir}/eggroll/conf',
                     'mode': 'ro',
                 },
+                LOCAL_DATA_STORE_PATH: {
+                    'bind': LOCAL_DATA_STORE_PATH,
+                    'mode': 'rw',
+                }
             },
         )
 
