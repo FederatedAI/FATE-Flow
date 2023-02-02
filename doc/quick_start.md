@@ -214,8 +214,8 @@ worker:
     # 宿主机路径，根据实际情况填写
     eggroll_conf_dir:
   k8s:
-    config:
-    image:
+    image: ccr.ccs.tencentyun.com/federatedai/fate_algorithm:2.0.0-alpha
+    namespace: fate-10000
 ```
 - 在 2.0.0-alpha 版本中暂不支持算法容器注册功能，只支持固定模式的算法运行方案：`local`、`docker` 或 `k8s`, 由配置 `type` 决定运行模式。
 - `worker.type` 支持：`docker`、`k8s`，默认使用非容器模式，即 `native`。
