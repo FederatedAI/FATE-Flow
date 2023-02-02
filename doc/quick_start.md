@@ -15,11 +15,26 @@ mkdir -p /data/projects/fate2.0
   # fate算法包
   mv ./FATE/python /data/projects/fate2.0/python
 ```
-#### 1.2 依赖下载
+#### 1.2 依赖
+##### 1.2.1 miniconda安装
 ```shell
+wget https://webank-ai-1251170195.cos.ap-guangzhou.myqcloud.com/resources/Miniconda3-py38_4.12.0-Linux-x86_64.sh
+#创建python虚拟化安装目录
+mkdir -p /data/projects/fate2.0/common/python/venv
+
+#安装miniconda3
+bash Miniconda3-py38_4.12.0-Linux-x86_64.sh -b -p /data/projects/fate2.0/common/miniconda3
+#创建虚拟化环境
+/data/projects/fate2.0/common/miniconda3/bin/python3.8 -m venv /data/projects/fate2.0/common/python/venv
+```
+
+##### 1.2.2 依赖安装
+```shell
+source /data/projects/fate2.0/common/python/venv/bin/activate
 pip install -r requirements.txt
 ```
 详细依赖参考： [requirements.txt](../python/requirements.txt)
+
 #### 1.3 修改配置
 #### 1.3.1 配置说明
 - 系统配置文件[service_conf.yaml](../conf/service_conf.yaml)说明：
@@ -46,7 +61,7 @@ export FATE_PROJECT_BASE=/data/projects/fate2.0
 export FATE_DEPLOY_BASE=/data/projects/fate2.0
 export EGGROLL_HOME=/data/projects/fate/eggroll
 export PYTHONPATH=/data/projects/fate2.0/python:/data/projects/fate2.0/fate_flow/python:/data/projects/fate/eggroll/python
-venv=/data/projects/fate2.0/flow
+venv=/data/projects/fate2.0/common/python/venv
 export PATH=$PATH:$JAVA_HOME/bin
 source ${venv}/bin/activate
 ```
