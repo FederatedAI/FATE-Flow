@@ -18,6 +18,7 @@ from ruamel import yaml
 from fate_flow.db.db_models import Task
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.settings import WORKER
+from fate_flow.utils.log_utils import schedule_logger
 
 
 class ContainerdWorkerManager:
@@ -55,14 +56,14 @@ class ContainerdWorkerManager:
         }
 
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
-        self.manager.start(
-            self.get_name(task),
-            self.get_command(task),
-            self.get_environment(task, run_parameters),
-        )
-
+        name = self.get_name(task)
+        cmd = self.get_command(task)
+        env = self.get_environment(task, run_parameters)
+        schedule_logger(job_id=task.f_job_id).info(f"start run container {name}, cmd: {cmd}, env: {env}")
+        self.manager.start(name, cmd, env)
         return {
             'run_ip': RuntimeConfig.JOB_SERVER_HOST,
+            'cmd': cmd
         }
 
     def kill(self, task: Task):
