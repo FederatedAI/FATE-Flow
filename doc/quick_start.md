@@ -2,8 +2,8 @@
 
 #### 1.1 源码获取
 ##### 1.1.1 从github拉取源码
-  - [FATE](https://github.com/FederatedAI/FATE/tree/dev-2.0-alpha)
-  - [FATE-Flow](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-alpha)
+  - [FATE](https://github.com/FederatedAI/FATE/tree/release-2.0-alpha)
+  - [FATE-Flow](https://github.com/FederatedAI/FATE-Flow/tree/release-2.0-alpha)
 ##### 1.1.2 新建部署目录:
 ```shell
 mkdir -p /data/projects/fate2.0
@@ -15,11 +15,27 @@ mkdir -p /data/projects/fate2.0
   # fate算法包
   mv ./FATE/python /data/projects/fate2.0/python
 ```
-#### 1.2 依赖下载
+#### 1.2 依赖
+##### 1.2.1 miniconda安装
 ```shell
+wget https://webank-ai-1251170195.cos.ap-guangzhou.myqcloud.com/resources/Miniconda3-py38_4.12.0-Linux-x86_64.sh
+#创建python虚拟化安装目录
+mkdir -p /data/projects/fate2.0/common/python/venv
+
+#安装miniconda3
+bash Miniconda3-py38_4.12.0-Linux-x86_64.sh -b -p /data/projects/fate2.0/common/miniconda3
+#创建虚拟化环境
+/data/projects/fate2.0/common/miniconda3/bin/python3.8 -m venv /data/projects/fate2.0/common/python/venv
+```
+
+##### 1.2.2 依赖安装
+```shell
+source /data/projects/fate2.0/common/python/venv/bin/activate
+cd /data/projects/fate2.0/fate_flow/python
 pip install -r requirements.txt
 ```
 详细依赖参考： [requirements.txt](../python/requirements.txt)
+
 #### 1.3 修改配置
 #### 1.3.1 配置说明
 - 系统配置文件[service_conf.yaml](../conf/service_conf.yaml)说明：
@@ -42,11 +58,9 @@ federation: 通信服务详细地址
 - 根据实际部署情况修改系统配置service_conf.yaml
 - 修改fate_flow/bin/init_env.sh, 参考如下：
 ```yaml
-export FATE_PROJECT_BASE=/data/projects/fate2.0
-export FATE_DEPLOY_BASE=/data/projects/fate2.0
 export EGGROLL_HOME=/data/projects/fate/eggroll
 export PYTHONPATH=/data/projects/fate2.0/python:/data/projects/fate2.0/fate_flow/python:/data/projects/fate/eggroll/python
-venv=/data/projects/fate2.0/flow
+venv=/data/projects/fate2.0/common/python/venv
 export PATH=$PATH:$JAVA_HOME/bin
 source ${venv}/bin/activate
 ```
@@ -72,7 +86,7 @@ source ${venv}/bin/activate
     ```shell
     sh /data/projects/fate2.0/fate_flow/bin/service.sh status
     ```
-  
+
 ### 2. 使用指南
 #### 2.1 数据上传
 - 若计算引擎使用standalone，reader组件参数支持配置文件路径，数据无需上传，使用时配置如下：
@@ -195,20 +209,14 @@ worker:
     config:
       base_url: unix:///var/run/docker.sock
     image: ccr.ccs.tencentyun.com/federatedai/fate_algorithm:2.0.0-alpha
-    # on container
+    # 容器内路径，一般不需要更改
     fate_root_dir: /data/projects/fate
-    # on host
+    # 宿主机路径，根据实际情况填写
     eggroll_conf_dir:
   k8s:
-    config:
-    image:
+    image: ccr.ccs.tencentyun.com/federatedai/fate_algorithm:2.0.0-alpha
+    namespace: fate-10000
 ```
-- 在2.0.0-alpha版本中暂不支持算法容器注册功能，只支持固定模式的算法运行方案："local"、"docker"或"k8s", 由配置"type"决定运行模式。
-- type支持：docker、k8s，默认使用非容器模式
-
-
-
-
-
-
-
+- 在 2.0.0-alpha 版本中暂不支持算法容器注册功能，只支持固定模式的算法运行方案：`local`、`docker` 或 `k8s`, 由配置 `type` 决定运行模式。
+- `worker.type` 支持：`docker`、`k8s`，默认使用非容器模式，即 `native`。
+- 容器模式不支持通信组件使用 `standalone`，需更改 `default_engines.federation` 为其他组件。

@@ -79,5 +79,5 @@ worker:
     # on host
     eggroll_conf_dir:
   k8s:
-    config:
-    image:
+    image: ccr.ccs.tencentyun.com/federatedai/fate_algorithm:2.0.0-alpha
+    namespace: fate-10000
