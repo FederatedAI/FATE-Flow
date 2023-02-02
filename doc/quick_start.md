@@ -3,7 +3,7 @@
 #### 1.1 源码获取
 ##### 1.1.1 从github拉取源码
   - [FATE](https://github.com/FederatedAI/FATE/tree/dev-2.0-alpha)
-  - [FATE-Flow](./../../)
+  - [FATE-Flow](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-alpha)
 ##### 1.1.2 新建部署目录:
 ```shell
 mkdir -p /data/projects/fate2.0
