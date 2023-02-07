@@ -73,12 +73,13 @@ def migration(config_data: dict):
         if not model.exists():
             raise Exception("Can not found {} {} model local cache".format(config_data["model_id"],
                                                                            config_data["model_version"]))
+        '''
         with DB.connection_context():
             if MLModel.get_or_none(MLModel.f_model_version == config_data["unify_model_version"]):
                 raise Exception("Unify model version {} has been occupied in database. "
                                 "Please choose another unify model version and try again.".format(
                     config_data["unify_model_version"]))
-
+        '''
         model_data = model.collect_models(in_bytes=True)
         if "pipeline.pipeline:Pipeline" not in model_data:
             raise Exception("Can not found pipeline file in model.")
@@ -141,7 +142,7 @@ def migration(config_data: dict):
 
         migrate_model.gen_model_import_config()
         archive_path = migrate_model.packaging_model()
-        shutil.rmtree(os.path.abspath(migrate_model.model_path))
+        #shutil.rmtree(os.path.abspath(migrate_model.model_path))
 
         return (0, f"Migrating model successfully. " \
                   "The configuration of model has been modified automatically. " \
