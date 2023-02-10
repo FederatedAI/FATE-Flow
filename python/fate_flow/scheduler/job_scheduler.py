@@ -77,13 +77,13 @@ class DAGScheduler(Cron):
                 ScheduleJobSaver.update_job_status({"job_id": job.f_job_id, "status": job.f_status})
             schedule_logger(job_id).info(f"submit job successfully, job id is {job.f_job_id}")
             result = {
-                "code": ReturnCode.JOB.SUCCESS,
+                "code": ReturnCode.Base.SUCCESS,
                 "message": "success"
             }
             submit_result.update(result)
         except Exception as e:
             schedule_logger(job_id).exception(e)
-            submit_result["code"] = ReturnCode.JOB.CREATE_JOB_FAILED
+            submit_result["code"] = ReturnCode.Job.CREATE_JOB_FAILED
             submit_result["message"] = exception_to_trace_string(e)
         return submit_result
 
@@ -187,7 +187,7 @@ class DAGScheduler(Cron):
             for dest_role in federated_response.keys():
                 for dest_party_id in federated_response[dest_role].keys():
                     retcode = federated_response[dest_role][dest_party_id]["code"]
-                    if retcode == ReturnCode.JOB.SUCCESS:
+                    if retcode == ReturnCode.Base.SUCCESS:
                         rollback_party.append({"role": dest_role, "party_id": [dest_party_id]})
                     else:
                         failed_party.append({"role": dest_role, "party_id": [dest_party_id]})
@@ -332,15 +332,15 @@ class DAGScheduler(Cron):
             status_code, response = FederatedScheduler.stop_job(job_id=job_id, roles=job.f_parties)
             if status_code == FederatedSchedulingStatusCode.SUCCESS:
                 schedule_logger(job_id).info(f"stop job with {stop_status} successfully")
-                return ReturnCode.JOB.SUCCESS, "success"
+                return ReturnCode.Base.SUCCESS, "success"
             else:
                 tasks_group = ScheduleJobSaver.get_status_tasks_asc(job_id=job.f_job_id)
                 for task in tasks_group.values():
                     TaskScheduler.collect_task_of_all_party(job, task=task, set_status=stop_status)
                 schedule_logger(job_id).info(f"stop job with {stop_status} failed, {response}")
-                return ReturnCode.JOB.KILL_FAILED, json_dumps(response)
+                return ReturnCode.Job.KILL_FAILED, json_dumps(response)
         else:
-            return ReturnCode.JOB.NO_FOUND, "can not found job"
+            return ReturnCode.Job.NOT_FOUND, "job not found"
 
     @classmethod
     @DB.connection_context()

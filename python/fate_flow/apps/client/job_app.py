@@ -33,8 +33,8 @@ def submit_job(dag_schema):
 def query_job(job_id=None, role=None, party_id=None, status=None):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id, status=status)
     if not jobs:
-        return get_json_result(code=ReturnCode.JOB.NO_FOUND, message="no found job")
-    return get_json_result(code=ReturnCode.JOB.SUCCESS, message="success",
+        return get_json_result(code=ReturnCode.Job.NOT_FOUND, message="job no found")
+    return get_json_result(code=ReturnCode.Base.SUCCESS, message="success",
                            data=[job.to_human_model_dict() for job in jobs])
 
 
@@ -47,8 +47,8 @@ def query_task(job_id=None, role=None, party_id=None, status=None, task_name=Non
     tasks = JobController.query_tasks(job_id=job_id, role=role, party_id=party_id, status=status, task_name=task_name,
                                       task_id=task_id, task_version=task_version)
     if not tasks:
-        return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
-    return get_json_result(code=ReturnCode.TASK.SUCCESS, message="success",
+        return get_json_result(code=ReturnCode.Task.NOT_FOUND, message="task no found")
+    return get_json_result(code=ReturnCode.Base.SUCCESS, message="success",
                            data=[task.to_human_model_dict() for task in tasks])
 
 
@@ -64,6 +64,6 @@ def request_stop_job(job_id=None):
 def request_rerun_job(job_id=None):
     jobs = JobController.query_job(job_id=job_id)
     if not jobs:
-        return get_json_result(code=ReturnCode.JOB.NO_FOUND, message="no found job")
+        return get_json_result(code=ReturnCode.Job.NOT_FOUND, message="job not found")
     rerun_result = JobController.request_rerun_job(job=jobs[0])
     return get_json_result(**rerun_result)
