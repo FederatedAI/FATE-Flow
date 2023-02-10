@@ -1,0 +1,2087 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../fate_flow_monitoring/">
+      
+      
+        <link rel="next" href="../fate_flow_authority_management/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.12">
+    
+    
+      
+        <title>Federated Model Registry - FATE Flow</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.0d440cfe.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.2505c338.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../mkdocs/css/termynal.css">
+    
+      <link rel="stylesheet" href="../mkdocs/css/custom.css">
+    
+      <link rel="stylesheet" href="../mkdocs/css/extra.css">
+    
+      <link rel="stylesheet" href="../mkdocs/css/landing.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#federated-model-registry" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="FATE Flow" class="md-header__button md-logo" aria-label="FATE Flow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FATE Flow
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Federated Model Registry
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+            </label>
+          
+        
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Select language">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href=".." hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../zh/" hreflang="zh" class="md-select__link">
+                    中文
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/FederatedAI/FATE-Flow" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    FederatedAI/FATE-Flow
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href=".." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../document_navigation/" class="md-tabs__link md-tabs__link--active">
+        Docs
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../swagger/" class="md-tabs__link">
+      API
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="FATE Flow" class="md-nav__button md-logo" aria-label="FATE Flow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    FATE Flow
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/FederatedAI/FATE-Flow" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    FederatedAI/FATE-Flow
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Docs
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Docs
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../document_navigation/" class="md-nav__link">
+        Document Navigation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow/" class="md-nav__link">
+        Overall Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_data_access/" class="md-nav__link">
+        Data Access
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_component_registry/" class="md-nav__link">
+        Task Component Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_job_scheduling/" class="md-nav__link">
+        Multi-Party Job&Task Scheduling
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_resource_management/" class="md-nav__link">
+        Multi-Party Resource Coordination
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_tracking/" class="md-nav__link">
+        Data Flow Tracking
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_monitoring/" class="md-nav__link">
+        Real-Time Monitoring
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Federated Model Registry
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Federated Model Registry
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-description" class="md-nav__link">
+    1. Description
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-disk-storage" class="md-nav__link">
+    Local disk storage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remote-storage-engine" class="md-nav__link">
+    Remote storage engine
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-model" class="md-nav__link">
+    2. Model
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load" class="md-nav__link">
+    load
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bind" class="md-nav__link">
+    bind
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import" class="md-nav__link">
+    import
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    export
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrate" class="md-nav__link">
+    migrate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-list" class="md-nav__link">
+    tag-list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-model" class="md-nav__link">
+    tag-model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy" class="md-nav__link">
+    deploy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-predict-dsl" class="md-nav__link">
+    get-predict-dsl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-predict-conf" class="md-nav__link">
+    get-predict-conf
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-model-info" class="md-nav__link">
+    get-model-info
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#homo-convert" class="md-nav__link">
+    homo-convert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#homo-deploy" class="md-nav__link">
+    homo-deploy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-checkpoint" class="md-nav__link">
+    3. Checkpoint
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Checkpoint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-storage-engine-configuration" class="md-nav__link">
+    4. Storage engine configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Storage engine configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable_model_store" class="md-nav__link">
+    enable_model_store
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model_store_address" class="md-nav__link">
+    model_store_address
+  </a>
+  
+    <nav class="md-nav" aria-label="model_store_address">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tencent-cloud-object-storage" class="md-nav__link">
+    Tencent Cloud Object Storage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mysql" class="md-nav__link">
+    MySQL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    Redis
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_authority_management/" class="md-nav__link">
+        Certification program
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_permission_management/" class="md-nav__link">
+        Fate flow permission management
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_server_operation/" class="md-nav__link">
+        Server Operation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_service_registry/" class="md-nav__link">
+        Service Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_model_migration/" class="md-nav__link">
+        Inter-cluster Model Migration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_client/" class="md-nav__link">
+        FATE Flow Client
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_http_api_call_demo/" class="md-nav__link">
+        REST API CLIENT
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration_instruction/" class="md-nav__link">
+        Configuration Instructions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../system_operational/" class="md-nav__link">
+        System Operation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        FAQ
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swagger/" class="md-nav__link">
+        API
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-description" class="md-nav__link">
+    1. Description
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-disk-storage" class="md-nav__link">
+    Local disk storage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remote-storage-engine" class="md-nav__link">
+    Remote storage engine
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-model" class="md-nav__link">
+    2. Model
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load" class="md-nav__link">
+    load
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bind" class="md-nav__link">
+    bind
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import" class="md-nav__link">
+    import
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    export
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrate" class="md-nav__link">
+    migrate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-list" class="md-nav__link">
+    tag-list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-model" class="md-nav__link">
+    tag-model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy" class="md-nav__link">
+    deploy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-predict-dsl" class="md-nav__link">
+    get-predict-dsl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-predict-conf" class="md-nav__link">
+    get-predict-conf
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-model-info" class="md-nav__link">
+    get-model-info
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#homo-convert" class="md-nav__link">
+    homo-convert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#homo-deploy" class="md-nav__link">
+    homo-deploy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-checkpoint" class="md-nav__link">
+    3. Checkpoint
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Checkpoint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-storage-engine-configuration" class="md-nav__link">
+    4. Storage engine configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Storage engine configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable_model_store" class="md-nav__link">
+    enable_model_store
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model_store_address" class="md-nav__link">
+    model_store_address
+  </a>
+  
+    <nav class="md-nav" aria-label="model_store_address">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tencent-cloud-object-storage" class="md-nav__link">
+    Tencent Cloud Object Storage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mysql" class="md-nav__link">
+    MySQL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    Redis
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+
+<h1 id="federated-model-registry">Federated Model Registry<a class="headerlink" href="#federated-model-registry" title="Permanent link">&para;</a></h1>
+<h2 id="1-description">1. Description<a class="headerlink" href="#1-description" title="Permanent link">&para;</a></h2>
+<p>Models trained by FATE are automatically saved locally and recorded in the FATE-Flow database. models saved after each component run are called Pipeline models, and models saved at regular intervals while the component is running are called Checkpoint models. checkpoint models can also be used for retrying after a component run is unexpectedly interrupted The Checkpoint model can also be used for "breakpoints" when a component is retrying after an unexpected interruption.</p>
+<p>Checkpoint model support has been added since 1.7.0 and is not saved by default. To enable it, add the callback <code>ModelCheckpoint</code> to the DSL.</p>
+<h3 id="local-disk-storage">Local disk storage<a class="headerlink" href="#local-disk-storage" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>Pipeline models are stored in <code>model_local_cache/&lt;party_model_id&gt;/&lt;model_version&gt;/variables/data/&lt;component_name&gt;/&lt;model_alias&gt;</code>.</p>
+</li>
+<li>
+<p>Checkpoint models are stored in <code>model_local_cache/&lt;party_model_id&gt;/&lt;model_version&gt;/checkpoint/&lt;component_name&gt;/&lt;step_index&gt;#&lt;step_name&gt;</code>.</p>
+</li>
+</ul>
+<h3 id="remote-storage-engine">Remote storage engine<a class="headerlink" href="#remote-storage-engine" title="Permanent link">&para;</a></h3>
+<p>Local disk is not reliable, so there is a risk of losing models. FATE-Flow supports exporting models to specified storage engines, importing from specified storage engines, and pushing models to engine storage when publishing models automatically.</p>
+<p>The storage engine supports Tencent Cloud Object Storage, MySQL and Redis, please refer to <a href="#4-storage-engine-configuration">Storage Engine Configuration</a></p>
+<h2 id="2-model">2. Model<a class="headerlink" href="#2-model" title="Permanent link">&para;</a></h2>
+<h3 id="load">load<a class="headerlink" href="#load" title="Permanent link">&para;</a></h3>
+<p>Load a model generated by <code>deploy</code> to Fate-Serving.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>load<span class="w"> </span>-c<span class="w"> </span>examples/model/publish_load_model.json
+flow<span class="w"> </span>model<span class="w"> </span>load<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>Yes</td>
+<td>Config file path</td>
+</tr>
+<tr>
+<td>job_id</td>
+<td><code>-j</code></td>
+<td><code>--job-id</code></td>
+<td>Yes</td>
+<td>Job ID</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091122168817080&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="bind">bind<a class="headerlink" href="#bind" title="Permanent link">&para;</a></h3>
+<p>Bind a model generated by <code>deploy</code> to Fate-Serving.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span><span class="nb">bind</span><span class="w"> </span>-c<span class="w"> </span>examples/model/bind_model_service.json
+flow<span class="w"> </span>model<span class="w"> </span><span class="nb">bind</span><span class="w"> </span>-c<span class="w"> </span>examples/model/bind_model_service.json<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>No</td>
+<td>Config file path</td>
+</tr>
+<tr>
+<td>job_id</td>
+<td><code>-j</code></td>
+<td><code>--job-id</code></td>
+<td>Yes</td>
+<td>Job ID</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;service id is 123&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="import">import<a class="headerlink" href="#import" title="Permanent link">&para;</a></h3>
+<p>Import the model from a file or storage engine.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>import<span class="w"> </span>-c<span class="w"> </span>examples/model/import_model.json
+flow<span class="w"> </span>model<span class="w"> </span>import<span class="w"> </span>-c<span class="w"> </span>examples/model/restore_model.json<span class="w"> </span>--from-database
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>No</td>
+<td>Config file path</td>
+</tr>
+<tr>
+<td>from_database</td>
+<td></td>
+<td><code>--from-database</code></td>
+<td>Yes</td>
+<td>Import the model from storage engine</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202208261102212849780&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;arbiter-10000#guest-9999#host-10000#model&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;foobar&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9999&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="export">export<a class="headerlink" href="#export" title="Permanent link">&para;</a></h3>
+<p>Export the model to a file or storage engine.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-c<span class="w"> </span>examples/model/export_model.json
+flow<span class="w"> </span>model<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-c<span class="w"> </span>examples/model/store_model.json<span class="w"> </span>--to-database
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>No</td>
+<td>Config file path</td>
+</tr>
+<tr>
+<td>to_database</td>
+<td></td>
+<td><code>--to-database</code></td>
+<td>Yes</td>
+<td>Export the model to storage engine</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8080/index.html#/dashboard?job_id=202111091124582110490&amp;role=local&amp;party_id=0&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/job_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091124582110490&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/logs/202111091124582110490&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local-0#model&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091124582110490&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/pipeline_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/local/0/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/job_runtime_conf.json&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/train_runtime_conf.json&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091124582110490&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="migrate">migrate<a class="headerlink" href="#migrate" title="Permanent link">&para;</a></h3>
+<p>Migrate the model.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>migrate<span class="w"> </span>-c<span class="w"> </span>examples/model/migrate_model.json
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>No</td>
+<td>Config file path</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Migrating model successfully. The Config of model has been modified automatically. New model id is: arbiter-100#guest-99#host-100#model, model version is: 202111091127392613050. Model files can be found at &#39;/root/Codes/FATE-Flow/temp/fate_flow/arbiter#100#arbiter-100#guest-99#host-100#model_202111091127392613050.zip&#39;.&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Migrating model successfully. The Config of model has been modified automatically. New model id is: arbiter-100#guest-99#host-100#model, model version is: 202111091127392613050. Model files can be found at &#39;/root/Codes/FATE-Flow/temp/fate_flow/guest#99#arbiter-100#guest-99#host-100#model_202111091127392613050.zip&#39;.&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Migrating model successfully. The Config of model has been modified automatically. New model id is: arbiter-100#guest-99#host-100#model, model version is: 202111091127392613050. Model files can be found at &#39;/root/Codes/FATE-Flow/temp/fate_flow/host#100#arbiter-100#guest-99#host-100#model_202111091127392613050.zip&#39;.&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091127392613050&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="tag-list">tag-list<a class="headerlink" href="#tag-list" title="Permanent link">&para;</a></h3>
+<p>List tags of the model.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>tag-list<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>job_id</td>
+<td><code>-j</code></td>
+<td><code>--job_id</code></td>
+<td>No</td>
+<td>Job ID</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tag-model">tag-model<a class="headerlink" href="#tag-model" title="Permanent link">&para;</a></h3>
+<p>Add or remove a tag from the model.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>tag-model<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;<span class="w"> </span>-t<span class="w"> </span>&lt;tag_name&gt;
+flow<span class="w"> </span>model<span class="w"> </span>tag-model<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;<span class="w"> </span>-t<span class="w"> </span>&lt;tag_name&gt;<span class="w"> </span>--remove
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>job_id</td>
+<td><code>-j</code></td>
+<td><code>--job_id</code></td>
+<td>No</td>
+<td>Job ID</td>
+</tr>
+<tr>
+<td>tag_name</td>
+<td><code>-t</code></td>
+<td><code>--tag-name</code></td>
+<td>No</td>
+<td>Tag name</td>
+</tr>
+<tr>
+<td>remove</td>
+<td></td>
+<td><code>--remove</code></td>
+<td>Yes</td>
+<td>Remove the tag</td>
+</tr>
+</tbody>
+</table>
+<h3 id="deploy">deploy<a class="headerlink" href="#deploy" title="Permanent link">&para;</a></h3>
+<p>Configure predict DSL.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>deploy<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>No</td>
+<td>Model ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>No</td>
+<td>Model version</td>
+</tr>
+<tr>
+<td>cpn_list</td>
+<td></td>
+<td><code>--cpn-list</code></td>
+<td>Yes</td>
+<td>Components list</td>
+</tr>
+<tr>
+<td>cpn_path</td>
+<td></td>
+<td><code>--cpn-path</code></td>
+<td>Yes</td>
+<td>Load components list from a file</td>
+</tr>
+<tr>
+<td>dsl_path</td>
+<td></td>
+<td><code>--dsl-path</code></td>
+<td>Yes</td>
+<td>Predict DSL file path</td>
+</tr>
+<tr>
+<td>cpn_step_index</td>
+<td></td>
+<td><code>--cpn-step-index</code></td>
+<td>Yes</td>
+<td>Specify a checkpoint model to replace the pipeline model<br />Use <code>:</code> to separate component name and step index<br />E.g. <code>--cpn-step-index cpn_a:123</code></td>
+</tr>
+<tr>
+<td>cpn_step_name</td>
+<td></td>
+<td><code>--cpn-step-name</code></td>
+<td>Yes</td>
+<td>Specify a checkpoint model to replace the pipeline model.<br />Use <code>:</code> to separate component name and step name<br />E.g. <code>--cpn-step-name cpn_b:foobar</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;arbiter-9999#guest-10000#host-9999#model&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111032227378766180&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9999</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9999</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deploy model of role arbiter 9999 success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deploy model of role guest 10000 success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deploy model of role host 9999 success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="get-predict-dsl">get-predict-dsl<a class="headerlink" href="#get-predict-dsl" title="Permanent link">&para;</a></h3>
+<p>Get predict DSL of the model.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>get-predict-dsl<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>-o<span class="w"> </span>./examples/
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>No</td>
+<td>Model ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>No</td>
+<td>Model version</td>
+</tr>
+<tr>
+<td>output_path</td>
+<td><code>-o</code></td>
+<td><code>--output-path</code></td>
+<td>No</td>
+<td>Output path</td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-predict-conf">get-predict-conf<a class="headerlink" href="#get-predict-conf" title="Permanent link">&para;</a></h3>
+<p>Get the template of predict config.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>get-predict-conf<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>-o<span class="w"> </span>./examples/
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>No</td>
+<td>Model ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>No</td>
+<td>Model version</td>
+</tr>
+<tr>
+<td>output_path</td>
+<td><code>-o</code></td>
+<td><code>--output-path</code></td>
+<td>No</td>
+<td>Output path</td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-model-info">get-model-info<a class="headerlink" href="#get-model-info" title="Permanent link">&para;</a></h3>
+<p>Get model information.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>get-model-info<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;
+flow<span class="w"> </span>model<span class="w"> </span>get-model-info<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>--detail
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>No</td>
+<td>Model ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>No</td>
+<td>Model version</td>
+</tr>
+<tr>
+<td>role</td>
+<td><code>-r</code></td>
+<td><code>--role</code></td>
+<td>Yes</td>
+<td>Party role</td>
+</tr>
+<tr>
+<td>party_id</td>
+<td><code>-p</code></td>
+<td><code>--party-id</code></td>
+<td>Yes</td>
+<td>Party ID</td>
+</tr>
+<tr>
+<td>detail</td>
+<td></td>
+<td><code>--detail</code></td>
+<td>Yes</td>
+<td>Display detailed information</td>
+</tr>
+</tbody>
+</table>
+<h3 id="homo-convert">homo-convert<a class="headerlink" href="#homo-convert" title="Permanent link">&para;</a></h3>
+<p>Convert trained homogenous model to the format of another ML framework.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>homo-convert<span class="w"> </span>-c<span class="w"> </span>examples/model/homo_convert_model.json
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>No</td>
+<td>Config file path</td>
+</tr>
+</tbody>
+</table>
+<h3 id="homo-deploy">homo-deploy<a class="headerlink" href="#homo-deploy" title="Permanent link">&para;</a></h3>
+<p>Deploy trained homogenous model to a target online serving system. Currently the supported target serving system is KFServing.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>homo-deploy<span class="w"> </span>-c<span class="w"> </span>examples/model/homo_deploy_model.json
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>No</td>
+<td>Config file path</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-checkpoint">3. Checkpoint<a class="headerlink" href="#3-checkpoint" title="Permanent link">&para;</a></h2>
+<h3 id="list">list<a class="headerlink" href="#list" title="Permanent link">&para;</a></h3>
+<p>List checkpoints.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>checkpoint<span class="w"> </span>list<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>--role<span class="w"> </span>&lt;role&gt;<span class="w"> </span>--party-id<span class="w"> </span>&lt;party_id&gt;<span class="w"> </span>--component-name<span class="w"> </span>&lt;component_name&gt;
+</code></pre></div>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>No</td>
+<td>Model ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>No</td>
+<td>Model version</td>
+</tr>
+<tr>
+<td>role</td>
+<td><code>-r</code></td>
+<td><code>--role</code></td>
+<td>No</td>
+<td>Party role</td>
+</tr>
+<tr>
+<td>party_id</td>
+<td><code>-p</code></td>
+<td><code>--party-id</code></td>
+<td>No</td>
+<td>Party ID</td>
+</tr>
+<tr>
+<td>component_name</td>
+<td><code>-cpn</code></td>
+<td><code>--component-name</code></td>
+<td>No</td>
+<td>Component name</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-11-07T02:34:54.683015&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;step_index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;step_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;step_name&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;HeteroLogisticRegressionMeta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;buffer_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LRModelMeta&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;sha1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6871508f6e6228341b18031b3623f99a53a87147&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;HeteroLogisticRegressionParam&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;buffer_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LRModelParam&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;sha1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e3cb636fc93675684bff27117943f5bfa87f3029&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="get">get<a class="headerlink" href="#get" title="Permanent link">&para;</a></h3>
+<p>Get checkpoint information.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>checkpoint<span class="w"> </span>get<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>--role<span class="w"> </span>&lt;role&gt;<span class="w"> </span>--party-id<span class="w"> </span>&lt;party_id&gt;<span class="w"> </span>--component-name<span class="w"> </span>&lt;component_name&gt;<span class="w"> </span>--step-index<span class="w"> </span>&lt;step_index&gt;
+</code></pre></div>
+<p><strong>Example</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Short Flag</th>
+<th>Long Flag</th>
+<th>Optional</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>No</td>
+<td>Model ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>No</td>
+<td>Model version</td>
+</tr>
+<tr>
+<td>role</td>
+<td><code>-r</code></td>
+<td><code>--role</code></td>
+<td>No</td>
+<td>Party role</td>
+</tr>
+<tr>
+<td>party_id</td>
+<td><code>-p</code></td>
+<td><code>--party-id</code></td>
+<td>No</td>
+<td>Party ID</td>
+</tr>
+<tr>
+<td>component_name</td>
+<td><code>-cpn</code></td>
+<td><code>--component-name</code></td>
+<td>No</td>
+<td>Component name</td>
+</tr>
+<tr>
+<td>step_index</td>
+<td></td>
+<td><code>--step-index</code></td>
+<td>Yes</td>
+<td>Step index, cannot be used with <code>step_name</code></td>
+</tr>
+<tr>
+<td>step_name</td>
+<td></td>
+<td><code>--step-name</code></td>
+<td>Yes</td>
+<td>Step name, cannot be used with <code>step_index</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-11-07T02:34:54.683015&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;step_index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;step_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;step_name&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;HeteroLogisticRegressionMeta&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CgJMMhEtQxzr4jYaPxkAAAAAAADwPyIHcm1zcHJvcDD///////////8BOTMzMzMzM8M/QApKBGRpZmZYAQ==&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;HeteroLogisticRegressionParam&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Ig0KAng3EW1qASu+uuO/Ig0KAng0EcNi7a65ReG/Ig0KAng4EbJbl4gvVea/Ig0KAng2EcZwlVZTkOu/Ig0KAngwEVpG8dCbGvG/Ig0KAng5ESJNTx5MLve/Ig0KAngzEZ88H9P8qfO/Ig0KAng1EVfWP8JJv/K/Ig0KAngxEVS0xVXoTem/Ig0KAngyEaApgW32Q/K/KSiiE8AukPs/MgJ4MDICeDEyAngyMgJ4MzICeDQyAng1MgJ4NjICeDcyAng4MgJ4OUj///////////8B&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="4-storage-engine-configuration">4. Storage engine configuration<a class="headerlink" href="#4-storage-engine-configuration" title="Permanent link">&para;</a></h2>
+<h3 id="enable_model_store"><code>enable_model_store</code><a class="headerlink" href="#enable_model_store" title="Permanent link">&para;</a></h3>
+<p>This option affects API <code>/model/load</code>.</p>
+<p>Automatic upload models to the model store if it exists locally but does not exist in the model storage, or download models from the model store if it does not exist locally but does not exist in the model storage.</p>
+<p>This option does not affect API <code>/model/store</code> or <code>/model/restore</code>.</p>
+<h3 id="model_store_address"><code>model_store_address</code><a class="headerlink" href="#model_store_address" title="Permanent link">&para;</a></h3>
+<p>This config defines which storage engine to use.</p>
+<h4 id="tencent-cloud-object-storage">Tencent Cloud Object Storage<a class="headerlink" href="#tencent-cloud-object-storage" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tencent_cos</span>
+<span class="c1"># get these configs from Tencent Cloud console</span>
+<span class="nt">Region</span><span class="p">:</span>
+<span class="nt">SecretId</span><span class="p">:</span>
+<span class="nt">SecretKey</span><span class="p">:</span>
+<span class="nt">Bucket</span><span class="p">:</span>
+</code></pre></div>
+<h4 id="mysql">MySQL<a class="headerlink" href="#mysql" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysql</span>
+<span class="nt">database</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_model</span>
+<span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3306</span>
+<span class="c1"># other optional configs send to the engine</span>
+<span class="nt">max_connections</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="nt">stale_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</code></pre></div>
+<h4 id="redis">Redis<a class="headerlink" href="#redis" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis</span>
+<span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6379</span>
+<span class="nt">db</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="nt">password</span><span class="p">:</span>
+<span class="c1"># the expiry time of keys, in seconds. defaults None (no expiry time)</span>
+<span class="nt">ex</span><span class="p">:</span>
+</code></pre></div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © Copyright 2022 WeBank Co., Ltd. | All Rights Reserved.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "search": "../assets/javascripts/workers/search.db81ec45.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.4b2c34cd.min.js"></script>
+      
+        <script src="../mkdocs/js/termynal.js"></script>
+      
+        <script src="../mkdocs/js/custom.js"></script>
+      
+        <script src="../mkdocs/js/lottie-player.js"></script>
+      
+    
+  </body>
+</html>
