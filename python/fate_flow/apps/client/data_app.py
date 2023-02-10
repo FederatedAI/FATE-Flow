@@ -15,7 +15,7 @@
 #
 from webargs import fields
 
-from fate_flow.entity.types import Code
+from fate_flow.entity.types import ReturnCode
 from fate_flow.utils.api_utils import get_json_result, validate_request_json, validate_request_params
 from fate_flow.utils.data_upload import Upload, UploadParam
 
@@ -30,10 +30,10 @@ page_name = "data"
 def upload_data(file, head, partitions, namespace, name, meta, destroy=False, storage_engine=""):
     data = Upload().run(parameters=UploadParam(file=file, head=head, partitions=partitions, namespace=namespace,
                                                name=name, storage_engine=storage_engine, meta=meta, destroy=destroy))
-    return get_json_result(code=Code.SUCCESS, message="success", data=data)
+    return get_json_result(code=ReturnCode.Base.SUCCESS, message="success", data=data)
 
 
 @manager.route('/download', methods=['GET'])
 @validate_request_params(name=fields.String(required=True), namespace=fields.String(required=True))
 def download(name, namespace):
-    return get_json_result(code=Code.SUCCESS, message="success")
+    return get_json_result(code=ReturnCode.Base.SUCCESS, message="success")

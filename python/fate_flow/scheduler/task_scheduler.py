@@ -128,7 +128,7 @@ class TaskScheduler(object):
             for dest_role in federated_response.keys():
                 for dest_party_id in federated_response[dest_role].keys():
                     retcode = federated_response[dest_role][dest_party_id]["code"]
-                    if retcode == ReturnCode.TASK.SUCCESS:
+                    if retcode == ReturnCode.Base.SUCCESS:
                         rollback_party.append({"role": dest_role, "party_id": [dest_party_id]})
                     else:
                         failed_party.append({"role": dest_role, "party_id": [dest_party_id]})
@@ -157,7 +157,7 @@ class TaskScheduler(object):
             schedule_logger(job.f_job_id).warning(f"collect task {task.f_task_id} {task.f_task_version} failed")
         for _role in federated_response.keys():
             for _party_id, party_response in federated_response[_role].items():
-                if party_response["code"] == ReturnCode.TASK.SUCCESS:
+                if party_response["code"] == ReturnCode.Base.SUCCESS:
                     ScheduleJobSaver.update_task_status(task_info=party_response["data"])
                 elif set_status:
                     tmp_task_info = {
