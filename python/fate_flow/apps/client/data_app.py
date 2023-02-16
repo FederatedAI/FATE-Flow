@@ -15,7 +15,9 @@
 #
 from webargs import fields
 
+from fate_flow.engine import storage
 from fate_flow.entity.types import Code
+from fate_flow.manager.data_manager import DataManager
 from fate_flow.utils.api_utils import get_json_result, validate_request_json, validate_request_params
 from fate_flow.utils.data_upload import Upload, UploadParam
 
@@ -35,5 +37,10 @@ def upload_data(file, head, partitions, namespace, name, meta, destroy=False, st
 
 @manager.route('/download', methods=['GET'])
 @validate_request_params(name=fields.String(required=True), namespace=fields.String(required=True))
-def download(name, namespace):
-    return get_json_result(code=Code.SUCCESS, message="success")
+def download(namespace, name):
+    data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
+    return DataManager.send_table(
+        output_tables_meta={"table": data_table_meta},
+        tar_file_name=f'download_data_{namespace}_{name}.tar.gz',
+        need_head=True
+    )

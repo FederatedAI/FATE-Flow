@@ -63,6 +63,9 @@ class StorageTable(StorageTableBase):
     def _put_meta(self, kv_list: Iterable, **kwargs):
         return self._meta_table.put_all(kv_list)
 
+    def _get_meta(self, **kwargs):
+        return self._meta_table.collect(**kwargs)
+
     def _collect(self, **kwargs):
         return self._table.collect(**kwargs)
 

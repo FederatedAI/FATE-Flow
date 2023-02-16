@@ -184,6 +184,10 @@ class StorageTableABC(metaclass=abc.ABCMeta):
         ...
 
     @abc.abstractmethod
+    def get_meta(self, **kwargs):
+        ...
+
+    @abc.abstractmethod
     def collect(self, **kwargs) -> list:
         ...
 
