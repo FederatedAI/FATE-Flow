@@ -23,11 +23,11 @@ from webargs.flaskparser import use_kwargs
 from werkzeug.http import HTTP_STATUS_CODES
 
 from fate_flow.entity.engine_types import CoordinationProxyService
-from fate_flow.entity.types import RetCode, CoordinationCommunicationProtocol, FederatedMode
+from fate_flow.entity.types import CoordinationCommunicationProtocol, FederatedMode, ReturnCode
 from fate_flow.settings import stat_logger, PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
 
 
-def get_json_result(code=RetCode.SUCCESS, message='success', data=None, job_id=None, meta=None):
+def get_json_result(code=ReturnCode.Base.SUCCESS, message='success', data=None, job_id=None, meta=None):
     result_dict = {
         "code": code,
         "message": message,
@@ -46,15 +46,14 @@ def get_json_result(code=RetCode.SUCCESS, message='success', data=None, job_id=N
 def server_error_response(e):
     stat_logger.exception(e)
     if len(e.args) > 1:
-        return get_json_result(code=RetCode.EXCEPTION_ERROR, message=repr(e.args[0]), data=e.args[1])
-    return get_json_result(code=RetCode.EXCEPTION_ERROR, message=repr(e))
+        return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message=repr(e.args[0]), data=e.args[1])
+    return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message=repr(e))
 
 
 def args_error_response(e):
     stat_logger.exception(e)
     messages = e.data.get("messages", {})
-    return get_json_result(code=RetCode.EXCEPTION_ERROR, message="Invalid request.",
-                           data=messages)
+    return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message="Invalid request.", data=messages)
 
 
 def error_response(response_code, retmsg=None):

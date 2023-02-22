@@ -14,4 +14,3 @@
 #  limitations under the License.
 #
 from ._base import BaseEntity, BaseModel
-from .types import RetCode

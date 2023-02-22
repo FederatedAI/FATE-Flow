@@ -45,7 +45,7 @@ def report_task_status(status, execution_id, error=None):
             task_info.update({"error_report": error})
             TaskController.update_task(task_info)
         return get_json_result()
-    return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
+    return get_json_result(code=ReturnCode.Task.NOT_FOUND, message="task not found")
 
 
 @manager.route('/task/status', methods=['GET'])
@@ -56,8 +56,8 @@ def query_task_status(execution_id):
         task_info = {
             "status": tasks[0].f_status,
         }
-        return get_json_result(code=ReturnCode.TASK.SUCCESS, message="success", data=task_info)
-    return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message="success", data=task_info)
+    return get_json_result(code=ReturnCode.Task.NOT_FOUND, message="task not found")
 
 
 @manager.route('/task/output/tracking', methods=['POST'])
@@ -81,8 +81,8 @@ def log_output_artifacts(execution_id, meta_data, type, uri, output_key):
             "task_name": task.f_task_name
         }
         OutputDataTracking.create(data_info)
-        return get_json_result(code=ReturnCode.TASK.SUCCESS, message="success")
-    return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message="success")
+    return get_json_result(code=ReturnCode.Task.NOT_FOUND, message="task not found")
 
 
 @manager.route('/task/model/<job_id>/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['POST'])

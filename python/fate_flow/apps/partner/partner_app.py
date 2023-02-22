@@ -31,16 +31,16 @@ page_name = 'partner'
 def partner_create_job(dag_schema, job_id, role, party_id):
     try:
         JobController.create_job(dag_schema, job_id, role, party_id)
-        return get_json_result(code=ReturnCode.JOB.SUCCESS, message="create job success")
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message="create job success")
     except RuntimeError as e:
-        return get_json_result(code=ReturnCode.JOB.CREATE_JOB_FAILED, message=str(e), data={"job_id": job_id})
+        return get_json_result(code=ReturnCode.Job.CREATE_JOB_FAILED, message=str(e), data={"job_id": job_id})
 
 
 @manager.route('/job/start', methods=['POST'])
 @job_request_json(extra_info=fields.Dict(required=False))
 def start_job(job_id, role, party_id, extra_info=None):
     JobController.start_job(job_id=job_id, role=role, party_id=party_id, extra_info=extra_info)
-    return get_json_result(code=ReturnCode.JOB.SUCCESS, message="start job success")
+    return get_json_result(code=ReturnCode.Base.SUCCESS, message="start job success")
 
 
 @manager.route('/job/status/update', methods=['POST'])
@@ -53,9 +53,9 @@ def partner_job_status_update(job_id, role, party_id, status):
         "status": status
     }
     if JobController.update_job_status(job_info=job_info):
-        return get_json_result(code=ReturnCode.JOB.SUCCESS, message='success')
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return get_json_result(code=ReturnCode.JOB.UPDATE_STATUS_FAILED,
+        return get_json_result(code=ReturnCode.Job.UPDATE_STATUS_FAILED,
                                message="update job status does not take effect")
 
 
@@ -70,15 +70,15 @@ def partner_job_update(job_id, role, party_id, progress):
     if progress:
         job_info.update({"progress": progress})
     if JobController.update_job(job_info=job_info):
-        return get_json_result(code=ReturnCode.JOB.SUCCESS, message='success')
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return get_json_result(code=ReturnCode.JOB.UPDATE_FAILED, message="update job does not take effect")
+        return get_json_result(code=ReturnCode.Job.UPDATE_FAILED, message="update job does not take effect")
 
 
 @manager.route('/job/pipeline/save', methods=['POST'])
 @job_request_json()
 def save_pipeline(job_id, role, party_id):
-    return get_json_result(code=ReturnCode.JOB.SUCCESS, message='success')
+    return get_json_result(code=ReturnCode.Base.SUCCESS, message='success')
 
 
 @manager.route('/job/resource/apply', methods=['POST'])
@@ -86,9 +86,9 @@ def save_pipeline(job_id, role, party_id):
 def apply_resource(job_id, role, party_id):
     status = ResourceManager.apply_for_job_resource(job_id, role, party_id)
     if status:
-        return get_json_result(code=ReturnCode.JOB.SUCCESS, message='success')
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return get_json_result(code=ReturnCode.JOB.APPLY_RESOURCE_FAILED,
+        return get_json_result(code=ReturnCode.Job.APPLY_RESOURCE_FAILED,
                                message=f'apply for job {job_id} resource failed')
 
 
@@ -97,9 +97,9 @@ def apply_resource(job_id, role, party_id):
 def return_resource(job_id, role, party_id):
     status = ResourceManager.return_job_resource(job_id=job_id, role=role, party_id=party_id)
     if status:
-        return get_json_result(ReturnCode.JOB.SUCCESS, message='success')
+        return get_json_result(ReturnCode.Base.SUCCESS, message='success')
     else:
-        return get_json_result(code=ReturnCode.JOB.APPLY_RESOURCE_FAILED,
+        return get_json_result(code=ReturnCode.Job.APPLY_RESOURCE_FAILED,
                                message=f'return for job {job_id} resource failed')
 
 
@@ -107,7 +107,7 @@ def return_resource(job_id, role, party_id):
 @job_request_json()
 def stop_job(job_id, role, party_id):
     kill_status, kill_details = JobController.stop_jobs(job_id=job_id, role=role, party_id=party_id)
-    return get_json_result(code=ReturnCode.JOB.SUCCESS if kill_status else ReturnCode.JOB.KILL_FAILED,
+    return get_json_result(code=ReturnCode.Base.SUCCESS if kill_status else ReturnCode.Job.KILL_FAILED,
                            message='success' if kill_status else 'failed',
                            data=kill_details)
 
@@ -118,9 +118,9 @@ def apply_task_resource(job_id, role, party_id, task_id, task_version):
     status = ResourceManager.apply_for_task_resource(job_id=job_id, role=role, party_id=party_id,
                                                      task_id=task_id, task_version=task_version)
     if status:
-        return get_json_result(code=ReturnCode.TASK.SUCCESS, message='success')
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return get_json_result(code=ReturnCode.TASK.APPLY_RESOURCE_FAILED,
+        return get_json_result(code=ReturnCode.Task.APPLY_RESOURCE_FAILED,
                                message=f'apply for task {job_id} resource failed')
 
 
@@ -130,9 +130,9 @@ def return_task_resource(job_id, role, party_id, task_id, task_version):
     status = ResourceManager.return_task_resource(job_id=job_id, role=role, party_id=party_id,
                                                   task_id=task_id, task_version=task_version)
     if status:
-        return get_json_result(ReturnCode.TASK.SUCCESS, message='success')
+        return get_json_result(ReturnCode.Base.SUCCESS, message='success')
     else:
-        return get_json_result(code=ReturnCode.TASK.APPLY_RESOURCE_FAILED,
+        return get_json_result(code=ReturnCode.Task.APPLY_RESOURCE_FAILED,
                                message=f'return for task {job_id} resource failed')
 
 
@@ -140,9 +140,9 @@ def return_task_resource(job_id, role, party_id, task_id, task_version):
 @task_request_json()
 def start_task(job_id, role, party_id, task_id, task_version):
     if TaskController.start_task(job_id, role, party_id, task_id, task_version):
-        return get_json_result(code=ReturnCode.TASK.SUCCESS, message='success')
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return get_json_result(code=ReturnCode.TASK.START_FAILED, message='start task failed')
+        return get_json_result(code=ReturnCode.Task.START_FAILED, message='start task failed')
 
 
 @manager.route('/task/collect', methods=['POST'])
@@ -151,9 +151,9 @@ def collect_task(job_id, role, party_id, task_id, task_version):
     task_info = TaskController.collect_task(job_id=job_id, task_id=task_id, task_version=task_version, role=role,
                                             party_id=party_id)
     if task_info:
-        return get_json_result(code=ReturnCode.TASK.SUCCESS, message="success", data=task_info)
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message="success", data=task_info)
     else:
-        return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
+        return get_json_result(code=ReturnCode.Task.NOT_FOUND, message="task not found")
 
 
 @manager.route('/task/status/update', methods=['POST'])
@@ -169,10 +169,10 @@ def task_status_update(job_id, role, party_id, task_id, task_version, status):
         "status": status
     })
     if TaskController.update_task_status(task_info=task_info):
-        return get_json_result(code=ReturnCode.TASK.SUCCESS, message='success')
+        return get_json_result(code=ReturnCode.Base.SUCCESS, message='success')
     else:
         return get_json_result(
-            code=ReturnCode.TASK.UPDATE_STATUS_FAILED,
+            code=ReturnCode.Task.UPDATE_STATUS_FAILED,
             message="update job status does not take effect"
         )
 
@@ -186,7 +186,7 @@ def stop_task(job_id, role, party_id, task_id, task_version, status=None):
     kill_status = True
     for task in tasks:
         kill_status = kill_status & TaskController.stop_task(task=task, stop_status=status)
-    return get_json_result(code=ReturnCode.TASK.SUCCESS if kill_status else ReturnCode.TASK.KILL_FAILED,
+    return get_json_result(code=ReturnCode.Base.SUCCESS if kill_status else ReturnCode.Task.KILL_FAILED,
                            message='success' if kill_status else 'failed')
 
 
@@ -196,8 +196,8 @@ def rerun_task(job_id, role, party_id, task_id, task_version, new_version):
     tasks = JobSaver.query_task(job_id=job_id, task_id=task_id, role=role, party_id=party_id)
     if not tasks:
         return get_json_result(
-            code=ReturnCode.TASK.NO_FOUND,
-            message="no found task"
+            code=ReturnCode.Task.NOT_FOUND,
+            message="task not found"
         )
     TaskController.create_new_version_task(task=tasks[0], new_version=new_version)
     return get_json_result()

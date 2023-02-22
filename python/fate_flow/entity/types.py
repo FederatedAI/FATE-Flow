@@ -84,50 +84,27 @@ class Stage(object):
     DEFAULT = "default"
 
 
-class RetCode(IntEnum, CustomEnum):
-    SUCCESS = 0
-    NOT_EFFECTIVE = 10
-    EXCEPTION_ERROR = 100
-    ARGUMENT_ERROR = 101
-    DATA_ERROR = 102
-    OPERATING_ERROR = 103
-    FEDERATED_ERROR = 104
-    CONNECTION_ERROR = 105
-    RUNNING = 106
-    INCOMPATIBLE_FATE_VER = 107
-    PERMISSION_ERROR = 108
-    AUTHENTICATION_ERROR = 109
-    SERVER_ERROR = 500
-
-
-class Code:
-    SUCCESS = 0
-
-
-class JobCode(Code):
-    NO_FOUND = 1000
-    CREATE_JOB_FAILED = 1001
-    UPDATE_STATUS_FAILED = 1002
-    UPDATE_FAILED = 1003
-    KILL_FAILED = 1004
-    APPLY_RESOURCE_FAILED = 1005
-
-
-class TaskCode(Code):
-    NO_FOUND = 2000
-    START_FAILED = 2001
-    UPDATE_STATUS_FAILED = 2002
-    UPDATE_FAILED = 2003
-    KILL_FAILED = 2004
-    APPLY_RESOURCE_FAILED = 2005
-
-
-class SiteCode(Code):
-    IS_STANDALONE = 3000
-
-
 class ReturnCode:
-    JOB = JobCode
-    TASK = TaskCode
-    SITE = SiteCode
 
+    class Base:
+        SUCCESS = 0
+        EXCEPTION_ERROR = 100
+
+    class Job:
+        NOT_FOUND = 1000
+        CREATE_JOB_FAILED = 1001
+        UPDATE_STATUS_FAILED = 1002
+        UPDATE_FAILED = 1003
+        KILL_FAILED = 1004
+        APPLY_RESOURCE_FAILED = 1005
+
+    class Task:
+        NOT_FOUND = 2000
+        START_FAILED = 2001
+        UPDATE_STATUS_FAILED = 2002
+        UPDATE_FAILED = 2003
+        KILL_FAILED = 2004
+        APPLY_RESOURCE_FAILED = 2005
+
+    class Site:
+        IS_STANDALONE = 3000
