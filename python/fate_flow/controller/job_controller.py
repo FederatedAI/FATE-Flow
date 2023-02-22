@@ -46,7 +46,7 @@ class JobController(object):
         schedule_logger(job_id).info(f"stop job on this party")
         jobs = JobSaver.query_job(job_id=job_id)
         if not jobs:
-            return {"code": ReturnCode.JOB.NO_FOUND, "message": "no found job"}
+            return {"code": ReturnCode.Job.NOT_FOUND, "message": "job not found"}
         status = JobStatus.CANCELED
         kill_status, kill_details = JobController.stop_jobs(job_id=job_id, stop_status=status)
         schedule_logger(job_id).info(f"stop job on this party status {kill_status}")
