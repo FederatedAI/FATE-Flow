@@ -13,22 +13,24 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.engine.computing._eggroll import ContainerdEggrollEngine, EggrollEngine
+from fate_flow.engine.computing._eggroll import ContainerdEggrollEngine, LocalEggrollEngine
 from fate_flow.engine.computing._spark import SparkEngine
+from fate_flow.entity import ProviderDevice, ComponentProvider
 from fate_flow.entity.engine_types import ComputingEngine, EngineType
-from fate_flow.settings import ENGINES, WORKER
+from fate_flow.manager.provider_manager import ProviderManager
+from fate_flow.settings import ENGINES
 
 
-def build_engine(computing_engine=None):
-    if not computing_engine:
-        computing_engine = ENGINES.get(EngineType.COMPUTING)
+def build_engine(provider_name: str):
+    provider = ProviderManager.get_provider_by_provider_name(provider_name)
+    computing_engine = ENGINES.get(EngineType.COMPUTING)
     if computing_engine in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
-        if WORKER.get('type') in {'docker', 'k8s'}:
-            engine_session = ContainerdEggrollEngine()
+        if ComponentProvider.device in {ProviderDevice.DOCKER, ProviderDevice.K8S}:
+            engine_session = ContainerdEggrollEngine(provider)
         else:
-            engine_session = EggrollEngine()
+            engine_session = LocalEggrollEngine(provider)
     elif computing_engine == ComputingEngine.SPARK:
-        engine_session = SparkEngine()
+        engine_session = SparkEngine(provider)
     else:
         raise ValueError(f'engine "{computing_engine}" is not supported')
     return engine_session

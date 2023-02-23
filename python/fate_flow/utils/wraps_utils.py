@@ -13,19 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
-
-import dotenv
-import typing
-
-from fate_flow.utils.file_utils import get_fate_flow_directory
+from functools import wraps
 
 
-def get_versions() -> typing.Mapping[str, typing.Any]:
-    return dotenv.dotenv_values(
-        dotenv_path=os.path.join(get_fate_flow_directory(), "fateflow.env")
-    )
-
-
-def get_flow_version() -> typing.Optional[str]:
-    return get_versions().get("FATEFlow")
+def filter_parameters(filter_value=None):
+    def _inner(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            _kwargs = {}
+            for k, v in kwargs.items():
+                if v != filter_value:
+                    _kwargs[k] = v
+            return func(*args, **_kwargs)
+        return _wrapper
+    return _inner

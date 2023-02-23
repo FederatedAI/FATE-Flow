@@ -19,6 +19,11 @@ default_engines:
   computing: standalone
   federation: standalone
   storage: standalone
+default_provider:
+  name: fate
+  # version default: fateflow.env
+  version:
+  device: local
 federation:
   pulsar:
     host: 192.168.0.5

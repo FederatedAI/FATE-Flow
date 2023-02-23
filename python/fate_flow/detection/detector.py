@@ -45,7 +45,7 @@ class Detector(Cron):
                     continue
                 count += 1
                 try:
-                    process_exist = build_engine().is_alive(task)
+                    process_exist = build_engine(task.f_provider_name).is_alive(task)
                     if not process_exist:
                         msg = f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id}"
                         detect_logger(job_id=task.f_job_id).info(

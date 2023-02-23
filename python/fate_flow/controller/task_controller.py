@@ -20,6 +20,7 @@ from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTask
 from fate_flow.engine.computing import build_engine
 from fate_flow.entity.dag_structures import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
+from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -44,7 +45,6 @@ class TaskController(object):
 
     @classmethod
     def create_task(cls, job_id, role, party_id, task_name, dag_schema, job_parser, is_scheduler, task_version=0):
-
         task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
         execution_id = job_utils.generate_session_id(task_id, task_version, role, party_id)
         task_node = job_parser.get_task_node(task_name=task_name)
@@ -55,8 +55,10 @@ class TaskController(object):
         need_run = task_parser.need_run
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
         task_parameters = task_parser.task_parameters.dict()
+        provider_name = ProviderManager.check_provider_name(task_parser.task_runtime_conf.get("provider"))
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
                                      f" {task_parameters}")
+        schedule_logger(job_id).info(f"task provider: {provider_name}")
         if is_scheduler:
             if need_run:
                 task = ScheduleTask()
@@ -84,6 +86,7 @@ class TaskController(object):
             task.f_party_status = TaskStatus.WAITING
             task.f_component_parameters = task_parameters
             task.f_execution_id = execution_id
+            task.f_provider_name = provider_name
             JobSaver.create_task(task.to_human_model_dict())
 
     @staticmethod
@@ -150,7 +153,7 @@ class TaskController(object):
             run_parameters_path = os.path.join(config_dir, 'task_parameters.json')
             with open(run_parameters_path, 'w') as fw:
                 fw.write(json_dumps(run_parameters, indent=True))
-            backend_engine = build_engine()
+            backend_engine = build_engine(task.f_provider_name)
             run_info = backend_engine.run(task=task,
                                           run_parameters=run_parameters,
                                           run_parameters_path=run_parameters_path,
@@ -306,7 +309,7 @@ class TaskController(object):
     def kill_task(cls, task: Task):
         kill_status = False
         try:
-            backend_engine = build_engine()
+            backend_engine = build_engine(task.f_provider_name)
             if backend_engine:
                 backend_engine.kill(task)
             WorkerManager.kill_task_all_workers(task)

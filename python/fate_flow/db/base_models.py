@@ -294,6 +294,13 @@ class BaseModel(Model):
         return operator.attrgetter(attr)(cls)
 
     @classmethod
+    def _delete(cls, **kwargs):
+        _kwargs = {}
+        for f_k, f_v in kwargs.items():
+            _kwargs["f_%s" % f_k] = f_v
+        cls.delete(**_kwargs)
+
+    @classmethod
     def query(cls, reverse=None, order_by=None, **kwargs):
         filters = []
         for f_n, f_v in kwargs.items():
@@ -435,4 +442,26 @@ class BaseModelOperate:
     @DB.connection_context()
     def _query(cls, entity_model, **kwargs) -> object:
         return entity_model.query(**kwargs)
+
+    @classmethod
+    @DB.connection_context()
+    def _delete(cls, entity_model, **kwargs):
+        model_list = cls._query(entity_model, **kwargs)
+        delete_list = []
+        for model in model_list:
+            model.delete().execute()
+            delete_list.append(model.to_human_model_dict())
+        return delete_list
+
+    @classmethod
+    def safe_save(cls, model, defaults, **kwargs):
+        entity_model, status = model.get_or_create(
+            **kwargs,
+            defaults=defaults)
+        if status is False:
+            for key in defaults:
+                setattr(entity_model, key, defaults[key])
+            entity_model.save(force_insert=False)
+            return "update"
+        return "create"
 

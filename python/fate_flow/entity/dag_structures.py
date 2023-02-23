@@ -188,8 +188,8 @@ class PartyTaskSpec(BaseModel):
 
 
 class TaskConfSpec(BaseModel):
-    task_cores: int
-    engine: Dict[str, Any]
+    engine: Optional[Dict[str, Any]]
+    provider: Optional[str]
 
 
 class JobConfSpec(BaseModel):

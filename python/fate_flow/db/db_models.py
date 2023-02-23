@@ -81,6 +81,7 @@ class Task(DataBaseModel):
     f_run_pid = IntegerField(null=True)
     f_party_status = CharField(max_length=50)
     f_provider_info = JSONField(null=True)
+    f_provider_name = CharField(max_length=50)
     f_task_parameters = JSONField(null=True)
     f_engine_conf = JSONField(null=True)
     f_kill_status = BooleanField(default=False)
@@ -215,3 +216,14 @@ class Metric(DataBaseModel):
     f_metadata = JSONField()
     f_data = JSONField()
     f_incomplete = BooleanField()
+
+
+class ProviderInfo(DataBaseModel):
+    f_provider_name = CharField(max_length=100, primary_key=True)
+    f_name = CharField(max_length=20, index=True)
+    f_version = CharField(max_length=20)
+    f_device = CharField(max_length=20)
+    f_metadata = JSONField()
+
+    class Meta:
+        db_table = "t_provider_info"

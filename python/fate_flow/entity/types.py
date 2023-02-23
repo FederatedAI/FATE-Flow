@@ -108,3 +108,7 @@ class ReturnCode:
 
     class Site:
         IS_STANDALONE = 3000
+
+    class Provider:
+        PARAMS_ERROR = 4000
+        DEVICE_NOT_SUPPORTED = 4001

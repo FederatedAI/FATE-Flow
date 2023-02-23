@@ -18,6 +18,7 @@ from pathlib import Path
 from kubernetes import client, config
 from ruamel import yaml
 
+from fate_flow.entity import ComponentProvider
 from fate_flow.settings import WORKER
 from fate_flow.utils.conf_utils import get_base_config
 from fate_flow.utils.log import getLogger
@@ -28,7 +29,8 @@ LOGGER = getLogger("k8s-manager")
 class K8sManager:
     image = WORKER.get('k8s', {}).get('image', '')
     namespace = WORKER.get('k8s', {}).get('namespace', '')
-    def __init__(self):
+
+    def __init__(self, provider: ComponentProvider):
         config.load_kube_config()
         self.job_template = yaml.safe_load(
             (Path(__file__).parent / 'k8s_template.yaml').read_text('utf-8')
