@@ -35,7 +35,7 @@ class WorkerManager:
         pass
 
     @classmethod
-    def start_task_worker(cls, worker_name, task: Task, task_parameters, executable: list = None,
+    def start_task_worker(cls, worker_name, task: Task, task_parameters, executable,
                           extra_env: dict = None, **kwargs):
         worker_id, config_dir, log_dir = cls.get_process_dirs(
             worker_name=worker_name,
@@ -43,8 +43,8 @@ class WorkerManager:
             role=task.f_role,
             party_id=task.f_party_id,
             task=task)
-        env = cls.get_env(task.f_job_id, task.f_provider_info, task_parameters)
-        # config_path, result_path = cls.get_config(config_dir=config_dir, config=task_parameters)
+        params_env = cls.get_env(task.f_job_id, task_parameters)
+        extra_env.update(params_env)
         specific_cmd = []
         if worker_name is WorkerName.TASK_EXECUTOR:
             from fate_flow.worker.executor import Submit
@@ -52,9 +52,9 @@ class WorkerManager:
         else:
             raise Exception(f"not support {worker_name} worker")
         if executable:
-            process_cmd = executable
+            process_cmd = [executable]
         else:
-            process_cmd = [env.get("EXECUTOR_ENV") or sys.executable or "python3"]
+            process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
         common_cmd = [
             module_file_path,
             "component",
@@ -67,7 +67,7 @@ class WorkerManager:
         process_cmd.extend(common_cmd)
         process_cmd.extend(specific_cmd)
         p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
-                                         added_env=env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
+                                         added_env=extra_env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
                                          process_id=worker_id)
         cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id,
                              run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=task_parameters,
@@ -102,15 +102,12 @@ class WorkerManager:
         return config_path, result_path
 
     @classmethod
-    def get_env(cls, job_id, provider_info, task_parameters):
-        # todo: get env by provider
+    def get_env(cls, job_id, task_parameters):
+        # todo: api callback params
         env = {
-            "PYTHONPATH":  os.getenv("PYTHONPATH"),
             "FATE_JOB_ID": job_id,
             "FATE_TASK_CONFIG": yaml.dump(task_parameters),
         }
-        if os.getenv("EXECUTOR_ENV"):
-            env["EXECUTOR_ENV"] = os.getenv("EXECUTOR_ENV")
         return env
 
     @classmethod

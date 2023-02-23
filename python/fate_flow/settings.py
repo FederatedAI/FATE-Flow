@@ -18,7 +18,7 @@ import os
 from fate_flow.entity.engine_types import ComputingEngine
 from fate_flow.utils import engine_utils
 from fate_flow.utils.conf_utils import get_base_config, decrypt_database_config
-from fate_flow.utils.file_utils import get_fate_flow_directory
+from fate_flow.utils.file_utils import get_fate_flow_directory, get_project_base_directory
 from fate_flow.utils.log_utils import LoggerFactory, getLogger
 
 # Server
@@ -51,6 +51,7 @@ FORCE_USE_SQLITE = get_base_config("force_use_sqlite")
 ENGINES = engine_utils.get_engines()
 IS_STANDALONE = engine_utils.is_standalone()
 WORKER = get_base_config("worker", {})
+DEFAULT_PROVIDER = get_base_config("default_provider", {})
 
 DATABASE = decrypt_database_config()
 
@@ -65,6 +66,7 @@ IGNORE_RESOURCE_ROLES = {"arbiter"}
 SUPPORT_IGNORE_RESOURCE_ENGINES = {
     ComputingEngine.EGGROLL, ComputingEngine.STANDALONE
 }
+DEFAULT_FATE_PROVIDER_PATH = get_project_base_directory("python")
 
 HEADERS = {
     "Content-Type": "application/json",

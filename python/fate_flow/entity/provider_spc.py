@@ -12,20 +12,29 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
-import os
+from typing import Optional, Union
 
-import dotenv
-import typing
-
-from fate_flow.utils.file_utils import get_fate_flow_directory
+import pydantic
 
 
-def get_versions() -> typing.Mapping[str, typing.Any]:
-    return dotenv.dotenv_values(
-        dotenv_path=os.path.join(get_fate_flow_directory(), "fateflow.env")
-    )
+class LocalProviderSpec(pydantic.BaseModel):
+    path: str
+    venv: Optional[str]
 
 
-def get_flow_version() -> typing.Optional[str]:
-    return get_versions().get("FATEFlow")
+class DockerProviderSpec(pydantic.BaseModel):
+    base_url: str
+    image: str
+
+
+class K8sProviderSpec(pydantic.BaseModel):
+    image: str
+    namespace: str
+    config: Optional[dict]
+
+
+class ProviderSpec(pydantic.BaseModel):
+    name: str
+    version: str
+    device: str
+    metadata: Union[LocalProviderSpec, DockerProviderSpec, K8sProviderSpec]

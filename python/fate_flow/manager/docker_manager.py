@@ -14,37 +14,37 @@
 #  limitations under the License.
 import docker
 
-from fate_flow.settings import LOG_DIRECTORY, WORKER, LOCAL_DATA_STORE_PATH
+from fate_flow.entity import ComponentProvider
+from fate_flow.settings import LOG_DIRECTORY, LOCAL_DATA_STORE_PATH
 
 
 class DockerManager:
-    config = WORKER.get('docker', {}).get('config', {})
-    image = WORKER.get('docker', {}).get('image', '')
-    fate_root_dir = WORKER.get('docker', {}).get('fate_root_dir', '')
-    eggroll_conf_dir = WORKER.get('docker', {}).get('eggroll_conf_dir', '')
+    def __init__(self, provider: ComponentProvider):
+        self.provider = provider
+        self.client = docker.DockerClient(base_url=provider.metadata.base_url)
 
-    def __init__(self):
-        self.client = docker.DockerClient(**self.config)
-
-    def start(self, name, command, environment):
+    def start(self, name, command, environment, auto_remove=False, detach=True, network_mode="host"):
+        # todo: delete volumes
+        # volumes = {
+        #     LOG_DIRECTORY: {
+        #         'bind': LOG_DIRECTORY,
+        #         'mode': 'rw',
+        #     },
+        #     eggroll_conf_dir: {
+        #         'bind': self.provider.metadata.eggroll_conf_dir,
+        #         'mode': 'ro',
+        #     },
+        #     LOCAL_DATA_STORE_PATH: {
+        #         'bind': LOCAL_DATA_STORE_PATH,
+        #         'mode': 'rw',
+        #     }
+        # }
+        volumes = {}
         self.client.containers.run(
-            self.image, command,
-            auto_remove=False, detach=True,
+            self.provider.metadata.image, command,
+            auto_remove=auto_remove, detach=detach,
             environment=environment, name=name,
-            network_mode='host', volumes={
-                LOG_DIRECTORY: {
-                    'bind': LOG_DIRECTORY,
-                    'mode': 'rw',
-                },
-                self.eggroll_conf_dir: {
-                    'bind': f'{self.fate_root_dir}/eggroll/conf',
-                    'mode': 'ro',
-                },
-                LOCAL_DATA_STORE_PATH: {
-                    'bind': LOCAL_DATA_STORE_PATH,
-                    'mode': 'rw',
-                }
-            },
+            network_mode=network_mode, volumes=volumes
         )
 
     def stop(self, name):

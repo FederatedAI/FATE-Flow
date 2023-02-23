@@ -25,6 +25,7 @@ from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
 from fate_flow.apps import app
 from fate_flow.controller.config_manager import ConfigManager
+from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.db.base_models import init_database_tables as init_flow_db
 from fate_flow.detection.detector import Detector, FederatedDetector
@@ -67,6 +68,7 @@ if __name__ == '__main__':
     Detector(interval=5 * 1000, logger=detect_logger).start()
     FederatedDetector(interval=10 * 1000, logger=detect_logger).start()
     DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
+    ProviderManager.register_default_providers()
     thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)
     stat_logger.info(f"start grpc server thread pool by {thread_pool_executor._max_workers} max workers")
     server = grpc.server(thread_pool=thread_pool_executor,
