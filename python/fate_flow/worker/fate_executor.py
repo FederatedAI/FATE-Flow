@@ -12,17 +12,25 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from fate_flow.entity.spec import DAGSchema
+#
+import argparse
+
+from fate_flow.entity import BaseEntity
+from fate_flow.utils.log import getLogger
 
 
-class FlowHub:
+class FateSubmit:
     @staticmethod
-    def load_job_parser(dag):
-        if isinstance(dag, DAGSchema):
-            from fate_flow.hub.parser.default import JobParser
-            return JobParser(dag)
+    def run():
+        import click
+        from fate.components.entrypoint.clean_cli import clean
+        from fate.components.entrypoint.component_cli import component
 
-    @staticmethod
-    def load_task_parser(*args, **kwargs):
-        from fate_flow.hub.parser.default import TaskParser
-        return TaskParser(*args, **kwargs)
+        cli = click.Group()
+        cli.add_command(component)
+        cli.add_command(clean)
+        cli(prog_name="python -m fate.component")
+
+
+if __name__ == "__main__":
+    FateSubmit.run()

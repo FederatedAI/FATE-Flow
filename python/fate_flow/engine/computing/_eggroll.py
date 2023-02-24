@@ -17,12 +17,11 @@ import yaml
 
 from fate_flow.db.db_models import Task
 from fate_flow.engine.computing._base import EngineABC
-from fate_flow.entity import ProviderDevice, ComponentProvider
-from fate_flow.entity.run_status import TaskStatus
-from fate_flow.entity.types import KillProcessRetCode, WorkerName
+from fate_flow.entity.types import ProviderDevice, TaskStatus, WorkerName
+from fate_flow.entity.code import KillProcessRetCode
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.settings import LOG_DIRECTORY, LOCAL_DATA_STORE_PATH
+from fate_flow.runtime.component_provider import ComponentProvider
 from fate_flow.utils import job_utils, process_utils
 from fate_flow.utils.log_utils import schedule_logger
 
@@ -35,7 +34,7 @@ class LocalEggrollEngine(EngineABC):
         return WorkerManager.start_task_worker(
             worker_name=WorkerName.TASK_EXECUTOR, task=task,
             extra_env={"PYTHONPATH": self.provider.python_path},
-            executable=self.provider.python_env,
+            executable=[self.provider.python_env],
             task_parameters=run_parameters
         )
 

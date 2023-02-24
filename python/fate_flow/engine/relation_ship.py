@@ -13,9 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.address_types import StandaloneAddress, EggRollAddress, HDFSAddress, MysqlAddress, HiveAddress, LocalFSAddress, PathAddress, \
-    ApiAddress
-from fate_flow.entity.engine_types import ComputingEngine, StorageEngine, FederationEngine, EngineType
+from fate_flow.entity.types import StandaloneAddress, EggRollAddress, HDFSAddress, MysqlAddress, HiveAddress, LocalFSAddress, PathAddress, \
+    ApiAddress, ComputingEngine, StorageEngine, FederationEngine, EngineType
 
 
 class Relationship(object):

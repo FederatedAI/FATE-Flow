@@ -15,9 +15,9 @@
 #
 from fate_flow.engine.computing._eggroll import ContainerdEggrollEngine, LocalEggrollEngine
 from fate_flow.engine.computing._spark import SparkEngine
-from fate_flow.entity import ProviderDevice, ComponentProvider
-from fate_flow.entity.engine_types import ComputingEngine, EngineType
+from fate_flow.entity.types import ComputingEngine, EngineType, ProviderDevice
 from fate_flow.manager.provider_manager import ProviderManager
+from fate_flow.runtime.component_provider import ComponentProvider
 from fate_flow.settings import ENGINES
 
 

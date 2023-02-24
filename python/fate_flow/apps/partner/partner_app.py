@@ -17,8 +17,8 @@ from webargs import fields
 
 from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.entity.run_status import TaskStatus
-from fate_flow.entity.types import ReturnCode
+from fate_flow.entity.types import TaskStatus
+from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import get_json_result, job_request_json, task_request_json

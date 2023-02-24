@@ -13,8 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from fate_flow.engine.relation_ship import Relationship
-from fate_flow.entity.engine_types import EngineType, FederationEngine, StorageEngine, ComputingEngine
-from fate_flow.entity.types import FederatedMode
+from fate_flow.entity.types import EngineType, FederationEngine, StorageEngine, ComputingEngine, FederatedMode
 from fate_flow.utils import conf_utils
 
 

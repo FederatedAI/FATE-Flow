@@ -16,9 +16,11 @@
 
 
 import abc
+import sys
 import typing
 
 from fate_flow.db.db_models import Task
+from fate_flow.entity.types import LocalProviderName
 
 
 class EngineABC(metaclass=abc.ABCMeta):
@@ -33,3 +35,30 @@ class EngineABC(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def is_alive(self, task: Task):
         ...
+
+
+class LocalEngine(object):
+    @staticmethod
+    def generate_cmd(local_provider_name):
+
+        if local_provider_name == LocalProviderName.FATE:
+            from fate_flow.worker.fate_executor import FateSubmit
+            module_file_path = sys.modules[FateSubmit.__module__].__file__
+            common_cmd = [
+                module_file_path,
+                "component",
+                "execute",
+                "--env-name",
+                "FATE_TASK_CONFIG",
+            ]
+
+        elif local_provider_name == LocalProviderName.FATE_FLOW:
+            from fate_flow.worker.fate_flow_executor import FateFlowSubmit
+            module_file_path = sys.modules[FateFlowSubmit.__module__].__file__
+            common_cmd = [
+                module_file_path,
+                "component",
+                "execute",
+                "--env-name",
+                "FATE_TASK_CONFIG",
+            ]

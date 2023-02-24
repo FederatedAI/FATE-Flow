@@ -14,9 +14,9 @@
 #  limitations under the License.
 #
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.entity.dag_structures import DAGSchema, JobConfSpec
-from fate_flow.entity.run_status import EndStatus, JobStatus, TaskStatus
-from fate_flow.entity.types import ReturnCode
+from fate_flow.entity.spec import DAGSchema, JobConfSpec
+from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
+from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler

@@ -16,7 +16,7 @@
 from webargs import fields
 
 from fate_flow.controller.job_controller import JobController
-from fate_flow.entity.types import ReturnCode
+from fate_flow.entity.code import ReturnCode
 from fate_flow.utils.api_utils import get_json_result, validate_request_json
 
 

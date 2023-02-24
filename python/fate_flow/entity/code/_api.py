@@ -1,0 +1,43 @@
+#
+#  Copyright 2019 The FATE Authors. All Rights Reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+class ReturnCode:
+
+    class Base:
+        SUCCESS = 0
+        EXCEPTION_ERROR = 100
+
+    class Job:
+        NOT_FOUND = 1000
+        CREATE_JOB_FAILED = 1001
+        UPDATE_STATUS_FAILED = 1002
+        UPDATE_FAILED = 1003
+        KILL_FAILED = 1004
+        APPLY_RESOURCE_FAILED = 1005
+
+    class Task:
+        NOT_FOUND = 2000
+        START_FAILED = 2001
+        UPDATE_STATUS_FAILED = 2002
+        UPDATE_FAILED = 2003
+        KILL_FAILED = 2004
+        APPLY_RESOURCE_FAILED = 2005
+
+    class Site:
+        IS_STANDALONE = 3000
+
+    class Provider:
+        PARAMS_ERROR = 4000
+        DEVICE_NOT_SUPPORTED = 4001
