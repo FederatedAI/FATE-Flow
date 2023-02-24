@@ -16,13 +16,18 @@
 from typing import Union
 
 from fate_flow.entity import BaseEntity
-from fate_flow.entity.provider_spc import ProviderSpec, LocalProviderSpec, DockerProviderSpec, K8sProviderSpec
+from fate_flow.entity.spec import ProviderSpec, LocalProviderSpec, DockerProviderSpec, K8sProviderSpec
 
 
 class ProviderDevice(object):
     LOCAL = "local"
     DOCKER = "docker"
     K8S = "k8s"
+
+
+class LocalProviderName(object):
+    FATE = "fate"
+    FATE_FLOW = "fate_flow"
 
 
 class ComponentProvider(BaseEntity):

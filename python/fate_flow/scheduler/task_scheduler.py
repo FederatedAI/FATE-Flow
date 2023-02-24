@@ -13,13 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.dag_structures import DAGSchema
-from fate_flow.entity.engine_types import FederatedCommunicationType
-from fate_flow.entity.types import ReturnCode, ResourceOperation
-from fate_flow.entity.run_status import StatusSet, TaskStatus, InterruptStatus, EndStatus, AutoRerunStatus, \
-    SchedulingStatusCode
-from fate_flow.entity.run_status import FederatedSchedulingStatusCode
-from fate_flow.manager.resource_manager import ResourceManager
+from fate_flow.entity.spec import DAGSchema
+from fate_flow.entity.types import FederatedCommunicationType, StatusSet, TaskStatus, InterruptStatus, EndStatus, \
+    AutoRerunStatus, ResourceOperation
+from fate_flow.entity.code import ReturnCode, FederatedSchedulingStatusCode, SchedulingStatusCode
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.utils.log_utils import schedule_logger

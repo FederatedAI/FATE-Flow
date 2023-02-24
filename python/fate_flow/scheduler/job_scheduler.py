@@ -16,15 +16,15 @@
 from pydantic import typing
 
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.entity.dag_structures import DAGSchema
+from fate_flow.entity.code import SchedulingStatusCode, FederatedSchedulingStatusCode
+from fate_flow.entity.spec import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.scheduler.task_scheduler import TaskScheduler
 from fate_flow.db.base_models import DB
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
-from fate_flow.entity.run_status import StatusSet, FederatedSchedulingStatusCode, JobStatus, TaskStatus, EndStatus, \
-    SchedulingStatusCode, InterruptStatus
-from fate_flow.entity.types import ResourceOperation, ReturnCode
-from fate_flow.operation.job_saver import ScheduleJobSaver, JobSaver
+from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation
+from fate_flow.entity.code import ReturnCode
+from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.utils import job_utils, schedule_utils

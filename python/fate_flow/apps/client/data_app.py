@@ -16,7 +16,7 @@
 from webargs import fields
 
 from fate_flow.engine import storage
-from fate_flow.entity.types import ReturnCode
+from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.data_manager import DataManager
 from fate_flow.utils.api_utils import get_json_result, validate_request_json, validate_request_params
 from fate_flow.utils.data_upload import Upload, UploadParam

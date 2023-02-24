@@ -13,5 +13,41 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from ._base import BaseEntity, BaseModel
-from ._component_provider import ComponentProvider, ProviderDevice
+from enum import Enum
+
+from pydantic import BaseModel as Base
+
+from fate_flow.utils.base_utils import BaseType
+
+
+class BaseEntity(BaseType):
+    pass
+
+
+class BaseModel(Base):
+    def to_dict(self):
+        d = {}
+        for k, v in self.__dict__.items():
+            d[k] = v
+        return d
+
+    def __str__(self):
+        return str(self.to_dict())
+
+
+class CustomEnum(Enum):
+    @classmethod
+    def valid(cls, value):
+        try:
+            cls(value)
+            return True
+        except:
+            return False
+
+    @classmethod
+    def values(cls):
+        return [member.value for member in cls.__members__.values()]
+
+    @classmethod
+    def names(cls):
+        return [member.name for member in cls.__members__.values()]

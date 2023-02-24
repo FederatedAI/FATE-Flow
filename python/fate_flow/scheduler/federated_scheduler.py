@@ -15,8 +15,8 @@
 #
 from functools import wraps
 
-from fate_flow.entity.run_status import FederatedSchedulingStatusCode
-from fate_flow.entity.types import ReturnCode
+from fate_flow.entity.code import FederatedSchedulingStatusCode
+from fate_flow.entity.code import ReturnCode
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils.log_utils import schedule_logger

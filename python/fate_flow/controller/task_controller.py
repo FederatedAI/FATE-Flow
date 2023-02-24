@@ -18,13 +18,14 @@ import os
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
 from fate_flow.engine.computing import build_engine
-from fate_flow.entity.dag_structures import DAGSchema
+from fate_flow.entity.spec import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.run_status import EndStatus, TaskStatus, FederatedSchedulingStatusCode
+from fate_flow.entity.types import EndStatus, TaskStatus
+from fate_flow.entity.code import FederatedSchedulingStatusCode
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils import job_utils
 from fate_flow.utils.base_utils import current_timestamp, json_dumps
@@ -55,10 +56,8 @@ class TaskController(object):
         need_run = task_parser.need_run
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
         task_parameters = task_parser.task_parameters.dict()
-        provider_name = ProviderManager.check_provider_name(task_parser.task_runtime_conf.get("provider"))
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
                                      f" {task_parameters}")
-        schedule_logger(job_id).info(f"task provider: {provider_name}")
         if is_scheduler:
             if need_run:
                 task = ScheduleTask()
@@ -73,6 +72,11 @@ class TaskController(object):
                 task.f_parties = [party.dict() for party in dag_schema.dag.parties]
                 ScheduleJobSaver.create_task(task.to_human_model_dict())
         else:
+            schedule_logger(job_id).info(f"start check task {task_name} role {role} part id {party_id} provider")
+            provider_name = task_parser.task_runtime_conf.get("provider")
+            schedule_logger(job_id).info(f"source provider name: {provider_name}")
+            provider_name = ProviderManager.check_provider_name(provider_name)
+            schedule_logger(job_id).info(f"update provider name to {provider_name}")
             task = Task()
             task.f_job_id = job_id
             task.f_role = role

@@ -13,21 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from pydantic import BaseModel as Base
+from enum import IntEnum
 
-from fate_flow.utils.base_utils import BaseType
-
-
-class BaseEntity(BaseType):
-    pass
+from fate_flow.entity import CustomEnum
 
 
-class BaseModel(Base):
-    def to_dict(self):
-        d = {}
-        for k, v in self.__dict__.items():
-            d[k] = v
-        return d
-
-    def __str__(self):
-        return str(self.to_dict())
+class KillProcessRetCode(IntEnum, CustomEnum):
+    KILLED = 0
+    NOT_FOUND = 1
+    ERROR_PID = 2

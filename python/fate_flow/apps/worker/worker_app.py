@@ -16,7 +16,7 @@ from flask import request
 from webargs import fields
 
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.entity.types import ReturnCode
+from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.model_manager import PipelinedModel
 from fate_flow.manager.output_manager import OutputDataTracking, OutputMetric
 from fate_flow.operation.job_saver import JobSaver

@@ -25,7 +25,7 @@ from fate_flow.db.storage_models import StorageTableMetaModel
 from fate_flow.engine.abc import StorageTableMetaABC, StorageTableABC
 
 from fate_flow.engine.relation_ship import Relationship
-from fate_flow.entity.address_types import AddressABC
+from fate_flow.entity.types import AddressABC
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log import getLogger
 

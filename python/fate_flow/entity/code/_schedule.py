@@ -13,24 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import argparse
-
-from fate_flow.entity import BaseEntity
-from fate_flow.utils.log import getLogger
-
-
-class Submit:
-    @staticmethod
-    def run():
-        import click
-        from fate.components.entrypoint.clean_cli import clean
-        from fate.components.entrypoint.component_cli import component
-
-        cli = click.Group()
-        cli.add_command(component)
-        cli.add_command(clean)
-        cli(prog_name="python -m fate.component")
+class SchedulingStatusCode(object):
+    SUCCESS = 0
+    NO_RESOURCE = 1
+    PASS = 1
+    NO_NEXT = 2
+    HAVE_NEXT = 3
+    FAILED = 4
 
 
-if __name__ == "__main__":
-    Submit.run()
+class FederatedSchedulingStatusCode(object):
+    SUCCESS = 0
+    FAILED = 1

@@ -14,7 +14,7 @@
 #  limitations under the License.
 import docker
 
-from fate_flow.entity import ComponentProvider
+from fate_flow.runtime.component_provider import ComponentProvider
 from fate_flow.settings import LOG_DIRECTORY, LOCAL_DATA_STORE_PATH
 
 

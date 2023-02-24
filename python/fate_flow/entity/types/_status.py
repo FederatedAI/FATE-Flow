@@ -128,17 +128,3 @@ class SuccessStatus(BaseStatus):
 class AutoRerunStatus(BaseStatus):
     TIMEOUT = StatusSet.TIMEOUT
     FAILED = StatusSet.FAILED
-
-
-class SchedulingStatusCode(object):
-    SUCCESS = 0
-    NO_RESOURCE = 1
-    PASS = 1
-    NO_NEXT = 2
-    HAVE_NEXT = 3
-    FAILED = 4
-
-
-class FederatedSchedulingStatusCode(object):
-    SUCCESS = 0
-    FAILED = 1

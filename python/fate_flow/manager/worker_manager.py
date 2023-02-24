@@ -47,12 +47,12 @@ class WorkerManager:
         extra_env.update(params_env)
         specific_cmd = []
         if worker_name is WorkerName.TASK_EXECUTOR:
-            from fate_flow.worker.executor import Submit
-            module_file_path = sys.modules[Submit.__module__].__file__
+            from fate_flow.worker.fate_executor import FateSubmit
+            module_file_path = sys.modules[FateSubmit.__module__].__file__
         else:
             raise Exception(f"not support {worker_name} worker")
         if executable:
-            process_cmd = [executable]
+            process_cmd = executable
         else:
             process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
         common_cmd = [
@@ -65,7 +65,6 @@ class WorkerManager:
             "FATE_TASK_CONFIG",
         ]
         process_cmd.extend(common_cmd)
-        process_cmd.extend(specific_cmd)
         p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=extra_env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
                                          process_id=worker_id)

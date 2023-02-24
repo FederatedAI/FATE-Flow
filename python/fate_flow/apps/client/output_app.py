@@ -15,7 +15,7 @@
 #
 from webargs import fields
 
-from fate_flow.entity.types import ReturnCode
+from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.model_manager import PipelinedModel
 from fate_flow.manager.output_manager import OutputMetric
 from fate_flow.operation.job_saver import JobSaver

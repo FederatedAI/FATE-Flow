@@ -12,17 +12,10 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from fate_flow.entity.spec import DAGSchema
+#
+from fate_flow.entity import CustomEnum
 
 
-class FlowHub:
-    @staticmethod
-    def load_job_parser(dag):
-        if isinstance(dag, DAGSchema):
-            from fate_flow.hub.parser.default import JobParser
-            return JobParser(dag)
-
-    @staticmethod
-    def load_task_parser(*args, **kwargs):
-        from fate_flow.hub.parser.default import TaskParser
-        return TaskParser(*args, **kwargs)
+class ResourceOperation(CustomEnum):
+    APPLY = "apply"
+    RETURN = "return"

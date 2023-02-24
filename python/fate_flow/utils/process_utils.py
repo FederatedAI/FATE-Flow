@@ -19,9 +19,11 @@ import subprocess
 import time
 
 import psutil
+
+from fate_flow.entity.code import KillProcessRetCode
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import Task
-from fate_flow.entity.types import KillProcessRetCode, ProcessRole
+from fate_flow.entity.types import ProcessRole
 from fate_flow.settings import SUBPROCESS_STD_LOG_NAME
 from fate_flow.settings import stat_logger
 

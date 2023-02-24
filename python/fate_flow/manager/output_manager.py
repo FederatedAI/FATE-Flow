@@ -16,7 +16,7 @@ import operator
 
 from fate_flow.db.base_models import DB, BaseModelOperate
 from fate_flow.db.db_models import TrackingOutputInfo, Metric
-from fate_flow.entity.output_types import MetricData
+from fate_flow.entity.types import MetricData
 from fate_flow.utils import db_utils
 from fate_flow.utils.log_utils import schedule_logger
 
