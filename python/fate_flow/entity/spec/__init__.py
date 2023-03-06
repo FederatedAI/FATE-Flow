@@ -17,3 +17,4 @@ from ._dag import *
 from ._model import *
 from ._provider import *
 from ._scheduler import *
+from ._flow_task import *

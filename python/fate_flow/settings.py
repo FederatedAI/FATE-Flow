@@ -25,6 +25,7 @@ from fate_flow.utils.log_utils import LoggerFactory, getLogger
 API_VERSION = "v2"
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
+CASBIN_TABLE_NAME = "fate_casbin"
 TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
 FATE_FLOW_CONF_PATH = os.path.join(get_fate_flow_directory(), "conf")
 
@@ -52,6 +53,7 @@ ENGINES = engine_utils.get_engines()
 IS_STANDALONE = engine_utils.is_standalone()
 WORKER = get_base_config("worker", {})
 DEFAULT_PROVIDER = get_base_config("default_provider", {})
+CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
 
 DATABASE = decrypt_database_config()
 

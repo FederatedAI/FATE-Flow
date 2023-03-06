@@ -16,14 +16,14 @@
 import os
 
 from fate_flow.db.db_models import Task
-from fate_flow.engine.computing._base import EngineABC
+from fate_flow.engine.computing._base import LocalEngine
 from fate_flow.entity.code import KillProcessRetCode
 from fate_flow.entity.types import TaskStatus, WorkerName
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.utils import job_utils, process_utils
 
 
-class SparkEngine(EngineABC):
+class SparkEngine(LocalEngine):
     def __init__(self, provider):
         self.provider = provider
 
@@ -58,9 +58,14 @@ class SparkEngine(EngineABC):
                 process_cmd.append(f"--conf")
                 process_cmd.append(f"{ck}={cv}")
         extra_env = {"SPARK_HOME": spark_home}
-        return WorkerManager.start_task_worker(worker_name=WorkerName.TASK_EXECUTOR, task=task,
-                                               task_parameters=run_parameters,
-                                               extra_env=extra_env, executable=process_cmd)
+        return WorkerManager.start_task_worker(
+            worker_name=WorkerName.TASK_EXECUTOR,
+            task=task,
+            task_parameters=run_parameters,
+            common_cmd=self.generate_cmd(self.provider.name),
+            extra_env=extra_env,
+            executable=process_cmd
+        )
 
     def kill(self, task):
         kill_status_code = process_utils.kill_task_executor_process(task)

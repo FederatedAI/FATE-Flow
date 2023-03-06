@@ -14,6 +14,8 @@
 #  limitations under the License.
 #
 import sys
+import typing as t
+
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
@@ -51,6 +53,7 @@ def register_page(page_path):
 
     page_name = getattr(page, 'page_name', page_name)
     url_prefix = f'/{API_VERSION}/{page_name}'
+    print(page_name)
 
     app.register_blueprint(page.manager, url_prefix=url_prefix)
 

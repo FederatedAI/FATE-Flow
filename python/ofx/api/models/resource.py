@@ -81,7 +81,7 @@ class APIClient(requests.Session):
     def _set_url(self, endpoint):
         return f"{self._url}/{endpoint}"
 
-    def remote(self, job_id, method, endpoint, src_party_id, dest_party_id, src_role, json_body, local=False, extra_params=None):
+    def remote(self, job_id, method, endpoint, src_party_id, dest_party_id, src_role, json_body, is_local=False, extra_params=None):
         if self.version:
             endpoint = f"/{self.version}{endpoint}"
         kwargs = {
@@ -102,7 +102,7 @@ class APIClient(requests.Session):
             "source_host": self.host,
             "source_port": self.port,
         })
-        if not local and self.remote_host and self.remote_port:
+        if not is_local and self.remote_host and self.remote_port:
             kwargs.update({
                 "host": self.remote_host,
                 "port": self.remote_port,
@@ -210,7 +210,8 @@ class BaseAPI:
                                           src_party_id=src_party_id,
                                           dest_party_id=dest_party_id,
                                           json_body=body if body else {},
-                                          extra_params=extra_params)
+                                          extra_params=extra_params,
+                                          is_local=self.is_local(party_id=dest_party_id))
             if only_scheduler:
                 return response
         except Exception as e:
@@ -221,6 +222,10 @@ class BaseAPI:
         if only_scheduler:
             return response
         federated_response[dest_role][dest_party_id] = response
+
+    @staticmethod
+    def is_local(party_id):
+        return party_id == "0"
 
     def job_command(self, job_id, roles, command, command_body=None, parallel=False):
         federated_response = {}

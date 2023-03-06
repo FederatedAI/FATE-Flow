@@ -12,8 +12,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
+def load_role(role: str):
+    from fate_flow.components import Role
 
-from ._base import BaseEntity, BaseModel, CustomEnum
+    return Role(role)
 
-__all__ = ["BaseEntity", "BaseModel", "CustomEnum"]
+
+def load_stage(stage: str):
+    from fate_flow.components import Stage
+
+    return Stage(stage)

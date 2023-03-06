@@ -141,14 +141,14 @@ class RuntimeInputDefinition(BaseModel):
 
 # dag
 class PartySpec(BaseModel):
-    role: Union[Literal["guest", "host", "arbiter"]]
+    role: Union[Literal["guest", "host", "arbiter", "local"]]
     party_id: List[str]
 
 
 class RuntimeTaskOutputChannelSpec(BaseModel):
     producer_task: str
     output_artifact_key: str
-    roles: Optional[List[Literal["guest", "host", "arbiter"]]]
+    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
 
 
 class ModelWarehouseChannelSpec(BaseModel):
@@ -156,7 +156,7 @@ class ModelWarehouseChannelSpec(BaseModel):
     model_version: Optional[Union[str, int]]
     producer_task: str
     output_artifact_key: str
-    roles: Optional[List[Literal["guest", "host", "arbiter"]]]
+    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
 
 
 InputChannelSpec = TypeVar("InputChannelSpec", RuntimeTaskOutputChannelSpec, ModelWarehouseChannelSpec)
