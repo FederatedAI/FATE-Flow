@@ -35,7 +35,7 @@ class WorkerManager:
         pass
 
     @classmethod
-    def start_task_worker(cls, worker_name, task: Task, task_parameters, executable,
+    def start_task_worker(cls, worker_name, task: Task, task_parameters, executable, common_cmd=None,
                           extra_env: dict = None, **kwargs):
         worker_id, config_dir, log_dir = cls.get_process_dirs(
             worker_name=worker_name,
@@ -45,7 +45,6 @@ class WorkerManager:
             task=task)
         params_env = cls.get_env(task.f_job_id, task_parameters)
         extra_env.update(params_env)
-        specific_cmd = []
         if worker_name is WorkerName.TASK_EXECUTOR:
             from fate_flow.worker.fate_executor import FateSubmit
             module_file_path = sys.modules[FateSubmit.__module__].__file__
@@ -55,15 +54,6 @@ class WorkerManager:
             process_cmd = executable
         else:
             process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
-        common_cmd = [
-            module_file_path,
-            "component",
-            "execute",
-            "--process-tag",
-            task.f_execution_id,
-            "--env-name",
-            "FATE_TASK_CONFIG",
-        ]
         process_cmd.extend(common_cmd)
         p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=extra_env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,

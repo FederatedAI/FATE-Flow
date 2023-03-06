@@ -19,7 +19,7 @@ import pydantic
 
 
 class PartySpec(pydantic.BaseModel):
-    role: Literal["guest", "host", "arbiter"]
+    role: Literal["guest", "host", "arbiter", "local"]
     partyid: str
 
     def tuple(self):

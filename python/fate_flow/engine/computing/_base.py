@@ -62,3 +62,6 @@ class LocalEngine(object):
                 "--env-name",
                 "FATE_TASK_CONFIG",
             ]
+        else:
+            raise ValueError(f"load local provider {local_provider_name} failed")
+        return common_cmd

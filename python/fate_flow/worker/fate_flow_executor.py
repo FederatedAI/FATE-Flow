@@ -22,13 +22,14 @@ from fate_flow.utils.log import getLogger
 
 class FateFlowSubmit:
     @staticmethod
-    def run(config_path):
-        print(config_path)
+    def run():
+        import click
+        from fate_flow.components.entrypoint.component_cli import component
+
+        cli = click.Group()
+        cli.add_command(component)
+        cli(prog_name="python -m fate_flow.component")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', required=False, type=str, help="runtime conf path")
-    args = parser.parse_args()
-    conf_path = args.config
-    FateFlowSubmit.run(conf_path)
+    FateFlowSubmit.run()

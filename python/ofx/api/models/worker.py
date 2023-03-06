@@ -16,31 +16,25 @@ from .resource import BaseAPI
 
 
 class Worker(BaseAPI):
+    def report_task_status(self, status, execution_id, error=None):
+        endpoint = '/worker/task/status'
+        return self.client.post(endpoint=endpoint, json={
+            "status": status,
+            "execution_id": execution_id,
+            "error": error
+        })
 
-    def task_parameters(self, task_info):
-        endpoint = '/party/{}/{}/{}/{}/{}/{}/report'.format(
-            task_info["job_id"],
-            task_info["component_name"],
-            task_info["task_id"],
-            task_info["task_version"],
-            task_info["role"],
-            task_info["party_id"]
-        )
-        return self.client.post(endpoint=endpoint, json=task_info)
+    def query_task_status(self, execution_id):
+        endpoint = '/worker/task/status'
+        return self.client.get(endpoint=endpoint, json={
+            "execution_id": execution_id,
+        })
 
-    def report_task(self, task_info):
-        endpoint = '/party/{}/{}/{}/{}/{}/{}/report'.format(
-            task_info["job_id"],
-            task_info["component_name"],
-            task_info["task_id"],
-            task_info["task_version"],
-            task_info["role"],
-            task_info["party_id"]
-        )
-        return self.client.post(endpoint=endpoint, json=task_info)
-
-    def output_metric(self, content):
-        return self.client.post(endpoint="/worker/metric/write", json=content)
-
-    def write_model(self, content):
-        return self.client.post(endpoint="/worker/model/write", json=content)
+    def log_output_artifacts(self, execution_id, type, output_key, uri, meta_data):
+        return self.client.post(endpoint="/worker/task/output/tracking", json={
+            "execution_id": execution_id,
+            "type": type,
+            "output_key": output_key,
+            "uri": uri,
+            "meta_data": meta_data
+        })
