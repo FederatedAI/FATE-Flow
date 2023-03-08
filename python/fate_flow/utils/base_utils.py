@@ -16,6 +16,7 @@
 import datetime
 import json
 import os
+import random
 import socket
 import time
 import uuid
@@ -87,6 +88,18 @@ def string_to_bytes(string):
 
 def bytes_to_string(byte):
     return byte.decode(encoding="utf-8")
+
+
+def generate_random_id(length=6, only_number=False):
+    random_id = ''
+    if only_number:
+        chars = '0123456789'
+    else:
+        chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789'
+    len_chars = len(chars) - 1
+    for i in range(length):
+        random_id += chars[random.randint(0, len_chars)]
+    return random_id
 
 
 def json_dumps(src, byte=False, indent=None, with_type=False):

@@ -72,17 +72,10 @@ computing:
     home:
     cores_per_node: 20
     nodes: 2
-worker:
-  type: native
-  docker:
-    config:
-      # https://docker-py.readthedocs.io/en/stable/client.html#docker.client.DockerClient
-      base_url: unix:///var/run/docker.sock
-    image: ccr.ccs.tencentyun.com/federatedai/fate_algorithm:2.0.0-alpha
-    # on container
-    fate_root_dir: /data/projects/fate
-    # on host
-    eggroll_conf_dir:
-  k8s:
-    image: ccr.ccs.tencentyun.com/federatedai/fate_algorithm:2.0.0-alpha
-    namespace: fate-10000
+hook_module:
+  client_authentication: fate_flow.hook.flow.client_authentication
+  site_authentication: fate_flow.hook.flow.site_authentication
+  permission: fate_flow.hook.flow.permission
+authentication:
+  client: true
+  site: false

@@ -25,6 +25,8 @@ from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
 from fate_flow.apps import app
 from fate_flow.controller.config_manager import ConfigManager
+from fate_flow.hook import HookManager
+from fate_flow.manager.app_manager import AppManager
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.db.base_models import init_database_tables as init_flow_db
@@ -64,6 +66,8 @@ if __name__ == '__main__':
     RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
     ConfigManager.load()
+    HookManager.init()
+    AppManager.init()
     init_scheduler()
     Detector(interval=5 * 1000, logger=detect_logger).start()
     FederatedDetector(interval=10 * 1000, logger=detect_logger).start()

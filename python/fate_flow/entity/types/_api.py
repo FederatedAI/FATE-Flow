@@ -13,6 +13,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.db.storage_models import *
-from fate_flow.db.schedule_models import *
-from fate_flow.db.db_models import *
+from fate_flow.entity import BaseModel
+
+
+class Role(BaseModel):
+    CLIENT = "client"
+    PARTNER = "partner"
+    SCHEDULER = "scheduler"
+    WORKER = "worker"
+
+
+class ClientRole(BaseModel):
+    DATA = "data"
+    JOB = "job"
+    OUTPUT = "output"
+    PROVIDER = "provider"
+    SITE = "site"
+
