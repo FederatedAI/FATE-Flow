@@ -41,3 +41,10 @@ class ReturnCode:
     class Provider:
         PARAMS_ERROR = 4000
         DEVICE_NOT_SUPPORTED = 4001
+
+    class API:
+        EXPIRED = 5000
+        INVALID_PARAMETER = 5001
+        NO_FOUND_APPID = 5002
+        VERIFY_FAILED = 5003
+        AUTHENTICATION_FAILED = 5004

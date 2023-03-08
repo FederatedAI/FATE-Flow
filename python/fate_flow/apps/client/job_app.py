@@ -17,7 +17,7 @@ from webargs import fields
 
 from fate_flow.controller.job_controller import JobController
 from fate_flow.entity.code import ReturnCode
-from fate_flow.utils.api_utils import get_json_result, validate_request_json
+from fate_flow.utils.api_utils import get_json_result, validate_request_json, validate_request_params
 
 
 @manager.route('/submit', methods=['POST'])
@@ -27,9 +27,9 @@ def submit_job(dag_schema):
     return get_json_result(**submit_result)
 
 
-@manager.route('/query', methods=['POST'])
-@validate_request_json(job_id=fields.String(required=False), role=fields.String(required=False),
-                       party_id=fields.String(required=False), status=fields.String(required=False))
+@manager.route('/query', methods=['GET'])
+@validate_request_params(job_id=fields.String(required=False), role=fields.String(required=False),
+                         party_id=fields.String(required=False), status=fields.String(required=False))
 def query_job(job_id=None, role=None, party_id=None, status=None):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id, status=status)
     if not jobs:
@@ -38,11 +38,11 @@ def query_job(job_id=None, role=None, party_id=None, status=None):
                            data=[job.to_human_model_dict() for job in jobs])
 
 
-@manager.route('/task/query', methods=['POST'])
-@validate_request_json(job_id=fields.String(required=False), role=fields.String(required=False),
-                       party_id=fields.String(required=False), status=fields.String(required=False),
-                       task_name=fields.String(required=False), task_id=fields.String(required=False),
-                       task_version=fields.Integer(required=False))
+@manager.route('/task/query', methods=['GET'])
+@validate_request_params(job_id=fields.String(required=False), role=fields.String(required=False),
+                         party_id=fields.String(required=False), status=fields.String(required=False),
+                         task_name=fields.String(required=False), task_id=fields.String(required=False),
+                         task_version=fields.Integer(required=False))
 def query_task(job_id=None, role=None, party_id=None, status=None, task_name=None, task_id=None, task_version=None):
     tasks = JobController.query_tasks(job_id=job_id, role=role, party_id=party_id, status=status, task_name=task_name,
                                       task_id=task_id, task_version=task_version)

@@ -26,6 +26,7 @@ API_VERSION = "v2"
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
 CASBIN_TABLE_NAME = "fate_casbin"
+PERMISSION_PAGE = "permission"
 TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
 FATE_FLOW_CONF_PATH = os.path.join(get_fate_flow_directory(), "conf")
 
@@ -87,3 +88,16 @@ SOURCE_MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model", "sour
 CACHE_MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model", "cache")
 LOCAL_DATA_STORE_PATH = os.path.join(get_fate_flow_directory(), "data")
 BASE_URI = f"{PROTOCOL}://{HOST}:{HTTP_PORT}/{API_VERSION}"
+
+HOOK_MODULE = get_base_config("hook_module")
+
+# authentication
+AUTHENTICATION_CONF = get_base_config("authentication", {})
+# client
+CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", False)
+# site
+SITE_AUTHENTICATION = AUTHENTICATION_CONF.get("site", False)
+
+ADMIN_ID = "admin"
+ADMIN_KEY = "fate_flow_admin"
+

@@ -13,6 +13,22 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.db.storage_models import *
-from fate_flow.db.schedule_models import *
-from fate_flow.db.db_models import *
+from webargs.aiohttpparser import use_kwargs
+
+class API:
+    class Parameter:
+        @staticmethod
+        def params(**kwargs):
+            return use_kwargs(kwargs, location='querystring')
+
+        @staticmethod
+        def data(**kwargs):
+            return use_kwargs(kwargs, location='querystring')
+
+        @staticmethod
+        def json(**kwargs):
+            return use_kwargs(kwargs, location='querystring')
+
+        @staticmethod
+        def header(**kwargs):
+            return use_kwargs(kwargs, location='querystring')

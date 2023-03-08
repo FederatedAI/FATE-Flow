@@ -293,12 +293,12 @@ class BaseModel(Model):
     def getter_by(cls, attr):
         return operator.attrgetter(attr)(cls)
 
-    @classmethod
-    def _delete(cls, **kwargs):
-        _kwargs = {}
-        for f_k, f_v in kwargs.items():
-            _kwargs["f_%s" % f_k] = f_v
-        cls.delete(**_kwargs)
+    # @classmethod
+    # def _delete(cls, **kwargs):
+    #     _kwargs = {}
+    #     for f_k, f_v in kwargs.items():
+    #         _kwargs["f_%s" % f_k] = f_v
+    #     cls.delete(**_kwargs)
 
     @classmethod
     def query(cls, reverse=None, order_by=None, **kwargs):
@@ -440,18 +440,18 @@ class BaseModelOperate:
 
     @classmethod
     @DB.connection_context()
-    def _query(cls, entity_model, **kwargs) -> object:
+    def _query(cls, entity_model, **kwargs):
         return entity_model.query(**kwargs)
 
     @classmethod
     @DB.connection_context()
     def _delete(cls, entity_model, **kwargs):
-        model_list = cls._query(entity_model, **kwargs)
-        delete_list = []
-        for model in model_list:
-            model.delete().execute()
-            delete_list.append(model.to_human_model_dict())
-        return delete_list
+        _kwargs = {}
+        filters = []
+        for f_k, f_v in kwargs.items():
+            attr_name = "f_%s" % f_k
+            filters.append(operator.attrgetter(attr_name)(entity_model) == f_v)
+        return entity_model.delete().where(*filters).execute()
 
     @classmethod
     def safe_save(cls, model, defaults, **kwargs):

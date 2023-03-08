@@ -1,0 +1,166 @@
+from functools import reduce
+
+import casbin
+import peewee as pw
+
+from fate_flow.db.base_models import singleton, DB
+from fate_flow.settings import CASBIN_MODEL_CONF, CASBIN_TABLE_NAME
+
+
+class FlowCasbinAdapter(casbin.persist.Adapter):
+    def __init__(self):
+        self.database = DB
+        proxy = pw.Proxy()
+        FlowCasbinRule._meta.database = proxy
+        proxy.initialize(DB)
+
+    def load_policy(self, model):
+        for line in FlowCasbinRule.select():
+            casbin.persist.load_policy_line(str(line), model)
+
+    def _save_policy_line(self, ptype, rule):
+        data = dict(zip(['v0', 'v1', 'v2', 'v3', 'v4', 'v5'], rule))
+        item = FlowCasbinRule(ptype=ptype)
+        item.__data__.update(data)
+        item.save()
+
+    def save_policy(self, model):
+        """saves all policy rules to the storage."""
+        for sec in ["p", "g"]:
+            if sec not in model.model.keys():
+                continue
+            for ptype, ast in model.model[sec].items():
+                for rule in ast.policy:
+                    self._save_policy_line(ptype, rule)
+        return True
+
+    def add_policy(self, sec, ptype, rule):
+        """adds a policy rule to the storage."""
+        self._save_policy_line(ptype, rule)
+
+    def remove_policy(self, sec, ptype, rule):
+        """removes a policy rule from the storage."""
+        if sec in ["p", "g"]:
+            condition = [FlowCasbinRule.ptype==ptype]
+            data = dict(zip(['v0', 'v1', 'v2', 'v3', 'v4', 'v5'], rule))
+            condition.extend([getattr(FlowCasbinRule, k) == data[k] for k in data])
+            check = FlowCasbinRule.select().filter(*condition)
+            if check.exists():
+                FlowCasbinRule.delete().where(*condition).execute()
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def remove_filtered_policy(self, sec, ptype, field_index, *field_values):
+        """removes policy rules that match the filter from the storage.
+        This is part of the Auto-Save feature.
+        """
+        pass
+
+
+class FlowCasbinRule(pw.Model):
+    class Meta:
+        table_name = CASBIN_TABLE_NAME
+    ptype = pw.CharField(max_length=255, null=True)
+    v0 = pw.CharField(max_length=255, null=True)
+    v1 = pw.CharField(max_length=255, null=True)
+    v2 = pw.CharField(max_length=255, null=True)
+    v3 = pw.CharField(max_length=255, null=True)
+    v4 = pw.CharField(max_length=255, null=True)
+    v5 = pw.CharField(max_length=255, null=True)
+
+
+    def __str__(self):
+        return reduce(lambda x, y: str(x) + ', ' + str(y) if y else x,
+                      [self.ptype, self.v0, self.v1, self.v2, self.v3, self.v4, self.v5])
+
+    def __repr__(self):
+        if not self.id:
+            return "<{cls}: {desc}>".format(cls=self.__class__.__name__, desc=self)
+        return "<{cls} {pk}: {desc}>".format(cls=self.__class__.__name__, pk=self.id, desc=self)
+
+
+class FlowEnforcer(casbin.Enforcer):
+    @property
+    def reload_policy(self):
+        self.load_policy()
+        return self
+
+
+@singleton
+class FateCasbin(object):
+    def __init__(self):
+        self.adapter = None
+        self.init_adapter()
+        self._e = FlowEnforcer(CASBIN_MODEL_CONF, self.adapter)
+
+    def init_adapter(self):
+        self.adapter = FlowCasbinAdapter()
+        self.init_table()
+
+    @staticmethod
+    def init_table():
+        FlowCasbinRule.create_table()
+
+    @property
+    def re(self) -> casbin.Enforcer:
+        return self._e.reload_policy
+
+    @property
+    def e(self) -> casbin.Enforcer:
+        return self._e
+
+    def add_policy(self, role, resource, permission):
+        return self.e.add_policy(role, resource, permission)
+
+    def remove_policy(self, role, resource, permission):
+        return self.e.remove_policy(role, resource, permission)
+
+    def add_role_for_user(self, user, role):
+        return self.e.add_role_for_user(user, role)
+
+    def delete_role_for_suer(self, user, role):
+        return self.e.delete_role_for_user(user, role)
+
+    def delete_roles_for_user(self, user):
+        return self.e.delete_roles_for_user(user)
+
+    def delete_user(self, user):
+        return self.e.delete_user(user)
+
+    def delete_role(self, role):
+        return self.e.delete_role(role)
+
+    def delete_permission(self, *permission):
+        return self.e.delete_permission(*permission)
+
+    def delete_permissions_for_user(self, user):
+        return self.e.delete_permissions_for_user(user)
+
+    def get_roles_for_user(self, user):
+        return self.re.get_roles_for_user(user)
+
+    def get_users_for_role(self, role):
+        return self.re.get_users_for_role(role)
+
+    def has_role_for_user(self, user, role):
+        return self.re.has_role_for_user(user, role)
+
+    def has_permission_for_user(self, user, *permission):
+        return self.re.has_permission_for_user(user, *permission)
+
+    def get_permissions_for_user(self, user):
+        return self.re.get_permissions_for_user(user)
+
+    def enforcer(self, *rvals):
+        return self.re.enforce(*rvals)
+
+FATE_CASBIN = FateCasbin()
+
+
+
+
+
+

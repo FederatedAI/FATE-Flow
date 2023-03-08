@@ -13,21 +13,28 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os.path
 import sys
+import types
 import typing as t
 
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
-from flask import Blueprint, Flask
+from flask import Blueprint, Flask, request
 from werkzeug.wrappers.request import Request
 
-from fate_flow.settings import API_VERSION, getLogger
-from fate_flow.utils.api_utils import args_error_response, server_error_response
+from fate_flow.controller.app_controller import PermissionController
+from fate_flow.entity.code import ReturnCode
+from fate_flow.hook import HookManager
+from fate_flow.hook.common.parameters import ClientAuthenticationParameters
+from fate_flow.settings import API_VERSION, getLogger, PERMISSION_PAGE, CLIENT_AUTHENTICATION
+from fate_flow.utils.api_utils import args_error_response, server_error_response, get_json_result
 from fate_flow.utils.base_utils import CustomJSONEncoder
 
 
 __all__ = ['app']
+app_list = ["client", "partner", "scheduler", "worker"]
 
 logger = getLogger('flask.app')
 
@@ -40,26 +47,76 @@ app.errorhandler(Exception)(server_error_response)
 app.json_encoder = CustomJSONEncoder
 
 
-def register_page(page_path):
-    page_name = page_path.stem.rstrip('_app')
+def search_pages_path(pages_dir):
+    return [path for path in pages_dir.glob('*_app.py') if not path.name.startswith('.')]
+
+
+def register_page(page_path, func=None):
+    page_name = page_path.stem.rstrip('app').rstrip("_")
     module_name = '.'.join(page_path.parts[page_path.parts.index('apps')-1:-1] + (page_name, ))
 
     spec = spec_from_file_location(module_name, page_path)
     page = module_from_spec(spec)
     page.app = app
     page.manager = Blueprint(page_name, module_name)
-    sys.modules[module_name] = page
-    spec.loader.exec_module(page)
-
     page_name = getattr(page, 'page_name', page_name)
     url_prefix = f'/{API_VERSION}/{page_name}'
-    print(page_name)
+    rule_methods_list = []
 
+    # rewrite blueprint route to get rule_list
+    def route(self, rule: str, **options: t.Any) -> t.Callable:
+        def decorator(f: t.Callable) -> t.Callable:
+            endpoint = options.pop("endpoint", None)
+            rule_methods_list.append((rule, options.get("methods", [])))
+            self.add_url_rule(rule, endpoint, f, **options)
+            return f
+        return decorator
+
+    page.manager.route = types.MethodType(route, page.manager)
+
+    if func:
+        page.manager.before_request(func)
+    sys.modules[module_name] = page
+    spec.loader.exec_module(page)
     app.register_blueprint(page.manager, url_prefix=url_prefix)
+    return page_name, [(os.path.join(url_prefix, rule_methods[0].lstrip("/")), rule_methods[1]) for rule_methods in rule_methods_list]
 
 
-for path in Path(__file__).parent.glob('*/*_app.py'):
-    if path.name.startswith(('.', '_')):
-        continue
+def client_authentication_before_request():
+    if CLIENT_AUTHENTICATION:
+        result = HookManager.client_authentication(ClientAuthenticationParameters(
+            request.path, request.method, request.headers,
+            request.form, request.data, request.json, request.full_path
+        ))
 
-    register_page(path)
+        if result.code != ReturnCode.Base.SUCCESS:
+            return get_json_result(result.code, result.message)
+
+
+def init_apps():
+    urls_dict = {}
+    before_request_func = {
+        "client": client_authentication_before_request
+    }
+    for key in app_list:
+        urls_dict[key] = [register_page(path, before_request_func.get(key)) for path in search_pages_path(Path(__file__).parent / key)]
+        _init_permission_group(urls=urls_dict)
+
+
+def _init_permission_group(urls: dict):
+    for role, role_items in urls.items():
+        super_role = "super_" + role
+        for resource, rule_methods_list in role_items:
+            for rule_methods in rule_methods_list:
+                rule = rule_methods[0]
+                methods = rule_methods[1]
+                for method in methods:
+                    if resource == PERMISSION_PAGE:
+                        PermissionController.add_policy(super_role, rule, method)
+                    else:
+                        PermissionController.add_policy(super_role, rule, method)
+                        PermissionController.add_policy(role, rule, method)
+        PermissionController.add_role_for_user("admin", super_role)
+
+
+init_apps()

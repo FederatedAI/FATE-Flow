@@ -46,7 +46,7 @@ def get_json_result(code=ReturnCode.Base.SUCCESS, message='success', data=None, 
 def server_error_response(e):
     stat_logger.exception(e)
     if len(e.args) > 1:
-        return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message=repr(e.args[0]), data=e.args[1])
+        return get_json_result(code=e.args[0], message=e.args[1])
     return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message=repr(e))
 
 
