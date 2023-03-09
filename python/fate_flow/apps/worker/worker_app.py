@@ -20,14 +20,15 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.model_manager import PipelinedModel
 from fate_flow.manager.output_manager import OutputDataTracking, OutputMetric
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.utils.api_utils import get_json_result, validate_request_json, validate_request_params
+from fate_flow.utils.api_utils import API
 
 page_name = 'worker'
 
 
 @manager.route('/task/status', methods=['POST'])
-@validate_request_json(status=fields.String(required=True), execution_id=fields.String(required=True),
-                       error=fields.String(required=False))
+@API.Input.json(execution_id=fields.String(required=True))
+@API.Input.json(status=fields.String(required=True))
+@API.Input.json(error=fields.String(required=False))
 def report_task_status(status, execution_id, error=None):
     tasks = JobSaver.query_task(execution_id=execution_id)
     if tasks:
@@ -44,26 +45,28 @@ def report_task_status(status, execution_id, error=None):
         if error:
             task_info.update({"error_report": error})
             TaskController.update_task(task_info)
-        return get_json_result()
-    return get_json_result(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+        return API.Output.json()
+    return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
 
 
 @manager.route('/task/status', methods=['GET'])
-@validate_request_params(execution_id=fields.String(required=True))
+@API.Input.params(execution_id=fields.String(required=True))
 def query_task_status(execution_id):
     tasks = JobSaver.query_task(execution_id=execution_id)
     if tasks:
         task_info = {
             "status": tasks[0].f_status,
         }
-        return get_json_result(code=ReturnCode.Base.SUCCESS, message="success", data=task_info)
-    return get_json_result(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+        return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=task_info)
+    return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
 
 
 @manager.route('/task/output/tracking', methods=['POST'])
-@validate_request_json(execution_id=fields.String(required=True), meta_data=fields.Dict(required=True),
-                       type=fields.String(required=True), uri=fields.String(required=True),
-                       output_key=fields.String(required=True))
+@API.Input.json(execution_id=fields.String(required=True))
+@API.Input.json(meta_data=fields.Dict(required=True))
+@API.Input.json(type=fields.String(required=True))
+@API.Input.json(uri=fields.String(required=True))
+@API.Input.json(output_key=fields.String(required=True))
 def log_output_artifacts(execution_id, meta_data, type, uri, output_key):
     tasks = JobSaver.query_task(execution_id=execution_id)
     if tasks:
@@ -81,8 +84,8 @@ def log_output_artifacts(execution_id, meta_data, type, uri, output_key):
             "task_name": task.f_task_name
         }
         OutputDataTracking.create(data_info)
-        return get_json_result(code=ReturnCode.Base.SUCCESS, message="success")
-    return get_json_result(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+        return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+    return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
 
 
 @manager.route('/task/model/<job_id>/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['POST'])
@@ -90,7 +93,7 @@ def save_output_model(job_id, role, party_id, model_id, model_version, component
     file = request.files['file']
     PipelinedModel(job_id=job_id, model_id=model_id, model_version=model_version, role=role, party_id=party_id).save_output_model(
         task_name, model_name, component, model_file=file)
-    return get_json_result()
+    return API.Output.json()
 
 
 @manager.route('/task/model/<job_id>/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['GET'])
@@ -101,8 +104,9 @@ def get_output_model(job_id, role, party_id, model_id, model_version, component,
 
 
 @manager.route('/task/metric/<job_id>/<role>/<party_id>/<task_name>/<task_id>/<task_version>/<name>', methods=["POST"])
-@validate_request_json(data=fields.Dict(required=True), incomplete=fields.Bool(required=True))
+@API.Input.json(data=fields.Dict(required=True))
+@API.Input.json(incomplete=fields.Bool(required=True))
 def save_metric(job_id, role, party_id, task_name, task_id, task_version, name, data, incomplete):
     OutputMetric(job_id=job_id, role=role, party_id=party_id, task_name=task_name, task_id=task_id,
                  task_version=task_version).save_output_metrics(data, incomplete)
-    return get_json_result()
+    return API.Output.json()
