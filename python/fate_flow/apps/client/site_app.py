@@ -13,16 +13,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from webargs import fields
-
 from fate_flow.entity.code import ReturnCode
 from fate_flow.settings import PARTY_ID, IS_STANDALONE
-from fate_flow.utils.api_utils import get_json_result
+from fate_flow.utils.api_utils import API
 
 
 @manager.route('/info/query', methods=['GET'])
 def query_site_info():
     if not IS_STANDALONE:
-        return get_json_result(code=ReturnCode.Base.SUCCESS, message="success", data={"party_id": PARTY_ID})
+        return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data={"party_id": PARTY_ID})
     else:
-        return get_json_result(code=ReturnCode.Site.IS_STANDALONE, message="site is standalone")
+        return API.Output.json(code=ReturnCode.Site.IS_STANDALONE, message="site is standalone")

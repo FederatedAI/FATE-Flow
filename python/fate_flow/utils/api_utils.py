@@ -27,75 +27,45 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.settings import stat_logger, PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
 
 
-def get_json_result(code=ReturnCode.Base.SUCCESS, message='success', data=None, job_id=None, meta=None):
-    result_dict = {
-        "code": code,
-        "message": message,
-        "data": data,
-        "job_id": job_id,
-        "meta": meta,
-    }
+class API:
+    class Input:
+        @staticmethod
+        def params(**kwargs):
+            return use_kwargs(kwargs, location='querystring')
 
-    response = {}
-    for key, value in result_dict.items():
-        if value is not None:
-            response[key] = value
-    return jsonify(response)
+        @staticmethod
+        def json(**kwargs):
+            return use_kwargs(kwargs, location='json')
 
+    class Output:
+        @staticmethod
+        def json(code=ReturnCode.Base.SUCCESS, message='success', data=None, job_id=None, meta=None):
+            result_dict = {
+                "code": code,
+                "message": message,
+                "data": data,
+                "job_id": job_id,
+                "meta": meta,
+            }
 
-def server_error_response(e):
-    stat_logger.exception(e)
-    if len(e.args) > 1:
-        return get_json_result(code=e.args[0], message=e.args[1])
-    return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message=repr(e))
+            response = {}
+            for key, value in result_dict.items():
+                if value is not None:
+                    response[key] = value
+            return jsonify(response)
 
+        @staticmethod
+        def server_error_response(e):
+            stat_logger.exception(e)
+            if len(e.args) > 1:
+                return API.Output.json(code=e.args[0], message=e.args[1])
+            return API.Output.json(code=ReturnCode.Base.EXCEPTION_ERROR, message=repr(e))
 
-def args_error_response(e):
-    stat_logger.exception(e)
-    messages = e.data.get("messages", {})
-    return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message="Invalid request.", data=messages)
-
-
-def error_response(response_code, retmsg=None):
-    if retmsg is None:
-        retmsg = HTTP_STATUS_CODES.get(response_code, 'Unknown Error')
-
-    return Response(json.dumps({
-        'retmsg': retmsg,
-        'retcode': response_code,
-    }), status=response_code, mimetype='application/json')
-
-
-def validate_request_json(**kwargs):
-    return use_kwargs(kwargs, location='json')
-
-
-def validate_request_params(**kwargs):
-    return use_kwargs(kwargs, location='querystring')
-
-
-def job_request_json(**kwargs):
-    return validate_request_json(
-        job_id=fields.String(required=True),
-        role=fields.String(required=True),
-        party_id=fields.String(required=True),
-        **kwargs
-    )
-
-
-def task_request_json(**kwargs):
-    return validate_request_json(
-        job_id=fields.String(required=True),
-        task_id=fields.String(required=True),
-        task_version=fields.Integer(required=True),
-        role=fields.String(required=True),
-        party_id=fields.String(required=True),
-        **kwargs
-    )
-
-
-def validate_request_headers(**kwargs):
-    return use_kwargs(kwargs, location='headers')
+        @staticmethod
+        def args_error_response(e):
+            stat_logger.exception(e)
+            messages = e.data.get("messages", {})
+            return API.Output.json(code=ReturnCode.Base.EXCEPTION_ERROR, message="Invalid request.", data=messages)
 
 
 def get_federated_proxy_address():

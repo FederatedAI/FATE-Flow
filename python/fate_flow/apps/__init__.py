@@ -29,7 +29,7 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import ClientAuthenticationParameters
 from fate_flow.settings import API_VERSION, getLogger, PERMISSION_PAGE, CLIENT_AUTHENTICATION
-from fate_flow.utils.api_utils import args_error_response, server_error_response, get_json_result
+from fate_flow.utils.api_utils import API
 from fate_flow.utils.base_utils import CustomJSONEncoder
 
 
@@ -42,8 +42,8 @@ Request.json = property(lambda self: self.get_json(force=True, silent=True))
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
-app.errorhandler(422)(args_error_response)
-app.errorhandler(Exception)(server_error_response)
+app.errorhandler(422)(API.Output.args_error_response)
+app.errorhandler(Exception)(API.Output.server_error_response)
 app.json_encoder = CustomJSONEncoder
 
 
@@ -90,7 +90,7 @@ def client_authentication_before_request():
         ))
 
         if result.code != ReturnCode.Base.SUCCESS:
-            return get_json_result(result.code, result.message)
+            return API.Output.json(result.code, result.message)
 
 
 def init_apps():

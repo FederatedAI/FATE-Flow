@@ -17,32 +17,38 @@ from webargs import fields
 
 from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.provider_manager import ProviderManager
-from fate_flow.utils.api_utils import validate_request_json, get_json_result, validate_request_params
+from fate_flow.utils.api_utils import API
 
 
 @manager.route('/register', methods=['POST'])
-@validate_request_json(name=fields.String(required=True), device=fields.String(required=True),
-                       version=fields.String(required=True), metadata=fields.Dict(required=True))
+@API.Input.json(name=fields.String(required=True))
+@API.Input.json(device=fields.String(required=True))
+@API.Input.json(version=fields.String(required=True))
+@API.Input.json(metadata=fields.Dict(required=True))
 def register(name, device, version, metadata):
     provider = ProviderManager.get_provider(name=name, device=device, version=version, metadata=metadata)
     if provider:
         operator_type = ProviderManager.register_provider(provider)
-        return get_json_result(message=f"{operator_type} success")
+        return API.Output.json(message=f"{operator_type} success")
     else:
-        return get_json_result(code=ReturnCode.Provider.DEVICE_NOT_SUPPORTED, message=device)
+        return API.Output.json(code=ReturnCode.Provider.DEVICE_NOT_SUPPORTED, message=device)
 
 
 @manager.route('/query', methods=['GET'])
-@validate_request_params(name=fields.String(required=False), device=fields.String(required=False),
-                         version=fields.String(required=False), provider_name=fields.String(required=False))
+@API.Input.params(name=fields.String(required=False))
+@API.Input.params(device=fields.String(required=False))
+@API.Input.params(version=fields.String(required=False))
+@API.Input.params(provider_name=fields.String(required=False))
 def query(name=None, device=None, version=None, provider_name=None):
     providers = ProviderManager.query_provider(name=name, device=device, version=version, provider_name=provider_name)
-    return get_json_result(data=[provider.to_human_model_dict() for provider in providers])
+    return API.Output.json(data=[provider.to_human_model_dict() for provider in providers])
 
 
 @manager.route('/delete', methods=['POST'])
-@validate_request_json(name=fields.String(required=False), device=fields.String(required=False),
-                       version=fields.String(required=False), provider_name=fields.String(required=False))
+@API.Input.json(name=fields.String(required=False))
+@API.Input.json(device=fields.String(required=False))
+@API.Input.json(version=fields.String(required=False))
+@API.Input.json(provider_name=fields.String(required=False))
 def delete(name=None, device=None, version=None, provider_name=None):
     result = ProviderManager.delete_provider(name=name, device=device, version=version, provider_name=provider_name)
-    return get_json_result(data=result)
+    return API.Output.json(data=result)

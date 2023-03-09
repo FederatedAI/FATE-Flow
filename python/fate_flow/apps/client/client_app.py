@@ -17,25 +17,26 @@ from webargs import fields
 
 from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.app_manager import AppManager
-from fate_flow.utils.api_utils import validate_request_params, validate_request_json, get_json_result
+from fate_flow.utils.api_utils import API
 
 
 @manager.route('/app/create', methods=['POST'])
-@validate_request_json(app_name=fields.String(required=True))
+@API.Input.json(app_name=fields.String(required=True))
 def create_app(app_name):
     data = AppManager.create_app(app_name=app_name)
-    return get_json_result(code=ReturnCode.Base.SUCCESS, message="success", data=data)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=data)
 
 
 @manager.route('/app/delete', methods=['POST'])
-@validate_request_json(app_id=fields.String(required=True))
+@API.Input.json(app_id=fields.String(required=True))
 def delete_app(app_id):
     data = AppManager.delete_app(app_id=app_id)
-    return get_json_result(code=ReturnCode.Base.SUCCESS, message="success", data=data)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=data)
 
 
 @manager.route('/app/query', methods=['GET'])
-@validate_request_params(app_id=fields.String(required=False), app_name=fields.String(required=False))
+@API.Input.params(app_id=fields.String(required=False))
+@API.Input.params(app_name=fields.String(required=False))
 def query_app(app_id=None, app_name=None):
     apps = AppManager.query_app(app_id=app_id, app_name=app_name)
-    return get_json_result(code=ReturnCode.Base.SUCCESS, message="success", data=[app.to_human_model_dict() for app in apps])
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=[app.to_human_model_dict() for app in apps])
