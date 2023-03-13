@@ -16,27 +16,75 @@
 from webargs import fields
 
 from fate_flow.entity.code import ReturnCode
+from fate_flow.entity.types import AppType
 from fate_flow.manager.app_manager import AppManager
+from fate_flow.runtime.system_settings import APP_MANAGER_PAGE
 from fate_flow.utils.api_utils import API
 
+page_name = APP_MANAGER_PAGE
 
-@manager.route('/app/create', methods=['POST'])
+
+@manager.route('/client/create', methods=['POST'])
 @API.Input.json(app_name=fields.String(required=True))
-def create_app(app_name):
-    data = AppManager.create_app(app_name=app_name)
+def create_client_app(app_name):
+    data = AppManager.create_app(app_name=app_name, app_type=AppType.CLIENT)
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=data)
 
 
-@manager.route('/app/delete', methods=['POST'])
+@manager.route('/client/delete', methods=['POST'])
 @API.Input.json(app_id=fields.String(required=True))
-def delete_app(app_id):
-    data = AppManager.delete_app(app_id=app_id)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=data)
+def delete_client_app(app_id):
+    status = AppManager.delete_app(app_id=app_id, app_type=AppType.CLIENT)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
 
 
-@manager.route('/app/query', methods=['GET'])
+@manager.route('/client/query', methods=['GET'])
 @API.Input.params(app_id=fields.String(required=False))
 @API.Input.params(app_name=fields.String(required=False))
-def query_app(app_id=None, app_name=None):
-    apps = AppManager.query_app(app_id=app_id, app_name=app_name)
+def query_client_app(app_id=None, app_name=None):
+    apps = AppManager.query_app(app_id=app_id, app_name=app_name, app_type=AppType.CLIENT)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=[app.to_human_model_dict() for app in apps])
+
+
+@manager.route('/site/create', methods=['POST'])
+@API.Input.json(party_id=fields.String(required=True))
+def create_site_app(party_id):
+    data = AppManager.create_app(app_name=party_id, app_type=AppType.SITE)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=data)
+
+
+@manager.route('/site/delete', methods=['POST'])
+@API.Input.json(party_id=fields.String(required=True))
+def delete_site_app(party_id):
+    AppManager.delete_app(app_name=party_id, app_type=AppType.SITE)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+
+
+@manager.route('/site/query', methods=['GET'])
+@API.Input.params(party_id=fields.String(required=True))
+def query_site_app(party_id=None):
+    apps = AppManager.query_app(app_name=party_id, app_type=AppType.SITE)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=[app.to_human_model_dict() for app in apps])
+
+
+@manager.route('/partner/create', methods=['POST'])
+@API.Input.json(party_id=fields.String(required=True))
+@API.Input.json(app_id=fields.String(required=True))
+@API.Input.json(app_token=fields.String(required=True))
+def create_partner_app(party_id, app_id, app_token):
+    data = AppManager.create_partner_app(app_id=app_id, party_id=party_id, app_token=app_token)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=data)
+
+
+@manager.route('/partner/delete', methods=['POST'])
+@API.Input.json(party_id=fields.String(required=True))
+def delete_partner_app(party_id):
+    AppManager.delete_partner_app(party_id=party_id)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+
+
+@manager.route('/partner/query', methods=['GET'])
+@API.Input.params(party_id=fields.String(required=False))
+def query_partner_app(party_id=None):
+    apps = AppManager.query_partner_app(party_id=party_id)
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=[app.to_human_model_dict() for app in apps])

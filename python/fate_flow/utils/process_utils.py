@@ -24,8 +24,8 @@ from fate_flow.entity.code import KillProcessRetCode
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import Task
 from fate_flow.entity.types import ProcessRole
-from fate_flow.settings import SUBPROCESS_STD_LOG_NAME
-from fate_flow.settings import stat_logger
+from fate_flow.runtime.system_settings import SUBPROCESS_STD_LOG_NAME
+from fate_flow.runtime.system_settings import stat_logger
 
 
 def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_dir=None, cwd_dir=None, process_name="", process_id=""):

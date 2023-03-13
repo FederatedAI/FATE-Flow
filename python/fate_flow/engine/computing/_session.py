@@ -18,7 +18,7 @@ from fate_flow.engine.computing._spark import SparkEngine
 from fate_flow.entity.types import ComputingEngine, EngineType, ProviderDevice
 from fate_flow.manager.provider_manager import ProviderManager
 from fate_flow.runtime.component_provider import ComponentProvider
-from fate_flow.settings import ENGINES
+from fate_flow.runtime.system_settings import ENGINES
 
 
 def build_engine(provider_name: str):

@@ -27,8 +27,10 @@ from werkzeug.wrappers.request import Request
 from fate_flow.controller.app_controller import PermissionController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.hook import HookManager
-from fate_flow.hook.common.parameters import ClientAuthenticationParameters
-from fate_flow.settings import API_VERSION, getLogger, PERMISSION_PAGE, CLIENT_AUTHENTICATION
+from fate_flow.hook.common.parameters import AuthenticationParameters
+from fate_flow.runtime.runtime_config import RuntimeConfig
+from fate_flow.runtime.system_settings import API_VERSION, getLogger, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION, \
+    ADMIN_PAGE, PARTY_ID
 from fate_flow.utils.api_utils import API
 from fate_flow.utils.base_utils import CustomJSONEncoder
 
@@ -59,8 +61,6 @@ def register_page(page_path, func=None):
     page = module_from_spec(spec)
     page.app = app
     page.manager = Blueprint(page_name, module_name)
-    page_name = getattr(page, 'page_name', page_name)
-    url_prefix = f'/{API_VERSION}/{page_name}'
     rule_methods_list = []
 
     # rewrite blueprint route to get rule_list
@@ -78,13 +78,26 @@ def register_page(page_path, func=None):
         page.manager.before_request(func)
     sys.modules[module_name] = page
     spec.loader.exec_module(page)
+    page_name = getattr(page, 'page_name', page_name)
+    url_prefix = f'/{API_VERSION}/{page_name}'
     app.register_blueprint(page.manager, url_prefix=url_prefix)
     return page_name, [(os.path.join(url_prefix, rule_methods[0].lstrip("/")), rule_methods[1]) for rule_methods in rule_methods_list]
 
 
 def client_authentication_before_request():
     if CLIENT_AUTHENTICATION:
-        result = HookManager.client_authentication(ClientAuthenticationParameters(
+        result = HookManager.client_authentication(AuthenticationParameters(
+            request.path, request.method, request.headers,
+            request.form, request.data, request.json, request.full_path
+        ))
+
+        if result.code != ReturnCode.Base.SUCCESS:
+            return API.Output.json(result.code, result.message)
+
+
+def site_authentication_before_request():
+    if SITE_AUTHENTICATION:
+        result = HookManager.site_authentication(AuthenticationParameters(
             request.path, request.method, request.headers,
             request.form, request.data, request.json, request.full_path
         ))
@@ -96,27 +109,31 @@ def client_authentication_before_request():
 def init_apps():
     urls_dict = {}
     before_request_func = {
-        "client": client_authentication_before_request
+        "client": client_authentication_before_request,
+        "partner": site_authentication_before_request
     }
     for key in app_list:
         urls_dict[key] = [register_page(path, before_request_func.get(key)) for path in search_pages_path(Path(__file__).parent / key)]
+    if CLIENT_AUTHENTICATION or SITE_AUTHENTICATION:
         _init_permission_group(urls=urls_dict)
 
 
 def _init_permission_group(urls: dict):
     for role, role_items in urls.items():
         super_role = "super_" + role
+        RuntimeConfig.set_client_roles(role, super_role)
         for resource, rule_methods_list in role_items:
             for rule_methods in rule_methods_list:
                 rule = rule_methods[0]
                 methods = rule_methods[1]
                 for method in methods:
-                    if resource == PERMISSION_PAGE:
+                    if resource in ADMIN_PAGE:
                         PermissionController.add_policy(super_role, rule, method)
                     else:
                         PermissionController.add_policy(super_role, rule, method)
                         PermissionController.add_policy(role, rule, method)
         PermissionController.add_role_for_user("admin", super_role)
+    PermissionController.add_role_for_user(PARTY_ID, "partner")
 
 
 init_apps()

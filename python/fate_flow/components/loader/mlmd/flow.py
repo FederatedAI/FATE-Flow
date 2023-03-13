@@ -114,9 +114,8 @@ class FlowMLMD(MLMD):
         self.execution_status = ExecutionStatus(task_id, self.worker_client)
         self.io = IOManager(task_id=task_id, client=self.worker_client)
 
-
     def init_worker_client(self):
-        from fate_flow.settings import HOST, HTTP_PORT, API_VERSION, HTTP_REQUEST_TIMEOUT, PROXY_PROTOCOL
+        from fate_flow.runtime.system_settings import HOST, HTTP_PORT, API_VERSION, HTTP_REQUEST_TIMEOUT, PROXY_PROTOCOL
         from ofx.api.client import FlowSchedulerApi
         self.worker_client = FlowSchedulerApi(host=HOST, port=HTTP_PORT, protocol=PROXY_PROTOCOL,
                                               api_version=API_VERSION, timeout=HTTP_REQUEST_TIMEOUT,

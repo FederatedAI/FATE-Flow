@@ -19,7 +19,7 @@ from kubernetes import client, config
 from ruamel import yaml
 
 from fate_flow.runtime.component_provider import ComponentProvider
-from fate_flow.settings import WORKER
+from fate_flow.runtime.system_settings import WORKER
 from fate_flow.utils.conf_utils import get_base_config
 from fate_flow.utils.log import getLogger
 

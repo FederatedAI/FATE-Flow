@@ -15,7 +15,6 @@
 import docker
 
 from fate_flow.runtime.component_provider import ComponentProvider
-from fate_flow.settings import LOG_DIRECTORY, LOCAL_DATA_STORE_PATH
 
 
 class DockerManager:

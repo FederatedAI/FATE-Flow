@@ -9,7 +9,7 @@ class ParametersBase:
         return d
 
 
-class ClientAuthenticationParameters(ParametersBase):
+class AuthenticationParameters(ParametersBase):
     def __init__(self, path, method, headers, form, data, json, full_path):
         self.path = path
         self.method = method
@@ -20,7 +20,7 @@ class ClientAuthenticationParameters(ParametersBase):
         self.full_path = full_path
 
 
-class ClientAuthenticationReturn(ParametersBase):
+class AuthenticationReturn(ParametersBase):
     def __init__(self, code=ReturnCode.Base.SUCCESS, message="success"):
         self.code = code
         self.message = message
@@ -33,21 +33,9 @@ class SignatureParameters(ParametersBase):
 
 
 class SignatureReturn(ParametersBase):
-    def __init__(self, code=ReturnCode.Base.SUCCESS, site_signature=None):
+    def __init__(self, code=ReturnCode.Base.SUCCESS, signature=None, message=""):
         self.code = code
-        self.site_signature = site_signature
-
-
-class AuthenticationParameters(ParametersBase):
-    def __init__(self, src_party_id, site_signature, body):
-        self.src_party_id = src_party_id
-        self.site_signature = site_signature
-        self.body = body
-
-
-class AuthenticationReturn(ParametersBase):
-    def __init__(self, code=ReturnCode.Base.SUCCESS, message="success"):
-        self.code = code
+        self.signature = signature
         self.message = message
 
 

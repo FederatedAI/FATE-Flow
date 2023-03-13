@@ -13,29 +13,33 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import json
+import marshmallow
+from flask import jsonify
 
-from flask import (
-    Response, jsonify
-)
-from webargs import fields
-from webargs.flaskparser import use_kwargs
-from werkzeug.http import HTTP_STATUS_CODES
+from webargs.flaskparser import parser
 
 from fate_flow.entity.types import CoordinationProxyService, CoordinationCommunicationProtocol, FederatedMode
 from fate_flow.entity.code import ReturnCode
-from fate_flow.settings import stat_logger, PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
+from fate_flow.hook import HookManager
+from fate_flow.hook.common.parameters import SignatureParameters
+from fate_flow.runtime.system_settings import stat_logger, PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
+
+parser.unknown = marshmallow.EXCLUDE
 
 
 class API:
     class Input:
         @staticmethod
         def params(**kwargs):
-            return use_kwargs(kwargs, location='querystring')
+            return parser.use_kwargs(kwargs, location='querystring')
 
         @staticmethod
         def json(**kwargs):
-            return use_kwargs(kwargs, location='json')
+            return parser.use_kwargs(kwargs, location='json')
+
+        @staticmethod
+        def headers(**kwargs):
+            return parser.use_kwargs(kwargs, location="headers")
 
     class Output:
         @staticmethod
@@ -59,13 +63,13 @@ class API:
             stat_logger.exception(e)
             if len(e.args) > 1:
                 return API.Output.json(code=e.args[0], message=e.args[1])
-            return API.Output.json(code=ReturnCode.Base.EXCEPTION_ERROR, message=repr(e))
+            return API.Output.json(code=ReturnCode.Server.EXCEPTION, message=repr(e))
 
         @staticmethod
         def args_error_response(e):
             stat_logger.exception(e)
             messages = e.data.get("messages", {})
-            return API.Output.json(code=ReturnCode.Base.EXCEPTION_ERROR, message="Invalid request.", data=messages)
+            return API.Output.json(code=ReturnCode.API.INVALID_PARAMETER, message="Invalid request.", data=messages)
 
 
 def get_federated_proxy_address():
@@ -89,3 +93,7 @@ def get_federated_proxy_address():
     else:
         raise RuntimeError(f"can not support coordinate proxy {PROXY_NAME}， all proxy {PROXY.keys()}")
     return host, port, protocol, PROXY_NAME
+
+
+def generate_headers(party_id, body):
+    return HookManager.site_signature(SignatureParameters(party_id=party_id, body=body))

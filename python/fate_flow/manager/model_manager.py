@@ -24,7 +24,7 @@ from werkzeug.datastructures import FileStorage
 from fate_flow.db.base_models import BaseModelOperate
 from fate_flow.db.db_models import PipelineModelMeta
 from fate_flow.entity.spec import MLModelSpec
-from fate_flow.settings import (
+from fate_flow.runtime.system_settings import (
     CACHE_MODEL_STORE_PATH,
     SOURCE_MODEL_STORE_PATH,
     stat_logger,

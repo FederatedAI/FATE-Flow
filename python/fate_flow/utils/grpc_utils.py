@@ -13,13 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import grpc
 
 from fate_flow.proto.osx import osx_pb2, osx_pb2_grpc
 from fate_flow.proto.rollsite import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HOST, REMOTE_REQUEST_TIMEOUT
+from fate_flow.runtime.system_settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HOST, REMOTE_REQUEST_TIMEOUT
 from fate_flow.utils.base_utils import json_loads, json_dumps
 from fate_flow.utils.log_utils import audit_logger
 from fate_flow.utils.requests_utils import request

@@ -30,7 +30,7 @@ from fate_flow.entity.spec import ComponentSpec, RuntimeInputDefinition, ModelWa
 from fate_flow.manager.output_manager import OutputDataTracking
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY, FATE_FLOW_CONF_PATH
+from fate_flow.runtime.system_settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY, FATE_FLOW_CONF_PATH
 from fate_flow.utils import job_utils, file_utils
 from fate_flow.entity.types import StorageEngine, EngineType, FederationEngine
 from fate_flow.entity.spec import SchedulerInfoSpec

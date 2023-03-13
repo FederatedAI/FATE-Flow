@@ -22,7 +22,7 @@ from pydantic import typing
 
 from fate_flow.engine.storage import Session, EggRollStoreType, StorageEngine, StorageTableMeta, StorageTableOrigin
 from fate_flow.entity.types import EngineType
-from fate_flow.settings import ENGINES
+from fate_flow.runtime.system_settings import ENGINES
 from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.log import getLogger
 

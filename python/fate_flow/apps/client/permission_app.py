@@ -17,13 +17,14 @@ from webargs import fields
 
 from fate_flow.controller.app_controller import PermissionController
 from fate_flow.entity.code import ReturnCode
-from fate_flow.settings import PERMISSION_PAGE
+from fate_flow.runtime.runtime_config import RuntimeConfig
+from fate_flow.runtime.system_settings import PERMISSION_MANAGER_PAGE
 from fate_flow.utils.api_utils import API
 
-page_name = PERMISSION_PAGE
+page_name = PERMISSION_MANAGER_PAGE
 
 
-@manager.route('/app/grant', methods=['POST'])
+@manager.route('/grant', methods=['POST'])
 @API.Input.json(app_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
 def grant(app_id, role):
@@ -31,7 +32,7 @@ def grant(app_id, role):
     return API.Output.json()
 
 
-@manager.route('/app/delete', methods=['POST'])
+@manager.route('/delete', methods=['POST'])
 @API.Input.json(app_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
 def delete(app_id, role):
@@ -39,9 +40,15 @@ def delete(app_id, role):
     return API.Output.json()
 
 
-@manager.route('/app/query', methods=['GET'])
+@manager.route('/query', methods=['GET'])
 @API.Input.params(app_id=fields.String(required=True))
 def query(app_id):
-    roles = PermissionController.get_roles_for_user(app_id=app_id)
-    permissions = PermissionController.get_permissions_for_user(app_id=app_id)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, data={"roles": roles, "permission": permissions})
+    permissions = {}
+    for role in PermissionController.get_roles_for_user(app_id=app_id):
+        permissions[role] = PermissionController.get_permissions_for_user(app_id=role)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, data=permissions)
+
+
+@manager.route('/role/query', methods=['GET'])
+def query_roles():
+    return API.Output.json(data=RuntimeConfig.CLIENT_ROLE)
