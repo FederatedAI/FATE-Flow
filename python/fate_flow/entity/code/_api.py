@@ -17,7 +17,6 @@ class ReturnCode:
 
     class Base:
         SUCCESS = 0
-        EXCEPTION_ERROR = 100
 
     class Job:
         NOT_FOUND = 1000
@@ -48,3 +47,7 @@ class ReturnCode:
         NO_FOUND_APPID = 5002
         VERIFY_FAILED = 5003
         AUTHENTICATION_FAILED = 5004
+
+    class Server:
+        EXCEPTION = 6000
+        FUNCTION_RESTRICTED = 6001

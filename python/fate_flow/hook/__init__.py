@@ -1,8 +1,8 @@
 import importlib
 
 from fate_flow.hook.common.parameters import SignatureParameters, AuthenticationParameters, PermissionCheckParameters, \
-    SignatureReturn, AuthenticationReturn, PermissionReturn, ClientAuthenticationReturn, ClientAuthenticationParameters
-from fate_flow.settings import HOOK_MODULE, stat_logger
+    SignatureReturn, AuthenticationReturn, PermissionReturn
+from fate_flow.runtime.system_settings import HOOK_MODULE, stat_logger
 from fate_flow.entity.code import ReturnCode
 
 
@@ -39,10 +39,10 @@ class HookManager:
         HookManager.PERMISSION_CHECK.append(func)
 
     @staticmethod
-    def client_authentication(parm: ClientAuthenticationParameters) -> ClientAuthenticationReturn:
+    def client_authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
         if HookManager.CLIENT_AUTHENTICATION:
             return HookManager.CLIENT_AUTHENTICATION[0](parm)
-        return ClientAuthenticationReturn()
+        return AuthenticationReturn()
 
     @staticmethod
     def site_signature(parm: SignatureParameters) -> SignatureReturn:

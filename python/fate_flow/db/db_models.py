@@ -227,12 +227,3 @@ class ProviderInfo(DataBaseModel):
 
     class Meta:
         db_table = "t_provider_info"
-
-
-class AppInfo(DataBaseModel):
-    f_app_name = CharField(max_length=100, index=True)
-    f_app_id = CharField(max_length=100, primary_key=True)
-    f_app_token = CharField(max_length=100)
-
-    class Meta:
-        db_table = "t_app_info"

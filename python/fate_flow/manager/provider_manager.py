@@ -20,7 +20,7 @@ from typing import Union
 from fate_flow.db import ProviderInfo
 from fate_flow.db.base_models import DB, BaseModelOperate
 from fate_flow.entity.spec import ProviderSpec, LocalProviderSpec, DockerProviderSpec, K8sProviderSpec
-from fate_flow.settings import DEFAULT_FATE_PROVIDER_PATH, DEFAULT_PROVIDER
+from fate_flow.runtime.system_settings import DEFAULT_FATE_PROVIDER_PATH, DEFAULT_PROVIDER
 from fate_flow.runtime.component_provider import ComponentProvider, ProviderDevice
 from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.version import get_versions

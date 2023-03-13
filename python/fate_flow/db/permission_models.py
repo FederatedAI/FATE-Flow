@@ -13,24 +13,25 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity import BaseModel
+from peewee import CharField, CompositeKey
+
+from fate_flow.db import DataBaseModel
 
 
-class Role(BaseModel):
-    CLIENT = "client"
-    PARTNER = "partner"
-    SCHEDULER = "scheduler"
-    WORKER = "worker"
+class AppInfo(DataBaseModel):
+    f_app_name = CharField(max_length=100, index=True)
+    f_app_id = CharField(max_length=100, primary_key=True)
+    f_app_token = CharField(max_length=100)
+    f_app_type = CharField(max_length=20, index=True)
+
+    class Meta:
+        db_table = "t_app_info"
 
 
-class ClientRole(BaseModel):
-    DATA = "data"
-    JOB = "job"
-    OUTPUT = "output"
-    PROVIDER = "provider"
-    SITE = "site"
+class PartnerAppInfo(DataBaseModel):
+    f_party_id = CharField(max_length=100, primary_key=True)
+    f_app_id = CharField(max_length=100)
+    f_app_token = CharField(max_length=100)
 
-
-class AppType:
-    SITE = "site"
-    CLIENT = "client"
+    class Meta:
+        db_table = "t_partner_app_info"

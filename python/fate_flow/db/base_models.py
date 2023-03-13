@@ -35,7 +35,7 @@ from peewee import (
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.settings import DATABASE, IS_STANDALONE, stat_logger, FORCE_USE_SQLITE
+from fate_flow.runtime.system_settings import DATABASE, IS_STANDALONE, stat_logger, FORCE_USE_SQLITE
 from fate_flow.utils.base_utils import json_dumps, json_loads, date_string_to_timestamp, \
     current_timestamp, timestamp_to_date
 from fate_flow.utils.file_utils import get_fate_flow_directory

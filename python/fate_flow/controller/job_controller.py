@@ -20,7 +20,7 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.settings import PARTY_ID
+from fate_flow.runtime.system_settings import PARTY_ID
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import schedule_logger
 

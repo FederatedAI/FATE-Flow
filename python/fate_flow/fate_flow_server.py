@@ -34,7 +34,7 @@ from fate_flow.detection.detector import Detector, FederatedDetector
 from fate_flow.entity.types import ProcessRole
 from fate_flow.scheduler import init_scheduler
 from fate_flow.scheduler.job_scheduler import DAGScheduler
-from fate_flow.settings import (
+from fate_flow.runtime.system_settings import (
     GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT, detect_logger, stat_logger,
 )
 from fate_flow.utils import process_utils

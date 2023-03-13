@@ -78,4 +78,4 @@ hook_module:
   permission: fate_flow.hook.flow.permission
 authentication:
   client: true
-  site: false
+  site: true

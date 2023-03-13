@@ -15,6 +15,8 @@
 #
 from functools import wraps
 
+from fate_flow.entity.code import ReturnCode
+
 
 def filter_parameters(filter_value=None):
     def _inner(func):
@@ -25,5 +27,17 @@ def filter_parameters(filter_value=None):
                 if v != filter_value:
                     _kwargs[k] = v
             return func(*args, **_kwargs)
+        return _wrapper
+    return _inner
+
+
+def switch_function(switch, code=ReturnCode.Server.FUNCTION_RESTRICTED, message="function restricted"):
+    def _inner(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            if switch:
+                return func(*args, **kwargs)
+            else:
+                raise Exception(code, message)
         return _wrapper
     return _inner

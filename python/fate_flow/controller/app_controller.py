@@ -18,9 +18,10 @@ import time
 
 from fate_flow.db.casbin_models import FATE_CASBIN
 from fate_flow.entity.code import ReturnCode
-from fate_flow.entity.types import Role
 from fate_flow.manager.app_manager import AppManager
+from fate_flow.runtime.system_settings import CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
 from fate_flow.utils.base_utils import generate_random_id
+from fate_flow.utils.wraps_utils import switch_function
 
 
 class Authentication(object):
@@ -31,7 +32,7 @@ class Authentication(object):
         return sign
 
     @classmethod
-    def md5_verify(cls, app_id, user_name, timestamp, nonce, signature):
+    def md5_verify(cls, app_id, timestamp, nonce, signature, user_name=""):
         if cls.check_if_expired(timestamp):
             raise ValueError(ReturnCode.API.EXPIRED, "request has expired")
         apps = AppManager.query_app(app_id=app_id)
@@ -53,7 +54,7 @@ class Authentication(object):
 
     @staticmethod
     def generate_nonce():
-        return generate_random_id()
+        return generate_random_id(length=4, only_number=True)
 
     @staticmethod
     def check_if_expired(timestamp, timeout=60):
@@ -66,37 +67,41 @@ class Authentication(object):
 
 class PermissionController(object):
     @staticmethod
+    @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def add_policy(role, resource, permission):
         return FATE_CASBIN.add_policy(role, resource, permission)
 
     @staticmethod
-    def query_all_role():
-        return [role for role in Role().to_dict().values()]
-
-    @staticmethod
+    @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def add_role_for_user(app_id, role):
         return FATE_CASBIN.add_role_for_user(app_id, role)
 
     @staticmethod
+    @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def delete_role_for_user(app_id, role):
         return FATE_CASBIN.delete_role_for_suer(app_id, role)
 
     @staticmethod
+    @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def get_roles_for_user(app_id):
         return FATE_CASBIN.get_roles_for_user(app_id)
 
     @staticmethod
+    @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def get_permissions_for_user(app_id):
         return FATE_CASBIN.get_permissions_for_user(app_id)
 
     @staticmethod
+    @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def delete_roles_for_user(app_id):
         return FATE_CASBIN.delete_roles_for_user(app_id)
 
     @staticmethod
+    @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def has_role_for_user(app_id, role):
         return FATE_CASBIN.has_role_for_user(app_id, role)
 
     @staticmethod
+    @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def enforcer(app_id, resource, permission):
         return FATE_CASBIN.enforcer(app_id, resource, permission)

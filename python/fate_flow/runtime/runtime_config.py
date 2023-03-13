@@ -27,6 +27,7 @@ class RuntimeConfig(ReloadConfigBase):
     IS_SERVER = False
     PROCESS_ROLE = None
     SCHEDULE_CLIENT: FlowSchedulerApi = None
+    CLIENT_ROLE = list()
     ENV = dict()
 
     @classmethod
@@ -62,3 +63,9 @@ class RuntimeConfig(ReloadConfigBase):
     @classmethod
     def set_schedule_client(cls, schedule_client):
         cls.SCHEDULE_CLIENT = schedule_client
+
+    @classmethod
+    def set_client_roles(cls, *roles):
+        for role in roles:
+            if role not in cls.CLIENT_ROLE:
+                cls.CLIENT_ROLE.append(role)
