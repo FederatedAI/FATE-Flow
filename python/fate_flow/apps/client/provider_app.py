@@ -16,7 +16,7 @@
 from webargs import fields
 
 from fate_flow.entity.code import ReturnCode
-from fate_flow.manager.provider_manager import ProviderManager
+from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.utils.api_utils import API
 
 

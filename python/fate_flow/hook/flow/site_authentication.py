@@ -2,11 +2,10 @@ import hashlib
 
 from fate_flow.controller.app_controller import PermissionController, Authentication
 from fate_flow.entity.code import ReturnCode
-from fate_flow.entity.types import AppType
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import SignatureParameters, SignatureReturn, AuthenticationParameters, \
     AuthenticationReturn
-from fate_flow.manager.app_manager import AppManager
+from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.runtime.system_settings import LOCAL_PARTY_ID, PARTY_ID
 
 

@@ -12,25 +12,15 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from typing import Dict, List, Union, Any
-
-from fate_flow.entity import BaseModel
-
-
-class MetricData(BaseModel):
-    namespace: Union[str, None]
-    name: str
-    type: str
-    groups: Dict
-    metadata: Dict
-    data: Union[List, Dict]
+from fate_flow.db.base_models import BaseModelOperate
+from fate_flow.db.db_models import PipelineModelMeta
 
 
-class ModelStorageEngine(object):
-    FILE = "file"
-    MYSQL = "mysql"
-    TENCENT_COS = "tencent_cos"
+class ModelMeta(BaseModelOperate):
+    @classmethod
+    def save(cls, **meta_info):
+        cls._create_entity(PipelineModelMeta, meta_info)
 
-
-class ModelFileFormat(object):
-    JSON = "json"
+    @classmethod
+    def query(cls, job_id, role, party_id, task_name, **kwargs):
+        return cls._query(PipelineModelMeta, job_id=job_id, role=role, party_id=party_id, task_name=task_name, **kwargs)

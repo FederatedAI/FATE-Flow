@@ -12,25 +12,10 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from typing import Dict, List, Union, Any
-
-from fate_flow.entity import BaseModel
-
-
-class MetricData(BaseModel):
-    namespace: Union[str, None]
-    name: str
-    type: str
-    groups: Dict
-    metadata: Dict
-    data: Union[List, Dict]
+from fate_flow.manager.model.handel._base import IOHandle
+from fate_flow.manager.model.handel._file import FileHandle
+from fate_flow.manager.model.handel._mysql import MysqlHandel
+from fate_flow.manager.model.handel._tencent_cos import TencentCosHandel
 
 
-class ModelStorageEngine(object):
-    FILE = "file"
-    MYSQL = "mysql"
-    TENCENT_COS = "tencent_cos"
-
-
-class ModelFileFormat(object):
-    JSON = "json"
+__all__ = ["IOHandle", "FileHandle", "MysqlHandel", "TencentCosHandel"]

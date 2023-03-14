@@ -16,8 +16,8 @@
 from webargs import fields
 
 from fate_flow.entity.code import ReturnCode
-from fate_flow.manager.model_manager import PipelinedModel
-from fate_flow.manager.output_manager import OutputMetric
+from fate_flow.manager.model.model_manager import PipelinedModel
+from fate_flow.manager.service.output_manager import OutputMetric
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API
 
@@ -60,5 +60,6 @@ def query_model(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
         return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
-    model_data, message = PipelinedModel(role=role, party_id=party_id, job_id=job_id).read_model_data(task_name)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message=message, data=model_data)
+    task = tasks[0]
+    model_data = PipelinedModel.read_model(task.f_job_id, task.f_role, task.f_party_id, task.f_task_name)
+    return API.Output.json(data=model_data)

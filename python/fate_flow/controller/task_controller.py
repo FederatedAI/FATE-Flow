@@ -20,9 +20,9 @@ from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTask
 from fate_flow.engine.computing import build_engine
 from fate_flow.entity.spec import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
-from fate_flow.manager.provider_manager import ProviderManager
-from fate_flow.manager.resource_manager import ResourceManager
-from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.manager.service.provider_manager import ProviderManager
+from fate_flow.manager.service.resource_manager import ResourceManager
+from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.types import EndStatus, TaskStatus
 from fate_flow.entity.code import FederatedSchedulingStatusCode

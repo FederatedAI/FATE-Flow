@@ -13,9 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import base64
 import datetime
 import json
 import os
+import pickle
 import random
 import socket
 import time
