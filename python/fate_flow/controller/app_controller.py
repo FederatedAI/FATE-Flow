@@ -18,7 +18,7 @@ import time
 
 from fate_flow.db.casbin_models import FATE_CASBIN
 from fate_flow.entity.code import ReturnCode
-from fate_flow.manager.app_manager import AppManager
+from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.runtime.system_settings import CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
 from fate_flow.utils.base_utils import generate_random_id
 from fate_flow.utils.wraps_utils import switch_function

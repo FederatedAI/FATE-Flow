@@ -18,3 +18,4 @@ from ._model import *
 from ._provider import *
 from ._scheduler import *
 from ._flow_task import *
+from ._model_storage import *

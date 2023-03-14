@@ -17,8 +17,8 @@ from webargs import fields
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import ReturnCode
-from fate_flow.manager.model_manager import PipelinedModel
-from fate_flow.manager.output_manager import OutputDataTracking, OutputMetric
+from fate_flow.manager.model.model_manager import PipelinedModel
+from fate_flow.manager.service.output_manager import OutputDataTracking, OutputMetric
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API
 
@@ -30,35 +30,31 @@ page_name = 'worker'
 @API.Input.json(status=fields.String(required=True))
 @API.Input.json(error=fields.String(required=False))
 def report_task_status(status, execution_id, error=None):
-    tasks = JobSaver.query_task(execution_id=execution_id)
-    if tasks:
-        task = tasks[0]
-        task_info = {
-            "party_status": status,
-            "job_id": task.f_job_id,
-            "role": task.f_role,
-            "party_id": task.f_party_id,
-            "task_id": task.f_task_id,
-            "task_version": task.f_task_version
-        }
-        TaskController.update_task_status(task_info=task_info)
-        if error:
-            task_info.update({"error_report": error})
-            TaskController.update_task(task_info)
-        return API.Output.json()
-    return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+    task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
+    task_info = {
+        "party_status": status,
+        "job_id": task.f_job_id,
+        "role": task.f_role,
+        "party_id": task.f_party_id,
+        "task_id": task.f_task_id,
+        "task_version": task.f_task_version
+    }
+    TaskController.update_task_status(task_info=task_info)
+    if error:
+        task_info.update({"error_report": error})
+        TaskController.update_task(task_info)
+    return API.Output.json()
 
 
 @manager.route('/task/status', methods=['GET'])
 @API.Input.params(execution_id=fields.String(required=True))
 def query_task_status(execution_id):
-    tasks = JobSaver.query_task(execution_id=execution_id)
-    if tasks:
-        task_info = {
-            "status": tasks[0].f_status,
-        }
-        return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=task_info)
-    return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+    task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
+
+    task_info = {
+        "status": task.f_status,
+    }
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=task_info)
 
 
 @manager.route('/task/output/tracking', methods=['POST'])
@@ -68,39 +64,39 @@ def query_task_status(execution_id):
 @API.Input.json(uri=fields.String(required=True))
 @API.Input.json(output_key=fields.String(required=True))
 def log_output_artifacts(execution_id, meta_data, type, uri, output_key):
-    tasks = JobSaver.query_task(execution_id=execution_id)
-    if tasks:
-        task = tasks[0]
-        data_info = {
-            "type": type,
-            "uri": uri,
-            "output_key": output_key,
-            "meta": meta_data,
-            "job_id": task.f_job_id,
-            "role": task.f_role,
-            "party_id": task.f_party_id,
-            "task_id": task.f_task_id,
-            "task_version": task.f_task_version,
-            "task_name": task.f_task_name
-        }
-        OutputDataTracking.create(data_info)
-        return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
-    return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+    task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
+    data_info = {
+        "type": type,
+        "uri": uri,
+        "output_key": output_key,
+        "meta": meta_data,
+        "job_id": task.f_job_id,
+        "role": task.f_role,
+        "party_id": task.f_party_id,
+        "task_id": task.f_task_id,
+        "task_version": task.f_task_version,
+        "task_name": task.f_task_name
+    }
+    OutputDataTracking.create(data_info)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
 
 
-@manager.route('/task/model/<job_id>/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['POST'])
-def save_output_model(job_id, role, party_id, model_id, model_version, component, task_name, model_name):
+@manager.route('/task/model/<model_id>/<model_version>/<dir_name>/<file_name>', methods=['POST'])
+def upload_output_model(model_id, model_version, dir_name, file_name):
     file = request.files['file']
-    PipelinedModel(job_id=job_id, model_id=model_id, model_version=model_version, role=role, party_id=party_id).save_output_model(
-        task_name, model_name, component, model_file=file)
+    PipelinedModel.upload_model(
+        model_file=file,
+        dir_name=dir_name,
+        file_name=file_name,
+        model_id=model_id,
+        model_version=model_version
+    )
     return API.Output.json()
 
 
-@manager.route('/task/model/<job_id>/<role>/<party_id>/<model_id>/<model_version>/<component>/<task_name>/<model_name>', methods=['GET'])
-def get_output_model(job_id, role, party_id, model_id, model_version, component, task_name, model_name):
-    return PipelinedModel(
-        model_id=model_id, model_version=model_version, job_id=job_id, role=role, party_id=party_id
-    ).read_output_model(task_name, model_name)
+@manager.route('/task/model/<model_id>/<model_version>/<dir_name>/<file_name>', methods=['GET'])
+def download_output_model(model_id, model_version, dir_name, file_name):
+    return PipelinedModel.download_model(model_id, model_version, dir_name, file_name)
 
 
 @manager.route('/task/metric/<job_id>/<role>/<party_id>/<task_name>/<task_id>/<task_version>/<name>', methods=["POST"])

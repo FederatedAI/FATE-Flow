@@ -14,7 +14,7 @@
 #  limitations under the License.
 from peewee import CharField, IntegerField, BooleanField, BigIntegerField, TextField, DateTimeField, CompositeKey
 
-from fate_flow.db.base_models import DataBaseModel, JSONField, SerializedField
+from fate_flow.db.base_models import DataBaseModel, JSONField
 
 
 class StorageConnectorModel(DataBaseModel):

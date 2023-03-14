@@ -17,6 +17,7 @@ import time
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job, Task
+from fate_flow.entity.code import ReturnCode
 from fate_flow.operation.base_saver import BaseSaver
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTask, ScheduleTaskStatus
 
@@ -49,6 +50,13 @@ class JobSaver(BaseSaver):
     @classmethod
     def query_task(cls, only_latest=True, reverse=None, order_by=None, **kwargs):
         return cls._query_task(Task, only_latest=only_latest, reverse=reverse, order_by=order_by, **kwargs)
+
+    @classmethod
+    def query_task_by_execution_id(cls, execution_id):
+        tasks = cls.query_task(execution_id=execution_id)
+        if not tasks:
+            raise ValueError(ReturnCode.Task.NOT_FOUND, "No Found Task")
+        return tasks[0]
 
     @classmethod
     def update_task_status(cls, task_info):

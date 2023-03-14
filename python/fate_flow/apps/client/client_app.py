@@ -17,7 +17,7 @@ from webargs import fields
 
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.types import AppType
-from fate_flow.manager.app_manager import AppManager
+from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.runtime.system_settings import APP_MANAGER_PAGE
 from fate_flow.utils.api_utils import API
 

@@ -115,33 +115,6 @@ class TrackingOutputInfo(DataBaseModel):
         primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id', 'f_type', 'f_output_key')
 
 
-class PipelineModelInfo(DataBaseModel):
-    f_role = CharField(max_length=50)
-    f_party_id = CharField(max_length=50)
-    f_job_id = CharField(max_length=25, index=True)
-    f_model_id = CharField(max_length=100, index=True)
-    f_model_version = IntegerField(index=True)
-
-    class Meta:
-        db_table = "t_model_info"
-        primary_key = CompositeKey('f_job_id')
-
-
-class PipelineModelMeta(DataBaseModel):
-    f_model_id = CharField(max_length=100)
-    f_model_version = IntegerField()
-    f_job_id = CharField(max_length=100, index=True)
-    f_role = CharField(max_length=50, index=True)
-    f_party_id = CharField(max_length=50, index=True)
-    f_task_name = CharField(max_length=100, index=True)
-    f_component = CharField(max_length=30, null=True)
-    f_model_name = CharField(max_length=30, null=True)
-
-    class Meta:
-        db_table = 't_model_meta'
-        primary_key = CompositeKey('f_job_id', 'f_role', 'f_party_id', 'f_task_name', 'f_model_name')
-
-
 class EngineRegistry(DataBaseModel):
     f_engine_type = CharField(max_length=10, index=True)
     f_engine_name = CharField(max_length=50, index=True)
@@ -206,7 +179,7 @@ class Metric(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
     f_role = CharField(max_length=10, index=True)
     f_party_id = CharField(max_length=50)
-    f_task_name = CharField(max_length=30, index=True)
+    f_task_name = CharField(max_length=50, index=True)
     f_task_id = CharField(max_length=100)
     f_task_version = BigIntegerField(null=True)
     f_namespace = CharField(max_length=30, index=True, null=True)
@@ -227,3 +200,18 @@ class ProviderInfo(DataBaseModel):
 
     class Meta:
         db_table = "t_provider_info"
+
+
+class PipelineModelMeta(DataBaseModel):
+    f_model_id = CharField(max_length=100)
+    f_model_version = IntegerField()
+    f_job_id = CharField(max_length=25, index=True)
+    f_role = CharField(max_length=50, index=True)
+    f_party_id = CharField(max_length=50, index=True)
+    f_task_name = CharField(max_length=50, index=True)
+    f_storage_key = CharField(max_length=100)
+    f_storage_engine = CharField(max_length=30, null=True, index=True)
+
+    class Meta:
+        db_table = 't_model_meta'
+        primary_key = CompositeKey('f_job_id', 'f_storage_key', "f_storage_engine")

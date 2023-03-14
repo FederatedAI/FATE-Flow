@@ -27,7 +27,7 @@ from fate_flow.entity.spec import ComponentSpec, RuntimeInputDefinition, ModelWa
     OutputMetricSpec, OutputModelSpec, OutputDataSpec, MLMDSpec, LOGGERSpec, ComputingBackendSpec, \
     RuntimeConfSpec
 
-from fate_flow.manager.output_manager import OutputDataTracking
+from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY, FATE_FLOW_CONF_PATH
@@ -223,7 +223,7 @@ class TaskParser(TaskParserABC):
         return OutputModelSpec(
             type=_type,
             metadata={
-                "uri": f"{BASE_URI}/worker/task/model/{self.job_id}/{self.role}/{self.party_id}/{model_id}/{str(model_version)}/{self.component_ref}/{self.task_name}",
+                "uri": f"{BASE_URI}/worker/task/model/{model_id}/{str(model_version)}/{self.execution_id}",
                 "format": _format
             }
         )

@@ -33,6 +33,7 @@ class ReturnCode:
         UPDATE_FAILED = 2003
         KILL_FAILED = 2004
         APPLY_RESOURCE_FAILED = 2005
+        NO_FOUND_MODEL_OUTPUT = 2006
 
     class Site:
         IS_STANDALONE = 3000

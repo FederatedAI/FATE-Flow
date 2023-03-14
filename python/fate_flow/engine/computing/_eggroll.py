@@ -19,7 +19,7 @@ from fate_flow.db.db_models import Task
 from fate_flow.engine.computing._base import EngineABC, LocalEngine
 from fate_flow.entity.types import ProviderDevice, TaskStatus, WorkerName
 from fate_flow.entity.code import KillProcessRetCode
-from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.component_provider import ComponentProvider
 from fate_flow.utils import job_utils, process_utils
@@ -53,10 +53,10 @@ class LocalEggrollEngine(LocalEngine):
 class ContainerdEggrollEngine(EngineABC):
     def __init__(self, provider):
         if provider.device == ProviderDevice.DOCKER:
-            from fate_flow.manager.docker_manager import DockerManager
+            from fate_flow.manager.container.docker_manager import DockerManager
             self.manager = DockerManager(provider)
         elif provider.device == ProviderDevice.K8S:
-            from fate_flow.manager.k8s_manager import K8sManager
+            from fate_flow.manager.container.k8s_manager import K8sManager
             self.manager = K8sManager(provider)
         else:
             raise ValueError(f'worker "{provider.device}" is not supported')

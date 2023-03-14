@@ -77,8 +77,7 @@ detect_logger = getLogger("fate_flow_detect")
 access_logger = getLogger("fate_flow_access")
 database_logger = getLogger("fate_flow_database")
 
-SOURCE_MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model", "source")
-CACHE_MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model", "cache")
+MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model")
 LOCAL_DATA_STORE_PATH = os.path.join(get_fate_flow_directory(), "data")
 BASE_URI = f"{PROTOCOL}://{HOST}:{HTTP_PORT}/{API_VERSION}"
 
@@ -93,3 +92,5 @@ SITE_AUTHENTICATION = AUTHENTICATION_CONF.get("site", False)
 
 PARTY_ID = get_base_config("party_id", "")
 LOCAL_PARTY_ID = "0"
+
+MODEL_STORE = get_base_config("model_store")
