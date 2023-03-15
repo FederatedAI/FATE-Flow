@@ -170,7 +170,8 @@ class TaskParser(TaskParserABC):
 
     @property
     def task_runtime_conf(self):
-        return self.task_node.conf.get(self.role, {}).get(self.party_id, {})
+        _rc = self.task_node.conf.get(self.role, {}).get(self.party_id, {})
+        return _rc if _rc else {}
 
     @property
     def input_parameters(self):
