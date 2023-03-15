@@ -2,7 +2,7 @@ import importlib
 
 from fate_flow.hook.common.parameters import SignatureParameters, AuthenticationParameters, PermissionCheckParameters, \
     SignatureReturn, AuthenticationReturn, PermissionReturn
-from fate_flow.runtime.system_settings import HOOK_MODULE, stat_logger
+from fate_flow.runtime.system_settings import HOOK_MODULE, stat_logger, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
 from fate_flow.entity.code import ReturnCode
 
 
@@ -14,7 +14,7 @@ class HookManager:
 
     @staticmethod
     def init():
-        if HOOK_MODULE is not None:
+        if HOOK_MODULE is not None and (CLIENT_AUTHENTICATION or SITE_AUTHENTICATION):
             for modules in HOOK_MODULE.values():
                 for module in modules.split(";"):
                     try:
