@@ -38,6 +38,6 @@ def switch_function(switch, code=ReturnCode.Server.FUNCTION_RESTRICTED, message=
             if switch:
                 return func(*args, **kwargs)
             else:
-                raise Exception(code, message)
+                raise Exception(code, f"func {func.__name__}, {message}")
         return _wrapper
     return _inner
