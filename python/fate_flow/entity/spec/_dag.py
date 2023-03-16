@@ -193,6 +193,7 @@ class TaskConfSpec(BaseModel):
 
 
 class JobConfSpec(BaseModel):
+    priority: Optional[int]
     scheduler_party_id: Optional[str]
     initiator_party_id: Optional[str]
     inherit: Optional[Dict[str, Any]]
