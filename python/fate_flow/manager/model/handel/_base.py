@@ -37,7 +37,7 @@ class IOHandle(object):
 
     def download(self, model_id, model_version, dir_name, file_name):
         storage_key = self.file_key(model_id, model_version, dir_name, file_name)
-        self._download(storage_key=storage_key)
+        return self._download(storage_key=storage_key)
 
     def upload(self, model_file: FileStorage, dir_name, file_name, model_id, model_version):
         storage_key = self.file_key(model_id, model_version, dir_name, file_name)

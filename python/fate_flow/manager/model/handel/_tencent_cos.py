@@ -41,7 +41,8 @@ class TencentCosHandel(IOHandle):
 
     def _download(self, storage_key):
         memory = self.engine.read(storage_key)
-        return send_file(memory, attachment_filename=storage_key, as_attachment=True)
+        memory.seek(0)
+        return send_file(memory, as_attachment=True, download_name=storage_key)
 
     def _read(self, storage_key):
         memory = self.engine.read(storage_key)
