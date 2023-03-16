@@ -20,6 +20,7 @@ from fate_flow.db.base_models import DataBaseModel, JSONField, DateTimeField
 
 class ScheduleJob(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
+    f_priority = IntegerField(default=0)
     f_tag = CharField(max_length=50, null=True, default='')
     f_dag = JSONField(null=True)
     f_parties = JSONField()

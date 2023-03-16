@@ -147,6 +147,7 @@ def is_continuous_field(cls: typing.Type) -> bool:
     else:
         return False
 
+
 class JsonSerializedField(SerializedField):
     def __init__(self, object_hook=from_dict_hook, object_pairs_hook=None, **kwargs):
         super(JsonSerializedField, self).__init__(serialized_type=SerializedType.JSON, object_hook=object_hook,
@@ -293,13 +294,6 @@ class BaseModel(Model):
     def getter_by(cls, attr):
         return operator.attrgetter(attr)(cls)
 
-    # @classmethod
-    # def _delete(cls, **kwargs):
-    #     _kwargs = {}
-    #     for f_k, f_v in kwargs.items():
-    #         _kwargs["f_%s" % f_k] = f_v
-    #     cls.delete(**_kwargs)
-
     @classmethod
     def query(cls, reverse=None, order_by=None, **kwargs):
         filters = []
@@ -339,19 +333,29 @@ class BaseModel(Model):
         if filters:
             query_records = cls.select().where(*filters)
             if reverse is not None:
-                if not order_by or not hasattr(cls, f"f_{order_by}"):
-                    order_by = "create_time"
-                if reverse is True:
-                    query_records = query_records.order_by(
-                        cls.getter_by(f"f_{order_by}").desc()
-                    )
-                elif reverse is False:
-                    query_records = query_records.order_by(
-                        cls.getter_by(f"f_{order_by}").asc()
-                    )
+                if isinstance(order_by, str) or not order_by:
+                    if not order_by or not hasattr(cls, f"f_{order_by}"):
+                        order_by = "create_time"
+                    query_records = cls.desc(query_records=query_records, reverse=[reverse], order_by=[order_by])
+                elif isinstance(order_by, list):
+                    if not isinstance(reverse, list) or len(reverse) != len(order_by):
+                        raise ValueError(f"reverse need is list and length={len(order_by)}")
+                    query_records = cls.desc(query_records=query_records, reverse=reverse, order_by=order_by)
+                else:
+                    raise ValueError(f"order_by type {type(order_by)} not support")
             return [query_record for query_record in query_records]
         else:
             return []
+
+    @classmethod
+    def desc(cls, query_records, order_by: list, reverse: list):
+        _filters = list()
+        for _k, _ob in enumerate(order_by):
+            if reverse[_k] is True:
+                _filters.append(cls.getter_by(f"f_{_ob}").desc())
+            else:
+                _filters.append(cls.getter_by(f"f_{_ob}").asc())
+        return query_records.order_by(*tuple(_filters))
 
     @classmethod
     def insert(cls, __data=None, **insert):

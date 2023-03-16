@@ -48,6 +48,8 @@ class DAGScheduler(Cron):
             job.f_parties = [party.dict() for party in dag_schema.dag.parties]
             job.f_initiator_party_id = dag_schema.dag.conf.initiator_party_id
             job.f_scheduler_party_id = dag_schema.dag.conf.scheduler_party_id
+            if dag_schema.dag.conf.priority:
+                job.f_priority = dag_schema.dag.conf.priority
             cls.fill_default_job_parameters(job_id, dag_schema)
             job.f_dag = dag_schema.dict()
             submit_result["data"].update({
@@ -99,7 +101,12 @@ class DAGScheduler(Cron):
     def run_do(self):
         # waiting
         schedule_logger().info("start schedule waiting jobs")
-        jobs = ScheduleJobSaver.query_job(status=JobStatus.WAITING, order_by="create_time", reverse=False)
+        # order by create_time and priority
+        jobs = ScheduleJobSaver.query_job(
+            status=JobStatus.WAITING,
+            order_by=["priority", "create_time"],
+            reverse=[True, False]
+        )
         schedule_logger().info(f"have {len(jobs)} waiting jobs")
         if len(jobs):
             job = jobs[0]
