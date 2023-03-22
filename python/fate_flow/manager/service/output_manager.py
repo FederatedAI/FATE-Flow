@@ -54,21 +54,32 @@ class OutputMetric:
         self.task_version = task_version
 
     def save_output_metrics(self, data, incomplete):
-        return self._insert_metrics_into_db(MetricData(**data), incomplete)
+        return self._insert_metrics_into_db(
+            self.job_id, self.role, self.party_id, self.task_id, self.task_version,  self.task_name, MetricData(**data),
+            incomplete
+        )
+
+    def save_as(self, job_id, role, party_id, task_name, task_id, task_version):
+        metrics = self.read_metrics()
+        for metric in metrics:
+            self._insert_metrics_into_db(
+                job_id, role, party_id, task_id, task_version, task_name, MetricData(**metric),
+                incomplete=metric.get("incomplete")
+            )
 
     @DB.connection_context()
-    def _insert_metrics_into_db(self, data: MetricData, incomplete: bool):
+    def _insert_metrics_into_db(self, job_id, role, party_id, task_id, task_version, task_name, data: MetricData, incomplete: bool):
         try:
-            model_class = self.get_model_class()
+            model_class = self.get_model_class(job_id)
             if not model_class.table_exists():
                 model_class.create_table()
             tracking_metric = model_class()
-            tracking_metric.f_job_id = self.job_id
-            tracking_metric.f_task_id = self.task_id
-            tracking_metric.f_task_version = self.task_version
-            tracking_metric.f_role = self.role
-            tracking_metric.f_party_id = self.party_id
-            tracking_metric.f_task_name = self.task_name
+            tracking_metric.f_job_id = job_id
+            tracking_metric.f_task_id = task_id
+            tracking_metric.f_task_version = task_version
+            tracking_metric.f_role = role
+            tracking_metric.f_party_id = party_id
+            tracking_metric.f_task_name = task_name
 
             tracking_metric.f_namespace = data.namespace
             tracking_metric.f_name = data.name
@@ -79,7 +90,7 @@ class OutputMetric:
             tracking_metric.f_incomplete = incomplete
             tracking_metric.save()
         except Exception as e:
-            schedule_logger(self.job_id).exception(
+            schedule_logger(job_id).exception(
                 "An exception where inserted metric {} of metric namespace: {} to database:\n{}".format(
                     data.name,
                     data.namespace,
@@ -91,7 +102,7 @@ class OutputMetric:
         try:
             if not filters_args:
                 filters_args = {}
-            tracking_metric_model = self.get_model_class()
+            tracking_metric_model = self.get_model_class(self.job_id)
             key_list = ["namespace", "name", "type", "groups", "incomplete"]
             filters = [
                 tracking_metric_model.f_job_id == self.job_id,
@@ -105,7 +116,13 @@ class OutputMetric:
                     if v is not None:
                         filters.append(operator.attrgetter(f"f_{k}")(tracking_metric_model) == v)
             metrics = tracking_metric_model.select(
-                tracking_metric_model.f_data, tracking_metric_model.f_metadata
+                tracking_metric_model.f_namespace,
+                tracking_metric_model.f_name,
+                tracking_metric_model.f_type,
+                tracking_metric_model.f_groups,
+                tracking_metric_model.f_data,
+                tracking_metric_model.f_metadata,
+                tracking_metric_model.f_incomplete
             ).where(*filters)
             return [metric.to_human_model_dict() for metric in metrics]
         except Exception as e:
@@ -115,7 +132,7 @@ class OutputMetric:
     @DB.connection_context()
     def query_metric_keys(self):
         try:
-            tracking_metric_model = self.get_model_class()
+            tracking_metric_model = self.get_model_class(self.job_id)
             metrics = tracking_metric_model.select(
                 tracking_metric_model.f_namespace,
                 tracking_metric_model.f_name,
@@ -136,7 +153,7 @@ class OutputMetric:
 
     @DB.connection_context()
     def clean_metrics(self):
-        tracking_metric_model = self.get_model_class()
+        tracking_metric_model = self.get_model_class(self.job_id)
         operate = tracking_metric_model.delete().where(
             tracking_metric_model.f_task_id == self.task_id,
             tracking_metric_model.f_task_version == self.task_version,
@@ -145,5 +162,6 @@ class OutputMetric:
         )
         return operate.execute() > 0
 
-    def get_model_class(self):
-        return db_utils.get_dynamic_db_model(Metric, self.job_id)
+    @staticmethod
+    def get_model_class(job_id):
+        return db_utils.get_dynamic_db_model(Metric, job_id)

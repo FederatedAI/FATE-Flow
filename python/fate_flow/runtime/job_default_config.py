@@ -38,7 +38,7 @@ class JobDefaultConfig(ReloadConfigBase):
     end_status_job_scheduling_updates = None
     auto_retries = None
     auto_retry_delay = None
-    federated_status_collect_type = None
+    sync_type = None
     detect_connect_max_retry_count = None
     detect_connect_long_retry_count = None
 

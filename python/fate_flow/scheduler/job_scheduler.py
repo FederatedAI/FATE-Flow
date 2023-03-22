@@ -91,8 +91,8 @@ class DAGScheduler(Cron):
 
     @classmethod
     def fill_default_job_parameters(cls, job_id: str, dag_schema: DAGSchema):
-        if not dag_schema.dag.conf.federated_status_collect_type:
-            dag_schema.dag.conf.federated_status_collect_type = JobDefaultConfig.federated_status_collect_type
+        if not dag_schema.dag.conf.sync_type:
+            dag_schema.dag.conf.sync_type = JobDefaultConfig.sync_type
         if not dag_schema.dag.conf.model_id or not dag_schema.dag.conf.model_id:
             dag_schema.dag.conf.model_id, dag_schema.dag.conf.model_version = job_utils.generate_model_info(job_id)
         if not dag_schema.dag.conf.auto_retries:
@@ -188,33 +188,35 @@ class DAGScheduler(Cron):
         if apply_status_code == FederatedSchedulingStatusCode.SUCCESS:
             return True
         else:
-            # rollback resource
-            rollback_party = []
-            failed_party = []
-            for dest_role in federated_response.keys():
-                for dest_party_id in federated_response[dest_role].keys():
-                    retcode = federated_response[dest_role][dest_party_id]["code"]
-                    if retcode == ReturnCode.Base.SUCCESS:
-                        rollback_party.append({"role": dest_role, "party_id": [dest_party_id]})
-                    else:
-                        failed_party.append({"role": dest_role, "party_id": [dest_party_id]})
-            schedule_logger(job.f_job_id).info("job apply resource failed on {}, rollback {}".format(failed_party,
-                                                                                               rollback_party))
-            if rollback_party:
-                return_status_code, federated_response = FederatedScheduler.resource_for_job(
-                    job_id=job.f_job_id,
-                    roles=rollback_party,
-                    operation_type=ResourceOperation.RETURN.value
-                )
-                if return_status_code != FederatedSchedulingStatusCode.SUCCESS:
-                    schedule_logger(job.f_job_id).info(f"job return resource failed:\n{federated_response}")
-            else:
-                schedule_logger(job.f_job_id).info("job no party should be rollback resource")
-        return False
+            cls.rollback_job_resource(job, federated_response)
+            return False
+
+    @classmethod
+    def rollback_job_resource(cls, job, federated_response):
+        rollback_party = []
+        failed_party = []
+        for dest_role in federated_response.keys():
+            for dest_party_id in federated_response[dest_role].keys():
+                retcode = federated_response[dest_role][dest_party_id]["code"]
+                if retcode == ReturnCode.Base.SUCCESS:
+                    rollback_party.append({"role": dest_role, "party_id": [dest_party_id]})
+                else:
+                    failed_party.append({"role": dest_role, "party_id": [dest_party_id]})
+        schedule_logger(job.f_job_id).info("job apply resource failed on {}, rollback {}".format(failed_party,
+                                                                                           rollback_party))
+        if rollback_party:
+            return_status_code, federated_response = FederatedScheduler.resource_for_job(
+                job_id=job.f_job_id,
+                roles=rollback_party,
+                operation_type=ResourceOperation.RETURN.value
+            )
+            if return_status_code != FederatedSchedulingStatusCode.SUCCESS:
+                schedule_logger(job.f_job_id).info(f"job return resource failed:\n{federated_response}")
+        else:
+            schedule_logger(job.f_job_id).info("job no party should be rollback resource")
 
     @classmethod
     def schedule_waiting_jobs(cls, job: ScheduleJob):
-        job_id = job.f_job_id
         if job.f_cancel_signal:
             FederatedScheduler.sync_job_status(job_id=job.f_job_id, roles=job.f_parties,
                                                job_info={"job_id": job.f_job_id, "status": JobStatus.CANCELED})
@@ -228,9 +230,11 @@ class DAGScheduler(Cron):
     def schedule_running_job(self, job: ScheduleJob, force_sync_status=False):
         schedule_logger(job.f_job_id).info("scheduling running job")
         job_parser = FlowHub.load_job_parser(DAGSchema(**job.f_dag))
-        task_scheduling_status_code, auto_rerun_tasks, tasks = TaskScheduler.schedule(job=job, job_parser=job_parser,
-                                                                                      canceled=job.f_cancel_signal,
-                                                                                      dag_schema=DAGSchema(**job.f_dag))
+        task_scheduling_status_code, auto_rerun_tasks, tasks = TaskScheduler.schedule(
+            job=job, job_parser=job_parser,
+            canceled=job.f_cancel_signal,
+            dag_schema=DAGSchema(**job.f_dag)
+        )
         tasks_status = dict([(task.f_task_name, task.f_status) for task in tasks])
         schedule_logger(job_id=job.f_job_id).info(f"task_scheduling_status_code: {task_scheduling_status_code}, "
                                                   f"tasks_status: {tasks_status.values()}")

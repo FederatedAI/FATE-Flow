@@ -112,7 +112,7 @@ class ScheduleJobSaver(BaseSaver):
         task_obj = ScheduleTask
         if scheduler_status:
             task_obj = ScheduleTaskStatus
-        cls._update_task_status(task_obj, task_info)
+        return cls._update_task_status(task_obj, task_info)
 
     @classmethod
     def update_task(cls, task_info, report=False):

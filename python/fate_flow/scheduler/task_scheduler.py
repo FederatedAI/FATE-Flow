@@ -31,7 +31,7 @@ class TaskScheduler(object):
         auto_rerun_tasks = []
         job_interrupt = False
         for task in tasks_group.values():
-            if dag_schema.dag.conf.federated_status_collect_type == FederatedCommunicationType.PULL:
+            if task.f_sync_type == FederatedCommunicationType.POLL:
                 cls.collect_task_of_all_party(job=job, task=task)
             else:
                 pass
@@ -146,15 +146,16 @@ class TaskScheduler(object):
     @classmethod
     def collect_task_of_all_party(cls, job, task, set_status=None):
         tasks_on_all_party = ScheduleJobSaver.query_task(task_id=task.f_task_id, task_version=task.f_task_version)
-        tasks_status_on_all = set([task.f_status for task in tasks_on_all_party])
-        if not len(tasks_status_on_all) > 1 and TaskStatus.RUNNING not in tasks_status_on_all:
-            return
+        # tasks_status_on_all = set([task.f_status for task in tasks_on_all_party])
+        # if not len(tasks_status_on_all) > 1 and TaskStatus.RUNNING not in tasks_status_on_all:
+        #     return
         status, federated_response = FederatedScheduler.collect_task(task_id=task.f_task_id)
         if status != FederatedSchedulingStatusCode.SUCCESS:
             schedule_logger(job.f_job_id).warning(f"collect task {task.f_task_id} {task.f_task_version} failed")
         for _role in federated_response.keys():
             for _party_id, party_response in federated_response[_role].items():
                 if party_response["code"] == ReturnCode.Base.SUCCESS:
+                    schedule_logger(job.f_job_id).info(f"collect party id {_party_id} task info: {party_response['data']}")
                     ScheduleJobSaver.update_task_status(task_info=party_response["data"])
                 elif set_status:
                     tmp_task_info = {

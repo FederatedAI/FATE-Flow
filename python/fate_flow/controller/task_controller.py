@@ -24,7 +24,7 @@ from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.types import EndStatus, TaskStatus
+from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType
 from fate_flow.entity.code import FederatedSchedulingStatusCode
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils import job_utils
@@ -91,6 +91,7 @@ class TaskController(object):
             task.f_component_parameters = task_parameters
             task.f_execution_id = execution_id
             task.f_provider_name = provider_name
+            task.f_sync_type = dag_schema.dag.conf.sync_type
             JobSaver.create_task(task.to_human_model_dict())
 
     @staticmethod
@@ -118,7 +119,7 @@ class TaskController(object):
                 "task_version": task_version,
                 "status": TaskStatus.WAITING,
                 "auto_retries": dag_schema.dag.conf.auto_retries if auto_retries is None else auto_retries,
-                "federated_status_collect_type": dag_schema.dag.conf.federated_status_collect_type
+                "sync_type": dag_schema.dag.conf.sync_type
             }
             ScheduleJobSaver.create_task_scheduler_status(task_info)
         schedule_logger(job_id).info("create schedule task status success")
@@ -254,12 +255,13 @@ class TaskController(object):
             return update_status
 
     @classmethod
-    def update_task_status(cls, task_info, scheduler_party_id=None):
-        if not scheduler_party_id:
-            scheduler_party_id = JobSaver.query_task(
+    def update_task_status(cls, task_info, scheduler_party_id=None, sync_type=None):
+        if not scheduler_party_id or not sync_type:
+            task = JobSaver.query_task(
                 task_id=task_info.get("task_id"),
                 task_version=task_info.get("task_version")
-            )[0].f_scheduler_party_id
+            )[0]
+            scheduler_party_id, sync_type = task.f_scheduler_party_id, task.f_sync_type
         update_status = JobSaver.update_task_status(task_info=task_info)
         if update_status and EndStatus.contains(task_info.get("party_status")):
             ResourceManager.return_task_resource(**task_info)
@@ -277,7 +279,8 @@ class TaskController(object):
                 "task_version": task_info.get("task_version"),
                 "status": task_info.get("party_status")
             }
-            cls.report_task_to_scheduler(task_info=report_task_info, scheduler_party_id=scheduler_party_id)
+            if sync_type == FederatedCommunicationType.CALLBACK:
+                cls.report_task_to_scheduler(task_info=report_task_info, scheduler_party_id=scheduler_party_id)
         return update_status
 
     @classmethod
@@ -305,7 +308,7 @@ class TaskController(object):
             "party_status": stop_status,
             "kill_status": True
         }
-        cls.update_task_status(task_info=task_info, scheduler_party_id=task.f_scheduler_party_id)
+        cls.update_task_status(task_info=task_info, scheduler_party_id=task.f_scheduler_party_id, sync_type=task.f_sync_type)
         cls.update_task(task_info=task_info)
         return kill_status
 

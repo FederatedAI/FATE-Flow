@@ -192,14 +192,19 @@ class TaskConfSpec(BaseModel):
     provider: Optional[str]
 
 
+class InheritConfSpec(BaseModel):
+    job_id: str
+    task_list: List[str]
+
+
 class JobConfSpec(BaseModel):
     priority: Optional[int]
     scheduler_party_id: Optional[str]
     initiator_party_id: Optional[str]
-    inherit: Optional[Dict[str, Any]]
+    inheritance: Optional[InheritConfSpec]
     task_parallelism: Optional[int]
     task_cores: Optional[int]
-    federated_status_collect_type: Optional[str]
+    sync_type: Optional[Union[Literal["poll", "callback"]]]
     auto_retries: Optional[int]
     model_id: Optional[str]
     model_version: Optional[Union[str, int]]

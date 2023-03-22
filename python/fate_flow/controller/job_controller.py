@@ -13,15 +13,22 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os
+import shutil
+
 from fate_flow.controller.task_controller import TaskController
-from fate_flow.entity.spec import DAGSchema, JobConfSpec
+from fate_flow.db import Job
+from fate_flow.entity.spec import DAGSchema, JobConfSpec, InheritConfSpec
 from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
 from fate_flow.entity.code import ReturnCode
+from fate_flow.manager.model.model_meta import ModelMeta
+from fate_flow.manager.service.output_manager import OutputMetric, OutputDataTracking
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.runtime.system_settings import PARTY_ID
 from fate_flow.utils.base_utils import current_timestamp
+from fate_flow.utils.job_utils import get_job_log_directory
 from fate_flow.utils.log_utils import schedule_logger
 
 
@@ -34,6 +41,7 @@ class JobController(object):
         dag_schema.dag.conf.initiator_party_id = PARTY_ID
         if not dag_schema.dag.conf.scheduler_party_id:
             dag_schema.dag.conf.scheduler_party_id = PARTY_ID
+        JobInheritance.check(dag_schema.dag.conf.inheritance)
         response = FederatedScheduler.request_create_job(
             party_id=dag_schema.dag.conf.scheduler_party_id,
             command_body={
@@ -82,6 +90,8 @@ class JobController(object):
             "model_id": dag_schema.dag.conf.model_id,
             "model_version": dag_schema.dag.conf.model_version
         }
+        if dag_schema.dag.conf.inheritance:
+            job_info.update({"inheritance": dag_schema.dag.conf.inheritance.dict()})
         JobSaver.create_job(job_info=job_info)
         TaskController.create_tasks(job_id, role, party_id, dag_schema)
 
@@ -98,9 +108,22 @@ class JobController(object):
         if extra_info:
             schedule_logger(job_id).info(f"extra info: {extra_info}")
             job_info.update(extra_info)
-        cls.update_job_status(job_info=job_info)
-        cls.update_job(job_info=job_info)
-        schedule_logger(job_id).info(f"start job on {role} {party_id} successfully")
+        try:
+            cls.inheritance_job(job_id, role, party_id)
+        except Exception as e:
+            schedule_logger(job_id).exception(e)
+            job_info.update({"status": JobStatus.FAILED})
+        finally:
+            cls.update_job_status(job_info=job_info)
+            cls.update_job(job_info=job_info)
+            schedule_logger(job_id).info(f"start job on {role} {party_id} {job_info.get('status')}")
+
+    @classmethod
+    def inheritance_job(cls, job_id, role, party_id):
+        job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
+        if job.f_inheritance:
+            schedule_logger(job_id).info(f"start inherit job {job_id}, inheritance: {job.f_inheritance}")
+            JobInheritance.load(job)
 
     @classmethod
     def update_job_status(cls, job_info):
@@ -165,3 +188,158 @@ class JobController(object):
             if v is not None:
                 query_filters[k] = v
         return JobSaver.query_task(**query_filters)
+
+
+class JobInheritance:
+    @classmethod
+    def check(cls, inheritance: InheritConfSpec = None):
+        if not inheritance:
+            return
+        inheritance_jobs = JobSaver.query_job(job_id=inheritance.job_id)
+        inheritance_tasks = JobSaver.query_task(job_id=inheritance.job_id)
+        if not inheritance_jobs:
+            raise Exception(ReturnCode.Job.INHERITANCE_FAILED, f"no found job {inheritance.job_id}")
+        task_status = {}
+        for task in inheritance_tasks:
+            task_status[task.f_task_name] = task.f_status
+
+        for task_name in inheritance.task_list:
+            if task_name not in task_status.keys():
+                raise Exception(ReturnCode.Job.INHERITANCE_FAILED, f"job {inheritance.job_id} no found task {task_name}")
+            elif task_status[task_name] not in [TaskStatus.SUCCESS, TaskStatus.PASS]:
+                raise Exception(ReturnCode.Job.INHERITANCE_FAILED,
+                                f"job {inheritance.job_id} task {task_name} status:{task_status[task_name]}")
+        # todo: parsing and judging whether job can be inherited
+
+    @classmethod
+    def load(cls, job: Job):
+        # load inheritance: data、model、metric、logs
+        inheritance = InheritConfSpec(**job.f_inheritance)
+        source_task_list = JobSaver.query_task(job_id=inheritance.job_id, role=job.f_role, party_id=job.f_party_id)
+        task_list = JobSaver.query_task(job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id)
+        target_task_list = [task for task in task_list if task.f_task_name in inheritance.task_list]
+        cls.load_logs(job, inheritance)
+        cls.load_output_tracking(job.f_job_id, source_task_list, target_task_list)
+        cls.load_data_meta()
+        cls.load_model_meta(job.f_job_id, source_task_list, target_task_list)
+        cls.load_metric(job.f_job_id, source_task_list, target_task_list)
+        cls.load_status(job.f_job_id, source_task_list, target_task_list)
+
+    @classmethod
+    def load_logs(cls, job: Job, inheritance: InheritConfSpec):
+        schedule_logger(job.f_job_id).info("start load job logs")
+        for task_name in inheritance.task_list:
+            source_path = os.path.join(get_job_log_directory(inheritance.job_id), job.f_role, job.f_party_id, task_name)
+            target_path = os.path.join(get_job_log_directory(job.f_job_id), job.f_role, job.f_party_id, task_name)
+            if os.path.exists(source_path):
+                if os.path.exists(target_path):
+                    shutil.rmtree(target_path)
+                shutil.copytree(source_path, target_path)
+        schedule_logger(job.f_job_id).info("load job logs success")
+
+    @classmethod
+    def load_output_tracking(cls, job_id, source_task_list, target_task_list):
+        def callback(target_task, source_task):
+            output_tracking = OutputDataTracking.query(
+                job_id=source_task.f_job_id,
+                role=source_task.f_role,
+                party_id=source_task.f_party_id,
+                task_name=source_task.f_task_name,
+                task_id=source_task.f_task_id,
+                task_version=source_task.f_task_version
+            )
+            for t in output_tracking:
+                _t = t.to_human_model_dict()
+                _t.update({
+                    "job_id": target_task.f_job_id,
+                    "task_id": target_task.f_task_id,
+                    "task_version": target_task.f_task_version,
+                    "role": target_task.f_role,
+                    "party_id": target_task.f_party_id
+                })
+                OutputDataTracking.create(_t)
+        schedule_logger(job_id).info("start load output tracking")
+        cls.load_do(source_task_list, target_task_list, callback)
+        schedule_logger(job_id).info("load output tracking success")
+
+    @classmethod
+    def load_data_meta(cls):
+        # todo:
+        pass
+
+    @classmethod
+    def load_model_meta(cls, job_id, source_task_list, target_task_list):
+        def callback(target_task, source_task):
+            _model_metas = ModelMeta.query(
+                job_id=source_task.f_job_id,
+                role=source_task.f_role,
+                party_id=source_task.f_party_id,
+                task_name=source_task.f_task_name
+            )
+            for _meta in _model_metas:
+                _md = _meta.to_human_model_dict()
+                _md.update({
+                    "job_id": target_task.f_job_id,
+                    "task_id": target_task.f_task_id,
+                    "task_version": target_task.f_task_version,
+                    "role": target_task.f_role,
+                    "party_id": target_task.f_party_id
+                })
+                ModelMeta.save(**_md)
+        schedule_logger(job_id).info("start load model meta")
+        cls.load_do(source_task_list, target_task_list, callback)
+        schedule_logger(job_id).info("load model meta success")
+
+    @classmethod
+    def load_metric(cls, job_id, source_task_list, target_task_list):
+        def callback(target_task, source_task):
+            OutputMetric(
+                job_id=source_task.f_job_id,
+                role=source_task.f_role,
+                party_id=source_task.f_party_id,
+                task_name=source_task.f_task_name,
+                task_id=source_task.f_task_id,
+                task_version=source_task.f_task_version
+            ).save_as(
+                job_id=target_task.f_task_id,
+                role=target_task.f_role,
+                party_id=target_task.f_party_id,
+                task_name=target_task.f_task_name,
+                task_id=target_task.f_task_id,
+                task_version=target_task.f_task_version
+            )
+        schedule_logger(job_id).info("start load metric")
+        cls.load_do(source_task_list, target_task_list, callback)
+        schedule_logger(job_id).info("load metric success")
+
+    @classmethod
+    def load_status(cls, job_id, source_task_list, target_task_list):
+        def callback(target_task, source_task):
+            task_info = {
+                "job_id": target_task.f_job_id,
+                "task_id": target_task.f_task_id,
+                "task_version": target_task.f_task_version,
+                "role": target_task.f_role,
+                "party_id": target_task.f_party_id
+            }
+            update_info = {}
+            update_list = ["cmd", "elapsed", "end_date", "end_time", "engine_conf", "party_status", "run_ip",
+                           "run_pid", "start_date", "start_time", "status", "worker_id"]
+            for k in update_list:
+                update_info[k] = getattr(source_task, f"f_{k}")
+            task_info.update(update_info)
+            schedule_logger(task_info["job_id"]).info(
+                "try to update task {} {}".format(task_info["task_id"], task_info["task_version"]))
+            schedule_logger(task_info["job_id"]).info("update info: {}".format(update_info))
+            JobSaver.update_task(task_info)
+            TaskController.update_task_status(task_info)
+        schedule_logger(job_id).info("start load status")
+        cls.load_do(source_task_list, target_task_list, callback)
+        schedule_logger(job_id).info("load status success")
+
+    @staticmethod
+    def load_do(source_task_list, target_task_list, callback):
+        for source_task in source_task_list:
+            for target_task in target_task_list:
+                if target_task.f_task_name == source_task.f_task_name:
+                    callback(target_task, source_task)
