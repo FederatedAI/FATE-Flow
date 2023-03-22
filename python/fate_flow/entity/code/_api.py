@@ -25,6 +25,7 @@ class ReturnCode:
         UPDATE_FAILED = 1003
         KILL_FAILED = 1004
         APPLY_RESOURCE_FAILED = 1005
+        INHERITANCE_FAILED = 1006
 
     class Task:
         NOT_FOUND = 2000

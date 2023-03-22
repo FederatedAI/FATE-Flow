@@ -62,7 +62,10 @@ class API:
         def server_error_response(e):
             stat_logger.exception(e)
             if len(e.args) > 1:
-                return API.Output.json(code=e.args[0], message=e.args[1])
+                if isinstance(e.args[0], int):
+                    return API.Output.json(code=e.args[0], message=e.args[1])
+                else:
+                    return API.Output.json(code=ReturnCode.Server.EXCEPTION, message=repr(e))
             return API.Output.json(code=ReturnCode.Server.EXCEPTION, message=repr(e))
 
         @staticmethod

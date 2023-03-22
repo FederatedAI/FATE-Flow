@@ -53,5 +53,5 @@ class CoordinationProxyService(object):
 
 
 class FederatedCommunicationType(object):
-    PUSH = "PUSH"
-    PULL = "PULL"
+    POLL = "poll"
+    CALLBACK = "callback"

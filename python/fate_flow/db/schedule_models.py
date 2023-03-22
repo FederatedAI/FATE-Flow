@@ -37,9 +37,6 @@ class ScheduleJob(DataBaseModel):
     f_rerun_signal = BooleanField(default=False)
     f_end_scheduling_updates = IntegerField(null=True, default=0)
 
-    f_inheritance_info = JSONField(null=True)
-    f_inheritance_status = CharField(max_length=50, null=True)
-
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)
@@ -81,7 +78,7 @@ class ScheduleTaskStatus(DataBaseModel):
     f_task_version = BigIntegerField()
     f_status = CharField(max_length=50)
     f_auto_retries = IntegerField(default=0)
-    f_federated_status_collect_type = CharField(max_length=10)
+    f_sync_type = CharField(max_length=10)
 
     class Meta:
         db_table = "t_schedule_task_status"

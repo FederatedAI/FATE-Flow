@@ -1,7 +1,6 @@
 force_use_sqlite: true
 party_id: "10000"
 fateflow:
-  # you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported
   host: 127.0.0.1
   http_port: 9380
   grpc_port: 9360
@@ -77,5 +76,23 @@ hook_module:
   site_authentication: fate_flow.hook.flow.site_authentication
   permission: fate_flow.hook.flow.permission
 authentication:
-  client: true
-  site: true
+  client: false
+  site: false
+model_store:
+  engine: file
+  file:
+    # default fate_flow/runtime/system_settings: MODEL_STORE_PATH
+    path:
+  mysql:
+    name: fate_flow
+    user: fate
+    passwd: fate
+    host: 127.0.0.1
+    port: 3306
+    max_connections: 100
+    stale_timeout: 30
+  tencent_cos:
+    Region:
+    SecretId:
+    SecretKey:
+    Bucket:

@@ -563,7 +563,7 @@ class DagSchemaParser(object):
             parties=[party.dict() for party in self.dag_schema.dag.parties],
             initiator_party_id=self.dag_schema.dag.conf.initiator_party_id,
             scheduler_party_id=self.dag_schema.dag.conf.scheduler_party_id,
-            federated_status_collect_type=self.dag_schema.dag.conf.federated_status_collect_type,
+            federated_status_collect_type=self.dag_schema.dag.conf.sync_type,
             model_id=self.dag_schema.dag.conf.model_id,
             model_version=self.dag_schema.dag.conf.model_version
         )

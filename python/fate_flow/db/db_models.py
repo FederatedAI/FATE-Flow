@@ -32,6 +32,9 @@ class Job(DataBaseModel):
     f_scheduler_party_id = CharField(max_length=50)
     f_status = CharField(max_length=50)
     f_status_code = IntegerField(null=True)
+
+    f_inheritance = JSONField(null=True)
+
     # this party configuration
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=50, index=True)
@@ -86,6 +89,7 @@ class Task(DataBaseModel):
     f_engine_conf = JSONField(null=True)
     f_kill_status = BooleanField(default=False)
     f_error_report = TextField(default="")
+    f_sync_type = CharField(max_length=20)
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)
