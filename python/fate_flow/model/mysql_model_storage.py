@@ -309,6 +309,7 @@ class MachineLearningModel(DataBaseModel):
     f_slice_index = IntegerField(default=0, index=True)
 
     class Meta:
+        database = DB
         db_table = 't_machine_learning_model'
         primary_key = CompositeKey('f_model_id', 'f_model_version', 'f_slice_index')
 
@@ -322,6 +323,7 @@ class MachineLearningComponent(DataBaseModel):
     f_slice_index = IntegerField(default=0, index=True)
 
     class Meta:
+        database = DB
         db_table = 't_machine_learning_component'
         indexes = (
             (('f_party_model_id', 'f_model_version', 'f_component_name', 'f_slice_index'), True),
