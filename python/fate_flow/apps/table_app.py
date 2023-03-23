@@ -157,6 +157,7 @@ def table_download():
         need_head=request_data.get("head", True)
     )
 
+
 @manager.route('/preview', methods=['get'])
 def table_data_preview():
     request_data = request.json
@@ -166,8 +167,9 @@ def table_data_preview():
     if not data_table_meta:
         return error_response(response_code=210, retmsg=f'no found table:{request_data.get("namespace")}, {request_data.get("name")}')
 
-    data = TableStorage.read_table_data(data_table_meta, request_data.get("limit"))
+    data = TableStorage.read_table_data(data_table_meta, limit=request_data.get("limit"))
     return get_json_result(retcode=0, retmsg='success', data=data)
+
 
 @manager.route('/delete', methods=['post'])
 def table_delete():

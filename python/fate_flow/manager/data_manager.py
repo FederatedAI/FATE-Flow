@@ -23,6 +23,7 @@ import uuid
 
 from flask import send_file
 
+from fate_arch import storage
 from fate_arch.abc import StorageTableABC
 from fate_arch.common.base_utils import fate_uuid
 from fate_arch.session import Session
@@ -283,32 +284,37 @@ class TableStorage:
             table.put_all(temp)
             temp.clear()
         return count + 1
-    
-    @staticmethod
-    def read_table_data(data_table_meta, limit=10000, need_head=True):
-        if limit >= 10000:
-            limit = 10000
 
-        data_table = storage.StorageTableMeta(name=data_table_meta.get_name(),
-                                              namespace=data_table_meta.get_namespace())
+    @staticmethod
+    def read_table_data(data_table_meta, limit=100):
+        if not limit or limit > 100:
+            limit = 100
+        data_table = storage.StorageTableMeta(
+            name=data_table_meta.get_name(),
+            namespace=data_table_meta.get_namespace()
+        )
         if data_table:
             table_schema = data_table_meta.get_schema()
             out_header = None
             data_list = []
             all_extend_header = {}
             for k, v in data_table_meta.get_part_of_data():
-                data_line, is_str, all_extend_header = feature_utils.get_component_output_data_line(src_key=k,
-                                                                                                src_value=v,
-                                                                                                schema=table_schema,
-                                                                                                all_extend_header=all_extend_header)
+                data_line, is_str, all_extend_header = feature_utils.get_component_output_data_line(
+                    src_key=k,
+                    src_value=v,
+                    schema=table_schema,
+                    all_extend_header=all_extend_header
+                )
                 data_list.append(data_line)
                 if len(data_list) == limit:
                     break
             if data_list:
                 extend_header = feature_utils.generate_header(all_extend_header, schema=table_schema)
-                out_header = get_component_output_data_schema(output_table_meta=data_table_meta,
-                                                              is_str=is_str,
-                                                              extend_header=extend_header)
+                out_header = get_component_output_data_schema(
+                    output_table_meta=data_table_meta,
+                    is_str=is_str,
+                    extend_header=extend_header
+                )
 
             return {'header': out_header, 'data': data_list}
 
