@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from base64 import encode
 import os
 import subprocess
 import sys
@@ -149,6 +150,7 @@ class WorkerManager:
     @classmethod
     def start_task_worker(cls, worker_name, task: Task, task_parameters: RunParameters = None,
                           executable: list = None, extra_env: dict = None, **kwargs):
+
         worker_id, config_dir, log_dir = cls.get_process_dirs(worker_name=worker_name,
                                                               job_id=task.f_job_id,
                                                               role=task.f_role,
@@ -179,7 +181,6 @@ class WorkerManager:
             process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
 
         common_cmd = [
-            module_file_path,
             "--job_id", task.f_job_id,
             "--component_name", task.f_component_name,
             "--task_id", task.f_task_id,
@@ -197,15 +198,42 @@ class WorkerManager:
             "--session_id", session_id,
             "--federation_session_id", federation_session_id
         ]
+        process_cmd.append(module_file_path)
         process_cmd.extend(common_cmd)
         process_cmd.extend(specific_cmd)
         if extra_env:
             env.update(extra_env)
         schedule_logger(task.f_job_id).info(
             f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} {worker_name} worker subprocess is ready")
-        p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
-                                         added_env=env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
-                                         process_id=worker_id)
+
+        if task.f_component_name.startswith("deepspeed"):
+            from .pdsh_runner import PDSHRunner
+            import json
+            import base64
+
+            world_info_base64 = ""
+            master_addr = "127.0.0.1"
+            master_port = "12345"
+            base64_args = base64.urlsafe_b64encode(json.dumps(common_cmd).encode("utf-8")).decode("utf-8")
+            process_cmd, env = PDSHRunner().get_cmd(
+                env=env,
+                active_workers="127.0.0.1",
+                exports=env,
+                world_info_base64=world_info_base64,
+                master_addr=master_addr,
+                master_port=master_port,
+                base64_args=base64_args,
+            )
+        p = process_utils.run_subprocess(
+            job_id=task.f_job_id,
+            config_dir=config_dir,
+            process_cmd=process_cmd,
+            added_env=env,
+            log_dir=log_dir,
+            cwd_dir=config_dir,
+            process_name=worker_name.value,
+            process_id=worker_id,
+        )
         cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id, run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=config, cmd=process_cmd, **info_kwargs)
         return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd}
 
