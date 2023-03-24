@@ -287,27 +287,22 @@ class Upload(ComponentBase):
                 count += 1
         return count
 
-    def upload_file(self, input_file, head, job_id=None, input_feature_count=None, table=None):
-        if not table:
-            table = self.table
+    def kv_generator(self, head, input_feature_count, input_file, job_id, part_of_data):
         with open(input_file, "r") as fin:
-            lines_count = 0
             if head is True:
                 data_head = fin.readline()
                 input_feature_count -= 1
                 self.update_table_schema(data_head)
             else:
                 self.update_table_schema()
-            n = 0
             fate_uuid = uuid.uuid1().hex
             get_line = self.get_line()
             line_index = 0
+            LOGGER.info(input_feature_count)
             while True:
-                data = list()
                 lines = fin.readlines(JobDefaultConfig.upload_block_max_bytes)
                 LOGGER.info(JobDefaultConfig.upload_block_max_bytes)
                 if lines:
-                    # self.append_data_line(lines, data, n)
                     for line in lines:
                         values = line.rstrip().split(self.parameters["id_delimiter"])
                         k, v = get_line(
@@ -318,10 +313,11 @@ class Upload(ComponentBase):
                             id_delimiter=self.parameters["id_delimiter"],
                             fate_uuid=fate_uuid,
                         )
-                        data.append((k, v))
+                        yield k, v
                         line_index += 1
-                    lines_count += len(data)
-                    save_progress = lines_count / input_feature_count * 100 // 1
+                        if line_index <= 100:
+                            part_of_data.append((k, v))
+                    save_progress = line_index / input_feature_count * 100 // 1
                     job_info = {
                         "progress": save_progress,
                         "job_id": job_id,
@@ -329,12 +325,15 @@ class Upload(ComponentBase):
                         "party_id": self.parameters["local"]["party_id"],
                     }
                     ControllerClient.update_job(job_info=job_info)
-                    table.put_all(data)
-                    if n == 0:
-                        table.meta.update_metas(part_of_data=data)
                 else:
                     return
-                n += 1
+
+    def upload_file(self, input_file, head, job_id=None, input_feature_count=None, table=None):
+        if not table:
+            table = self.table
+        part_of_data = []
+        self.table.put_all(self.kv_generator(head, input_feature_count, input_file, job_id, part_of_data))
+        table.meta.update_metas(part_of_data=part_of_data)
 
     def get_computing_table(self, name, namespace, schema=None):
         storage_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
