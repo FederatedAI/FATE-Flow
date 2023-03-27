@@ -14,9 +14,11 @@ def signature(parm: SignatureParameters) -> SignatureReturn:
     if not service_list:
         raise Exception(f"signature error: no found server {HOOK_SERVER_NAME} service signature")
     service = service_list[0]
+    data = service.f_data if service.f_data else {}
+    data.update(parm.to_dict())
     response = getattr(requests, service.f_method.lower(), None)(
         url=service.f_url,
-        json=parm.to_dict()
+        json=data
     )
     if response.status_code == 200:
         if response.json().get("code") == 0:
@@ -37,9 +39,11 @@ def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
         raise Exception(
             f"site authentication error: no found server {HOOK_SERVER_NAME} service site_authentication")
     service = service_list[0]
+    data = service.f_data if service.f_data else {}
+    data.update(parm.to_dict())
     response = getattr(requests, service.f_method.lower(), None)(
         url=service.f_url,
-        json=parm.to_dict()
+        json=data
     )
     if response.status_code != 200:
         raise Exception(
