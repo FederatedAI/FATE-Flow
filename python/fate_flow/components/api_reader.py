@@ -192,9 +192,14 @@ class ApiReader(ComponentBase):
             )
             upload_registry_info = self.service_info.get("upload")
             logger.info(f"upload info:{upload_registry_info.to_dict()}")
+            params = self.parameters.get("parameters", {})
+            params.update({"job_id": self.tracker.job_id, })
+            en_content = self.encrypt_content()
+            if en_content:
+                params.update({"sign": en_content})
             response = getattr(requests, upload_registry_info.f_method.lower(), None)(
                 url=upload_registry_info.f_url,
-                params={"requestBody": json.dumps(self.parameters.get("parameters", {}))},
+                params={"requestBody": json.dumps(params)},
                 data=data,
                 headers={'Content-Type': data.content_type}
             )
@@ -206,3 +211,11 @@ class ApiReader(ComponentBase):
                 if key == info.f_service_name:
                     self.service_info[key] = info
         logger.info(f"set service registry info:{self.service_info}")
+
+    def encrypt_content(self, job_id=None):
+        if not job_id:
+            job_id = self.tracker.job_id
+        import hashlib
+        md5 = hashlib.md5()
+        md5.update(job_id.encode())
+        return md5.hexdigest()

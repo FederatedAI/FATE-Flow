@@ -32,7 +32,7 @@ from fate_flow.entity import JobConfiguration, RunParameters
 from fate_flow.entity.run_status import JobStatus, TaskStatus
 from fate_flow.entity.types import InputSearchType
 from fate_flow.settings import FATE_BOARD_DASHBOARD_ENDPOINT
-from fate_flow.utils import data_utils, detect_utils, process_utils, session_utils
+from fate_flow.utils import data_utils, detect_utils, process_utils, session_utils, schedule_utils
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.utils.schedule_utils import get_dsl_parser_by_version
@@ -478,12 +478,24 @@ def asynchronous_function(func):
     return _wrapper
 
 
-def task_report(tasks):
-    now_time = current_timestamp()
-    report_list = [{"component_name": task.f_component_name, "start_time": task.f_start_time,
-                    "end_time": task.f_end_time, "elapsed": task.f_elapsed, "status": task.f_status}
-                   for task in tasks]
-    report_list.sort(key=lambda x: (x["start_time"] if x["start_time"] else now_time, x["status"]))
+def task_report(jobs, tasks):
+    job = jobs[0]
+    report_list = []
+    dsl_parser = schedule_utils.get_job_dsl_parser(
+        dsl=job.f_dsl,
+        runtime_conf=job.f_runtime_conf,
+        train_runtime_conf=job.f_train_runtime_conf
+    )
+    name_component_maps, hierarchical_structure = dsl_parser.get_dsl_hierarchical_structure()
+    for index, cpn_list in enumerate(hierarchical_structure):
+        for name in cpn_list:
+            for task in tasks:
+                if task.f_component_name == name:
+                    report_list.append({
+                        "component_name": task.f_component_name, "start_time": task.f_start_time,
+                        "end_time": task.f_end_time, "elapsed": task.f_elapsed, "status": task.f_status,
+                        "index": index
+                    })
     return report_list
 
 

@@ -643,6 +643,12 @@ def query_model():
     return get_json_result(retcode=retcode, retmsg=retmsg, data=data)
 
 
+@manager.route('/query/detail', methods=['POST'])
+def query_model_detail():
+    retcode, retmsg, data = model_utils.query_model_detail(**request.json)
+    return get_json_result(retcode=retcode, retmsg=retmsg, data=data)
+
+
 @manager.route('/deploy', methods=['POST'])
 @validate_request('model_id', 'model_version')
 def deploy():

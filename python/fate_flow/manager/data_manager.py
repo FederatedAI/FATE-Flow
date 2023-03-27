@@ -23,6 +23,7 @@ import uuid
 
 from flask import send_file
 
+from fate_arch import storage
 from fate_arch.abc import StorageTableABC
 from fate_arch.common.base_utils import fate_uuid
 from fate_arch.session import Session
@@ -184,83 +185,74 @@ class DataTableTracker(object):
 
 class TableStorage:
     @staticmethod
-    def copy_table(src_table: StorageTableABC, dest_table: StorageTableABC, deserialize_value=False):
+    def collect(src_table, part_of_data):
+        line_index = 0
         count = 0
-        data_temp = []
+        fate_uuid = uuid.uuid1().hex
+        for k, v in src_table.collect():
+            if src_table.meta.get_extend_sid():
+                v = src_table.meta.get_id_delimiter().join([k, v])
+                k = line_extend_uuid(fate_uuid, line_index)
+                line_index += 1
+            yield k, v
+            if count <= 100:
+                part_of_data.append((k, v))
+                count += 1
+
+    @staticmethod
+    def read(src_table, schema, part_of_data):
+        line_index = 0
+        count = 0
+        src_table_meta = src_table.meta
+        fate_uuid = uuid.uuid1().hex
+        if src_table_meta.get_have_head():
+            get_head = False
+        else:
+            get_head = True
+        if not src_table.meta.get_extend_sid():
+            get_line = data_utils.get_data_line
+        elif not src_table_meta.get_auto_increasing_sid():
+            get_line = data_utils.get_sid_data_line
+        else:
+            get_line = data_utils.get_auto_increasing_sid_data_line
+        for line in src_table.read():
+            if not get_head:
+                schema.update(data_utils.get_header_schema(
+                    header_line=line,
+                    id_delimiter=src_table_meta.get_id_delimiter(),
+                    extend_sid=src_table_meta.get_extend_sid(),
+                ))
+                get_head = True
+                continue
+            values = line.rstrip().split(src_table.meta.get_id_delimiter())
+            k, v = get_line(
+                values=values,
+                line_index=line_index,
+                extend_sid=src_table.meta.get_extend_sid(),
+                auto_increasing_sid=src_table.meta.get_auto_increasing_sid(),
+                id_delimiter=src_table.meta.get_id_delimiter(),
+                fate_uuid=fate_uuid,
+            )
+            line_index += 1
+            yield k, v
+            if count <= 100:
+                part_of_data.append((k, v))
+                count += 1
+
+    @staticmethod
+    def copy_table(src_table: StorageTableABC, dest_table: StorageTableABC):
         part_of_data = []
         src_table_meta = src_table.meta
         schema = {}
         update_schema = False
-        line_index = 0
-        fate_uuid = uuid.uuid1().hex
         if not src_table_meta.get_in_serialized():
-            if src_table_meta.get_have_head():
-                get_head = False
-            else:
-                get_head = True
-            if not src_table.meta.get_extend_sid():
-                get_line = data_utils.get_data_line
-            elif not src_table_meta.get_auto_increasing_sid():
-                get_line = data_utils.get_sid_data_line
-            else:
-                get_line = data_utils.get_auto_increasing_sid_data_line
-            for line in src_table.read():
-                if not get_head:
-                    schema = data_utils.get_header_schema(
-                        header_line=line,
-                        id_delimiter=src_table_meta.get_id_delimiter(),
-                        extend_sid=src_table_meta.get_extend_sid(),
-                    )
-                    get_head = True
-                    continue
-                values = line.rstrip().split(src_table.meta.get_id_delimiter())
-                k, v = get_line(
-                    values=values,
-                    line_index=line_index,
-                    extend_sid=src_table.meta.get_extend_sid(),
-                    auto_increasing_sid=src_table.meta.get_auto_increasing_sid(),
-                    id_delimiter=src_table.meta.get_id_delimiter(),
-                    fate_uuid=fate_uuid,
-                )
-                line_index += 1
-                count = TableStorage.put_in_table(
-                    table=dest_table,
-                    k=k,
-                    v=v,
-                    temp=data_temp,
-                    count=count,
-                    part_of_data=part_of_data,
-                )
+            dest_table.put_all(TableStorage.read(src_table, schema, part_of_data))
         else:
             source_header = copy.deepcopy(src_table_meta.get_schema().get("header"))
             TableStorage.update_full_header(src_table_meta)
-            for k, v in src_table.collect():
-                if src_table.meta.get_extend_sid():
-                    # extend id
-                    v = src_table.meta.get_id_delimiter().join([k, v])
-                    k = line_extend_uuid(fate_uuid, line_index)
-                    line_index += 1
-                if deserialize_value:
-                    # writer component: deserialize value
-                    v, extend_header = feature_utils.get_deserialize_value(v, dest_table.meta.get_id_delimiter())
-                    if not update_schema:
-                        header_list = get_component_output_data_schema(src_table.meta, extend_header)
-                        schema = get_header_schema(dest_table.meta.get_id_delimiter().join(header_list),
-                                                   dest_table.meta.get_id_delimiter())
-                        _, dest_table.meta = dest_table.meta.update_metas(schema=schema)
-                        update_schema = True
-                count = TableStorage.put_in_table(
-                    table=dest_table,
-                    k=k,
-                    v=v,
-                    temp=data_temp,
-                    count=count,
-                    part_of_data=part_of_data,
-                )
+            dest_table.put_all(TableStorage.collect(src_table, part_of_data))
             schema = src_table.meta.get_schema()
             schema["header"] = source_header
-        if data_temp:
-            dest_table.put_all(data_temp)
         if schema.get("extend_tag"):
             schema.update({"extend_tag": False})
         _, dest_table.meta = dest_table.meta.update_metas(schema=schema if not update_schema else None, part_of_data=part_of_data)
@@ -275,14 +267,39 @@ class TableStorage:
             table_meta.set_metas(schema=schema)
 
     @staticmethod
-    def put_in_table(table: StorageTableABC, k, v, temp, count, part_of_data, max_num=10000):
-        temp.append((k, v))
-        if count < 100:
-            part_of_data.append((k, v))
-        if len(temp) == max_num:
-            table.put_all(temp)
-            temp.clear()
-        return count + 1
+    def read_table_data(data_table_meta, limit=100):
+        if not limit or limit > 100:
+            limit = 100
+        data_table = storage.StorageTableMeta(
+            name=data_table_meta.get_name(),
+            namespace=data_table_meta.get_namespace()
+        )
+        if data_table:
+            table_schema = data_table_meta.get_schema()
+            out_header = None
+            data_list = []
+            all_extend_header = {}
+            for k, v in data_table_meta.get_part_of_data():
+                data_line, is_str, all_extend_header = feature_utils.get_component_output_data_line(
+                    src_key=k,
+                    src_value=v,
+                    schema=table_schema,
+                    all_extend_header=all_extend_header
+                )
+                data_list.append(data_line)
+                if len(data_list) == limit:
+                    break
+            if data_list:
+                extend_header = feature_utils.generate_header(all_extend_header, schema=table_schema)
+                out_header = get_component_output_data_schema(
+                    output_table_meta=data_table_meta,
+                    is_str=is_str,
+                    extend_header=extend_header
+                )
+
+            return {'header': out_header, 'data': data_list}
+
+        return {'header': [], 'data': []}
 
     @staticmethod
     def send_table(output_tables_meta, tar_file_name="", limit=-1, need_head=True, local_download=False, output_data_file_path=None):
