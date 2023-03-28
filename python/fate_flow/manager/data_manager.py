@@ -255,7 +255,11 @@ class TableStorage:
             schema["header"] = source_header
         if schema.get("extend_tag"):
             schema.update({"extend_tag": False})
-        _, dest_table.meta = dest_table.meta.update_metas(schema=schema if not update_schema else None, part_of_data=part_of_data)
+        _, dest_table.meta = dest_table.meta.update_metas(
+            schema=schema if not update_schema else None,
+            part_of_data=part_of_data,
+            id_delimiter=src_table_meta.get_id_delimiter()
+        )
         return dest_table.count()
 
     @staticmethod
