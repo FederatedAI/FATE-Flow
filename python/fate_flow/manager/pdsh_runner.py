@@ -1,7 +1,10 @@
 import base64
+import json
 import os
 import subprocess
 import sys
+
+from fate_flow.settings import PDSH
 
 
 class PDSHRunner:
@@ -15,33 +18,28 @@ class PDSHRunner:
     def get_cmd(
         self,
         env,
-        active_workers,
         exports,
-        world_info_base64,
-        master_addr,
-        master_port,
         base64_args,
     ):
         env["PDSH_RCMD_TYPE"] = "ssh"
 
         exports_cmd = ""
         for key, val in exports.items():
-            if key == "PYTHONPATH":
-                val = f"{val}:/Users/sage/FATE/python"
             exports_cmd += "export {}={}; ".format(key, val)
-        exports_cmd += "export FATE_PROJECT_BASE=/Users/sage/FATE;"
 
+        world_info_base64 = base64.urlsafe_b64encode(json.dumps(PDSH.get("world_info")).encode("utf-8")).decode("utf-8")
+        master_addr = PDSH.get("master_address")
+        master_port = PDSH.get("master_port")
+        active_workers = PDSH.get("active_workers")
 
         return [
-            "/usr/local/bin/pdsh",
+            PDSH.get("path"),
             "-S",
             "-f",
             "1024",
             "-w",
             active_workers,
-            # cmd
             exports_cmd,
-            f"cd {os.path.abspath('.')};",
             sys.executable,
             "-u",
             "-m",

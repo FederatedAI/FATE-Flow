@@ -56,6 +56,7 @@ class DAGScheduler(Cron):
             job_initiator = runtime_conf["initiator"]
             conf_adapter = JobRuntimeConfigAdapter(runtime_conf)
             common_job_parameters = conf_adapter.get_common_parameters()
+            common_job_parameters.task_conf = runtime_conf.get("job_parameters", {}).get("task_conf", {})
 
             if common_job_parameters.job_type != "predict":
                 # generate job model info

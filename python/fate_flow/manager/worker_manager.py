@@ -13,7 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from base64 import encode
 import os
 import subprocess
 import sys
@@ -29,6 +28,7 @@ from fate_flow.entity import ComponentProvider, RunParameters
 from fate_flow.entity.types import WorkerName
 from fate_flow.settings import stat_logger
 from fate_flow.utils import job_utils, process_utils
+from fate_flow.utils.base_utils import get_fate_flow_python_directory
 from fate_flow.utils.log_utils import failed_log, ready_log, schedule_logger, start_log, successful_log
 
 
@@ -205,25 +205,19 @@ class WorkerManager:
             env.update(extra_env)
         schedule_logger(task.f_job_id).info(
             f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} {worker_name} worker subprocess is ready")
-
-        if task.f_component_name.startswith("deepspeed"):
+        if task_parameters.task_conf.get(task.f_component_name, {}).get("launcher") == "pdsh":
+            schedule_logger("use launcher pdsh to start task")
             from .pdsh_runner import PDSHRunner
             import json
             import base64
 
-            world_info_base64 = ""
-            master_addr = "127.0.0.1"
-            master_port = "12345"
             base64_args = base64.urlsafe_b64encode(json.dumps(common_cmd).encode("utf-8")).decode("utf-8")
             process_cmd, env = PDSHRunner().get_cmd(
                 env=env,
-                active_workers="127.0.0.1",
                 exports=env,
-                world_info_base64=world_info_base64,
-                master_addr=master_addr,
-                master_port=master_port,
                 base64_args=base64_args,
             )
+        schedule_logger(job_id=task.f_job_id).info(f"task process_cmd: {process_cmd}, env: {env}")
         p = process_utils.run_subprocess(
             job_id=task.f_job_id,
             config_dir=config_dir,
@@ -266,9 +260,10 @@ class WorkerManager:
     def get_env(cls, job_id, provider_info):
         provider = ComponentProvider(**provider_info)
         env = provider.env.copy()
-        env["PYTHONPATH"] = os.path.dirname(provider.path)
+        env["PYTHONPATH"] = f"{get_fate_flow_python_directory()}:{os.path.dirname(provider.path)}"
         if job_id:
             env["FATE_JOB_ID"] = job_id
+        env["FATE_PROJECT_BASE"] = os.environ.get("FATE_PROJECT_BASE")
         return env
 
     @classmethod

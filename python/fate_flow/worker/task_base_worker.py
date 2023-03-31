@@ -110,12 +110,15 @@ class BaseTaskWorker(BaseWorker):
         self.report_task_info_to_driver()
 
     def report_task_info_to_driver(self):
-        LOGGER.info("report {} {} {} {} {} to driver:\n{}".format(
-            self.__class__.__name__,
-            self.report_info["task_id"],
-            self.report_info["task_version"],
-            self.report_info["role"],
-            self.report_info["party_id"],
-            self.report_info
-        ))
-        ControllerClient.report_task(self.report_info)
+        import os
+        LOGGER.info(f"IGNORE_STATUS: {os.getenv('IGNORE_STATUS', False)}")
+        if not os.getenv("IGNORE_STATUS", False):
+            LOGGER.info("report {} {} {} {} {} to driver:\n{}".format(
+                self.__class__.__name__,
+                self.report_info["task_id"],
+                self.report_info["task_version"],
+                self.report_info["role"],
+                self.report_info["party_id"],
+                self.report_info
+            ))
+            ControllerClient.report_task(self.report_info)

@@ -45,6 +45,7 @@ class RunParameters(BaseEntity):
         self.assistant_role = None
         self.map_table_name = None
         self.map_namespace = None
+        self.task_conf = {}
         for k, v in kwargs.items():
             if hasattr(self, k):
                 setattr(self, k, v)
