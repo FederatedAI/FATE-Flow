@@ -3,7 +3,7 @@ import json
 
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import MD5
+from Crypto.Hash import SHA256
 
 from fate_flow.db.key_manager import RsaKeyManager
 from fate_flow.entity import RetCode
@@ -19,7 +19,7 @@ def signature(parm: SignatureParameters) -> SignatureReturn:
     private_key = RsaKeyManager.get_key(parm.party_id, key_name=SiteKeyName.PRIVATE.value)
     if not private_key:
         raise Exception(f"signature error: no found party id {parm.party_id} private key")
-    sign= PKCS1_v1_5.new(RSA.importKey(private_key)).sign(MD5.new(json.dumps(parm.body).encode()))
+    sign = PKCS1_v1_5.new(RSA.importKey(private_key)).sign(SHA256.new(json.dumps(parm.body).encode()))
     return SignatureReturn(site_signature=base64.b64encode(sign).decode())
 
 
@@ -30,7 +30,7 @@ def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
     if not public_key:
         raise Exception(f"signature error: no found party id {party_id} public key")
     verifier = PKCS1_v1_5.new(RSA.importKey(public_key))
-    if verifier.verify(MD5.new(json.dumps(parm.body).encode()), base64.b64decode(parm.site_signature)) is True:
+    if verifier.verify(SHA256.new(json.dumps(parm.body).encode()), base64.b64decode(parm.site_signature)) is True:
         return AuthenticationReturn()
     else:
         return AuthenticationReturn(code=RetCode.AUTHENTICATION_ERROR, message="authentication failed")
