@@ -44,16 +44,7 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
         startupinfo.wShowWindow = subprocess.SW_HIDE
     else:
         startupinfo = None
-
-    subprocess_env = os.environ.copy()
-    subprocess_env["PROCESS_ROLE"] = ProcessRole.WORKER.value
-    if added_env:
-        for name, value in added_env.items():
-            if name.endswith("PATH") and subprocess_env.get(name) is not None:
-                value += ':' + subprocess_env[name]
-            subprocess_env[name] = value
-    subprocess_env.pop("CLASSPATH", None)
-
+    subprocess_env = get_subprocess_env(added_env)
     p = subprocess.Popen(process_cmd,
                          stdout=std,
                          stderr=std,
@@ -67,6 +58,18 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
         f.flush()
     logger.info(f"start process successfully, pid: {p.pid}, std log path: {std_path}")
     return p
+
+
+def get_subprocess_env(env):
+    subprocess_env = os.environ.copy()
+    subprocess_env["PROCESS_ROLE"] = ProcessRole.WORKER.value
+    if env:
+        for name, value in env.items():
+            if name.endswith("PATH") and subprocess_env.get(name) is not None:
+                value += ':' + subprocess_env[name]
+            subprocess_env[name] = value
+    subprocess_env.pop("CLASSPATH", None)
+    return subprocess_env
 
 
 def check_process(pid, task: Task = None, expected_cmdline: list = None):

@@ -28,8 +28,8 @@ from fate_flow.entity import ComponentProvider, RunParameters
 from fate_flow.entity.types import WorkerName
 from fate_flow.settings import stat_logger
 from fate_flow.utils import job_utils, process_utils
-from fate_flow.utils.base_utils import get_fate_flow_python_directory
 from fate_flow.utils.log_utils import failed_log, ready_log, schedule_logger, start_log, successful_log
+from fate_flow.utils.process_utils import get_subprocess_env
 
 
 class WorkerManager:
@@ -206,11 +206,11 @@ class WorkerManager:
         schedule_logger(task.f_job_id).info(
             f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} {worker_name} worker subprocess is ready")
         if task_parameters.task_conf.get(task.f_component_name, {}).get("launcher") == "pdsh" and task.f_role != "arbiter":
-            schedule_logger("use launcher pdsh to start task")
+            schedule_logger(task.f_job_id).info("use launcher pdsh to start task")
             from .pdsh_runner import PDSHRunner
             import json
             import base64
-
+            env = get_subprocess_env(env)
             base64_args = base64.urlsafe_b64encode(json.dumps(common_cmd).encode("utf-8")).decode("utf-8")
             process_cmd, env = PDSHRunner().get_cmd(
                 env=env,
@@ -260,7 +260,7 @@ class WorkerManager:
     def get_env(cls, job_id, provider_info):
         provider = ComponentProvider(**provider_info)
         env = provider.env.copy()
-        env["PYTHONPATH"] = f"{get_fate_flow_python_directory()}:{os.path.dirname(provider.path)}"
+        env["PYTHONPATH"] = os.path.dirname(provider.path)
         if job_id:
             env["FATE_JOB_ID"] = job_id
         env["FATE_PROJECT_BASE"] = os.environ.get("FATE_PROJECT_BASE")

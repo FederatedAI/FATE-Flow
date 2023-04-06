@@ -111,8 +111,8 @@ class BaseTaskWorker(BaseWorker):
 
     def report_task_info_to_driver(self):
         import os
-        LOGGER.info(f"IGNORE_STATUS: {os.getenv('IGNORE_STATUS', False)}")
-        if not os.getenv("IGNORE_STATUS", False):
+        LOGGER.info(f"IS MASTER TASK: {os.getenv('IS_MASTER_TASK', 1)}")
+        if int(os.getenv("IS_MASTER_TASK", 1)):
             LOGGER.info("report {} {} {} {} {} to driver:\n{}".format(
                 self.__class__.__name__,
                 self.report_info["task_id"],

@@ -72,8 +72,10 @@ class DeepspeedLauncher:
             current_env["RANK"] = str(dist_rank)
             current_env["LOCAL_RANK"] = str(local_rank)
             current_env["PROCESS_ROLE"] = ProcessRole.WORKER.value
-            if current_env["MASTER_ADDR"] != self.local_node or local_rank != 0:
-                current_env["IGNORE_STATUS"] = str(True)
+            if current_env["MASTER_ADDR"] == self.local_node and local_rank == 0:
+                current_env["IS_MASTER_TASK"] = str(1)
+            else:
+                current_env["IS_MASTER_TASK"] = str(0)
             process_cmd = [str(cmd) for cmd in self.get_cmd()]
             worker_name = WorkerName.TASK_EXECUTOR
             args = self.parser_args()

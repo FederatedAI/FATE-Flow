@@ -145,15 +145,17 @@ class TaskExecutor(BaseTaskWorker):
 
             sess = session.Session(session_id=args.session_id)
             sess.as_global()
-            sess.init_computing(computing_session_id=args.session_id, options=session_options)
+            if int(os.getenv("IS_MASTER_TASK", 1)):
+                sess.init_computing(computing_session_id=args.session_id, options=session_options)
             component_parameters_on_party["job_parameters"] = job_parameters.to_dict()
             roles = job_configuration.runtime_conf["role"]
             if set(roles) == {"local"}:
                 LOGGER.info(f"only local roles, pass init federation")
             else:
-                sess.init_federation(federation_session_id=args.federation_session_id,
-                                     runtime_conf=component_parameters_on_party,
-                                     service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
+                if int(os.getenv("IS_MASTER_TASK", 1)):
+                    sess.init_federation(federation_session_id=args.federation_session_id,
+                                         runtime_conf=component_parameters_on_party,
+                                         service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
             LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
             LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
             LOGGER.info(f"task input dsl {task_input_dsl}")
