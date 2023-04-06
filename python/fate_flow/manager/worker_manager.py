@@ -205,7 +205,7 @@ class WorkerManager:
             env.update(extra_env)
         schedule_logger(task.f_job_id).info(
             f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} {worker_name} worker subprocess is ready")
-        if task_parameters.task_conf.get(task.f_component_name, {}).get("launcher") == "pdsh":
+        if task_parameters.task_conf.get(task.f_component_name, {}).get("launcher") == "pdsh" and task.f_role != "arbiter":
             schedule_logger("use launcher pdsh to start task")
             from .pdsh_runner import PDSHRunner
             import json
