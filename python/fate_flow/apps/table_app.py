@@ -158,7 +158,7 @@ def table_download():
     )
 
 
-@manager.route('/preview', methods=['get'])
+@manager.route('/preview', methods=['post'])
 def table_data_preview():
     request_data = request.json
     from fate_flow.component_env_utils.env_utils import import_component_output_depend
