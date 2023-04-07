@@ -732,6 +732,57 @@ paths:
                     type: string
                     example: no find table
 
+  '/table/preview':
+    post:
+      summary: table data preview
+      tags:
+        - table
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - namespace
+              properties:
+                name:
+                  type: string
+                  example: "guest"
+                namespace:
+                  type: string
+                  example: "data"
+      responses:
+        '200':
+          description: get preview table success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 0
+                  retmsg:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+        '404':
+          description: no found table
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retcode:
+                    type: integer
+                    example: 210
+                  retmsg:
+                    type: string
+                    example: no find table
+
   '/job/submit':
     post:
       summary: submit job
