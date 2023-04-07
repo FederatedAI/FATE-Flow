@@ -145,8 +145,8 @@ class TaskExecutor(BaseTaskWorker):
 
             sess = session.Session(session_id=args.session_id)
             sess.as_global()
-            if int(os.getenv("IS_MASTER_TASK", 1)):
-                sess.init_computing(computing_session_id=args.session_id, options=session_options)
+            # if int(os.getenv("IS_MASTER_TASK", 1)):
+            sess.init_computing(computing_session_id=args.session_id, options=session_options)
             component_parameters_on_party["job_parameters"] = job_parameters.to_dict()
             roles = job_configuration.runtime_conf["role"]
             if set(roles) == {"local"}:

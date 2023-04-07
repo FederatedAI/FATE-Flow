@@ -29,7 +29,6 @@ from fate_flow.entity.types import WorkerName
 from fate_flow.settings import stat_logger
 from fate_flow.utils import job_utils, process_utils
 from fate_flow.utils.log_utils import failed_log, ready_log, schedule_logger, start_log, successful_log
-from fate_flow.utils.process_utils import get_subprocess_env
 
 
 class WorkerManager:
@@ -210,7 +209,7 @@ class WorkerManager:
             from .pdsh_runner import PDSHRunner
             import json
             import base64
-            env = get_subprocess_env(env)
+            cls.update_pdsh_env(env)
             base64_args = base64.urlsafe_b64encode(json.dumps(common_cmd).encode("utf-8")).decode("utf-8")
             process_cmd, env = PDSHRunner().get_cmd(
                 env=env,
@@ -230,6 +229,21 @@ class WorkerManager:
         )
         cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id, run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=config, cmd=process_cmd, **info_kwargs)
         return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd}
+
+    @classmethod
+    def update_pdsh_env(cls, env):
+        for name, value in os.environ.items():
+            if name.endswith("HOME"):
+                env[name] = value
+
+            if name.endswith("PATH"):
+                if name == "PYTHONPATH":
+                    env[name] += ':' + value
+                else:
+                    env[name] = value
+
+            if name == "VIRTUAL_ENV":
+                env[name] = os.getenv(name)
 
     @classmethod
     def get_process_dirs(cls, worker_name: WorkerName, job_id=None, role=None, party_id=None, task: Task = None):
