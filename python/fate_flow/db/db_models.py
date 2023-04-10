@@ -249,6 +249,10 @@ class Task(DataBaseModel):
     f_kill_status = BooleanField(default=False)
     f_error_report = TextField(default="")
 
+    # for deepspeed
+    f_world_info = JSONField(null=True)
+    f_launcher = CharField(max_length=20, null=True)
+
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)

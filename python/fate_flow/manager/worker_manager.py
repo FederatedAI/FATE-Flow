@@ -25,7 +25,7 @@ from fate_arch.metastore.base_model import auto_date_timestamp_db_field
 from fate_flow.db.db_models import DB, Task, WorkerInfo
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import ComponentProvider, RunParameters
-from fate_flow.entity.types import WorkerName
+from fate_flow.entity.types import WorkerName, TaskLauncher
 from fate_flow.settings import stat_logger
 from fate_flow.utils import job_utils, process_utils
 from fate_flow.utils.log_utils import failed_log, ready_log, schedule_logger, start_log, successful_log
@@ -204,7 +204,9 @@ class WorkerManager:
             env.update(extra_env)
         schedule_logger(task.f_job_id).info(
             f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} {worker_name} worker subprocess is ready")
-        if task_parameters.task_conf.get(task.f_component_name, {}).get("launcher") == "pdsh" and task.f_role != "arbiter":
+        launcher = TaskLauncher.DEFAULT.value
+        if task_parameters.task_conf.get(task.f_component_name, {}).get("launcher") == TaskLauncher.PDSH.value and task.f_role != "arbiter":
+            launcher = TaskLauncher.PDSH.value
             schedule_logger(task.f_job_id).info("use launcher pdsh to start task")
             from .pdsh_runner import PDSHRunner
             import json
@@ -228,7 +230,7 @@ class WorkerManager:
             process_id=worker_id,
         )
         cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id, run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=config, cmd=process_cmd, **info_kwargs)
-        return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd}
+        return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd, "launcher": launcher}
 
     @classmethod
     def update_pdsh_env(cls, env):

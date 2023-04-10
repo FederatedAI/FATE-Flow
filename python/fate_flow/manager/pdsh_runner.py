@@ -23,22 +23,27 @@ class PDSHRunner:
     ):
         env["PDSH_RCMD_TYPE"] = "ssh"
 
-        exports_cmd = ""
-        for key, val in exports.items():
-            exports_cmd += "export {}={}; ".format(key, val)
-
         world_info_base64 = base64.urlsafe_b64encode(json.dumps(PDSH.get("world_info")).encode("utf-8")).decode("utf-8")
         master_addr = PDSH.get("master_address")
         master_port = PDSH.get("master_port")
         active_workers = PDSH.get("active_workers")
 
-        return [
+        pdsh_cmd_args =[
             PDSH.get("path"),
             "-S",
             "-f",
             "1024",
             "-w",
-            active_workers,
+            active_workers
+        ]
+
+        exports_cmd = ""
+        for key, val in exports.items():
+            exports_cmd += "export {}={}; ".format(key, val)
+        exports_cmd += "export {}={}; ".format("MASTER_ADDR", master_addr)
+        exports_cmd += "export {}={}; ".format("MASTER_PORT", master_port)
+
+        deepspeed_launch = [
             exports_cmd,
             sys.executable,
             "-u",
@@ -49,4 +54,20 @@ class PDSHRunner:
             f"--master_addr={master_addr}",
             f"--master_port={master_port}",
             f"--base64_args={base64_args}",
-        ], env
+        ]
+
+        return pdsh_cmd_args + deepspeed_launch, env
+
+    @staticmethod
+    def get_kill_cmd(active_workers, worker_id):
+        active_workers = PDSH.get("active_workers")
+        pdsh_cmd_args =[
+            PDSH.get("path"),
+            "-S",
+            "-f",
+            "1024",
+            "-w",
+            active_workers
+        ]
+        kill_command = pdsh_cmd_args + [f"pkill -f {worker_id}"]
+        return kill_command

@@ -17,9 +17,11 @@ import errno
 import os
 import subprocess
 import psutil
+
+from fate_flow.manager.pdsh_runner import PDSHRunner
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import Task
-from fate_flow.entity.types import KillProcessRetCode, ProcessRole
+from fate_flow.entity.types import KillProcessRetCode, ProcessRole, TaskLauncher
 from fate_flow.settings import SUBPROCESS_STD_LOG_NAME
 from fate_flow.settings import stat_logger
 
@@ -178,6 +180,9 @@ def is_task_executor_process(task: Task, process: psutil.Process):
 
 def kill_task_executor_process(task: Task, only_child=False):
     try:
+        if task.f_launcher == TaskLauncher.PDSH.value:
+            pdsh_task_executor_process(task)
+            return KillProcessRetCode.KILLED
         if not task.f_run_pid:
             schedule_logger(task.f_job_id).info("task {} {} {} with {} party status no process pid".format(
                 task.f_task_id, task.f_role, task.f_party_id, task.f_party_status))
@@ -207,6 +212,14 @@ def kill_task_executor_process(task: Task, only_child=False):
         return KillProcessRetCode.KILLED
     except Exception as e:
         raise e
+
+
+def pdsh_task_executor_process(task: Task):
+    schedule_logger(task.f_job_id).info(f"pdsh kill task {task.f_task_id} {task.f_task_version}")
+    cmd = PDSHRunner().get_kill_cmd(task.f_world_info, task.f_worker_id)
+    schedule_logger(task.f_job_id).info(" ".join(cmd))
+    f = os.popen(" ".join(cmd))
+    schedule_logger(task.f_job_id).info(f"pdsh kill return: {f.read()}")
 
 
 def kill_process(process: psutil.Process = None, pid: int = None, expected_cmdline: list = None):
