@@ -59,7 +59,7 @@ class MysqlStorage(Storage):
                 self._con.commit()
                 sql = None
                 LOGGER.info(f"save data count:{count}")
-        if count > 0:
+        if count > 0 and sql:
             sql = ",".join(sql.split(",")[:-1]) + ";"
             self._cur.execute(sql)
             self._con.commit()

@@ -287,54 +287,59 @@ class Upload(ComponentBase):
                 count += 1
         return count
 
+    def kv_generator(self, input_feature_count, fp, job_id, part_of_data):
+        fate_uuid = uuid.uuid1().hex
+        get_line = self.get_line()
+        line_index = 0
+        LOGGER.info(input_feature_count)
+        while True:
+            lines = fp.readlines(JobDefaultConfig.upload_block_max_bytes)
+            LOGGER.info(JobDefaultConfig.upload_block_max_bytes)
+            if lines:
+                for line in lines:
+                    values = line.rstrip().split(self.parameters["id_delimiter"])
+                    k, v = get_line(
+                        values=values,
+                        line_index=line_index,
+                        extend_sid=self.parameters["extend_sid"],
+                        auto_increasing_sid=self.parameters["auto_increasing_sid"],
+                        id_delimiter=self.parameters["id_delimiter"],
+                        fate_uuid=fate_uuid,
+                    )
+                    yield k, v
+                    line_index += 1
+                    if line_index <= 100:
+                        part_of_data.append((k, v))
+                save_progress = line_index / input_feature_count * 100 // 1
+                job_info = {
+                    "progress": save_progress,
+                    "job_id": job_id,
+                    "role": self.parameters["local"]["role"],
+                    "party_id": self.parameters["local"]["party_id"],
+                }
+                ControllerClient.update_job(job_info=job_info)
+            else:
+                return
+
+    def update_schema(self, head, fp):
+        read_status = False
+        if head is True:
+            data_head = fp.readline()
+            self.update_table_schema(data_head)
+            read_status = True
+        else:
+            self.update_table_schema()
+        return read_status
+
     def upload_file(self, input_file, head, job_id=None, input_feature_count=None, table=None):
         if not table:
             table = self.table
-        with open(input_file, "r") as fin:
-            lines_count = 0
-            if head is True:
-                data_head = fin.readline()
+        part_of_data = []
+        with open(input_file, "r") as fp:
+            if self.update_schema(head, fp):
                 input_feature_count -= 1
-                self.update_table_schema(data_head)
-            else:
-                self.update_table_schema()
-            n = 0
-            fate_uuid = uuid.uuid1().hex
-            get_line = self.get_line()
-            line_index = 0
-            while True:
-                data = list()
-                lines = fin.readlines(JobDefaultConfig.upload_block_max_bytes)
-                LOGGER.info(JobDefaultConfig.upload_block_max_bytes)
-                if lines:
-                    # self.append_data_line(lines, data, n)
-                    for line in lines:
-                        values = line.rstrip().split(self.parameters["id_delimiter"])
-                        k, v = get_line(
-                            values=values,
-                            line_index=line_index,
-                            extend_sid=self.parameters["extend_sid"],
-                            auto_increasing_sid=self.parameters["auto_increasing_sid"],
-                            id_delimiter=self.parameters["id_delimiter"],
-                            fate_uuid=fate_uuid,
-                        )
-                        data.append((k, v))
-                        line_index += 1
-                    lines_count += len(data)
-                    save_progress = lines_count / input_feature_count * 100 // 1
-                    job_info = {
-                        "progress": save_progress,
-                        "job_id": job_id,
-                        "role": self.parameters["local"]["role"],
-                        "party_id": self.parameters["local"]["party_id"],
-                    }
-                    ControllerClient.update_job(job_info=job_info)
-                    table.put_all(data)
-                    if n == 0:
-                        table.meta.update_metas(part_of_data=data)
-                else:
-                    return
-                n += 1
+            self.table.put_all(self.kv_generator(input_feature_count, fp, job_id, part_of_data))
+            table.meta.update_metas(part_of_data=part_of_data)
 
     def get_computing_table(self, name, namespace, schema=None):
         storage_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
