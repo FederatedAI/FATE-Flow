@@ -25,7 +25,7 @@ class PDSHRunner:
 
         world_info_base64 = base64.urlsafe_b64encode(json.dumps(PDSH.get("world_info")).encode("utf-8")).decode("utf-8")
         master_addr = PDSH.get("master_address")
-        master_port = PDSH.get("master_port")
+        master_port = self.generate_master_port(master_addr)
         active_workers = PDSH.get("active_workers")
 
         pdsh_cmd_args =[
@@ -71,3 +71,19 @@ class PDSHRunner:
         ]
         kill_command = pdsh_cmd_args + [f"pkill -f {worker_id}"]
         return kill_command
+
+    def generate_master_port(self, master_addr):
+        import random
+        port = random.randint(30000, 60000)
+        while True:
+            if not self.telnet(master_addr, port):
+                return port
+
+    @staticmethod
+    def telnet(ip, port):
+        import telnetlib
+        try:
+            telnetlib.Telnet(ip, port, timeout=3)
+            return True
+        except Exception as e:
+            return False
