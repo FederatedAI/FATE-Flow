@@ -4,7 +4,7 @@
 
 ## Bug Fixes
 * Fix the performance problems of upload and reader in processing large amounts of data
-* Fix online reasoning cannot be done after model migration bug
+* Fix online inference cannot be done after model migration bug
 * Fix the model cannot be saved to the specified database bug
 * Fix reader data preview display bug
 
