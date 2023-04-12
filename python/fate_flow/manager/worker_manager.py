@@ -23,9 +23,11 @@ from fate_arch.common.file_utils import load_json_conf
 from fate_arch.metastore.base_model import auto_date_timestamp_db_field
 
 from fate_flow.db.db_models import DB, Task, WorkerInfo
+from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity import ComponentProvider, RunParameters
 from fate_flow.entity.types import WorkerName, TaskLauncher
+from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.settings import stat_logger
 from fate_flow.utils import job_utils, process_utils
 from fate_flow.utils.log_utils import failed_log, ready_log, schedule_logger, start_log, successful_log
@@ -205,19 +207,30 @@ class WorkerManager:
         schedule_logger(task.f_job_id).info(
             f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} {worker_name} worker subprocess is ready")
         launcher = TaskLauncher.DEFAULT.value
-        if task_parameters.task_conf.get(task.f_component_name, {}).get("launcher") == TaskLauncher.PDSH.value and task.f_role != "arbiter":
-            launcher = TaskLauncher.PDSH.value
-            schedule_logger(task.f_job_id).info("use launcher pdsh to start task")
+        world_info = {}
+
+        task_conf = task_parameters.role_parameter("task_conf", role=task.f_role, party_id=task.f_party_id)
+
+        if task_conf.get(task.f_component_name, {}).get("launcher") == TaskLauncher.PDSH.value and task.f_role != "arbiter":
             from .pdsh_runner import PDSHRunner
             import json
             import base64
+
+            devices = task_conf.get(task.f_component_name).get("devices", JobDefaultConfig.devices)
+            # apply device
+            node_info = ResourceManager.apply_for_task_device(task.to_human_model_dict(), devices, task_parameters.computing_engine)
+            schedule_logger(job_id=task.f_job_id).info(f"apply task device success: {node_info}")
+            launcher = TaskLauncher.PDSH.value
+            schedule_logger(task.f_job_id).info("use launcher pdsh to start task")
             cls.update_pdsh_env(env)
             base64_args = base64.urlsafe_b64encode(json.dumps(common_cmd).encode("utf-8")).decode("utf-8")
-            process_cmd, env = PDSHRunner().get_cmd(
+            process_cmd, env, master_addr, world_info = PDSHRunner().get_cmd(
                 env=env,
                 exports=env,
                 base64_args=base64_args,
+                node_info=node_info
             )
+            schedule_logger(job_id=task.f_job_id).info(f"master addr: {master_addr}, world info: {world_info}")
         schedule_logger(job_id=task.f_job_id).info(f"task process_cmd: {process_cmd}, env: {env}")
         p = process_utils.run_subprocess(
             job_id=task.f_job_id,
@@ -230,7 +243,8 @@ class WorkerManager:
             process_id=worker_id,
         )
         cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id, run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=config, cmd=process_cmd, **info_kwargs)
-        return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd, "launcher": launcher}
+        return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd, "launcher": launcher,
+                "world_info": world_info}
 
     @classmethod
     def update_pdsh_env(cls, env):

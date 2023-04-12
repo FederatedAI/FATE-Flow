@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import math
+import random
 import typing
 
 from fate_arch.common import EngineType
@@ -21,8 +22,8 @@ from fate_arch.common import base_utils
 from fate_flow.utils.log_utils import schedule_logger
 from fate_arch.computing import ComputingEngine
 from fate_arch.common import engine_utils
-from fate_flow.db.db_models import DB, EngineRegistry, Job
-from fate_flow.entity.types import ResourceOperation
+from fate_flow.db.db_models import DB, EngineRegistry, Job, DeviceRegistry
+from fate_flow.entity.types import ResourceOperation, TaskLauncher
 from fate_flow.entity import RunParameters
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.settings import stat_logger, IGNORE_RESOURCE_ROLES, SUPPORT_IGNORE_RESOURCE_ENGINES, \
@@ -45,8 +46,13 @@ class ResourceManager(object):
         nodes = engine_config.get("nodes", 1)
         cores = engine_config.get("cores_per_node", 0) * nodes * JobDefaultConfig.total_cores_overweight_percent
         memory = engine_config.get("memory_per_node", 0) * nodes * JobDefaultConfig.total_memory_overweight_percent
+        device_count = 0
         filters = [EngineRegistry.f_engine_type == engine_type, EngineRegistry.f_engine_name == engine_name]
         resources = EngineRegistry.select().where(*filters)
+        devices_conf = engine_config.get("devices", {})
+        if devices_conf and engine_type == EngineType.COMPUTING:
+            resource = resources[0] if resources else None
+            device_count = cls.register_devices(devices_conf, resource, engine_name)
         if resources:
             resource = resources[0]
             update_fields = {}
@@ -58,6 +64,10 @@ class ResourceManager(object):
             update_fields[EngineRegistry.f_remaining_memory] = EngineRegistry.f_remaining_memory + (
                     memory - resource.f_memory)
             update_fields[EngineRegistry.f_nodes] = nodes
+            update_fields[EngineRegistry.f_devices] = device_count
+            update_fields[EngineRegistry.f_remaining_devices] =\
+                EngineRegistry.f_remaining_devices + (device_count - resource.f_devices) \
+                    if resource.f_remaining_devices is not None else device_count
             operate = EngineRegistry.update(update_fields).where(*filters)
             update_status = operate.execute() > 0
             if update_status:
@@ -77,11 +87,42 @@ class ResourceManager(object):
             resource.f_remaining_cores = cores
             resource.f_remaining_memory = memory
             resource.f_nodes = nodes
+            resource.f_devices = device_count
+            resource.f_remaining_devices = device_count
             try:
                 resource.save(force_insert=True)
             except Exception as e:
                 stat_logger.warning(e)
             stat_logger.info(f"create {engine_type} engine {engine_name} {engine_entrance} registration information")
+
+    @classmethod
+    def register_devices(cls, devices_conf, resource: EngineRegistry, engine_name):
+        device_count = 0
+        device_list = []
+        for node, devices in devices_conf.items():
+            for device in range(int(devices)):
+                device_count += 1
+                device_list.append([node, device])
+        stat_logger.info(f"device count: {device_count}, info: {device_list}, engine name: {engine_name}")
+        if resource:
+            if resource.f_engine_config.get("devices") == devices_conf:
+                stat_logger.info(f"device count: {device_count}, device_list: {device_list}, pass create")
+                return device_count
+            else:
+                # delete history device registry
+                stat_logger.info(f"delete engine {engine_name} device registry")
+                DeviceRegistry.delete().where(DeviceRegistry.f_engine_name == engine_name).execute()
+        for device_info in device_list:
+            device_registry = DeviceRegistry()
+            device_registry.f_node = device_info[0]
+            device_registry.f_device = device_info[1]
+            device_registry.f_engine_name = engine_name
+            try:
+                device_registry.save(force_insert=True)
+            except Exception as e:
+                stat_logger.warning(e)
+        stat_logger.info(f"create device registry success")
+        return device_count
 
     @classmethod
     def check_resource_apply(cls, job_parameters: RunParameters, role, party_id, engines_info):
@@ -285,6 +326,7 @@ class ResourceManager(object):
 
     @classmethod
     def return_task_resource(cls, task_info):
+        ResourceManager.return_for_task_device(task_info=task_info)
         return ResourceManager.resource_for_task(task_info=task_info, operation_type=ResourceOperation.RETURN)
 
     @classmethod
@@ -328,6 +370,120 @@ class ResourceManager(object):
             filters = []
             updates = {resource_model.f_remaining_cores: resource_model.f_remaining_cores + cores,
                        resource_model.f_remaining_memory: resource_model.f_remaining_memory + memory}
+        else:
+            raise RuntimeError(f"can not support {operation_type} resource operation type")
+        return filters, updates
+
+    @classmethod
+    def apply_for_task_device(cls, task_info, devices, computing_engine):
+        return ResourceManager.device_for_task(
+            task_info=task_info,
+            operation_type=ResourceOperation.APPLY,
+            devices=devices,
+            computing_engine=computing_engine
+        )
+
+    @classmethod
+    def return_for_task_device(cls, task_info):
+        try:
+            task = JobSaver.query_task(
+                role=task_info["role"],
+                party_id=task_info["party_id"],
+                task_id=task_info["task_id"],
+                task_version=task_info["task_version"]
+            )[0]
+            if task.f_launcher != TaskLauncher.PDSH.value:
+                return
+            task_info = task.to_human_model_dict()
+            computing_engine = task_info.get("engine_conf", {}).get("computing_engine")
+            world_info = task_info.get("world_info", {})
+            devices = sum([len(values) for values in world_info.values()])
+            schedule_logger(task_info["job_id"]).info(f"return task {task_info['task_id']} {task_info['task_version']} "
+                                                      f"devices count {devices}")
+            if computing_engine and devices:
+                ResourceManager.device_for_task(
+                    task_info=task_info,
+                    operation_type=ResourceOperation.RETURN,
+                    devices=devices,
+                    computing_engine=computing_engine
+                )
+                schedule_logger(task_info["job_id"]).info(
+                    f"return task {task_info['task_id']} {task_info['task_version']}"
+                    f"devices count {devices} success")
+        except Exception as e:
+            # maybe called multiple times
+            schedule_logger(task_info["job_id"]).exception(f"return task device failed: {e}")
+
+    @classmethod
+    @DB.connection_context()
+    @DB.lock("device_for_task")
+    def device_for_task(cls, task_info, operation_type, devices, computing_engine):
+        with DB.atomic():
+            filters, updates = cls.update_device_sql(devices=devices, operation_type=operation_type)
+            filters.append(EngineRegistry.f_engine_name == computing_engine)
+            operate = EngineRegistry.update(updates).where(*filters)
+            operate_status = operate.execute() > 0
+            if not operate_status:
+                raise RuntimeError(
+                    f"task {task_info['task_id']} {task_info['task_version']} {operation_type} device failed"
+                )
+            node_list = []
+            if operation_type is ResourceOperation.APPLY:
+                remaining_device = [[device.f_node, device.f_device] for device in DeviceRegistry.query(in_use=False, engine_name=computing_engine)]
+                node_list = cls.random_device_generator(remaining_device, devices)
+                for _node in node_list:
+                    filters = []
+                    updates = {
+                        DeviceRegistry.f_in_use: True,
+                        DeviceRegistry.f_task_info: cls.task_id(task_info)
+                    }
+                    filters.append(DeviceRegistry.f_in_use == False)
+                    filters.append(DeviceRegistry.f_node == _node[0])
+                    filters.append(DeviceRegistry.f_device == _node[1])
+                    filters.append(DeviceRegistry.f_engine_name == computing_engine)
+                    operate = DeviceRegistry.update(updates).where(*filters).execute()
+                    if not operate:
+                        raise RuntimeError(
+                            f"task {task_info['task_id']} {task_info['task_version']} {operation_type} device failed,"
+                            f"node {_node[0]}, device {_node[1]}"
+                        )
+            elif operation_type is ResourceOperation.RETURN:
+                updates = {}
+                filters = []
+                updates[DeviceRegistry.f_in_use] = False
+                updates[DeviceRegistry.f_task_info] = None
+                filters.append(DeviceRegistry.f_in_use == True)
+                filters.append(DeviceRegistry.f_task_info == cls.task_id(task_info))
+                filters.append(DeviceRegistry.f_engine_name == computing_engine)
+                operate = DeviceRegistry.update(updates).where(*filters).execute()
+                if not operate or operate != devices:
+                    raise RuntimeError(
+                        f"task {task_info['task_id']} {task_info['task_version']} {operation_type} device failed,"
+                        f" {operate}, {devices}"
+                    )
+        return node_list
+
+    @staticmethod
+    def random_device_generator(remaining_device, devices):
+        return random.sample(remaining_device, devices)
+
+    @staticmethod
+    def task_id(task_info):
+        return "_".join(
+            [task_info["role"], str(task_info["party_id"]),
+             task_info["task_id"], str(task_info["task_version"])]
+        )
+
+    @classmethod
+    def update_device_sql(cls, devices, operation_type: ResourceOperation):
+        if operation_type is ResourceOperation.APPLY:
+            filters = [
+                EngineRegistry.f_remaining_devices >= devices
+            ]
+            updates = {EngineRegistry.f_remaining_devices: EngineRegistry.f_remaining_devices - devices}
+        elif operation_type is ResourceOperation.RETURN:
+            filters = []
+            updates = {EngineRegistry.f_remaining_devices: EngineRegistry.f_remaining_devices + devices}
         else:
             raise RuntimeError(f"can not support {operation_type} resource operation type")
         return filters, updates

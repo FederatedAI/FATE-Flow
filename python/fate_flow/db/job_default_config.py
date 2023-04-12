@@ -29,6 +29,7 @@ class JobDefaultConfig(ReloadConfigBase):
     task_cores = None
     task_memory = None
     max_cores_percent_per_job = None
+    devices = None
 
     # scheduling
     remote_request_timeout = None

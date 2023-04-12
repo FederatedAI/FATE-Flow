@@ -1,7 +1,5 @@
 import base64
 import json
-import os
-import subprocess
 import sys
 
 from fate_flow.settings import PDSH
@@ -16,17 +14,16 @@ class PDSHRunner:
         return "fate_flow.manager.deepspeed_worker_launcher"
 
     def get_cmd(
-        self,
-        env,
-        exports,
-        base64_args,
+            self,
+            env,
+            exports,
+            base64_args,
+            node_info
     ):
         env["PDSH_RCMD_TYPE"] = "ssh"
-
-        world_info_base64 = base64.urlsafe_b64encode(json.dumps(PDSH.get("world_info")).encode("utf-8")).decode("utf-8")
-        master_addr = PDSH.get("master_address")
+        master_addr, active_workers, world_info = self.node_voting(node_info)
+        world_info_base64 = base64.urlsafe_b64encode(json.dumps(world_info).encode("utf-8")).decode("utf-8")
         master_port = self.generate_master_port(master_addr)
-        active_workers = PDSH.get("active_workers")
 
         pdsh_cmd_args =[
             PDSH.get("path"),
@@ -55,12 +52,21 @@ class PDSHRunner:
             f"--master_port={master_port}",
             f"--base64_args={base64_args}",
         ]
+        return pdsh_cmd_args + deepspeed_launch, env, master_addr, world_info
 
-        return pdsh_cmd_args + deepspeed_launch, env
+    @staticmethod
+    def node_voting(node_info):
+        world_info = {}
+        master_addr = node_info[0][0]
+        for node in node_info:
+            if node[0] not in world_info:
+                world_info[node[0]] = [node[1]]
+            else:
+                world_info[node[0]].append(node[1])
+        return master_addr, ",".join(world_info.keys()), world_info
 
     @staticmethod
     def get_kill_cmd(active_workers, worker_id):
-        active_workers = PDSH.get("active_workers")
         pdsh_cmd_args =[
             PDSH.get("path"),
             "-S",

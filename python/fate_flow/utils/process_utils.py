@@ -215,11 +215,15 @@ def kill_task_executor_process(task: Task, only_child=False):
 
 
 def pdsh_task_executor_process(task: Task):
-    schedule_logger(task.f_job_id).info(f"pdsh kill task {task.f_task_id} {task.f_task_version}")
-    cmd = PDSHRunner().get_kill_cmd(task.f_world_info, task.f_worker_id)
-    schedule_logger(task.f_job_id).info(" ".join(cmd))
-    f = os.popen(" ".join(cmd))
-    schedule_logger(task.f_job_id).info(f"pdsh kill return: {f.read()}")
+    try:
+        schedule_logger(task.f_job_id).info(f"pdsh kill task {task.f_task_id} {task.f_task_version}")
+        active_workers = ",".join(task.f_world_info.keys())
+        cmd = PDSHRunner().get_kill_cmd(active_workers, task.f_worker_id)
+        schedule_logger(task.f_job_id).info(" ".join(cmd))
+        f = os.popen(" ".join(cmd))
+        schedule_logger(task.f_job_id).info(f"pdsh kill return: {f.read()}")
+    except Exception as e:
+        schedule_logger(task.f_job_id).exception(f"pdsh kill task {task.f_task_id} {task.f_task_version} failed: {e}")
 
 
 def kill_process(process: psutil.Process = None, pid: int = None, expected_cmdline: list = None):

@@ -251,6 +251,7 @@ class Task(DataBaseModel):
 
     # for deepspeed
     f_world_info = JSONField(null=True)
+    f_master_addr = CharField(max_length=30, null=True)
     f_launcher = CharField(max_length=20, null=True)
 
     f_start_time = BigIntegerField(null=True)
@@ -464,6 +465,8 @@ class EngineRegistry(DataBaseModel):
     f_engine_config = JSONField()
     f_cores = IntegerField()
     f_memory = IntegerField()  # MB
+    f_devices = IntegerField()
+    f_remaining_devices = IntegerField()
     f_remaining_cores = IntegerField()
     f_remaining_memory = IntegerField()  # MB
     f_nodes = IntegerField()
@@ -471,6 +474,18 @@ class EngineRegistry(DataBaseModel):
     class Meta:
         db_table = "t_engine_registry"
         primary_key = CompositeKey('f_engine_name', 'f_engine_type')
+
+
+class DeviceRegistry(DataBaseModel):
+    f_node = CharField(max_length=30, index=True)
+    f_device = IntegerField()
+    f_engine_name = CharField(max_length=50, index=True)
+    f_in_use = BooleanField(default=False)
+    f_task_info = CharField(max_length=100, null=True)
+
+    class Meta:
+        db_table = "t_device_registry"
+        primary_key = CompositeKey('f_node', 'f_device', 'f_engine_name')
 
 
 # component registry
