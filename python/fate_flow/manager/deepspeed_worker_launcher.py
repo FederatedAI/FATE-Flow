@@ -70,6 +70,7 @@ class DeepspeedLauncher:
             current_env = self.current_env.copy()
             dist_rank = self.global_rank_mapping[self.local_node][local_rank]
             current_env["RANK"] = str(dist_rank)
+            current_env["LOCAL_NODE"] = self.local_node
             current_env["LOCAL_RANK"] = str(local_rank)
             current_env["PROCESS_ROLE"] = ProcessRole.WORKER.value
             if current_env["MASTER_ADDR"] == self.local_node and local_rank == 0:

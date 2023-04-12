@@ -13,7 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.run_status import TaskStatus
+import os
+
+from fate_flow.entity.run_status import TaskStatus, EndStatus
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.worker.base_worker import BaseWorker
@@ -110,9 +112,7 @@ class BaseTaskWorker(BaseWorker):
         self.report_task_info_to_driver()
 
     def report_task_info_to_driver(self):
-        import os
-        LOGGER.info(f"IS MASTER TASK: {os.getenv('IS_MASTER_TASK', 1)}")
-        if int(os.getenv("IS_MASTER_TASK", 1)):
+        if self.is_report():
             LOGGER.info("report {} {} {} {} {} to driver:\n{}".format(
                 self.__class__.__name__,
                 self.report_info["task_id"],
@@ -122,3 +122,14 @@ class BaseTaskWorker(BaseWorker):
                 self.report_info
             ))
             ControllerClient.report_task(self.report_info)
+
+    def is_report(self):
+        report = False
+        LOGGER.info(f"IS MASTER TASK: {os.getenv('IS_MASTER_TASK', 1)}")
+        if int(os.getenv("IS_MASTER_TASK", 1)):
+            # master task report
+            report = True
+        if self.report_info.get("party_status") in EndStatus.status_list():
+            # All worker final states need to be reported
+            report = True
+        return report

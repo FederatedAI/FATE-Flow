@@ -253,6 +253,7 @@ class Task(DataBaseModel):
     f_world_info = JSONField(null=True)
     f_master_addr = CharField(max_length=30, null=True)
     f_launcher = CharField(max_length=20, null=True)
+    f_report_worker_count = IntegerField(default=0)
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)

@@ -29,7 +29,7 @@ from fate_flow.entity import RunParameters
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.manager.worker_manager import WorkerManager
-from fate_flow.entity.types import TaskCleanResourceType
+from fate_flow.entity.types import TaskCleanResourceType, TaskLauncher
 
 
 class TaskController(object):
@@ -146,6 +146,42 @@ class TaskController(object):
                            is_asynchronous=True)
         cls.report_task_to_initiator(task_info=task_info)
         return update_status
+
+    @classmethod
+    def report_filter(cls, task_info):
+        party_status = task_info.get("party_status")
+        schedule_logger(task_info["job_id"]).info(f"task party status {party_status}")
+        if party_status in EndStatus.status_list():
+            if party_status == TaskStatus.SUCCESS:
+                info = {
+                    "job_id": task_info["job_id"],
+                    "role": task_info["role"],
+                    "party_id": task_info["party_id"],
+                    "task_id": task_info["task_id"],
+                    "task_version": task_info["task_version"]
+                }
+                task = JobSaver.query_task(**info)[0]
+                if task.f_launcher != TaskLauncher.PDSH.value:
+                    # non-pdsh worker
+                    schedule_logger(task_info["job_id"]).info(f"task launcher {task.f_launcher} pass")
+                    return True
+                if task.f_party_status in EndStatus.status_list():
+                    schedule_logger(task_info["job_id"]).warning(f"task over ...")
+                    # task over
+                    return False
+
+                info["report_worker_count"] = task.f_report_worker_count + 1
+                devices = sum([len(values) for values in task.f_world_info.values()])
+                schedule_logger(task_info["job_id"]).info(f"task report worker count: {info['report_worker_count']},"
+                                                          f"devices: {devices}")
+                JobSaver.update_task(task_info=info)
+                if info["report_worker_count"] == devices:
+                    # all task workers success
+                    return True
+                else:
+                    # Wait for all task workers to end
+                    return False
+        return True
 
     @classmethod
     def report_task_to_initiator(cls, task_info):
