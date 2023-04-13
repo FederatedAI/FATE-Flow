@@ -156,12 +156,16 @@ class TaskController(object):
         return cls.pdsh_worker_filter(task_info)
 
     @classmethod
-    @DB.lock("task_report")
     def pdsh_worker_filter(cls, task_info):
         party_status = task_info.get("party_status")
         schedule_logger(task_info["job_id"]).info(f"task party status {party_status}")
         if party_status in EndStatus.status_list():
+            schedule_logger(task_info["job_id"]).info(
+                f"report role {task_info.get('role')} party id {task_info.get('party_id')} node {task_info.get('node')}"
+                f" rank: {task_info.get('rank')}")
+            JobSaver.save_task_collector(task_info)
             if party_status == TaskStatus.SUCCESS:
+                # Determine whether the task is over
                 info = {
                     "job_id": task_info["job_id"],
                     "role": task_info["role"],
@@ -170,22 +174,15 @@ class TaskController(object):
                     "task_version": task_info["task_version"]
                 }
                 task = JobSaver.query_task(**info)[0]
-                if task.f_launcher != TaskLauncher.PDSH.value:
-                    # non-pdsh worker
-                    schedule_logger(task_info["job_id"]).info(f"task launcher {task.f_launcher} pass")
-                    return True
-                if task.f_party_status in EndStatus.status_list():
+                collect_list = JobSaver.query_task_collector(**info)
+                if len(set([collector.f_party_status for collector in collect_list])) > 1:
                     schedule_logger(task_info["job_id"]).warning(f"task over ...")
-                    # task over
                     return False
-
-                info["report_worker_count"] = task.f_report_worker_count + 1
                 devices = sum([len(values) for values in task.f_world_info.values()])
-                schedule_logger(task_info["job_id"]).info(f"task report worker count: {info['report_worker_count']},"
-                                                          f"devices: {devices}")
-                JobSaver.update_task(task_info=info)
-                if info["report_worker_count"] == devices:
+                schedule_logger(task_info["job_id"]).info(f"len(collect_list): {len(collect_list)}, devices: {devices}")
+                if len(collect_list) == devices:
                     # all task workers success
+
                     return True
                 else:
                     # Wait for all task workers to end

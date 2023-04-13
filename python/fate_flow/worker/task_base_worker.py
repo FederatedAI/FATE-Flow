@@ -135,4 +135,6 @@ class BaseTaskWorker(BaseWorker):
         if os.getenv("LOCAL_RANK"):
             from fate_flow.entity.types import TaskLauncher
             self.report_info["launcher"] = TaskLauncher.PDSH.value
+            self.report_info["rank"] = os.getenv("LOCAL_RANK")
+            self.report_info["node"] = os.getenv("LOCAL_NODE")
         return report

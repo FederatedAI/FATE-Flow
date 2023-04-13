@@ -19,7 +19,7 @@ import time
 import typing
 
 from fate_arch.common.base_utils import current_timestamp
-from fate_flow.db.db_models import DB, Job, Task, DataBaseModel
+from fate_flow.db.db_models import DB, Job, Task, DataBaseModel, TaskStatusCollector
 from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
 from fate_flow.utils.log_utils import schedule_logger, sql_logger
 from fate_flow.utils import schedule_utils
@@ -283,6 +283,16 @@ class JobSaver(object):
     @classmethod
     def task_key(cls, task_id, role, party_id):
         return f"{task_id}_{role}_{party_id}"
+
+    @classmethod
+    def save_task_collector(cls, task_info):
+        return cls.create_job_family_entity(TaskStatusCollector, task_info)
+
+    @classmethod
+    @DB.connection_context()
+    def query_task_collector(cls, **kwargs):
+        tasks = TaskStatusCollector.query(**kwargs)
+        return [task for task in tasks]
 
 
 def str_to_time_stamp(time_str):

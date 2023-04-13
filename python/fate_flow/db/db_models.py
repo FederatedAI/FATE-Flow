@@ -253,7 +253,6 @@ class Task(DataBaseModel):
     f_world_info = JSONField(null=True)
     f_master_addr = CharField(max_length=30, null=True)
     f_launcher = CharField(max_length=20, null=True)
-    f_report_worker_count = IntegerField(default=0)
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)
@@ -264,6 +263,22 @@ class Task(DataBaseModel):
     class Meta:
         db_table = "t_task"
         primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id')
+
+
+class TaskStatusCollector(DataBaseModel):
+    f_job_id = CharField(max_length=25, index=True)
+    f_role = CharField(max_length=10, index=True)
+    f_party_id = CharField(max_length=10, index=True)
+    f_task_id = CharField(max_length=50, null=True)
+    f_task_version = BigIntegerField()
+    f_node = CharField(max_length=20, null=True)
+    f_rank = IntegerField()
+    f_party_status = CharField(max_length=50, index=True)
+
+    class Meta:
+        db_table = "t_task_status_collector"
+        primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id',
+                                   'f_node', 'f_rank')
 
 
 class TrackingMetric(DataBaseModel):
