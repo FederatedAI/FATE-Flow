@@ -132,4 +132,7 @@ class BaseTaskWorker(BaseWorker):
         if self.report_info.get("party_status") in EndStatus.status_list():
             # All worker final states need to be reported
             report = True
+        if os.getenv("LOCAL_RANK"):
+            from fate_flow.entity.types import TaskLauncher
+            self.report_info["launcher"] = TaskLauncher.PDSH.value
         return report

@@ -18,7 +18,7 @@ from fate_arch.common import FederatedCommunicationType
 from fate_flow.utils.job_utils import asynchronous_function
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.controller.engine_adapt import build_engine
-from fate_flow.db.db_models import Task
+from fate_flow.db.db_models import Task, DB
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import TaskStatus, EndStatus
 from fate_flow.utils import job_utils
@@ -148,7 +148,16 @@ class TaskController(object):
         return update_status
 
     @classmethod
-    def report_filter(cls, task_info):
+    def report_filter(cls, task_info, launcher):
+        if launcher != TaskLauncher.PDSH.value:
+            # non-pdsh worker
+            schedule_logger(task_info["job_id"]).info(f"task launcher {launcher} pass")
+            return True
+        return cls.pdsh_worker_filter(task_info)
+
+    @classmethod
+    @DB.lock("task_report")
+    def pdsh_worker_filter(cls, task_info):
         party_status = task_info.get("party_status")
         schedule_logger(task_info["job_id"]).info(f"task party status {party_status}")
         if party_status in EndStatus.status_list():
