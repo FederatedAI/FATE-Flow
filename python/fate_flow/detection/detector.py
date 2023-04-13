@@ -29,6 +29,7 @@ from fate_flow.entity.run_status import (
     EndStatus, FederatedSchedulingStatusCode,
     JobStatus, TaskStatus,
 )
+from fate_flow.entity.types import TaskLauncher
 from fate_flow.manager.dependence_manager import DependenceManager
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
@@ -60,6 +61,8 @@ class Detector(Cron):
             for task in running_tasks:
                 if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST:
                     cls.detect_cluster_instance_status(task, stop_job_ids)
+                    continue
+                if task.f_launcher == TaskLauncher.PDSH.value:
                     continue
                 if not task.f_engine_conf or task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST:
                     continue

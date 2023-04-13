@@ -78,6 +78,20 @@ class PDSHRunner:
         kill_command = pdsh_cmd_args + [f"pkill -f {worker_id}"]
         return kill_command
 
+    @staticmethod
+    def get_model_sync_cmd(active_workers, path):
+        import os
+        os.makedirs(os.path.dirname(path))
+        pdcp_cmd_args =[
+            PDSH.get("pdcp"),
+            "-w",
+            active_workers,
+            "-r",
+            path,
+            path
+        ]
+        return pdcp_cmd_args
+
     def generate_master_port(self, master_addr):
         import random
         port = random.randint(30000, 60000)

@@ -24,6 +24,7 @@ from fate_flow.pipelined_model.pipelined_component import PipelinedComponent
 from fate_flow.settings import ENABLE_MODEL_STORE
 from fate_flow.utils.api_utils import get_json_result, validate_request
 from fate_flow.utils.model_utils import gen_party_model_id
+from fate_flow.utils.process_utils import pdcp_data
 
 
 @manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/metric_data/save',
@@ -179,3 +180,10 @@ def component_output_data_table(job_id, component_name, role, party_id):
                                                                    } for output_data_info in output_data_infos])
     else:
         return get_json_result(retcode=100, retmsg='No found table, please check if the parameters are correct')
+
+
+@manager.route('/output/sync', methods=['post'])
+def output_sync():
+    request_data = request.json
+    pdcp_data(request_data.get("job_id"), request_data.get("host"), request_data.get("path"))
+    return get_json_result(retcode=0, retmsg='success')

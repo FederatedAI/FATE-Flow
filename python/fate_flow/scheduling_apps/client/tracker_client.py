@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import base64
+import os
 import typing
 from typing import List
 
@@ -298,3 +299,21 @@ class TrackerClient(object):
                                        json_body=request_body)
         if response['retcode'] != RetCode.SUCCESS:
             raise Exception(f"log component summary error, response code: {response['retcode']}, msg: {response['retmsg']}")
+
+    def sync_model(self, path):
+        if not os.environ.get("LOCAL_NODE"):
+            LOGGER.info(f"os environ no found 'LOCAL_NODE'")
+            return
+        LOGGER.info(f"Request save model to fate flow server path: {path}")
+        request_body = {
+            "job_id": self.job_id,
+            "host": os.environ.get("LOCAL_NODE"),
+            "path": path
+        }
+        response = api_utils.local_api(
+            job_id=self.job_id,
+            method='POST',
+            endpoint='/tracker/output/sync',
+            json_body=request_body
+        )
+        LOGGER.info(response)

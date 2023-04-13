@@ -9,6 +9,7 @@ import logging
 
 from fate_flow.entity.types import WorkerName, ProcessRole
 from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.settings import EXTRA_MODEL_DIR
 from fate_flow.utils.process_utils import run_subprocess
 from fate_flow.worker.task_executor import TaskExecutor
 
@@ -67,6 +68,7 @@ class DeepspeedLauncher:
     def run(self):
         processes = []
         for local_rank in range(0, self.num_local_procs):
+            args = self.parser_args()
             current_env = self.current_env.copy()
             dist_rank = self.global_rank_mapping[self.local_node][local_rank]
             current_env["RANK"] = str(dist_rank)
@@ -78,8 +80,11 @@ class DeepspeedLauncher:
             else:
                 current_env["IS_MASTER_TASK"] = str(0)
             process_cmd = [str(cmd) for cmd in self.get_cmd()]
+            model_store_dir = os.path.join(EXTRA_MODEL_DIR, args["job_id"], args.get("role"), args.get("party_id"),
+                                           args.get("component_name"))
+            os.makedirs(model_store_dir, exist_ok=True)
+            current_env["MODEL_STORE_DIR"] = model_store_dir
             worker_name = WorkerName.TASK_EXECUTOR
-            args = self.parser_args()
             worker_id, config_dir, _ = WorkerManager.get_process_dirs(worker_name=worker_name,
                                                                       job_id=args.get("job_id"),
                                                                       role=args.get("role"),

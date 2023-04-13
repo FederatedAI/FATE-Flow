@@ -165,3 +165,4 @@ ENABLE_MODEL_STORE = get_base_config('enable_model_store', False)
 
 PDSH = get_base_config('pdsh', False)
 REMOTE_LOAD_CONF = False
+EXTRA_MODEL_DIR = get_fate_flow_directory('model')
