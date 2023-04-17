@@ -167,6 +167,9 @@ class ApiReader(ComponentBase):
         download_path = os.path.join(self.task_dir, "features")
         logger.info(f"start download feature, url: {download_registry_info.f_url}")
         params = {"jobId": job_id}
+        en_content = self.encrypt_content(job_id)
+        if en_content:
+            params.update({"sign": en_content})
         with closing(getattr(requests, download_registry_info.f_method.lower(), None)(
                 url=download_registry_info.f_url,
                 params={"requestBody": json.dumps(params)},
@@ -185,10 +188,14 @@ class ApiReader(ComponentBase):
         logger.info(f"save to: {id_path}")
         os.makedirs(os.path.dirname(id_path), exist_ok=True)
         with open(id_path, "w") as f:
+            if self.input_table.schema:
+                id_name = self.input_table.schema.get("sid_name") or self.input_table.schema.get("sid", "sid")
+                f.write(f"{id_name}\n")
             for k, _ in self.input_table.collect():
                 f.write(f"{k}\n")
+        with open(id_path, "rb") as f:
             data = MultipartEncoder(
-                fields={'file': (id_path, f, 'application/octet-stream')}
+                fields={'file': ("id", f, 'application/octet-stream')}
             )
             upload_registry_info = self.service_info.get("upload")
             logger.info(f"upload info:{upload_registry_info.to_dict()}")
