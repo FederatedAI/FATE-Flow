@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import os
+import time
 
 from fate_flow.entity.run_status import TaskStatus, EndStatus
 from fate_flow.scheduling_apps.client import ControllerClient
@@ -122,6 +123,7 @@ class BaseTaskWorker(BaseWorker):
                 self.report_info
             ))
             ControllerClient.report_task(self.report_info)
+            self.await_success()
 
     def is_report(self):
         report = False
@@ -138,3 +140,15 @@ class BaseTaskWorker(BaseWorker):
             self.report_info["rank"] = os.getenv("LOCAL_RANK")
             self.report_info["node"] = os.getenv("LOCAL_NODE")
         return report
+
+    def await_success(self):
+        # the master node task needs to wait for all tasks to succeed
+        if int(os.getenv("IS_MASTER_TASK", 0)) == 1 and self.report_info.get("party_status") == TaskStatus.SUCCESS:
+            while True:
+                LOGGER.info(f"master task wait until all other workers succeed")
+                status = ControllerClient.query_task(self.report_info)
+                LOGGER.info(f"task status: {status}")
+                if status in EndStatus.status_list():
+                    LOGGER.info(f"Task End!")
+                    return
+                time.sleep(5)

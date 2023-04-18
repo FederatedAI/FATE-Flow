@@ -54,6 +54,7 @@ class TaskExecutor(BaseTaskWorker):
         start_time = current_timestamp()
         try:
             LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
+            LOGGER.info(f"run env {os.environ}")
             HookManager.init()
             self.report_info.update({
                 "job_id": args.job_id,

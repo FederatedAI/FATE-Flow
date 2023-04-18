@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.settings import API_VERSION
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.utils import api_utils
 
@@ -52,3 +54,22 @@ class ControllerClient(object):
             ),
             json_body=task_info)
         return response
+
+    @classmethod
+    def query_task(cls, task_info):
+        import requests
+        data = {
+            "job_id": task_info["job_id"],
+            "role": task_info["role"],
+            "party_id": task_info["party_id"],
+            "component_name": task_info["component_name"],
+            "task_version": task_info["task_version"]
+        }
+        response = requests.post(
+            url=f"http://{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}/{API_VERSION}/job/task/query",
+            json=data
+        )
+        response_json = response.json().get("data", [])
+        if not response_json:
+            raise Exception(response.text)
+        return response_json[0].get("f_party_status")
