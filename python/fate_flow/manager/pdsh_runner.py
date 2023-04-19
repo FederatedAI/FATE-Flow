@@ -24,16 +24,7 @@ class PDSHRunner:
         master_addr, active_workers, world_info = self.node_voting(node_info)
         world_info_base64 = base64.urlsafe_b64encode(json.dumps(world_info).encode("utf-8")).decode("utf-8")
         master_port = self.generate_master_port(master_addr)
-
-        pdsh_cmd_args =[
-            PDSH.get("path"),
-            "-S",
-            "-f",
-            "1024",
-            "-w",
-            active_workers
-        ]
-
+        pdsh_cmd_args = self.pdsh_args(active_workers)
         exports_cmd = ""
         for key, val in exports.items():
             exports_cmd += "export {}={}; ".format(key, val)
@@ -65,32 +56,39 @@ class PDSHRunner:
                 world_info[node[0]].append(node[1])
         return master_addr, ",".join(world_info.keys()), world_info
 
-    @staticmethod
-    def get_kill_cmd(active_workers, worker_id):
-        pdsh_cmd_args =[
-            PDSH.get("path"),
-            "-S",
-            "-f",
-            "1024",
-            "-w",
-            active_workers
-        ]
-        kill_command = pdsh_cmd_args + [f"pkill -f {worker_id}"]
+    @classmethod
+    def get_kill_cmd(cls, active_workers, worker_id):
+        kill_command = cls.pdsh_args(active_workers) + [f"pkill -f {worker_id}"]
         return kill_command
+
+    @classmethod
+    def get_makedir_cmd(cls, active_workers, path):
+        return cls.pdsh_args(active_workers) + [f"mkdir -p {path}"]
 
     @staticmethod
     def get_model_sync_cmd(active_workers, path):
         import os
-        os.makedirs(os.path.dirname(path), exist_ok=True)
         pdcp_cmd_args =[
             PDSH.get("pdcp"),
             "-w",
             active_workers,
             "-r",
             path,
-            path
+            os.path.dirname(path)
         ]
         return pdcp_cmd_args
+
+    @staticmethod
+    def pdsh_args(active_workers):
+        args = [
+            PDSH.get("path"),
+            "-S",
+            "-f",
+            "1024",
+            "-w",
+            active_workers,
+        ]
+        return args
 
     def generate_master_port(self, master_addr):
         import random

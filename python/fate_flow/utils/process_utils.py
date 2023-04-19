@@ -227,17 +227,6 @@ def pdsh_task_executor_process(task: Task):
         schedule_logger(task.f_job_id).exception(f"pdsh kill task {task.f_task_id} {task.f_task_version} failed: {e}")
 
 
-def pdcp_data(job_id, active_worker, path):
-    if active_worker == RuntimeConfig.JOB_SERVER_HOST:
-        schedule_logger(job_id).info(f"The local directory does not need to be manipulated")
-        return
-    schedule_logger(job_id).info(f"cp {path} from {active_worker} to {RuntimeConfig.JOB_SERVER_HOST}")
-    cmd = PDSHRunner().get_model_sync_cmd(active_worker, path)
-    schedule_logger(job_id).info(f"cmd: {cmd}")
-    f = os.popen(" ".join(cmd))
-    schedule_logger(job_id).info(f"pdcp return: {f.read()}")
-
-
 def kill_process(process: psutil.Process = None, pid: int = None, expected_cmdline: list = None):
     process = process if process is not None else get_process_instance(pid)
     if process is None:

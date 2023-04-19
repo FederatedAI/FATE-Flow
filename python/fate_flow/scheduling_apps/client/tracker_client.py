@@ -20,6 +20,8 @@ from typing import List
 
 from fate_arch import storage
 from fate_arch.abc import AddressABC
+from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.manager.pdsh_runner import PDSHRunner
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.entity import RunParameters
 from fate_arch.common.base_utils import serialize_b64, deserialize_b64
@@ -305,15 +307,18 @@ class TrackerClient(object):
             LOGGER.info(f"os environ no found 'LOCAL_NODE'")
             return
         LOGGER.info(f"Request save model to fate flow server path: {path}")
-        request_body = {
-            "job_id": self.job_id,
-            "host": os.environ.get("LOCAL_NODE"),
-            "path": path
-        }
-        response = api_utils.local_api(
-            job_id=self.job_id,
-            method='POST',
-            endpoint='/tracker/output/sync',
-            json_body=request_body
-        )
-        LOGGER.info(response)
+        if os.environ.get("LOCAL_NODE") == RuntimeConfig.JOB_SERVER_HOST:
+            LOGGER.info("The local directory does not need to be manipulated")
+        else:
+            active_worker = RuntimeConfig.JOB_SERVER_HOST
+            cmd = PDSHRunner().get_makedir_cmd(active_worker, os.path.dirname(path))
+            cmd = " ".join(cmd)
+            LOGGER.info(f"mkdir cmd: {cmd}")
+            f = os.popen(cmd)
+            LOGGER.info(f"mkdir return: {f.read()}")
+
+            cp_cmd = PDSHRunner().get_model_sync_cmd(active_worker, path)
+            cp_cmd = " ".join(cp_cmd)
+            LOGGER.info(f"pdcp cmd: {cp_cmd}")
+            f = os.popen(cp_cmd)
+            LOGGER.info(f"pdcp return: {f.read()}")
