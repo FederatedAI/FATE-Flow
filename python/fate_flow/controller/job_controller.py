@@ -57,7 +57,7 @@ class JobController(object):
             runtime_conf=runtime_conf,
             train_runtime_conf=train_runtime_conf
         )
-        job_parameters = dsl_parser.get_job_parameters(runtime_conf)
+        job_parameters = dsl_parser.get_job_parameters(runtime_conf, int(runtime_conf.get("dsl_version", "1")))
         schedule_logger(job_id).info('job parameters:{}'.format(job_parameters))
         dest_user = job_parameters.get(role, {}).get(party_id, {}).get('user', '')
         user = {}
