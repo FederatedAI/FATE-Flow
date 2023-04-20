@@ -539,9 +539,10 @@ class RuntimeConfParserV2(object):
     def get_job_parameters(submit_dict):
         ret = {}
         job_parameters = submit_dict.get("job_parameters", {})
+        component_parameters = submit_dict.get("component_parameters", {})
         common_job_parameters = job_parameters.get("common", {})
-        role_job_parameters = job_parameters.get("role", {})
-        for role in submit_dict["role"]:
+        role_job_parameters = component_parameters.get("role", {})
+        for role in component_parameters["role"]:
             party_id_list = submit_dict["role"][role]
             if not role_job_parameters:
                 ret[role] = {party_id: copy.deepcopy(common_job_parameters) for party_id in party_id_list}
