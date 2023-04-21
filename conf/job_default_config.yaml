@@ -12,7 +12,7 @@ remote_request_timeout: 30000  # ms
 federated_command_trys: 3
 end_status_job_scheduling_time_limit: 300000 # ms
 end_status_job_scheduling_updates: 1
-auto_retries: 3
+auto_retries: 1
 auto_retry_delay: 1  #seconds
 # It can also be specified in the job configuration using the sync_type parameter
 sync_type: callback # poll or callback

@@ -14,6 +14,7 @@
 #  limitations under the License.
 from webargs import fields
 
+from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec import DAGSchema
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.scheduler.job_scheduler import DAGScheduler
@@ -37,7 +38,7 @@ def create_job(dag_schema):
 @API.Input.json(task_version=fields.Integer(required=True))
 @API.Input.json(status=fields.String(required=False))
 def report_task(job_id, role, party_id, task_id, task_version, status=None):
-    ScheduleJobSaver.update_task_status(task_info={
+    status = ScheduleJobSaver.update_task_status(task_info={
         "job_id": job_id,
         "role": role,
         "party_id": party_id,
@@ -45,7 +46,9 @@ def report_task(job_id, role, party_id, task_id, task_version, status=None):
         "task_version": task_version,
         "status": status
     })
-    return API.Output.json(code=0, message='success')
+    if status:
+        return API.Output.json()
+    return API.Output.json(code=ReturnCode.Task.UPDATE_STATUS_FAILED, message="update job status does not take effect")
 
 
 @manager.route('/job/stop', methods=['POST'])
