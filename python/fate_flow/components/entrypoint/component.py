@@ -30,8 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 def execute_component(config: TaskConfigSpec):
-    party_task_id = config.party_task_id
-    mlmd = FlowMLMD(task_id=party_task_id)
+    mlmd = FlowMLMD(task_id=config.party_task_id)
     logger.debug(f"component={config.component}")
     try:
         logger.debug("running...")
@@ -70,6 +69,8 @@ def execute_component(config: TaskConfigSpec):
         execute_kwargs.update(output_data_artifacts)
         execute_kwargs.update(output_model_artifacts)
         execute_kwargs.update(output_metric_artifacts)
+        execute_kwargs.update({"job_id": config.job_id})
+        logger.info(f"input_parameters test: {input_parameters}")
 
         component.execute(**execute_kwargs)
         # log output artifacts

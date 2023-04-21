@@ -53,3 +53,6 @@ class ReturnCode:
     class Server:
         EXCEPTION = 6000
         FUNCTION_RESTRICTED = 6001
+
+    class Table:
+        NO_FOUND = 7001

@@ -173,7 +173,7 @@ class TaskConfigSpec(pydantic.BaseModel):
     class TaskConfSpec(pydantic.BaseModel):
         logger: FlowLogger
         output: OutputPoolConf
-
+    job_id: Optional[str] = ""
     task_id: str
     party_task_id: str
     component: str

@@ -12,26 +12,40 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import logging
-
 from fate_flow.components import LOCAL, Output, DatasetArtifact, cpn
+from fate_flow.manager.components.upload import Upload, UploadParam
 
 
 @cpn.component(roles=[LOCAL])
 @cpn.parameter("path", type=str, default=None, optional=False)
-@cpn.parameter("format", type=str, default="csv", optional=False)
-@cpn.parameter("id_name", type=str, default="id", optional=True)
+@cpn.parameter("namespace", type=str, default=None, optional=False)
+@cpn.parameter("name", type=str, default=None, optional=False)
+@cpn.parameter("head", type=bool, default=True, optional=True)
 @cpn.parameter("delimiter", type=str, default=",", optional=True)
-@cpn.parameter("label_name", type=str, default=None, optional=True)
-@cpn.parameter("label_type", type=str, default="float32", optional=True)
-@cpn.parameter("dtype", type=str, default="float32", optional=True)
+@cpn.parameter("destroy", type=bool, default=False, optional=True)
+@cpn.parameter("partitions", type=int, default=10, optional=True)
+@cpn.parameter("extend_sid", type=bool, default=False, optional=True)
+@cpn.parameter("meta", type=dict, default={}, optional=True)
 @cpn.artifact("output_data", type=Output[DatasetArtifact], roles=[LOCAL])
 def upload(
-    path, format, id_name, delimiter, label_name, label_type, dtype, output_data
+    job_id, path, namespace, name, head, delimiter, destroy, partitions, extend_sid, meta, output_data
 ):
-    output_data.uri = "test"
-    upload_data(path, id_name, delimiter, label_name, label_type, dtype, output_data)
+    upload_data(job_id, path, namespace, name, head, delimiter, destroy, partitions, extend_sid, meta, output_data)
 
 
-def upload_data(*args):
-    pass
+def upload_data(job_id, path, namespace, name, head, delimiter, destroy, partitions, extend_sid, meta, output_data):
+    upload_object = Upload()
+    data = upload_object.run(
+        parameters=UploadParam(
+            file=path,
+            head=head,
+            partitions=partitions,
+            namespace=namespace,
+            name=name,
+            meta=meta,
+            destroy=destroy,
+            extend_sid=extend_sid,
+            delimiter=delimiter
+        ),
+        job_id=job_id
+    )

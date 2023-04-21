@@ -349,6 +349,7 @@ class TaskParser(TaskParserABC):
     @property
     def task_parameters(self) -> TaskScheduleSpec:
         return TaskScheduleSpec(
+            job_id=self.job_id,
             task_id=self.task_id,
             party_task_id=self.execution_id,
             component=self.component_ref,

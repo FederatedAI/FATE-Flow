@@ -87,6 +87,7 @@ class RuntimeConfSpec(BaseModel):
 
 
 class TaskScheduleSpec(BaseModel):
+    job_id: Optional[str]
     task_id: Optional[str]
     party_task_id: Optional[str]
     component: Optional[str]

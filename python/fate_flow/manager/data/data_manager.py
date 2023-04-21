@@ -29,17 +29,20 @@ class DataManager:
             tar_file_name="",
             limit=-1,
             need_head=True,
-            local_download=False,
-            output_data_file_path=None
+            download_dir="",
+
     ):
         output_data_file_list = []
         output_data_meta_file_list = []
         with TemporaryDirectory() as output_tmp_dir:
             for output_name, output_table_meta in output_tables_meta.items():
                 output_data_count = 0
-                if not local_download:
+                if not download_dir:
                     output_data_file_path = "{}/{}.csv".format(output_tmp_dir, output_name)
                     output_data_meta_file_path = "{}/{}.meta".format(output_tmp_dir, output_name)
+                else:
+                    output_data_file_path = "{}/{}.csv".format(download_dir, output_name)
+                    output_data_meta_file_path = "{}/{}.meta".format(download_dir, output_name)
                 os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
                 with open(output_data_file_path, 'w') as fw:
                     with Session() as sess:
@@ -53,11 +56,9 @@ class DataManager:
                                     header = []
                                     for meta_k, meta_v in output_table.get_meta():
                                         header = meta_v.get("header")
-
-                                    if not local_download:
-                                        output_data_meta_file_list.append(output_data_meta_file_path)
-                                        with open(output_data_meta_file_path, 'w') as f:
-                                            json.dump({'header': header}, f, indent=4)
+                                    output_data_meta_file_list.append(output_data_meta_file_path)
+                                    with open(output_data_meta_file_path, 'w') as f:
+                                        json.dump({'header': header}, f, indent=4)
                                     if need_head and header and output_table_meta.get_have_head():
                                         if isinstance(header, list):
                                             header = output_table_meta.get_id_delimiter().join(header)
@@ -67,7 +68,7 @@ class DataManager:
                                 output_data_count += 1
                                 if output_data_count == limit:
                                     break
-            if local_download:
+            if download_dir:
                 return
             # tar
             output_data_tarfile = "{}/{}".format(output_tmp_dir, tar_file_name)

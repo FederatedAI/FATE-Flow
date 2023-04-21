@@ -18,7 +18,6 @@ from webargs import fields
 from fate_flow.engine import storage
 from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.utils.api_utils import API
-from fate_flow.utils.data_upload import Upload, UploadParam
 
 page_name = "data"
 
