@@ -19,7 +19,7 @@ from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.log import LoggerFactory
 
 # GRPC
-GRPC_SERVER_MAX_WORKERS = None
+GRPC_SERVER_MAX_WORKERS = None  # default: (os.cpu_count() or 1) * 5
 
 # Request
 HTTP_REQUEST_TIMEOUT = 10  # s

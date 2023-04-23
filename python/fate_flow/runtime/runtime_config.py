@@ -21,10 +21,8 @@ from fate_flow.utils.version import get_versions
 
 
 class RuntimeConfig(ReloadConfigBase):
-    DEBUG = None
     HTTP_PORT = None
     JOB_SERVER_HOST = None
-    IS_SERVER = False
     PROCESS_ROLE = None
     SCHEDULE_CLIENT: FlowSchedulerApi = None
     CLIENT_ROLE = list()
