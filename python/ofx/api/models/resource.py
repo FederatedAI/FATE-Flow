@@ -141,8 +141,10 @@ class APIClient(requests.Session):
                 if t >= try_times - 1:
                     raise e
             else:
-                return response.json()
-            # time.sleep(get_exponential_backoff_interval(t))
+                try:
+                    return response.json()
+                except:
+                    raise Exception(response.text)
 
     @staticmethod
     def remote_on_grpc_proxy(job_id, method, host, port, endpoint, src_party_id, dest_party_id, json_body,
