@@ -968,10 +968,9 @@ class DSLParserV1(BaseDSLParser):
         self.version = 1
 
     @staticmethod
-    def get_job_parameters(runtime_conf):
+    def get_job_parameters(runtime_conf, conf_version=1):
         job_parameters = RuntimeConfParserUtil.get_job_parameters(runtime_conf,
-                                                                  conf_version=1)
-
+                                                                  conf_version)
         return job_parameters
 
     @staticmethod
