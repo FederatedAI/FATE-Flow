@@ -17,9 +17,9 @@ from typing import Dict, Union
 
 from requests.models import Response
 
-from sdk.client.base import BaseFlowAPI
-from sdk.client.utils.io_utils import download_from_request
-from sdk.client.utils.params_utils import filter_invalid_params
+from ..utils.base_utils import BaseFlowAPI
+from ..utils.io_utils import download_from_request
+from ..utils.params_utils import filter_invalid_params
 
 
 class Job(BaseFlowAPI):
