@@ -48,6 +48,14 @@ class JobSaver(BaseSaver):
         return cls._update_job(Job, job_info)
 
     @classmethod
+    def list_job(cls, limit, offset, query, order_by):
+        return cls._list(Job, limit, offset, query, order_by)
+
+    @classmethod
+    def list_task(cls, limit, offset, query, order_by):
+        return cls._list(Task, limit, offset, query, order_by)
+
+    @classmethod
     def query_task(cls, only_latest=True, reverse=None, order_by=None, **kwargs):
         return cls._query_task(Task, only_latest=only_latest, reverse=reverse, order_by=order_by, **kwargs)
 

@@ -32,7 +32,7 @@ from fate_flow.entity.types import ProcessRole
 from fate_flow.scheduler import init_scheduler
 from fate_flow.scheduler.job_scheduler import DAGScheduler
 from fate_flow.runtime.system_settings import (
-    GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT, detect_logger, stat_logger,
+    GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT, detect_logger, stat_logger, GRPC_OPTIONS,
 )
 from fate_flow.utils import process_utils
 from fate_flow.utils.grpc_utils import UnaryService, UnaryServiceOSX
@@ -54,6 +54,7 @@ def server_init():
     RuntimeConfig.init_env()
     RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
+    RuntimeConfig.init_config()
 
     # manager
     ConfigManager.load()
@@ -72,23 +73,20 @@ def server_init():
     ProviderManager.register_default_providers()
 
 
-def start_grpc_server():
+def start_server(debug=False):
+    # grpc
     thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)
     stat_logger.info(f"start grpc server thread pool by {thread_pool_executor.max_workers} max workers")
     server = grpc.server(thread_pool=thread_pool_executor,
-                         options=[("grpc.max_send_message_length", -1),
-                                  ("grpc.max_receive_message_length", -1)])
+                         options=GRPC_OPTIONS)
 
     osx_pb2_grpc.add_PrivateTransferProtocolServicer_to_server(UnaryServiceOSX(), server)
     proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
     server.add_insecure_port(f"{HOST}:{GRPC_PORT}")
     server.start()
-    print("FATE Flow grpc server start successfully")
     stat_logger.info("FATE Flow grpc server start successfully")
 
-
-def start_http_server(debug=False):
-    print("FATE Flow http server start...")
+    # http
     stat_logger.info("FATE Flow http server start...")
     run_simple(
         hostname=HOST,
@@ -113,8 +111,7 @@ if __name__ == '__main__':
     server_init()
 
     try:
-        start_grpc_server()
-        start_http_server(debug=args.debug)
+        start_server(debug=args.debug)
     except Exception as e:
         traceback.print_exc()
         print(e)

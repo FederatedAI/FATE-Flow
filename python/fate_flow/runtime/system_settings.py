@@ -15,11 +15,13 @@
 #
 import os
 
+from grpc._cython import cygrpc
+
 from fate_flow.entity.types import ComputingEngine
 from fate_flow.utils import engine_utils
 from fate_flow.utils.conf_utils import get_base_config, decrypt_database_config
 from fate_flow.utils.file_utils import get_project_base_directory
-from fate_flow.utils.log_utils import LoggerFactory, getLogger
+from fate_flow.utils.log_utils import getLogger
 
 from fate_flow.settings import *
 
@@ -94,3 +96,8 @@ PARTY_ID = get_base_config("party_id", "")
 LOCAL_PARTY_ID = "0"
 
 MODEL_STORE = get_base_config("model_store")
+
+GRPC_OPTIONS = [
+    (cygrpc.ChannelArgKey.max_send_message_length, -1),
+    (cygrpc.ChannelArgKey.max_receive_message_length, -1),
+]

@@ -51,3 +51,7 @@ class JobParserABC(metaclass=ABCMeta):
     @abc.abstractmethod
     def get_task_node(self, task_name):
         ...
+
+    @property
+    def task_parser(self):
+        return TaskParserABC
