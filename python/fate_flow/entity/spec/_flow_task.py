@@ -129,8 +129,7 @@ class FlowLogger(pydantic.BaseModel):
         component_handlers = []
         component_base_path = self.metadata.basepath.joinpath("component")
         component_base_path.mkdir(parents=True, exist_ok=True)
-        filters["components"] = {"name": "fate.components"}
-        filters["ml"] = {"name": "fate.ml"}
+        filters["components"] = {"name": "fate_flow.components"}
         for level in levels:
             handler_name = f"component_{level.lower()}"
             add_file_handler(
@@ -140,16 +139,11 @@ class FlowLogger(pydantic.BaseModel):
             )
             component_handlers.append(handler_name)
         component_loggers = {
-            "fate.components": dict(
+            "fate_flow.components": dict(
                 handlers=component_handlers,
                 filters=["components"],
                 level=self.metadata.level,
-            ),
-            "fate.ml": dict(
-                handlers=component_handlers,
-                filters=["ml"],
-                level=self.metadata.level,
-            ),
+            )
         }
 
         logging.config.dictConfig(
