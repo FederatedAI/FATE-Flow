@@ -13,4 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from sdk.client.api.job import Job
+from ..utils.base_utils import BaseFlowAPI
+
+
+class Task(BaseFlowAPI):
+    def query(self, job_id: str = None, role: str = None, party_id: str = None, task_name: str = None,
+              status: str = None, task_id: str = None, task_version: int = None):
+        # todo:
+        return self._post(url='/job/task/query')

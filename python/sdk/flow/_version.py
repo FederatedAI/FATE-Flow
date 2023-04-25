@@ -14,15 +14,3 @@
 #  limitations under the License.
 
 __version__ = "2.0.0-beta"
-
-
-from sdk.client.base import BaseFlowClient
-from sdk.client import api
-
-
-class FlowClient(BaseFlowClient):
-    job = api.Job()
-
-    def __init__(self, ip, port, version="v2", app_id=None, app_token=None, user_name=""):
-        super().__init__(ip, port, version, app_id=app_id, app_token=app_token, user_name=user_name)
-        self.API_BASE_URL = 'http://%s:%s/%s' % (ip, port, version)

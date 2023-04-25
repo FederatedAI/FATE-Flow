@@ -27,7 +27,6 @@ import requests
 def _is_api_endpoint(obj):
     return isinstance(obj, BaseFlowAPI)
 
-
 class BaseFlowClient:
     API_BASE_URL = ''
 

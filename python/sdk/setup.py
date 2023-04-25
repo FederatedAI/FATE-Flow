@@ -16,7 +16,7 @@
 
 from setuptools import find_packages, setup
 
-import client
+import flow
 
 packages = find_packages(".")
 package_data = {"": ["*"]}
@@ -26,8 +26,8 @@ install_requires = [
 
 
 setup_kwargs = {
-    "name": "fate-client",
-    "version": client.__version__,
+    "name": "flow-client",
+    "version": flow.__version__,
     "description": "SDK for FATE Flow",
     "long_description_content_type": "text/markdown",
     "long_description": "SDK for FATE Flow",
