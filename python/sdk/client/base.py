@@ -23,8 +23,6 @@ import traceback
 
 import requests
 
-from sdk.client.api.base import BaseFlowAPI
-
 
 def _is_api_endpoint(obj):
     return isinstance(obj, BaseFlowAPI)
@@ -118,3 +116,39 @@ class BaseFlowClient:
 
     def post(self, uri, **kwargs):
         return self._request(method='post', uri=uri, **kwargs)
+
+
+class BaseFlowAPI:
+    def __init__(self, client=None):
+        self._client = client
+
+    def _get(self, url, handle_result=True, **kwargs):
+        if handle_result:
+            return self._handle_result(self._client.get(url, **kwargs))
+        else:
+            return self._client.get(url, **kwargs)
+
+    def _post(self, url, handle_result=True, **kwargs):
+        if handle_result:
+            return self._handle_result(self._client.post(url, **kwargs))
+        else:
+            return self._client.post(url, **kwargs)
+
+    def _handle_result(self, response):
+        return self._client._handle_result(response)
+
+    @property
+    def session(self):
+        return self._client.session
+
+    @property
+    def ip(self):
+        return self._client.ip
+
+    @property
+    def port(self):
+        return self._client.port
+
+    @property
+    def version(self):
+        return self._client.version
