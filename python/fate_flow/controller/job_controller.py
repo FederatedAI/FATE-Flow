@@ -199,7 +199,7 @@ class JobController(object):
         if status:
             query["status"] = ('in_', set(status))
         by = []
-        if by:
+        if order_by:
             by.append(order_by)
         if order:
             by.append(order)
