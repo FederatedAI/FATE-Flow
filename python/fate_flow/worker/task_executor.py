@@ -77,7 +77,7 @@ class TaskExecutor(BaseTaskWorker):
                                                            train_runtime_conf=job_configuration.train_runtime_conf,
                                                            pipeline_dsl=None)
 
-            job_parameters = dsl_parser.get_job_parameters(job_configuration.runtime_conf)
+            job_parameters = dsl_parser.get_job_parameters(job_configuration.runtime_conf, int(job_configuration.runtime_conf.get("dsl_version", "1")))
             user_name = job_parameters.get(args.role, {}).get(args.party_id, {}).get("user", '')
             LOGGER.info(f"user name:{user_name}")
             task_parameters = RunParameters(**task_parameters_conf)
