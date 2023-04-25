@@ -13,10 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import io
+import os
+import tarfile
+
 from webargs import fields
 
 from fate_flow.controller.job_controller import JobController
 from fate_flow.entity.code import ReturnCode
+from fate_flow.utils import job_utils
 from fate_flow.utils.api_utils import API
 
 
@@ -40,6 +45,43 @@ def query_job(job_id=None, role=None, party_id=None, status=None):
                            data=[job.to_human_model_dict() for job in jobs])
 
 
+@manager.route('/stop', methods=['POST'])
+@API.Input.json(job_id=fields.String(required=True))
+def request_stop_job(job_id=None):
+    stop_result = JobController.request_stop_job(job_id=job_id)
+    return API.Output.json(**stop_result)
+
+
+@manager.route('/rerun', methods=['POST'])
+@API.Input.json(job_id=fields.String(required=True))
+def request_rerun_job(job_id=None):
+    jobs = JobController.query_job(job_id=job_id)
+    if not jobs:
+        return API.Output.json(code=ReturnCode.Job.NOT_FOUND, message="job not found")
+    rerun_result = JobController.request_rerun_job(job=jobs[0])
+    return API.Output.json(**rerun_result)
+
+
+@manager.route('/list/query', methods=['GET'])
+@API.Input.params(limit=fields.Integer(required=False))
+@API.Input.params(page=fields.Integer(required=False))
+@API.Input.params(job_id=fields.String(required=False))
+@API.Input.params(description=fields.String(required=False))
+@API.Input.params(partner=fields.String(required=False))
+@API.Input.params(party_id=fields.String(required=False))
+@API.Input.params(role=fields.Dict(required=False))
+@API.Input.params(status=fields.Dict(required=False))
+@API.Input.params(order_by=fields.String(required=False))
+@API.Input.params(order=fields.String(required=False))
+def query_job_list(limit=0, page=0, job_id=None, description=None, partner=None, party_id=None, role=None, status=None,
+                   order_by=None, order=None):
+    count, data = JobController.query_job_list(
+        limit, page, job_id, description, partner, party_id, role, status, order_by, order
+    )
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success",
+                           data={"count": count, "data": data})
+
+
 @manager.route('/task/query', methods=['GET'])
 @API.Input.params(job_id=fields.String(required=False))
 @API.Input.params(role=fields.String(required=False))
@@ -57,18 +99,43 @@ def query_task(job_id=None, role=None, party_id=None, status=None, task_name=Non
                            data=[task.to_human_model_dict() for task in tasks])
 
 
-@manager.route('/stop', methods=['POST'])
-@API.Input.json(job_id=fields.String(required=True))
-def request_stop_job(job_id=None):
-    stop_result = JobController.request_stop_job(job_id=job_id)
-    return API.Output.json(**stop_result)
+@manager.route('/task/list/query', methods=['GET'])
+@API.Input.params(limit=fields.Integer(required=False))
+@API.Input.params(page=fields.Integer(required=False))
+@API.Input.params(job_id=fields.String(required=False))
+@API.Input.params(role=fields.String(required=False))
+@API.Input.params(party_id=fields.String(required=False))
+@API.Input.params(task_name=fields.String(required=False))
+@API.Input.params(order_by=fields.String(required=False))
+@API.Input.params(order=fields.String(required=False))
+def query_task_list(limit=0, page=0, job_id=None, role=None, party_id=None, task_name=None, order_by=None, order=None):
+    count, data = JobController.query_task_list(
+        limit, page, job_id, role, party_id, task_name, order_by, order
+    )
+    return API.Output.json(
+        code=ReturnCode.Base.SUCCESS, message="success",
+        data={"count": count, "data": data}
+    )
 
 
-@manager.route('/rerun', methods=['POST'])
+@manager.route('/log/download', methods=['POST'])
 @API.Input.json(job_id=fields.String(required=True))
-def request_rerun_job(job_id=None):
-    jobs = JobController.query_job(job_id=job_id)
-    if not jobs:
-        return API.Output.json(code=ReturnCode.Job.NOT_FOUND, message="job not found")
-    rerun_result = JobController.request_rerun_job(job=jobs[0])
-    return API.Output.json(**rerun_result)
+def download_job_logs(job_id):
+    job_log_dir = job_utils.get_job_log_directory(job_id=job_id)
+    if not os.path.exists(job_log_dir):
+        return API.Output.json(code=ReturnCode.API.FILE_EXCEPTION, message="no found job logs")
+    memory_file = io.BytesIO()
+    with tarfile.open(fileobj=memory_file, mode='w:gz') as tar:
+        for root, _, files in os.walk(job_log_dir):
+            for file in files:
+                full_path = os.path.join(root, file)
+                rel_path = os.path.relpath(full_path, job_log_dir)
+                tar.add(full_path, rel_path)
+    memory_file.seek(0)
+    return API.Output.file(memory_file, attachment_filename=f'job_{job_id}_log.tar.gz', as_attachment=True)
+
+
+@manager.route('/queue/clean', methods=['POST'])
+def clean_queue():
+    data = JobController.clean_queue()
+    return API.Output.json(data=data)

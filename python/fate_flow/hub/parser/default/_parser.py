@@ -361,6 +361,7 @@ class TaskParser(TaskParserABC):
         )
 
     def update_runtime_artifacts(self, task_parameters):
+        # update runtime artifacts: input model and data
         task_parameters["inputs"].update({"artifacts": self.input_artifacts})
         schedule_logger(job_id=self.job_id).info(f"update artifacts: {self.input_artifacts}")
         return task_parameters
@@ -546,6 +547,10 @@ class JobParser(JobParserABC):
                 for channel in channels:
                     dependent_task_list.append(channel.producer_task)
         return dependent_task_list
+
+    @property
+    def task_parser(self):
+        return TaskParser
 
 
 class Party(BaseModel):

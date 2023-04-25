@@ -12,6 +12,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from fate_flow.hub.flow_hub import FlowHub
 from ofx.api.client import FlowSchedulerApi
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import HOST, HTTP_PORT, PROXY_PROTOCOL, API_VERSION, HTTP_REQUEST_TIMEOUT
@@ -27,3 +28,5 @@ def init_scheduler():
                                                        remote_protocol=protocol, remote_host=remote_host,
                                                        remote_port=remote_port, grpc_channel=grpc_channel,
                                                        callback=generate_headers))
+
+    RuntimeConfig.set_scheduler(FlowHub.load_job_scheduler())

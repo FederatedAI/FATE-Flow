@@ -49,7 +49,7 @@ class TaskController(object):
         task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
         execution_id = job_utils.generate_session_id(task_id, task_version, role, party_id)
         task_node = job_parser.get_task_node(task_name=task_name)
-        task_parser = FlowHub.load_task_parser(
+        task_parser = job_parser.task_parser(
             task_node=task_node, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
             task_id=task_id, execution_id=execution_id, task_version=task_version, parties=dag_schema.dag.parties
         )
@@ -145,7 +145,7 @@ class TaskController(object):
             dag_schema = DAGSchema(**job.f_dag)
             job_parser = FlowHub.load_job_parser(dag_schema)
             task_node = job_parser.get_task_node(task_name=task.f_task_name)
-            task_parser = FlowHub.load_task_parser(
+            task_parser = job_parser.task_parser(
                 task_node=task_node, job_id=job_id, task_name=task.f_task_name, role=role,
                 party_id=party_id, parties=dag_schema.dag.parties
             )

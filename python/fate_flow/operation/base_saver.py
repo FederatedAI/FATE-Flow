@@ -15,8 +15,10 @@
 #
 
 import operator
+from functools import reduce
+from typing import Type, Union, Dict
 
-from fate_flow.db.base_models import DB, BaseModelOperate
+from fate_flow.db.base_models import DB, BaseModelOperate, DataBaseModel
 from fate_flow.db.db_models import Task, Job
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleTaskStatus, ScheduleJob
 from fate_flow.entity.types import JobStatus, TaskStatus, EndStatus
@@ -26,6 +28,20 @@ from fate_flow.utils.log_utils import schedule_logger, sql_logger
 
 class BaseSaver(BaseModelOperate):
     STATUS_FIELDS = ["status", "party_status"]
+    OPERATION = {
+            '==': operator.eq,
+            '<': operator.lt,
+            '<=': operator.le,
+            '>': operator.gt,
+            '>=': operator.ge,
+            '!=': operator.ne,
+            '<<': operator.lshift,
+            '>>': operator.rshift,
+            '%': operator.mod,
+            '**': operator.pow,
+            '^': operator.xor,
+            '~': operator.inv,
+        }
 
     @classmethod
     def _create_job(cls, job_obj, job_info):
@@ -221,3 +237,46 @@ class BaseSaver(BaseModelOperate):
             elif task.f_task_version > tasks_group[task.f_task_id].f_task_version:
                 tasks_group[task.f_task_id] = task
         return tasks_group
+
+    @classmethod
+    @DB.connection_context()
+    def _list(cls, model: Type[DataBaseModel], limit: int = 0, offset: int = 0,
+              query: dict = None, order_by: Union[str, list, tuple] = None):
+        data = model.select()
+        if query:
+            data = data.where(cls.query_dict2expression(model, query))
+        count = data.count()
+
+        if not order_by:
+            order_by = 'create_time'
+        if not isinstance(order_by, (list, tuple)):
+            order_by = (order_by, 'asc')
+        order_by, order = order_by
+        order_by = getattr(model, f'f_{order_by}')
+        order_by = getattr(order_by, order)()
+        data = data.order_by(order_by)
+
+        if limit > 0:
+            data = data.limit(limit)
+        if offset > 0:
+            data = data.offset(offset)
+        return list(data), count
+
+    @classmethod
+    def query_dict2expression(cls, model: Type[DataBaseModel], query: Dict[str, Union[bool, int, str, list, tuple]]):
+        expression = []
+        for field, value in query.items():
+            if not isinstance(value, (list, tuple)):
+                value = ('==', value)
+            op, *val = value
+
+            field = getattr(model, f'f_{field}')
+            value = cls.OPERATION[op](field, val[0]) if op in cls.OPERATION else getattr(field, op)(*val)
+
+            expression.append(value)
+
+        return reduce(operator.iand, expression)
+
+    @property
+    def supported_operators(self):
+        return

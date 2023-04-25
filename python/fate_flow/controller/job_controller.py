@@ -182,12 +182,81 @@ class JobController(object):
         return JobSaver.query_job(**query_filters)
 
     @classmethod
+    def query_job_list(cls, limit, page, job_id, description, partner, party_id, role, status, order_by, order):
+        # Provided to the job display page
+        offset = limit * (page - 1)
+        query = {'tag': ('!=', 'submit_failed')}
+        if job_id:
+            query["job_id"] = ('contains', job_id)
+        if description:
+            query["description"] = ('contains', description)
+        if party_id:
+            query["party_id"] = ('contains', party_id)
+        if partner:
+            query["partner"] = ('contains', partner)
+        if role:
+            query["role"] = ('in_', set(role))
+        if status:
+            query["status"] = ('in_', set(status))
+        by = []
+        if by:
+            by.append(order_by)
+        if order:
+            by.append(order)
+        if not by:
+            by = ['create_time', 'desc']
+
+        jobs, count = JobSaver.list_job(limit, offset, query, by)
+        jobs = [job.to_human_model_dict() for job in jobs]
+        for job in jobs:
+            job['partners'] = set()
+            for _r in job['parties']:
+                job['partners'].update(_r.get("party_id"))
+            job['partners'].discard(job['party_id'])
+            job['partners'] = sorted(job['partners'])
+        return count, jobs
+
+    @classmethod
+    def query_task_list(cls, limit, page, job_id, role, party_id, task_name, order_by, order):
+        offset = limit * (page - 1)
+
+        query = {}
+        if job_id:
+            query["job_id"] = job_id
+        if role:
+            query["role"] = role
+        if party_id:
+            query["party_id"] = party_id
+        if task_name:
+            query["task_name"] = task_name
+        by = []
+        if by:
+            by.append(order_by)
+        if order:
+            by.append(order)
+        if not by:
+            by = ['create_time', 'desc']
+
+        tasks, count = JobSaver.list_task(limit, offset, query, by)
+        return count, [task.to_human_model_dict() for task in tasks]
+
+    @classmethod
     def query_tasks(cls, **kwargs):
         query_filters = {}
         for k, v in kwargs.items():
             if v is not None:
                 query_filters[k] = v
         return JobSaver.query_task(**query_filters)
+
+    @classmethod
+    def clean_queue(cls):
+        # stop waiting job
+        jobs = JobSaver.query_job(status=JobStatus.WAITING)
+        clean_status = {}
+        for job in jobs:
+            status = FederatedScheduler.request_stop_job(party_id=job.f_scheduler_party_id,job_id=job.f_job_id, stop_status=JobStatus.CANCELED)
+            clean_status[job.f_job_id] = status
+        return clean_status
 
 
 class JobInheritance:

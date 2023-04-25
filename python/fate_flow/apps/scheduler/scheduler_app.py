@@ -26,7 +26,7 @@ page_name = 'scheduler'
 @manager.route('/job/create', methods=['POST'])
 @API.Input.json(dag_schema=fields.Dict(required=True))
 def create_job(dag_schema):
-    submit_result = DAGScheduler.submit(DAGSchema(**dag_schema))
+    submit_result = DAGScheduler.submit(dag_schema)
     return API.Output.json(**submit_result)
 
 
@@ -63,5 +63,5 @@ def stop_job(job_id, stop_status=None):
 @manager.route('/job/rerun', methods=['POST'])
 @API.Input.json(job_id=fields.String(required=True))
 def rerun_job(job_id):
-    DAGScheduler.set_job_rerun(job_id=job_id, auto=False)
+    DAGScheduler.rerun_job(job_id=job_id, auto=False)
     return API.Output.json()

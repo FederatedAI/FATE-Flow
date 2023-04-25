@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 import marshmallow
-from flask import jsonify
+from flask import jsonify, send_file
 
 from webargs.flaskparser import parser
 
@@ -57,6 +57,10 @@ class API:
                 if value is not None:
                     response[key] = value
             return jsonify(response)
+
+        @staticmethod
+        def file(path_or_file, attachment_filename, as_attachment):
+            return send_file(path_or_file, attachment_filename=attachment_filename, as_attachment=as_attachment)
 
         @staticmethod
         def server_error_response(e):

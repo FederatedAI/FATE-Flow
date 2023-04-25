@@ -49,6 +49,7 @@ class ReturnCode:
         NO_FOUND_APPID = 5002
         VERIFY_FAILED = 5003
         AUTHENTICATION_FAILED = 5004
+        FILE_EXCEPTION = 5004
 
     class Server:
         EXCEPTION = 6000
