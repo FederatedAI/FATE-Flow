@@ -12,17 +12,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-__version__ = "2.0.0-beta"
-
-
-from sdk.client.base import BaseFlowClient
-from sdk.client import api
+#
+from sdk.client.base import BaseFlowAPI
+from sdk.client.utils.params_utils import filter_invalid_params
 
 
-class FlowClient(BaseFlowClient):
-    job = api.Job()
-
-    def __init__(self, ip, port, version="v2", app_id=None, app_token=None, user_name=""):
-        super().__init__(ip, port, version, app_id=app_id, app_token=app_token, user_name=user_name)
-        self.API_BASE_URL = 'http://%s:%s/%s' % (ip, port, version)
+class Task(BaseFlowAPI):
+    def query(self, job_id: str = None, role: str = None, party_id: str = None, task_name: str = None,
+              status: str = None, task_id: str = None, task_version: int = None):
+        # todo:
+        return self._post(url='/job/task/query')
