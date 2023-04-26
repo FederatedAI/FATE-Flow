@@ -20,8 +20,7 @@ from grpc._cython import cygrpc
 from fate_flow.entity.types import ComputingEngine
 from fate_flow.utils import engine_utils
 from fate_flow.utils.conf_utils import get_base_config, decrypt_database_config
-from fate_flow.utils.file_utils import get_project_base_directory
-from fate_flow.utils.log_utils import getLogger
+from fate_flow.utils.file_utils import get_project_base_directory, get_fate_flow_directory
 
 from fate_flow.settings import *
 
@@ -74,13 +73,6 @@ HEADERS = {
     "service": FATE_FLOW_SERVICE_NAME
 }
 
-stat_logger = getLogger("fate_flow_stat")
-detect_logger = getLogger("fate_flow_detect")
-access_logger = getLogger("fate_flow_access")
-database_logger = getLogger("fate_flow_database")
-
-MODEL_STORE_PATH = os.path.join(get_fate_flow_directory(), "model")
-LOCAL_DATA_STORE_PATH = os.path.join(get_fate_flow_directory(), "data")
 BASE_URI = f"{PROTOCOL}://{HOST}:{HTTP_PORT}/{API_VERSION}"
 
 HOOK_MODULE = get_base_config("hook_module")
@@ -101,3 +93,20 @@ GRPC_OPTIONS = [
     (cygrpc.ChannelArgKey.max_send_message_length, -1),
     (cygrpc.ChannelArgKey.max_receive_message_length, -1),
 ]
+
+LOG_DIR = LOG_DIR or get_fate_flow_directory("logs")
+JOB_DIR = JOB_DIR or get_fate_flow_directory("jobs")
+MODEL_STORE_PATH = MODEL_DIR or os.path.join(get_fate_flow_directory(), "model")
+LOCAL_DATA_STORE_PATH = DATA_DIR or os.path.join(get_fate_flow_directory(), "data")
+LOG_LEVEL = LOG_LEVEL or "DEBUG"
+FATE_FLOW_LOG_DIR = os.path.join(LOG_DIR, "fate_flow")
+WORKERS_DIR = os.path.join(LOG_DIR, "workers")
+
+SQLITE_FILE_DIR = SQLITE_FILE_DIR or get_fate_flow_directory()
+SQLITE_PATH = os.path.join(SQLITE_FILE_DIR, SQLITE_FILE_NAME)
+
+GRPC_SERVER_MAX_WORKERS = GRPC_SERVER_MAX_WORKERS or (os.cpu_count() or 1) * 5
+
+VERSION_FILE_PATH = os.path.join(get_fate_flow_directory(), "fateflow.env")
+FATE_FLOW_PROVIDER_PATH = get_fate_flow_directory("python")
+FATE_FLOW_CONF_PATH = get_fate_flow_directory()

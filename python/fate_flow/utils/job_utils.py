@@ -19,8 +19,8 @@ import threading
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job
 from fate_flow.entity.spec import DAGSchema
+from fate_flow.runtime.system_settings import LOG_DIR, JOB_DIR, WORKERS_DIR
 from fate_flow.utils.base_utils import fate_uuid
-from fate_flow.utils.file_utils import get_fate_flow_directory
 
 
 class JobIdGenerator(object):
@@ -35,7 +35,6 @@ class JobIdGenerator(object):
         """
         generate next job id with locking
         """
-        #todo: there is duplication in the case of multiple instances deployment
         now = datetime.datetime.now()
         with JobIdGenerator._lock:
             if self._pre_timestamp == now:
@@ -76,11 +75,11 @@ def generate_session_id(task_id, task_version, role, party_id, suffix=None, rand
 
 
 def get_job_directory(job_id, *args):
-    return os.path.join(get_fate_flow_directory(), 'jobs', job_id, *args)
+    return os.path.join(JOB_DIR, job_id, *args)
 
 
 def get_job_log_directory(job_id, *args):
-    return os.path.join(get_fate_flow_directory(), 'logs', job_id, *args)
+    return os.path.join(LOG_DIR, job_id, *args)
 
 
 def get_task_directory(job_id, role, party_id, task_name, task_id, task_version, **kwargs):
@@ -93,11 +92,11 @@ def start_session_stop(task):
 
 
 def get_general_worker_directory(worker_name, worker_id, *args):
-    return os.path.join(get_fate_flow_directory(), worker_name, worker_id, *args)
+    return os.path.join(WORKERS_DIR, worker_name, worker_id, *args)
 
 
 def get_general_worker_log_directory(worker_name, worker_id, *args):
-    return os.path.join(get_fate_flow_directory(), 'logs', worker_name, worker_id, *args)
+    return os.path.join(LOG_DIR, worker_name, worker_id, *args)
 
 
 def generate_model_info(job_id):
@@ -108,9 +107,11 @@ def generate_model_info(job_id):
 
 @DB.connection_context()
 def get_job_resource_info(job_id, role, party_id):
-    jobs = Job.select(Job.f_dag).where(Job.f_job_id == job_id,
-                                                         Job.f_role == role,
-                                                         Job.f_party_id == party_id)
+    jobs = Job.select(Job.f_dag).where(
+        Job.f_job_id == job_id,
+        Job.f_role == role,
+        Job.f_party_id == party_id)
+
     if jobs:
         job = jobs[0]
         dag_schema = DAGSchema(**job.f_dag)

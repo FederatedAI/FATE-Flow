@@ -26,7 +26,10 @@ import queue
 import threading
 import weakref
 import os
-from fate_flow.runtime.system_settings import stat_logger
+
+from fate_flow.utils.log import getLogger
+
+stat_logger = getLogger()
 
 # Workers are created as daemon threads. This is done to allow the interpreter
 # to exit when there are still idle threads in a ThreadPoolExecutor's thread

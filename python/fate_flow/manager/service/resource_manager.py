@@ -19,9 +19,12 @@ from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import EngineRegistry, Job
 from fate_flow.entity.types import EngineType, ResourceOperation
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.runtime.system_settings import stat_logger, IGNORE_RESOURCE_ROLES, ENGINES
+from fate_flow.runtime.system_settings import IGNORE_RESOURCE_ROLES, ENGINES
 from fate_flow.utils import engine_utils, base_utils, job_utils
+from fate_flow.utils.log import getLogger
 from fate_flow.utils.log_utils import schedule_logger
+
+stat_logger = getLogger()
 
 
 class ResourceManager(object):

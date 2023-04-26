@@ -2,8 +2,11 @@ import importlib
 
 from fate_flow.hook.common.parameters import SignatureParameters, AuthenticationParameters, PermissionCheckParameters, \
     SignatureReturn, AuthenticationReturn, PermissionReturn
-from fate_flow.runtime.system_settings import HOOK_MODULE, stat_logger, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
+from fate_flow.runtime.system_settings import HOOK_MODULE, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
 from fate_flow.entity.code import ReturnCode
+from fate_flow.utils.log import getLogger
+
+stat_logger = getLogger()
 
 
 class HookManager:
