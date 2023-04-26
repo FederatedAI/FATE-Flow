@@ -16,7 +16,9 @@
 import os
 import time
 
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.run_status import TaskStatus, EndStatus
+from fate_flow.manager.pdsh_runner import PDSHRunner
 from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.worker.base_worker import BaseWorker
@@ -113,7 +115,7 @@ class BaseTaskWorker(BaseWorker):
         self.report_task_info_to_driver()
 
     def report_task_info_to_driver(self):
-        if self.is_report():
+        if self.need_report:
             LOGGER.info("report {} {} {} {} {} to driver:\n{}".format(
                 self.__class__.__name__,
                 self.report_info["task_id"],
@@ -124,8 +126,10 @@ class BaseTaskWorker(BaseWorker):
             ))
             ControllerClient.report_task(self.report_info)
             self.await_success()
+            self.sync_logs()
 
-    def is_report(self):
+    @property
+    def need_report(self):
         report = False
         LOGGER.info(f"IS MASTER TASK: {os.getenv('IS_MASTER_TASK', 1)}")
         if int(os.getenv("IS_MASTER_TASK", 1)):
@@ -143,7 +147,7 @@ class BaseTaskWorker(BaseWorker):
 
     def await_success(self):
         # the master node task needs to wait for all tasks to succeed
-        if int(os.getenv("IS_MASTER_TASK", 0)) == 1 and self.report_info.get("party_status") == TaskStatus.SUCCESS:
+        if self.is_master and self.report_info.get("party_status") == TaskStatus.SUCCESS:
             while True:
                 LOGGER.info(f"master task wait until all other workers succeed")
                 status = ControllerClient.query_task(self.report_info)
@@ -152,3 +156,25 @@ class BaseTaskWorker(BaseWorker):
                     LOGGER.info(f"Task End!")
                     return
                 time.sleep(5)
+
+    def sync_logs(self):
+        # The master worker not in fate flow server machine need sync logs to fate flow server
+        if self.is_master and self.report_info.get("party_status") in EndStatus.status_list():
+            if os.environ.get("LOCAL_NODE") != RuntimeConfig.JOB_SERVER_HOST:
+                LOGGER.info("start sync logs")
+                path = self.args.log_dir
+                cmd = PDSHRunner().get_makedir_cmd(RuntimeConfig.JOB_SERVER_HOST, os.path.dirname(path))
+                cmd = " ".join(cmd)
+                LOGGER.info(f"mkdir cmd: {cmd}")
+                f = os.popen(cmd)
+                LOGGER.info(f"mkdir return: {f.read()}")
+
+                cp_cmd = PDSHRunner().get_data_sync_cmd(RuntimeConfig.JOB_SERVER_HOST, path)
+                cp_cmd = " ".join(cp_cmd)
+                LOGGER.info(f"pdcp cmd: {cp_cmd}")
+                f = os.popen(cp_cmd)
+                LOGGER.info(f"pdcp return: {f.read()}")
+
+    @property
+    def is_master(self):
+        return int(os.getenv("IS_MASTER_TASK", 0)) == 1

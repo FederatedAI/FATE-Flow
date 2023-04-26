@@ -317,7 +317,7 @@ class TrackerClient(object):
             f = os.popen(cmd)
             LOGGER.info(f"mkdir return: {f.read()}")
 
-            cp_cmd = PDSHRunner().get_model_sync_cmd(active_worker, path)
+            cp_cmd = PDSHRunner().get_data_sync_cmd(active_worker, path)
             cp_cmd = " ".join(cp_cmd)
             LOGGER.info(f"pdcp cmd: {cp_cmd}")
             f = os.popen(cp_cmd)

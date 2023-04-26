@@ -66,7 +66,7 @@ class PDSHRunner:
         return cls.pdsh_args(active_workers) + [f"mkdir -p {path}"]
 
     @staticmethod
-    def get_model_sync_cmd(active_workers, path):
+    def get_data_sync_cmd(active_workers, path):
         import os
         pdcp_cmd_args =[
             PDSH.get("pdcp"),
