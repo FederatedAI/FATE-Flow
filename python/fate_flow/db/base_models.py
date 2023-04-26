@@ -35,10 +35,9 @@ from peewee import (
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.runtime.system_settings import DATABASE, IS_STANDALONE, stat_logger, FORCE_USE_SQLITE
+from fate_flow.runtime.system_settings import DATABASE, IS_STANDALONE, FORCE_USE_SQLITE, SQLITE_PATH
 from fate_flow.utils.base_utils import json_dumps, json_loads, date_string_to_timestamp, \
     current_timestamp, timestamp_to_date
-from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import getLogger, sql_logger
 from fate_flow.utils.object_utils import from_dict_hook
 
@@ -188,12 +187,12 @@ class BaseDataBase:
             Insert.on_conflict = lambda self, *args, **kwargs: self.on_conflict_replace()
 
             from playhouse.apsw_ext import APSWDatabase
-            self.database_connection = APSWDatabase(get_fate_flow_directory("fate_sqlite.db"))
+            self.database_connection = APSWDatabase(SQLITE_PATH)
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
-            stat_logger.info('init sqlite database on standalone mode successfully')
+            LOGGER.info('init sqlite database on standalone mode successfully')
         else:
             self.database_connection = PooledMySQLDatabase(db_name, **database_config)
-            stat_logger.info('init mysql database on cluster mode successfully')
+            LOGGER.info('init mysql database on cluster mode successfully')
 
 
 class DatabaseLock:

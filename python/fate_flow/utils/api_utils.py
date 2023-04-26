@@ -22,9 +22,12 @@ from fate_flow.entity.types import CoordinationProxyService, CoordinationCommuni
 from fate_flow.entity.code import ReturnCode
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import SignatureParameters
-from fate_flow.runtime.system_settings import stat_logger, PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
+from fate_flow.runtime.system_settings import PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
+from fate_flow.utils.log import getLogger
 
 parser.unknown = marshmallow.EXCLUDE
+
+stat_logger = getLogger()
 
 
 class API:

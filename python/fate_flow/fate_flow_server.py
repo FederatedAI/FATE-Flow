@@ -32,18 +32,27 @@ from fate_flow.entity.types import ProcessRole
 from fate_flow.scheduler import init_scheduler
 from fate_flow.scheduler.job_scheduler import DAGScheduler
 from fate_flow.runtime.system_settings import (
-    GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT, detect_logger, stat_logger, GRPC_OPTIONS,
+    GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT , GRPC_OPTIONS, FATE_FLOW_LOG_DIR,
+    LOG_LEVEL,
 )
 from fate_flow.utils import process_utils
 from fate_flow.utils.grpc_utils import UnaryService, UnaryServiceOSX
+from fate_flow.utils.log import LoggerFactory, getLogger
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.utils.version import get_versions
 from fate_flow.utils.xthread import ThreadPoolExecutor
 from fate_flow.proto.rollsite import proxy_pb2_grpc
 from fate_flow.proto.osx import osx_pb2_grpc
 
+detect_logger = getLogger("fate_flow_detect")
+stat_logger = getLogger("fate_flow_stat")
+
 
 def server_init():
+    # init logs
+    LoggerFactory.set_directory(FATE_FLOW_LOG_DIR)
+    LoggerFactory.LEVEL = LOG_LEVEL
+
     # set signal
     signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
 

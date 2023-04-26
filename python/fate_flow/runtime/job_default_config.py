@@ -13,9 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.runtime.system_settings import FATE_FLOW_JOB_DEFAULT_CONFIG_PATH, stat_logger
+from fate_flow.runtime.system_settings import FATE_FLOW_JOB_DEFAULT_CONFIG_PATH
 from .reload_config_base import ReloadConfigBase
 from ..utils import file_utils
+from ..utils.log import getLogger
+
+stat_logger = getLogger()
 
 
 class JobDefaultConfig(ReloadConfigBase):

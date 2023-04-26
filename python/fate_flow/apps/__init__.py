@@ -29,16 +29,15 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import AuthenticationParameters
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.runtime.system_settings import API_VERSION, getLogger, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION, \
+from fate_flow.runtime.system_settings import API_VERSION, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION, \
     ADMIN_PAGE, PARTY_ID
 from fate_flow.utils.api_utils import API
 from fate_flow.utils.base_utils import CustomJSONEncoder
 
 
 __all__ = ['app']
-app_list = ["client", "partner", "scheduler", "worker"]
 
-logger = getLogger('flask.app')
+app_list = ["client", "partner", "scheduler", "worker"]
 
 Request.json = property(lambda self: self.get_json(force=True, silent=True))
 
