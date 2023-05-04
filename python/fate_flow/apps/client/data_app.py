@@ -16,6 +16,7 @@
 from webargs import fields
 
 from fate_flow.engine import storage
+from fate_flow.manager.components.upload import UploadParam, Upload
 from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.utils.api_utils import API
 

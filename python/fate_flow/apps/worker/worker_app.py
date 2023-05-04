@@ -18,7 +18,8 @@ from webargs import fields
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.manager.model.model_manager import PipelinedModel
-from fate_flow.manager.service.output_manager import OutputDataTracking, OutputMetric
+from fate_flow.manager.metric.metric_manager import OutputMetric
+from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API
 

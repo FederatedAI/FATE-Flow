@@ -44,6 +44,14 @@ class IOHandle(object):
         model_meta = self._upload(model_file=model_file, storage_key=storage_key)
         self.log_meta(model_meta, storage_key)
 
+    def delete(self, job_id, role, party_id, task_name):
+        model_metas = ModelMeta.query(job_id=job_id, role=role, party_id=party_id, task_name=task_name, reverse=True)
+        if not model_metas:
+            raise ValueError(ReturnCode.Task.NO_FOUND_MODEL_OUTPUT, "No found output model")
+        for meta in model_metas:
+            self._delete(storage_key=meta.f_storage_key)
+        self.delete_meta(job_id=job_id, role=role, party_id=party_id, task_name=task_name, storage_engine=self.name)
+
     def log_meta(self, model_meta: MLModelSpec, storage_key: str):
         execution_id = model_meta.party.party_task_id
         task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
@@ -59,6 +67,10 @@ class IOHandle(object):
             "storage_key": storage_key
         }
         ModelMeta.save(**meta_info)
+
+    @staticmethod
+    def delete_meta(**kwargs):
+        return ModelMeta.delete(**kwargs)
 
     def meta_info(self, model_meta: MLModelSpec):
         execution_id = model_meta.party.party_task_id
@@ -92,6 +104,9 @@ class IOHandle(object):
         raise NotImplementedError()
 
     def _read(self, storage_key):
+        raise NotImplementedError()
+
+    def _delete(self, storage_key):
         raise NotImplementedError()
 
     @classmethod

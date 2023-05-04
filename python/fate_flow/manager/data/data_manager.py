@@ -79,3 +79,12 @@ class DataManager:
                         os.path.relpath(output_data_meta_file_list[index], output_tmp_dir))
             tar.close()
             return send_file(output_data_tarfile, attachment_filename=tar_file_name, as_attachment=True)
+
+    @staticmethod
+    def delete_data(namespace, name):
+        with Session() as sess:
+            table = sess.get_table(name=name, namespace=namespace)
+            if table:
+                table.destroy()
+                return True
+            return False

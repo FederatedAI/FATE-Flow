@@ -20,7 +20,6 @@ import traceback
 import logging
 
 from fate_flow.runtime.system_settings import FATE_FLOW_LOG_DIR, LOG_DIR
-from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.log import LoggerFactory, getLogger
 
 

@@ -58,6 +58,13 @@ class MysqlModelStorage(object):
         finally:
             self.close_connection()
 
+    def delete(self, storage_key):
+        if not self.exists(storage_key):
+            raise FileNotFoundError(f'The model {storage_key} not found in the database.')
+        return MachineLearningModel.delete().where(
+            MachineLearningModel.f_storage_key == storage_key
+        ).execute()
+
     def store(self, memory_io, storage_key, force_update=True):
         memory_io.seek(0)
         if not force_update and self.exists(storage_key):

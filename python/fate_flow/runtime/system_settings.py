@@ -99,6 +99,7 @@ JOB_DIR = JOB_DIR or get_fate_flow_directory("jobs")
 MODEL_STORE_PATH = MODEL_DIR or os.path.join(get_fate_flow_directory(), "model")
 LOCAL_DATA_STORE_PATH = DATA_DIR or os.path.join(get_fate_flow_directory(), "data")
 LOG_LEVEL = LOG_LEVEL or "DEBUG"
+LOG_SHARE = False
 FATE_FLOW_LOG_DIR = os.path.join(LOG_DIR, "fate_flow")
 WORKERS_DIR = os.path.join(LOG_DIR, "workers")
 

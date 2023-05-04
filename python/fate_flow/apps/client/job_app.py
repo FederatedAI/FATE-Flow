@@ -139,3 +139,10 @@ def download_job_logs(job_id):
 def clean_queue():
     data = JobController.clean_queue()
     return API.Output.json(data=data)
+
+
+@manager.route('/clean', methods=['POST'])
+@API.Input.json(job_id=fields.String(required=True))
+def clean_job(job_id):
+    JobController.clean_job(job_id=job_id)
+    return API.Output.json()
