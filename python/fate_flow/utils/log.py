@@ -21,6 +21,8 @@ import os
 from logging.handlers import TimedRotatingFileHandler
 from threading import RLock
 
+from fate_flow.runtime.system_settings import LOG_SHARE
+
 
 class LoggerFactory(object):
     TYPE = "FILE"
@@ -31,7 +33,7 @@ class LoggerFactory(object):
 
     LOG_DIR = None
     PARENT_LOG_DIR = None
-    log_share = True
+    log_share = LOG_SHARE
 
     append_to_parent_log = None
 

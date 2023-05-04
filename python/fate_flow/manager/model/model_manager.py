@@ -42,3 +42,7 @@ class PipelinedModel(object):
     @classmethod
     def read_model(cls, job_id, role, party_id, task_name):
         return cls.handle.read(job_id, role, party_id, task_name)
+
+    @classmethod
+    def delete_model(cls, job_id, role, party_id, task_name):
+        return cls.handle.delete(job_id, role, party_id, task_name)

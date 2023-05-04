@@ -67,6 +67,18 @@ class TencentCosStorage(object):
             LOGGER.info(f"Read model {storage_key} from Tencent COS successfully")
             return _io
 
+    def delete(self, storage_key):
+        if not self.exists(storage_key):
+            raise FileExistsError(f'The model {storage_key} not exist in the Cos.')
+        try:
+            rt = self.client.delete_bucket(
+                Bucket=self.Bucket,
+                Key=storage_key
+            )
+        except Exception as e:
+            LOGGER.exception(e)
+            raise Exception(f"Delete model {storage_key} from Tencent COS failed: {e}")
+
     @staticmethod
     def init_client(storage_address):
         from qcloud_cos import CosS3Client, CosConfig

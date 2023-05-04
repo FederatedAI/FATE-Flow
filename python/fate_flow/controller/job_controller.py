@@ -21,12 +21,14 @@ from fate_flow.db import Job
 from fate_flow.entity.spec import DAGSchema, JobConfSpec, InheritConfSpec
 from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
 from fate_flow.entity.code import ReturnCode
+from fate_flow.manager.metric.metric_manager import OutputMetric
+from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.model.model_meta import ModelMeta
-from fate_flow.manager.service.output_manager import OutputMetric, OutputDataTracking
+from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.runtime.system_settings import PARTY_ID
+from fate_flow.runtime.system_settings import PARTY_ID, LOG_DIR
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.job_utils import get_job_log_directory
 from fate_flow.utils.log_utils import schedule_logger
@@ -257,6 +259,32 @@ class JobController(object):
             status = FederatedScheduler.request_stop_job(party_id=job.f_scheduler_party_id,job_id=job.f_job_id, stop_status=JobStatus.CANCELED)
             clean_status[job.f_job_id] = status
         return clean_status
+
+    @classmethod
+    def clean_job(cls, job_id):
+        tasks = JobSaver.query_task(job_id=job_id)
+        for task in tasks:
+            # metric
+            try:
+                OutputMetric(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id,
+                             task_name=task.f_task_name,
+                             task_id=task.f_task_id, task_version=task.f_task_version).delete_metrics()
+                schedule_logger(task.f_job_id).info(f'delete {task.f_job_id} {task.f_role} {task.f_party_id}'
+                                                    f' {task.f_task_name} metric data success')
+            except Exception as e:
+                pass
+
+            # data
+            # todo
+
+            # model
+            try:
+                PipelinedModel.delete_model(task.f_job_id, task.f_role, task.f_party_id, task.f_task_name)
+                schedule_logger(task.f_job_id).info(f'delete {task.f_job_id} {task.f_role} {task.f_party_id}'
+                                                    f' {task.f_task_name} model success')
+            except Exception as e:
+                pass
+        JobSaver.delete_job(job_id=job_id)
 
 
 class JobInheritance:

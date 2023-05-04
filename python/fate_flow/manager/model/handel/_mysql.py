@@ -49,6 +49,9 @@ class MysqlHandel(IOHandle):
         _tar_io = self._tar_io(memory)
         return self.read_model(_tar_io)
 
+    def _delete(self, storage_key):
+        self.engine.delete(storage_key=storage_key)
+
     def save_as(self):
         pass
 

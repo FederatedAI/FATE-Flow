@@ -18,6 +18,7 @@ from webargs import fields
 from fate_flow.engine import storage
 from fate_flow.engine.storage import Session
 from fate_flow.entity.code import ReturnCode
+from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.utils.api_utils import API
 
 page_name = "table"
@@ -47,12 +48,7 @@ def query_table(namespace, name, display=False):
 @API.Input.json(namespace=fields.String(required=True))
 @API.Input.json(name=fields.String(required=True))
 def delete_table(namespace, name):
-    with Session() as sess:
-        import time
-        time.sleep(10)
-        table = sess.get_table(name=name, namespace=namespace)
-        if table:
-            table.destroy()
-            return API.Output.json()
-        else:
-            return API.Output.json(code=ReturnCode.Table.NO_FOUND, message="no found table")
+    if DataManager.delete_data(namespace, name):
+        return API.Output.json()
+    else:
+        return API.Output.json(code=ReturnCode.Table.NO_FOUND, message="no found table")

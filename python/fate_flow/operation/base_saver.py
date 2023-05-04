@@ -54,7 +54,8 @@ class BaseSaver(BaseModelOperate):
     @classmethod
     @DB.connection_context()
     def _delete_job(cls, job_obj, job_id):
-        job_obj.delete().where(job_obj.f_job_id == job_id)
+        _op = job_obj.delete().where(job_obj.f_job_id == job_id)
+        return _op.execute() > 0
 
     @classmethod
     def _update_job_status(cls, job_obj, job_info):

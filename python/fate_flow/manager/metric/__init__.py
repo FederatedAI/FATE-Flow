@@ -12,19 +12,3 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from fate_flow.db.base_models import BaseModelOperate
-from fate_flow.db.db_models import PipelineModelMeta
-
-
-class ModelMeta(BaseModelOperate):
-    @classmethod
-    def save(cls, **meta_info):
-        cls._create_entity(PipelineModelMeta, meta_info)
-
-    @classmethod
-    def query(cls, job_id, role, party_id, task_name, **kwargs):
-        return cls._query(PipelineModelMeta, job_id=job_id, role=role, party_id=party_id, task_name=task_name, **kwargs)
-
-    @classmethod
-    def delete(cls, **kwargs):
-        return cls._delete(PipelineModelMeta, **kwargs)

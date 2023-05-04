@@ -49,6 +49,10 @@ class FileHandle(IOHandle):
         _tar_io = self._tar_io(_p)
         return self.read_model(_tar_io)
 
+    def _delete(self, storage_key):
+        _p = self._generate_model_storage_path(storage_key)
+        return os.remove(_p)
+
     @staticmethod
     def _tar_io(path):
         with open(path, "rb") as f:
