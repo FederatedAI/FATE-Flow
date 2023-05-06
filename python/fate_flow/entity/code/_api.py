@@ -55,6 +55,7 @@ class ReturnCode:
         EXCEPTION = 6000
         FUNCTION_RESTRICTED = 6001
         RETURN_NO_JSON = 6002
+        NO_FOUND = 6003
 
     class Table:
         NO_FOUND = 7001

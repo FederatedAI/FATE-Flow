@@ -45,6 +45,10 @@ HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")
 GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("grpc_port")
 
+NGINX_HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("host") or HOST
+NGINX_HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("nginx", {}).get("http_port") or HTTP_PORT
+RANDOM_INSTANCE_ID = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("random_instance_id", False)
+
 PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol", "http")
 
 PROXY_NAME = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy_name")
@@ -56,6 +60,7 @@ IS_STANDALONE = engine_utils.is_standalone()
 WORKER = get_base_config("worker", {})
 DEFAULT_PROVIDER = get_base_config("default_provider", {})
 CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
+SERVICE_CONF_NAME = "service_conf.yaml"
 
 DATABASE = decrypt_database_config()
 
@@ -111,3 +116,16 @@ GRPC_SERVER_MAX_WORKERS = GRPC_SERVER_MAX_WORKERS or (os.cpu_count() or 1) * 5
 VERSION_FILE_PATH = os.path.join(get_fate_flow_directory(), "fateflow.env")
 FATE_FLOW_PROVIDER_PATH = get_fate_flow_directory("python")
 FATE_FLOW_CONF_PATH = get_fate_flow_directory()
+
+# Registry
+FATE_FLOW_MODEL_TRANSFER_ENDPOINT = "/v1/model/transfer"
+ZOOKEEPER = get_base_config("zookeeper", {})
+ZOOKEEPER_REGISTRY = {
+    # server
+    'flow-server': "/FATE-COMPONENTS/fate-flow",
+    # model service
+    'fateflow': "/FATE-SERVICES/flow/online/transfer/providers",
+    'servings': "/FATE-SERVICES/serving/online/publishLoad/providers",
+}
+USE_REGISTRY = get_base_config("use_registry")
+

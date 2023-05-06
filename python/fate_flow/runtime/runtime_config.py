@@ -28,6 +28,7 @@ class RuntimeConfig(ReloadConfigBase):
     SCHEDULE_CLIENT: FlowSchedulerApi = None
     SCHEDULER: JobSchedulerABC = None
     CLIENT_ROLE = list()
+    SERVICE_DB = None
     ENV = dict()
 
     @classmethod
@@ -73,3 +74,7 @@ class RuntimeConfig(ReloadConfigBase):
         for role in roles:
             if role not in cls.CLIENT_ROLE:
                 cls.CLIENT_ROLE.append(role)
+
+    @classmethod
+    def set_service_db(cls, service_db):
+        cls.SERVICE_DB = service_db
