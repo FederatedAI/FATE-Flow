@@ -219,3 +219,27 @@ class PipelineModelMeta(DataBaseModel):
     class Meta:
         db_table = 't_model_meta'
         primary_key = CompositeKey('f_job_id', 'f_storage_key', "f_storage_engine")
+
+
+class ServerRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30, index=True)
+    f_host = CharField(max_length=30)
+    f_port = IntegerField()
+    f_protocol = CharField(max_length=10)
+
+    class Meta:
+        db_table = "t_server"
+
+
+class ServiceRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30)
+    f_service_name = CharField(max_length=30)
+    f_url = CharField(max_length=100)
+    f_method = CharField(max_length=10)
+    f_params = JSONField(null=True)
+    f_data = JSONField(null=True)
+    f_headers = JSONField(null=True)
+
+    class Meta:
+        db_table = "t_service"
+        primary_key = CompositeKey('f_server_name', 'f_service_name')

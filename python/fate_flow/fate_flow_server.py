@@ -25,6 +25,7 @@ from fate_flow.controller.config_manager import ConfigManager
 from fate_flow.hook import HookManager
 from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.manager.service.provider_manager import ProviderManager
+from fate_flow.manager.service.service_manager import service_db
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.db.base_models import init_database_tables as init_flow_db
 from fate_flow.detection.detector import Detector, FederatedDetector
@@ -64,6 +65,7 @@ def server_init():
     RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
     RuntimeConfig.init_config()
+    RuntimeConfig.set_service_db(service_db())
 
     # manager
     ConfigManager.load()

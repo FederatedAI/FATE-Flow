@@ -1,4 +1,5 @@
 force_use_sqlite: true
+use_registry: false
 party_id: "10000"
 fateflow:
   host: 127.0.0.1

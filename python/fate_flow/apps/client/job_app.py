@@ -146,3 +146,15 @@ def clean_queue():
 def clean_job(job_id):
     JobController.clean_job(job_id=job_id)
     return API.Output.json()
+
+
+@manager.route('/dag/dependency', methods=['GET'])
+@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(role=fields.String(required=True))
+@API.Input.json(party_id=fields.String(required=True))
+def dag_dependency(job_id, role, party_id):
+    jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id)
+    if not jobs:
+        return API.Output.json(code=ReturnCode.Job.NOT_FOUND, message="job not found")
+    # todo
+    return API.Output.json(data={})

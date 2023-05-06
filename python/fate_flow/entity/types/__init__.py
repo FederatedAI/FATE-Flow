@@ -22,3 +22,4 @@ from ._status import *
 from ._federation import *
 from ._command import *
 from ._api import *
+from ._instance import *
