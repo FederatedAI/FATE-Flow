@@ -28,8 +28,9 @@ from fate_flow.utils.api_utils import API
 
 @manager.route('/submit', methods=['POST'])
 @API.Input.json(dag_schema=fields.Dict(required=True))
-def submit_job(dag_schema):
-    submit_result = JobController.request_create_job(dag_schema)
+@API.Input.headers(user_name=fields.String(required=False))
+def submit_job(dag_schema, user_name=None):
+    submit_result = JobController.request_create_job(dag_schema, user_name)
     return API.Output.json(**submit_result)
 
 
@@ -38,8 +39,9 @@ def submit_job(dag_schema):
 @API.Input.params(role=fields.String(required=False))
 @API.Input.params(party_id=fields.String(required=False))
 @API.Input.params(status=fields.String(required=False))
-def query_job(job_id=None, role=None, party_id=None, status=None):
-    jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id, status=status)
+@API.Input.headers(user_name=fields.String(required=False))
+def query_job(job_id=None, role=None, party_id=None, status=None, user_name=None):
+    jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id, status=status, user_name=user_name)
     if not jobs:
         return API.Output.fate_flow_exception(NoFoundJob(job_id=job_id, role=role, party_id=party_id, status=status))
     return API.Output.json(data=[job.to_human_model_dict() for job in jobs])
@@ -73,10 +75,11 @@ def request_rerun_job(job_id=None):
 @API.Input.params(status=fields.Dict(required=False))
 @API.Input.params(order_by=fields.String(required=False))
 @API.Input.params(order=fields.String(required=False))
+@API.Input.headers(user_name=fields.String(required=False))
 def query_job_list(limit=0, page=0, job_id=None, description=None, partner=None, party_id=None, role=None, status=None,
-                   order_by=None, order=None):
+                   order_by=None, order=None, user_name=None):
     count, data = JobController.query_job_list(
-        limit, page, job_id, description, partner, party_id, role, status, order_by, order
+        limit, page, job_id, description, partner, party_id, role, status, order_by, order, user_name
     )
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success",
                            data={"count": count, "data": data})

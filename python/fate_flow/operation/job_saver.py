@@ -49,6 +49,13 @@ class JobSaver(BaseSaver):
         return cls._update_job(Job, job_info)
 
     @classmethod
+    def update_job_user(cls, job_id, user_name):
+        return cls.update_entity_table(Job, {
+            "job_id": job_id,
+            "user_name": user_name
+        }, filters=["job_id"])
+
+    @classmethod
     def list_job(cls, limit, offset, query, order_by):
         return cls._list(Job, limit, offset, query, order_by)
 

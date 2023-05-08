@@ -157,11 +157,16 @@ class BaseSaver(BaseModelOperate):
 
     @classmethod
     @DB.connection_context()
-    def update_entity_table(cls, entity_model, entity_info):
+    def update_entity_table(cls, entity_model, entity_info, filters: list = None):
         query_filters = []
         primary_keys = entity_model.get_primary_keys_name()
-        for p_k in primary_keys:
-            query_filters.append(operator.attrgetter(p_k)(entity_model) == entity_info[p_k.lstrip("f").lstrip("_")])
+        if not filters:
+            for p_k in primary_keys:
+                query_filters.append(operator.attrgetter(p_k)(entity_model) == entity_info[p_k.lstrip("f").lstrip("_")])
+        else:
+            for _k in filters:
+                p_k = f"f_{_k}"
+                query_filters.append(operator.attrgetter(p_k)(entity_model) == entity_info[_k])
         objs = entity_model.select().where(*query_filters)
         if objs:
             obj = objs[0]

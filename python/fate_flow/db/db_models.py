@@ -20,9 +20,8 @@ from fate_flow.db.base_models import DataBaseModel, JSONField, DateTimeField
 
 
 class Job(DataBaseModel):
-    # multi-party common configuration
     f_job_id = CharField(max_length=25, index=True)
-    f_name = CharField(max_length=500, null=True, default='')
+    f_user_name = CharField(max_length=500, null=True, default='')
     f_description = TextField(null=True, default='')
     f_tag = CharField(max_length=50, null=True, default='')
     f_dag = JSONField()
