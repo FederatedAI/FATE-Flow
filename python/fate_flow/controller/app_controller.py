@@ -18,6 +18,7 @@ import time
 
 from fate_flow.db.casbin_models import FATE_CASBIN
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import RequestExpired, NoFoundAppid
 from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.runtime.system_settings import CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
 from fate_flow.utils.base_utils import generate_random_id
@@ -34,7 +35,7 @@ class Authentication(object):
     @classmethod
     def md5_verify(cls, app_id, timestamp, nonce, signature, user_name=""):
         if cls.check_if_expired(timestamp):
-            raise ValueError(ReturnCode.API.EXPIRED, "request has expired")
+            raise RequestExpired()
         apps = AppManager.query_app(app_id=app_id)
         if apps:
             _signature = cls.md5_sign(
@@ -46,7 +47,7 @@ class Authentication(object):
             )
             return _signature == signature
         else:
-            raise ValueError(ReturnCode.API.NO_FOUND_APPID, f"no found appid {app_id}")
+            raise NoFoundAppid(app_id=app_id)
 
     @staticmethod
     def generate_timestamp():

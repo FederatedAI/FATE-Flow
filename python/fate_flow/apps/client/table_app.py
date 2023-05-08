@@ -18,6 +18,7 @@ from webargs import fields
 from fate_flow.engine import storage
 from fate_flow.engine.storage import Session
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import NoFoundTable
 from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.utils.api_utils import API
 
@@ -41,7 +42,7 @@ def query_table(namespace, name, display=False):
             data.update({"display": data_table_meta.part_of_data})
         return API.Output.json(data=data)
     else:
-        return API.Output.json(code=ReturnCode.Table.NO_FOUND, message="no found table")
+        return API.Output.fate_flow_exception(NoFoundTable(name=name, namespace=namespace))
 
 
 @manager.route('/delete', methods=['POST'])
@@ -51,4 +52,4 @@ def delete_table(namespace, name):
     if DataManager.delete_data(namespace, name):
         return API.Output.json()
     else:
-        return API.Output.json(code=ReturnCode.Table.NO_FOUND, message="no found table")
+        return API.Output.fate_flow_exception(NoFoundTable(name=name, namespace=namespace))

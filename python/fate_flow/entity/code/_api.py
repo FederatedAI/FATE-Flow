@@ -21,20 +21,18 @@ class ReturnCode:
     class Job:
         NOT_FOUND = 1000
         CREATE_JOB_FAILED = 1001
-        UPDATE_STATUS_FAILED = 1002
-        UPDATE_FAILED = 1003
-        KILL_FAILED = 1004
-        APPLY_RESOURCE_FAILED = 1005
-        INHERITANCE_FAILED = 1006
+        UPDATE_FAILED = 1002
+        KILL_FAILED = 1003
+        RESOURCE_EXCEPTION = 1004
+        INHERITANCE_FAILED = 1005
 
     class Task:
         NOT_FOUND = 2000
         START_FAILED = 2001
-        UPDATE_STATUS_FAILED = 2002
-        UPDATE_FAILED = 2003
-        KILL_FAILED = 2004
-        APPLY_RESOURCE_FAILED = 2005
-        NO_FOUND_MODEL_OUTPUT = 2006
+        UPDATE_FAILED = 2002
+        KILL_FAILED = 2003
+        RESOURCE_EXCEPTION = 2004
+        NO_FOUND_MODEL_OUTPUT = 2005
 
     class Site:
         IS_STANDALONE = 3000
@@ -49,13 +47,16 @@ class ReturnCode:
         NO_FOUND_APPID = 5002
         VERIFY_FAILED = 5003
         AUTHENTICATION_FAILED = 5004
-        FILE_EXCEPTION = 5004
 
     class Server:
         EXCEPTION = 6000
         FUNCTION_RESTRICTED = 6001
-        RETURN_NO_JSON = 6002
+        RESPONSE_EXCEPTION = 6002
         NO_FOUND = 6003
 
     class Table:
         NO_FOUND = 7001
+
+    class File:
+        FILE_NOT_FOUND = 8001
+        FILE_EXISTS = 8002

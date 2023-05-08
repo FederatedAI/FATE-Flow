@@ -1,5 +1,6 @@
 from fate_flow.controller.app_controller import Authentication, PermissionController
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import InvalidParameter
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import AuthenticationReturn, AuthenticationParameters
 
@@ -24,10 +25,10 @@ def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
 
 def check_parameters(app_id, user_name, time_stamp, nonce, signature):
     if not app_id:
-        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter: app-id")
+        raise InvalidParameter(name="app-id")
     if not time_stamp or not isinstance(time_stamp, str):
-        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter:timestamp")
+        raise InvalidParameter(name="timestamp")
     if not nonce or not isinstance(time_stamp, str) or len(nonce) != 4:
-        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter: nonce")
+        raise InvalidParameter(name="nonce")
     if not signature:
-        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter: signature")
+        raise InvalidParameter(name="signature")

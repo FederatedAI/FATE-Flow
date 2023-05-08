@@ -16,6 +16,7 @@
 from webargs import fields
 
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import NoFoundTask
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.metric.metric_manager import OutputMetric
 from fate_flow.operation.job_saver import JobSaver
@@ -30,7 +31,8 @@ from fate_flow.utils.api_utils import API
 def query_metric_key(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
-        return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
     metric_keys = OutputMetric(job_id=job_id, role=role, party_id=party_id, task_name=task_name,
                                task_id=tasks[0].f_task_id, task_version=tasks[0].f_task_version).query_metric_keys()
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success', data=metric_keys)
@@ -45,7 +47,8 @@ def query_metric_key(job_id, role, party_id, task_name):
 def query_metric(job_id, role, party_id, task_name, filters=None):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
-        return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
     metrics = OutputMetric(job_id=job_id, role=role, party_id=party_id, task_name=task_name, task_id=tasks[0].f_task_id,
                            task_version=tasks[0].f_task_version).read_metrics(filters)
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success', data=metrics)
@@ -59,7 +62,8 @@ def query_metric(job_id, role, party_id, task_name, filters=None):
 def delete_metric(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
-        return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
     metric_keys = OutputMetric(
         job_id=job_id, role=role, party_id=party_id, task_name=task_name,
         task_id=tasks[0].f_task_id, task_version=tasks[0].f_task_version
@@ -75,7 +79,8 @@ def delete_metric(job_id, role, party_id, task_name):
 def query_model(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
-        return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
     task = tasks[0]
     model_data = PipelinedModel.read_model(task.f_job_id, task.f_role, task.f_party_id, task.f_task_name)
     return API.Output.json(data=model_data)
@@ -89,7 +94,8 @@ def query_model(job_id, role, party_id, task_name):
 def delete_model(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
-        return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
     task = tasks[0]
     PipelinedModel.delete_model(task.f_job_id, task.f_role, task.f_party_id, task.f_task_name)
     return API.Output.json()

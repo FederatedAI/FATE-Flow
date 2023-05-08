@@ -16,6 +16,7 @@ from webargs import fields
 
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec import DAGSchema
+from fate_flow.errors.job import UpdateTaskFailed
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.scheduler.job_scheduler import DAGScheduler
 from fate_flow.utils.api_utils import API
@@ -48,7 +49,10 @@ def report_task(job_id, role, party_id, task_id, task_version, status=None):
     })
     if status:
         return API.Output.json()
-    return API.Output.json(code=ReturnCode.Task.UPDATE_STATUS_FAILED, message="update job status does not take effect")
+    return API.Output.fate_flow_exception(UpdateTaskFailed(
+        job_id=job_id, role=role, party_id=party_id,
+        task_id=task_id, task_version=task_version, status=status)
+    )
 
 
 @manager.route('/job/stop', methods=['POST'])

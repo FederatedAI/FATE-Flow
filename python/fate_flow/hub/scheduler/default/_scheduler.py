@@ -23,6 +23,7 @@ from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
 from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation, \
     FederatedCommunicationType, AutoRerunStatus
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import NoFoundJob
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.hub.scheduler import JobSchedulerABC
 from fate_flow.operation.job_saver import ScheduleJobSaver
@@ -348,7 +349,7 @@ class DAGScheduler(JobSchedulerABC):
                 schedule_logger(job_id).info(f"stop job with {stop_status} failed, {response}")
                 return ReturnCode.Job.KILL_FAILED, json_dumps(response)
         else:
-            return ReturnCode.Job.NOT_FOUND, "job not found"
+            raise NoFoundJob(job_id=job_id)
 
     @classmethod
     @DB.connection_context()

@@ -19,6 +19,8 @@ from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.types import TaskStatus
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import CreateJobFailed, UpdateJobFailed, KillFailed, JobResourceException, NoFoundTask, \
+    StartTaskFailed, UpdateTaskFailed, KillTaskFailed, TaskResourceException
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API
@@ -34,9 +36,9 @@ page_name = 'partner'
 def partner_create_job(dag_schema, job_id, role, party_id):
     try:
         JobController.create_job(dag_schema, job_id, role, party_id)
-        return API.Output.json(code=ReturnCode.Base.SUCCESS, message="create job success")
-    except RuntimeError as e:
-        return API.Output.json(code=ReturnCode.Job.CREATE_JOB_FAILED, message=str(e), data={"job_id": job_id})
+        return API.Output.json()
+    except Exception as e:
+        return API.Output.fate_flow_exception(CreateJobFailed(detail=str(e)))
 
 
 @manager.route('/job/start', methods=['POST'])
@@ -46,7 +48,7 @@ def partner_create_job(dag_schema, job_id, role, party_id):
 @API.Input.json(extra_info=fields.Dict(required=False))
 def start_job(job_id, role, party_id, extra_info=None):
     JobController.start_job(job_id=job_id, role=role, party_id=party_id, extra_info=extra_info)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="start job success")
+    return API.Output.json()
 
 
 @manager.route('/job/status/update', methods=['POST'])
@@ -64,8 +66,9 @@ def partner_job_status_update(job_id, role, party_id, status):
     if JobController.update_job_status(job_info=job_info):
         return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return API.Output.json(code=ReturnCode.Job.UPDATE_STATUS_FAILED,
-                               message="update job status does not take effect")
+        return API.Output.fate_flow_exception(UpdateJobFailed(
+            job_id=job_id, role=role, party_id=party_id, status=status
+        ))
 
 
 @manager.route('/job/update', methods=['POST'])
@@ -84,7 +87,7 @@ def partner_job_update(job_id, role, party_id, progress):
     if JobController.update_job(job_info=job_info):
         return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return API.Output.json(code=ReturnCode.Job.UPDATE_FAILED, message="update job does not take effect")
+        return API.Output.fate_flow_exception(UpdateJobFailed(**job_info))
 
 
 @manager.route('/job/pipeline/save', methods=['POST'])
@@ -92,6 +95,7 @@ def partner_job_update(job_id, role, party_id, progress):
 @API.Input.json(role=fields.String(required=True))
 @API.Input.json(party_id=fields.String(required=True))
 def save_pipeline(job_id, role, party_id):
+    # todo:
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
 
 
@@ -104,8 +108,10 @@ def apply_resource(job_id, role, party_id):
     if status:
         return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return API.Output.json(code=ReturnCode.Job.APPLY_RESOURCE_FAILED,
-                               message=f'apply for job {job_id} resource failed')
+        return API.Output.fate_flow_exception(JobResourceException(
+            job_id=job_id, role=role, party_id=party_id,
+            operation_type="apply"
+        ))
 
 
 @manager.route('/job/resource/return', methods=['POST'])
@@ -117,8 +123,10 @@ def return_resource(job_id, role, party_id):
     if status:
         return API.Output.json(ReturnCode.Base.SUCCESS, message='success')
     else:
-        return API.Output.json(code=ReturnCode.Job.APPLY_RESOURCE_FAILED,
-                               message=f'return for job {job_id} resource failed')
+        return API.Output.fate_flow_exception(JobResourceException(
+            job_id=job_id, role=role, party_id=party_id,
+            operation_type="return"
+        ))
 
 
 @manager.route('/job/stop', methods=['POST'])
@@ -127,9 +135,9 @@ def return_resource(job_id, role, party_id):
 @API.Input.json(party_id=fields.String(required=True))
 def stop_job(job_id, role, party_id):
     kill_status, kill_details = JobController.stop_jobs(job_id=job_id, role=role, party_id=party_id)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS if kill_status else ReturnCode.Job.KILL_FAILED,
-                           message='success' if kill_status else 'failed',
-                           data=kill_details)
+    if kill_status:
+        return API.Output.json()
+    return API.Output.fate_flow_exception(KillFailed(detail=kill_details))
 
 
 @manager.route('/task/resource/apply', methods=['POST'])
@@ -144,8 +152,10 @@ def apply_task_resource(job_id, role, party_id, task_id, task_version):
     if status:
         return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return API.Output.json(code=ReturnCode.Task.APPLY_RESOURCE_FAILED,
-                               message=f'apply for task {job_id} resource failed')
+        return API.Output.fate_flow_exception(TaskResourceException(
+            job_id=job_id, role=role, party_id=party_id,
+            task_id=task_id, task_version=task_version, operation_type="apply"
+        ))
 
 
 @manager.route('/task/resource/return', methods=['POST'])
@@ -160,8 +170,10 @@ def return_task_resource(job_id, role, party_id, task_id, task_version):
     if status:
         return API.Output.json(ReturnCode.Base.SUCCESS, message='success')
     else:
-        return API.Output.json(code=ReturnCode.Task.APPLY_RESOURCE_FAILED,
-                               message=f'return for task {job_id} resource failed')
+        return API.Output.fate_flow_exception(TaskResourceException(
+            job_id=job_id, role=role, party_id=party_id, task_id=task_id,
+            task_version=task_version,  operation_type="return"
+        ))
 
 
 @manager.route('/task/start', methods=['POST'])
@@ -174,7 +186,10 @@ def start_task(job_id, role, party_id, task_id, task_version):
     if TaskController.start_task(job_id, role, party_id, task_id, task_version):
         return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return API.Output.json(code=ReturnCode.Task.START_FAILED, message='start task failed')
+        return API.Output.fate_flow_exception(e=StartTaskFailed(
+            job_id=job_id, role=role, party_id=party_id,
+            task_id=task_id, task_version=task_version
+        ))
 
 
 @manager.route('/task/collect', methods=['POST'])
@@ -189,7 +204,8 @@ def collect_task(job_id, role, party_id, task_id, task_version):
     if task_info:
         return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=task_info)
     else:
-        return API.Output.json(code=ReturnCode.Task.NOT_FOUND, message="task not found")
+        return API.Output.fate_flow_exception(NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                          task_id=task_id, task_version=task_version))
 
 
 @manager.route('/task/status/update', methods=['POST'])
@@ -210,11 +226,11 @@ def task_status_update(job_id, role, party_id, task_id, task_version, status):
         "status": status
     })
     if TaskController.update_task_status(task_info=task_info):
-        return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
+        return API.Output.json()
     else:
-        return API.Output.json(
-            code=ReturnCode.Task.UPDATE_STATUS_FAILED,
-            message="update job status does not take effect"
+        return API.Output.fate_flow_exception(UpdateTaskFailed(
+            job_id=job_id, role=role, party_id=party_id,
+            task_id=task_id, task_version=task_version, status=status)
         )
 
 
@@ -232,8 +248,11 @@ def stop_task(job_id, role, party_id, task_id, task_version, status=None):
     kill_status = True
     for task in tasks:
         kill_status = kill_status & TaskController.stop_task(task=task, stop_status=status)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS if kill_status else ReturnCode.Task.KILL_FAILED,
-                           message='success' if kill_status else 'failed')
+    if kill_status:
+        return API.Output.json()
+    else:
+        return API.Output.fate_flow_exception(KillTaskFailed(job_id=job_id, role=role, party_id=party_id,
+                                                             task_id=task_id, task_version=task_version))
 
 
 @manager.route('/task/rerun', methods=['POST'])
@@ -246,9 +265,6 @@ def stop_task(job_id, role, party_id, task_id, task_version, status=None):
 def rerun_task(job_id, role, party_id, task_id, task_version, new_version):
     tasks = JobSaver.query_task(job_id=job_id, task_id=task_id, role=role, party_id=party_id)
     if not tasks:
-        return API.Output.json(
-            code=ReturnCode.Task.NOT_FOUND,
-            message="task not found"
-        )
+        return API.Output.fate_flow_exception(NoFoundTask(job_id=job_id, role=role, party_id=party_id, task_id=task_id))
     TaskController.create_new_version_task(task=tasks[0], new_version=new_version)
     return API.Output.json()
