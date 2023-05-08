@@ -109,7 +109,8 @@ def init_apps():
     urls_dict = {}
     before_request_func = {
         "client": client_authentication_before_request,
-        "partner": site_authentication_before_request
+        "partner": site_authentication_before_request,
+        "scheduler": site_authentication_before_request
     }
     for key in app_list:
         urls_dict[key] = [register_page(path, before_request_func.get(key)) for path in search_pages_path(Path(__file__).parent / key)]

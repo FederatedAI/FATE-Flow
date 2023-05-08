@@ -37,7 +37,7 @@ from fate_flow.utils.log_utils import schedule_logger
 
 class JobController(object):
     @classmethod
-    def request_create_job(cls, dag_schema: dict):
+    def request_create_job(cls, dag_schema: dict, user_name: str):
         dag_schema = DAGSchema(**dag_schema)
         if not dag_schema.dag.conf:
             dag_schema.dag.conf = JobConfSpec()
@@ -50,6 +50,8 @@ class JobController(object):
             command_body={
                 "dag_schema": dag_schema.dict()
             })
+        if user_name and response.get("code") == ReturnCode.Base.SUCCESS:
+            JobSaver.update_job_user(job_id=response.get("job_id"), user_name=user_name)
         return response
 
     @classmethod
@@ -185,7 +187,8 @@ class JobController(object):
         return JobSaver.query_job(**query_filters)
 
     @classmethod
-    def query_job_list(cls, limit, page, job_id, description, partner, party_id, role, status, order_by, order):
+    def query_job_list(cls, limit, page, job_id, description, partner, party_id, role, status, order_by, order,
+                       user_name):
         # Provided to the job display page
         offset = limit * (page - 1)
         query = {'tag': ('!=', 'submit_failed')}
@@ -208,7 +211,8 @@ class JobController(object):
             by.append(order)
         if not by:
             by = ['create_time', 'desc']
-
+        if user_name:
+            query["user_name"] = ("==", user_name)
         jobs, count = JobSaver.list_job(limit, offset, query, by)
         jobs = [job.to_human_model_dict() for job in jobs]
         for job in jobs:
