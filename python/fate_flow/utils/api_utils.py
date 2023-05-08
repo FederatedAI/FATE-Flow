@@ -20,6 +20,7 @@ from webargs.flaskparser import parser
 
 from fate_flow.entity.types import CoordinationProxyService, CoordinationCommunicationProtocol, FederatedMode
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors import FateFlowError
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import SignatureParameters
 from fate_flow.runtime.system_settings import PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
@@ -67,6 +68,8 @@ class API:
 
         @staticmethod
         def server_error_response(e):
+            if isinstance(e, FateFlowError):
+                return API.Output.json(code=e.code, message=e.message)
             stat_logger.exception(e)
             if len(e.args) > 1:
                 if isinstance(e.args[0], int):
@@ -80,6 +83,10 @@ class API:
             stat_logger.exception(e)
             messages = e.data.get("messages", {})
             return API.Output.json(code=ReturnCode.API.INVALID_PARAMETER, message="Invalid request.", data=messages)
+
+        @staticmethod
+        def fate_flow_exception(e: FateFlowError):
+            return API.Output.json(code=e.code, message=e.message)
 
 
 def get_federated_proxy_address():

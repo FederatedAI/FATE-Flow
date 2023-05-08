@@ -15,7 +15,7 @@
 #
 from webargs import fields
 
-from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import DeviceNotSupported
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.utils.api_utils import API
 
@@ -31,7 +31,7 @@ def register(name, device, version, metadata):
         operator_type = ProviderManager.register_provider(provider)
         return API.Output.json(message=f"{operator_type} success")
     else:
-        return API.Output.json(code=ReturnCode.Provider.DEVICE_NOT_SUPPORTED, message=device)
+        return API.Output.fate_flow_exception(DeviceNotSupported(device=device))
 
 
 @manager.route('/query', methods=['GET'])

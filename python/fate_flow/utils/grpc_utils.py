@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import ResponseException
 from fate_flow.proto.osx import osx_pb2, osx_pb2_grpc
 from fate_flow.proto.rollsite import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
 
@@ -121,4 +122,4 @@ def response_json(response):
         return response.json()
     except:
         audit_logger().exception(response.text)
-        return API.Output.json(code=ReturnCode.Server.RETURN_NO_JSON, message=f"response text: {response.text}")
+        return API.Output.fate_flow_exception(ResponseException(response=response.text))

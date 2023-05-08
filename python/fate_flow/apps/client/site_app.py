@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import IsStandalone
 from fate_flow.runtime.system_settings import PARTY_ID, IS_STANDALONE
 from fate_flow.utils.api_utils import API
 
@@ -23,4 +24,4 @@ def query_site_info():
     if not IS_STANDALONE:
         return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data={"party_id": PARTY_ID})
     else:
-        return API.Output.json(code=ReturnCode.Site.IS_STANDALONE, message="site is standalone")
+        return API.Output.fate_flow_exception(IsStandalone())

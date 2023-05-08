@@ -18,6 +18,7 @@ import time
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job, Task
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import NoFoundTask
 from fate_flow.operation.base_saver import BaseSaver
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTask, ScheduleTaskStatus
 
@@ -63,7 +64,7 @@ class JobSaver(BaseSaver):
     def query_task_by_execution_id(cls, execution_id):
         tasks = cls.query_task(execution_id=execution_id)
         if not tasks:
-            raise ValueError(ReturnCode.Task.NOT_FOUND, "No Found Task")
+            raise NoFoundTask(execution_id=execution_id)
         return tasks[0]
 
     @classmethod

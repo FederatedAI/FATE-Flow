@@ -22,6 +22,7 @@ from werkzeug.datastructures import FileStorage
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec import MLModelSpec
 from fate_flow.entity.types import ModelFileFormat
+from fate_flow.errors.job import NoFoundModelOutput
 from fate_flow.manager.model.model_meta import ModelMeta
 from fate_flow.operation.job_saver import JobSaver
 
@@ -47,7 +48,7 @@ class IOHandle(object):
     def delete(self, job_id, role, party_id, task_name):
         model_metas = ModelMeta.query(job_id=job_id, role=role, party_id=party_id, task_name=task_name, reverse=True)
         if not model_metas:
-            raise ValueError(ReturnCode.Task.NO_FOUND_MODEL_OUTPUT, "No found output model")
+            raise NoFoundModelOutput(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
         for meta in model_metas:
             self._delete(storage_key=meta.f_storage_key)
         self.delete_meta(job_id=job_id, role=role, party_id=party_id, task_name=task_name, storage_engine=self.name)
@@ -90,7 +91,7 @@ class IOHandle(object):
     def read(self, job_id, role, party_id, task_name):
         model_metas = ModelMeta.query(job_id=job_id, role=role, party_id=party_id, task_name=task_name, reverse=True)
         if not model_metas:
-            raise ValueError(ReturnCode.Task.NO_FOUND_MODEL_OUTPUT, "No found output model")
+            raise NoFoundModelOutput(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
         return self._read(model_metas[0].f_storage_key)
 
     @property

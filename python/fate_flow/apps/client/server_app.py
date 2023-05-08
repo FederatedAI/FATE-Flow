@@ -15,7 +15,7 @@
 #
 from webargs import fields
 
-from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import NoFoundServer
 from fate_flow.manager.service.service_manager import ServiceRegistry, ServerRegistry
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils.api_utils import API
@@ -38,7 +38,7 @@ def query_all():
 def query_server(server_name):
     server_list = ServerRegistry.query_server_info_from_db(server_name)
     if not server_list:
-        return API.Output.json(code=ReturnCode.Server.NO_FOUND, message=f"no found server {server_name}")
+        return API.Output.fate_flow_exception(NoFoundServer(server_name=server_name))
     return API.Output.json(data=server_list[0].to_human_model_dict())
 
 
@@ -65,7 +65,7 @@ def delete_server(server_name):
 def query_service(server_name, service_name):
     service_list = ServiceRegistry.load_service(server_name=server_name, service_name=service_name)
     if not service_list:
-        return API.Output.json(code=ReturnCode.Server.NO_FOUND, message=f"no found server {server_name}")
+        return API.Output.fate_flow_exception(NoFoundServer(server_name=server_name))
     return API.Output.json(data=service_list[0].to_human_model_dict())
 
 

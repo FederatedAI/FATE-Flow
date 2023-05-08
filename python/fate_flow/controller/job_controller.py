@@ -21,6 +21,7 @@ from fate_flow.db import Job
 from fate_flow.entity.spec import DAGSchema, JobConfSpec, InheritConfSpec
 from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import NoFoundJob, InheritanceFailed
 from fate_flow.manager.metric.metric_manager import OutputMetric
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.model.model_meta import ModelMeta
@@ -56,7 +57,7 @@ class JobController(object):
         schedule_logger(job_id).info(f"stop job on this party")
         jobs = JobSaver.query_job(job_id=job_id)
         if not jobs:
-            return {"code": ReturnCode.Job.NOT_FOUND, "message": "job not found"}
+            raise NoFoundJob(job_id=job_id)
         status = JobStatus.CANCELED
         kill_status, kill_details = JobController.stop_jobs(job_id=job_id, stop_status=status)
         schedule_logger(job_id).info(f"stop job on this party status {kill_status}")
@@ -295,17 +296,21 @@ class JobInheritance:
         inheritance_jobs = JobSaver.query_job(job_id=inheritance.job_id)
         inheritance_tasks = JobSaver.query_task(job_id=inheritance.job_id)
         if not inheritance_jobs:
-            raise Exception(ReturnCode.Job.INHERITANCE_FAILED, f"no found job {inheritance.job_id}")
+            raise InheritanceFailed(job_id=inheritance.job_id, detail=f"no found job {inheritance.job_id}")
         task_status = {}
         for task in inheritance_tasks:
             task_status[task.f_task_name] = task.f_status
 
         for task_name in inheritance.task_list:
             if task_name not in task_status.keys():
-                raise Exception(ReturnCode.Job.INHERITANCE_FAILED, f"job {inheritance.job_id} no found task {task_name}")
+                raise InheritanceFailed(job_id=inheritance.job_id, task_name=task_name, detail="no found task name")
             elif task_status[task_name] not in [TaskStatus.SUCCESS, TaskStatus.PASS]:
-                raise Exception(ReturnCode.Job.INHERITANCE_FAILED,
-                                f"job {inheritance.job_id} task {task_name} status:{task_status[task_name]}")
+                raise InheritanceFailed(
+                    job_id=inheritance.job_id,
+                    task_name=task_name,
+                    task_status=task_status[task_name],
+                    detail=f"task status need in [{TaskStatus.SUCCESS}, {TaskStatus.PASS}]"
+                )
         # todo: parsing and judging whether job can be inherited
 
     @classmethod
