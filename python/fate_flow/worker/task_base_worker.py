@@ -125,6 +125,7 @@ class BaseTaskWorker(BaseWorker):
                 self.report_info
             ))
             ControllerClient.report_task(self.report_info)
+            self.sync_model()
             self.await_success()
             self.sync_logs()
 
@@ -174,6 +175,25 @@ class BaseTaskWorker(BaseWorker):
                 LOGGER.info(f"pdcp cmd: {cp_cmd}")
                 f = os.popen(cp_cmd)
                 LOGGER.info(f"pdcp return: {f.read()}")
+
+    def sync_model(self):
+        # The master worker not in fate flow server machine need sync model to fate flow server
+        if self.is_master and self.report_info.get("party_status") == EndStatus.SUCCESS:
+            if os.environ.get("LOCAL_NODE") != RuntimeConfig.JOB_SERVER_HOST:
+                LOGGER.info("start sync model")
+                model_dir = os.environ.get("MODEL_STORE_DIR")
+                cmd = PDSHRunner().get_makedir_cmd(RuntimeConfig.JOB_SERVER_HOST, model_dir)
+                cmd = " ".join(cmd)
+                LOGGER.info(f"mkdir cmd: {cmd}")
+                f = os.popen(cmd)
+                LOGGER.info(f"mkdir return: {f.read()}")
+                cp_cmd = PDSHRunner().get_data_sync_cmd(RuntimeConfig.JOB_SERVER_HOST, model_dir, base_dir=True)
+                cp_cmd = " ".join(cp_cmd)
+                LOGGER.info(f"pdcp cmd: {cp_cmd}")
+                f = os.popen(cp_cmd)
+                LOGGER.info(f"pdcp return: {f.read()}")
+            else:
+                LOGGER.info("The local directory does not need to be manipulated")
 
     @property
     def is_master(self):
