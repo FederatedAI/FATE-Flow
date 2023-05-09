@@ -6,6 +6,11 @@ fateflow:
   http_port: 9380
   grpc_port: 9360
   proxy_name: rollsite
+  # Nginx load balancing
+  nginx:
+    host:
+    http_port:
+    grpc_port:
 database:
   name: fate_flow
   user: fate

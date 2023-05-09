@@ -29,7 +29,7 @@ from fate_flow.hub.scheduler import JobSchedulerABC
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.utils import job_utils, schedule_utils
+from fate_flow.utils import job_utils, schedule_utils, wraps_utils
 from fate_flow.utils.base_utils import current_timestamp, json_dumps
 from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
 
@@ -114,7 +114,7 @@ class DAGScheduler(JobSchedulerABC):
             job = jobs[0]
             schedule_logger().info(f"schedule waiting job {job.f_job_id}")
             try:
-                self.schedule_waiting_jobs(job=job)
+                self.schedule_waiting_jobs(job=job, lock=True)
             except Exception as e:
                 schedule_logger(job.f_job_id).exception(e)
                 schedule_logger(job.f_job_id).error("schedule waiting job failed")
@@ -127,7 +127,7 @@ class DAGScheduler(JobSchedulerABC):
         for job in jobs:
             schedule_logger().info(f"schedule running job {job.f_job_id}")
             try:
-                self.schedule_running_job(job=job)
+                self.schedule_running_job(job=job, lock=True)
             except Exception as e:
                 schedule_logger(job.f_job_id).exception(e)
                 schedule_logger(job.f_job_id).error("schedule job failed")
@@ -174,7 +174,7 @@ class DAGScheduler(JobSchedulerABC):
                 else:
                     schedule_logger(job.f_job_id).info("the number of updates has been exceeded")
                     continue
-                self.schedule_running_job(job=job, force_sync_status=True)
+                self.schedule_running_job(job=job, force_sync_status=True, lock=True)
             except Exception as e:
                 schedule_logger(job.f_job_id).exception(e)
                 schedule_logger(job.f_job_id).error("schedule job failed")
@@ -218,6 +218,7 @@ class DAGScheduler(JobSchedulerABC):
             schedule_logger(job.f_job_id).info("job no party should be rollback resource")
 
     @classmethod
+    @wraps_utils.schedule_lock
     def schedule_waiting_jobs(cls, job: ScheduleJob):
         if job.f_cancel_signal:
             FederatedScheduler.sync_job_status(job_id=job.f_job_id, roles=job.f_parties,
@@ -229,6 +230,7 @@ class DAGScheduler(JobSchedulerABC):
         if status:
             cls.start_job(job_id=job.f_job_id, roles=job.f_parties)
 
+    @wraps_utils.schedule_lock
     def schedule_running_job(self, job: ScheduleJob, force_sync_status=False):
         schedule_logger(job.f_job_id).info("scheduling running job")
 
@@ -268,6 +270,7 @@ class DAGScheduler(JobSchedulerABC):
                                                job_info=job.to_human_model_dict())
         schedule_logger(job.f_job_id).info("finish scheduling running job")
 
+    @wraps_utils.schedule_lock
     def schedule_rerun_job(self, job):
         if EndStatus.contains(job.f_status):
             job.f_status = JobStatus.WAITING
