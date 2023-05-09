@@ -24,6 +24,7 @@ from fate_flow.errors.job import CreateJobFailed, UpdateJobFailed, KillFailed, J
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API
+from fate_flow.utils.wraps_utils import task_request_proxy
 
 page_name = 'partner'
 
@@ -182,11 +183,12 @@ def return_task_resource(job_id, role, party_id, task_id, task_version):
 @API.Input.json(party_id=fields.String(required=True))
 @API.Input.json(task_id=fields.String(required=True))
 @API.Input.json(task_version=fields.Integer(required=True))
+@task_request_proxy(filter_local=True)
 def start_task(job_id, role, party_id, task_id, task_version):
     if TaskController.start_task(job_id, role, party_id, task_id, task_version):
         return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
     else:
-        return API.Output.fate_flow_exception(e=StartTaskFailed(
+        return API.Output.fate_flow_exception(StartTaskFailed(
             job_id=job_id, role=role, party_id=party_id,
             task_id=task_id, task_version=task_version
         ))
@@ -241,6 +243,7 @@ def task_status_update(job_id, role, party_id, task_id, task_version, status):
 @API.Input.json(task_id=fields.String(required=True))
 @API.Input.json(task_version=fields.Integer(required=True))
 @API.Input.json(status=fields.String())
+@task_request_proxy()
 def stop_task(job_id, role, party_id, task_id, task_version, status=None):
     if not status:
         status = TaskStatus.FAILED

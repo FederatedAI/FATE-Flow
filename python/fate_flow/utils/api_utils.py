@@ -13,6 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import random
+import time
+
 import marshmallow
 from flask import jsonify, send_file
 
@@ -23,8 +26,12 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.errors import FateFlowError
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import SignatureParameters
-from fate_flow.runtime.system_settings import PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
+from fate_flow.runtime.job_default_config import JobDefaultConfig
+from fate_flow.runtime.system_settings import PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT, API_VERSION, \
+    REQUEST_TRY_TIMES, REQUEST_MAX_WAIT_SEC, REQUEST_WAIT_SEC
 from fate_flow.utils.log import getLogger
+from fate_flow.utils.log_utils import schedule_logger, audit_logger
+from fate_flow.utils.requests_utils import request
 
 parser.unknown = marshmallow.EXCLUDE
 
@@ -47,13 +54,12 @@ class API:
 
     class Output:
         @staticmethod
-        def json(code=ReturnCode.Base.SUCCESS, message='success', data=None, job_id=None, meta=None):
+        def json(code=ReturnCode.Base.SUCCESS, message='success', data=None, job_id=None):
             result_dict = {
                 "code": code,
                 "message": message,
                 "data": data,
                 "job_id": job_id,
-                "meta": meta,
             }
 
             response = {}
@@ -114,3 +120,35 @@ def get_federated_proxy_address():
 
 def generate_headers(party_id, body):
     return HookManager.site_signature(SignatureParameters(party_id=party_id, body=body))
+
+
+def get_exponential_backoff_interval(retries, full_jitter=False):
+    """Calculate the exponential backoff wait time."""
+    # Will be zero if factor equals 0
+    countdown = min(REQUEST_MAX_WAIT_SEC, REQUEST_WAIT_SEC * (2 ** retries))
+    # Full jitter according to
+    # https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+    if full_jitter:
+        countdown = random.randrange(countdown + 1)
+    # Adjust according to maximum wait time and account for negative values.
+    return max(0, countdown)
+
+
+def federated_coordination_on_http(method, host, port, endpoint, json_body, headers=None, params=None,
+                timeout=JobDefaultConfig.remote_request_timeout):
+    url = f'http://{host}:{port}/{API_VERSION}{endpoint}'
+    for t in range(REQUEST_TRY_TIMES):
+        try:
+            response = request(
+                method=method, url=url, timeout=timeout,
+                headers=headers, json=json_body, params=params
+            )
+            response.raise_for_status()
+        except Exception as e:
+            schedule_logger().warning(f'http api error: {url}\n{e}')
+            if t >= REQUEST_TRY_TIMES - 1:
+                raise e
+        else:
+            audit_logger().info(f'http api response: {url}\n{response.text}')
+            return response.json()
+        time.sleep(get_exponential_backoff_interval(t))

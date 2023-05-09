@@ -53,6 +53,7 @@ class ReturnCode:
         FUNCTION_RESTRICTED = 6001
         RESPONSE_EXCEPTION = 6002
         NO_FOUND = 6003
+        NO_FOUND_INSTANCE = 6004
 
     class Table:
         NO_FOUND = 7001
