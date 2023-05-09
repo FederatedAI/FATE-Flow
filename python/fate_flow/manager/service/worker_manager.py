@@ -62,7 +62,13 @@ class WorkerManager:
                              run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=task_parameters,
                              cmd=process_cmd)
         schedule_logger(job_id=task.f_job_id).info(f"start task worker, executor id {task.f_execution_id}...")
-        return {"run_pid": p.pid, "run_ip": RuntimeConfig.JOB_SERVER_HOST, "worker_id": worker_id, "cmd": process_cmd}
+        return {
+            "run_pid": p.pid,
+            "run_ip": RuntimeConfig.JOB_SERVER_HOST,
+            "worker_id": worker_id,
+            "cmd": process_cmd,
+            "run_port": RuntimeConfig.HTTP_PORT
+        }
 
     @classmethod
     def get_process_dirs(cls, worker_name: WorkerName, worker_id=None, job_id=None, role=None, party_id=None, task: Task = None):

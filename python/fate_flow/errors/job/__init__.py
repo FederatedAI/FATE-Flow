@@ -117,6 +117,11 @@ class NoFoundServer(FateFlowError):
     message = "No found server"
 
 
+class NoFoundINSTANCE(FateFlowError):
+    code = ReturnCode.Server.NO_FOUND_INSTANCE
+    message = "No Found Flow Instance"
+
+
 class NoFoundTable(FateFlowError):
     code = ReturnCode.Table.NO_FOUND
     message = "No found table"

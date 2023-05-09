@@ -17,6 +17,14 @@ from functools import wraps
 
 from fate_flow.entity.code import ReturnCode
 
+from flask import request as flask_request
+from fate_flow.errors.job import NoFoundTask, ResponseException, NoFoundINSTANCE
+from fate_flow.operation.job_saver import JobSaver
+from fate_flow.runtime.runtime_config import RuntimeConfig
+from fate_flow.runtime.system_settings import HOST, HTTP_PORT, API_VERSION
+from fate_flow.utils.api_utils import API, federated_coordination_on_http
+from fate_flow.utils.requests_utils import request
+
 
 def filter_parameters(filter_value=None):
     def _inner(func):
@@ -41,3 +49,72 @@ def switch_function(switch, code=ReturnCode.Server.FUNCTION_RESTRICTED, message=
                 raise Exception(code, f"func {func.__name__}, {message}")
         return _wrapper
     return _inner
+
+
+def task_request_proxy(filter_local=False, force=True):
+    def _outer(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            party_id, role, task_id, task_version = kwargs.get("party_id"), kwargs.get("role"), \
+                                                    kwargs.get("task_id"), kwargs.get("task_version")
+            if not filter_local or (filter_local and role == "local"):
+                tasks = JobSaver.query_task(task_id=task_id, task_version=task_version, role=role, party_id=party_id)
+                if tasks:
+                    if tasks[0].f_run_ip and tasks[0].f_run_port:
+                        if tasks[0].f_run_ip != RuntimeConfig.JOB_SERVER_HOST:
+                            source_url = flask_request.url
+                            source_address = source_url.split("/")[2]
+                            dest_address = ":".join([tasks[0].f_run_ip, str(tasks[0].f_run_port)])
+                            dest_url = source_url.replace(source_address, dest_address)
+                            try:
+                                response = request(method=flask_request.method, url=dest_url, json=flask_request.json,
+                                                   headers=flask_request.headers, params=flask_request.args)
+                                if 200 <= response.status_code < 300:
+                                    response = response.json()
+                                    return API.Output.json(code=response.get("code"), message=response.get("message"))
+                                else:
+                                    raise ResponseException(response=response.text)
+                            except Exception as e:
+                                if force:
+                                    return func(*args, **kwargs)
+                                raise e
+                else:
+                    return API.Output.fate_flow_exception(NoFoundTask(
+                        role=role,
+                        party_id=party_id,
+                        task_id=task_id,
+                        task_version=task_version
+                    ))
+            return func(*args, **kwargs)
+        return _wrapper
+    return _outer
+
+
+def cluster_route(func):
+    @wraps(func)
+    def _route(*args, **kwargs):
+        instance_id = kwargs.get('instance_id')
+        request_data = flask_request.json or flask_request.form.to_dict()
+        if not instance_id:
+            return func(*args, **kwargs)
+        instance = RuntimeConfig.SERVICE_DB.get_servers().get(instance_id)
+        if instance is None:
+            return API.Output.fate_flow_exception(NoFoundINSTANCE(instance_id=instance_id))
+
+        if instance.http_address == f'{HOST}:{HTTP_PORT}':
+            return func(*args, **kwargs)
+
+        endpoint = flask_request.full_path
+        prefix = f'/{API_VERSION}/'
+        if endpoint.startswith(prefix):
+            endpoint = endpoint[len(prefix) - 1:]
+        response = federated_coordination_on_http(
+            method=flask_request.method,
+            host=instance.host,
+            port=instance.http_port,
+            endpoint=endpoint,
+            json_body=request_data,
+            headers=flask_request.headers,
+        )
+        return API.Output.json(**response)
+    return _route
