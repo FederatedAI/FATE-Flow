@@ -1,4 +1,5 @@
 import functools
+import os
 
 from flask import request as flask_request
 
@@ -41,3 +42,11 @@ def task_request_proxy(filter_local=False, force=True):
             return func(*args, **kwargs)
         return _wrapper
     return _outer
+
+
+def is_master():
+    return int(os.getenv("IS_MASTER_TASK", 0)) == 1
+
+
+def is_local_process():
+    return os.environ.get("LOCAL_NODE") == RuntimeConfig.JOB_SERVER_HOST

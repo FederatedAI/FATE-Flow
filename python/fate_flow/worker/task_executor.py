@@ -152,7 +152,7 @@ class TaskExecutor(BaseTaskWorker):
             if set(roles) == {"local"}:
                 LOGGER.info(f"only local roles, pass init federation")
             else:
-                if int(os.getenv("IS_MASTER_TASK", 1)):
+                if self.is_master:
                     sess.init_federation(federation_session_id=args.federation_session_id,
                                          runtime_conf=component_parameters_on_party,
                                          service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
@@ -229,7 +229,7 @@ class TaskExecutor(BaseTaskWorker):
                     output_table_list.append({"namespace": persistent_table_namespace, "name": persistent_table_name})
             self.log_output_data_table_tracker(args.job_id, input_table_list, output_table_list)
 
-            if cpn_output.model:
+            if cpn_output.model and self.is_master:
                 getattr(
                     tracker_client if predict_tracker_client is None else predict_tracker_client,
                     'save_component_output_model',
@@ -284,6 +284,10 @@ class TaskExecutor(BaseTaskWorker):
         LOGGER.info(msg)
         print(msg)
         return self.report_info
+
+    @property
+    def is_master(self):
+        return int(os.getenv("IS_MASTER_TASK", 1))
 
     @classmethod
     def log_output_data_table_tracker(cls, job_id, input_table_list, output_table_list):

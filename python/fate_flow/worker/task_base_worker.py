@@ -20,6 +20,7 @@ from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.run_status import TaskStatus, EndStatus
 from fate_flow.manager.pdsh_runner import PDSHRunner
 from fate_flow.scheduling_apps.client import ControllerClient
+from fate_flow.utils import task_utils
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.worker.base_worker import BaseWorker
 
@@ -160,8 +161,8 @@ class BaseTaskWorker(BaseWorker):
 
     def sync_logs(self):
         # The master worker not in fate flow server machine need sync logs to fate flow server
-        if self.is_master and self.report_info.get("party_status") in EndStatus.status_list():
-            if os.environ.get("LOCAL_NODE") != RuntimeConfig.JOB_SERVER_HOST:
+        if task_utils.is_master() and self.report_info.get("party_status") in EndStatus.status_list():
+            if not task_utils.is_local_process():
                 LOGGER.info("start sync logs")
                 path = self.args.log_dir
                 cmd = PDSHRunner().get_makedir_cmd(RuntimeConfig.JOB_SERVER_HOST, os.path.dirname(path))
@@ -178,8 +179,8 @@ class BaseTaskWorker(BaseWorker):
 
     def sync_model(self):
         # The master worker not in fate flow server machine need sync model to fate flow server
-        if self.is_master and self.report_info.get("party_status") == EndStatus.SUCCESS:
-            if os.environ.get("LOCAL_NODE") != RuntimeConfig.JOB_SERVER_HOST:
+        if task_utils.is_master() and self.report_info.get("party_status") == EndStatus.SUCCESS:
+            if not task_utils.is_local_process():
                 LOGGER.info("start sync model")
                 model_dir = os.environ.get("MODEL_STORE_DIR")
                 cmd = PDSHRunner().get_makedir_cmd(RuntimeConfig.JOB_SERVER_HOST, model_dir)
@@ -194,7 +195,3 @@ class BaseTaskWorker(BaseWorker):
                 LOGGER.info(f"pdcp return: {f.read()}")
             else:
                 LOGGER.info("The local directory does not need to be manipulated")
-
-    @property
-    def is_master(self):
-        return int(os.getenv("IS_MASTER_TASK", 0)) == 1

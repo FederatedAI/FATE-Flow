@@ -27,6 +27,7 @@ from fate_arch.common.base_utils import json_dumps, json_loads
 
 from fate_flow.settings import stat_logger
 from fate_flow.entity import RunParameters
+from fate_flow.utils import task_utils
 from fate_flow.utils.model_utils import gen_party_model_id
 from fate_flow.utils.base_utils import get_fate_flow_directory
 from fate_flow.model import Locker
@@ -80,7 +81,26 @@ class Checkpoint(Locker):
             self.database.write_text(yaml.dump(data, Dumper=yaml.RoundTripDumper), 'utf8')
 
         stat_logger.info(f'Checkpoint saved. path: {self.directory}')
+        self.sync_directory()
         return self.directory
+
+    def sync_directory(self):
+        if task_utils.is_master() and not task_utils.is_local_process():
+            import os
+
+            from fate_flow.manager.pdsh_runner import PDSHRunner
+            from fate_flow.db.runtime_config import RuntimeConfig
+            stat_logger.info("start sync checkpoint model")
+            cmd = PDSHRunner().get_makedir_cmd(RuntimeConfig.JOB_SERVER_HOST, self.directory)
+            stat_logger.info(f"mkdir cmd: {cmd}")
+            cmd = " ".join(cmd)
+            os.popen(cmd)
+            cp_cmd = PDSHRunner().get_data_sync_cmd(RuntimeConfig.JOB_SERVER_HOST, self.directory, base_dir=True)
+            cp_cmd = " ".join(cp_cmd)
+            f = os.popen(cp_cmd)
+            stat_logger.info(f"pdcp return: {f.read()}")
+        else:
+            stat_logger.info("The local directory does not need to be manipulated")
 
     def read_database(self):
         with self.lock:
