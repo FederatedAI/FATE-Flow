@@ -23,7 +23,9 @@ from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import HOST, HTTP_PORT, API_VERSION
 from fate_flow.utils.api_utils import API, federated_coordination_on_http
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.utils.requests_utils import request
+from fate_flow.utils.schedule_utils import schedule_signal
 
 
 def filter_parameters(filter_value=None):
@@ -118,3 +120,28 @@ def cluster_route(func):
         )
         return API.Output.json(**response)
     return _route
+
+
+def schedule_lock(func):
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        _lock = kwargs.pop("lock", False)
+        if _lock:
+            job = kwargs.get("job")
+            schedule_logger(job.f_job_id).debug(f"get job {job.f_job_id} schedule lock")
+            _result = None
+            if not schedule_signal(job_id=job.f_job_id, set_or_reset=True):
+                schedule_logger(job.f_job_id).warn(f"get job {job.f_job_id} schedule lock failed, "
+                                                   f"job may be handled by another scheduler")
+                return
+            try:
+                _result = func(*args, **kwargs)
+            except Exception as e:
+                raise e
+            finally:
+                schedule_signal(job_id=job.f_job_id, set_or_reset=False)
+                schedule_logger(job.f_job_id).debug(f"release job {job.f_job_id} schedule lock")
+                return _result
+        else:
+            return func(*args, **kwargs)
+    return _wrapper

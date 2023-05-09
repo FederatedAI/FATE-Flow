@@ -34,3 +34,18 @@ def rerun_signal(job_id, set_or_reset: bool):
         raise RuntimeError(f"can not support rereun signal {set_or_reset}")
     update_status = ScheduleJob.update(update_fields).where(ScheduleJob.f_job_id == job_id).execute() > 0
     return update_status
+
+
+@DB.connection_context()
+def schedule_signal(job_id: object, set_or_reset: bool, ready_timeout_ttl: object = None) -> object:
+    filters = [ScheduleJob.f_job_id == job_id]
+    if set_or_reset:
+        update_fields = {ScheduleJob.f_schedule_signal: True, ScheduleJob.f_schedule_time: current_timestamp()}
+        filters.append(ScheduleJob.f_schedule_signal == False)
+    else:
+        update_fields = {ScheduleJob.f_schedule_signal: False, ScheduleJob.f_schedule_time: None}
+        filters.append(ScheduleJob.f_schedule_signal == True)
+        if ready_timeout_ttl:
+            filters.append(current_timestamp() - ScheduleJob.f_schedule_time > ready_timeout_ttl)
+    update_status = ScheduleJob.update(update_fields).where(*filters).execute() > 0
+    return update_status

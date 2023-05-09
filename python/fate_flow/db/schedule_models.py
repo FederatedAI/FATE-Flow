@@ -30,8 +30,8 @@ class ScheduleJob(DataBaseModel):
     f_status_code = IntegerField(null=True)
 
     f_progress = IntegerField(null=True, default=0)
-    f_ready_signal = BooleanField(default=False)
-    f_ready_time = BigIntegerField(null=True)
+    f_schedule_signal = BooleanField(default=False)
+    f_schedule_time = BigIntegerField(null=True)
     f_cancel_signal = BooleanField(default=False)
     f_cancel_time = BigIntegerField(null=True)
     f_rerun_signal = BooleanField(default=False)
