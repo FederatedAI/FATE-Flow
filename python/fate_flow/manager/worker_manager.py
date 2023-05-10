@@ -258,7 +258,7 @@ class WorkerManager:
                 else:
                     env[name] = value
 
-            if name == "VIRTUAL_ENV":
+            if name in ["VIRTUAL_ENV", "FATE_LOG_LEVEL"]:
                 env[name] = os.getenv(name)
 
     @classmethod
