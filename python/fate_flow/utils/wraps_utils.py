@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import threading
 from functools import wraps
 
 from fate_flow.entity.code import ReturnCode
@@ -143,5 +144,14 @@ def schedule_lock(func):
                 schedule_logger(job.f_job_id).debug(f"release job {job.f_job_id} schedule lock")
                 return _result
         else:
+            return func(*args, **kwargs)
+    return _wrapper
+
+
+def threading_lock(func):
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        with threading.Lock():
+            schedule_logger('wzh').info(f'{func.__name__}, args: {args}, kwargs: {kwargs}')
             return func(*args, **kwargs)
     return _wrapper
