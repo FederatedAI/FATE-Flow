@@ -66,6 +66,7 @@ def server_init():
     RuntimeConfig.set_process_role(ProcessRole.DRIVER)
     RuntimeConfig.init_config()
     RuntimeConfig.set_service_db(service_db())
+    RuntimeConfig.SERVICE_DB.register_flow()
 
     # manager
     ConfigManager.load()
