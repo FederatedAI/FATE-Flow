@@ -13,14 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.job import ResponseException
 from fate_flow.proto.osx import osx_pb2, osx_pb2_grpc
 from fate_flow.proto.rollsite import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HOST, REMOTE_REQUEST_TIMEOUT
-from fate_flow.utils.api_utils import API
 from fate_flow.utils.base_utils import json_loads, json_dumps
 from fate_flow.utils.log_utils import audit_logger
 from fate_flow.utils.requests_utils import request
@@ -79,7 +77,8 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
         audit_logger(job_id).info('rpc receive: {}'.format(packet))
         audit_logger(job_id).info("rpc receive: {} {}".format(get_url(_suffix), param))
         resp = request(method=method, url=get_url(_suffix), json=param_dict, headers=headers)
-        resp_json = response_json(response_json(resp))
+        audit_logger(job_id).info(f"resp: {resp.text}")
+        resp_json = response_json(resp)
         return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)
 
 
@@ -122,4 +121,6 @@ def response_json(response):
         return response.json()
     except:
         audit_logger().exception(response.text)
-        return API.Output.fate_flow_exception(ResponseException(response=response.text))
+        e = ResponseException(response=response.text)
+        return {"code": e.code, "message": e.message}
+

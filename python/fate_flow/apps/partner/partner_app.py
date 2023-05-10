@@ -23,7 +23,7 @@ from fate_flow.errors.job import CreateJobFailed, UpdateJobFailed, KillFailed, J
     StartTaskFailed, UpdateTaskFailed, KillTaskFailed, TaskResourceException
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.utils.api_utils import API
+from fate_flow.utils.api_utils import API, stat_logger
 from fate_flow.utils.wraps_utils import task_request_proxy
 
 page_name = 'partner'
@@ -39,6 +39,7 @@ def partner_create_job(dag_schema, job_id, role, party_id):
         JobController.create_job(dag_schema, job_id, role, party_id)
         return API.Output.json()
     except Exception as e:
+        stat_logger.exception(e)
         return API.Output.fate_flow_exception(CreateJobFailed(detail=str(e)))
 
 
