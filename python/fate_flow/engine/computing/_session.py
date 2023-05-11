@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 from fate_flow.engine.computing._eggroll import ContainerdEggrollEngine, LocalEggrollEngine
-from fate_flow.engine.computing._spark import SparkEngine
+from fate_flow.engine.computing._spark import LocalSparkEngine
 from fate_flow.entity.types import ComputingEngine, EngineType, ProviderDevice
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.component_provider import ComponentProvider
@@ -30,7 +30,10 @@ def build_engine(provider_name: str):
         else:
             engine_session = LocalEggrollEngine(provider)
     elif computing_engine == ComputingEngine.SPARK:
-        engine_session = SparkEngine(provider)
+        if ComponentProvider.device in {ProviderDevice.DOCKER, ProviderDevice.K8S}:
+            raise ValueError(f'{computing_engine} engine device "{computing_engine}" is not supported')
+        else:
+            engine_session = LocalSparkEngine(provider)
     else:
         raise ValueError(f'engine "{computing_engine}" is not supported')
     return engine_session

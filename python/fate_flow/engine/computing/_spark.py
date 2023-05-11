@@ -23,7 +23,7 @@ from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.utils import job_utils, process_utils
 
 
-class SparkEngine(LocalEngine):
+class LocalSparkEngine(LocalEngine):
     def __init__(self, provider):
         self.provider = provider
 
@@ -38,10 +38,6 @@ class SparkEngine(LocalEngine):
                 raise RuntimeError("can not import pyspark")
             except Exception as e:
                 raise RuntimeError("can not import pyspark")
-        # else:
-        #     raise ValueError(f"spark home must be configured in conf/service_conf.yaml when run on cluster mode")
-
-        # additional configs
         spark_submit_config = run_parameters.get("conf", {}).get("computing", {}).get("metadata", {}).get("spark_run", {})
 
         deploy_mode = spark_submit_config.get("deploy-mode", "client")
