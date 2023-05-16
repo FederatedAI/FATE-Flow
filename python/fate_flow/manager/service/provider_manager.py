@@ -30,7 +30,7 @@ class ProviderManager(BaseModelOperate):
     @classmethod
     def get_provider_by_provider_name(cls, provider_name) -> ComponentProvider:
         name, version, device = cls.parser_provider_name(provider_name)
-        provider_list = [provider_info for provider_info in cls.query_provider(name=name, versin=version, device=device)]
+        provider_list = [provider_info for provider_info in cls.query_provider(name=name, version=version, device=device)]
         if not provider_list:
             raise ValueError(f"Query provider info failed: {provider_name}")
         provider_info = provider_list[0]
