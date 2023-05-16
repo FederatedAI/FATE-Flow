@@ -27,7 +27,8 @@ class HookManager:
 
     @staticmethod
     def register_site_signature_hook(func):
-        HookManager.SITE_SIGNATURE.append(func)
+        if SITE_AUTHENTICATION:
+            HookManager.SITE_SIGNATURE.append(func)
 
     @staticmethod
     def register_site_authentication_hook(func):
