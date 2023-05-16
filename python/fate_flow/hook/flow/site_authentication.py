@@ -2,6 +2,7 @@ import hashlib
 
 from fate_flow.controller.app_controller import PermissionController, Authentication
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import NoFoundAppid
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import SignatureParameters, SignatureReturn, AuthenticationParameters, \
     AuthenticationReturn
@@ -15,9 +16,10 @@ def signature(parm: SignatureParameters) -> SignatureReturn:
         parm.party_id = PARTY_ID
     apps = AppManager.query_partner_app(party_id=parm.party_id)
     if not apps:
+        e = NoFoundAppid(party_id=parm.party_id)
         return SignatureReturn(
-            code=ReturnCode.API.NO_FOUND_APPID,
-            message="Signature Failed"
+            code=e.code,
+            message=e.message
         )
     app = apps[0]
     nonce = Authentication.generate_nonce()

@@ -53,7 +53,7 @@ class AppManager(BaseModelOperate):
             return {}
 
     @classmethod
-    @switch_function(SITE_AUTHENTICATION)
+    @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def create_partner_app(cls, party_id, app_id=None, app_token=None):
         app_info = {
             "party_id": party_id,

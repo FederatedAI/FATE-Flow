@@ -421,7 +421,7 @@ def fill_db_model_object(model_object, human_model_dict):
 class BaseModelOperate:
     @classmethod
     @DB.connection_context()
-    def _create_entity(cls, entity_model: object, entity_info: object) -> object:
+    def _create_entity(cls, entity_model, entity_info: dict) -> object:
         obj = entity_model()
         obj.f_create_time = current_timestamp()
         for k, v in entity_info.items():
