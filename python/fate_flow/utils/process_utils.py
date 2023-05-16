@@ -59,7 +59,7 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
                 value += ':' + subprocess_env[name]
             subprocess_env[name] = value
     subprocess_env.pop("CLASSPATH", None)
-
+    logger.info(f"RUN ENV: {subprocess_env}")
     p = subprocess.Popen(process_cmd,
                          stdout=std,
                          stderr=std,
