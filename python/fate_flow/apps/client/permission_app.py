@@ -28,16 +28,16 @@ page_name = PERMISSION_MANAGER_PAGE
 @API.Input.json(app_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
 def grant(app_id, role):
-    PermissionController.add_role_for_user(app_id=app_id, role=role)
-    return API.Output.json()
+    status = PermissionController.add_role_for_user(app_id=app_id, role=role)
+    return API.Output.json(data={"status": status})
 
 
 @manager.route('/delete', methods=['POST'])
 @API.Input.json(app_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
 def delete(app_id, role):
-    PermissionController.delete_role_for_user(app_id=app_id, role=role)
-    return API.Output.json()
+    status = PermissionController.delete_role_for_user(app_id=app_id, role=role)
+    return API.Output.json(data={"status": status})
 
 
 @manager.route('/query', methods=['GET'])

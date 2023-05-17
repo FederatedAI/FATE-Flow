@@ -17,9 +17,9 @@ import hashlib
 import time
 
 from fate_flow.db.casbin_models import FATE_CASBIN
-from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import RequestExpired, NoFoundAppid
+from fate_flow.errors.job import RequestExpired, NoFoundAppid, InvalidParameter
 from fate_flow.manager.service.app_manager import AppManager
+from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
 from fate_flow.utils.base_utils import generate_random_id
 from fate_flow.utils.wraps_utils import switch_function
@@ -74,35 +74,49 @@ class PermissionController(object):
 
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
+    @AppManager.check_app_id
     def add_role_for_user(app_id, role):
+        PermissionController.check_permission_role(role)
         return FATE_CASBIN.add_role_for_user(app_id, role)
 
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
+    @AppManager.check_app_id
     def delete_role_for_user(app_id, role):
+        PermissionController.check_permission_role(role)
         return FATE_CASBIN.delete_role_for_suer(app_id, role)
 
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
+    @AppManager.check_app_id
     def get_roles_for_user(app_id):
         return FATE_CASBIN.get_roles_for_user(app_id)
 
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
+    @AppManager.check_app_id
     def get_permissions_for_user(app_id):
         return FATE_CASBIN.get_permissions_for_user(app_id)
 
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
+    @AppManager.check_app_id
     def delete_roles_for_user(app_id):
         return FATE_CASBIN.delete_roles_for_user(app_id)
 
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
+    @AppManager.check_app_id
     def has_role_for_user(app_id, role):
         return FATE_CASBIN.has_role_for_user(app_id, role)
 
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
+    @AppManager.check_app_id
     def enforcer(app_id, resource, permission):
         return FATE_CASBIN.enforcer(app_id, resource, permission)
+
+    @staticmethod
+    def check_permission_role(role):
+        if role not in RuntimeConfig.CLIENT_ROLE:
+            raise InvalidParameter(role=role)

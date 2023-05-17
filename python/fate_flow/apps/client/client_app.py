@@ -35,7 +35,7 @@ def create_client_app(app_name):
 @API.Input.json(app_id=fields.String(required=True))
 def delete_client_app(app_id):
     status = AppManager.delete_app(app_id=app_id, app_type=AppType.CLIENT)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+    return API.Output.json(data={"status": status})
 
 
 @manager.route('/client/query', methods=['GET'])
@@ -56,8 +56,8 @@ def create_site_app(party_id):
 @manager.route('/site/delete', methods=['POST'])
 @API.Input.json(party_id=fields.String(required=True))
 def delete_site_app(party_id):
-    AppManager.delete_app(app_name=party_id, app_type=AppType.SITE)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+    status = AppManager.delete_app(app_name=party_id, app_type=AppType.SITE)
+    return API.Output.json(data={"status": status})
 
 
 @manager.route('/site/query', methods=['GET'])
@@ -79,8 +79,8 @@ def create_partner_app(party_id, app_id, app_token):
 @manager.route('/partner/delete', methods=['POST'])
 @API.Input.json(party_id=fields.String(required=True))
 def delete_partner_app(party_id):
-    AppManager.delete_partner_app(party_id=party_id)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+    status = AppManager.delete_partner_app(party_id=party_id)
+    return API.Output.json(data={"status": status})
 
 
 @manager.route('/partner/query', methods=['GET'])
