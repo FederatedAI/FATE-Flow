@@ -12,9 +12,12 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from functools import wraps
+
 from fate_flow.db.base_models import BaseModelOperate
 from fate_flow.db.permission_models import AppInfo, PartnerAppInfo
 from fate_flow.entity.types import AppType
+from fate_flow.errors.job import NoFoundAppid
 from fate_flow.runtime.system_settings import ADMIN_KEY, CLIENT_AUTHENTICATION, APP_TOKEN_LENGTH, SITE_AUTHENTICATION, \
     PARTY_ID
 from fate_flow.utils.base_utils import generate_random_id
@@ -103,3 +106,13 @@ class AppManager(BaseModelOperate):
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     def generate_app_token(cls, length=APP_TOKEN_LENGTH):
         return generate_random_id(length=length)
+
+    @staticmethod
+    def check_app_id(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            if kwargs.get("app_id"):
+                if not AppManager.query_app(app_id=kwargs.get("app_id")):
+                    raise NoFoundAppid(app_id=kwargs.get("app_id"))
+            return func(*args, **kwargs)
+        return _wrapper
