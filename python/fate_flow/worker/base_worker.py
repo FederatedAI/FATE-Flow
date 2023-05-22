@@ -70,6 +70,8 @@ class WorkerArgs(BaseEntity):
         # Dependence Upload
         self.dependence_type = kwargs.get("dependence_type")
 
+        self.is_deepspeed = kwargs.get("is_deepspeed")
+
     @staticmethod
     def load_dict_attr(kwargs: dict, attr_name: str):
         return load_json_conf(kwargs[attr_name]) if kwargs.get(attr_name) else {}

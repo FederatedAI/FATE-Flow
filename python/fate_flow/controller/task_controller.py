@@ -29,7 +29,7 @@ from fate_flow.entity import RunParameters
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.manager.worker_manager import WorkerManager
-from fate_flow.entity.types import TaskCleanResourceType
+from fate_flow.entity.types import TaskCleanResourceType, TaskLauncher
 
 
 class TaskController(object):
@@ -47,7 +47,9 @@ class TaskController(object):
             task_info["task_id"] = job_utils.generate_task_id(job_id=task_info["job_id"], component_name=task_info["component_name"])
         if task_info.get("task_version") is None:
             task_info["task_version"] = 0
-
+        run_parameters_dict = job_utils.get_job_parameters(task_info.get("job_id"), role, party_id)
+        run_parameters = RunParameters(**run_parameters_dict)
+        task_info.update({"is_deepspeed": cls.is_deepspeed(run_parameters, role, party_id, task_info["component_name"])})
         task = JobSaver.create_task(task_info=task_info)
 
     @classmethod
@@ -62,7 +64,6 @@ class TaskController(object):
         :param party_id:
         :return:
         """
-        job_dsl = job_utils.get_job_dsl(job_id, role, party_id)
         schedule_logger(job_id).info(
             f"try to start task {task_id} {task_version} on {role} {party_id} executor subprocess")
         task_executor_process_start_status = False
@@ -89,7 +90,9 @@ class TaskController(object):
 
             schedule_logger(job_id).info(f"use computing engine {run_parameters.computing_engine}")
             task_info["engine_conf"] = {"computing_engine": run_parameters.computing_engine}
-            backend_engine = build_engine(run_parameters.computing_engine)
+            backend_engine = build_engine(
+                run_parameters.computing_engine,
+                task.f_is_deepspeed)
             run_info = backend_engine.run(task=task,
                                           run_parameters=run_parameters,
                                           run_parameters_path=run_parameters_path,
@@ -194,7 +197,10 @@ class TaskController(object):
         kill_status = False
         try:
             # kill task executor
-            backend_engine = build_engine(task.f_engine_conf.get("computing_engine"))
+            backend_engine = build_engine(
+                task.f_engine_conf.get("computing_engine"),
+                task.f_is_deepspeed
+                )
             if backend_engine:
                 backend_engine.kill(task)
             WorkerManager.kill_task_all_workers(task)
@@ -227,6 +233,14 @@ class TaskController(object):
                 tracker = Tracker(job_id=job_id, role=role, party_id=party_id, task_id=task_id, task_version=task_version, job_parameters=job_parameters)
                 status.add(tracker.clean_task())
         if len(status) == 1 and True in status:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def is_deepspeed(run_parameters, role, party_id, component_name):
+        task_conf = run_parameters.role_parameter("task_conf", role=role, party_id=party_id)
+        if task_conf.get(component_name, {}).get("launcher") == TaskLauncher.DEEPSPEED.value and role != "arbiter":
             return True
         else:
             return False
