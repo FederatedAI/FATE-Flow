@@ -287,9 +287,9 @@ class TaskExecutor(BaseTaskWorker):
     @property
     def is_master(self):
         # deepspeed rank 0
-        if not os.getenv("GLOBAL_RANK"):
+        if not os.getenv("RANK"):
             return True
-        return int(os.getenv("GLOBAL_RANK")) == 0
+        return int(os.getenv("RANK")) == 0
 
     @classmethod
     def log_output_data_table_tracker(cls, job_id, input_table_list, output_table_list):

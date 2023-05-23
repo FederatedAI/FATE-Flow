@@ -108,9 +108,10 @@ class Detector(Cron):
         try:
             deepspeed_engine = build_engine(task.f_engine_conf.get("computing_engine"), task.f_is_deepspeed)
             # query or update
-            if not deepspeed_engine.is_alive():
+            if not deepspeed_engine.is_alive(task):
                 # update task status to end status
                 status = deepspeed_engine.query_task_status(task)
+                detect_logger(task.f_job_id).info(f"task status status: {status}")
                 task_info = {
                     "job_id": task.f_job_id,
                     "task_id": task.f_task_id,
@@ -119,7 +120,8 @@ class Detector(Cron):
                     "party_id": task.f_party_id,
                     "party_status": status
                 }
-                TaskController.update_task(task_info)
+                TaskController.update_task_status(task_info)
+                deepspeed_engine.download(task)
         except Exception as e:
             detect_logger(task.f_job_id).exception(e)
 

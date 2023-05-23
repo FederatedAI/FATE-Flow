@@ -162,3 +162,5 @@ HOOK_MODULE = get_base_config("hook_module")
 HOOK_SERVER_NAME = get_base_config("hook_server_name")
 
 ENABLE_MODEL_STORE = get_base_config('enable_model_store', False)
+
+REMOTE_LOAD_CONF = True
