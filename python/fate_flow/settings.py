@@ -164,3 +164,4 @@ HOOK_SERVER_NAME = get_base_config("hook_server_name")
 ENABLE_MODEL_STORE = get_base_config('enable_model_store', False)
 
 REMOTE_LOAD_CONF = True
+EXTRA_MODEL_DIR = get_fate_flow_directory('model')

@@ -268,8 +268,10 @@ class TaskExecutor(BaseTaskWorker):
                 LOGGER.info("start destroy sessions")
                 sess.destroy_all_sessions()
                 LOGGER.info("destroy all sessions success")
-            except Exception as e:
-                LOGGER.exception(e)
+            except Exception as _e:
+                LOGGER.exception(_e)
+            if self.args.is_deepspeed:
+                raise RuntimeError(e)
         finally:
             try:
                 self.report_info["end_time"] = current_timestamp()

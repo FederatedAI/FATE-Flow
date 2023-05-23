@@ -23,6 +23,7 @@ from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.entity.run_status import BaseStatus, TaskStatus
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.settings import EXTRA_MODEL_DIR
 from fate_flow.utils import log_utils
 from fate_flow.utils.log_utils import detect_logger, schedule_logger
 from fate_flow.worker.task_executor import TaskExecutor
@@ -60,6 +61,7 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         session_id, _, command_arguments = WorkerManager.generate_common_cmd(task, config_dir, config,
                                                                              log_dir, worker_id)
         command_arguments.extend(["--is_deepspeed", True])
+        command_arguments.extend(["--model_path", self.model_path(task)])
         cmd = [str(_c) for _c in command_arguments]
         environment_variables = {}
         files = {}
@@ -83,6 +85,7 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
 
     def kill(self, task):
         if task.f_deepspeed_id:
+            schedule_logger(task.f_job_id).info(f"start kill deepspeed task: {task.f_deepspeed_id}")
             from eggroll.deepspeed.submit import client
             client = client.DeepspeedJob(task.f_deepspeed_id)
             return client.kill()
@@ -96,15 +99,18 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         return StatusSet.NEW
 
     @staticmethod
-    def _download_job(task):
+    def _download_job(task, base_dir=None):
         if task.f_deepspeed_id:
+            if not base_dir:
+                base_dir = os.path.join(log_utils.get_logger_base_dir(), task.f_job_id, task.f_role, task.f_party_id,
+                                        task.f_component_name)
             from eggroll.deepspeed.submit import client
             client = client.DeepspeedJob(task.f_deepspeed_id)
-            dir_name = os.path.join(log_utils.get_logger_base_dir(), task.f_job_id, task.f_role, task.f_party_id, task.f_component_name)
-            os.makedirs(dir_name, exist_ok=True)
-            path = lambda rank: f"{dir_name}/{rank}.zip"
+
+            os.makedirs(base_dir, exist_ok=True)
+            path = lambda rank: f"{base_dir}/{rank}.zip"
             client.download_job_to(rank_to_path=path)
-            return dir_name
+            return base_dir
 
     def query_task_status(self, task):
         status = self._query_status(task)
@@ -125,8 +131,8 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         else:
             raise RuntimeError(f"task run status: {status}")
 
-    def download(self, task):
-        dir_name = self._download_job(task)
+    def download(self, task, base_dir=None):
+        dir_name = self._download_job(task, base_dir)
         if dir_name:
             for file in os.listdir(dir_name):
                 if file.endswith(".zip"):
@@ -146,3 +152,7 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
             data = zfile.read(name)
             with open(file_path, "w+b") as file:
                 file.write(data)
+
+    @staticmethod
+    def model_path(task):
+        return os.path.join(EXTRA_MODEL_DIR, task.f_job_id, task.f_component_name)

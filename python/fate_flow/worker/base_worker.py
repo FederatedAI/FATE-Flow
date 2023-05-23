@@ -74,6 +74,7 @@ class WorkerArgs(BaseEntity):
         self.dependence_type = kwargs.get("dependence_type")
 
         self.is_deepspeed = kwargs.get("is_deepspeed")
+        self.model_path = kwargs.get("model_path")
 
     @staticmethod
     def load_dict_attr(kwargs: dict, attr_name: str):
@@ -107,6 +108,8 @@ class BaseWorker:
         self.run_pid = os.getpid()
         try:
             self.args = self.get_args(**kwargs)
+            if self.args.model_path:
+                os.environ["MODEL_PATH"] = self.args.model_path
             RuntimeConfig.init_env()
             RuntimeConfig.set_process_role(ProcessRole(os.getenv("PROCESS_ROLE")))
             if RuntimeConfig.PROCESS_ROLE == ProcessRole.WORKER:
