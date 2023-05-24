@@ -47,7 +47,7 @@ def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
             return AuthenticationReturn(code=ReturnCode.Base.SUCCESS, message="success")
         else:
             return AuthenticationReturn(code=ReturnCode.API.AUTHENTICATION_FAILED,
-                                        message="Authentication Failed")
+                                        message=f"Authentication Failed: app_id[{app_id}, path[{parm.path}, method[{parm.method}]]]")
     else:
         return AuthenticationReturn(code=ReturnCode.API.VERIFY_FAILED, message="varify failed!")
 

@@ -121,6 +121,9 @@ def init_apps():
 def _init_permission_group(urls: dict):
     for role, role_items in urls.items():
         super_role = "super_" + role
+        if role in ["scheduler", "partner"]:
+            role = "site"
+            super_role = "site"
         RuntimeConfig.set_client_roles(role, super_role)
         for resource, rule_methods_list in role_items:
             for rule_methods in rule_methods_list:
@@ -133,7 +136,7 @@ def _init_permission_group(urls: dict):
                         PermissionController.add_policy(super_role, rule, method)
                         PermissionController.add_policy(role, rule, method)
         PermissionController.add_role_for_user("admin", super_role)
-    PermissionController.add_role_for_user(PARTY_ID, "partner")
+    PermissionController.add_role_for_user(PARTY_ID, "site")
 
 
 init_apps()
