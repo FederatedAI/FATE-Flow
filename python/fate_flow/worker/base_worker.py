@@ -147,6 +147,8 @@ class BaseWorker:
             LOGGER.info(f"worker {self.__class__.__name__}, process role: {RuntimeConfig.PROCESS_ROLE}, pid: {self.run_pid}, elapsed: {end_time - start_time} ms")
             if RuntimeConfig.PROCESS_ROLE == ProcessRole.WORKER:
                 sys.exit(code)
+            if self.args and self.args.is_deepspeed:
+                sys.exit(code)
             else:
                 return code, message, result
 

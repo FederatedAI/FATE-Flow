@@ -121,7 +121,7 @@ class Detector(Cron):
                     "party_status": status
                 }
                 TaskController.update_task_status(task_info)
-                deepspeed_engine.download(task)
+                deepspeed_engine.download_log(task)
         except Exception as e:
             detect_logger(task.f_job_id).exception(e)
 

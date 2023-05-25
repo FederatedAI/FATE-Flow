@@ -19,7 +19,7 @@ from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.operation.job_saver import JobSaver
 
 
-FUNC = ["query_status", "download_log"]
+FUNC = ["query_status", "download_log", "download_model"]
 
 
 def call_fun(func, args):
@@ -33,6 +33,9 @@ def call_fun(func, args):
         query_status(engine, task)
     elif func == "download_log":
         download_log(engine, task, output_path)
+
+    elif func == "download_model":
+        download_model(engine, task, output_path)
 
 
 def load_engine(job_id, role, party_id, component_name):
@@ -54,7 +57,12 @@ def query_status(engine, task):
 
 
 def download_log(engine, task, output_path):
-    engine.download(task, base_dir=output_path)
+    engine.download_log(task, path=output_path)
+    print(output_path)
+
+
+def download_model(engine, task, output_path):
+    engine.download_model(task, path=output_path)
     print(output_path)
 
 

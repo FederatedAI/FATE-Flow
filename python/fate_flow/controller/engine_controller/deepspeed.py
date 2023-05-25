@@ -71,7 +71,7 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         task_conf = run_parameters.role_parameter("task_conf", role=task.f_role, party_id=task.f_party_id)
         world_size = task_conf.get(task.f_component_name).get("world_size", JobDefaultConfig.task_world_size)
         resource_options = {"timeout_seconds": 3000, "resource_exhausted_strategy": "waiting"}
-        schedule_logger(task.f_job_id).info(f"start submit deepspeed task")
+        schedule_logger(task.f_job_id).info(f"start submit deepspeed task, world size: {world_size}")
         schedule_logger(task.f_job_id).info(f"cmd: {cmd}")
         client = client.DeepspeedJob()
         result = client.submit(
@@ -99,17 +99,15 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         return StatusSet.NEW
 
     @staticmethod
-    def _download_job(task, base_dir=None):
+    def _download_job(task, base_dir, content_type=None):
+        from eggroll.deepspeed.submit import client
+        if not content_type:
+            content_type = client.ContentType.ALL
         if task.f_deepspeed_id:
-            if not base_dir:
-                base_dir = os.path.join(log_utils.get_logger_base_dir(), task.f_job_id, task.f_role, task.f_party_id,
-                                        task.f_component_name)
-            from eggroll.deepspeed.submit import client
             client = client.DeepspeedJob(task.f_deepspeed_id)
-
             os.makedirs(base_dir, exist_ok=True)
             path = lambda rank: f"{base_dir}/{rank}.zip"
-            client.download_job_to(rank_to_path=path)
+            client.download_job_to(rank_to_path=path, content_type=content_type)
             return base_dir
 
     def query_task_status(self, task):
@@ -131,8 +129,11 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         else:
             raise RuntimeError(f"task run status: {status}")
 
-    def download(self, task, base_dir=None):
-        dir_name = self._download_job(task, base_dir)
+    def download(self, task, base_dir, content_type=None):
+        from eggroll.deepspeed.submit.client import ContentType
+        if not content_type:
+            content_type = ContentType.ALL
+        dir_name = self._download_job(task, base_dir, content_type)
         if dir_name:
             for file in os.listdir(dir_name):
                 if file.endswith(".zip"):
@@ -140,6 +141,18 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
                     os.makedirs(rank_dir, exist_ok=True)
                     self.unzip(os.path.join(dir_name, file), extra_dir=rank_dir)
                     os.remove(os.path.join(dir_name, file))
+
+    def download_log(self, task, path=None):
+        from eggroll.deepspeed.submit.client import ContentType
+        if not path:
+            path = self.log_path(task)
+        self.download(task, base_dir=path, content_type=ContentType.LOGS)
+
+    def download_model(self, task, path=None):
+        from eggroll.deepspeed.submit.client import ContentType
+        if not path:
+            path = self.model_path(task, download=True)
+        self.download(task, base_dir=path, content_type=ContentType.MODELS)
 
     @staticmethod
     def unzip(zip_path, extra_dir):
@@ -154,5 +167,15 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
                 file.write(data)
 
     @staticmethod
-    def model_path(task):
-        return os.path.join(EXTRA_MODEL_DIR, task.f_job_id, task.f_component_name)
+    def model_path(task, download=False):
+        _p = os.path.join(EXTRA_MODEL_DIR, task.f_job_id, task.f_component_name)
+        if not download:
+            # only rank 0 output model
+            _p = os.path.join(_p, "0")
+        return _p
+
+    @staticmethod
+    def log_path(task):
+        return os.path.join(
+                log_utils.get_logger_base_dir(), task.f_job_id, task.f_role, task.f_party_id, task.f_component_name
+        )
