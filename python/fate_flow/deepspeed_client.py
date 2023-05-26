@@ -39,7 +39,7 @@ def call_fun(func, args):
 
 
 def load_engine(job_id, role, party_id, component_name):
-    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, component_name=component_name)
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, component_name=component_name, run_on_this_party=True)
     if tasks:
         task = tasks[0]
         if task.f_is_deepspeed:

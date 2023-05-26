@@ -14,6 +14,8 @@
 #  limitations under the License.
 #
 import os
+import sys
+
 from fate_arch.common import FederatedCommunicationType
 from fate_flow.utils.job_utils import asynchronous_function
 from fate_flow.utils.log_utils import schedule_logger
@@ -21,7 +23,7 @@ from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.db.db_models import Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import TaskStatus, EndStatus
-from fate_flow.utils import job_utils
+from fate_flow.utils import job_utils, process_utils
 from fate_flow.operation.job_saver import JobSaver
 from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_arch.common import base_utils
@@ -30,6 +32,7 @@ from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.entity.types import TaskCleanResourceType, TaskLauncher
+from fate_flow.worker.download_model import DownloadModel
 
 
 class TaskController(object):
@@ -259,4 +262,20 @@ class TaskController(object):
                 deepspeed_engine = build_engine(task.f_engine_conf.get("computing_engine"), task.f_is_deepspeed)
                 deepspeed_engine.download_log(task)
                 if status == TaskStatus.SUCCESS:
-                    deepspeed_engine.download_model(task)
+                    # run subprocess to download model
+                    conf_dir = job_utils.get_job_directory(job_id=task.f_job_id)
+                    os.makedirs(conf_dir, exist_ok=True)
+                    process_cmd = [
+                        sys.executable or 'python3',
+                        sys.modules[DownloadModel.__module__].__file__,
+                        '--job_id', task.f_job_id,
+                        '--role', task.f_role,
+                        '--party_id', task.f_party_id,
+                        '--task_id', task.f_task_id,
+                        '--task_version', task.f_task_version,
+                        '--computing_engine', task.f_engine_conf.get("computing_engine")
+                    ]
+                    process_name = "model_download"
+                    log_dir = job_utils.get_job_log_directory(job_id=task.f_job_id)
+                    process_utils.run_subprocess(job_id=task.f_job_id, config_dir=conf_dir, process_cmd=process_cmd,
+                                                 log_dir=log_dir, process_name=process_name)

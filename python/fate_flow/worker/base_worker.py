@@ -75,6 +75,7 @@ class WorkerArgs(BaseEntity):
 
         self.is_deepspeed = kwargs.get("is_deepspeed")
         self.model_path = kwargs.get("model_path")
+        self.computing_engine = kwargs.get("computing_engine")
 
     @staticmethod
     def load_dict_attr(kwargs: dict, attr_name: str):
