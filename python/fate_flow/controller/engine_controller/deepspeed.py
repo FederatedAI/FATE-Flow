@@ -13,10 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import datetime
 import os
 import sys
 from abc import ABC
 
+from fate_arch.common.base_utils import json_dumps
 from fate_flow.controller.engine_controller.engine import EngineABC
 from fate_flow.db.db_models import Task
 from fate_flow.db.job_default_config import JobDefaultConfig
@@ -24,7 +26,8 @@ from fate_flow.entity.run_status import BaseStatus, TaskStatus
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.worker_manager import WorkerManager
 from fate_flow.settings import EXTRA_MODEL_DIR
-from fate_flow.utils import log_utils
+from fate_flow.utils import log_utils, job_utils, process_utils
+from fate_flow.utils.deepspeed_utils import Submit
 from fate_flow.utils.log_utils import detect_logger, schedule_logger
 from fate_flow.worker.task_executor import TaskExecutor
 
@@ -48,8 +51,11 @@ class EndStatus(BaseStatus):
 
 
 class EggrollDeepspeedEngine(EngineABC, ABC):
+    @staticmethod
+    def generate_session_id():
+        return f"deepspeed_session_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')}"
+
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
-        from eggroll.deepspeed.submit import client
         worker_id, config_dir, log_dir = WorkerManager.get_process_dirs(
             worker_name=WorkerName.TASK_EXECUTOR,
             job_id=task.f_job_id,
@@ -70,18 +76,45 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         }
         task_conf = run_parameters.role_parameter("task_conf", role=task.f_role, party_id=task.f_party_id)
         world_size = task_conf.get(task.f_component_name).get("world_size", JobDefaultConfig.task_world_size)
-        resource_options = {"timeout_seconds": 3000, "resource_exhausted_strategy": "waiting"}
-        schedule_logger(task.f_job_id).info(f"start submit deepspeed task, world size: {world_size}")
-        schedule_logger(task.f_job_id).info(f"cmd: {cmd}")
-        client = client.DeepspeedJob()
-        result = client.submit(
-            world_size=world_size,
-            command_arguments=cmd,
-            environment_variables=environment_variables,
-            files=files,
-            resource_options=resource_options,
-            options=options)
-        return {"worker_id": worker_id, "cmd": cmd, "deepspeed_id": result.session_id}
+        timeout = task_conf.get(task.f_component_name).get("timeout", JobDefaultConfig.resource_waiting_timeout)
+        resource_options = {"timeout_seconds": timeout, "resource_exhausted_strategy": "waiting"}
+        submit_conf = {
+            "world_size": world_size,
+            "command_arguments": cmd,
+            "environment_variables": environment_variables,
+            "files": files,
+            "resource_options": resource_options,
+            "options": options
+        }
+        config_dir = job_utils.get_task_directory(
+            task.f_job_id, task.f_role, task.f_party_id,
+            task.f_component_name, task.f_task_id, str(task.f_task_version)
+        )
+        os.makedirs(config_dir, exist_ok=True)
+        config_path = os.path.join(config_dir, 'deepspeed_submit.json')
+        with open(config_path, 'w') as fw:
+            fw.write(json_dumps(submit_conf))
+        session_id = self.generate_session_id()
+        self.submit(task, config_path, session_id)
+        return {"worker_id": worker_id, "cmd": cmd, "deepspeed_id": session_id}
+
+    @staticmethod
+    def submit(task, config_path, session_id):
+        conf_dir = job_utils.get_job_directory(job_id=task.f_job_id)
+        os.makedirs(conf_dir, exist_ok=True)
+        process_cmd = [
+            sys.executable or 'python3',
+            sys.modules[Submit.__module__].__file__,
+            '--job_id', task.f_job_id,
+            '--config', config_path,
+            '--session_id', session_id
+        ]
+        process_name = "deepspeed_submit"
+        log_dir = job_utils.get_job_log_directory(job_id=task.f_job_id)
+
+        p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=conf_dir, process_cmd=process_cmd,
+                                         log_dir=log_dir, process_name=process_name)
+        schedule_logger(task.f_job_id).info(f"run subprocess {p.pid}")
 
     def kill(self, task):
         if task.f_deepspeed_id:
@@ -95,7 +128,8 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         if task.f_deepspeed_id:
             from eggroll.deepspeed.submit import client
             client = client.DeepspeedJob(task.f_deepspeed_id)
-            return client.query_status().status
+            _s = client.query_status().status
+            return _s if _s else StatusSet.NEW
         return StatusSet.NEW
 
     @staticmethod

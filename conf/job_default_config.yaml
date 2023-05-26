@@ -29,3 +29,4 @@ upload_block_max_bytes: 104857600 # bytes
 output_data_summary_count_limit: 100
 
 task_world_size: 2
+resource_waiting_timeout: 21600000 # ms

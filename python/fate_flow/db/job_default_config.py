@@ -49,6 +49,7 @@ class JobDefaultConfig(ReloadConfigBase):
     output_data_summary_count_limit = None
 
     task_world_size = None
+    resource_waiting_timeout = None
 
     @classmethod
     def load(cls):
