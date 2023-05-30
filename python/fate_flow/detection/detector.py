@@ -49,6 +49,7 @@ class Detector(Cron):
         self.detect_resource_record()
         self.detect_expired_session()
         self.detect_dependence_upload_record()
+        self.detect_deepspeed_task()
 
     @classmethod
     def detect_running_task(cls):
@@ -93,6 +94,36 @@ class Detector(Cron):
             detect_logger().exception(e)
         finally:
             detect_logger().info(f"finish detect {count} running task")
+
+    @classmethod
+    def detect_deepspeed_task(cls):
+        detect_logger().info('start to detect deepspeed running task..')
+        running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, is_deepspeed=True)
+        for task in running_tasks:
+            cls.detect_deepspeed_task_status(task)
+        detect_logger().info(f'finish detect deepspeed running task {running_tasks}')
+
+    @staticmethod
+    def detect_deepspeed_task_status(task):
+        try:
+            deepspeed_engine = build_engine(task.f_engine_conf.get("computing_engine"), task.f_is_deepspeed)
+            # query or update
+            if not deepspeed_engine.is_alive(task):
+                # update task status to end status
+                status = deepspeed_engine.query_task_status(task)
+                detect_logger(task.f_job_id).info(f"task status status: {status}")
+                task_info = {
+                    "job_id": task.f_job_id,
+                    "task_id": task.f_task_id,
+                    "task_version": task.f_task_version,
+                    "role": task.f_role,
+                    "party_id": task.f_party_id,
+                    "party_status": status
+                }
+                TaskController.update_task_status(task_info)
+                deepspeed_engine.download_log(task)
+        except Exception as e:
+            detect_logger(task.f_job_id).exception(e)
 
     @classmethod
     def detect_end_task(cls):

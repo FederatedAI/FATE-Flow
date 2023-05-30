@@ -14,6 +14,8 @@
 #  limitations under the License.
 #
 import os
+import sys
+
 from fate_arch.common import FederatedCommunicationType
 from fate_flow.utils.job_utils import asynchronous_function
 from fate_flow.utils.log_utils import schedule_logger
@@ -21,7 +23,7 @@ from fate_flow.controller.engine_adapt import build_engine
 from fate_flow.db.db_models import Task
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.run_status import TaskStatus, EndStatus
-from fate_flow.utils import job_utils
+from fate_flow.utils import job_utils, process_utils
 from fate_flow.operation.job_saver import JobSaver
 from fate_arch.common.base_utils import json_dumps, current_timestamp
 from fate_arch.common import base_utils
@@ -29,7 +31,8 @@ from fate_flow.entity import RunParameters
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.manager.worker_manager import WorkerManager
-from fate_flow.entity.types import TaskCleanResourceType
+from fate_flow.entity.types import TaskCleanResourceType, TaskLauncher
+from fate_flow.worker.download_model import DownloadModel
 
 
 class TaskController(object):
@@ -47,7 +50,9 @@ class TaskController(object):
             task_info["task_id"] = job_utils.generate_task_id(job_id=task_info["job_id"], component_name=task_info["component_name"])
         if task_info.get("task_version") is None:
             task_info["task_version"] = 0
-
+        run_parameters_dict = job_utils.get_job_parameters(task_info.get("job_id"), role, party_id)
+        run_parameters = RunParameters(**run_parameters_dict)
+        task_info.update({"is_deepspeed": cls.is_deepspeed(run_parameters, role, party_id, task_info["component_name"])})
         task = JobSaver.create_task(task_info=task_info)
 
     @classmethod
@@ -62,7 +67,6 @@ class TaskController(object):
         :param party_id:
         :return:
         """
-        job_dsl = job_utils.get_job_dsl(job_id, role, party_id)
         schedule_logger(job_id).info(
             f"try to start task {task_id} {task_version} on {role} {party_id} executor subprocess")
         task_executor_process_start_status = False
@@ -89,7 +93,9 @@ class TaskController(object):
 
             schedule_logger(job_id).info(f"use computing engine {run_parameters.computing_engine}")
             task_info["engine_conf"] = {"computing_engine": run_parameters.computing_engine}
-            backend_engine = build_engine(run_parameters.computing_engine)
+            backend_engine = build_engine(
+                run_parameters.computing_engine,
+                task.f_is_deepspeed)
             run_info = backend_engine.run(task=task,
                                           run_parameters=run_parameters,
                                           run_parameters_path=run_parameters_path,
@@ -135,6 +141,10 @@ class TaskController(object):
     @classmethod
     def update_task_status(cls, task_info):
         update_status = JobSaver.update_task_status(task_info=task_info)
+        task = JobSaver.query_task(task_id=task_info["task_id"],
+                                   task_version=task_info["task_version"],
+                                   role=task_info["role"],
+                                   party_id=task_info["party_id"])[0]
         if update_status and EndStatus.contains(task_info.get("status")):
             ResourceManager.return_task_resource(task_info=task_info)
             cls.clean_task(job_id=task_info["job_id"],
@@ -144,19 +154,22 @@ class TaskController(object):
                            party_id=task_info["party_id"],
                            content_type=TaskCleanResourceType.TABLE,
                            is_asynchronous=True)
-        cls.report_task_to_initiator(task_info=task_info)
+        cls.report_task_to_initiator(task_info=task_info, task=task)
+        cls.callback_task_output(task, task_info.get("status"))
         return update_status
 
     @classmethod
-    def report_task_to_initiator(cls, task_info):
-        tasks = JobSaver.query_task(task_id=task_info["task_id"],
-                                    task_version=task_info["task_version"],
-                                    role=task_info["role"],
-                                    party_id=task_info["party_id"])
+    def report_task_to_initiator(cls, task_info, task=None):
+        if not task:
+            tasks = JobSaver.query_task(task_id=task_info["task_id"],
+                                        task_version=task_info["task_version"],
+                                        role=task_info["role"],
+                                        party_id=task_info["party_id"])
+            task = tasks[0]
         if task_info.get("error_report"):
-            tasks[0].f_error_report = task_info.get("error_report")
-        if tasks[0].f_federated_status_collect_type == FederatedCommunicationType.PUSH:
-            FederatedScheduler.report_task_to_initiator(task=tasks[0])
+            task.f_error_report = task_info.get("error_report")
+        if task.f_federated_status_collect_type == FederatedCommunicationType.PUSH:
+            FederatedScheduler.report_task_to_initiator(task=task)
 
     @classmethod
     def collect_task(cls, job_id, component_name, task_id, task_version, role, party_id):
@@ -194,7 +207,10 @@ class TaskController(object):
         kill_status = False
         try:
             # kill task executor
-            backend_engine = build_engine(task.f_engine_conf.get("computing_engine"))
+            backend_engine = build_engine(
+                task.f_engine_conf.get("computing_engine"),
+                task.f_is_deepspeed
+                )
             if backend_engine:
                 backend_engine.kill(task)
             WorkerManager.kill_task_all_workers(task)
@@ -231,3 +247,35 @@ class TaskController(object):
         else:
             return False
 
+    @staticmethod
+    def is_deepspeed(run_parameters, role, party_id, component_name):
+        task_conf = run_parameters.role_parameter("task_conf", role=role, party_id=party_id)
+        if task_conf.get(component_name, {}).get("launcher") == TaskLauncher.DEEPSPEED.value and role != "arbiter":
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def callback_task_output(task, status):
+        if EndStatus.contains(status):
+            if task.f_is_deepspeed:
+                deepspeed_engine = build_engine(task.f_engine_conf.get("computing_engine"), task.f_is_deepspeed)
+                deepspeed_engine.download_log(task)
+
+                # run subprocess to download model
+                conf_dir = job_utils.get_job_directory(job_id=task.f_job_id)
+                os.makedirs(conf_dir, exist_ok=True)
+                process_cmd = [
+                    sys.executable or 'python3',
+                    sys.modules[DownloadModel.__module__].__file__,
+                    '--job_id', task.f_job_id,
+                    '--role', task.f_role,
+                    '--party_id', task.f_party_id,
+                    '--task_id', task.f_task_id,
+                    '--task_version', task.f_task_version,
+                    '--computing_engine', task.f_engine_conf.get("computing_engine")
+                ]
+                process_name = "model_download"
+                log_dir = job_utils.get_job_log_directory(job_id=task.f_job_id)
+                process_utils.run_subprocess(job_id=task.f_job_id, config_dir=conf_dir, process_cmd=process_cmd,
+                                             log_dir=log_dir, process_name=process_name)

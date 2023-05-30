@@ -13,7 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from copy import deepcopy
+
 from ._base import BaseEntity
+from ..utils.runtime_conf_parse_util import RuntimeConfParserUtil
 
 
 class RunParameters(BaseEntity):
@@ -45,9 +48,30 @@ class RunParameters(BaseEntity):
         self.assistant_role = None
         self.map_table_name = None
         self.map_namespace = None
+        self.task_conf = {}
+        self.roles = {}
+        self.role_parameters = {}
         for k, v in kwargs.items():
             if hasattr(self, k):
                 setattr(self, k, v)
+
+    def role_parameter(self, parameter_name, role, party_id):
+        if role == "local" or int(party_id) == 0:
+            return {}
+        if not self.roles:
+            # compatible with previous versions
+            return getattr(self, parameter_name)
+        index = [str(_p) for _p in self.roles.get(role)].index(str(party_id))
+        _conf = deepcopy(getattr(self, parameter_name))
+        _role = self.role_parameters.get(role, {}).get(str(index), {}).get(parameter_name, {})
+        if isinstance(_conf, dict):
+            # dict
+            _conf = RuntimeConfParserUtil.merge_dict(_conf, _role)
+        else:
+            # int, str, etc.
+            _conf = _role if _role else _conf
+        return _conf
+
 
     def to_dict(self):
         d = {}
