@@ -112,11 +112,20 @@ class BaseWorker:
             if self.args.model_path:
                 os.environ["MODEL_PATH"] = self.args.model_path
             RuntimeConfig.init_env()
-            RuntimeConfig.set_process_role(ProcessRole(os.getenv("PROCESS_ROLE")))
+            role = ProcessRole(os.getenv("PROCESS_ROLE"))
+            append_to_parent_log = True
+            if self.args.is_deepspeed:
+                role = ProcessRole(ProcessRole.WORKER.value)
+                append_to_parent_log = False
+            RuntimeConfig.set_process_role(role)
             if RuntimeConfig.PROCESS_ROLE == ProcessRole.WORKER:
                 LoggerFactory.LEVEL = logging.getLevelName(os.getenv("FATE_LOG_LEVEL", "INFO"))
+                if os.getenv("EGGROLL_CONTAINER_LOGS_DIR"):
+                    # eggroll deepspeed
+                    self.args.parent_log_dir = os.path.dirname(os.getenv("EGGROLL_CONTAINER_LOGS_DIR"))
+                    self.args.log_dir = os.getenv("EGGROLL_CONTAINER_LOGS_DIR")
                 LoggerFactory.set_directory(directory=self.args.log_dir, parent_log_dir=self.args.parent_log_dir,
-                                            append_to_parent_log=True, force=True)
+                                            append_to_parent_log=append_to_parent_log, force=True)
                 LOGGER.info(f"enter {self.__class__.__name__} worker in subprocess, pid: {self.run_pid}")
             else:
                 LOGGER.info(f"enter {self.__class__.__name__} worker in driver process, pid: {self.run_pid}")

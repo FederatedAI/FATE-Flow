@@ -22,6 +22,7 @@ from fate_arch.common.base_utils import json_dumps
 from fate_flow.controller.engine_controller.engine import EngineABC
 from fate_flow.db.db_models import Task
 from fate_flow.db.job_default_config import JobDefaultConfig
+from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.run_status import BaseStatus, TaskStatus
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.worker_manager import WorkerManager
@@ -95,8 +96,10 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         with open(config_path, 'w') as fw:
             fw.write(json_dumps(submit_conf))
         session_id = self.generate_session_id()
-        self.submit(task, config_path, session_id)
-        return {"worker_id": worker_id, "cmd": cmd, "deepspeed_id": session_id}
+        process_cmd, pid = self.submit(task, config_path, session_id)
+        WorkerManager.save_worker_info(task=task, worker_name=WorkerName.TASK_EXECUTOR, worker_id=worker_id,
+                                       run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=pid, cmd=process_cmd)
+        return {"worker_id": worker_id, "cmd": cmd, "deepspeed_id": session_id, "run_pid": pid}
 
     @staticmethod
     def submit(task, config_path, session_id):
@@ -115,6 +118,7 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=conf_dir, process_cmd=process_cmd,
                                          log_dir=log_dir, process_name=process_name)
         schedule_logger(task.f_job_id).info(f"run subprocess {p.pid}")
+        return process_cmd, p.pid
 
     def kill(self, task):
         if task.f_deepspeed_id:
@@ -133,7 +137,7 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         return StatusSet.NEW
 
     @staticmethod
-    def _download_job(task, base_dir, content_type=None):
+    def _download_job(task, base_dir, content_type=None, ranks: list = None):
         from eggroll.deepspeed.submit import client
         if not content_type:
             content_type = client.ContentType.ALL
@@ -141,7 +145,7 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
             client = client.DeepspeedJob(task.f_deepspeed_id)
             os.makedirs(base_dir, exist_ok=True)
             path = lambda rank: f"{base_dir}/{rank}.zip"
-            client.download_job_to(rank_to_path=path, content_type=content_type)
+            client.download_job_to(rank_to_path=path, content_type=content_type, ranks=ranks)
             return base_dir
 
     def query_task_status(self, task):
@@ -163,11 +167,11 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         else:
             raise RuntimeError(f"task run status: {status}")
 
-    def download(self, task, base_dir, content_type=None):
+    def download(self, task, base_dir, content_type=None, ranks=None):
         from eggroll.deepspeed.submit.client import ContentType
         if not content_type:
             content_type = ContentType.ALL
-        dir_name = self._download_job(task, base_dir, content_type)
+        dir_name = self._download_job(task, base_dir, content_type, ranks)
         if dir_name:
             for file in os.listdir(dir_name):
                 if file.endswith(".zip"):
@@ -186,7 +190,7 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         from eggroll.deepspeed.submit.client import ContentType
         if not path:
             path = self.model_path(task, download=True)
-        self.download(task, base_dir=path, content_type=ContentType.MODELS)
+        self.download(task, base_dir=path, content_type=ContentType.MODELS, ranks=[0])
 
     @staticmethod
     def unzip(zip_path, extra_dir):

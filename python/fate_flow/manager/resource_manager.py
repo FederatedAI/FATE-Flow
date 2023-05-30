@@ -288,6 +288,7 @@ class ResourceManager(object):
         return ResourceManager.resource_for_task(task_info=task_info, operation_type=ResourceOperation.RETURN)
 
     @classmethod
+    @DB.connection_context()
     def resource_for_task(cls, task_info, operation_type):
         cores_per_task, memory_per_task = cls.calculate_task_resource(task_info=task_info)
         schedule_logger(task_info["job_id"]).info(f"cores_per_task:{cores_per_task}, memory_per_task:{memory_per_task}")

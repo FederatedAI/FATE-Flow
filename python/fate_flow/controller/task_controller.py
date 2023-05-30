@@ -261,21 +261,21 @@ class TaskController(object):
             if task.f_is_deepspeed:
                 deepspeed_engine = build_engine(task.f_engine_conf.get("computing_engine"), task.f_is_deepspeed)
                 deepspeed_engine.download_log(task)
-                if status == TaskStatus.SUCCESS:
-                    # run subprocess to download model
-                    conf_dir = job_utils.get_job_directory(job_id=task.f_job_id)
-                    os.makedirs(conf_dir, exist_ok=True)
-                    process_cmd = [
-                        sys.executable or 'python3',
-                        sys.modules[DownloadModel.__module__].__file__,
-                        '--job_id', task.f_job_id,
-                        '--role', task.f_role,
-                        '--party_id', task.f_party_id,
-                        '--task_id', task.f_task_id,
-                        '--task_version', task.f_task_version,
-                        '--computing_engine', task.f_engine_conf.get("computing_engine")
-                    ]
-                    process_name = "model_download"
-                    log_dir = job_utils.get_job_log_directory(job_id=task.f_job_id)
-                    process_utils.run_subprocess(job_id=task.f_job_id, config_dir=conf_dir, process_cmd=process_cmd,
-                                                 log_dir=log_dir, process_name=process_name)
+
+                # run subprocess to download model
+                conf_dir = job_utils.get_job_directory(job_id=task.f_job_id)
+                os.makedirs(conf_dir, exist_ok=True)
+                process_cmd = [
+                    sys.executable or 'python3',
+                    sys.modules[DownloadModel.__module__].__file__,
+                    '--job_id', task.f_job_id,
+                    '--role', task.f_role,
+                    '--party_id', task.f_party_id,
+                    '--task_id', task.f_task_id,
+                    '--task_version', task.f_task_version,
+                    '--computing_engine', task.f_engine_conf.get("computing_engine")
+                ]
+                process_name = "model_download"
+                log_dir = job_utils.get_job_log_directory(job_id=task.f_job_id)
+                process_utils.run_subprocess(job_id=task.f_job_id, config_dir=conf_dir, process_cmd=process_cmd,
+                                             log_dir=log_dir, process_name=process_name)
