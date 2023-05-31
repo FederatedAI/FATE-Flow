@@ -109,7 +109,13 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
             sys.executable or 'python3',
             sys.modules[Submit.__module__].__file__,
             '--job_id', task.f_job_id,
+            '--role', task.f_role,
+            '--party_id', task.f_party_id,
+            '--task_id', task.f_task_id,
+            '--task_version', task.f_task_version,
+            '--component_name', task.f_component_name,
             '--config', config_path,
+            '--job_server', f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
             '--session_id', session_id
         ]
         process_name = "deepspeed_submit"
