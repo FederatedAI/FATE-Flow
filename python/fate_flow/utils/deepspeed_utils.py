@@ -13,9 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import os
-import sys
-
+from fate_flow.db.runtime_config import RuntimeConfig
+from fate_flow.entity.run_status import TaskStatus
+from fate_flow.scheduling_apps.client import ControllerClient
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.worker.base_worker import BaseWorker
 
@@ -38,6 +38,18 @@ class Submit(BaseWorker):
             )
             schedule_logger(self.args.job_id).info(f"submit deepspeed task success")
         except Exception as e:
+            task_info = {
+                "job_id": self.args.job_id,
+                "role": self.args.role,
+                "party_id": self.args.party_id,
+                "task_id": self.args.task_id,
+                "task_version": self.args.task_version,
+                "component_name": self.args.component_name,
+                "party_status": TaskStatus.FAILED,
+            }
+
+            RuntimeConfig.init_config(JOB_SERVER_HOST=self.args.job_server.split(':')[0], HTTP_PORT=self.args.job_server.split(':')[1])
+            ControllerClient.report_task(task_info)
             schedule_logger(self.args.job_id).exception(e)
 
 
