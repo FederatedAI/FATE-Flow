@@ -50,6 +50,7 @@ class JobDefaultConfig(ReloadConfigBase):
 
     task_world_size = None
     resource_waiting_timeout = None
+    task_process_classpath = None
 
     @classmethod
     def load(cls):
