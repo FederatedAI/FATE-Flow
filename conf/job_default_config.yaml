@@ -22,6 +22,8 @@ federated_status_collect_type: PUSH
 detect_connect_max_retry_count: 3
 detect_connect_long_retry_count: 2
 
+task_process_classpath: true
+
 # upload
 upload_block_max_bytes: 104857600 # bytes
 
