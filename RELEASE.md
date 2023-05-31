@@ -3,8 +3,8 @@
 * Support distributed training with multiple gpus for FATE-LLM by Eggroll
 
 ## Bug Fixes
-* fix hadoop cannot be connected in some scenarios
-* fix spark config in role does not take effect
+* Fix hadoop connection failures in some scenarios
+* Fix spark config in role does not take effect
 
 # Release 1.11.0
 ## Major Features and Improvements
