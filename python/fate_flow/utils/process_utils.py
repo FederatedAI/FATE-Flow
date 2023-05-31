@@ -17,6 +17,8 @@ import errno
 import os
 import subprocess
 import psutil
+
+from fate_flow.db.job_default_config import JobDefaultConfig
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import Task
 from fate_flow.entity.types import KillProcessRetCode, ProcessRole
@@ -52,7 +54,9 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
             if name.endswith("PATH") and subprocess_env.get(name) is not None:
                 value += ':' + subprocess_env[name]
             subprocess_env[name] = value
-    subprocess_env.pop("CLASSPATH", None)
+
+    if not JobDefaultConfig.task_process_classpath:
+        subprocess_env.pop("CLASSPATH", None)
 
     p = subprocess.Popen(process_cmd,
                          stdout=std,

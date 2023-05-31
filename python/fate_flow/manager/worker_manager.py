@@ -154,12 +154,6 @@ class WorkerManager:
                                                               role=task.f_role,
                                                               party_id=task.f_party_id,
                                                               task=task)
-
-        session_id = job_utils.generate_session_id(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id)
-        federation_session_id = job_utils.generate_task_version_id(task.f_task_id, task.f_task_version)
-
-        info_kwargs = {}
-        specific_cmd = []
         if worker_name is WorkerName.TASK_EXECUTOR:
             from fate_flow.worker.task_executor import TaskExecutor
             module_file_path = sys.modules[TaskExecutor.__module__].__file__
@@ -171,15 +165,30 @@ class WorkerManager:
 
         config = task_parameters.to_dict()
         config["src_user"] = kwargs.get("src_user")
-        config_path, result_path = cls.get_config(config_dir=config_dir, config=config, log_dir=log_dir)
         env = cls.get_env(task.f_job_id, task.f_provider_info)
         if executable:
             process_cmd = executable
         else:
             process_cmd = [env.get("PYTHON_ENV") or sys.executable or "python3"]
+        common_cmd = [module_file_path]
+        common_cmd.extend(cls.generate_common_cmd(task, config_dir, config, log_dir, worker_id)[2])
+        process_cmd.extend(common_cmd)
+        if extra_env:
+            env.update(extra_env)
+        schedule_logger(task.f_job_id).info(
+            f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} {worker_name} worker subprocess is ready")
+        p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
+                                         added_env=env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
+                                         process_id=worker_id)
+        cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id, run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=config, cmd=process_cmd)
+        return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd}
 
-        common_cmd = [
-            module_file_path,
+    @classmethod
+    def generate_common_cmd(cls, task, config_dir, config, log_dir, worker_id):
+        session_id = job_utils.generate_session_id(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id)
+        federation_session_id = job_utils.generate_task_version_id(task.f_task_id, task.f_task_version)
+        config_path, result_path = cls.get_config(config_dir=config_dir, config=config, log_dir=log_dir)
+        cmd = [
             "--job_id", task.f_job_id,
             "--component_name", task.f_component_name,
             "--task_id", task.f_task_id,
@@ -197,17 +206,7 @@ class WorkerManager:
             "--session_id", session_id,
             "--federation_session_id", federation_session_id
         ]
-        process_cmd.extend(common_cmd)
-        process_cmd.extend(specific_cmd)
-        if extra_env:
-            env.update(extra_env)
-        schedule_logger(task.f_job_id).info(
-            f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id} {worker_name} worker subprocess is ready")
-        p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
-                                         added_env=env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
-                                         process_id=worker_id)
-        cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id, run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=config, cmd=process_cmd, **info_kwargs)
-        return {"run_pid": p.pid, "worker_id": worker_id, "cmd": process_cmd}
+        return session_id, federation_session_id, cmd
 
     @classmethod
     def get_process_dirs(cls, worker_name: WorkerName, job_id=None, role=None, party_id=None, task: Task = None):
