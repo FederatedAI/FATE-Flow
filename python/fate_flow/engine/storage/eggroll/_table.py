@@ -47,7 +47,7 @@ class StorageTable(StorageTableBase):
 
     def _save_as(self, address, name, namespace, partitions=None, **kwargs):
         self._table.save_as(name=name, namespace=namespace)
-
+        self._meta_table.save_as(name=f"{name}.meta", namespace=namespace)
         table = StorageTable(
             context=self._context,
             address=address,
