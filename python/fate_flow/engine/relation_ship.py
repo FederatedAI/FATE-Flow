@@ -57,11 +57,12 @@ class Relationship(object):
                     StorageEngine.HDFS,
                     StorageEngine.HIVE,
                     StorageEngine.LOCALFS,
+                    StorageEngine.STANDALONE
                 ],
             },
             EngineType.FEDERATION: {
                 "default": FederationEngine.RABBITMQ,
-                "support": [FederationEngine.PULSAR, FederationEngine.RABBITMQ, FederationEngine.OSX],
+                "support": [FederationEngine.PULSAR, FederationEngine.RABBITMQ, FederationEngine.OSX, FederationEngine.STANDALONE],
             },
         }
     }
