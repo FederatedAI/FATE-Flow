@@ -78,7 +78,7 @@ class DataManager:
                 tar.add(output_data_meta_file_list[index],
                         os.path.relpath(output_data_meta_file_list[index], output_tmp_dir))
             tar.close()
-            return send_file(output_data_tarfile, attachment_filename=tar_file_name, as_attachment=True)
+            return send_file(output_data_tarfile, download_name=tar_file_name, as_attachment=True)
 
     @staticmethod
     def delete_data(namespace, name):

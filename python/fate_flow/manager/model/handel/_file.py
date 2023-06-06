@@ -42,7 +42,7 @@ class FileHandle(IOHandle):
 
     def _download(self, storage_key):
         _p = self._generate_model_storage_path(storage_key)
-        return send_file(_p, attachment_filename=os.path.basename(_p), as_attachment=True)
+        return send_file(_p, download_name=os.path.basename(_p), as_attachment=True)
 
     def _read(self, storage_key):
         _p = self._generate_model_storage_path(storage_key)

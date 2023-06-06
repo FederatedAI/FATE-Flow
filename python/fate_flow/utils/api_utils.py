@@ -70,7 +70,7 @@ class API:
 
         @staticmethod
         def file(path_or_file, attachment_filename, as_attachment):
-            return send_file(path_or_file, attachment_filename=attachment_filename, as_attachment=as_attachment)
+            return send_file(path_or_file, download_name=attachment_filename, as_attachment=as_attachment)
 
         @staticmethod
         def server_error_response(e):
