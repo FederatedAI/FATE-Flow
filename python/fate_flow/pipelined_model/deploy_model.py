@@ -126,7 +126,9 @@ def deploy(config_data):
             job_id=model_version, role=local_role, party_id=local_party_id,
             dsl_parser=parser, origin_inference_dsl=inference_dsl,
         )
-        pipeline_model.inference_dsl = json_dumps(inference_dsl, byte=True)
+        # migrate model miss CodePath
+        module_object_dict = get_module_object_dict(json_loads(pipeline_model.inference_dsl))
+        pipeline_model.inference_dsl = json_dumps(parser.get_predict_dsl(inference_dsl, module_object_dict), byte=True)
 
         train_runtime_conf = JobRuntimeConfigAdapter(
             train_runtime_conf,
@@ -211,3 +213,12 @@ def deploy(config_data):
             f'deploy model of role {local_role} {local_party_id} success'
             + ('' if not warning_msg else f', warning: {warning_msg}')
         )
+
+
+def get_module_object_dict(inference_dsl):
+    module_object_dict = {}
+    for _, components in inference_dsl.items():
+        for name, module in components.items():
+            module_object_dict[name] = module.get("CodePath")
+    return module_object_dict
+

@@ -1,3 +1,22 @@
+# Release 1.11.1
+## Major Features and Improvements
+* Support distributed training with multiple gpus for FATE-LLM by Eggroll
+
+## Bug Fixes
+* Fix hadoop connection failures in some scenarios
+* Fix spark config in role does not take effect
+
+# Release 1.11.0
+## Major Features and Improvements
+* Add data table preview query interface
+
+## Bug Fixes
+* Fix the performance problems of upload and reader in processing large amounts of data
+* Fix online inference cannot be done after model migration bug
+* Fix the model cannot be saved to the specified database bug
+* Fix reader data preview display bug
+
+
 # Release 1.10.1
 ## Major Features and Improvements
 * Optimize table info API

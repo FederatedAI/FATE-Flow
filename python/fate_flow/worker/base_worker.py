@@ -19,8 +19,11 @@ import sys
 import traceback
 import logging
 
+import requests
+
 from fate_arch.common.base_utils import current_timestamp
 from fate_arch.common.file_utils import load_json_conf, dump_json_conf
+from fate_flow.settings import REMOTE_LOAD_CONF
 from fate_flow.utils.log_utils import getLogger, LoggerFactory, exception_to_trace_string
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.db.config_manager import ConfigManager
@@ -70,9 +73,26 @@ class WorkerArgs(BaseEntity):
         # Dependence Upload
         self.dependence_type = kwargs.get("dependence_type")
 
+        self.is_deepspeed = kwargs.get("is_deepspeed")
+        self.model_path = kwargs.get("model_path")
+        self.computing_engine = kwargs.get("computing_engine")
+
     @staticmethod
     def load_dict_attr(kwargs: dict, attr_name: str):
-        return load_json_conf(kwargs[attr_name]) if kwargs.get(attr_name) else {}
+        if kwargs.get(attr_name):
+            if REMOTE_LOAD_CONF and kwargs.get("is_deepspeed"):
+                url = f'http://{kwargs.get("job_server")}/v1/worker/config/load'
+                try:
+                    _r = requests.post(url, json={"config_path": kwargs[attr_name]}).json()
+                    config = _r.get("data") if _r.get("data") else {}
+                except Exception as e:
+                    LOGGER.exception(e)
+                    config = {}
+            else:
+                config = load_json_conf(kwargs[attr_name])
+        else:
+            config = {}
+        return config
 
 
 class BaseWorker:
@@ -89,12 +109,23 @@ class BaseWorker:
         self.run_pid = os.getpid()
         try:
             self.args = self.get_args(**kwargs)
+            if self.args.model_path:
+                os.environ["MODEL_PATH"] = self.args.model_path
             RuntimeConfig.init_env()
-            RuntimeConfig.set_process_role(ProcessRole(os.getenv("PROCESS_ROLE")))
+            role = ProcessRole(os.getenv("PROCESS_ROLE"))
+            append_to_parent_log = True
+            if self.args.is_deepspeed:
+                role = ProcessRole(ProcessRole.WORKER.value)
+                append_to_parent_log = False
+            RuntimeConfig.set_process_role(role)
             if RuntimeConfig.PROCESS_ROLE == ProcessRole.WORKER:
                 LoggerFactory.LEVEL = logging.getLevelName(os.getenv("FATE_LOG_LEVEL", "INFO"))
+                if os.getenv("EGGROLL_CONTAINER_LOGS_DIR"):
+                    # eggroll deepspeed
+                    self.args.parent_log_dir = os.path.dirname(os.getenv("EGGROLL_CONTAINER_LOGS_DIR"))
+                    self.args.log_dir = os.getenv("EGGROLL_CONTAINER_LOGS_DIR")
                 LoggerFactory.set_directory(directory=self.args.log_dir, parent_log_dir=self.args.parent_log_dir,
-                                            append_to_parent_log=True, force=True)
+                                            append_to_parent_log=append_to_parent_log, force=True)
                 LOGGER.info(f"enter {self.__class__.__name__} worker in subprocess, pid: {self.run_pid}")
             else:
                 LOGGER.info(f"enter {self.__class__.__name__} worker in driver process, pid: {self.run_pid}")
@@ -120,10 +151,13 @@ class BaseWorker:
             message = exception_to_trace_string(e)
         finally:
             if self.args and self.args.result:
-                dump_json_conf(result, self.args.result)
+                if not self.args.is_deepspeed:
+                    dump_json_conf(result, self.args.result)
             end_time = current_timestamp()
             LOGGER.info(f"worker {self.__class__.__name__}, process role: {RuntimeConfig.PROCESS_ROLE}, pid: {self.run_pid}, elapsed: {end_time - start_time} ms")
             if RuntimeConfig.PROCESS_ROLE == ProcessRole.WORKER:
+                sys.exit(code)
+            if self.args and self.args.is_deepspeed:
                 sys.exit(code)
             else:
                 return code, message, result

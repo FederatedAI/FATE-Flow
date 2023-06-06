@@ -22,7 +22,7 @@ LOGGER = getLogger()
 class ControllerClient(object):
     @classmethod
     def update_job(cls, job_info):
-        LOGGER.info("request update job {} on {} {}".format(job_info["job_id"], job_info["role"], job_info["party_id"]))
+        LOGGER.info(f"request update job {job_info['job_id']} on {job_info['role']} {job_info['party_id']}: {job_info}")
         response = api_utils.local_api(
             job_id=job_info["job_id"],
             method='POST',

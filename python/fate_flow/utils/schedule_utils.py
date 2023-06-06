@@ -96,7 +96,7 @@ def get_conf_version(conf: dict):
     return int(conf.get("dsl_version", "1"))
 
 
-def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None):
+def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_runtime_conf=None, job_type=None):
     parser_version = get_conf_version(runtime_conf)
 
     if parser_version == 1:
@@ -106,7 +106,8 @@ def get_job_dsl_parser(dsl=None, runtime_conf=None, pipeline_dsl=None, train_run
         parser_version = 2
 
     dsl_parser = get_dsl_parser_by_version(parser_version)
-    job_type = JobRuntimeConfigAdapter(runtime_conf).get_job_type()
+    if not job_type:
+        job_type = JobRuntimeConfigAdapter(runtime_conf).get_job_type()
     dsl_parser.run(dsl=dsl,
                    runtime_conf=runtime_conf,
                    pipeline_dsl=pipeline_dsl,

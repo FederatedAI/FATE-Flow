@@ -35,6 +35,7 @@ from fate_flow.entity.types import InputSearchType
 from fate_flow.manager.data_manager import DataTableTracker, TableStorage, AnonymousGenerator
 from fate_flow.operation.job_tracker import Tracker
 from fate_flow.utils import data_utils
+from federatedml.feature.instance import Instance
 
 LOGGER = log.getLogger()
 MAX_NUM = 10000
@@ -305,8 +306,22 @@ class Reader(ComponentBase):
                         data_list[0].extend(headers)
                 LOGGER.info(f"data info header: {data_list[0]}")
                 for data in output_table_meta.get_part_of_data():
-                    delimiter = schema.get("meta", {}).get("delimiter") or output_table_meta.id_delimiter
-                    data_list.append(data[1].split(delimiter))
+                    if isinstance(data[1], str):
+                        delimiter = schema.get("meta", {}).get(
+                            "delimiter") or output_table_meta.id_delimiter
+                        data_list.append(data[1].split(delimiter))
+                    elif isinstance(data[1], Instance):
+                        table_data = []
+                        if data[1].inst_id:
+                            table_data = table_data.append(data[1].inst_id)
+                        if not data[1].label is None:
+                            table_data.append(data[1].label)
+
+                        table_data.extend(data[1].features)
+                        data_list.append([str(v) for v in table_data])
+                    else:
+                        data_list.append(data[1])
+
                 data = np.array(data_list)
                 Tdata = data.transpose()
                 for data in Tdata:
@@ -317,7 +332,7 @@ class Reader(ComponentBase):
                 if schema.get("label_name"):
                     anonymous_info[schema.get("label_name")] = schema.get("anonymous_label")
                     attribute_info[schema.get("label_name")] = "label"
-                if schema.get("meta").get("id_list"):
+                if schema.get("meta", {}).get("id_list"):
                     for id_name in schema.get("meta").get("id_list"):
                         if id_name in attribute_info:
                             attribute_info[id_name] = "match_id"
