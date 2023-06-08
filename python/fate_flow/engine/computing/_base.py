@@ -20,7 +20,7 @@ import sys
 import typing
 
 from fate_flow.db.db_models import Task
-from fate_flow.entity.types import LocalProviderName
+from fate_flow.entity.types import ProviderName
 
 
 class EngineABC(metaclass=abc.ABCMeta):
@@ -41,7 +41,7 @@ class LocalEngine(object):
     @staticmethod
     def generate_cmd(local_provider_name):
 
-        if local_provider_name == LocalProviderName.FATE:
+        if local_provider_name == ProviderName.FATE:
             from fate_flow.worker.fate_executor import FateSubmit
             module_file_path = sys.modules[FateSubmit.__module__].__file__
             common_cmd = [
@@ -52,7 +52,7 @@ class LocalEngine(object):
                 "FATE_TASK_CONFIG",
             ]
 
-        elif local_provider_name == LocalProviderName.FATE_FLOW:
+        elif local_provider_name == ProviderName.FATE_FLOW:
             from fate_flow.worker.fate_flow_executor import FateFlowSubmit
             module_file_path = sys.modules[FateFlowSubmit.__module__].__file__
             common_cmd = [

@@ -24,14 +24,16 @@ def signature(parm: SignatureParameters) -> SignatureReturn:
     app = apps[0]
     nonce = Authentication.generate_nonce()
     timestamp = Authentication.generate_timestamp()
-    key = hashlib.md5(str(app.f_app_id + nonce + timestamp).encode("utf8")).hexdigest().lower()
+    initiator_party_id = parm.initiator_party_id if parm.initiator_party_id else ""
+    key = hashlib.md5(str(app.f_app_id + initiator_party_id + nonce + timestamp).encode("utf8")).hexdigest().lower()
     sign = hashlib.md5(str(key + app.f_app_token).encode("utf8")).hexdigest().lower()
 
     return SignatureReturn(signature={
         "signature": sign,
         "app_id": app.f_app_id,
         "nonce": nonce,
-        "timestamp": timestamp
+        "timestamp": timestamp,
+        "initiator_party_id": initiator_party_id
     })
 
 
@@ -41,8 +43,9 @@ def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
     timestamp = parm.headers.get("timestamp")
     nonce = parm.headers.get("nonce")
     sign = parm.headers.get("signature")
+    initiator_party_id = parm.headers.get("initiator_party_id")
     check_parameters(app_id, timestamp, nonce, sign)
-    if Authentication.md5_verify(app_id, timestamp, nonce, sign):
+    if Authentication.md5_verify(app_id, timestamp, nonce, sign, initiator_party_id):
         if PermissionController.enforcer(app_id, parm.path, parm.method):
             return AuthenticationReturn(code=ReturnCode.Base.SUCCESS, message="success")
         else:

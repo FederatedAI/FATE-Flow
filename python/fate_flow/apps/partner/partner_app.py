@@ -24,7 +24,7 @@ from fate_flow.errors.job import CreateJobFailed, UpdateJobFailed, KillFailed, J
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API, stat_logger
-from fate_flow.utils.wraps_utils import task_request_proxy
+from fate_flow.utils.wraps_utils import task_request_proxy, create_job_request_check
 
 page_name = 'partner'
 
@@ -34,6 +34,7 @@ page_name = 'partner'
 @API.Input.json(job_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
 @API.Input.json(party_id=fields.String(required=True))
+@create_job_request_check
 def partner_create_job(dag_schema, job_id, role, party_id):
     try:
         JobController.create_job(dag_schema, job_id, role, party_id)

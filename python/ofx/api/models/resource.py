@@ -209,15 +209,17 @@ class BaseAPI:
         self.callback = callback
 
     def federated_command(self, job_id, src_role, src_party_id, dest_role, dest_party_id, endpoint, body,
-                          federated_response, method='POST', only_scheduler=False, extra_params=None):
+                          federated_response, method='POST', only_scheduler=False, extra_params=None,
+                          initiator_party_id=""):
         try:
             headers = {}
             if self.callback:
-                result = self.callback(dest_party_id, body)
+                result = self.callback(dest_party_id, body, initiator_party_id=initiator_party_id)
                 if result.code == 0:
-                    headers = self.callback(dest_party_id, body).signature
+                    headers = result.signature if result.signature else {}
                 else:
                     raise Exception(result.code, result.message)
+            headers.update({"initiator_party_id": initiator_party_id})
             response = self.client.remote(job_id=job_id,
                                           method=method,
                                           endpoint=endpoint,
@@ -243,7 +245,7 @@ class BaseAPI:
     def is_local(party_id):
         return party_id == "0"
 
-    def job_command(self, job_id, roles, command, command_body=None, parallel=False):
+    def job_command(self, job_id, roles, command, command_body=None, parallel=False, initiator_party_id=""):
         federated_response = {}
         api_type = "partner/job"
         threads = []
@@ -259,12 +261,13 @@ class BaseAPI:
                 command_body["party_id"] = dest_party_id
                 command_body["job_id"] = job_id
                 args = (job_id, "", "", dest_role, dest_party_id, endpoint, command_body, federated_response)
+                kwargs = {"initiator_party_id": initiator_party_id}
                 if parallel:
-                    t = threading.Thread(target=self.federated_command, args=args)
+                    t = threading.Thread(target=self.federated_command, args=args, kwargs=kwargs)
                     threads.append(t)
                     t.start()
                 else:
-                    self.federated_command(*args)
+                    self.federated_command(*args, initiator_party_id=initiator_party_id)
         for thread in threads:
             thread.join()
         return federated_response
@@ -297,7 +300,7 @@ class BaseAPI:
             thread.join()
         return federated_response
 
-    def scheduler_command(self, command, party_id, command_body=None, method='POST'):
+    def scheduler_command(self, command, party_id, command_body=None, method='POST', initiator_party_id=""):
         try:
             federated_response = {}
             endpoint = f"/scheduler/{command}"
@@ -310,7 +313,8 @@ class BaseAPI:
                                               dest_party_id=party_id,
                                               body=command_body if command_body else {},
                                               federated_response=federated_response,
-                                              only_scheduler=True
+                                              only_scheduler=True,
+                                              initiator_party_id=initiator_party_id
                                               )
         except Exception as e:
             response = {

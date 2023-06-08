@@ -17,11 +17,14 @@ import os
 import sys
 from typing import Union
 
-from fate_flow.db import ProviderInfo
+from fate_flow.db import ProviderInfo, ComponentInfo
 from fate_flow.db.base_models import DB, BaseModelOperate
 from fate_flow.entity.spec import ProviderSpec, LocalProviderSpec, DockerProviderSpec, K8sProviderSpec
+from fate_flow.entity.types import ProviderDevice
+from fate_flow.hub.flow_hub import FlowHub
+from fate_flow.hub.provider import EntrypointABC
 from fate_flow.runtime.system_settings import DEFAULT_FATE_PROVIDER_PATH, DEFAULT_PROVIDER, FATE_FLOW_PROVIDER_PATH
-from fate_flow.runtime.component_provider import ComponentProvider, ProviderDevice
+from fate_flow.runtime.component_provider import ComponentProvider
 from fate_flow.utils.version import get_versions
 from fate_flow.utils.wraps_utils import filter_parameters
 
@@ -63,7 +66,27 @@ class ProviderManager(BaseModelOperate):
                                       f_provider_name=cls.generate_provider_name(provider.name, provider.version,
                                                                                  provider.device))
         # todo: load entrypoint、components、params...
+        # load components
+        cls.register_component(provider)
         return operator_type
+
+    @classmethod
+    def register_component(cls, provider: ComponentProvider):
+        entrypoint = cls.load_entrypoint(provider)
+        component_list = []
+        if entrypoint:
+            component_list = entrypoint.component_list
+
+        for component_name in component_list:
+            component = ComponentInfo()
+            component.f_provider_name = cls.generate_provider_name(
+                name=provider.name, version=provider.version, device=provider.device
+            )
+            component.f_name = provider.name
+            component.f_device = provider.device
+            component.f_version = provider.version
+            component.f_component_name = component_name
+            cls.safe_save(ComponentInfo, defaults=component.to_dict(), **component.to_dict())
 
     @classmethod
     @filter_parameters()
@@ -74,6 +97,13 @@ class ProviderManager(BaseModelOperate):
     @filter_parameters()
     def delete_provider(cls, **kwargs):
         result = cls._delete(ProviderInfo, **kwargs)
+        cls.delete_provider_component_info(**kwargs)
+        return result
+
+    @classmethod
+    @filter_parameters()
+    def delete_provider_component_info(cls, **kwargs):
+        result = cls._delete(ComponentInfo, **kwargs)
         return result
 
     @classmethod
@@ -82,6 +112,11 @@ class ProviderManager(BaseModelOperate):
         cls.register_provider(cls.get_fate_flow_provider())
         # register fate
         cls.register_provider(cls.get_default_fate_provider())
+
+    @classmethod
+    def get_all_components(cls):
+        component_list = cls._query(ComponentInfo, force=True)
+        return list(set([component.f_component_name for component in component_list]))
 
     @classmethod
     def get_fate_flow_provider(cls):
@@ -135,3 +170,7 @@ class ProviderManager(BaseModelOperate):
         if not provider_info:
             raise ValueError(f"Not found provider[{cls.generate_provider_name(name, version, device)}]")
         return cls.generate_provider_name(name, version, device)
+
+    @staticmethod
+    def load_entrypoint(provider) -> Union[None, EntrypointABC]:
+        return FlowHub.load_provider_entrypoint(provider)

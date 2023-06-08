@@ -18,14 +18,6 @@ from webargs import fields
 from fate_flow.utils.api_utils import API
 
 
-@manager.route('/deploy', methods=['POST'])
-@API.Input.json(model_id=fields.String(required=True))
-@API.Input.json(model_version=fields.Integer(required=True))
-def deploy(model_id, model_version):
-    # todo:
-    return API.Output.json()
-
-
 @manager.route('/load', methods=['POST'])
 def load():
     # todo:
@@ -46,6 +38,12 @@ def export():
 
 @manager.route('/import', methods=['POST'])
 def import_model():
+    # todo:
+    return API.Output.json()
+
+
+@manager.route('/delete', methods=['POST'])
+def delete_model():
     # todo:
     return API.Output.json()
 

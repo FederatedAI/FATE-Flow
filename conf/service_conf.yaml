@@ -1,6 +1,6 @@
 force_use_sqlite: true
 use_registry: false
-party_id: "10000"
+party_id: "9999"
 fateflow:
   host: 127.0.0.1
   http_port: 9380
@@ -84,6 +84,7 @@ hook_module:
 authentication:
   client: false
   site: false
+  permission: false
 model_store:
   engine: file
   file:

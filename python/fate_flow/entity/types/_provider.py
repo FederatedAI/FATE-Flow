@@ -18,6 +18,6 @@ class ProviderDevice(object):
     K8S = "k8s"
 
 
-class LocalProviderName(object):
+class ProviderName(object):
     FATE = "fate"
     FATE_FLOW = "fate_flow"

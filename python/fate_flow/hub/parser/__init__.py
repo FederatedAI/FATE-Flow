@@ -55,3 +55,16 @@ class JobParserABC(metaclass=ABCMeta):
     @property
     def task_parser(self):
         return TaskParserABC
+
+    @property
+    @abc.abstractmethod
+    def component_ref_list(self):
+        ...
+
+    @abc.abstractmethod
+    def dataset_list(self, role, party_id):
+        ...
+
+    @abc.abstractmethod
+    def role_parameters(self, role, party_id):
+        ...

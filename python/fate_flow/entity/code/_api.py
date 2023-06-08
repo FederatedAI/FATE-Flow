@@ -47,6 +47,8 @@ class ReturnCode:
         NO_FOUND_APPID = 5002
         VERIFY_FAILED = 5003
         AUTHENTICATION_FAILED = 5004
+        NO_PERMISSION = 5005
+        PermissionOperateError = 5006
 
     class Server:
         EXCEPTION = 6000
