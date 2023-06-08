@@ -2,7 +2,7 @@ import importlib
 
 from fate_flow.hook.common.parameters import SignatureParameters, AuthenticationParameters, PermissionCheckParameters, \
     SignatureReturn, AuthenticationReturn, PermissionReturn
-from fate_flow.runtime.system_settings import HOOK_MODULE, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
+from fate_flow.runtime.system_settings import HOOK_MODULE, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION, PERMISSION_SWITCH
 from fate_flow.entity.code import ReturnCode
 from fate_flow.utils.log import getLogger
 
@@ -17,7 +17,7 @@ class HookManager:
 
     @staticmethod
     def init():
-        if HOOK_MODULE is not None and (CLIENT_AUTHENTICATION or SITE_AUTHENTICATION):
+        if HOOK_MODULE is not None and (CLIENT_AUTHENTICATION or SITE_AUTHENTICATION or PERMISSION_SWITCH):
             for modules in HOOK_MODULE.values():
                 for module in modules.split(";"):
                     try:
@@ -63,8 +63,5 @@ class HookManager:
     @staticmethod
     def permission_check(parm: PermissionCheckParameters) -> PermissionReturn:
         if HookManager.PERMISSION_CHECK:
-            for permission_check_func in HookManager.PERMISSION_CHECK:
-                result = permission_check_func(parm)
-                if result.code != ReturnCode.Base.SUCCESS:
-                    return result
+            return HookManager.PERMISSION_CHECK[0](parm)
         return PermissionReturn()

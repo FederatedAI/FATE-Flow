@@ -18,7 +18,7 @@ import networkx as nx
 import copy
 
 from pydantic import BaseModel
-from typing import Dict, Union
+from typing import Dict, Union, List
 
 from ._federation import StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, PulsarFederationSpec, \
     RabbitMQFederationSpec
@@ -32,7 +32,7 @@ from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY, FATE_FLOW_CONF_PATH
 from fate_flow.utils import job_utils, file_utils
-from fate_flow.entity.types import StorageEngine, EngineType, FederationEngine
+from fate_flow.entity.types import StorageEngine, EngineType, FederationEngine, DataSet
 from fate_flow.entity.spec import SchedulerInfoSpec
 from fate_flow.utils.log_utils import schedule_logger
 from .. import TaskParserABC, JobParserABC
@@ -551,6 +551,36 @@ class JobParser(JobParserABC):
     @property
     def task_parser(self):
         return TaskParser
+
+    @property
+    def component_ref_list(self):
+        _list = []
+        for name in self.topological_sort():
+            node = self.get_task_node(name)
+            if node:
+                _list.append(node.component_ref)
+        return _list
+
+    def dataset_list(self, role, party_id) -> List[DataSet]:
+        _list = []
+        for task_name in self.topological_sort():
+            task_node = self.get_task_node(task_name)
+            if task_node.component_ref == "reader":
+                name = task_node.runtime_parameters.get(role, {}).get(party_id, {}).get("name", "")
+                namespace = task_node.runtime_parameters.get(role, {}).get(party_id, {}).get("name", "namespace")
+                if name and namespace:
+                    _list.append(DataSet(**{
+                        "name": name,
+                        "namespace": namespace
+                    }))
+        return _list
+
+    def role_parameters(self, role, party_id):
+        _dict = {}
+        for task_name in self.topological_sort():
+            task_node = self.get_task_node(task_name)
+            _dict[task_node.component_ref] = task_node.runtime_parameters.get(role, {}).get(party_id, {})
+        return _dict
 
 
 class Party(BaseModel):

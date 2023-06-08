@@ -20,11 +20,13 @@ from fate_flow.entity.code import ReturnCode
 
 from flask import request as flask_request
 from fate_flow.errors.job import NoFoundTask, ResponseException, NoFoundINSTANCE
+from fate_flow.hook import HookManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.runtime.system_settings import HOST, HTTP_PORT, API_VERSION
+from fate_flow.runtime.system_settings import HOST, HTTP_PORT, API_VERSION, PERMISSION_SWITCH
 from fate_flow.utils.api_utils import API, federated_coordination_on_http
 from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.utils.permission_utils import get_permission_parameters
 from fate_flow.utils.requests_utils import request
 from fate_flow.utils.schedule_utils import schedule_signal
 
@@ -152,6 +154,25 @@ def threading_lock(func):
     @wraps(func)
     def _wrapper(*args, **kwargs):
         with threading.Lock():
-            schedule_logger('wzh').info(f'{func.__name__}, args: {args}, kwargs: {kwargs}')
             return func(*args, **kwargs)
+    return _wrapper
+
+
+def create_job_request_check(func):
+    @wraps(func)
+    def _wrapper(*_args, **_kwargs):
+        party_id = _kwargs.get("party_id")
+        role = _kwargs.get("role")
+        body = flask_request.json
+        headers = flask_request.headers
+        initiator_party_id = headers.get("initiator_party_id")
+
+        # permission check
+        if PERMISSION_SWITCH:
+            permission_return = HookManager.permission_check(get_permission_parameters(
+                role, party_id, initiator_party_id, body
+            ))
+            if permission_return.code != ReturnCode.Base.SUCCESS:
+                return API.Output.fate_flow_exception(permission_return)
+        return func(*_args, **_kwargs)
     return _wrapper

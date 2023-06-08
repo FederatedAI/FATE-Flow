@@ -92,8 +92,8 @@ class FederatedScheduler:
     # Job
     @classmethod
     @federated
-    def create_job(cls, job_id, roles, job_info):
-        return RuntimeConfig.SCHEDULE_CLIENT.federated.create_job(job_id, roles, command_body=job_info)
+    def create_job(cls, job_id, roles, initiator_party_id, job_info):
+        return RuntimeConfig.SCHEDULE_CLIENT.federated.create_job(job_id, roles, initiator_party_id=initiator_party_id, command_body=job_info)
 
     @classmethod
     @federated
@@ -164,8 +164,8 @@ class FederatedScheduler:
     # scheduler
     @classmethod
     @schedule_job
-    def request_create_job(cls, party_id, command_body):
-        return RuntimeConfig.SCHEDULE_CLIENT.scheduler.create_job(party_id, command_body)
+    def request_create_job(cls, party_id, initiator_party_id, command_body):
+        return RuntimeConfig.SCHEDULE_CLIENT.scheduler.create_job(party_id, initiator_party_id, command_body)
 
     @classmethod
     @schedule_job

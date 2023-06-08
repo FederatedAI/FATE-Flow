@@ -294,7 +294,7 @@ class BaseModel(Model):
         return operator.attrgetter(attr)(cls)
 
     @classmethod
-    def query(cls, reverse=None, order_by=None, **kwargs):
+    def query(cls, reverse=None, order_by=None, force=False, **kwargs):
         filters = []
         for f_n, f_v in kwargs.items():
             attr_name = "f_%s" % f_n
@@ -342,6 +342,11 @@ class BaseModel(Model):
                     query_records = cls.desc(query_records=query_records, reverse=reverse, order_by=order_by)
                 else:
                     raise ValueError(f"order_by type {type(order_by)} not support")
+            return [query_record for query_record in query_records]
+
+        elif force:
+            # force query all
+            query_records = cls.select()
             return [query_record for query_record in query_records]
         else:
             return []
@@ -443,8 +448,8 @@ class BaseModelOperate:
 
     @classmethod
     @DB.connection_context()
-    def _query(cls, entity_model, **kwargs):
-        return entity_model.query(**kwargs)
+    def _query(cls, entity_model, force=False, **kwargs):
+        return entity_model.query(force=force, **kwargs)
 
     @classmethod
     @DB.connection_context()

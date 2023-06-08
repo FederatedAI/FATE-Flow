@@ -29,6 +29,7 @@ API_VERSION = "v2"
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
 CASBIN_TABLE_NAME = "fate_casbin"
+PERMISSION_TABLE_NAME = "permission_casbin"
 PERMISSION_MANAGER_PAGE = "permission"
 APP_MANAGER_PAGE = "app"
 
@@ -60,6 +61,7 @@ IS_STANDALONE = engine_utils.is_standalone()
 WORKER = get_base_config("worker", {})
 DEFAULT_PROVIDER = get_base_config("default_provider", {})
 CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
+PERMISSION_CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "permission_casbin_model.conf")
 SERVICE_CONF_NAME = "service_conf.yaml"
 
 DATABASE = decrypt_database_config()
@@ -88,6 +90,8 @@ AUTHENTICATION_CONF = get_base_config("authentication", {})
 CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", False)
 # site
 SITE_AUTHENTICATION = AUTHENTICATION_CONF.get("site", False)
+# permission
+PERMISSION_SWITCH = AUTHENTICATION_CONF.get("permission", False)
 
 PARTY_ID = get_base_config("party_id", "")
 LOCAL_PARTY_ID = "0"
@@ -103,7 +107,7 @@ LOG_DIR = LOG_DIR or get_fate_flow_directory("logs")
 JOB_DIR = JOB_DIR or get_fate_flow_directory("jobs")
 MODEL_STORE_PATH = MODEL_DIR or os.path.join(get_fate_flow_directory(), "model")
 LOCAL_DATA_STORE_PATH = DATA_DIR or os.path.join(get_fate_flow_directory(), "data")
-LOG_LEVEL = LOG_LEVEL or "DEBUG"
+LOG_LEVEL = LOG_LEVEL or 10
 LOG_SHARE = False
 FATE_FLOW_LOG_DIR = os.path.join(LOG_DIR, "fate_flow")
 WORKERS_DIR = os.path.join(LOG_DIR, "workers")

@@ -19,23 +19,27 @@ import casbin
 import peewee as pw
 
 from fate_flow.db.base_models import singleton, DB
-from fate_flow.runtime.system_settings import CASBIN_MODEL_CONF, CASBIN_TABLE_NAME
+from fate_flow.runtime.system_settings import CASBIN_MODEL_CONF, CASBIN_TABLE_NAME, PERMISSION_TABLE_NAME, \
+    PERMISSION_CASBIN_MODEL_CONF
 
 
 class FlowCasbinAdapter(casbin.persist.Adapter):
-    def __init__(self):
+    def __init__(self, rule=None):
+        if not rule:
+            rule = FlowCasbinRule
+        self.rule = rule
         self.database = DB
         proxy = pw.Proxy()
-        FlowCasbinRule._meta.database = proxy
+        self.rule._meta.database = proxy
         proxy.initialize(DB)
 
     def load_policy(self, model):
-        for line in FlowCasbinRule.select():
+        for line in self.rule.select():
             casbin.persist.load_policy_line(str(line), model)
 
     def _save_policy_line(self, ptype, rule):
         data = dict(zip(['v0', 'v1', 'v2', 'v3', 'v4', 'v5'], rule))
-        item = FlowCasbinRule(ptype=ptype)
+        item = self.rule(ptype=ptype)
         item.__data__.update(data)
         item.save()
 
@@ -56,12 +60,12 @@ class FlowCasbinAdapter(casbin.persist.Adapter):
     def remove_policy(self, sec, ptype, rule):
         """removes a policy rule from the storage."""
         if sec in ["p", "g"]:
-            condition = [FlowCasbinRule.ptype==ptype]
+            condition = [self.rule.ptype==ptype]
             data = dict(zip(['v0', 'v1', 'v2', 'v3', 'v4', 'v5'], rule))
-            condition.extend([getattr(FlowCasbinRule, k) == data[k] for k in data])
-            check = FlowCasbinRule.select().filter(*condition)
+            condition.extend([getattr(self.rule, k) == data[k] for k in data])
+            check = self.rule.select().filter(*condition)
             if check.exists():
-                FlowCasbinRule.delete().where(*condition).execute()
+                self.rule.delete().where(*condition).execute()
                 return True
             else:
                 return False
@@ -86,6 +90,26 @@ class FlowCasbinRule(pw.Model):
     v4 = pw.CharField(max_length=255, null=True)
     v5 = pw.CharField(max_length=255, null=True)
 
+    def __str__(self):
+        return reduce(lambda x, y: str(x) + ', ' + str(y) if y else x,
+                      [self.ptype, self.v0, self.v1, self.v2, self.v3, self.v4, self.v5])
+
+    def __repr__(self):
+        if not self.id:
+            return "<{cls}: {desc}>".format(cls=self.__class__.__name__, desc=self)
+        return "<{cls} {pk}: {desc}>".format(cls=self.__class__.__name__, pk=self.id, desc=self)
+
+
+class PermissionCasbinRule(pw.Model):
+    class Meta:
+        table_name = PERMISSION_TABLE_NAME
+    ptype = pw.CharField(max_length=255, null=True)
+    v0 = pw.CharField(max_length=255, null=True)
+    v1 = pw.CharField(max_length=255, null=True)
+    v2 = pw.CharField(max_length=255, null=True)
+    v3 = pw.CharField(max_length=255, null=True)
+    v4 = pw.CharField(max_length=255, null=True)
+    v5 = pw.CharField(max_length=255, null=True)
 
     def __str__(self):
         return reduce(lambda x, y: str(x) + ', ' + str(y) if y else x,
@@ -173,4 +197,47 @@ class FateCasbin(object):
         return self.re.enforce(*rvals)
 
 
+@singleton
+class PermissionCasbin(object):
+    def __init__(self):
+        self.adapter = None
+        self.init_adapter()
+        self._e = FlowEnforcer(PERMISSION_CASBIN_MODEL_CONF, self.adapter)
+
+    def init_adapter(self):
+        self.adapter = FlowCasbinAdapter(rule=PermissionCasbinRule)
+        self.init_table()
+
+    @staticmethod
+    def init_table():
+        PermissionCasbinRule.create_table()
+
+    @property
+    def re(self) -> casbin.Enforcer:
+        return self._e.reload_policy
+
+    @property
+    def e(self) -> casbin.Enforcer:
+        return self._e
+
+    def query(self, party_id):
+        return self.re.get_permissions_for_user(party_id)
+
+    def delete(self, party_id, type, value):
+        return self.re.delete_permission_for_user(party_id, type, value)
+
+    def delete_all(self, party_id, type):
+        return self.re.remove_filtered_policy(0, party_id, type)
+
+    def grant(self, party_id, type, value):
+        return self.re.add_permission_for_user(party_id, type, value)
+
+    def enforce(self, party_id, type, value):
+        try:
+            return self.re.enforce(party_id, type, str(value))
+        except Exception as e:
+            raise Exception(f"{party_id}, {type}, {value} {e}")
+
+
 FATE_CASBIN = FateCasbin()
+PERMISSION_CASBIN = PermissionCasbin()

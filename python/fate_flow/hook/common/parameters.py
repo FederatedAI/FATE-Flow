@@ -27,8 +27,9 @@ class AuthenticationReturn(ParametersBase):
 
 
 class SignatureParameters(ParametersBase):
-    def __init__(self, party_id, body):
+    def __init__(self, party_id, body, initiator_party_id=""):
         self.party_id = party_id
+        self.initiator_party_id = initiator_party_id
         self.body = body
 
 
@@ -40,17 +41,12 @@ class SignatureReturn(ParametersBase):
 
 
 class PermissionCheckParameters(ParametersBase):
-    def __init__(self, src_role, src_party_id, role, party_id, initiator, roles, component_list, dataset_list, runtime_conf, dsl, component_parameters):
-        self.src_role = src_role
-        self.src_party_id = src_party_id
-        self.role = role
-        self.party_id = party_id
-        self.initiator = initiator
+    def __init__(self, initiator_party_id, roles, component_list, dataset_list, dag_schema, component_parameters):
+        self.party_id = initiator_party_id
         self.roles = roles
         self.component_list = component_list
         self.dataset_list = dataset_list
-        self.run_time_conf = runtime_conf
-        self.dsl = dsl
+        self.dag_schema = dag_schema
         self.component_parameters = component_parameters
 
 

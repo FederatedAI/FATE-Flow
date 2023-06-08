@@ -16,7 +16,9 @@
 from webargs import fields
 
 from fate_flow.controller.app_controller import PermissionController
+from fate_flow.controller.permission_controller import ResourcePermissionController
 from fate_flow.entity.code import ReturnCode
+from fate_flow.entity.types import PermissionParameters
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import PERMISSION_MANAGER_PAGE
 from fate_flow.utils.api_utils import API
@@ -52,3 +54,33 @@ def query(app_id):
 @manager.route('/role/query', methods=['GET'])
 def query_roles():
     return API.Output.json(data=RuntimeConfig.CLIENT_ROLE)
+
+
+@manager.route('/resource/grant', methods=['post'])
+@API.Input.json(party_id=fields.String(required=True))
+@API.Input.json(component=fields.String(required=False))
+@API.Input.json(dataset=fields.Dict(required=False))
+def grant_resource_permission(party_id, component=None, dataset=None):
+    parameters = PermissionParameters(party_id=party_id, component=component, dataset=dataset)
+    ResourcePermissionController(party_id).grant_or_delete(parameters)
+    return API.Output.json()
+
+
+@manager.route('/resource/delete', methods=['post'])
+@API.Input.json(party_id=fields.String(required=True))
+@API.Input.json(component=fields.String(required=False))
+@API.Input.json(dataset=fields.Dict(required=False))
+def delete_resource_permission(party_id, component=None, dataset=None):
+    parameters = PermissionParameters(party_id=party_id, component=component, dataset=dataset, is_delete=True)
+    ResourcePermissionController(parameters.party_id).grant_or_delete(parameters)
+    return API.Output.json()
+
+
+@manager.route('/resource/query', methods=['get'])
+@API.Input.json(party_id=fields.String(required=True))
+@API.Input.json(component=fields.String(required=False))
+@API.Input.json(dataset=fields.Dict(required=False))
+def query_resource_privilege(party_id, component=None, dataset=None):
+    parameters = PermissionParameters(party_id=party_id, component=component, dataset=dataset)
+    data = ResourcePermissionController(parameters.party_id).query()
+    return API.Output.json(data=data)

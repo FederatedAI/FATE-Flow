@@ -61,7 +61,7 @@ class DAGScheduler(JobSchedulerABC):
             job.f_status = StatusSet.READY
             ScheduleJobSaver.create_job(job.to_human_model_dict())
             status_code, response = FederatedScheduler.create_job(
-                job_id, job.f_parties, {"dag_schema": dag_schema.dict(), "job_id": job_id}
+                job_id, job.f_parties, job.f_initiator_party_id, {"dag_schema": dag_schema.dict(), "job_id": job_id}
             )
             if status_code != FederatedSchedulingStatusCode.SUCCESS:
                 job.f_status = JobStatus.FAILED

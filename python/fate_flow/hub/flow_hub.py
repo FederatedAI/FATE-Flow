@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from fate_flow.entity.spec import DAGSchema
+from fate_flow.entity.types import ProviderName, ProviderDevice
+from fate_flow.runtime.component_provider import ComponentProvider
 
 
 class FlowHub:
@@ -26,3 +28,11 @@ class FlowHub:
     def load_job_scheduler():
         from fate_flow.hub.scheduler.default import DAGScheduler
         return DAGScheduler()
+
+    @staticmethod
+    def load_provider_entrypoint(provider: ComponentProvider):
+        entrypoint = None
+        if provider.name == ProviderName.FATE and provider.device == ProviderDevice.LOCAL:
+            from fate_flow.hub.provider.fate import LocalFateEntrypoint
+            entrypoint = LocalFateEntrypoint(provider)
+        return entrypoint

@@ -118,8 +118,8 @@ def get_federated_proxy_address():
     return host, port, protocol, PROXY_NAME
 
 
-def generate_headers(party_id, body):
-    return HookManager.site_signature(SignatureParameters(party_id=party_id, body=body))
+def generate_headers(party_id, body, initiator_party_id=""):
+    return HookManager.site_signature(SignatureParameters(party_id=party_id, body=body, initiator_party_id=initiator_party_id))
 
 
 def get_exponential_backoff_interval(retries, full_jitter=False):

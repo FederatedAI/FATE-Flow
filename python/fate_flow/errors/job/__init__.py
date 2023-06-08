@@ -125,3 +125,13 @@ class NoFoundINSTANCE(FateFlowError):
 class NoFoundTable(FateFlowError):
     code = ReturnCode.Table.NO_FOUND
     message = "No found table"
+
+
+class NoPermission(FateFlowError):
+    code = ReturnCode.API.NO_PERMISSION
+    message = "No Permission"
+
+
+class PermissionOperateError(FateFlowError):
+    code = ReturnCode.API.PermissionOperateError
+    message = "Permission Operate Error"

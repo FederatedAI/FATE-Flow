@@ -27,13 +27,13 @@ from fate_flow.utils.wraps_utils import switch_function
 
 class Authentication(object):
     @classmethod
-    def md5_sign(cls, app_id, app_token, user_name, timestamp, nonce):
-        key = hashlib.md5(str(app_id + user_name + nonce + timestamp).encode("utf8")).hexdigest().lower()
+    def md5_sign(cls, app_id, app_token, user_name, initiator_party_id, timestamp, nonce):
+        key = hashlib.md5(str(app_id + user_name + initiator_party_id + nonce + timestamp).encode("utf8")).hexdigest().lower()
         sign = hashlib.md5(str(key + app_token).encode("utf8")).hexdigest().lower()
         return sign
 
     @classmethod
-    def md5_verify(cls, app_id, timestamp, nonce, signature, user_name=""):
+    def md5_verify(cls, app_id, timestamp, nonce, signature, user_name="", initiator_party_id=""):
         if cls.check_if_expired(timestamp):
             raise RequestExpired()
         apps = AppManager.query_app(app_id=app_id)
@@ -42,6 +42,7 @@ class Authentication(object):
                 app_id=app_id,
                 app_token=apps[0].f_app_token,
                 user_name=user_name,
+                initiator_party_id=initiator_party_id,
                 timestamp=timestamp,
                 nonce=nonce
             )

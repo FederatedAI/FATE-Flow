@@ -205,6 +205,20 @@ class ProviderInfo(DataBaseModel):
         db_table = "t_provider_info"
 
 
+class ComponentInfo(DataBaseModel):
+    f_provider_name = CharField(max_length=100)
+    f_name = CharField(max_length=20, index=True)
+    f_version = CharField(max_length=20)
+    f_device = CharField(max_length=20)
+    f_component_name = CharField(max_length=20)
+    f_component_entrypoint = JSONField(null=True)
+    f_component_params = JSONField(null=True)
+
+    class Meta:
+        db_table = "t_component_info"
+        primary_key = CompositeKey("f_provider_name", "f_component_name")
+
+
 class PipelineModelMeta(DataBaseModel):
     f_model_id = CharField(max_length=100)
     f_model_version = IntegerField()

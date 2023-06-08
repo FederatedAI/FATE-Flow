@@ -16,9 +16,10 @@ from .resource import BaseAPI
 
 
 class Scheduler(BaseAPI):
-    def create_job(self, party_id, command_body):
+    def create_job(self, party_id, initiator_party_id, command_body):
         return self.scheduler_command(command="job/create",
                                       party_id=party_id,
+                                      initiator_party_id=initiator_party_id,
                                       command_body=command_body
                                       )
 

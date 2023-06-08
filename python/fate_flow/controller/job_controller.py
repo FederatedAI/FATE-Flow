@@ -47,6 +47,7 @@ class JobController(object):
         JobInheritance.check(dag_schema.dag.conf.inheritance)
         response = FederatedScheduler.request_create_job(
             party_id=dag_schema.dag.conf.scheduler_party_id,
+            initiator_party_id=dag_schema.dag.conf.initiator_party_id,
             command_body={
                 "dag_schema": dag_schema.dict()
             })
