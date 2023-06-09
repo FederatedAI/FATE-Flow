@@ -281,9 +281,9 @@ class DAGScheduler(JobSchedulerABC):
             if status == FederatedSchedulingStatusCode.SUCCESS:
                 schedule_utils.rerun_signal(job_id=job.f_job_id, set_or_reset=False)
                 schedule_logger(job.f_job_id).info("job set waiting to rerun successfully")
-                ScheduleJobSaver.update_job_status({"job_id": job.f_job_id, "status": job.f_status})
             else:
-                schedule_logger(job.f_job_id).info("job set waiting to rerun failed")
+                schedule_logger(job.f_job_id).warning("job set waiting to rerun failed")
+            ScheduleJobSaver.update_job_status({"job_id": job.f_job_id, "status": job.f_status})
         else:
             schedule_utils.rerun_signal(job_id=job.f_job_id, set_or_reset=False)
             self.schedule_running_job(job)
