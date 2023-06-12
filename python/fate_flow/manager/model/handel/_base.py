@@ -19,7 +19,6 @@ import tarfile
 from ruamel import yaml
 from werkzeug.datastructures import FileStorage
 
-from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec import MLModelSpec
 from fate_flow.entity.types import ModelFileFormat
 from fate_flow.errors.job import NoFoundModelOutput
@@ -36,14 +35,24 @@ class IOHandle(object):
     def file_key(model_id, model_version, dir_name, file_name):
         return os.path.join(model_id, model_version, dir_name, file_name)
 
-    def download(self, model_id, model_version, dir_name, file_name):
-        storage_key = self.file_key(model_id, model_version, dir_name, file_name)
+    def download(self, model_id=None, model_version=None, dir_name=None, file_name=None, storage_key=None):
+        if not storage_key:
+            storage_key = self.file_key(model_id, model_version, dir_name, file_name)
         return self._download(storage_key=storage_key)
 
     def upload(self, model_file: FileStorage, dir_name, file_name, model_id, model_version):
         storage_key = self.file_key(model_id, model_version, dir_name, file_name)
         model_meta = self._upload(model_file=model_file, storage_key=storage_key)
         self.log_meta(model_meta, storage_key)
+
+    def save_as(self, storage_key, dir_path):
+        file_path = os.path.join(dir_path, storage_key)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        return self._save_as(storage_key, file_path)
+
+    def load(self, file, storage_key, model_id, model_version):
+        model_meta = self._load(file=file, storage_key=storage_key)
+        self.log_meta(model_meta, storage_key, model_id=model_id, model_version=model_version)
 
     def delete(self, job_id, role, party_id, task_name):
         model_metas = ModelMeta.query(job_id=job_id, role=role, party_id=party_id, task_name=task_name, reverse=True)
@@ -53,21 +62,30 @@ class IOHandle(object):
             self._delete(storage_key=meta.f_storage_key)
         self.delete_meta(job_id=job_id, role=role, party_id=party_id, task_name=task_name, storage_engine=self.name)
 
-    def log_meta(self, model_meta: MLModelSpec, storage_key: str):
-        execution_id = model_meta.party.party_task_id
-        task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
-        job = JobSaver.query_job(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id)[0]
-        meta_info = {
-            "model_id": job.f_model_id,
-            "model_version": job.f_model_version,
-            "job_id": task.f_job_id,
-            "role": task.f_role,
-            "party_id": task.f_party_id,
-            "task_name": task.f_task_name,
-            "storage_engine": self.name,
-            "storage_key": storage_key
-        }
-        ModelMeta.save(**meta_info)
+    def log_meta(self, model_meta: MLModelSpec, storage_key: str, model_id=None, model_version=None):
+        model_info = {"storage_key": storage_key, "storage_engine": self.name}
+        if model_id and model_version:
+            model_info.update({
+                "model_id": model_id,
+                "model_version": model_version,
+                "job_id": "",  # todo: log job id by meta
+                "role": model_meta.party.role,
+                "party_id": model_meta.party.partyid,
+                "task_name": model_meta.party.models[0].name  # todo
+            })
+        else:
+            execution_id = model_meta.party.party_task_id
+            task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
+            job = JobSaver.query_job(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id)[0]
+            model_info.update({
+                "model_id": job.f_model_id,
+                "model_version": job.f_model_version,
+                "job_id": task.f_job_id,
+                "role": task.f_role,
+                "party_id": task.f_party_id,
+                "task_name": task.f_task_name
+            })
+        ModelMeta.save(**model_info)
 
     @staticmethod
     def delete_meta(**kwargs):
@@ -108,6 +126,12 @@ class IOHandle(object):
         raise NotImplementedError()
 
     def _delete(self, storage_key):
+        raise NotImplementedError()
+
+    def _save_as(self, storage_key, path):
+        raise NotImplementedError()
+
+    def _load(self, file, storage_key):
         raise NotImplementedError()
 
     @classmethod

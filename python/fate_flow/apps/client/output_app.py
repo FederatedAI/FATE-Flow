@@ -97,5 +97,9 @@ def delete_model(job_id, role, party_id, task_name):
         return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
                                                             task_name=task_name))
     task = tasks[0]
-    PipelinedModel.delete_model(task.f_job_id, task.f_role, task.f_party_id, task.f_task_name)
+    PipelinedModel.delete_model(
+        job_id=task.f_job_id,
+        role=task.f_role,
+        party_id=task.f_party_id,
+        task_name=task.f_task_name)
     return API.Output.json()

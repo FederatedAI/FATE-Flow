@@ -48,7 +48,8 @@ class ReturnCode:
         VERIFY_FAILED = 5003
         AUTHENTICATION_FAILED = 5004
         NO_PERMISSION = 5005
-        PermissionOperateError = 5006
+        PERMISSION_OPERATE_ERROR = 5006
+        NO_FOUND_FILE = 5007
 
     class Server:
         EXCEPTION = 6000
