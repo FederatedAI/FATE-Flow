@@ -12,11 +12,16 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import os
+import shutil
+from tempfile import TemporaryDirectory
+
 from werkzeug.datastructures import FileStorage
 
 from fate_flow.entity.spec import FileStorageSpec, MysqlStorageSpec, TencentCosStorageSpec
 from fate_flow.entity.types import ModelStorageEngine
 from fate_flow.manager.model.handel import FileHandle, MysqlHandel, TencentCosHandel
+from fate_flow.manager.model.model_meta import ModelMeta
 from fate_flow.runtime.system_settings import MODEL_STORE
 
 
@@ -44,5 +49,35 @@ class PipelinedModel(object):
         return cls.handle.read(job_id, role, party_id, task_name)
 
     @classmethod
-    def delete_model(cls, job_id, role, party_id, task_name):
-        return cls.handle.delete(job_id, role, party_id, task_name)
+    def delete_model(cls, **kwargs):
+        return cls.handle.delete(**kwargs)
+
+    @classmethod
+    def export_model(cls, model_id, model_version, role, party_id, dir_path):
+        _key_list = cls.get_model_storage_key(model_id=model_id, model_version=model_version, role=role, party_id=party_id)
+        with TemporaryDirectory() as temp_dir:
+            for _k in _key_list:
+                temp_path = os.path.join(temp_dir, _k)
+                cls.handle.save_as(storage_key=_k, dir_path=temp_path)
+            os.makedirs(dir_path, exist_ok=True)
+            shutil.make_archive(os.path.join(dir_path, f"{model_id}_{model_version}_{role}_{party_id}"), 'zip', temp_path)
+
+    @classmethod
+    def import_model(cls, model_id, model_version, path, temp_dir):
+        base_dir = os.path.dirname(path)
+        shutil.unpack_archive(path, base_dir, 'zip')
+        for dirpath, dirnames, filenames in os.walk(base_dir):
+            for filename in filenames:
+                model_path = os.path.join(dirpath, filename)
+                # exclude original model packs
+                if model_path != path:
+                    storage_key = model_path.strip(temp_dir)
+                    cls.handle.load(model_path, storage_key, model_id, model_version)
+
+    @classmethod
+    def get_model_storage_key(cls, **kwargs):
+        _key_list = []
+        _model_metas = ModelMeta.query(**kwargs)
+        for _meta in _model_metas:
+            _key_list.append(_meta.f_storage_key)
+        return _key_list

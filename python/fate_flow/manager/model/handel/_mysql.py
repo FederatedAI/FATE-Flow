@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import io
+import os
 import tarfile
 
 from flask import send_file
@@ -52,8 +53,19 @@ class MysqlHandel(IOHandle):
     def _delete(self, storage_key):
         self.engine.delete(storage_key=storage_key)
 
-    def save_as(self):
-        pass
+    def _load(self, file, storage_key):
+        with open(file, "rb") as memory:
+            memory.seek(0)
+            model_meta = self.read_meta(self._tar_io(memory))
+            self.engine.store(memory, storage_key)
+            return model_meta
+
+    def _save_as(self, storage_key, path):
+        memory = self.engine.read(storage_key)
+        memory.seek(0)
+        with open(path, "wb") as f:
+            f.write(memory)
+        return path
 
     @staticmethod
     def _tar_io(memory):

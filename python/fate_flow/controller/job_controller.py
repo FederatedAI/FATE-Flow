@@ -285,7 +285,8 @@ class JobController(object):
 
             # model
             try:
-                PipelinedModel.delete_model(task.f_job_id, task.f_role, task.f_party_id, task.f_task_name)
+                PipelinedModel.delete_model(job_id=task.f_job_id, role=task.f_role,
+                                            party_id=task.f_party_id, task_name=task.f_task_name)
                 schedule_logger(task.f_job_id).info(f'delete {task.f_job_id} {task.f_role} {task.f_party_id}'
                                                     f' {task.f_task_name} model success')
             except Exception as e:

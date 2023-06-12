@@ -22,8 +22,8 @@ class ModelMeta(BaseModelOperate):
         cls._create_entity(PipelineModelMeta, meta_info)
 
     @classmethod
-    def query(cls, job_id, role, party_id, task_name, **kwargs):
-        return cls._query(PipelineModelMeta, job_id=job_id, role=role, party_id=party_id, task_name=task_name, **kwargs)
+    def query(cls, **kwargs):
+        return cls._query(PipelineModelMeta, **kwargs)
 
     @classmethod
     def delete(cls, **kwargs):

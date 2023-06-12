@@ -133,5 +133,10 @@ class NoPermission(FateFlowError):
 
 
 class PermissionOperateError(FateFlowError):
-    code = ReturnCode.API.PermissionOperateError
+    code = ReturnCode.API.PERMISSION_OPERATE_ERROR
     message = "Permission Operate Error"
+
+
+class NoFoundFile(FateFlowError):
+    code = ReturnCode.API.NO_FOUND_FILE
+    message = "No Found File"

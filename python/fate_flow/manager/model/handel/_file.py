@@ -14,6 +14,7 @@
 #  limitations under the License.
 import io
 import os.path
+import shutil
 import tarfile
 
 from flask import send_file
@@ -43,6 +44,20 @@ class FileHandle(IOHandle):
     def _download(self, storage_key):
         _p = self._generate_model_storage_path(storage_key)
         return send_file(_p, download_name=os.path.basename(_p), as_attachment=True)
+
+    def _save_as(self, storage_key, path):
+        _p = self._generate_model_storage_path(storage_key)
+        shutil.copy(_p, path)
+        return path
+
+    def _load(self, file, storage_key):
+        _path = self._generate_model_storage_path(storage_key)
+        os.makedirs(os.path.dirname(_path), exist_ok=True)
+        shutil.copy(file, _path)
+        from fate_flow.utils.schedule_utils import schedule_logger
+        schedule_logger('wzh').info(_path)
+        model_meta = self.read_meta(self._tar_io(_path))
+        return model_meta
 
     def _read(self, storage_key):
         _p = self._generate_model_storage_path(storage_key)

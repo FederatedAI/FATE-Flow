@@ -52,8 +52,18 @@ class TencentCosHandel(IOHandle):
     def _delete(self, storage_key):
         return self.engine.delete(storage_key=storage_key)
 
-    def save_as(self):
-        pass
+    def _load(self, file, storage_key):
+        with open(file, "rb") as memory:
+            model_meta = self.read_meta(self._tar_io(memory))
+            self.engine.store(memory, storage_key)
+            return model_meta
+
+    def _save_as(self, storage_key, path):
+        memory = self.engine.read(storage_key)
+        memory.seek(0)
+        with open(path, "wb") as f:
+            f.write(memory)
+        return path
 
     @staticmethod
     def _tar_io(memory):

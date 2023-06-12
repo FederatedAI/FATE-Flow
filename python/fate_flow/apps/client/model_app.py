@@ -13,8 +13,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os.path
+from tempfile import TemporaryDirectory
+
+from flask import request
 from webargs import fields
 
+from fate_flow.errors.job import NoFoundFile
+from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.utils.api_utils import API
 
 
@@ -30,15 +36,34 @@ def migrate():
     return API.Output.json()
 
 
-@manager.route('/export', methods=['POST'])
-def export():
-    # todo:
-    return API.Output.json()
+@manager.route('/local/export', methods=['POST'])
+@API.Input.json(model_id=fields.String(required=True))
+@API.Input.json(model_version=fields.String(required=True))
+@API.Input.json(party_id=fields.String(required=True))
+@API.Input.json(role=fields.String(required=True))
+@API.Input.json(dir_path=fields.String(required=True))
+def export(model_id, model_version, party_id, role, dir_path):
+    file_list = PipelinedModel.export_model(
+        model_id=model_id,
+        model_version=model_version,
+        party_id=party_id,
+        role=role,
+        dir_path=dir_path
+    )
+    return API.Output.json(data=file_list)
 
 
 @manager.route('/import', methods=['POST'])
-def import_model():
-    # todo:
+@API.Input.params(model_id=fields.String(required=True))
+@API.Input.params(model_version=fields.String(required=True))
+def import_model(model_id, model_version):
+    file = request.files.get('file')
+    if not file:
+        raise NoFoundFile()
+    with TemporaryDirectory() as temp_dir:
+        path = os.path.join(temp_dir, file.name)
+        file.save(path)
+        PipelinedModel.import_model(model_id, model_version, path, temp_dir)
     return API.Output.json()
 
 
