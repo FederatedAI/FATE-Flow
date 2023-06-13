@@ -243,7 +243,7 @@ class Upload:
         )
         self.schema.update(schema)
         self.schema.update(self.parameters.meta.to_dict())
-        self.table.put_meta([("schema", self.schema)])
+        self.table.meta.update_metas(schema=schema)
 
     def get_header_schema(self, header_line, delimiter):
         header_source_item = header_line.split(delimiter)

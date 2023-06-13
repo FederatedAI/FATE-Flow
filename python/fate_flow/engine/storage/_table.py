@@ -128,14 +128,6 @@ class StorageTableBase(StorageTableABC):
         # self._update_write_access_time()
         self._put_all(kv_list, **kwargs)
 
-    def put_meta(self, kv_list: Iterable, **kwargs):
-        # self._update_write_access_time()
-        self._put_meta(kv_list, **kwargs)
-
-    def get_meta(self, **kwargs):
-        # self._update_write_access_time()
-        return self._get_meta(**kwargs)
-
     def collect(self, **kwargs) -> list:
         # self._update_read_access_time()
         return self._collect(**kwargs)
@@ -169,12 +161,6 @@ class StorageTableBase(StorageTableABC):
 
     # to be implemented
     def _put_all(self, kv_list: Iterable, **kwargs):
-        raise NotImplementedError()
-
-    def _put_meta(self, kv_list: Iterable, **kwargs):
-        raise NotImplementedError()
-
-    def _get_meta(self, **kwargs):
         raise NotImplementedError()
 
     def _collect(self, **kwargs) -> list:

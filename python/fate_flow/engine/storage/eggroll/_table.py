@@ -43,11 +43,9 @@ class StorageTable(StorageTableBase):
         self._options["total_partitions"] = partitions
         self._options["create_if_missing"] = True
         self._table = self._context.load(namespace=self.namespace, name=self.name, options=self._options)
-        self._meta_table = self._context.load(namespace=self.namespace, name=self.meta_name, options=self._options)
 
     def _save_as(self, address, name, namespace, partitions=None, **kwargs):
         self._table.save_as(name=name, namespace=namespace)
-        self._meta_table.save_as(name=f"{name}.meta", namespace=namespace)
         table = StorageTable(
             context=self._context,
             address=address,
@@ -60,18 +58,11 @@ class StorageTable(StorageTableBase):
     def _put_all(self, kv_list: Iterable, **kwargs):
         return self._table.put_all(kv_list)
 
-    def _put_meta(self, kv_list: Iterable, **kwargs):
-        return self._meta_table.put_all(kv_list)
-
-    def _get_meta(self, **kwargs):
-        return self._meta_table.get_all(**kwargs)
-
     def _collect(self, **kwargs) -> list:
         return self._table.get_all(**kwargs)
 
     def _destroy(self):
         self._table.destroy()
-        self._meta_table.destory()
 
     def _count(self, **kwargs):
         return self._table.count()
