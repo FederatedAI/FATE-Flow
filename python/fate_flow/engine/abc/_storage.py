@@ -180,14 +180,6 @@ class StorageTableABC(metaclass=abc.ABCMeta):
         ...
 
     @abc.abstractmethod
-    def put_meta(self, kv_list: Iterable, **kwargs):
-        ...
-
-    @abc.abstractmethod
-    def get_meta(self, **kwargs):
-        ...
-
-    @abc.abstractmethod
     def collect(self, **kwargs) -> list:
         ...
 

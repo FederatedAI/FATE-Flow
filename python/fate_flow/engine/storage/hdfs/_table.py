@@ -55,20 +55,16 @@ class StorageTable(StorageTableBase):
         except Exception as e:
             LOGGER.warning(f"load libhdfs failed: {e}")
         self._hdfs_client = fs.HadoopFileSystem.from_uri(self.path)
-        self._meta_client = fs.HadoopFileSystem.from_uri(self.meta_path)
 
     def check_address(self):
         return self._exist()
 
     def _put_all(
-            self, kv_list: Iterable, append=True, assume_file_exist=False, meta=False, **kwargs
+            self, kv_list: Iterable, append=True, assume_file_exist=False, **kwargs
     ):
-        if not meta:
-            client = self._hdfs_client
-            path = self.file_path
-        else:
-            client = self._meta_client
-            path = self.meta_path
+
+        client = self._hdfs_client
+        path = self.file_path
         LOGGER.info(f"put in hdfs file: {path}")
         if append and (assume_file_exist or self._exist(path)):
             stream = client.open_append_stream(
@@ -82,30 +78,10 @@ class StorageTable(StorageTableBase):
         counter = self._meta.get_count() if self._meta.get_count() else 0
         with io.TextIOWrapper(stream) as writer:
             for k, v in kv_list:
-                if meta:
-                    writer.write(self._generate_meta_line(k, v))
-                else:
-                    writer.write(hdfs_utils.serialize(k, v))
-                    writer.write(hdfs_utils.NEWLINE)
+                writer.write(hdfs_utils.serialize(k, v))
+                writer.write(hdfs_utils.NEWLINE)
                 counter = counter + 1
-        if not meta:
-            self._meta.update_metas(count=counter)
-
-    def _put_meta(self, kv_list: Iterable, **kwargs):
-        return self._put_all(kv_list, meta=True)
-
-    def _get_meta(self, **kwargs):
-        return self._get_meta_line()
-
-    @staticmethod
-    def _generate_meta_line(k, v):
-        return hdfs_utils.DELIMITER.join([k, v]) + hdfs_utils.NEWLINE
-
-    def _get_meta_line(self):
-        for line in self._as_generator(meta=True):
-            line = line.strip(hdfs_utils.NEWLINE)
-            kv_list = line.split(hdfs_utils.DELIMITER)[0]
-            yield kv_list[0], kv_list[1]
+        self._meta.update_metas(count=counter)
 
     def _collect(self, **kwargs) -> list:
         for line in self._as_generator():
@@ -129,10 +105,7 @@ class StorageTable(StorageTableBase):
     def _save_as(
             self, address, partitions=None, name=None, namespace=None, **kwargs
     ):
-        # data path
         self._hdfs_client.copy_file(src=self.file_path, dst=address.path)
-        # meta path
-        self._meta_client.copy_file(src=self.meta_path, dst=os.path.join(address.path, self.meta_name))
         table = StorageTable(
             address=address,
             partitions=partitions,
@@ -150,16 +123,8 @@ class StorageTable(StorageTableBase):
         return f"{self._address.name_node}/{self._address.path}"
 
     @property
-    def meta_path(self):
-        return os.path.join(self.path, self.meta_name)
-
-    @property
     def file_path(self) -> str:
         return f"{self._address.path}"
-
-    @property
-    def meta_file_path(self):
-        return os.path.join(self.file_path, self.meta_name)
 
     def _exist(self, path=None):
         if not path:
@@ -167,8 +132,8 @@ class StorageTable(StorageTableBase):
         info = self._hdfs_client.get_file_info([path])[0]
         return info.type != fs.FileType.NotFound
 
-    def _as_generator(self, meta=False):
-        file = self.file_path if not meta else self.meta_file_path
+    def _as_generator(self):
+        file = self.file_path
         LOGGER.info(f"as generator: {file}")
         info = self._hdfs_client.get_file_info([file])[0]
         if info.type == fs.FileType.NotFound:
@@ -193,9 +158,8 @@ class StorageTable(StorageTableBase):
                     for line in reader:
                         yield line
 
-    def _read_buffer_lines(self, path=None):
-        if not path:
-            path = self.file_path
+    def _read_buffer_lines(self):
+        path = self.file_path
         buffer = self._hdfs_client.open_input_file(path)
         offset = 0
         block_size = 1024 * 1024 * 10
@@ -227,7 +191,8 @@ class StorageTable(StorageTableBase):
                 yield line
             offset += len(buffer_block[:end_index])
 
-    def _read_lines(self, buffer_block):
+    @staticmethod
+    def _read_lines(buffer_block):
         with io.TextIOWrapper(buffer=io.BytesIO(buffer_block), encoding="utf-8") as reader:
             for line in reader:
                 yield line
