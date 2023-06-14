@@ -13,8 +13,22 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from ._dag import *
-from ._model import *
-from ._provider import *
-from ._scheduler import *
-from ._model_storage import *
+import argparse
+
+from fate_flow.entity import BaseEntity
+from fate_flow.utils.log import getLogger
+
+
+class Submit:
+    @staticmethod
+    def run():
+        import click
+        from fate_flow.entrypoint.cli import component
+
+        cli = click.Group()
+        cli.add_command(component)
+        cli(prog_name="python -m fate_flow.entrypoint")
+
+
+if __name__ == "__main__":
+    Submit.run()

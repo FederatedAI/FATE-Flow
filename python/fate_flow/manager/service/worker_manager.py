@@ -45,11 +45,6 @@ class WorkerManager:
             task=task)
         params_env = cls.get_env(task.f_job_id, task_parameters)
         extra_env.update(params_env)
-        if worker_name is WorkerName.TASK_EXECUTOR:
-            from fate_flow.worker.fate_executor import FateSubmit
-            module_file_path = sys.modules[FateSubmit.__module__].__file__
-        else:
-            raise Exception(f"not support {worker_name} worker")
         if executable:
             process_cmd = executable
         else:

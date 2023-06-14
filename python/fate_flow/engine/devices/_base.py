@@ -12,9 +12,26 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from fate_flow.engine.abc._storage import StorageSessionABC, StorageTableABC, StorageTableMetaABC
+#
 
-__all__ = [
-    "StorageSessionABC", "StorageTableABC", "StorageTableMetaABC"
-]
 
+import abc
+import sys
+import typing
+
+from fate_flow.db.db_models import Task
+from fate_flow.entity.types import ProviderName
+
+
+class EngineABC(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs) -> typing.Dict:
+        ...
+
+    @abc.abstractmethod
+    def kill(self, task: Task):
+        ...
+
+    @abc.abstractmethod
+    def is_alive(self, task: Task):
+        ...

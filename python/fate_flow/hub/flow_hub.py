@@ -36,3 +36,9 @@ class FlowHub:
             from fate_flow.hub.provider.fate import LocalFateEntrypoint
             entrypoint = LocalFateEntrypoint(provider)
         return entrypoint
+
+    @staticmethod
+    def load_components_wraps(config, name="default"):
+        if name == "default":
+            from fate_flow.hub.components_wraps.default import FlowWraps
+            return FlowWraps(config)

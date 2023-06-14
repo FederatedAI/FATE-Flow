@@ -12,9 +12,23 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
-from ._dag import *
-from ._model import *
-from ._provider import *
-from ._scheduler import *
-from ._model_storage import *
+import abc
+from abc import ABCMeta
+
+
+class WrapsABC(metaclass=ABCMeta):
+    @abc.abstractmethod
+    def run(self):
+        ...
+
+    @abc.abstractmethod
+    def preprocess(self):
+        ...
+
+    @abc.abstractmethod
+    def push_output(self):
+        ...
+
+    @abc.abstractmethod
+    def run_component(self):
+        ...

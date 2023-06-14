@@ -109,13 +109,12 @@ class TrackingOutputInfo(DataBaseModel):
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=50, index=True)
     f_output_key = CharField(max_length=30)
-    f_type = CharField(max_length=10, null=True)
     f_uri = CharField(max_length=200, null=True)
     f_meta = JSONField()
 
     class Meta:
-        db_table = "t_tracking_output"
-        primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id', 'f_type', 'f_output_key')
+        db_table = "t_tracking_data_output"
+        primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id', 'f_output_key')
 
 
 class EngineRegistry(DataBaseModel):
@@ -227,6 +226,8 @@ class PipelineModelMeta(DataBaseModel):
     f_party_id = CharField(max_length=50, index=True)
     f_task_name = CharField(max_length=50, index=True)
     f_storage_key = CharField(max_length=100)
+    f_output_key = CharField(max_length=20)
+    f_meta_data = JSONField(null=True)
     f_storage_engine = CharField(max_length=30, null=True, index=True)
 
     class Meta:

@@ -22,7 +22,5 @@ class ProcessRole(CustomEnum):
 
 
 class WorkerName(CustomEnum):
+    TASK_ENTRYPOINT = "task_entrypoint"
     TASK_EXECUTOR = "task_executor"
-    TASK_INITIALIZER = "task_initializer"
-    PROVIDER_REGISTRAR = "provider_registrar"
-    DEPENDENCE_UPLOAD = "dependence_upload"

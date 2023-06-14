@@ -17,7 +17,7 @@ from pydantic import typing
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import SchedulingStatusCode, FederatedSchedulingStatusCode
-from fate_flow.entity.spec import DAGSchema
+from fate_flow.entity.spec import DAGSchema, JobConfSpec
 from fate_flow.db.base_models import DB
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
 from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation, \

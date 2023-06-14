@@ -12,90 +12,11 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import logging.config
+import os.path
 from typing import Optional, Dict, List, Union, Any, Literal, TypeVar
 from pydantic import BaseModel
 
-# task
-class IOArtifact(BaseModel):
-    name: str
-    uri: str
-    metadata: Optional[dict]
-
-
-class InputSpec(BaseModel):
-    parameters: Optional[Dict[str, Any]]
-    artifacts: Optional[IOArtifact]
-
-
-class TaskRuntimeInputSpec(BaseModel):
-    parameters: Optional[Dict[str, Any]]
-    artifacts: Optional[Dict[str, IOArtifact]]
-
-
-class TaskRuntimeOutputSpec(BaseModel):
-    artifacts: Dict[str, IOArtifact]
-
-
-class MLMDSpec(BaseModel):
-    type: str
-    metadata: Dict[str, Any]
-
-
-class LOGGERSpec(BaseModel):
-    type: str
-    metadata: Dict[str, Any]
-
-
-class ComputingBackendSpec(BaseModel):
-    type: str
-    metadata: Dict[str, Any]
-
-
-class FederationBackendSpec(BaseModel):
-    type: str
-    metadata: Dict[str, Any]
-
-
-class OutputModelSpec(BaseModel):
-    type: str
-    metadata: Dict[str, str]
-
-
-class OutputMetricSpec(BaseModel):
-    type: str
-    metadata: Dict[str, str]
-
-
-class OutputDataSpec(BaseModel):
-    type: str
-    metadata: Dict[str, str]
-
-
-class OutputSpec(BaseModel):
-    model: OutputModelSpec
-    metric: OutputMetricSpec
-    data: OutputDataSpec
-
-
-class RuntimeConfSpec(BaseModel):
-    output: OutputSpec
-    mlmd: MLMDSpec
-    logger: LOGGERSpec
-    device: Dict[str, str]
-    computing: ComputingBackendSpec
-    federation: FederationBackendSpec
-
-
-class TaskScheduleSpec(BaseModel):
-    job_id: Optional[str]
-    task_id: Optional[str]
-    party_task_id: Optional[str]
-    component: Optional[str]
-    role: Optional[str]
-    stage: Optional[str]
-    party_id: Optional[str]
-    inputs: Optional[TaskRuntimeInputSpec]
-    conf: RuntimeConfSpec
 
 # component
 class ParameterSpec(BaseModel):
@@ -139,6 +60,7 @@ class RuntimeOutputChannelSpec(BaseModel):
 class RuntimeInputDefinition(BaseModel):
     parameters: Optional[Dict[str, Any]]
     artifacts: Optional[Dict[str, Dict[str, RuntimeOutputChannelSpec]]]
+
 
 # dag
 class PartySpec(BaseModel):
@@ -199,6 +121,9 @@ class InheritConfSpec(BaseModel):
 
 
 class JobConfSpec(BaseModel):
+    class PipelineModel(BaseModel):
+        model_id: str
+        model_version: Union[str, int]
     priority: Optional[int]
     scheduler_party_id: Optional[str]
     initiator_party_id: Optional[str]
@@ -209,6 +134,7 @@ class JobConfSpec(BaseModel):
     auto_retries: Optional[int]
     model_id: Optional[str]
     model_version: Optional[Union[str, int]]
+    model_warehouse: Optional[PipelineModel]
     task: Optional[TaskConfSpec]
 
 
@@ -223,3 +149,170 @@ class DAGSpec(BaseModel):
 class DAGSchema(BaseModel):
     dag: DAGSpec
     schema_version: str
+
+
+# task
+class MLMDSpec(BaseModel):
+    class MLMDMetadata:
+        host: Optional[str]
+        port: Optional[int]
+        protocol: Optional[str]
+    type: str
+    metadata: Dict[str, Any]
+
+
+class ComputingBackendSpec(BaseModel):
+    type: str
+    metadata: Dict[str, Any]
+
+
+class DirectoryDataPool(BaseModel):
+    class DirectoryDataPoolMetadata(BaseModel):
+        uri: str
+        format: str = "csv"
+        name_template: str = "{name}"  # `name` and `uuid` allowed in template
+
+    type: Literal["directory"]
+    metadata: DirectoryDataPoolMetadata
+
+
+class CustomDataPool(BaseModel):
+    type: Literal["custom"]
+    metadata: dict
+
+
+class DirectoryModelPool(BaseModel):
+    class DirectoryDataPoolMetadata(BaseModel):
+        uri: str
+        format: str = "json"
+        name_template: str = "{name}"  # `name` and `uuid` allowed in template
+
+    type: Literal["directory"]
+    metadata: DirectoryDataPoolMetadata
+
+
+class DirectoryMetricPool(BaseModel):
+    class DirectoryDataPoolMetadata(BaseModel):
+        uri: str
+        format: str = "json"
+        name_template: str = "{name}"  # `name` and `uuid` allowed in template
+
+    type: Literal["directory"]
+    metadata: DirectoryDataPoolMetadata
+
+
+class CustomModelPool(BaseModel):
+    type: Literal["custom"]
+    metadata: dict
+
+
+class CustomMetricPool(BaseModel):
+    type: Literal["custom"]
+    metadata: dict
+
+
+class TaskArtifactSpec(BaseModel):
+    name: str
+    uri: str
+    metadata: Optional[dict] = None
+
+
+class FlowLogger(BaseModel):
+    class FlowLoggerMetadata(BaseModel):
+        basepath: str
+        level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+
+    type: Literal["flow"]
+    metadata: FlowLoggerMetadata
+
+    def install(self):
+        os.makedirs(self.metadata.basepath, exist_ok=True)
+        levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+        formatters = {"brief": {"format": "'%(asctime)s %(levelname)-8s %(name)s:%(lineno)s %(message)s'"}}
+        handlers = {}
+        filters = {}
+
+        def add_file_handler(
+            name,
+            filename,
+            level,
+            formater="brief",
+            filters=[]
+        ):
+            handlers[name] = {
+                "class": "logging.FileHandler",
+                "level": level,
+                "formatter": formater,
+                "filters": filters,
+                "filename": filename
+            }
+
+        # add root logger
+        root_handlers = []
+        root_base_path = os.path.join(self.metadata.basepath, "root")
+        os.makedirs(root_base_path, exist_ok=True)
+        for level in levels:
+            handler_name = f"root_{level.lower()}"
+            add_file_handler(
+                name=handler_name,
+                filename=os.path.join(root_base_path, level),
+                level=level,
+            )
+            root_handlers.append(handler_name)
+
+        # add component logger
+        component_handlers = []
+        component_base_path = os.path.join(self.metadata.basepath, "component")
+        os.makedirs(component_base_path, exist_ok=True)
+        filters["components"] = {"name": "fate_flow.components"}
+        for level in levels:
+            handler_name = f"component_{level.lower()}"
+            add_file_handler(
+                name=handler_name,
+                filename=os.path.join(component_base_path, level),
+                level=level,
+            )
+            component_handlers.append(handler_name)
+        component_loggers = {
+            "fate_flow.components": dict(
+                handlers=component_handlers,
+                filters=["components"],
+                level=self.metadata.level,
+            )
+        }
+
+        logging.config.dictConfig(
+            dict(
+                version=1,
+                formatters=formatters,
+                handlers=handlers,
+                filters=filters,
+                loggers=component_loggers,
+                root=dict(handlers=root_handlers, level=self.metadata.level),
+                disable_existing_loggers=False,
+            )
+        )
+
+
+class TaskConfigSpec(BaseModel):
+    class TaskInputsSpec(BaseModel):
+        parameters: Dict[str, Any] = {}
+        artifacts: Dict[str, Union[TaskArtifactSpec, List[TaskArtifactSpec], InputChannelSpec]] = {}
+
+    class TaskConfSpec(BaseModel):
+        mlmd: MLMDSpec
+        device: Any
+        computing: Any
+        federation: Any
+        logger: FlowLogger
+    model_id: Optional[str] = ""
+    model_version: Optional[str] = ""
+    job_id: Optional[str] = ""
+    task_id: str
+    party_task_id: str
+    component: str
+    role: str
+    party_id: str
+    stage: str = "default"
+    inputs: TaskInputsSpec = TaskInputsSpec(parameters={}, artifacts={})
+    conf: TaskConfSpec

@@ -15,7 +15,7 @@
 #
 import time
 
-from fate_flow.engine.computing import build_engine
+from fate_flow.engine.devices import build_engine
 from fate_flow.entity.types import TaskStatus, JobStatus
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig

@@ -22,17 +22,17 @@ from typing import Dict, Union, List
 
 from ._federation import StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, PulsarFederationSpec, \
     RabbitMQFederationSpec
-from fate_flow.entity.spec import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, DAGSchema,\
-    RuntimeTaskOutputChannelSpec, TaskScheduleSpec, TaskRuntimeInputSpec, IOArtifact, OutputSpec, \
-    OutputMetricSpec, OutputModelSpec, OutputDataSpec, MLMDSpec, LOGGERSpec, ComputingBackendSpec, \
-    RuntimeConfSpec
+from fate_flow.entity.spec import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, \
+    DAGSchema, RuntimeTaskOutputChannelSpec, TaskArtifactSpec, TaskConfigSpec, MLMDSpec, \
+    FlowLogger, ComputingBackendSpec
 
 from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.runtime.system_settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY, FATE_FLOW_CONF_PATH
+from fate_flow.runtime.system_settings import ENGINES, BASE_URI, PROXY, FATE_FLOW_CONF_PATH, HOST, HTTP_PORT, PROTOCOL, \
+    API_VERSION
 from fate_flow.utils import job_utils, file_utils
-from fate_flow.entity.types import StorageEngine, EngineType, FederationEngine, DataSet
+from fate_flow.entity.types import EngineType, FederationEngine, DataSet
 from fate_flow.entity.spec import SchedulerInfoSpec
 from fate_flow.utils.log_utils import schedule_logger
 from .. import TaskParserABC, JobParserABC
@@ -206,67 +206,19 @@ class TaskParser(TaskParserABC):
                                         role=self.role, party_id=self.party_id,  job_id=job_id)
         if data:
             data = data[-1]
-            return IOArtifact(name=name, uri=data.f_uri, metadata=data.f_meta).dict()
+            return TaskArtifactSpec(name=name, uri=data.f_uri, metadata=data.f_meta).dict()
         return {}
-
-    def generate_task_outputs(self):
-        return OutputSpec(
-            model=self.get_output_model_store_conf(),
-            data=self.get_output_data_store_conf(),
-            metric=self.get_output_data_metric_conf(),
-        )
-
-    def get_output_model_store_conf(self):
-        model_id, model_version = job_utils.generate_model_info(job_id=self.job_id)
-        _type = JobDefaultConfig.task_default_conf.get("output").get("model").get("type")
-        _format = JobDefaultConfig.task_default_conf.get("output").get("model").get("format")
-
-        return OutputModelSpec(
-            type=_type,
-            metadata={
-                "uri": f"{BASE_URI}/worker/task/model/{model_id}/{str(model_version)}/{self.execution_id}",
-                "format": _format
-            }
-        )
-
-    def get_output_data_store_conf(self):
-        _type = JobDefaultConfig.task_default_conf.get("output").get("data").get("type")
-        _format = JobDefaultConfig.task_default_conf.get("output").get("data").get("format")
-
-        if ENGINES.get(EngineType.STORAGE) in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
-            os.makedirs(os.path.join(LOCAL_DATA_STORE_PATH, self.job_id, self.execution_id), exist_ok=True)
-            return OutputDataSpec(type=_type, metadata={
-                "uri": f"file:///{LOCAL_DATA_STORE_PATH}/{self.job_id}/{self.execution_id}",
-                "format": _format
-            })
-        elif ENGINES.get(EngineType.STORAGE) == StorageEngine.EGGROLL:
-            return OutputDataSpec(type=_type, metadata={
-                "uri": f"eggroll:///output_data_{self.execution_id}",
-                "format": _format
-            })
-
-    def get_output_data_metric_conf(self):
-        _type = JobDefaultConfig.task_default_conf.get("output").get("metric").get("type")
-        _format = JobDefaultConfig.task_default_conf.get("output").get("metric").get("format")
-
-        return OutputMetricSpec(
-            type=_type,
-            metadata={
-                "uri": f"{BASE_URI}/worker/task/metric/{self.job_id}/{self.role}/"
-                       f"{self.party_id}/{self.task_name}/{self.task_id}/{self.task_version}",
-                "format": _format
-            })
 
     @staticmethod
     def generate_mlmd():
         _type = "flow"
-        _statu_uri = f"{BASE_URI}/worker/task/status"
-        _tracking_uri = f'{BASE_URI}/worker/task/output/tracking'
         return MLMDSpec(
             type=_type,
             metadata={
-                "statu_uri": _statu_uri,
-                "tracking_uri": _tracking_uri
+                "host": HOST,
+                "port": HTTP_PORT,
+                "protocol": PROTOCOL,
+                "api_version": API_VERSION
             })
 
     def generate_logger_conf(self):
@@ -274,7 +226,7 @@ class TaskParser(TaskParserABC):
         log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id, self.task_name)
         if logger_conf.get("metadata"):
             logger_conf.get("metadata").update({"basepath": log_dir})
-        return LOGGERSpec(**logger_conf)
+        return FlowLogger(**logger_conf)
 
     @staticmethod
     def generate_device():
@@ -337,8 +289,7 @@ class TaskParser(TaskParserABC):
 
     @property
     def task_conf(self):
-        return RuntimeConfSpec(
-            output=self.generate_task_outputs(),
+        return TaskConfigSpec.TaskConfSpec(
             mlmd=self.generate_mlmd(),
             logger=self.generate_logger_conf(),
             device=self.generate_device(),
@@ -347,8 +298,10 @@ class TaskParser(TaskParserABC):
         )
 
     @property
-    def task_parameters(self) -> TaskScheduleSpec:
-        return TaskScheduleSpec(
+    def task_parameters(self) -> TaskConfigSpec:
+        return TaskConfigSpec(
+            model_id="",
+            model_version="",
             job_id=self.job_id,
             task_id=self.task_id,
             party_task_id=self.execution_id,
@@ -356,7 +309,7 @@ class TaskParser(TaskParserABC):
             role=self.role,
             stage=self.stage,
             party_id=self.party_id,
-            inputs=TaskRuntimeInputSpec(parameters=self.input_parameters).dict(),
+            inputs=TaskConfigSpec.TaskInputsSpec(parameters=self.input_parameters, artifacts=self.task_node.upstream_inputs).dict(),
             conf=self.task_conf
         )
 

@@ -37,12 +37,12 @@ class PipelinedModel(object):
         raise ValueError(f"Model storage engine {engine} is not supported.")
 
     @classmethod
-    def upload_model(cls, model_file: FileStorage, dir_name: str, file_name: str, model_id, model_version):
-        return cls.handle.upload(model_file, dir_name, file_name, model_id, model_version)
+    def upload_model(cls, model_file: FileStorage, job_id: str, task_name, output_key, model_id, model_version, meta_data):
+        return cls.handle.upload(model_file, job_id, task_name, output_key, model_id, model_version, meta_data)
 
     @classmethod
-    def download_model(cls, model_id, model_version, dir_name, file_name):
-        return cls.handle.download(model_id, model_version, dir_name, file_name)
+    def download_model(cls, model_id, model_version, role, party_id, task_name, output_key):
+        return cls.handle.download(model_id, model_version, role, party_id, task_name, output_key)
 
     @classmethod
     def read_model(cls, job_id, role, party_id, task_name):
