@@ -17,7 +17,7 @@ import os
 
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
-from fate_flow.engine.computing import build_engine
+from fate_flow.engine.devices import build_engine
 from fate_flow.entity.spec import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.service.provider_manager import ProviderManager
@@ -149,7 +149,7 @@ class TaskController(object):
                 task_node=task_node, job_id=job_id, task_name=task.f_task_name, role=role,
                 party_id=party_id, parties=dag_schema.dag.parties
             )
-            task_parser.update_runtime_artifacts(run_parameters)
+            # task_parser.update_runtime_artifacts(run_parameters)
             schedule_logger(job_id).info(f"task run parameters: {run_parameters}")
             task_executor_process_start_status = False
 

@@ -22,7 +22,7 @@ import peewee
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.storage_models import StorageTableMetaModel
-from fate_flow.engine.abc import StorageTableMetaABC, StorageTableABC
+from fate_flow.engine.storage._abc import StorageTableMetaABC, StorageTableABC
 
 from fate_flow.engine.relation_ship import Relationship
 from fate_flow.entity.types import AddressABC
@@ -49,10 +49,6 @@ class StorageTableBase(StorageTableABC):
     @property
     def name(self):
         return self._name
-
-    @property
-    def meta_name(self):
-        return f"{self.name}.meta"
 
     @property
     def namespace(self):

@@ -58,16 +58,66 @@ def query_task_status(execution_id):
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=task_info)
 
 
-@manager.route('/task/output/tracking', methods=['POST'])
+@manager.route('/model/save', methods=['POST'])
+@API.Input.json(model_id=fields.String(required=True))
+@API.Input.json(model_version=fields.String(required=True))
 @API.Input.json(execution_id=fields.String(required=True))
 @API.Input.json(meta_data=fields.Dict(required=True))
-@API.Input.json(type=fields.String(required=True))
+@API.Input.json(output_key=fields.String(required=True))
+def upload_model(model_id, model_version, execution_id, meta_data, output_key):
+    task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
+    file = request.files['file']
+    PipelinedModel.upload_model(
+        model_file=file,
+        job_id=task.f_job_id,
+        task_name=task.f_task_name,
+        output_key=output_key,
+        model_id=model_id,
+        model_version=model_version,
+        meta_data=meta_data
+    )
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+
+
+@manager.route('/model/download', methods=['GET'])
+@API.Input.params(model_id=fields.String(required=True))
+@API.Input.params(model_version=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(output_key=fields.String(required=True))
+def download_model(model_id, model_version, role, party_id, task_name, output_key):
+    return PipelinedModel.download_model(model_id, model_version, role, party_id, task_name, output_key)
+
+
+@manager.route('/data/tracking/query', methods=['GET'])
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(output_key=fields.String(required=True))
+def query_data_tracking(job_id, role, party_id, task_name, output_key):
+    data_info = {
+        "job_id": job_id,
+        "role": role,
+        "party_id": party_id,
+        "task_name": task_name,
+        "output_key": output_key
+    }
+    data_list = OutputDataTracking.query(data_info)
+    if data_list:
+        return  API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=data_list[0].to_human_model_dict())
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+
+
+@manager.route('/data/tracking/save', methods=['POST'])
+@API.Input.json(execution_id=fields.String(required=True))
+@API.Input.json(meta_data=fields.Dict(required=True))
 @API.Input.json(uri=fields.String(required=True))
 @API.Input.json(output_key=fields.String(required=True))
-def log_output_artifacts(execution_id, meta_data, type, uri, output_key):
+def save_data_tracking(execution_id, meta_data, uri, output_key):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     data_info = {
-        "type": type,
         "uri": uri,
         "output_key": output_key,
         "meta": meta_data,
@@ -82,28 +132,12 @@ def log_output_artifacts(execution_id, meta_data, type, uri, output_key):
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
 
 
-@manager.route('/task/model/<model_id>/<model_version>/<dir_name>/<file_name>', methods=['POST'])
-def upload_output_model(model_id, model_version, dir_name, file_name):
-    file = request.files['file']
-    PipelinedModel.upload_model(
-        model_file=file,
-        dir_name=dir_name,
-        file_name=file_name,
-        model_id=model_id,
-        model_version=model_version
-    )
-    return API.Output.json()
-
-
-@manager.route('/task/model/<model_id>/<model_version>/<dir_name>/<file_name>', methods=['GET'])
-def download_output_model(model_id, model_version, dir_name, file_name):
-    return PipelinedModel.download_model(model_id, model_version, dir_name, file_name)
-
-
-@manager.route('/task/metric/<job_id>/<role>/<party_id>/<task_name>/<task_id>/<task_version>/<name>', methods=["POST"])
+@manager.route('/metric/save', methods=["POST"])
+@API.Input.json(execution_id=fields.String(required=True))
 @API.Input.json(data=fields.Dict(required=True))
 @API.Input.json(incomplete=fields.Bool(required=True))
-def save_metric(job_id, role, party_id, task_name, task_id, task_version, name, data, incomplete):
-    OutputMetric(job_id=job_id, role=role, party_id=party_id, task_name=task_name, task_id=task_id,
-                 task_version=task_version).save_output_metrics(data, incomplete)
+def save_metric(execution_id, data, incomplete):
+    task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
+    OutputMetric(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id, task_name=task.f_task_name,
+                 task_id=task.f_task_id, task_version=task.f_task_version).save_output_metrics(data, incomplete)
     return API.Output.json()

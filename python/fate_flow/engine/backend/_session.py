@@ -13,8 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.engine.computing._eggroll import ContainerdEggrollEngine, LocalEggrollEngine
-from fate_flow.engine.computing._spark import LocalSparkEngine
+from fate_flow.engine.backend._eggroll import ContainerdEggrollEngine, LocalEggrollEngine
+from fate_flow.engine.backend._spark import LocalSparkEngine
 from fate_flow.entity.types import ComputingEngine, EngineType, ProviderDevice
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.component_provider import ComponentProvider

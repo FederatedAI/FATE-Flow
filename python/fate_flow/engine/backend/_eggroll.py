@@ -16,7 +16,7 @@
 import yaml
 
 from fate_flow.db.db_models import Task
-from fate_flow.engine.computing._base import EngineABC, LocalEngine
+from fate_flow.engine.backend._base import EngineABC, LocalEngine
 from fate_flow.entity.types import ProviderDevice, TaskStatus, WorkerName
 from fate_flow.entity.code import KillProcessRetCode
 from fate_flow.manager.service.worker_manager import WorkerManager
