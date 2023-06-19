@@ -30,7 +30,7 @@ class StorageTableMetaABC(metaclass=abc.ABCMeta):
         ...
 
     @abc.abstractmethod
-    def update_metas(self, schema=None, count=None, part_of_data=None, description=None, partitions=None, **kwargs):
+    def update_metas(self, data_meta=None, count=None, part_of_data=None, description=None, partitions=None, **kwargs):
         ...
 
     @abc.abstractmethod
@@ -67,10 +67,6 @@ class StorageTableMetaABC(metaclass=abc.ABCMeta):
         ...
 
     @abc.abstractmethod
-    def get_in_serialized(self):
-        ...
-
-    @abc.abstractmethod
     def get_id_delimiter(self):
         ...
 
@@ -87,7 +83,7 @@ class StorageTableMetaABC(metaclass=abc.ABCMeta):
         ...
 
     @abc.abstractmethod
-    def get_schema(self):
+    def get_data_meta(self):
         ...
 
     @abc.abstractmethod

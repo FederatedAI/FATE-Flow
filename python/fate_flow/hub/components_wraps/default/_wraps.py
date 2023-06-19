@@ -14,6 +14,7 @@
 #  limitations under the License.
 import logging
 
+from fate_flow.engine.backend import build_backend
 from fate_flow.entity.spec import TaskConfigSpec, ModelWarehouseChannelSpec, RuntimeTaskOutputChannelSpec
 from fate_flow.hub.components_wraps import WrapsABC
 
@@ -22,6 +23,18 @@ class FlowWraps(WrapsABC):
     def __init__(self, config: TaskConfigSpec):
         self.config = config
         self.mlmd = self.load_mlmd(config.conf.mlmd)
+        self.backend = build_backend(backend_name=self.config.conf.computing.type)
+
+    @property
+    def task_info(self):
+        return {
+            "job_id": self.config.job_id,
+            "role": self.config.role,
+            "party_id": self.config.party_id,
+            "task_name": self.config.task_name,
+            "task_id": self.config.task_id,
+            "task_version": self.config.task_version
+        }
 
     def run(self):
         _config = self.preprocess()
@@ -38,12 +51,13 @@ class FlowWraps(WrapsABC):
                 if isinstance(v, ModelWarehouseChannelSpec):
                     self._input_model(v)
                 else:
-
                     self._intput_data(v)
+
+        # get component define
+        define = self.backend.get_component_define(provider_name=self.config.provider_name, task_info=self.task_info)
+        logging.info(define)
         logging.info(self.config.inputs.parameters)
         logging.info(self.config.inputs.artifacts)
-
-        # model
         return {}
 
     def push_output(self):
@@ -79,7 +93,21 @@ class FlowWraps(WrapsABC):
         pass
 
     def run_component(self):
-        return 0
+        task_parameters = self.config.dict()
+        logging.info(self.config.provider_name)
+        logging.info(self.task_info)
+        logging.info("start run task")
+
+        p = self.backend.run(
+            provider_name=self.config.provider_name,
+            task_info=self.task_info,
+            run_parameters=task_parameters,
+            output_path=""
+        )
+        p.wait()
+
+        logging.info(f"p.stdout: {p.stdout}")
+        logging.info(f"p.stderr: {p.stderr}")
 
     @staticmethod
     def load_mlmd(mlmd):

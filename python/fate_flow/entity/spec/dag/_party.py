@@ -1,4 +1,3 @@
-#
 #  Copyright 2019 The FATE Authors. All Rights Reserved.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,3 +11,15 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+#
+from typing import Union, Literal, List
+
+from pydantic import BaseModel
+
+
+class PartySpec(BaseModel):
+    role: Union[Literal["guest", "host", "arbiter", "local"]]
+    party_id: List[str]
+
+    def tuple(self):
+        return self.role, self.party_id

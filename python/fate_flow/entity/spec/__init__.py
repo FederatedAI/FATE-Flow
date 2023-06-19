@@ -13,8 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from .flow import MLModelSpec, MysqlStorageSpec, TencentCosStorageSpec, FileStorageSpec, K8sProviderSpec, \
+    DockerProviderSpec, LocalProviderSpec, ProviderSpec, SchedulerInfoSpec
+# from .dag import TaskConfigSpec, PreTaskConfigSpec, DAGSchema
 from ._dag import *
-from ._model import *
-from ._provider import *
-from ._scheduler import *
-from ._model_storage import *
+
+# __all__ = ["MLModelSpec", "MysqlStorageSpec", "TencentCosStorageSpec", "FileStorageSpec", "K8sProviderSpec",
+#            "DockerProviderSpec", "LocalProviderSpec", "ProviderSpec", "SchedulerInfoSpec", "TaskConfigSpec",
+#            "DAGSchema"]

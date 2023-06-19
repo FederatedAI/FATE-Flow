@@ -58,5 +58,9 @@ class ComponentProvider(BaseEntity):
     def python_env(self):
         return self._python_env
 
+    @property
+    def provider_name(self):
+        return f"{self.name}:{self.version}@{self.device}"
+
     def __eq__(self, other):
         return self.name == other.name and self.version == other.version

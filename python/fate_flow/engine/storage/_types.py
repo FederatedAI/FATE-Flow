@@ -16,7 +16,13 @@
 DEFAULT_ID_DELIMITER = ","
 
 
-class StorageTableOrigin(object):
+class StorageType:
+    TABLE = "table"
+    DATAFRAME = "dataframe"
+    FILE = "file"
+
+
+class StorageOrigin(object):
     TABLE_BIND = "table_bind"
     READER = "reader"
     UPLOAD = "upload"

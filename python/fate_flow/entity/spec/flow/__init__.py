@@ -12,23 +12,10 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from typing import Any, List, Union, Literal, Dict
+from ._model import MLModelSpec
+from ._storage import FileStorageSpec, MysqlStorageSpec, TencentCosStorageSpec
+from ._provider import ProviderSpec, DockerProviderSpec, K8sProviderSpec, LocalProviderSpec
+from ._scheduler import SchedulerInfoSpec
 
-from pydantic import BaseModel
-
-
-class PartySpec(BaseModel):
-    role: Union[Literal["guest", "host", "arbiter"]]
-    party_id: List[Union[str, int]]
-
-
-class SchedulerInfoSpec(BaseModel):
-    dag: Dict[str, Any]
-    parties: List[PartySpec]
-    initiator_party_id: str
-    scheduler_party_id: str
-    federated_status_collect_type: str
-    model_id: str
-    model_version: Union[str, int]
-
-
+__all__ = ["MLModelSpec", "FileStorageSpec", "MysqlStorageSpec", "TencentCosStorageSpec", "ProviderSpec",
+           "DockerProviderSpec", "K8sProviderSpec", "LocalProviderSpec", "SchedulerInfoSpec"]

@@ -23,7 +23,7 @@ class LocalFateEntrypoint(EntrypointABC):
 
     @property
     def component_list(self):
-        from fate.components.loader.component import list_components
+        from fate.components.core import list_components
         # {'buildin': [], 'thirdparty': []}
         components = list_components()
         _list = components.get('buildin', [])

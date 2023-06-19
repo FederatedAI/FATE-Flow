@@ -36,12 +36,9 @@ class StorageTableMetaModel(DataBaseModel):
     f_partitions = IntegerField(null=True)
 
     f_delimiter = CharField(null=True)
-    f_in_serialized = BooleanField(default=True)
     f_have_head = BooleanField(default=True)
     f_extend_sid = BooleanField(default=False)
-    f_auto_increasing_sid = BooleanField(default=False)
-
-    f_schema = JSONField()
+    f_data_meta = JSONField()
     f_count = BigIntegerField(null=True)
     f_part_of_data = JSONField()
     f_origin = CharField(max_length=50, default='')

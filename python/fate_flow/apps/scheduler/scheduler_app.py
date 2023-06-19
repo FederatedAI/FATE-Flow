@@ -14,8 +14,6 @@
 #  limitations under the License.
 from webargs import fields
 
-from fate_flow.entity.code import ReturnCode
-from fate_flow.entity.spec import DAGSchema
 from fate_flow.errors.job import UpdateTaskFailed
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.scheduler.job_scheduler import DAGScheduler
