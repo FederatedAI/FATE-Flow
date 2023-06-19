@@ -56,15 +56,13 @@ class ProviderManager(BaseModelOperate):
     @DB.connection_context()
     def register_provider(cls, provider: ComponentProvider):
         provider_info = ProviderInfo()
-        provider_info.f_provider_name = cls.generate_provider_name(name=provider.name, version=provider.version,
-                                                                   device=provider.device)
+        provider_info.f_provider_name = provider.provider_name
         provider_info.f_name = provider.name
         provider_info.f_device = provider.device
         provider_info.f_version = provider.version
         provider_info.f_metadata = provider.metadata.dict()
         operator_type = cls.safe_save(ProviderInfo, defaults=provider_info.to_dict(),
-                                      f_provider_name=cls.generate_provider_name(provider.name, provider.version,
-                                                                                 provider.device))
+                                      f_provider_name=provider.provider_name)
         # todo: load entrypoint、components、params...
         # load components
         cls.register_component(provider)
@@ -79,9 +77,7 @@ class ProviderManager(BaseModelOperate):
 
         for component_name in component_list:
             component = ComponentInfo()
-            component.f_provider_name = cls.generate_provider_name(
-                name=provider.name, version=provider.version, device=provider.device
-            )
+            component.f_provider_name = provider.provider_name
             component.f_name = provider.name
             component.f_device = provider.device
             component.f_version = provider.version

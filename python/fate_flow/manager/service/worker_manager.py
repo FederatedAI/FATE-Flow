@@ -30,58 +30,50 @@ from fate_flow.utils.log_utils import failed_log, schedule_logger, start_log, su
 
 class WorkerManager:
     @classmethod
-    def start_general_worker(cls, worker_name: WorkerName, job_id="", role="", party_id=0, provider=None,
-                             initialized_config: dict = None, run_in_subprocess=True, **kwargs):
-        pass
-
-    @classmethod
-    def start_task_worker(cls, worker_name, task: Task, task_parameters, executable, common_cmd=None,
-                          extra_env: dict = None, **kwargs):
-        worker_id, config_dir, log_dir = cls.get_process_dirs(
-            worker_name=worker_name,
-            job_id=task.f_job_id,
-            role=task.f_role,
-            party_id=task.f_party_id,
-            task=task)
-        params_env = cls.get_env(task.f_job_id, task_parameters)
+    def start_task_worker(cls, worker_name, task_info, task_parameters=None, executable=None, common_cmd=None,
+                          extra_env: dict = None, record=False, **kwargs):
+        if not extra_env:
+            extra_env = {}
+        worker_id = uuid1().hex
+        config_dir, log_dir = cls.get_process_dirs(
+            job_id=task_info.get("job_id"),
+            role=task_info.get("role"),
+            party_id=task_info.get("party_id"),
+            task_name=task_info.get("task_name"),
+            task_version=task_info.get("task_version")
+        )
+        params_env = {}
+        if task_info:
+            params_env = cls.get_env(task_info.get("job_id"), task_parameters)
         extra_env.update(params_env)
         if executable:
             process_cmd = executable
         else:
             process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
         process_cmd.extend(common_cmd)
-        p = process_utils.run_subprocess(job_id=task.f_job_id, config_dir=config_dir, process_cmd=process_cmd,
-                                         added_env=extra_env, log_dir=log_dir, cwd_dir=config_dir, process_name=worker_name.value,
-                                         process_id=worker_id)
-        cls.save_worker_info(task=task, worker_name=worker_name, worker_id=worker_id,
-                             run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=task_parameters,
-                             cmd=process_cmd)
-        schedule_logger(job_id=task.f_job_id).info(f"start task worker, executor id {task.f_execution_id}...")
-        return {
-            "run_pid": p.pid,
-            "run_ip": RuntimeConfig.JOB_SERVER_HOST,
-            "worker_id": worker_id,
-            "cmd": process_cmd,
-            "run_port": RuntimeConfig.HTTP_PORT
-        }
+        p = process_utils.run_subprocess(job_id=task_info.get("job_id"), config_dir=config_dir, process_cmd=process_cmd,
+                                         added_env=extra_env, log_dir=log_dir, cwd_dir=config_dir,
+                                         process_name=worker_name.value, process_id=worker_id)
+        if record:
+            cls.save_worker_info(task_info=task_info, worker_name=worker_name, worker_id=worker_id,
+                                 run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=task_parameters,
+                                 cmd=process_cmd)
+            return {
+                "run_pid": p.pid,
+                "run_ip": RuntimeConfig.JOB_SERVER_HOST,
+                "worker_id": worker_id,
+                "cmd": process_cmd,
+                "run_port": RuntimeConfig.HTTP_PORT
+            }
+        else:
+            return p
 
     @classmethod
-    def get_process_dirs(cls, worker_name: WorkerName, worker_id=None, job_id=None, role=None, party_id=None, task: Task = None):
-        if not worker_id:
-            worker_id = uuid1().hex
-        party_id = str(party_id)
-        if task:
-            config_dir = job_utils.get_job_directory(job_id, role, party_id, task.f_task_name, task.f_task_id,
-                                                     str(task.f_task_version), worker_name.value, worker_id)
-            log_dir = job_utils.get_job_log_directory(job_id, role, party_id, task.f_task_name)
-        elif job_id and role and party_id:
-            config_dir = job_utils.get_job_directory(job_id, role, party_id, worker_name.value, worker_id)
-            log_dir = job_utils.get_job_log_directory(job_id, role, party_id, worker_name.value, worker_id)
-        else:
-            config_dir = job_utils.get_general_worker_directory(worker_name.value, worker_id)
-            log_dir = job_utils.get_general_worker_log_directory(worker_name.value, worker_id)
+    def get_process_dirs(cls, job_id, role, party_id, task_name, task_version):
+        config_dir = job_utils.get_job_directory(job_id, role, party_id, task_name, str(task_version))
+        log_dir = job_utils.get_job_log_directory(job_id, role, party_id, task_name)
         os.makedirs(config_dir, exist_ok=True)
-        return worker_id, config_dir, log_dir
+        return  config_dir, log_dir
 
     @classmethod
     def get_config(cls, config_dir, config):
@@ -109,10 +101,11 @@ class WorkerManager:
 
     @classmethod
     @DB.connection_context()
-    def save_worker_info(cls, task: Task, worker_name: WorkerName, worker_id, **kwargs):
+    def save_worker_info(cls, task_info, worker_name: WorkerName, worker_id, **kwargs):
         worker = WorkerInfo()
         ignore_attr = auto_date_timestamp_db_field()
-        for attr, value in task.to_dict().items():
+        for attr, value in task_info.items():
+            attr = f"f_{attr}"
             if hasattr(worker, attr) and attr not in ignore_attr and value is not None:
                 setattr(worker, attr, value)
         worker.f_create_time = current_timestamp()

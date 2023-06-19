@@ -23,11 +23,8 @@ from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.utils import job_utils, process_utils
 
 
-class LocalSparkEngine(LocalEngine):
-    def __init__(self, provider):
-        self.provider = provider
-
-    def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
+class SparkEngine(LocalEngine):
+    def run(self, task_info, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, provider_name, **kwargs):
         # todo: get spark home from server registry
         spark_home = None
         if not spark_home:
@@ -45,7 +42,7 @@ class LocalSparkEngine(LocalEngine):
             raise ValueError(f"deploy mode {deploy_mode} not supported")
 
         spark_submit_cmd = os.path.join(spark_home, "bin/spark-submit")
-        process_cmd = [spark_submit_cmd, f"--name={task.f_task_id}#{task.f_role}"]
+        process_cmd = [spark_submit_cmd, f"--name={task_info.get('task_id')}#{task_info.get('role')}"]
         for k, v in spark_submit_config.items():
             if k != "conf":
                 process_cmd.append(f"--{k}={v}")
@@ -55,19 +52,10 @@ class LocalSparkEngine(LocalEngine):
                 process_cmd.append(f"{ck}={cv}")
         extra_env = {"SPARK_HOME": spark_home}
         return WorkerManager.start_task_worker(
-            worker_name=WorkerName.TASK_EXECUTOR,
-            task=task,
+            worker_name=WorkerName.TASK_EXECUTE,
+            task_info=task_info,
             task_parameters=run_parameters,
-            common_cmd=self.generate_cmd(self.provider.name),
+            common_cmd=self.generate_component_run_cmd(provider_name),
             extra_env=extra_env,
             executable=process_cmd
         )
-
-    def kill(self, task):
-        kill_status_code = process_utils.kill_task_executor_process(task)
-        # session stop
-        if kill_status_code is KillProcessRetCode.KILLED or task.f_status not in {TaskStatus.WAITING}:
-            job_utils.start_session_stop(task)
-
-    def is_alive(self, task):
-        return process_utils.check_process(pid=int(task.f_run_pid), task=task)

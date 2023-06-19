@@ -16,7 +16,7 @@
 from webargs import fields
 
 from fate_flow.engine import storage
-from fate_flow.manager.components.upload import UploadParam, Upload
+from fate_flow.manager.components.upload import UploadManager
 from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.utils.api_utils import API
 
@@ -26,16 +26,16 @@ page_name = "data"
 @manager.route('/upload', methods=['POST'])
 @API.Input.json(file=fields.String(required=True))
 @API.Input.json(head=fields.Bool(required=True))
-@API.Input.json(namespace=fields.String(required=True))
-@API.Input.json(name=fields.String(required=True))
 @API.Input.json(partitions=fields.Integer(required=True))
-@API.Input.json(storage_engine=fields.String(required=False))
-@API.Input.json(destroy=fields.Bool(required=False))
+@API.Input.json(extend_sid=fields.Bool(required=False))
 @API.Input.json(meta=fields.Dict(required=True))
-def upload_data(file, head, partitions, namespace, name, meta, destroy=False, storage_engine=""):
-    data = Upload().run(parameters=UploadParam(file=file, head=head, partitions=partitions, namespace=namespace,
-                                               name=name, storage_engine=storage_engine, meta=meta, destroy=destroy))
-    return API.Output.json(data=data)
+@API.Input.json(namespace=fields.String(required=False))
+@API.Input.json(name=fields.String(required=False))
+def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_sid=False):
+    result = UploadManager.upload_file(
+        file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
+    )
+    return API.Output.json(**result)
 
 
 @manager.route('/download', methods=['GET'])

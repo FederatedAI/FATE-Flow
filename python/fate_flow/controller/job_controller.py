@@ -15,6 +15,7 @@
 #
 import os
 import shutil
+from typing import Union
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.db import Job
@@ -37,7 +38,7 @@ from fate_flow.utils.log_utils import schedule_logger
 
 class JobController(object):
     @classmethod
-    def request_create_job(cls, dag_schema: dict, user_name: str):
+    def request_create_job(cls, dag_schema: dict, user_name: str = None):
         dag_schema = DAGSchema(**dag_schema)
         if not dag_schema.dag.conf:
             dag_schema.dag.conf = JobConfSpec()

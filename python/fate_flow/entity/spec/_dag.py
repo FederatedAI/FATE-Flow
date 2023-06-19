@@ -302,13 +302,16 @@ class TaskConfigSpec(BaseModel):
     class TaskConfSpec(BaseModel):
         mlmd: MLMDSpec
         device: Any
-        computing: Any
+        computing: ComputingBackendSpec
         federation: Any
         logger: FlowLogger
     model_id: Optional[str] = ""
     model_version: Optional[str] = ""
     job_id: Optional[str] = ""
     task_id: str
+    task_version: str
+    task_name: str
+    provider_name: str = "fate"
     party_task_id: str
     component: str
     role: str

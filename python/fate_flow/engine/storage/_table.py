@@ -91,13 +91,13 @@ class StorageTableBase(StorageTableABC):
         return self._write_access_time
 
     def update_meta(self,
-                    schema=None,
+                    data_meta=None,
                     count=None,
                     part_of_data=None,
                     description=None,
                     partitions=None,
                     **kwargs):
-        self._meta.update_metas(schema=schema,
+        self._meta.update_metas(data_meta=data_meta,
                                 count=count,
                                 part_of_data=part_of_data,
                                 description=description,
@@ -185,12 +185,11 @@ class StorageTableMeta(StorageTableMetaABC):
         self.store_type = None
         self.options = None
         self.partitions = None
-        self.in_serialized = None
         self.have_head = None
         self.delimiter = None
         self.extend_sid = False
         self.auto_increasing_sid = None
-        self.schema = None
+        self.data_meta = None
         self.count = None
         self.part_of_data = None
         self.description = None
@@ -202,8 +201,8 @@ class StorageTableMeta(StorageTableMetaABC):
         self.write_access_time = None
         if self.options is None:
             self.options = {}
-        if self.schema is None:
-            self.schema = {}
+        if self.data_meta is None:
+            self.data_meta = {}
         if self.part_of_data is None:
             self.part_of_data = []
         if not new:
@@ -239,7 +238,7 @@ class StorageTableMeta(StorageTableMetaABC):
     def create(self):
         table_meta = StorageTableMetaModel()
         table_meta.f_create_time = current_timestamp()
-        table_meta.f_schema = {}
+        table_meta.f_data_meta = {}
         table_meta.f_part_of_data = []
         for k, v in self.to_dict().items():
             attr_name = 'f_%s' % k
@@ -290,7 +289,7 @@ class StorageTableMeta(StorageTableMetaABC):
             return []
 
     @DB.connection_context()
-    def update_metas(self, schema=None, count=None, part_of_data=None, description=None, partitions=None,
+    def update_metas(self, data_meta=None, count=None, part_of_data=None, description=None, partitions=None,
                      in_serialized=None, **kwargs):
         meta_info = {}
         for k, v in locals().items():
@@ -366,9 +365,6 @@ class StorageTableMeta(StorageTableMetaABC):
     def get_partitions(self):
         return self.partitions
 
-    def get_in_serialized(self):
-        return self.in_serialized
-
     def get_id_delimiter(self):
         return self.delimiter
 
@@ -387,8 +383,8 @@ class StorageTableMeta(StorageTableMetaABC):
     def get_disable(self):
         return self.disable
 
-    def get_schema(self):
-        return self.schema
+    def get_data_meta(self):
+        return self.data_meta
 
     def get_count(self):
         return self.count

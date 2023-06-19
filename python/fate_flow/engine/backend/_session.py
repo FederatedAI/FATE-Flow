@@ -13,27 +13,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.engine.backend._eggroll import ContainerdEggrollEngine, LocalEggrollEngine
-from fate_flow.engine.backend._spark import LocalSparkEngine
-from fate_flow.entity.types import ComputingEngine, EngineType, ProviderDevice
-from fate_flow.manager.service.provider_manager import ProviderManager
-from fate_flow.runtime.component_provider import ComponentProvider
-from fate_flow.runtime.system_settings import ENGINES
+from fate_flow.engine.backend._eggroll import EggrollEngine
+from fate_flow.engine.backend._spark import SparkEngine
+from fate_flow.entity.types import ComputingEngine
 
 
-def build_engine(provider_name: str):
-    provider = ProviderManager.get_provider_by_provider_name(provider_name)
-    computing_engine = ENGINES.get(EngineType.COMPUTING)
-    if computing_engine in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
-        if ComponentProvider.device in {ProviderDevice.DOCKER, ProviderDevice.K8S}:
-            engine_session = ContainerdEggrollEngine(provider)
-        else:
-            engine_session = LocalEggrollEngine(provider)
-    elif computing_engine == ComputingEngine.SPARK:
-        if ComponentProvider.device in {ProviderDevice.DOCKER, ProviderDevice.K8S}:
-            raise ValueError(f'{computing_engine} engine device "{computing_engine}" is not supported')
-        else:
-            engine_session = LocalSparkEngine(provider)
+def build_backend(backend_name: str):
+    if backend_name in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
+        backend = EggrollEngine()
+    elif backend_name == ComputingEngine.SPARK:
+        backend = SparkEngine()
     else:
-        raise ValueError(f'engine "{computing_engine}" is not supported')
-    return engine_session
+        raise ValueError(f'backend "{backend_name}" is not supported')
+    return backend

@@ -31,11 +31,12 @@ class LocalEngine(EngineABC):
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
         return WorkerManager.start_task_worker(
             worker_name=WorkerName.TASK_ENTRYPOINT,
-            task=task,
+            task_info=task.to_human_model_dict(),
             extra_env={"PYTHONPATH": self.provider.python_path},
             executable=[self.provider.python_env],
             common_cmd=self.generate_cmd(),
-            task_parameters=run_parameters
+            task_parameters=run_parameters,
+            record=True
         )
 
     def kill(self, task):

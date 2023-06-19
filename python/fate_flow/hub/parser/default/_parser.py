@@ -20,6 +20,7 @@ import copy
 from pydantic import BaseModel
 from typing import Dict, Union, List
 
+from fate_flow.manager.service.provider_manager import ProviderManager
 from ._federation import StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, PulsarFederationSpec, \
     RabbitMQFederationSpec
 from fate_flow.entity.spec import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, \
@@ -125,7 +126,7 @@ class TaskNodeInfo(object):
 
 class TaskParser(TaskParserABC):
     def __init__(self, task_node, job_id, task_name, role, party_id, task_id="", execution_id="",
-                 task_version=None, parties=None):
+                 task_version=None, parties=None, provider=None):
         self.task_node = task_node
         self.job_id = job_id
         self.task_name = task_name
@@ -135,6 +136,7 @@ class TaskParser(TaskParserABC):
         self.task_version = task_version
         self.execution_id = execution_id
         self.parties = parties
+        self._provider = None
 
     @property
     def need_run(self):
@@ -172,6 +174,17 @@ class TaskParser(TaskParserABC):
     def task_runtime_conf(self):
         _rc = self.task_node.conf.get(self.role, {}).get(self.party_id, {})
         return _rc if _rc else {}
+
+    @property
+    def provider(self):
+        if not self._provider:
+            provider_name = self.task_runtime_conf.get("provider")
+            self._provider = ProviderManager.check_provider_name(provider_name)
+        return self._provider
+
+    @property
+    def provider_name(self):
+        return ProviderManager.parser_provider_name(self.provider)[0]
 
     @property
     def input_parameters(self):
@@ -304,6 +317,9 @@ class TaskParser(TaskParserABC):
             model_version="",
             job_id=self.job_id,
             task_id=self.task_id,
+            task_version=self.task_version,
+            task_name=self.task_name,
+            provider_name=self.provider_name,
             party_task_id=self.execution_id,
             component=self.component_ref,
             role=self.role,
@@ -344,7 +360,7 @@ class JobParser(JobParserABC):
             if not task_spec.conf:
                 task_conf = copy.deepcopy(job_conf)
             else:
-                task_conf = copy.deepcopy(task_spec.conf).update(job_conf)
+                task_conf = copy.deepcopy(job_conf).update(task_spec.conf)
             if task_spec.stage:
                 task_stage = task_spec.stage
 
@@ -369,14 +385,16 @@ class JobParser(JobParserABC):
                             for channel in channel_spec_list:
                                 model_warehouse_channel = ModelWarehouseChannelSpec(**channel.dict(exclude_defaults=True))
                                 if model_warehouse_channel.model_id is None:
-                                    model_warehouse_channel.model_id = self._conf.get("model_id", None)
-                                    model_warehouse_channel.model_version = self._conf.get("model_version", None)
+                                    model_warehouse_channel.model_id = \
+                                        self._conf.get("model_warehouse", {}).get("model_id", None)
+                                    model_warehouse_channel.model_version = \
+                                        self._conf.get("model_warehouse", {}).get("model_version", None)
                                 inputs.append(model_warehouse_channel)
                         else:
                             inputs = ModelWarehouseChannelSpec(**channel_spec_list.dict(exclude_defaults=True))
                             if inputs.model_id is None:
-                                inputs.model_id = self._conf.get("model_id", None)
-                                inputs.model_version = self._conf.get("model_version", None)
+                                inputs.model_id = self._conf.get("model_warehouse", {}).get("model_id", None)
+                                inputs.model_version = self._conf.get("model_warehouse", {}).get("model_version", None)
 
                         upstream_inputs[input_key] = inputs
                         continue

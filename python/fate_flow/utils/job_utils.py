@@ -82,8 +82,8 @@ def get_job_log_directory(job_id, *args):
     return os.path.join(LOG_DIR, job_id, *args)
 
 
-def get_task_directory(job_id, role, party_id, task_name, task_id, task_version, **kwargs):
-    return get_job_directory(job_id, role, party_id, task_name, task_id, str(task_version))
+def get_task_directory(job_id, role, party_id, task_name, task_version, **kwargs):
+    return get_job_directory(job_id, role, party_id, task_name, str(task_version))
 
 
 def start_session_stop(task):

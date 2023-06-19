@@ -23,12 +23,10 @@ class FateSubmit:
     @staticmethod
     def run():
         import click
-        from fate.components.entrypoint.clean_cli import clean
         from fate.components.entrypoint.component_cli import component
 
         cli = click.Group()
         cli.add_command(component)
-        cli.add_command(clean)
         cli(prog_name="python -m fate.component")
 
 

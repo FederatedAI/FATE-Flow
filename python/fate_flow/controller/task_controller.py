@@ -51,13 +51,14 @@ class TaskController(object):
         task_node = job_parser.get_task_node(task_name=task_name)
         task_parser = job_parser.task_parser(
             task_node=task_node, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
-            task_id=task_id, execution_id=execution_id, task_version=task_version, parties=dag_schema.dag.parties
+            task_id=task_id, execution_id=execution_id, task_version=task_version, parties=dag_schema.dag.parties,
+
         )
         need_run = task_parser.need_run
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
-        task_parameters = task_parser.task_parameters.dict()
+        task_parameters = task_parser.task_parameters
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
-                                     f" {task_parameters}")
+                                     f" {task_parameters.dict()}")
         if is_scheduler:
             if need_run:
                 task = ScheduleTask()
@@ -72,11 +73,6 @@ class TaskController(object):
                 task.f_parties = [party.dict() for party in dag_schema.dag.parties]
                 ScheduleJobSaver.create_task(task.to_human_model_dict())
         else:
-            schedule_logger(job_id).info(f"start check task {task_name} role {role} part id {party_id} provider")
-            provider_name = task_parser.task_runtime_conf.get("provider")
-            schedule_logger(job_id).info(f"source provider name: {provider_name}")
-            provider_name = ProviderManager.check_provider_name(provider_name)
-            schedule_logger(job_id).info(f"update provider name to {provider_name}")
             task = Task()
             task.f_job_id = job_id
             task.f_role = role
@@ -88,9 +84,9 @@ class TaskController(object):
             task.f_scheduler_party_id = dag_schema.dag.conf.scheduler_party_id
             task.f_status = TaskStatus.WAITING if need_run else TaskStatus.PASS
             task.f_party_status = TaskStatus.WAITING
-            task.f_component_parameters = task_parameters
+            task.f_component_parameters = task_parameters.dict()
             task.f_execution_id = execution_id
-            task.f_provider_name = provider_name
+            task.f_provider_name = task_parser.provider
             task.f_sync_type = dag_schema.dag.conf.sync_type
             JobSaver.create_task(task.to_human_model_dict())
 
@@ -153,7 +149,7 @@ class TaskController(object):
             schedule_logger(job_id).info(f"task run parameters: {run_parameters}")
             task_executor_process_start_status = False
 
-            config_dir = job_utils.get_task_directory(job_id, role, party_id, task.f_task_name, task_id, task_version)
+            config_dir = job_utils.get_task_directory(job_id, role, party_id, task.f_task_name, task.f_task_version)
             os.makedirs(config_dir, exist_ok=True)
             run_parameters_path = os.path.join(config_dir, 'task_parameters.json')
             with open(run_parameters_path, 'w') as fw:

@@ -53,7 +53,7 @@ class DataManager:
                                 # save meta
                                 if output_data_count == 0:
                                     output_data_file_list.append(output_data_file_path)
-                                    schema = output_table.meta.get_schema()
+                                    schema = output_table.meta.get_data_meta()
                                     header = schema.get("header", [])
                                     output_data_meta_file_list.append(output_data_meta_file_path)
                                     with open(output_data_meta_file_path, 'w') as f:

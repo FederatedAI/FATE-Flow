@@ -12,24 +12,16 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
-import argparse
-import sys
+from typing import Literal
 
-from fate_flow.entity import BaseEntity
-from fate_flow.utils.log import getLogger
+import pydantic
 
 
-class FateFlowSubmit:
-    @staticmethod
-    def run():
-        import click
-        from fate_flow.entrypoint.cli import component
-
-        cli = click.Group()
-        cli.add_command(component)
-        cli(prog_name="python -m fate_flow.component")
+class CPUSpec(pydantic.BaseModel):
+    type: Literal["CPU"]
+    metadata: dict = {}
 
 
-if __name__ == "__main__":
-    FateFlowSubmit.run()
+class GPUSpec(pydantic.BaseModel):
+    type: Literal["GPU"]
+    metadata: dict = {}
