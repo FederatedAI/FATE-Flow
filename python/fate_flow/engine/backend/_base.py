@@ -17,9 +17,12 @@
 
 import abc
 import json
+import logging
 import os
 import sys
 import typing
+
+import yaml
 
 from fate_flow.db.db_models import Task
 from fate_flow.entity.types import ProviderName, WorkerName
@@ -43,11 +46,14 @@ class EngineABC(metaclass=abc.ABCMeta):
 
 class LocalEngine(object):
     @classmethod
-    def get_component_define(cls, provider_name, task_info):
+    def get_component_define(cls, provider_name, task_info, stage):
         task_dir = get_task_directory(**task_info)
+        component_ref = task_info.get("component")
+        role = task_info.get("role")
         os.makedirs(task_dir, exist_ok=True)
-        define_file = os.path.join(task_dir, "define.json")
-        cmd = cls.generate_component_define_cmd(provider_name, define_file)
+        define_file = os.path.join(task_dir, "define.yaml")
+        cmd = cls.generate_component_define_cmd(provider_name, component_ref, role, stage, define_file)
+        logging.debug(f"load define cmd: {cmd}")
         if cmd:
             p = WorkerManager.start_task_worker(
                 worker_name=WorkerName.COMPONENT_DEFINE,
@@ -55,13 +61,14 @@ class LocalEngine(object):
                 common_cmd=cmd
             )
             p.wait()
+            logging.info(p.stdout)
         if os.path.exists(define_file):
             with open(define_file, "r") as fr:
-                return json.load(fr)
+                return yaml.safe_load(fr)
         return {}
 
     @staticmethod
-    def generate_component_run_cmd(provider_name, path=""):
+    def generate_component_run_cmd(provider_name, output_path=""):
         if provider_name == ProviderName.FATE:
             from fate_flow.worker.fate_executor import FateSubmit
             module_file_path = sys.modules[FateSubmit.__module__].__file__
@@ -71,6 +78,8 @@ class LocalEngine(object):
                 "execute",
                 "--env-name",
                 "FATE_TASK_CONFIG",
+                "--output-path",
+                output_path
             ]
 
         elif provider_name == ProviderName.FATE_FLOW:
@@ -81,25 +90,29 @@ class LocalEngine(object):
                 "component",
                 "execute",
                 "--env-name",
-                "FATE_TASK_CONFIG",
+                "FATE_TASK_CONFIG"
             ]
         else:
             raise ValueError(f"load provider {provider_name} failed")
         return common_cmd
 
     @staticmethod
-    def generate_component_define_cmd(provider_name, define_file):
+    def generate_component_define_cmd(provider_name, component_ref, role, stage, define_file):
         cmd = []
-        if provider_name == ProviderName.FATE_FLOW:
+        if provider_name == ProviderName.FATE:
             from fate_flow.worker.fate_executor import FateSubmit
             module_file_path = sys.modules[FateSubmit.__module__].__file__
             cmd = [
                 module_file_path,
                 "component",
-                "cleanup",
-                "--path",
+                "artifact-type",
+                "--name",
+                component_ref,
+                "--role",
+                role,
+                "--stage",
+                stage,
+                "--output-path",
                 define_file
             ]
-            return None
-
         return cmd

@@ -14,14 +14,14 @@
 #  limitations under the License.
 import logging
 
-from fate_flow.entity.spec import TaskConfigSpec
+from fate_flow.entity.spec.dag import TaskConfigSpec
 
 logger = logging.getLogger(__name__)
 
 
 def execute_component(config: TaskConfigSpec):
     component = load_component(config.component)
-    cpn_config = config.inputs.parameters
+    cpn_config = config.parameters
     cpn_config["job_id"] = config.job_id
     logger.info(f"cpn_config： {cpn_config}")
 

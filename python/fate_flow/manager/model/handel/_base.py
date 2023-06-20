@@ -19,7 +19,7 @@ import tarfile
 from ruamel import yaml
 from werkzeug.datastructures import FileStorage
 
-from fate_flow.entity.spec import MLModelSpec
+from fate_flow.entity.spec.flow import MLModelSpec
 from fate_flow.entity.types import ModelFileFormat
 from fate_flow.errors.job import NoFoundModelOutput
 from fate_flow.manager.model.model_meta import ModelMeta

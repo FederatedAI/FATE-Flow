@@ -19,7 +19,10 @@ from tempfile import TemporaryDirectory
 
 from flask import send_file
 
-from fate_flow.engine.storage import Session
+from fate_flow.engine import storage
+from fate_flow.engine.storage import Session, StorageEngine
+from fate_flow.entity.types import EggRollAddress, StandaloneAddress, HDFSAddress, PathAddress
+from fate_flow.utils.io_utils import URI
 
 
 class DataManager:
@@ -87,3 +90,47 @@ class DataManager:
                 table.destroy()
                 return True
             return False
+
+    @staticmethod
+    def create_data_table(
+            namespace, name, uri, partitions, data_meta, origin, part_of_data=None, count=None,
+    ):
+        address = DataManager.uri_to_address(uri)
+        storage_meta = storage.StorageTableBase(
+            namespace=namespace, name=name, address=address,
+            partitions=partitions, engine=address.storage_engine,
+            options=None
+        )
+        storage_meta.create_meta(
+            data_meta=data_meta, part_of_data=part_of_data, count=count, origin=origin
+        )
+
+    @staticmethod
+    def uri_to_address(uri):
+        uri_schema = URI.from_string(uri).to_schema()
+        if uri_schema.schema == StorageEngine.EGGROLL:
+            return EggRollAddress(namespace=uri_schema.namespace, name=uri_schema.name)
+        elif uri_schema.schema == StorageEngine.STANDALONE:
+            return StandaloneAddress(namespace=uri_schema.namespace, name=uri_schema.name)
+        elif uri_schema.schema == StorageEngine.HDFS:
+            return HDFSAddress(path=uri_schema.path)
+        elif uri_schema.schema() == StorageEngine.PATH:
+            return PathAddress(path=uri_schema.path)
+        else:
+            raise ValueError(f"uri {uri} engine could not be converted to an address")
+
+    @staticmethod
+    def get_data_info(namespace, name):
+        data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
+        if data_table_meta:
+            data = {
+                "namespace": namespace,
+                "name": name,
+                "count": data_table_meta.count,
+                "meta": data_table_meta.get_data_meta(),
+                "engine": data_table_meta.engine,
+                "path": data_table_meta.address.engine_path
+            }
+            display_data = data_table_meta.part_of_data
+            return data, display_data
+        return {}

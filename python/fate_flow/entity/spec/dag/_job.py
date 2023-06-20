@@ -13,46 +13,27 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from typing import Literal, Union, List, Optional, TypeVar, Dict, Any
+from typing import Optional, Union, Literal, Dict, List, Any
 
 from pydantic import BaseModel
 
 from fate_flow.entity.spec.dag._party import PartySpec
-
-
-class RuntimeTaskOutputChannelSpec(BaseModel):
-    producer_task: str
-    output_artifact_key: str
-    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
-
-
-class ModelWarehouseChannelSpec(BaseModel):
-    model_id: Optional[str]
-    model_version: Optional[Union[str, int]]
-    producer_task: str
-    output_artifact_key: str
-    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
-
-
-InputChannelSpec = TypeVar("InputChannelSpec", RuntimeTaskOutputChannelSpec, ModelWarehouseChannelSpec)
-
-
-class TaskRuntimeInputDefinition(BaseModel):
-    parameters: Optional[Dict[str, Any]]
-    artifacts: Optional[Dict[str, Dict[str, Union[InputChannelSpec, List[InputChannelSpec]]]]]
+from fate_flow.entity.spec.dag._artifact import RuntimeInputArtifacts, SourceInputArtifacts
 
 
 class TaskSpec(BaseModel):
     component_ref: str
     dependent_tasks: Optional[List[str]]
-    inputs: Optional[TaskRuntimeInputDefinition]
+    parameters: Optional[Dict[Any, Any]]
+    inputs: Optional[RuntimeInputArtifacts]
     parties: Optional[List[PartySpec]]
     conf: Optional[Dict[Any, Any]]
     stage: Optional[Union[Literal["train", "predict", "default"]]]
 
 
 class PartyTaskRefSpec(BaseModel):
-    inputs: TaskRuntimeInputDefinition
+    parameters: Dict[Any, Any]
+    inputs: Optional[SourceInputArtifacts]
     conf: Optional[Dict]
 
 
@@ -63,6 +44,7 @@ class PartyTaskSpec(BaseModel):
 
 
 class TaskConfSpec(BaseModel):
+    task_cores: Optional[int]
     engine: Optional[Dict[str, Any]]
     provider: Optional[str]
 

@@ -33,14 +33,13 @@ LOGGER = getLogger("storage")
 
 
 class StorageTableBase(StorageTableABC):
-    def __init__(self, name, namespace, address, partitions, options, engine, store_type):
+    def __init__(self, name, namespace, address, partitions, options, engine):
         self._name = name
         self._namespace = namespace
         self._address = address
         self._partitions = partitions
         self._options = options if options else {}
         self._engine = engine
-        self._store_type = store_type
 
         self._meta = None
         self._read_access_time = None
@@ -69,10 +68,6 @@ class StorageTableBase(StorageTableABC):
     @property
     def engine(self):
         return self._engine
-
-    @property
-    def store_type(self):
-        return self._store_type
 
     @property
     def meta(self):
@@ -110,7 +105,6 @@ class StorageTableBase(StorageTableABC):
         table_meta.address = self._address
         table_meta.partitions = self._partitions
         table_meta.engine = self._engine
-        table_meta.store_type = self._store_type
         table_meta.options = self._options
         table_meta.create()
         self._meta = table_meta
@@ -186,7 +180,6 @@ class StorageTableMeta(StorageTableMetaABC):
         self.options = None
         self.partitions = None
         self.have_head = None
-        self.delimiter = None
         self.extend_sid = False
         self.auto_increasing_sid = None
         self.data_meta = None
@@ -366,7 +359,7 @@ class StorageTableMeta(StorageTableMetaABC):
         return self.partitions
 
     def get_id_delimiter(self):
-        return self.delimiter
+        return self.data_meta.get("delimiter", ",")
 
     def get_extend_sid(self):
         return self.extend_sid

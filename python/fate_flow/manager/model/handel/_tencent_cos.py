@@ -18,7 +18,7 @@ import tarfile
 from flask import send_file
 from werkzeug.datastructures import FileStorage
 
-from fate_flow.entity.spec import TencentCosStorageSpec
+from fate_flow.entity.spec.flow import TencentCosStorageSpec
 from fate_flow.entity.types import ModelStorageEngine
 from fate_flow.manager.model.engine import TencentCosStorage
 from fate_flow.manager.model.handel import IOHandle

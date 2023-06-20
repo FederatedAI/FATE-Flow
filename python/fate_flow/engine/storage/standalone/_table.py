@@ -37,8 +37,8 @@ class StorageTable(StorageTableBase):
             partitions=partitions,
             options=options,
             engine=StorageEngine.STANDALONE,
-            store_type=store_type,
         )
+        self._store_type = store_type
         self._session = session
         self._table = self._session.create_table(
             namespace=self.namespace,

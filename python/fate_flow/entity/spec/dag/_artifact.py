@@ -14,7 +14,7 @@
 #
 
 import re
-from typing import Optional
+from typing import Optional, List, Literal, TypeVar, Dict, Union
 
 import pydantic
 
@@ -91,3 +91,56 @@ class URI:
             raise ValueError(f"`{uri}` is not valid uri")
         _, schema, _, authority, path, _, query, _, fragment = match.groups()
         return URI(schema=schema, path=path, query=query, fragment=fragment, authority=authority)
+
+    @classmethod
+    def load_uri(cls, engine, address):
+        pass
+
+
+class RuntimeTaskOutputChannelSpec(pydantic.BaseModel):
+    producer_task: str
+    output_artifact_key: str
+    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
+
+
+class DataWarehouseChannelSpec(pydantic.BaseModel):
+    job_id: Optional[str]
+    producer_task: Optional[str]
+    output_artifact_key: Optional[str]
+    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
+    namespace: Optional[str]
+    name: Optional[str]
+
+
+class ModelWarehouseChannelSpec(pydantic.BaseModel):
+    model_id: Optional[str]
+    model_version: Optional[int]
+    producer_task: str
+    output_artifact_key: str
+    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
+
+
+InputArtifactSpec = TypeVar("InputArtifactSpec",
+                            RuntimeTaskOutputChannelSpec,
+                            ModelWarehouseChannelSpec,
+                            DataWarehouseChannelSpec)
+
+
+SourceInputArtifactSpec = TypeVar("SourceInputArtifactSpec",
+                                  ModelWarehouseChannelSpec,
+                                  DataWarehouseChannelSpec)
+
+
+class RuntimeInputArtifacts(pydantic.BaseModel):
+    data: Optional[Dict[str, Dict[str, Union[InputArtifactSpec, List[InputArtifactSpec]]]]]
+    model: Optional[Dict[str, Dict[str, Union[InputArtifactSpec, List[InputArtifactSpec]]]]]
+
+
+class SourceInputArtifacts(pydantic.BaseModel):
+    data: Optional[Dict[str, Dict[str, Union[SourceInputArtifactSpec, List[SourceInputArtifactSpec]]]]]
+    model: Optional[Dict[str, Dict[str, Union[SourceInputArtifactSpec, List[SourceInputArtifactSpec]]]]]
+
+
+class FlowRuntimeInputArtifacts(pydantic.BaseModel):
+    data: Optional[Dict[str, Union[InputArtifactSpec, List[InputArtifactSpec]]]]
+    model: Optional[Dict[str, Union[InputArtifactSpec, List[InputArtifactSpec]]]]

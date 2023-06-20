@@ -24,3 +24,5 @@ from ._command import *
 from ._api import *
 from ._instance import *
 from ._permission import *
+from ._input import *
+from ._artificats import *

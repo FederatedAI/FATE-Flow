@@ -134,11 +134,6 @@ class StorageTableABC(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def store_type(self):
-        ...
-
-    @property
-    @abc.abstractmethod
     def options(self):
         ...
 

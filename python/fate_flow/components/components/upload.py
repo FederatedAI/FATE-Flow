@@ -19,6 +19,7 @@ from typing import Union
 
 from fate_flow.components import cpn
 from fate_flow.engine.storage import Session, StorageEngine, StorageType, StorageTableMeta, StorageOrigin
+from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
 from fate_flow.utils.file_utils import get_fate_flow_directory
 
 
@@ -151,9 +152,10 @@ class Upload:
             if storage_engine in {StorageEngine.EGGROLL, StorageEngine.STANDALONE}:
                 upload_address = {
                     "name": name,
-                    "namespace": namespace,
-                    "storage_type": StorageType.TABLE
+                    "namespace": namespace
                 }
+                if storage_engine == StorageEngine.STANDALONE:
+                    upload_address.update({"home": STANDALONE_DATA_HOME})
             else:
                 raise RuntimeError(f"can not support this storage engine: {storage_engine}")
             address_dict.update(upload_address)

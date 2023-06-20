@@ -13,7 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.spec.dag._job import DAGSchema
-from fate_flow.entity.spec.dag._task import TaskConfigSpec, PreTaskConfigSpec
-
-__all__ = ["TaskConfigSpec", "PreTaskConfigSpec", "DAGSchema"]
+from fate_flow.entity.spec.dag._party import PartySpec
+from fate_flow.entity.spec.dag._job import DAGSchema, DAGSpec, JobConfSpec, TaskConfSpec, TaskSpec, PartyTaskSpec, \
+    InheritConfSpec, PartyTaskRefSpec
+from fate_flow.entity.spec.dag._task import TaskConfigSpec, PreTaskConfigSpec, TaskRuntimeConfSpec
+from fate_flow.entity.spec.dag._artifact import RuntimeTaskOutputChannelSpec, DataWarehouseChannelSpec, \
+    ModelWarehouseChannelSpec, SourceInputArtifactSpec, RuntimeInputArtifacts, FlowRuntimeInputArtifacts
+from fate_flow.entity.spec.dag._component import ComponentSpec, ComponentIOArtifactsTypeSpec
+from fate_flow.entity.spec.dag._computing import EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec
+from fate_flow.entity.spec.dag._federation import StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \
+    PulsarFederationSpec, RabbitMQFederationSpec
+from fate_flow.entity.spec.dag._logger import FlowLogger
+from fate_flow.entity.spec.dag._mlmd import MLMDSpec

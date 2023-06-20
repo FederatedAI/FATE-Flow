@@ -19,7 +19,7 @@ from typing import Union
 
 from fate_flow.db import ProviderInfo, ComponentInfo
 from fate_flow.db.base_models import DB, BaseModelOperate
-from fate_flow.entity.spec import ProviderSpec, LocalProviderSpec, DockerProviderSpec, K8sProviderSpec
+from fate_flow.entity.spec.flow import ProviderSpec, LocalProviderSpec, DockerProviderSpec, K8sProviderSpec
 from fate_flow.entity.types import ProviderDevice
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.hub.provider import EntrypointABC

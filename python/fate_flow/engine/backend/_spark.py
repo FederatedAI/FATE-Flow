@@ -24,7 +24,7 @@ from fate_flow.utils import job_utils, process_utils
 
 
 class SparkEngine(LocalEngine):
-    def run(self, task_info, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, provider_name, **kwargs):
+    def run(self, task_info, run_parameters, output_path, run_parameters_path, config_dir, log_dir, cwd_dir, provider_name, **kwargs):
         # todo: get spark home from server registry
         spark_home = None
         if not spark_home:
@@ -55,7 +55,7 @@ class SparkEngine(LocalEngine):
             worker_name=WorkerName.TASK_EXECUTE,
             task_info=task_info,
             task_parameters=run_parameters,
-            common_cmd=self.generate_component_run_cmd(provider_name),
+            common_cmd=self.generate_component_run_cmd(provider_name, output_path),
             extra_env=extra_env,
             executable=process_cmd
         )

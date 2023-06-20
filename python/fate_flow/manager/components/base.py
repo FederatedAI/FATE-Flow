@@ -13,8 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.spec import DAGSchema, DAGSpec, PartySpec, TaskSpec, PartyTaskSpec, PartyTaskRefSpec, \
-    TaskRuntimeInputDefinition, JobConfSpec, TaskConfSpec
+from fate_flow.entity.spec.dag import PartySpec, DAGSchema, DAGSpec, JobConfSpec, TaskConfSpec, TaskSpec, \
+    PartyTaskSpec, PartyTaskRefSpec
 from fate_flow.manager.service.provider_manager import ProviderManager
 
 
@@ -33,7 +33,7 @@ class Base:
                 party_tasks={
                     "local_0": PartyTaskSpec(
                         parties=[party],
-                        tasks={task_name: PartyTaskRefSpec(inputs=TaskRuntimeInputDefinition(parameters=parameters))}
+                        tasks={task_name: PartyTaskRefSpec(parameters=parameters)}
                     )}
             ))
         return dag

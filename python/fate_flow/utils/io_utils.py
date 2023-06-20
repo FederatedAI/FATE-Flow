@@ -116,6 +116,33 @@ class EggrollURI(ConcrateURI):
 
 
 @dataclass
+class StandaloneURI(ConcrateURI):
+    namespace: str
+    name: str
+
+    @classmethod
+    def schema(cls):
+        return "standalone"
+
+    @classmethod
+    def from_uri(cls, uri: URI):
+        _, namespace, *names = uri.path.split("/")
+        name = "_".join(names)
+        if len(name) > _EGGROLL_NAME_MAX_SIZE:
+            name = hashlib.md5(name.encode(encoding="utf8")).hexdigest()[:_EGGROLL_NAME_MAX_SIZE]
+        return EggrollURI(namespace, name)
+
+    def create_file(self, name):
+        name = f"{self.name}_{name}"
+        if len(name) > _EGGROLL_NAME_MAX_SIZE:
+            name = hashlib.md5(name.encode(encoding="utf8")).hexdigest()[:_EGGROLL_NAME_MAX_SIZE]
+        return StandaloneURI(namespace=self.namespace, name=name)
+
+    def to_string(self):
+        return f"standalone:///{self.namespace}/{self.name}"
+
+
+@dataclass
 class HdfsURI(ConcrateURI):
     path: str
     authority: Optional[str] = None
@@ -136,49 +163,3 @@ class HdfsURI(ConcrateURI):
             return f"hdfs://{self.authority}{self.path}"
         else:
             return f"hdfs://{self.path}"
-
-
-@dataclass
-class HttpURI(ConcrateURI):
-    path: str
-    authority: Optional[str] = None
-
-    @classmethod
-    def schema(cls):
-        return "http"
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        return HttpURI(uri.path, uri.authority)
-
-    def create_file(self, name):
-        return HttpURI(path=f"{self.path}/{name}", authority=self.authority)
-
-    def to_string(self):
-        if self.authority:
-            return f"http://{self.authority}{self.path}"
-        else:
-            return f"http://{self.path}"
-
-
-@dataclass
-class HttpsURI(ConcrateURI):
-    path: str
-    authority: Optional[str] = None
-
-    @classmethod
-    def schema(cls):
-        return "https"
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        return HttpsURI(uri.path, uri.authority)
-
-    def create_file(self, name):
-        return HttpURI(path=f"{self.path}/{name}", authority=self.authority)
-
-    def to_string(self):
-        if self.authority:
-            return f"https://{self.authority}{self.path}"
-        else:
-            return f"https://{self.path}"

@@ -12,20 +12,19 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from typing import Any, List, Union, Dict
+#
 
-from pydantic import BaseModel
-
-from fate_flow.entity.spec.dag import PartySpec
-
-
-class SchedulerInfoSpec(BaseModel):
-    dag: Dict[str, Any]
-    parties: List[PartySpec]
-    initiator_party_id: str
-    scheduler_party_id: str
-    federated_status_collect_type: str
-    model_id: str
-    model_version: Union[str, int]
+class ArtifactSourceType(object):
+    TASK_OUTPUT_ARTIFACT = "task_output_artifact"
+    MODEL_WAREHOUSE = "model_warehouse"
+    DATA_WAREHOUSE = "data_warehouse"
 
 
+class InputArtifactType(object):
+    DATA = "data"
+    MODEL = "model"
+
+    @classmethod
+    def types(cls):
+        for _type in [cls.DATA, cls.MODEL]:
+            yield _type

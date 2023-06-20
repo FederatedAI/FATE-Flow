@@ -18,7 +18,7 @@ from tempfile import TemporaryDirectory
 
 from werkzeug.datastructures import FileStorage
 
-from fate_flow.entity.spec import FileStorageSpec, MysqlStorageSpec, TencentCosStorageSpec
+from fate_flow.entity.spec.flow import FileStorageSpec, MysqlStorageSpec, TencentCosStorageSpec
 from fate_flow.entity.types import ModelStorageEngine
 from fate_flow.manager.model.handel import FileHandle, MysqlHandel, TencentCosHandel
 from fate_flow.manager.model.model_meta import ModelMeta

@@ -32,10 +32,6 @@ class TaskParserABC(metaclass=ABCMeta):
     def task_parameters(self):
         ...
 
-    @abc.abstractmethod
-    def update_runtime_artifacts(self, task_parameters):
-        ...
-
 
 class JobParserABC(metaclass=ABCMeta):
     @property
