@@ -28,7 +28,7 @@ class FateFlowSubmit:
 
         cli = click.Group()
         cli.add_command(component)
-        cli(prog_name="python -m fate_flow.component")
+        cli(prog_name="python -m fate_flow.components")
 
 
 if __name__ == "__main__":

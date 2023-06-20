@@ -31,6 +31,10 @@ class AddressBase(AddressABC):
     def storage_engine(self):
         return
 
+    @property
+    def engine_path(self):
+        return
+
 
 class StandaloneAddress(AddressBase):
     def __init__(self, home=None, name=None, namespace=None, storage_type=None, connector_name=None):
@@ -53,6 +57,13 @@ class StandaloneAddress(AddressBase):
     def connector(self):
         return {"home": self.home}
 
+    @property
+    def engine_path(self):
+        if self.home:
+            return f"standalone:///{self.home}/{self.namespace}/{self.name}"
+        else:
+            return f"standalone:///{self.namespace}/{self.name}"
+
 
 class EggRollAddress(AddressBase):
     def __init__(self, home=None, name=None, namespace=None, connector_name=None):
@@ -74,6 +85,10 @@ class EggRollAddress(AddressBase):
     def connector(self):
         return {"home": self.home}
 
+    @property
+    def engine_path(self):
+        return f"eggroll:///{self.namespace}/{self.name}"
+
 
 class HDFSAddress(AddressBase):
     def __init__(self, name_node=None, path=None, connector_name=None):
@@ -89,6 +104,13 @@ class HDFSAddress(AddressBase):
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def engine_path(self):
+        if not self.name_node:
+            return f"hdfs:///{self.path}"
+        else:
+            return f"hdfs:///{self.name_node}{self.path}"
 
     @property
     def connector(self):
@@ -109,6 +131,9 @@ class PathAddress(AddressBase):
     def __repr__(self):
         return self.__str__()
 
+    @property
+    def engine_path(self):
+        return f"file:///{self.path}"
 
 class ApiAddress(AddressBase):
     def __init__(self, method="POST", url=None, header=None, body=None, connector_name=None):

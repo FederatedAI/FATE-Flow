@@ -17,6 +17,7 @@ from webargs import fields
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import ReturnCode
+from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.metric.metric_manager import OutputMetric
 from fate_flow.manager.service.output_manager import OutputDataTracking
@@ -91,23 +92,31 @@ def download_model(model_id, model_version, role, party_id, task_name, output_ke
 
 
 @manager.route('/data/tracking/query', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(task_name=fields.String(required=True))
-@API.Input.params(output_key=fields.String(required=True))
-def query_data_tracking(job_id, role, party_id, task_name, output_key):
-    data_info = {
-        "job_id": job_id,
-        "role": role,
-        "party_id": party_id,
-        "task_name": task_name,
-        "output_key": output_key
-    }
-    data_list = OutputDataTracking.query(data_info)
-    if data_list:
-        return  API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=data_list[0].to_human_model_dict())
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+@API.Input.params(job_id=fields.String(required=False))
+@API.Input.params(role=fields.String(required=False))
+@API.Input.params(party_id=fields.String(required=False))
+@API.Input.params(task_name=fields.String(required=False))
+@API.Input.params(output_key=fields.String(required=False))
+@API.Input.params(namespace=fields.String(required=False))
+@API.Input.params(name=fields.String(required=False))
+def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, output_key=None, namespace=None, name=None):
+    if not namespace and name:
+        data_info = {
+            "job_id": job_id,
+            "role": role,
+            "party_id": party_id,
+            "task_name": task_name,
+            "output_key": output_key
+        }
+        data_list = OutputDataTracking.query(data_info)
+        if data_list:
+            data = data_list[0]
+            namespace, name = data.f_namespace, data.f_name
+        else:
+            return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
+    info = DataManager.get_data_info(namespace, name)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=info)
+
 
 
 @manager.route('/data/tracking/save', methods=['POST'])
@@ -115,20 +124,28 @@ def query_data_tracking(job_id, role, party_id, task_name, output_key):
 @API.Input.json(meta_data=fields.Dict(required=True))
 @API.Input.json(uri=fields.String(required=True))
 @API.Input.json(output_key=fields.String(required=True))
-def save_data_tracking(execution_id, meta_data, uri, output_key):
+@API.Input.params(namespace=fields.String(required=True))
+@API.Input.params(name=fields.String(required=True))
+@API.Input.params(partitions=fields.String(required=True))
+def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name, partitions):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     data_info = {
         "uri": uri,
         "output_key": output_key,
-        "meta": meta_data,
         "job_id": task.f_job_id,
         "role": task.f_role,
         "party_id": task.f_party_id,
         "task_id": task.f_task_id,
         "task_version": task.f_task_version,
-        "task_name": task.f_task_name
+        "task_name": task.f_task_name,
+        "namespace": namespace,
+        "name": name
     }
     OutputDataTracking.create(data_info)
+    DataManager.create_data_table(
+        namespace=namespace, name=name, uri=uri, partitions=partitions,
+        data_meta=meta_data, origin=f"{task.f_job_id}.{task.f_task_name}"
+    )
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
 
 

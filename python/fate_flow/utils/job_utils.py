@@ -16,9 +16,11 @@ import datetime
 import os
 import threading
 
+import yaml
+
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job
-from fate_flow.entity.spec import DAGSchema
+from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.runtime.system_settings import LOG_DIR, JOB_DIR, WORKERS_DIR
 from fate_flow.utils.base_utils import fate_uuid
 
@@ -118,3 +120,10 @@ def get_job_resource_info(job_id, role, party_id):
         return dag_schema.dag.conf.task_cores, dag_schema.dag.conf.task_parallelism
     else:
         return None, None
+
+
+def save_job_dag(job_id, dag):
+    job_conf_file = os.path.join(JOB_DIR, job_id, "dag.yaml")
+    os.makedirs(os.path.dirname(job_conf_file), exist_ok=True)
+    with open(job_conf_file, "w") as f:
+        f.write(yaml.dump(dag))

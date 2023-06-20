@@ -15,11 +15,10 @@
 #
 import os
 import shutil
-from typing import Union
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.db import Job
-from fate_flow.entity.spec import DAGSchema, JobConfSpec, InheritConfSpec
+from fate_flow.entity.spec.dag import DAGSchema, JobConfSpec, InheritConfSpec
 from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.job import NoFoundJob, InheritanceFailed
@@ -32,7 +31,7 @@ from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.runtime.system_settings import PARTY_ID, LOG_DIR
 from fate_flow.utils.base_utils import current_timestamp
-from fate_flow.utils.job_utils import get_job_log_directory
+from fate_flow.utils.job_utils import get_job_log_directory, save_job_dag
 from fate_flow.utils.log_utils import schedule_logger
 
 
@@ -46,6 +45,7 @@ class JobController(object):
         if not dag_schema.dag.conf.scheduler_party_id:
             dag_schema.dag.conf.scheduler_party_id = PARTY_ID
         JobInheritance.check(dag_schema.dag.conf.inheritance)
+
         response = FederatedScheduler.request_create_job(
             party_id=dag_schema.dag.conf.scheduler_party_id,
             initiator_party_id=dag_schema.dag.conf.initiator_party_id,
@@ -54,6 +54,8 @@ class JobController(object):
             })
         if user_name and response.get("code") == ReturnCode.Base.SUCCESS:
             JobSaver.update_job_user(job_id=response.get("job_id"), user_name=user_name)
+        if response and isinstance(response, dict) and response.get("code") == ReturnCode.Base.SUCCESS:
+            save_job_dag(job_id=response.get("job_id"), dag=dag_schema.dict())
         return response
 
     @classmethod

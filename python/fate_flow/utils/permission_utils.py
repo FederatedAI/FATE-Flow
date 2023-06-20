@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.spec import DAGSchema
+from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.hook.common.parameters import PermissionCheckParameters
 from fate_flow.hub.flow_hub import FlowHub
 

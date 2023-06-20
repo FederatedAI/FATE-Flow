@@ -17,7 +17,7 @@ from pydantic import typing
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import SchedulingStatusCode, FederatedSchedulingStatusCode
-from fate_flow.entity.spec import DAGSchema, JobConfSpec
+from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.db.base_models import DB
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
 from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation, \
@@ -233,7 +233,6 @@ class DAGScheduler(JobSchedulerABC):
     @wraps_utils.schedule_lock
     def schedule_running_job(self, job: ScheduleJob, force_sync_status=False):
         schedule_logger(job.f_job_id).info("scheduling running job")
-
         task_scheduling_status_code, auto_rerun_tasks, tasks = TaskScheduler.schedule(job=job)
         tasks_status = dict([(task.f_task_name, task.f_status) for task in tasks])
         schedule_logger(job_id=job.f_job_id).info(f"task_scheduling_status_code: {task_scheduling_status_code}, "

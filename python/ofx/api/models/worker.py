@@ -65,6 +65,14 @@ class Worker(BaseAPI):
                 "output_key": output_key
             })
 
+    def query_data_meta(self, namespace, name):
+        return self.client.get(
+            endpoint="/table/query",
+            params={
+                "namespace": namespace,
+                "name": name
+            })
+
     def save_metric(self, execution_id, data, incomplete):
         return self.client.post(
             endpoint="/worker/metric/save",

@@ -30,16 +30,10 @@ page_name = "table"
 @API.Input.params(name=fields.String(required=True))
 @API.Input.params(display=fields.Bool(required=False))
 def query_table(namespace, name, display=False):
-    data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
-    if data_table_meta:
-        data = {
-            "namespace": namespace,
-            "name": name,
-            "count": data_table_meta.count,
-            "schema": data_table_meta.get_schema()
-        }
+    data, display_data = DataManager.get_data_info(namespace, name)
+    if data:
         if display:
-            data.update({"display": data_table_meta.part_of_data})
+            data.update({"display": display_data})
         return API.Output.json(data=data)
     else:
         return API.Output.fate_flow_exception(NoFoundTable(name=name, namespace=namespace))

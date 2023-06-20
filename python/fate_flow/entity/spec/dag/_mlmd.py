@@ -18,7 +18,7 @@ from typing import Optional, Any, Dict, Union
 import pydantic
 
 
-class FlowMLMDMetadata:
+class FlowMLMDMetadata(pydantic.BaseModel):
     host: Optional[str]
     port: Optional[int]
     protocol: Optional[str]

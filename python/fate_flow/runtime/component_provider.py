@@ -16,7 +16,7 @@
 from typing import Union
 
 from fate_flow.entity import BaseEntity
-from fate_flow.entity.spec import ProviderSpec, LocalProviderSpec, DockerProviderSpec, K8sProviderSpec
+from fate_flow.entity.spec.flow import ProviderSpec, LocalProviderSpec, DockerProviderSpec, K8sProviderSpec
 
 
 class ComponentProvider(BaseEntity):

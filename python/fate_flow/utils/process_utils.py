@@ -42,7 +42,8 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
         os.makedirs(log_dir, exist_ok=True)
     std_path = get_std_path(log_dir=log_dir, process_name=process_name, process_id=process_id)
     std = open(std_path, 'w')
-    pid_path = os.path.join(config_dir, f"{process_name}_pid")
+    pid_path = os.path.join(config_dir, "pid", f"{process_name}")
+    os.makedirs(os.path.dirname(pid_path), exist_ok=True)
 
     if os.name == 'nt':
         startupinfo = subprocess.STARTUPINFO()

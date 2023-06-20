@@ -18,9 +18,8 @@ import os
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
 from fate_flow.engine.devices import build_engine
-from fate_flow.entity.spec import DAGSchema
+from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
-from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -52,7 +51,7 @@ class TaskController(object):
         task_parser = job_parser.task_parser(
             task_node=task_node, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
             task_id=task_id, execution_id=execution_id, task_version=task_version, parties=dag_schema.dag.parties,
-
+            model_id=dag_schema.dag.conf.model_id, model_version=dag_schema.dag.conf.model_version
         )
         need_run = task_parser.need_run
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
@@ -143,7 +142,8 @@ class TaskController(object):
             task_node = job_parser.get_task_node(task_name=task.f_task_name)
             task_parser = job_parser.task_parser(
                 task_node=task_node, job_id=job_id, task_name=task.f_task_name, role=role,
-                party_id=party_id, parties=dag_schema.dag.parties
+                party_id=party_id, parties=dag_schema.dag.parties, model_id=dag_schema.dag.conf.model_id,
+                model_version=dag_schema.dag.conf.model_version
             )
             # task_parser.update_runtime_artifacts(run_parameters)
             schedule_logger(job_id).info(f"task run parameters: {run_parameters}")

@@ -12,9 +12,10 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from typing import Literal, Union
+from typing import Literal, Union, List, Dict
 
 import pydantic
+from pydantic import typing
 
 
 class DirectoryDataPool(pydantic.BaseModel):
@@ -66,3 +67,25 @@ class OutputPoolConf(pydantic.BaseModel):
     data: Union[DirectoryDataPool, CustomDataPool]
     model: Union[DirectoryModelPool, CustomModelPool]
     metric: Union[DirectoryMetricPool, CustomMetricPool]
+
+
+class IOMeta(pydantic.BaseModel):
+    class InputMeta(pydantic.BaseModel):
+        data: typing.Dict[str, Union[List[Dict], Dict]]
+        model: typing.Dict[str, Union[List[Dict], Dict]]
+
+    class OutputMeta(pydantic.BaseModel):
+        data: typing.Dict[str, Union[List[Dict], Dict]]
+        model: typing.Dict[str, Union[List[Dict], Dict]]
+        metric: typing.Dict[str, Union[List[Dict], Dict]]
+
+    inputs: InputMeta
+    outputs: OutputMeta
+
+
+class ComponentOutputMeta(pydantic.BaseModel):
+    class Status(pydantic.BaseModel):
+        code: int
+        exceptions: typing.Optional[str]
+    status: Status
+    io_meta: typing.Optional[IOMeta]

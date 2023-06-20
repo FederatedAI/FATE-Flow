@@ -18,7 +18,7 @@ import os
 from grpc._cython import cygrpc
 
 from fate_flow.entity.types import ComputingEngine
-from fate_flow.utils import engine_utils
+from fate_flow.utils import engine_utils, file_utils
 from fate_flow.utils.conf_utils import get_base_config, decrypt_database_config
 from fate_flow.utils.file_utils import get_project_base_directory, get_fate_flow_directory
 
@@ -136,3 +136,5 @@ USE_REGISTRY = get_base_config("use_registry")
 REQUEST_TRY_TIMES = 3
 REQUEST_WAIT_SEC = 2
 REQUEST_MAX_WAIT_SEC = 300
+
+STANDALONE_DATA_HOME = os.path.join(file_utils.get_project_base_directory(), "data")

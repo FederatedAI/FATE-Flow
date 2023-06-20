@@ -27,7 +27,7 @@ class FateSubmit:
 
         cli = click.Group()
         cli.add_command(component)
-        cli(prog_name="python -m fate.component")
+        cli(prog_name="python -m fate.components")
 
 
 if __name__ == "__main__":
