@@ -12,15 +12,18 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import io
 import json
 import logging
 import os.path
+import tarfile
 import traceback
 import uuid
 
 import yaml
 
 from fate_flow.engine.backend import build_backend
+from fate_flow.engine.storage import StorageEngine
 from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpec, ComponentIOArtifactsTypeSpec,\
     TaskConfigSpec, ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
     ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta
@@ -28,6 +31,7 @@ from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpe
 from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, TaskStatus, ComputingEngine
 
 from fate_flow.hub.components_wraps import WrapsABC
+from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
 from fate_flow.utils import job_utils
 
@@ -131,7 +135,7 @@ class FlowWraps(WrapsABC):
                     output_data = ArtifactOutputSpec(**datas)
                     self._push_data(key, output_data)
 
-            # push output model
+            # push model
             for key, models in output_meta.io_meta.outputs.model.items():
                 if isinstance(models, list):
                     for model in models:
@@ -140,6 +144,16 @@ class FlowWraps(WrapsABC):
                 else:
                     output_model = ArtifactOutputSpec(**models)
                     self._push_model(key, output_model)
+
+            # push metric
+            for key, metrics in output_meta.io_meta.outputs.metric.items():
+                if isinstance(metrics, list):
+                    for metric in metrics:
+                        output_metric = ArtifactOutputSpec(**metric)
+                        self._push_metric(key, output_metric)
+                else:
+                    output_metric = ArtifactOutputSpec(**metrics)
+                    self._push_metric(key, output_metric)
         self.report_status(output_meta.status.code, output_meta.status.exceptions)
 
     def _push_data(self, output_key, output_data: ArtifactOutputSpec):
@@ -163,6 +177,45 @@ class FlowWraps(WrapsABC):
     def _push_model(self, output_key, output_model: ArtifactOutputSpec):
         logging.info(f"output data: {output_model}")
         logging.info("save model")
+        engine, address = DataManager.uri_to_address(output_model.uri)
+        if engine == StorageEngine.PATH:
+            _path = address.path
+            if os.path.exists(_path):
+                if os.path.isdir(_path):
+                    path = _path
+                    meta_path = os.path.join(path, "meta.yaml")
+                    with open(meta_path, "w") as fp:
+                        yaml.dump(output_model.metadata, fp)
+
+                else:
+                    path = os.path.dirname(_path)
+                    meta_path = os.path.join(path, "meta.yaml")
+                    with open(meta_path, "w") as fp:
+                        yaml.dump(output_model.metadata, fp)
+
+                # tar and send to server
+                _io = io.BytesIO()
+                with tarfile.open(fileobj=_io, mode="w:tar") as tar:
+                    for _root, _dir, _files in os.walk(path):
+                        for _f in _files:
+                            pathfile = os.path.join(_root, _f)
+                            tar.add(pathfile)
+                tar.close()
+                _io.seek(0)
+                self.mlmd.save_model(
+                    self.config.model_id,
+                    self.config.model_version,
+                    self.config.party_task_id,
+                    output_key,
+                    output_model.metadata,
+                    fp
+                )
+            else:
+                raise ValueError(f"Model path no found: {_path}")
+
+    def _push_metric(self, output_key, output_metric: ArtifactOutputSpec):
+        logging.info(f"output metric: {output_metric}")
+        logging.info("save metric")
 
     def _default_output_info(self):
         return f"output_data_{self.config.task_id}_{self.config.task_version}", uuid.uuid1().hex
@@ -245,6 +298,7 @@ class FlowWraps(WrapsABC):
         # data reference conversion
         meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
         query_field = {}
+        logging.info(channel)
         if isinstance(channel, DataWarehouseChannelSpec):
             # external data reference -> data meta
             if channel.name and channel.namespace:
@@ -273,7 +327,8 @@ class FlowWraps(WrapsABC):
         resp = self.mlmd.query_data_meta(**query_field)
         logging.info(resp.text)
         resp_json = resp.json()
-        logging.info(meta)
+        if resp_json.get("code") != 0:
+            raise ValueError(f"Get data artifacts failed: {query_field}")
         schema = resp_json.get("data", {}).get("meta", {})
         meta.metadata.metadata = {"schema": schema}
         meta.uri = resp_json.get("data", {}).get("path")
