@@ -224,7 +224,7 @@ class Upload:
 
     @staticmethod
     def get_sid_data_line(values, delimiter, fate_uuid, line_index):
-        return fate_uuid + str(line_index), delimiter.join(list(map(str, values[1:])))
+        return fate_uuid + str(line_index), delimiter.join(list(map(str, values[:])))
 
     def kv_generator(self, input_feature_count, fp, job_id, part_of_data):
         fate_uuid = uuid.uuid1().hex

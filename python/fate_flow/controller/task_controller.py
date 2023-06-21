@@ -15,6 +15,8 @@
 #
 import os
 
+import yaml
+
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
 from fate_flow.engine.devices import build_engine
@@ -149,11 +151,13 @@ class TaskController(object):
             schedule_logger(job_id).info(f"task run parameters: {run_parameters}")
             task_executor_process_start_status = False
 
-            config_dir = job_utils.get_task_directory(job_id, role, party_id, task.f_task_name, task.f_task_version)
+            config_dir = job_utils.get_task_directory(
+                job_id, role, party_id, task.f_task_name, task.f_task_version, input=True
+            )
             os.makedirs(config_dir, exist_ok=True)
-            run_parameters_path = os.path.join(config_dir, 'task_parameters.json')
+            run_parameters_path = os.path.join(config_dir, 'preprocess_parameters.yaml')
             with open(run_parameters_path, 'w') as fw:
-                fw.write(json_dumps(run_parameters, indent=True))
+                yaml.dump(run_parameters, fw)
             backend_engine = build_engine(task.f_provider_name)
             run_info = backend_engine.run(task=task,
                                           run_parameters=run_parameters,

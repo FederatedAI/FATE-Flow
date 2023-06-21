@@ -44,34 +44,52 @@ class Worker(BaseAPI):
                     "model_meta": model_data
                 })
 
-    def save_data_tracking(self, execution_id, output_key, model_data, uri):
+    def save_data_tracking(self, execution_id, output_key, meta_data, uri, namespace, name, overview, partitions=None):
         return self.client.post(
             endpoint="/worker/data/tracking/save",
             json={
                 "execution_id": execution_id,
                 "output_key": output_key,
-                "model_meta": model_data,
-                "uri": uri
+                "meta_data": meta_data,
+                "uri": uri,
+                "namespace": namespace,
+                "name": name,
+                "overview": overview
             })
 
-    def query_data_tracking(self, job_id, role, party_id, task_name, output_key):
-        return self.client.get(
-            endpoint="/worker/data/tracking/query",
-            params={
+    def query_data_meta(self, job_id=None, role=None, party_id=None, task_name=None, output_key=None, namespace=None,
+                        name=None):
+        # [job_id, role, party_id, task_name, output_key] or [name, namespace]
+        if namespace and name:
+            params = {
+                    "namespace": namespace,
+                    "name": name
+            }
+        else:
+            params = {
                 "job_id": job_id,
                 "role": role,
                 "party_id": party_id,
                 "task_name": task_name,
                 "output_key": output_key
-            })
-
-    def query_data_meta(self, namespace, name):
+            }
         return self.client.get(
-            endpoint="/table/query",
+            endpoint="/worker/data/tracking/query",
+            params=params
+        )
+
+    def download_model(self, model_id, model_version, task_name, output_key, role, party_id):
+        return self.client.get(
+            endpoint="/worker/model/download",
             params={
-                "namespace": namespace,
-                "name": name
-            })
+                "model_id": model_id,
+                "model_version": model_version,
+                "task_name": task_name,
+                "output_key": output_key,
+                "role": role,
+                "party_id": party_id
+            }
+        )
 
     def save_metric(self, execution_id, data, incomplete):
         return self.client.post(

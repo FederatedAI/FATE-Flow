@@ -24,6 +24,8 @@ from typing import Optional
 # path      = $5
 # query     = $7
 # fragment  = $9
+from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
+
 _uri_regex = re.compile(r"^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?")
 
 
@@ -126,11 +128,14 @@ class StandaloneURI(ConcrateURI):
 
     @classmethod
     def from_uri(cls, uri: URI):
-        _, namespace, *names = uri.path.split("/")
+        if STANDALONE_DATA_HOME in uri.path:
+            _, namespace, *names = uri.path.split(STANDALONE_DATA_HOME)[1].split("/")
+        else:
+            _, namespace, *names = uri.path.split("/")
         name = "_".join(names)
         if len(name) > _EGGROLL_NAME_MAX_SIZE:
             name = hashlib.md5(name.encode(encoding="utf8")).hexdigest()[:_EGGROLL_NAME_MAX_SIZE]
-        return EggrollURI(namespace, name)
+        return StandaloneURI(namespace, name)
 
     def create_file(self, name):
         name = f"{self.name}_{name}"

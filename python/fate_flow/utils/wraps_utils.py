@@ -140,6 +140,7 @@ def schedule_lock(func):
             try:
                 _result = func(*args, **kwargs)
             except Exception as e:
+                schedule_logger(job.f_job_id).exception(e)
                 raise e
             finally:
                 schedule_signal(job_id=job.f_job_id, set_or_reset=False)

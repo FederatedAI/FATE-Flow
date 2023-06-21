@@ -15,15 +15,16 @@
 import json
 import logging
 import os.path
-import sys
 import traceback
+import uuid
+
+import yaml
 
 from fate_flow.engine.backend import build_backend
 from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpec, ComponentIOArtifactsTypeSpec,\
-    TaskConfigSpec
-from fate_flow.entity.spec.dag._artifact import ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
-    ArtifactOutputApplySpec
-from fate_flow.entity.spec.dag._output import ComponentOutputMeta
+    TaskConfigSpec, ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
+    ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta
+
 from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, TaskStatus, ComputingEngine
 
 from fate_flow.hub.components_wraps import WrapsABC
@@ -61,6 +62,7 @@ class FlowWraps(WrapsABC):
             traceback.format_exc()
             code = -1
             exceptions = str(e)
+            logging.exception(e)
         finally:
             self.report_status(code, exceptions)
 
@@ -92,9 +94,14 @@ class FlowWraps(WrapsABC):
     def run_component(self, config):
         task_parameters = config.dict()
         logging.info("start run task")
-        task_dir = job_utils.get_task_directory(**self.task_info)
-        os.makedirs(task_dir, exist_ok=True)
-        task_result = os.path.join(task_dir, "task_result.yaml")
+        task_input = job_utils.get_task_directory(**self.task_info, input=True)
+        task_output = job_utils.get_task_directory(**self.task_info, output=True)
+        os.makedirs(task_input, exist_ok=True)
+        os.makedirs(task_output, exist_ok=True)
+        task_parameters_file = os.path.join(task_input, "task_parameters.yaml")
+        task_result = os.path.join(task_output, "task_result.yaml")
+        with open(task_parameters_file, "w") as f:
+            yaml.dump(task_parameters, f)
         p = self.backend.run(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
@@ -114,8 +121,51 @@ class FlowWraps(WrapsABC):
 
     def push_output(self, output_meta: ComponentOutputMeta):
         if self.task_end_with_success(output_meta.status.code):
-            pass
+            # push output data to server
+            for key, datas in output_meta.io_meta.outputs.data.items():
+                if isinstance(datas, list):
+                    for data in datas:
+                        output_data = ArtifactOutputSpec(**data)
+                        self._push_data(key, output_data)
+                else:
+                    output_data = ArtifactOutputSpec(**datas)
+                    self._push_data(key, output_data)
+
+            # push output model
+            for key, models in output_meta.io_meta.outputs.model.items():
+                if isinstance(models, list):
+                    for model in models:
+                        output_model = ArtifactOutputSpec(**model)
+                        self._push_model(key, output_model)
+                else:
+                    output_model = ArtifactOutputSpec(**models)
+                    self._push_model(key, output_model)
         self.report_status(output_meta.status.code, output_meta.status.exceptions)
+
+    def _push_data(self, output_key, output_data: ArtifactOutputSpec):
+        logging.info(f"output data: {output_data}")
+        namespace = output_data.metadata.namespace
+        name = output_data.metadata.name
+        if not namespace and name:
+            namespace, name = self._default_output_info()
+        logging.info("save data tracking")
+        resp = self.mlmd.save_data_tracking(
+            execution_id=self.config.party_task_id,
+            output_key=output_key,
+            meta_data=output_data.metadata.metadata.get("schema", {}),
+            uri=output_data.uri,
+            namespace=namespace,
+            name=name,
+            overview=output_data.metadata.overview.dict()
+        )
+        logging.info(resp.text)
+
+    def _push_model(self, output_key, output_model: ArtifactOutputSpec):
+        logging.info(f"output data: {output_model}")
+        logging.info("save model")
+
+    def _default_output_info(self):
+        return f"output_data_{self.config.task_id}_{self.config.task_version}", uuid.uuid1().hex
 
     def _preprocess_input_artifacts(self):
         input_artifacts = {}
@@ -128,6 +178,16 @@ class FlowWraps(WrapsABC):
                         input_artifacts[_k].append(self._intput_data_artifacts(_channel))
                 else:
                     input_artifacts[_k] = self._intput_data_artifacts(_channels)
+
+        if self.config.input_artifacts.model:
+            for _k, _channels in self.config.input_artifacts.model.items():
+                input_artifacts[_k] = None
+                if isinstance(_channels, list):
+                    input_artifacts[_k] = []
+                    for _channel in _channels:
+                        input_artifacts[_k].append(self._intput_model_artifacts(_channel))
+                else:
+                    input_artifacts[_k] = self._intput_model_artifacts(_channels)
         return input_artifacts
 
     def _preprocess_output_artifacts(self):
@@ -152,15 +212,19 @@ class FlowWraps(WrapsABC):
         if type_name in [DataframeArtifactType.type_name, TableArtifactType.type_name]:
             if self.config.conf.computing.type == ComputingEngine.STANDALONE:
                 os.environ["STANDALONE_DATA_PATH"] = STANDALONE_DATA_HOME
-                uri = f"{self.config.conf.computing.type}://{STANDALONE_DATA_HOME}{self.config.job_id}/{self.config.party_task_id}"
+                uri = f"{self.config.conf.computing.type}://{STANDALONE_DATA_HOME}/{self.config.task_id}/{uuid.uuid1().hex}"
             else:
-                uri = f"{self.config.conf.computing.type}:///{self.config.job_id}/{self.config.party_task_id}"
+                uri = f"{self.config.conf.computing.type}:///{self.config.task_id}/{uuid.uuid1().hex}"
             if is_multi:
+                # replace "{index}"
                 uri += "_{index}"
         else:
-            uri = job_utils.get_job_directory(self.config.job_id, self.config.task_name, str(self.config.task_version),
-                                              "output", name)
-            if not is_multi:
+            uri = job_utils.get_job_directory(self.config.job_id, self.config.role, self.config.party_id,
+                                              self.config.task_name, str(self.config.task_version), "output",
+                                              name)
+            if is_multi:
+                uri = f"file:///{uri}"
+            else:
                 uri = os.path.join(f"file:///{uri}", type_name)
         output_artifacts.uri = uri
         return output_artifacts
@@ -178,34 +242,76 @@ class FlowWraps(WrapsABC):
             return None
 
     def _intput_data_artifacts(self, channel):
+        # data reference conversion
         meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
+        query_field = {}
         if isinstance(channel, DataWarehouseChannelSpec):
+            # external data reference -> data meta
             if channel.name and channel.namespace:
-                resp = self.mlmd.query_data_meta(
-                    namespace=channel.namespace,
-                    name=channel.name
-                )
-                logging.info(resp.text)
-                resp_json = resp.json()
-                logging.info(meta)
-                meta.metadata.metadata = {"schema": resp_json.get("data", {}).get("meta", {})}
-                meta.uri = resp_json.get("data", {}).get("path")
+                query_field = {
+                    "namespace": channel.namespace,
+                    "name": channel.name
+                }
             else:
-                resp = self.mlmd.query_data_meta(
-                    job_id=channel.namespace,
-                    name=channel.name
-                )
+                query_field = {
+                    "job_id": channel.job_id,
+                    "role": self.config.role,
+                    "party_id": self.config.party_id,
+                    "task_name": channel.producer_task,
+                    "output_key": channel.output_artifact_key
+                }
 
         elif isinstance(channel, RuntimeTaskOutputChannelSpec):
-            pass
-            # resp = self.mlmd.query_data_tracking(
-            #     job_id=self.config.job_id,
-            #     role=self.config.role,
-            #     party_id=self.config.party_id,
-            #     task_name=channel.producer_task,
-            #     output_key=channel.output_artifact_key
-            # )
-            # logging.info(resp.text)
+            # this job output data reference -> data meta
+            query_field = {
+                "job_id": self.config.job_id,
+                "role": self.config.role,
+                "party_id": self.config.party_id,
+                "task_name": channel.producer_task,
+                "output_key": channel.output_artifact_key
+            }
+        resp = self.mlmd.query_data_meta(**query_field)
+        logging.info(resp.text)
+        resp_json = resp.json()
+        logging.info(meta)
+        schema = resp_json.get("data", {}).get("meta", {})
+        meta.metadata.metadata = {"schema": schema}
+        meta.uri = resp_json.get("data", {}).get("path")
+        return meta
+
+    def _intput_model_artifacts(self, channel):
+        # model reference conversion
+        meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
+        query_field = {}
+        if isinstance(channel, ModelWarehouseChannelSpec):
+            # external model reference -> download to local
+            query_field = {
+                "task_name": channel.producer_task,
+                "output_key": channel.output_artifact_key,
+                "role": self.config.role,
+                "party_id": self.config.party_id
+            }
+            if channel.model_id and channel.model_version:
+                query_field.update({
+                    "model_id": channel.model_id,
+                    "model_version": channel.model_version
+                })
+            else:
+                query_field.update({
+                    "model_id": self.config.model_id,
+                    "model_version": self.config.model_version
+                })
+        elif isinstance(channel, RuntimeTaskOutputChannelSpec):
+            query_field.update({
+                "model_id": self.config.model_id,
+                "model_version": self.config.model_version
+            })
+
+        # this job output data reference -> data meta
+        resp = self.mlmd.download_model(**query_field)
+        for chunk in resp.iter_content(1024):
+            if chunk:
+                pass
         return meta
 
     def report_status(self, code, error=""):
