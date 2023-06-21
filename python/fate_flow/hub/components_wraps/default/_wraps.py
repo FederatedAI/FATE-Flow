@@ -184,38 +184,38 @@ class FlowWraps(WrapsABC):
         logging.info(f"output data: {output_model}")
         logging.info("save model")
         engine, address = DataManager.uri_to_address(output_model.uri)
-        if engine == StorageEngine.PATH:
+        if engine == StorageEngine.FILE:
             _path = address.path
             if os.path.exists(_path):
                 if os.path.isdir(_path):
                     path = _path
                     meta_path = os.path.join(path, "meta.yaml")
                     with open(meta_path, "w") as fp:
-                        yaml.dump(output_model.metadata, fp)
+                        yaml.dump(output_model.metadata.dict(), fp)
 
                 else:
                     path = os.path.dirname(_path)
                     meta_path = os.path.join(path, "meta.yaml")
                     with open(meta_path, "w") as fp:
-                        yaml.dump(output_model.metadata, fp)
-
+                        yaml.dump(output_model.metadata.dict(), fp)
                 # tar and send to server
                 _io = io.BytesIO()
-                with tarfile.open(fileobj=_io, mode="w:tar") as tar:
+                with tarfile.open(fileobj=_io, mode="x:tar") as tar:
                     for _root, _dir, _files in os.walk(path):
                         for _f in _files:
                             pathfile = os.path.join(_root, _f)
                             tar.add(pathfile)
-                tar.close()
                 _io.seek(0)
-                self.mlmd.save_model(
+                logging.info(output_model.metadata.dict())
+                resp = self.mlmd.save_model(
                     self.config.model_id,
                     self.config.model_version,
                     self.config.party_task_id,
                     output_key,
-                    output_model.metadata,
-                    fp
+                    output_model.metadata.dict(),
+                    _io
                 )
+                logging.info(resp.text)
             else:
                 raise ValueError(f"Model path no found: {_path}")
         else:
@@ -225,15 +225,16 @@ class FlowWraps(WrapsABC):
         logging.info(f"output metric: {output_metric}")
         logging.info("save metric")
         engine, address = DataManager.uri_to_address(output_metric.uri)
-        if engine == StorageEngine.PATH:
+        if engine == StorageEngine.FILE:
             _path = address.path
             if os.path.exists(_path):
                 with open(_path, "r") as f:
                     data = json.load(f)
-                    self.mlmd.save_metric(
+                    resp = self.mlmd.save_metric(
                         execution_id=self.config.party_task_id,
                         data=data
                     )
+                    logging.info(resp.text)
             else:
                 raise ValueError(f"Metric path no found: {_path}")
         else:
@@ -294,11 +295,10 @@ class FlowWraps(WrapsABC):
                 # replace "{index}"
                 uri += "_{index}"
         else:
-            uri = os.path.join(self.task_output_dir, name)
+            path = os.path.join(self.task_output_dir, name)
+            uri = os.path.join(f"file://{path}", type_name)
             if is_multi:
-                uri = f"file:///{uri}"
-            else:
-                uri = os.path.join(f"file:///{uri}", type_name)
+                uri += "_{index}"
         output_artifacts.uri = uri
         return output_artifacts
 
@@ -403,7 +403,7 @@ class FlowWraps(WrapsABC):
         for chunk in resp.iter_content(1024):
             if chunk:
                 _io.write(chunk)
-        model = tarfile.open(fileobj=_io)
+        model = tarfile.open(fileobj=_io, mode="x:tar")
         metadata = {}
         count = 0
         input_model_file = ""

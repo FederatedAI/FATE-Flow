@@ -60,11 +60,11 @@ def query_task_status(execution_id):
 
 
 @manager.route('/model/save', methods=['POST'])
-@API.Input.json(model_id=fields.String(required=True))
-@API.Input.json(model_version=fields.String(required=True))
-@API.Input.json(execution_id=fields.String(required=True))
-@API.Input.json(meta_data=fields.Dict(required=True))
-@API.Input.json(output_key=fields.String(required=True))
+@API.Input.params(model_id=fields.String(required=True))
+@API.Input.params(model_version=fields.String(required=True))
+@API.Input.params(execution_id=fields.String(required=True))
+@API.Input.params(meta_data=fields.Dict(required=True))
+@API.Input.params(output_key=fields.String(required=True))
 def upload_model(model_id, model_version, execution_id, meta_data, output_key):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     file = request.files['file']

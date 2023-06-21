@@ -115,7 +115,7 @@ class DataManager:
             address = StandaloneAddress(namespace=uri_schema.namespace, name=uri_schema.name)
         elif uri_schema.schema() == StorageEngine.HDFS:
             address = HDFSAddress(path=uri_schema.path)
-        elif uri_schema.schema() == StorageEngine.PATH:
+        elif uri_schema.schema() in [StorageEngine.PATH, StorageEngine.FILE]:
             address = PathAddress(path=uri_schema.path)
         else:
             raise ValueError(f"uri {uri} engine could not be converted to an address")
