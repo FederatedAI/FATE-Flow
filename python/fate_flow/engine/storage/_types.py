@@ -36,6 +36,7 @@ class StorageEngine(object):
     MYSQL = 'mysql'
     SIMPLE = 'simple'
     PATH = 'path'
+    FILE = 'file'
     HIVE = 'hive'
     LOCALFS = 'localfs'
     API = 'api'

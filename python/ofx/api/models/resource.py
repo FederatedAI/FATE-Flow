@@ -51,6 +51,10 @@ class APIClient(requests.Session):
         return self.request('POST', url=self._set_url(endpoint), data=data, json=json,
                             **self._set_request_timeout(kwargs))
 
+    def send_file(self, endpoint, data=None, json=None, params=None, files=None, **kwargs):
+        return self.request('POST', url=self._set_url(endpoint), data=data, json=json, files=files, params=params,
+                            **self._set_request_timeout(kwargs))
+
     def get(self, endpoint, **kwargs):
         kwargs.setdefault('allow_redirects', True)
         return self.request('GET', url=self._set_url(endpoint), **self._set_request_timeout(kwargs))
