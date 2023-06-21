@@ -43,7 +43,7 @@ class Worker(BaseAPI):
                 "meta_data": meta_data
             })
 
-    def save_data_tracking(self, execution_id, output_key, meta_data, uri, namespace, name, overview, partitions=None):
+    def save_data_tracking(self, execution_id, output_key, meta_data, uri, namespace, name, overview, source, partitions=None):
         return self.client.post(
             endpoint="/worker/data/tracking/save",
             json={
@@ -53,7 +53,8 @@ class Worker(BaseAPI):
                 "uri": uri,
                 "namespace": namespace,
                 "name": name,
-                "overview": overview
+                "overview": overview,
+                "source": source
             })
 
     def query_data_meta(self, job_id=None, role=None, party_id=None, task_name=None, output_key=None, namespace=None,

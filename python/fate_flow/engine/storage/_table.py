@@ -186,7 +186,7 @@ class StorageTableMeta(StorageTableMetaABC):
         self.count = None
         self.part_of_data = None
         self.description = None
-        self.origin = None
+        self.source = None
         self.disable = None
         self.create_time = None
         self.update_time = None
@@ -370,8 +370,8 @@ class StorageTableMeta(StorageTableMetaABC):
     def get_have_head(self):
         return self.have_head
 
-    def get_origin(self):
-        return self.origin
+    def get_source(self):
+        return self.source
 
     def get_disable(self):
         return self.disable

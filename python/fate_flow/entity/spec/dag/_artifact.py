@@ -27,6 +27,15 @@ import pydantic
 _uri_regex = re.compile(r"^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?")
 
 
+class ArtifactSource(pydantic.BaseModel):
+    task_id: str
+    party_task_id: str
+    task_name: str
+    component: str
+    output_artifact_key: str
+    output_index: Optional[int] = None
+
+
 class Metadata(pydantic.BaseModel):
     class DataOverview(pydantic.BaseModel):
         count: Optional[int] = None
@@ -34,7 +43,9 @@ class Metadata(pydantic.BaseModel):
     metadata: dict = pydantic.Field(default_factory=dict)
     name: Optional[str] = None
     namespace: Optional[str] = None
-    overview: Optional[DataOverview]
+    model_overview: Optional[dict] = {}
+    data_overview: Optional[DataOverview]
+    source: Optional[ArtifactSource] = None
 
     class Config:
         extra = "forbid"

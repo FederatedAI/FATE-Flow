@@ -93,7 +93,7 @@ class DataManager:
 
     @staticmethod
     def create_data_table(
-            namespace, name, uri, partitions, data_meta, origin, part_of_data=None, count=None
+            namespace, name, uri, partitions, data_meta, part_of_data=None, count=None, source=None
     ):
         engine, address = DataManager.uri_to_address(uri)
         storage_meta = storage.StorageTableBase(
@@ -102,7 +102,7 @@ class DataManager:
             options=None
         )
         storage_meta.create_meta(
-            data_meta=data_meta, part_of_data=part_of_data, count=count, origin=origin,
+            data_meta=data_meta, part_of_data=part_of_data, count=count, source=source
         )
 
     @staticmethod
@@ -131,7 +131,8 @@ class DataManager:
                 "count": data_table_meta.count,
                 "meta": data_table_meta.get_data_meta(),
                 "engine": data_table_meta.engine,
-                "path": data_table_meta.address.engine_path
+                "path": data_table_meta.address.engine_path,
+                "source": data_table_meta.source
             }
             display_data = data_table_meta.part_of_data
             return data, display_data

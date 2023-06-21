@@ -130,7 +130,8 @@ def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, o
 @API.Input.json(name=fields.String(required=True))
 @API.Input.json(overview=fields.Dict(required=True))
 @API.Input.json(partitions=fields.Int(required=False))
-def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name, overview, partitions=None):
+@API.Input.json(source=fields.Dict(required=True))
+def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name, overview, source, partitions=None):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     data_info = {
         "uri": uri,
@@ -147,8 +148,8 @@ def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name
     OutputDataTracking.create(data_info)
     DataManager.create_data_table(
         namespace=namespace, name=name, uri=uri, partitions=partitions,
-        data_meta=meta_data, origin=f"{task.f_task_name}.{output_key}",
-        count=overview.get("count", None), part_of_data=overview.get("samples", [])
+        data_meta=meta_data, source=source,
+        count=overview.get("count", None), part_of_data=overview.get("samples", []),
     )
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
 
