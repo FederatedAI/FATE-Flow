@@ -47,7 +47,7 @@ class EngineABC(metaclass=abc.ABCMeta):
 class LocalEngine(object):
     @classmethod
     def get_component_define(cls, provider_name, task_info, stage):
-        task_dir = get_task_directory(**task_info)
+        task_dir = get_task_directory(**task_info, output=True)
         component_ref = task_info.get("component")
         role = task_info.get("role")
         os.makedirs(task_dir, exist_ok=True)
@@ -78,7 +78,7 @@ class LocalEngine(object):
                 "execute",
                 "--env-name",
                 "FATE_TASK_CONFIG",
-                "--output-path",
+                "--execution-final-meta-path",
                 output_path
             ]
 

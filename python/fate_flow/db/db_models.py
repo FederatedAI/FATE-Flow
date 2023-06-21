@@ -112,7 +112,6 @@ class TrackingOutputInfo(DataBaseModel):
     f_uri = CharField(max_length=200, null=True)
     f_namespace = CharField(max_length=200)
     f_name = CharField(max_length=200)
-    f_meta = JSONField()
 
     class Meta:
         db_table = "t_tracking_data_output"

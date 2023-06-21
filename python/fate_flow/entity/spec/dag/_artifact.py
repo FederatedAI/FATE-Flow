@@ -28,9 +28,13 @@ _uri_regex = re.compile(r"^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*
 
 
 class Metadata(pydantic.BaseModel):
+    class DataOverview(pydantic.BaseModel):
+        count: Optional[int] = None
+        samples: Optional[List] = None
     metadata: dict = pydantic.Field(default_factory=dict)
     name: Optional[str] = None
     namespace: Optional[str] = None
+    overview: Optional[DataOverview]
 
     class Config:
         extra = "forbid"
@@ -67,6 +71,11 @@ class ArtifactOutputApplySpec(pydantic.BaseModel):
         if not _uri_regex.match(v):
             raise pydantic.ValidationError(f"`{v}` is not valid uri")
         return v
+
+
+class ArtifactOutputSpec(pydantic.BaseModel):
+    uri: str
+    metadata: Metadata
 
 
 class URI:

@@ -531,20 +531,25 @@ class JobParser(JobParserABC):
         return nx.topological_sort(self._dag)
 
     @classmethod
-    def infer_dependent_tasks(cls, artifacts):
-        if not artifacts:
+    def infer_dependent_tasks(cls, input_artifacts):
+        print (input_artifacts)
+        if not input_artifacts:
             return []
 
         dependent_task_list = list()
-        for artifact_name, artifact_channel in artifacts.items():
-            for artifact_source_type, channels in artifact_channel.items():
-                if artifact_source_type in [ArtifactSourceType.MODEL_WAREHOUSE, ArtifactSourceType.DATA_WAREHOUSE]:
-                    continue
+        for input_type in InputArtifactType.types():
+            artifacts = getattr(input_artifacts, input_type)
+            if not artifacts:
+                continue
+            for artifact_name, artifact_channel in artifacts.items():
+                for artifact_source_type, channels in artifact_channel.items():
+                    if artifact_source_type in [ArtifactSourceType.MODEL_WAREHOUSE, ArtifactSourceType.DATA_WAREHOUSE]:
+                        continue
 
-                if not isinstance(channels, list):
-                    channels = [channels]
-                for channel in channels:
-                    dependent_task_list.append(channel.producer_task)
+                    if not isinstance(channels, list):
+                        channels = [channels]
+                    for channel in channels:
+                        dependent_task_list.append(channel.producer_task)
 
         return dependent_task_list
 
