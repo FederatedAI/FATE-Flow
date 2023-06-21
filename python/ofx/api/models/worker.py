@@ -30,19 +30,18 @@ class Worker(BaseAPI):
             "execution_id": execution_id,
         })
 
-    def save_model(self, model_id, model_version, execution_id, output_key, model_data, model_path):
-        with open(model_path, 'rb') as fp:
-            files = {"file": fp}
-            return self.client.post(
-                endpoint="/worker/output/save",
-                files=files,
-                json={
-                    "model_id": model_id,
-                    "model_version": model_version,
-                    "execution_id": execution_id,
-                    "output_key": output_key,
-                    "model_meta": model_data
-                })
+    def save_model(self, model_id, model_version, execution_id, output_key, model_data, fp):
+        files = {"file": fp}
+        return self.client.post(
+            endpoint="/worker/output/save",
+            files=files,
+            json={
+                "model_id": model_id,
+                "model_version": model_version,
+                "execution_id": execution_id,
+                "output_key": output_key,
+                "model_meta": model_data
+            })
 
     def save_data_tracking(self, execution_id, output_key, meta_data, uri, namespace, name, overview, partitions=None):
         return self.client.post(
