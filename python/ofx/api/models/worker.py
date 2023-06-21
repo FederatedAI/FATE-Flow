@@ -33,7 +33,7 @@ class Worker(BaseAPI):
     def save_model(self, model_id, model_version, execution_id, output_key, model_data, fp):
         files = {"file": fp}
         return self.client.post(
-            endpoint="/worker/output/save",
+            endpoint="/worker/model/save",
             files=files,
             json={
                 "model_id": model_id,
@@ -90,11 +90,11 @@ class Worker(BaseAPI):
             }
         )
 
-    def save_metric(self, execution_id, data, incomplete):
+    def save_metric(self, execution_id, data):
         return self.client.post(
             endpoint="/worker/metric/save",
             json={
                 "execution_id": execution_id,
                 "data": data,
-                "incomplete": incomplete
+                "incomplete": True
             })

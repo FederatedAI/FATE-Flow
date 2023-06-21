@@ -289,12 +289,6 @@ class TaskParser(TaskParserABC):
 
     @property
     def task_parameters(self) -> PreTaskConfigSpec:
-        input_artifacts = {}
-        for k, v in self.task_node.upstream_inputs.get(self.role).get(self.party_id).items():
-            input_artifacts[k] = {}
-            for _k, _v in v.items():
-                if _v:
-                    input_artifacts[k][_k] = _v.dict(exclude_defaults=True)
         return PreTaskConfigSpec(
             model_id=self.model_id,
             model_version=self.model_version,
@@ -309,7 +303,7 @@ class TaskParser(TaskParserABC):
             stage=self.stage,
             party_id=self.party_id,
             parameters=self.input_parameters,
-            input_artifacts=FlowRuntimeInputArtifacts(**input_artifacts),
+            input_artifacts=self.task_node.upstream_inputs.get(self.role).get(self.party_id),
             conf=self.task_conf,
             mlmd=self.generate_mlmd()
         )

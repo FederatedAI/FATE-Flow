@@ -115,7 +115,7 @@ class TrackingOutputInfo(DataBaseModel):
 
     class Meta:
         db_table = "t_tracking_data_output"
-        primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id', 'f_output_key')
+        primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id', 'f_output_key', 'f_uri')
 
 
 class EngineRegistry(DataBaseModel):

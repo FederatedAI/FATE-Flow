@@ -141,8 +141,8 @@ SourceInputArtifactSpec = TypeVar("SourceInputArtifactSpec",
 
 
 class RuntimeInputArtifacts(pydantic.BaseModel):
-    data: Optional[Dict[str, Dict[str, Union[InputArtifactSpec, List[InputArtifactSpec]]]]]
-    model: Optional[Dict[str, Dict[str, Union[InputArtifactSpec, List[InputArtifactSpec]]]]]
+    data: Optional[Dict[str, Dict[str, Union[List[InputArtifactSpec], InputArtifactSpec]]]]
+    model: Optional[Dict[str, Dict[str, Union[List[InputArtifactSpec], InputArtifactSpec]]]]
 
 
 class SourceInputArtifacts(pydantic.BaseModel):
