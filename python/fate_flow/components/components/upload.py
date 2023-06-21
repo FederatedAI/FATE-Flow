@@ -19,6 +19,7 @@ from typing import Union
 
 from fate_flow.components import cpn
 from fate_flow.engine.storage import Session, StorageEngine, StorageType, StorageTableMeta, StorageOrigin
+from fate_flow.entity.spec.dag import ArtifactSource
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
 from fate_flow.utils.file_utils import get_fate_flow_directory
 
@@ -165,7 +166,13 @@ class Upload:
             )
             self.table = storage_session.create_table(
                 address=address,
-                origin=StorageOrigin.UPLOAD,
+                source=ArtifactSource(
+                    task_id="",
+                    party_task_id="",
+                    task_name="upload",
+                    component="upload",
+                    output_artifact_key="data"
+                ).dict(),
                 **self.parameters.to_dict()
             )
             data_table_count = self.save_data_table(job_id)

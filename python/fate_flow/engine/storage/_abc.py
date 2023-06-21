@@ -99,7 +99,7 @@ class StorageTableMetaABC(metaclass=abc.ABCMeta):
         ...
 
     @abc.abstractmethod
-    def get_origin(self):
+    def get_source(self):
         ...
 
     @abc.abstractmethod

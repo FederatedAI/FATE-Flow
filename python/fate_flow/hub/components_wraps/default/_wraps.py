@@ -98,7 +98,8 @@ class FlowWraps(WrapsABC):
             parameters=self.config.parameters,
             input_artifacts=input_artifacts,
             output_artifacts=output_artifacts,
-            conf=self.config.conf
+            conf=self.config.conf,
+            task_name=self.config.task_name
         )
         logging.info(config)
         return config
@@ -176,7 +177,8 @@ class FlowWraps(WrapsABC):
             uri=output_data.uri,
             namespace=namespace,
             name=name,
-            overview=output_data.metadata.overview.dict()
+            overview=output_data.metadata.data_overview.dict(),
+            source=output_data.metadata.source.dict()
         )
         logging.info(resp.text)
 
@@ -212,7 +214,7 @@ class FlowWraps(WrapsABC):
                     self.config.model_version,
                     self.config.party_task_id,
                     output_key,
-                    output_model.metadata.dict(),
+                    output_model.metadata.model_overview,
                     _io
                 )
                 logging.info(resp.text)
@@ -354,6 +356,7 @@ class FlowWraps(WrapsABC):
             data = resp_data[0]
             schema = data.get("meta", {})
             meta.metadata.metadata = {"schema": schema}
+            meta.metadata.source = data.get("source", {})
             meta.uri = data.get("path")
             return meta
         elif len(resp_data) > 1:
@@ -362,6 +365,7 @@ class FlowWraps(WrapsABC):
                 schema = data.get("meta", {})
                 meta.metadata.metadata = {"schema": schema}
                 meta.uri = data.get("path")
+                meta.metadata.source = data.get("source", {})
                 meta_list.append(meta)
             return meta_list
         else:
@@ -404,13 +408,13 @@ class FlowWraps(WrapsABC):
             if chunk:
                 _io.write(chunk)
         model = tarfile.open(fileobj=_io, mode="x:tar")
-        metadata = {}
+        model_overview = {}
         count = 0
         input_model_file = ""
         for name in model.getnames():
             fp = model.extractfile(name).read()
             if name.endswith("yaml"):
-                metadata = yaml.safe_load(fp)
+                model_overview = yaml.safe_load(fp)
             else:
                 count += 1
                 input_model_file = os.path.join(input_model_base, name)
@@ -420,7 +424,7 @@ class FlowWraps(WrapsABC):
             meta.uri = f"file://{input_model_base}"
         else:
             meta.uri = f"file://{input_model_file}"
-        meta.metadata = metadata
+        meta.metadata.model_overview = model_overview
         return meta
 
     def report_status(self, code, error=""):
