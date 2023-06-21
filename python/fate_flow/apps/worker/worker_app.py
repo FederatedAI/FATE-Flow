@@ -100,6 +100,7 @@ def download_model(model_id, model_version, role, party_id, task_name, output_ke
 @API.Input.params(namespace=fields.String(required=False))
 @API.Input.params(name=fields.String(required=False))
 def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, output_key=None, namespace=None, name=None):
+    tracking_list = []
     if not namespace and name:
         data_info = {
             "job_id": job_id,
@@ -109,13 +110,15 @@ def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, o
             "output_key": output_key
         }
         data_list = OutputDataTracking.query(data_info)
-        if data_list:
-            data = data_list[0]
-            namespace, name = data.f_namespace, data.f_name
-        else:
-            return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
-    info, _ = DataManager.get_data_info(namespace, name)
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=info)
+        if not data_list:
+            return API.Output.json(code=ReturnCode.Task.NO_FOUND_MODEL_OUTPUT, message="failed")
+        for data in data_list:
+            info, _ = DataManager.get_data_info(data.f_namespace, data.f_name)
+            tracking_list.append(info)
+    else:
+        info, _ = DataManager.get_data_info(namespace, name)
+        tracking_list.append(info)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=tracking_list)
 
 
 @manager.route('/data/tracking/save', methods=['POST'])
@@ -144,7 +147,7 @@ def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name
     OutputDataTracking.create(data_info)
     DataManager.create_data_table(
         namespace=namespace, name=name, uri=uri, partitions=partitions,
-        data_meta=meta_data, origin=f"{task.f_job_id}.{task.f_task_name}",
+        data_meta=meta_data, origin=f"{task.f_task_name}.{output_key}",
         count=overview.get("count", None), part_of_data=overview.get("samples", [])
     )
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")

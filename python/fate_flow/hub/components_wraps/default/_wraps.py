@@ -54,6 +54,14 @@ class FlowWraps(WrapsABC):
             "task_version": self.config.task_version
         }
 
+    @property
+    def task_input_dir(self):
+        return job_utils.get_task_directory(**self.task_info, input=True)
+
+    @property
+    def task_output_dir(self):
+        return job_utils.get_task_directory(**self.task_info, output=True)
+
     def run(self):
         code = 0
         exceptions = ""
@@ -98,12 +106,10 @@ class FlowWraps(WrapsABC):
     def run_component(self, config):
         task_parameters = config.dict()
         logging.info("start run task")
-        task_input = job_utils.get_task_directory(**self.task_info, input=True)
-        task_output = job_utils.get_task_directory(**self.task_info, output=True)
-        os.makedirs(task_input, exist_ok=True)
-        os.makedirs(task_output, exist_ok=True)
-        task_parameters_file = os.path.join(task_input, "task_parameters.yaml")
-        task_result = os.path.join(task_output, "task_result.yaml")
+        os.makedirs(self.task_input_dir, exist_ok=True)
+        os.makedirs(self.task_output_dir, exist_ok=True)
+        task_parameters_file = os.path.join(self.task_input_dir, "task_parameters.yaml")
+        task_result = os.path.join(self.task_output_dir, "task_result.yaml")
         with open(task_parameters_file, "w") as f:
             yaml.dump(task_parameters, f)
         p = self.backend.run(
@@ -160,9 +166,9 @@ class FlowWraps(WrapsABC):
         logging.info(f"output data: {output_data}")
         namespace = output_data.metadata.namespace
         name = output_data.metadata.name
-        if not namespace and name:
+        if not namespace and not name:
             namespace, name = self._default_output_info()
-        logging.info("save data tracking")
+        logging.info(f"save data tracking to {namespace}, {name}")
         resp = self.mlmd.save_data_tracking(
             execution_id=self.config.party_task_id,
             output_key=output_key,
@@ -212,10 +218,26 @@ class FlowWraps(WrapsABC):
                 )
             else:
                 raise ValueError(f"Model path no found: {_path}")
+        else:
+            raise ValueError(f"Engine {engine} is not supported")
 
     def _push_metric(self, output_key, output_metric: ArtifactOutputSpec):
         logging.info(f"output metric: {output_metric}")
         logging.info("save metric")
+        engine, address = DataManager.uri_to_address(output_metric.uri)
+        if engine == StorageEngine.PATH:
+            _path = address.path
+            if os.path.exists(_path):
+                with open(_path, "r") as f:
+                    data = json.load(f)
+                    self.mlmd.save_metric(
+                        execution_id=self.config.party_task_id,
+                        data=data
+                    )
+            else:
+                raise ValueError(f"Metric path no found: {_path}")
+        else:
+            raise ValueError(f"Engine {engine} is not supported")
 
     def _default_output_info(self):
         return f"output_data_{self.config.task_id}_{self.config.task_version}", uuid.uuid1().hex
@@ -272,9 +294,7 @@ class FlowWraps(WrapsABC):
                 # replace "{index}"
                 uri += "_{index}"
         else:
-            uri = job_utils.get_job_directory(self.config.job_id, self.config.role, self.config.party_id,
-                                              self.config.task_name, str(self.config.task_version), "output",
-                                              name)
+            uri = os.path.join(self.task_output_dir, name)
             if is_multi:
                 uri = f"file:///{uri}"
             else:
@@ -329,10 +349,23 @@ class FlowWraps(WrapsABC):
         resp_json = resp.json()
         if resp_json.get("code") != 0:
             raise ValueError(f"Get data artifacts failed: {query_field}")
-        schema = resp_json.get("data", {}).get("meta", {})
-        meta.metadata.metadata = {"schema": schema}
-        meta.uri = resp_json.get("data", {}).get("path")
-        return meta
+        resp_data = resp_json.get("data", [])
+        if len(resp_data) == 1:
+            data = resp_data[0]
+            schema = data.get("meta", {})
+            meta.metadata.metadata = {"schema": schema}
+            meta.uri = data.get("path")
+            return meta
+        elif len(resp_data) > 1:
+            meta_list = []
+            for data in resp_data:
+                schema = data.get("meta", {})
+                meta.metadata.metadata = {"schema": schema}
+                meta.uri = data.get("path")
+                meta_list.append(meta)
+            return meta_list
+        else:
+            raise RuntimeError(resp_data)
 
     def _intput_model_artifacts(self, channel):
         # model reference conversion
@@ -363,10 +396,31 @@ class FlowWraps(WrapsABC):
             })
 
         # this job output data reference -> data meta
+        input_model_base = os.path.join(self.task_input_dir, "model")
+        os.makedirs(input_model_base, exist_ok=True)
+        _io = io.BytesIO()
         resp = self.mlmd.download_model(**query_field)
         for chunk in resp.iter_content(1024):
             if chunk:
-                pass
+                _io.write(chunk)
+        model = tarfile.open(fileobj=_io)
+        metadata = {}
+        count = 0
+        input_model_file = ""
+        for name in model.getnames():
+            fp = model.extractfile(name).read()
+            if name.endswith("yaml"):
+                metadata = yaml.safe_load(fp)
+            else:
+                count += 1
+                input_model_file = os.path.join(input_model_base, name)
+                with open(input_model_file, "wb") as fw:
+                    fw.write(fp)
+        if count > 1:
+            meta.uri = f"file://{input_model_base}"
+        else:
+            meta.uri = f"file://{input_model_file}"
+        meta.metadata = metadata
         return meta
 
     def report_status(self, code, error=""):
