@@ -73,6 +73,8 @@ def upload_model(model_id, model_version, execution_id, output_key):
         model_file=file,
         job_id=task.f_job_id,
         task_name=task.f_task_name,
+        role=task.f_role,
+        party_id=task.f_party_id,
         output_key=output_key,
         model_id=model_id,
         model_version=model_version
@@ -101,7 +103,7 @@ def download_model(model_id, model_version, role, party_id, task_name, output_ke
 @API.Input.params(name=fields.String(required=False))
 def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, output_key=None, namespace=None, name=None):
     tracking_list = []
-    if not namespace and name:
+    if not namespace and not name:
         data_info = {
             "job_id": job_id,
             "role": role,

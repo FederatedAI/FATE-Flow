@@ -36,15 +36,17 @@ class IOHandle(object):
         return os.path.join(model_id, model_version, dir_name, file_name)
 
     def download(self, model_id, model_version, role, party_id, task_name, output_key):
+        from fate_flow.utils.schedule_utils import schedule_logger
+        schedule_logger('wzh').info(f"model_id={model_id}, model_version={model_version}, task_name={task_name}, output_key={output_key}, role={role}, party_id={party_id}")
         model_metas = ModelMeta.query(model_id=model_id, model_version=model_version, task_name=task_name,
                                       output_key=output_key, role=role, party_id=party_id)
         return self._download(storage_key=model_metas[0].f_storage_key)
 
-    def upload(self, model_file: FileStorage, job_id, task_name, output_key, model_id, model_version):
+    def upload(self, model_file: FileStorage, job_id, task_name, output_key, model_id, model_version, role, party_id):
         storage_key = self.file_key(model_id, model_version, task_name, output_key)
         model_meta = self._upload(model_file=model_file, storage_key=storage_key)
         self.log_meta(model_meta, storage_key, job_id=job_id, task_name=task_name, model_id=model_id,
-                      model_version=model_version, output_key=output_key)
+                      model_version=model_version, output_key=output_key, role=role, party_id=party_id)
 
     def save_as(self, storage_key, dir_path):
         file_path = os.path.join(dir_path, storage_key)
@@ -63,15 +65,15 @@ class IOHandle(object):
             self._delete(storage_key=meta.f_storage_key)
         self.delete_meta(job_id=job_id, role=role, party_id=party_id, task_name=task_name, storage_engine=self.name)
 
-    def log_meta(self, model_meta: Metadata, storage_key, model_id, model_version, job_id, task_name, output_key):
+    def log_meta(self, model_meta: Metadata, storage_key, model_id, model_version, job_id, task_name, output_key, role, party_id):
         model_info = {
             "storage_key": storage_key,
             "storage_engine": self.name,
             "model_id": model_id,
             "model_version": model_version,
             "job_id": job_id,
-            "role": model_meta.model_overview.party.role,
-            "party_id": model_meta.model_overview.party.partyid,
+            "role": role,
+            "party_id": party_id,
             "task_name": task_name,
             "output_key": output_key,
             "meta_data": model_meta.dict()
