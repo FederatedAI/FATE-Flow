@@ -57,3 +57,8 @@ class MLModelSpec(pydantic.BaseModel):
 
     federated: MLModelFederatedSpec
     party: MLModelPartySpec
+
+
+class Metadata(pydantic.BaseModel):
+    metadata: dict
+    model_overview: MLModelSpec

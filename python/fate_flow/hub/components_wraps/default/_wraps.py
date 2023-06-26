@@ -82,7 +82,7 @@ class FlowWraps(WrapsABC):
         # input
         logging.info(self.config.input_artifacts)
         input_artifacts = self._preprocess_input_artifacts()
-        logging.info(input_artifacts)
+        logging.debug(input_artifacts)
 
         # output
         output_artifacts = self._preprocess_output_artifacts()
@@ -101,7 +101,7 @@ class FlowWraps(WrapsABC):
             conf=self.config.conf,
             task_name=self.config.task_name
         )
-        logging.info(config)
+        logging.debug(config)
         return config
 
     def run_component(self, config):
@@ -125,7 +125,7 @@ class FlowWraps(WrapsABC):
             with open(task_result, "r") as f:
                 result = json.load(f)
                 output_meta = ComponentOutputMeta.parse_obj(result)
-                logging.info(output_meta)
+                logging.debug(output_meta)
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.status(code=1, exceptions=p.stdout))
         return output_meta
@@ -164,7 +164,7 @@ class FlowWraps(WrapsABC):
         self.report_status(output_meta.status.code, output_meta.status.exceptions)
 
     def _push_data(self, output_key, output_data: ArtifactOutputSpec):
-        logging.info(f"output data: {output_data}")
+        logging.debug(f"output data: {output_data}")
         namespace = output_data.metadata.namespace
         name = output_data.metadata.name
         if not namespace and not name:
@@ -178,7 +178,8 @@ class FlowWraps(WrapsABC):
             namespace=namespace,
             name=name,
             overview=output_data.metadata.data_overview.dict(),
-            source=output_data.metadata.source.dict()
+            source=output_data.metadata.source.dict(),
+            data_type=output_data.type_name
         )
         logging.info(resp.text)
 
@@ -210,12 +211,11 @@ class FlowWraps(WrapsABC):
                 _io.seek(0)
                 logging.info(output_model.metadata.dict())
                 resp = self.mlmd.save_model(
-                    self.config.model_id,
-                    self.config.model_version,
-                    self.config.party_task_id,
-                    output_key,
-                    output_model.metadata.model_overview,
-                    _io
+                    model_id=self.config.model_id,
+                    model_version=self.config.model_version,
+                    execution_id=self.config.party_task_id,
+                    output_key=output_key,
+                    fp=_io
                 )
                 logging.info(resp.text)
             else:
@@ -282,11 +282,16 @@ class FlowWraps(WrapsABC):
                 datas = getattr(define.outputs, key, None)
                 if datas:
                     for data in datas:
-                        output_artifacts[data.name] = self._output_artifacts(data.type_name, data.is_multi, data.name)
+                        _output_artifacts = []
+                        for data_type in data.types:
+                            _output_artifacts.append(self._output_artifacts(data_type.type_name, data.is_multi, data.name))
+                        # todo: multi-type strategy
+                        output_artifacts[data.name] = _output_artifacts[0]
         return output_artifacts
 
     def _output_artifacts(self, type_name, is_multi, name):
-        output_artifacts = ArtifactOutputApplySpec(uri="")
+        logging.info(type_name)
+        output_artifacts = ArtifactOutputApplySpec(uri="", type_name=type_name)
         if type_name in [DataframeArtifactType.type_name, TableArtifactType.type_name]:
             if self.config.conf.computing.type == ComputingEngine.STANDALONE:
                 os.environ["STANDALONE_DATA_PATH"] = STANDALONE_DATA_HOME
@@ -347,7 +352,7 @@ class FlowWraps(WrapsABC):
                 "output_key": channel.output_artifact_key
             }
         resp = self.mlmd.query_data_meta(**query_field)
-        logging.info(resp.text)
+        logging.debug(resp.text)
         resp_json = resp.json()
         if resp_json.get("code") != 0:
             raise ValueError(f"Get data artifacts failed: {query_field}")
@@ -366,6 +371,7 @@ class FlowWraps(WrapsABC):
                 meta.metadata.metadata = {"schema": schema}
                 meta.uri = data.get("path")
                 meta.metadata.source = data.get("source", {})
+                meta.type_name = data.get("data_type")
                 meta_list.append(meta)
             return meta_list
         else:

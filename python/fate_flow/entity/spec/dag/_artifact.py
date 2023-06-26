@@ -54,6 +54,7 @@ class Metadata(pydantic.BaseModel):
 class ArtifactInputApplySpec(pydantic.BaseModel):
     uri: str
     metadata: Metadata
+    type_name: Optional[str] = None
 
     def get_uri(self) -> "URI":
         return URI.from_string(self.uri)
@@ -62,6 +63,7 @@ class ArtifactInputApplySpec(pydantic.BaseModel):
 class ArtifactOutputApplySpec(pydantic.BaseModel):
     uri: str
     _is_template: Optional[bool] = None
+    type_name: Optional[str] = None
 
     def get_uri(self, index) -> "URI":
         if self.is_template():
@@ -87,6 +89,7 @@ class ArtifactOutputApplySpec(pydantic.BaseModel):
 class ArtifactOutputSpec(pydantic.BaseModel):
     uri: str
     metadata: Metadata
+    type_name: str
 
 
 class URI:

@@ -66,12 +66,16 @@ class RuntimeInputDefinition(BaseModel):
     artifacts: Optional[Dict[str, Dict[str, RuntimeOutputChannelSpec]]]
 
 
-class ComponentIOArtifactTypeSpec(BaseModel):
-    name: str
+class ArtifactTypeSpec(BaseModel):
     type_name: str
     uri_types: List[str]
     path_type: Literal["file", "directory", "distributed"]
+
+
+class ComponentIOArtifactTypeSpec(BaseModel):
+    name: str
     is_multi: bool
+    types: List[ArtifactTypeSpec]
 
 
 class ComponentIOInputsArtifactsTypeSpec(BaseModel):

@@ -30,20 +30,20 @@ class Worker(BaseAPI):
             "execution_id": execution_id,
         })
 
-    def save_model(self, model_id, model_version, execution_id, output_key, meta_data, fp):
+    def save_model(self, model_id, model_version, execution_id, output_key, fp):
         files = {"file": fp}
         return self.client.send_file(
             endpoint="/worker/model/save",
             files=files,
-            params={
+            data={
                 "model_id": model_id,
                 "model_version": model_version,
                 "execution_id": execution_id,
-                "output_key": output_key,
-                "meta_data": meta_data
+                "output_key": output_key
             })
 
-    def save_data_tracking(self, execution_id, output_key, meta_data, uri, namespace, name, overview, source, partitions=None):
+    def save_data_tracking(self, execution_id, output_key, meta_data, uri, namespace, name, overview, source, data_type,
+                           partitions=None):
         return self.client.post(
             endpoint="/worker/data/tracking/save",
             json={
@@ -54,7 +54,8 @@ class Worker(BaseAPI):
                 "namespace": namespace,
                 "name": name,
                 "overview": overview,
-                "source": source
+                "source": source,
+                "data_type": data_type
             })
 
     def query_data_meta(self, job_id=None, role=None, party_id=None, task_name=None, output_key=None, namespace=None,

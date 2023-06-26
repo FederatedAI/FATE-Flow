@@ -41,6 +41,7 @@ class StorageTableMetaModel(DataBaseModel):
     f_count = BigIntegerField(null=True)
     f_part_of_data = JSONField()
     f_source = JSONField()
+    f_data_type = CharField(max_length=20, null=True)
     f_disable = BooleanField(default=False)
     f_description = TextField(default='')
 
