@@ -206,8 +206,9 @@ class FlowWraps(WrapsABC):
                 with tarfile.open(fileobj=_io, mode="x:tar") as tar:
                     for _root, _dir, _files in os.walk(path):
                         for _f in _files:
-                            pathfile = os.path.join(_root, _f)
-                            tar.add(pathfile)
+                            full_path = os.path.join(_root, _f)
+                            rel_path = os.path.relpath(full_path, path)
+                            tar.add(full_path, rel_path)
                 _io.seek(0)
                 logging.info(output_model.metadata.dict())
                 resp = self.mlmd.save_model(
@@ -290,7 +291,6 @@ class FlowWraps(WrapsABC):
         return output_artifacts
 
     def _output_artifacts(self, type_name, is_multi, name):
-        logging.info(type_name)
         output_artifacts = ArtifactOutputApplySpec(uri="", type_name=type_name)
         if type_name in [DataframeArtifactType.type_name, TableArtifactType.type_name]:
             if self.config.conf.computing.type == ComputingEngine.STANDALONE:
@@ -355,7 +355,7 @@ class FlowWraps(WrapsABC):
         logging.debug(resp.text)
         resp_json = resp.json()
         if resp_json.get("code") != 0:
-            raise ValueError(f"Get data artifacts failed: {query_field}")
+            raise ValueError(f"Get data artifacts failed: {query_field}, response: {resp.text}")
         resp_data = resp_json.get("data", [])
         if len(resp_data) == 1:
             data = resp_data[0]
@@ -380,15 +380,14 @@ class FlowWraps(WrapsABC):
     def _intput_model_artifacts(self, channel):
         # model reference conversion
         meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
-        query_field = {}
+        query_field = {
+            "task_name": channel.producer_task,
+            "output_key": channel.output_artifact_key,
+            "role": self.config.role,
+            "party_id": self.config.party_id
+        }
         if isinstance(channel, ModelWarehouseChannelSpec):
             # external model reference -> download to local
-            query_field = {
-                "task_name": channel.producer_task,
-                "output_key": channel.output_artifact_key,
-                "role": self.config.role,
-                "party_id": self.config.party_id
-            }
             if channel.model_id and channel.model_version:
                 query_field.update({
                     "model_id": channel.model_id,
@@ -410,17 +409,26 @@ class FlowWraps(WrapsABC):
         os.makedirs(input_model_base, exist_ok=True)
         _io = io.BytesIO()
         resp = self.mlmd.download_model(**query_field)
+        _write = False
         for chunk in resp.iter_content(1024):
             if chunk:
                 _io.write(chunk)
-        model = tarfile.open(fileobj=_io, mode="x:tar")
-        model_overview = {}
+                _write = True
+
+        if not _write:
+            raise RuntimeError(resp.text)
+
+        _io.seek(0)
+        model = tarfile.open(fileobj=_io)
+
+        model_meta = {}
         count = 0
         input_model_file = ""
+        logging.info(model.getnames())
         for name in model.getnames():
             fp = model.extractfile(name).read()
             if name.endswith("yaml"):
-                model_overview = yaml.safe_load(fp)
+                model_meta = yaml.safe_load(fp)
             else:
                 count += 1
                 input_model_file = os.path.join(input_model_base, name)
@@ -430,7 +438,7 @@ class FlowWraps(WrapsABC):
             meta.uri = f"file://{input_model_base}"
         else:
             meta.uri = f"file://{input_model_file}"
-        meta.metadata.model_overview = model_overview
+        meta.metadata = model_meta
         return meta
 
     def report_status(self, code, error=""):
