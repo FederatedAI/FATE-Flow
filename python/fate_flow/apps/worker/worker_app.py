@@ -12,6 +12,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import json
+
 from flask import request
 from webargs import fields
 
@@ -60,12 +62,11 @@ def query_task_status(execution_id):
 
 
 @manager.route('/model/save', methods=['POST'])
-@API.Input.params(model_id=fields.String(required=True))
-@API.Input.params(model_version=fields.String(required=True))
-@API.Input.params(execution_id=fields.String(required=True))
-@API.Input.params(meta_data=fields.Dict(required=True))
-@API.Input.params(output_key=fields.String(required=True))
-def upload_model(model_id, model_version, execution_id, meta_data, output_key):
+@API.Input.form(model_id=fields.String(required=True))
+@API.Input.form(model_version=fields.String(required=True))
+@API.Input.form(execution_id=fields.String(required=True))
+@API.Input.form(output_key=fields.String(required=True))
+def upload_model(model_id, model_version, execution_id, output_key):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     file = request.files['file']
     PipelinedModel.upload_model(
@@ -74,8 +75,7 @@ def upload_model(model_id, model_version, execution_id, meta_data, output_key):
         task_name=task.f_task_name,
         output_key=output_key,
         model_id=model_id,
-        model_version=model_version,
-        meta_data=meta_data
+        model_version=model_version
     )
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
 
@@ -109,7 +109,7 @@ def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, o
             "task_name": task_name,
             "output_key": output_key
         }
-        data_list = OutputDataTracking.query(data_info)
+        data_list = OutputDataTracking.query(**data_info)
         if not data_list:
             return API.Output.json(code=ReturnCode.Task.NO_FOUND_MODEL_OUTPUT, message="failed")
         for data in data_list:
@@ -131,7 +131,8 @@ def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, o
 @API.Input.json(overview=fields.Dict(required=True))
 @API.Input.json(partitions=fields.Int(required=False))
 @API.Input.json(source=fields.Dict(required=True))
-def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name, overview, source, partitions=None):
+@API.Input.json(data_type=fields.String(required=True))
+def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name, overview, source, data_type, partitions=None):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     data_info = {
         "uri": uri,
@@ -148,7 +149,7 @@ def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name
     OutputDataTracking.create(data_info)
     DataManager.create_data_table(
         namespace=namespace, name=name, uri=uri, partitions=partitions,
-        data_meta=meta_data, source=source,
+        data_meta=meta_data, source=source, data_type=data_type,
         count=overview.get("count", None), part_of_data=overview.get("samples", []),
     )
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")

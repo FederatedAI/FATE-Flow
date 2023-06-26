@@ -45,6 +45,14 @@ class API:
             return parser.use_kwargs(kwargs, location='querystring')
 
         @staticmethod
+        def form(**kwargs):
+            return parser.use_kwargs(kwargs, location='form')
+
+        @staticmethod
+        def files(**kwargs):
+            return parser.use_kwargs(kwargs, location='files')
+
+        @staticmethod
         def json(**kwargs):
             return parser.use_kwargs(kwargs, location='json')
 

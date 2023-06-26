@@ -19,7 +19,7 @@ import tarfile
 from ruamel import yaml
 from werkzeug.datastructures import FileStorage
 
-from fate_flow.entity.spec.flow import MLModelSpec
+from fate_flow.entity.spec.flow import Metadata
 from fate_flow.entity.types import ModelFileFormat
 from fate_flow.errors.job import NoFoundModelOutput
 from fate_flow.manager.model.model_meta import ModelMeta
@@ -40,11 +40,11 @@ class IOHandle(object):
                                       output_key=output_key, role=role, party_id=party_id)
         return self._download(storage_key=model_metas[0].f_storage_key)
 
-    def upload(self, model_file: FileStorage, job_id, task_name, output_key, model_id, model_version, meta_data):
+    def upload(self, model_file: FileStorage, job_id, task_name, output_key, model_id, model_version):
         storage_key = self.file_key(model_id, model_version, task_name, output_key)
         model_meta = self._upload(model_file=model_file, storage_key=storage_key)
         self.log_meta(model_meta, storage_key, job_id=job_id, task_name=task_name, model_id=model_id,
-                      model_version=model_version, output_key=output_key, meta_data=meta_data)
+                      model_version=model_version, output_key=output_key)
 
     def save_as(self, storage_key, dir_path):
         file_path = os.path.join(dir_path, storage_key)
@@ -63,19 +63,18 @@ class IOHandle(object):
             self._delete(storage_key=meta.f_storage_key)
         self.delete_meta(job_id=job_id, role=role, party_id=party_id, task_name=task_name, storage_engine=self.name)
 
-    def log_meta(self, model_meta: MLModelSpec, storage_key, model_id, model_version, job_id, task_name, output_key,
-                 meta_data):
+    def log_meta(self, model_meta: Metadata, storage_key, model_id, model_version, job_id, task_name, output_key):
         model_info = {
             "storage_key": storage_key,
             "storage_engine": self.name,
             "model_id": model_id,
             "model_version": model_version,
             "job_id": job_id,
-            "role": model_meta.party.role,
-            "party_id": model_meta.party.partyid,
+            "role": model_meta.model_overview.party.role,
+            "party_id": model_meta.model_overview.party.partyid,
             "task_name": task_name,
             "output_key": output_key,
-            "meta_data": meta_data
+            "meta_data": model_meta.dict()
         }
         ModelMeta.save(**model_info)
 
@@ -83,8 +82,8 @@ class IOHandle(object):
     def delete_meta(**kwargs):
         return ModelMeta.delete(**kwargs)
 
-    def meta_info(self, model_meta: MLModelSpec):
-        execution_id = model_meta.party.party_task_id
+    def meta_info(self, model_meta: Metadata):
+        execution_id = model_meta.model_overview.party.party_task_id
         task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
         job = JobSaver.query_job(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id)[0]
         _meta_info = {
@@ -127,18 +126,18 @@ class IOHandle(object):
         raise NotImplementedError()
 
     @classmethod
-    def read_meta(cls, _tar: tarfile.TarFile) -> MLModelSpec:
+    def read_meta(cls, _tar: tarfile.TarFile) -> Metadata:
         for name in _tar.getnames():
             if name.endswith("yaml"):
                 fp = _tar.extractfile(name).read()
                 meta = yaml.safe_load(fp)
-                return MLModelSpec.parse_obj(meta)
+                return Metadata.parse_obj(meta)
 
     @classmethod
     def read_model(cls, _tar: tarfile.TarFile):
         model_cache = {}
         model_meta = cls.read_meta(_tar)
-        for model in model_meta.party.models:
+        for model in model_meta.model_overview.party.models:
             if model.file_format == ModelFileFormat.JSON:
                 fp = _tar.extractfile(model.name).read()
                 model_cache[model.name] = json.loads(fp)

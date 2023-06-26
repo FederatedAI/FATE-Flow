@@ -12,10 +12,10 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from ._model import MLModelSpec
+from ._model import MLModelSpec, Metadata
 from ._storage import FileStorageSpec, MysqlStorageSpec, TencentCosStorageSpec
 from ._provider import ProviderSpec, DockerProviderSpec, K8sProviderSpec, LocalProviderSpec
 from ._scheduler import SchedulerInfoSpec
 
 __all__ = ["MLModelSpec", "FileStorageSpec", "MysqlStorageSpec", "TencentCosStorageSpec", "ProviderSpec",
-           "DockerProviderSpec", "K8sProviderSpec", "LocalProviderSpec", "SchedulerInfoSpec"]
+           "DockerProviderSpec", "K8sProviderSpec", "LocalProviderSpec", "SchedulerInfoSpec", "Metadata"]

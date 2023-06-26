@@ -183,6 +183,7 @@ class StorageTableMeta(StorageTableMetaABC):
         self.extend_sid = False
         self.auto_increasing_sid = None
         self.data_meta = None
+        self.data_type = None
         self.count = None
         self.part_of_data = None
         self.description = None
