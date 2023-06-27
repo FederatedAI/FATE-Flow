@@ -31,9 +31,12 @@ page_name = "data"
 @API.Input.json(meta=fields.Dict(required=True))
 @API.Input.json(namespace=fields.String(required=False))
 @API.Input.json(name=fields.String(required=False))
-def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_sid=False):
+@API.Input.json(role=fields.String(required=False))
+@API.Input.json(party_id=fields.String(required=False))
+def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_sid=False, role=None, party_id=None):
     result = ComponentManager.upload(
-        file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
+        file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid,
+        role=role, party_id=party_id
     )
     return API.Output.json(**result)
 
@@ -42,8 +45,10 @@ def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_
 @API.Input.json(data_warehouse=fields.Dict(required=True))
 @API.Input.json(namespace=fields.String(required=True))
 @API.Input.json(name=fields.String(required=True))
-def transformer_data(data_warehouse, namespace, name):
-    result = ComponentManager.dataframe_transformer(data_warehouse, namespace, name)
+@API.Input.json(role=fields.String(required=False))
+@API.Input.json(party_id=fields.String(required=False))
+def transformer_data(data_warehouse, namespace, name, role, party_id):
+    result = ComponentManager.dataframe_transformer(data_warehouse, namespace, name, role, party_id)
     return API.Output.json(**result)
 
 
