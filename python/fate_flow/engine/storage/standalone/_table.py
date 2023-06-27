@@ -41,8 +41,8 @@ class StorageTable(StorageTableBase):
         self._store_type = store_type
         self._session = session
         self._table = self._session.create_table(
-            namespace=self.namespace,
-            name=self.name,
+            namespace=self.address.namespace,
+            name=self.address.name,
             partitions=partitions,
             need_cleanup=self._store_type == StandaloneStoreType.ROLLPAIR_IN_MEMORY,
             error_if_exist=False,
@@ -61,7 +61,7 @@ class StorageTable(StorageTableBase):
         self._table.destroy()
 
     def _save_as(self, address, name, namespace, partitions=None, **kwargs):
-        self._table.save_as(name=name, namespace=namespace)
+        self._table.save_as(name=address.name, namespace=address.namespace)
 
         table = StorageTable(
             session=self._session,
