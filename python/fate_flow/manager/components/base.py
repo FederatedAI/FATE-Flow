@@ -14,14 +14,15 @@
 #  limitations under the License.
 #
 from fate_flow.entity.spec.dag import PartySpec, DAGSchema, DAGSpec, JobConfSpec, TaskConfSpec, TaskSpec, \
-    PartyTaskSpec, PartyTaskRefSpec
+    PartyTaskSpec, PartyTaskRefSpec, RuntimeInputArtifacts
 from fate_flow.manager.service.provider_manager import ProviderManager
 
 
 class Base:
     @staticmethod
-    def local_dag_schema(task_name, component_ref, parameters):
-        provider = ProviderManager.get_fate_flow_provider()
+    def local_dag_schema(task_name, component_ref, parameters, inputs=None, provider=None):
+        if not provider:
+            provider = ProviderManager.get_fate_flow_provider()
         party = PartySpec(role="local", party_id=["0"])
         dag = DAGSchema(
             schema_version=provider.version,
@@ -36,4 +37,6 @@ class Base:
                         tasks={task_name: PartyTaskRefSpec(parameters=parameters)}
                     )}
             ))
+        if inputs:
+            dag.dag.tasks[task_name].inputs = RuntimeInputArtifacts(**inputs)
         return dag
