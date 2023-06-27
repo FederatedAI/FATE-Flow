@@ -173,6 +173,8 @@ class FlowWraps(WrapsABC):
         if not namespace and not name:
             namespace, name = self._default_output_info()
         logging.info(f"save data tracking to {namespace}, {name}")
+        overview = output_data.metadata.data_overview
+        source = output_data.metadata.source
         resp = self.mlmd.save_data_tracking(
             execution_id=self.config.party_task_id,
             output_key=output_key,
@@ -180,8 +182,8 @@ class FlowWraps(WrapsABC):
             uri=output_data.uri,
             namespace=namespace,
             name=name,
-            overview=output_data.metadata.data_overview.dict(),
-            source=output_data.metadata.source.dict(),
+            overview=overview.dict() if overview else {},
+            source=source.dict() if source else {},
             data_type=output_data.type_name
         )
         logging.info(resp.text)
@@ -223,7 +225,7 @@ class FlowWraps(WrapsABC):
                 )
                 logging.info(resp.text)
             else:
-                raise ValueError(f"Model path no found: {_path}")
+                logging.warning(f"Model path no found: {_path}")
         else:
             raise ValueError(f"Engine {engine} is not supported")
 
@@ -242,7 +244,7 @@ class FlowWraps(WrapsABC):
                     )
                     logging.info(resp.text)
             else:
-                raise ValueError(f"Metric path no found: {_path}")
+                logging.warning(f"Metric path no found: {_path}")
         else:
             raise ValueError(f"Engine {engine} is not supported")
 
