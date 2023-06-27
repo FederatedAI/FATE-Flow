@@ -35,7 +35,7 @@ class Base:
                 stage="default",
                 tasks={task_name: TaskSpec(component_ref=component_ref, parties=[party])},
                 party_tasks={
-                    "local_0": PartyTaskSpec(
+                    f"{role}_{party_id}": PartyTaskSpec(
                         parties=[party],
                         tasks={task_name: PartyTaskRefSpec(parameters=parameters)}
                     )}

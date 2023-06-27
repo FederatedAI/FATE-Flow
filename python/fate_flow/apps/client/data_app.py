@@ -55,10 +55,11 @@ def transformer_data(data_warehouse, namespace, name, role=None, party_id=None):
 @manager.route('/download', methods=['GET'])
 @API.Input.params(name=fields.String(required=True))
 @API.Input.params(namespace=fields.String(required=True))
-def download(namespace, name):
+@API.Input.params(header=fields.String(required=False))
+def download(namespace, name, header=None):
     data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
     return DataManager.send_table(
         output_tables_meta={"data": data_table_meta},
         tar_file_name=f'download_data_{namespace}_{name}.tar.gz',
-        need_head=True
+        need_head=header
     )

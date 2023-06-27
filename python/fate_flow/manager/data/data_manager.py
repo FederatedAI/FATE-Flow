@@ -26,8 +26,9 @@ from fate_flow.utils.io_utils import URI
 
 
 class DataManager:
-    @staticmethod
+    @classmethod
     def send_table(
+            cls,
             output_tables_meta,
             tar_file_name="",
             limit=-1,
@@ -35,6 +36,8 @@ class DataManager:
             download_dir="",
 
     ):
+        if not need_head:
+            need_head = True
         output_data_file_list = []
         output_data_meta_file_list = []
         with TemporaryDirectory() as output_tmp_dir:
@@ -52,24 +55,30 @@ class DataManager:
                         output_table = sess.get_table(name=output_table_meta.get_name(),
                                                       namespace=output_table_meta.get_namespace())
                         if output_table:
-                            for k, v in output_table.collect():
-                                # save meta
-                                if output_data_count == 0:
-                                    output_data_file_list.append(output_data_file_path)
-                                    schema = output_table.meta.get_data_meta()
-                                    header = schema.get("header", [])
-                                    output_data_meta_file_list.append(output_data_meta_file_path)
-                                    with open(output_data_meta_file_path, 'w') as f:
-                                        json.dump({'header': header}, f, indent=4)
-                                    if need_head and header and output_table_meta.get_have_head():
-                                        if isinstance(header, list):
-                                            header = output_table_meta.get_id_delimiter().join(header)
-                                        fw.write(f'{header}\n')
-                                delimiter = output_table_meta.get_id_delimiter() if output_table_meta.get_id_delimiter() else ","
-                                fw.write('{}\n'.format(delimiter.join([k, v])))
-                                output_data_count += 1
-                                if output_data_count == limit:
-                                    break
+                            for _, data in output_table.collect():
+                                for v in data:
+                                    # save meta
+                                    if output_data_count == 0:
+                                        output_data_file_list.append(output_data_file_path)
+                                        data_meta = output_table.meta.get_data_meta()
+                                        header = cls.get_data_header(output_table_meta.get_id_delimiter(), data_meta)
+                                        output_data_meta_file_list.append(output_data_meta_file_path)
+                                        with open(output_data_meta_file_path, 'w') as f:
+                                            json.dump({'header': header}, f, indent=4)
+                                        if need_head and header and output_table_meta.get_have_head():
+                                            if isinstance(header, list):
+                                                header = output_table_meta.get_id_delimiter().join(header)
+                                            fw.write(f'{header}\n')
+                                    delimiter = output_table_meta.get_id_delimiter()
+                                    if isinstance(v, str):
+                                        fw.write('{}\n'.format(v))
+                                    elif isinstance(v, list):
+                                        fw.write('{}\n'.format(delimiter.join([str(_v) for _v in v])))
+                                    else:
+                                        raise ValueError(type(v))
+                                    output_data_count += 1
+                                    if output_data_count == limit:
+                                        break
             if download_dir:
                 return
             # tar
@@ -138,3 +147,15 @@ class DataManager:
             display_data = data_table_meta.part_of_data
             return data, display_data
         return {}
+
+    @staticmethod
+    def get_data_header(delimiter, data_meta):
+        header = []
+        if data_meta.get("header"):
+            header = data_meta.get("header")
+            if isinstance(header, str):
+                header = header.split(delimiter)
+        else:
+            for field in data_meta.get("fields", []):
+                header.append(field.get("name"))
+        return header
