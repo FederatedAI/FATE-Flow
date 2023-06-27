@@ -20,10 +20,13 @@ from fate_flow.manager.service.provider_manager import ProviderManager
 
 class Base:
     @staticmethod
-    def local_dag_schema(task_name, component_ref, parameters, inputs=None, provider=None):
+    def local_dag_schema(task_name, component_ref, parameters, inputs=None, provider=None, role=None, party_id=None):
         if not provider:
             provider = ProviderManager.get_fate_flow_provider()
-        party = PartySpec(role="local", party_id=["0"])
+        if not role or not party_id:
+            role = "local"
+            party_id = "0"
+        party = PartySpec(role=role, party_id=[party_id])
         dag = DAGSchema(
             schema_version=provider.version,
             dag=DAGSpec(
