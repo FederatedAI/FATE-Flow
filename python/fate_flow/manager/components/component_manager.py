@@ -19,12 +19,13 @@ from fate_flow.controller.job_controller import JobController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.types import EngineType
 from fate_flow.manager.components.base import Base
+from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.system_settings import ENGINES
 
 
-class UploadManager(Base):
+class ComponentManager(Base):
     @classmethod
-    def upload_file(cls, **kwargs):
+    def upload(cls, **kwargs):
         name = kwargs.get("name")
         namespace = kwargs.get("namespace")
         if not name or not namespace:
@@ -37,6 +38,21 @@ class UploadManager(Base):
         })
 
         dag_schema = cls.local_dag_schema("upload_0", "upload", parameters=kwargs)
+        result = JobController.request_create_job(dag_schema.dict())
+        if result.get("code") == ReturnCode.Base.SUCCESS:
+            result["data"] = {"name": name, "namespace": namespace}
+        return result
+
+    @classmethod
+    def dataframe_transformer(cls, data_warehouse, namespace, name):
+        provider = ProviderManager.get_default_fate_provider()
+        dag_schema = cls.local_dag_schema(
+            task_name="transformer_0",
+            component_ref="dataframe_transformer",
+            parameters={"namespace": namespace, "name": name},
+            inputs={"data": {"table": {"data_warehouse": data_warehouse}}},
+            provider=provider
+        )
         result = JobController.request_create_job(dag_schema.dict())
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
