@@ -90,7 +90,9 @@ class LocalEngine(object):
                 "component",
                 "execute",
                 "--env-name",
-                "FATE_TASK_CONFIG"
+                "FATE_TASK_CONFIG",
+                "--execution-final-meta-path",
+                output_path
             ]
         else:
             raise ValueError(f"load provider {provider_name} failed")

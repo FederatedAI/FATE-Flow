@@ -133,6 +133,9 @@ class FlowWraps(WrapsABC):
     def push_output(self, output_meta: ComponentOutputMeta):
         if self.task_end_with_success(output_meta.status.code):
             # push output data to server
+            if not output_meta.io_meta:
+                logging.info("no io meta, pass push")
+                return
             for key, datas in output_meta.io_meta.outputs.data.items():
                 if isinstance(datas, list):
                     for data in datas:
@@ -161,7 +164,7 @@ class FlowWraps(WrapsABC):
                 else:
                     output_metric = ArtifactOutputSpec(**metrics)
                     self._push_metric(key, output_metric)
-        self.report_status(output_meta.status.code, output_meta.status.exceptions)
+        # self.report_status(output_meta.status.code, output_meta.status.exceptions)
 
     def _push_data(self, output_key, output_data: ArtifactOutputSpec):
         logging.debug(f"output data: {output_data}")
