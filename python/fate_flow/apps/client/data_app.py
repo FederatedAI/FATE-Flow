@@ -47,7 +47,7 @@ def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_
 @API.Input.json(name=fields.String(required=True))
 @API.Input.json(role=fields.String(required=False))
 @API.Input.json(party_id=fields.String(required=False))
-def transformer_data(data_warehouse, namespace, name, role, party_id):
+def transformer_data(data_warehouse, namespace, name, role=None, party_id=None):
     result = ComponentManager.dataframe_transformer(data_warehouse, namespace, name, role, party_id)
     return API.Output.json(**result)
 
