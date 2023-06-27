@@ -25,33 +25,46 @@ from fate_flow.runtime.system_settings import ENGINES
 
 class ComponentManager(Base):
     @classmethod
-    def upload(cls, **kwargs):
-        name = kwargs.get("name")
-        namespace = kwargs.get("namespace")
+    def upload(cls, file, head, partitions, meta, namespace, name, extend_sid, role, party_id):
+        parameters = {
+            "file": file,
+            "head": head,
+            "partitions": partitions,
+            "meta": meta,
+            "extend_sid": extend_sid
+        }
         if not name or not namespace:
             name = str(uuid.uuid1())
             namespace = "upload"
-        kwargs.update({
+        parameters.update({
             "storage_engine": ENGINES.get(EngineType.STORAGE),
             "name": name,
             "namespace": namespace
         })
 
-        dag_schema = cls.local_dag_schema("upload_0", "upload", parameters=kwargs)
+        dag_schema = cls.local_dag_schema(
+            task_name="upload_0",
+            component_ref="upload",
+            parameters=parameters,
+            role=role,
+            party_id=party_id
+        )
         result = JobController.request_create_job(dag_schema.dict())
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
         return result
 
     @classmethod
-    def dataframe_transformer(cls, data_warehouse, namespace, name):
+    def dataframe_transformer(cls, data_warehouse, namespace, name, role, party_id):
         provider = ProviderManager.get_default_fate_provider()
         dag_schema = cls.local_dag_schema(
             task_name="transformer_0",
             component_ref="dataframe_transformer",
             parameters={"namespace": namespace, "name": name},
             inputs={"data": {"table": {"data_warehouse": data_warehouse}}},
-            provider=provider
+            provider=provider,
+            role=role,
+            party_id=party_id
         )
         result = JobController.request_create_job(dag_schema.dict())
         if result.get("code") == ReturnCode.Base.SUCCESS:
