@@ -13,10 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import operator
+from typing import List
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Metric
-from fate_flow.entity.types import MetricData
+from fate_flow.entity.spec.dag import MetricData
 from fate_flow.utils import db_utils
 from fate_flow.utils.log_utils import schedule_logger
 
@@ -31,10 +32,9 @@ class OutputMetric:
         self.task_id = task_id
         self.task_version = task_version
 
-    def save_output_metrics(self, data, incomplete):
+    def save_output_metrics(self, data):
         return self._insert_metrics_into_db(
-            self.job_id, self.role, self.party_id, self.task_id, self.task_version,  self.task_name, MetricData(**data),
-            incomplete
+            self.job_id, self.role, self.party_id, self.task_id, self.task_version,  self.task_name, data
         )
 
     def save_as(self, job_id, role, party_id, task_name, task_id, task_version):
@@ -46,34 +46,29 @@ class OutputMetric:
             )
 
     @DB.connection_context()
-    def _insert_metrics_into_db(self, job_id, role, party_id, task_id, task_version, task_name, data: MetricData, incomplete: bool):
-        try:
-            model_class = self.get_model_class(job_id)
-            if not model_class.table_exists():
-                model_class.create_table()
-            tracking_metric = model_class()
-            tracking_metric.f_job_id = job_id
-            tracking_metric.f_task_id = task_id
-            tracking_metric.f_task_version = task_version
-            tracking_metric.f_role = role
-            tracking_metric.f_party_id = party_id
-            tracking_metric.f_task_name = task_name
+    def _insert_metrics_into_db(self, job_id, role, party_id, task_id, task_version, task_name, data_list):
+        model_class = self.get_model_class(job_id)
+        if not model_class.table_exists():
+            model_class.create_table()
+        metric_list = [{
+            "f_job_id": job_id,
+            "f_task_id": task_id,
+            "f_task_version": task_version,
+            "f_role": role,
+            "f_party_id": party_id,
+            "f_task_name": task_name,
+            "f_namespace": data.get("namespace", ""),
+            "f_name": data.get("name"),
+            "f_type": data.get("type"),
+            "f_groups": data.get("groups"),
+            "f_metadata": data.get("metadata"),
+            "f_data": data.get("data")
 
-            tracking_metric.f_namespace = data.namespace
-            tracking_metric.f_name = data.name
-            tracking_metric.f_type = data.type
-            tracking_metric.f_groups = data.groups
-            tracking_metric.f_metadata = data.metadata
-            tracking_metric.f_data = data.data
-            tracking_metric.f_incomplete = incomplete
-            tracking_metric.save()
-        except Exception as e:
-            schedule_logger(job_id).exception(
-                "An exception where inserted metric {} of metric namespace: {} to database:\n{}".format(
-                    data.name,
-                    data.namespace,
-                    e
-                ))
+        } for data in data_list]
+
+        with DB.atomic():
+            for i in range(0, len(metric_list), 100):
+                model_class.insert_many(metric_list[i: i+100]).execute()
 
     @DB.connection_context()
     def read_metrics(self, filters_args: dict = None):
@@ -99,8 +94,7 @@ class OutputMetric:
                 tracking_metric_model.f_type,
                 tracking_metric_model.f_groups,
                 tracking_metric_model.f_data,
-                tracking_metric_model.f_metadata,
-                tracking_metric_model.f_incomplete
+                tracking_metric_model.f_metadata
             ).where(*filters)
             return [metric.to_human_model_dict() for metric in metrics]
         except Exception as e:
@@ -115,8 +109,7 @@ class OutputMetric:
                 tracking_metric_model.f_namespace,
                 tracking_metric_model.f_name,
                 tracking_metric_model.f_type,
-                tracking_metric_model.f_groups,
-                tracking_metric_model.f_incomplete
+                tracking_metric_model.f_groups
             ).where(
                 tracking_metric_model.f_job_id == self.job_id,
                 tracking_metric_model.f_role == self.role,

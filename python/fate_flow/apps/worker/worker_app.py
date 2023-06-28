@@ -159,10 +159,9 @@ def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name
 
 @manager.route('/metric/save', methods=["POST"])
 @API.Input.json(execution_id=fields.String(required=True))
-@API.Input.json(data=fields.Dict(required=True))
-@API.Input.json(incomplete=fields.Bool(required=True))
-def save_metric(execution_id, data, incomplete):
+@API.Input.json(data=fields.List(fields.Dict()))
+def save_metric(execution_id, data):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     OutputMetric(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id, task_name=task.f_task_name,
-                 task_id=task.f_task_id, task_version=task.f_task_version).save_output_metrics(data, incomplete)
+                 task_id=task.f_task_id, task_version=task.f_task_version).save_output_metrics(data)
     return API.Output.json()

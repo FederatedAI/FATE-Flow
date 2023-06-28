@@ -187,11 +187,10 @@ class Metric(DataBaseModel):
     f_task_version = BigIntegerField(null=True)
     f_namespace = CharField(max_length=30, index=True, null=True)
     f_name = CharField(max_length=30, index=True)
-    f_type = CharField()
-    f_groups = JSONField()
+    f_type = CharField(max_length=30, index=True)
+    f_groups = CharField(max_length=30, index=True)
     f_metadata = JSONField()
     f_data = JSONField()
-    f_incomplete = BooleanField()
 
 
 class ProviderInfo(DataBaseModel):

@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.spec.dag._output import ComponentOutputMeta
+from fate_flow.entity.spec.dag._output import ComponentOutputMeta, MetricData
 from fate_flow.entity.spec.dag._party import PartySpec
 from fate_flow.entity.spec.dag._job import DAGSchema, DAGSpec, JobConfSpec, TaskConfSpec, TaskSpec, PartyTaskSpec, \
     InheritConfSpec, PartyTaskRefSpec
