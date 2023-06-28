@@ -43,6 +43,7 @@ class FlowWraps(WrapsABC):
         self.config = config
         self.mlmd = self.load_mlmd(config.mlmd)
         self.backend = build_backend(backend_name=self.config.conf.computing.type)
+        self._component_define = None
 
     @property
     def task_info(self):
@@ -82,13 +83,16 @@ class FlowWraps(WrapsABC):
 
     def preprocess(self):
         # input
+        logging.info("start generating input artifacts")
         logging.info(self.config.input_artifacts)
         input_artifacts = self._preprocess_input_artifacts()
+        logging.info("success")
         logging.debug(input_artifacts)
 
         # output
+        logging.info("start generating output artifacts")
         output_artifacts = self._preprocess_output_artifacts()
-        logging.info(output_artifacts)
+        logging.info(f"output_artifacts: {output_artifacts}")
         config = TaskConfigSpec(
             job_id=self.config.job_id,
             task_id=self.config.task_id,
@@ -267,11 +271,11 @@ class FlowWraps(WrapsABC):
                 if isinstance(_channels, list):
                     input_artifacts[_k] = []
                     for _channel in _channels:
-                        _artifacts = self._intput_data_artifacts(_channel)
+                        _artifacts = self._intput_data_artifacts(_k, _channel)
                         if _artifacts:
                             input_artifacts[_k].append(_artifacts)
                 else:
-                    input_artifacts[_k] = self._intput_data_artifacts(_channels)
+                    input_artifacts[_k] = self._intput_data_artifacts(_k, _channels)
 
         if self.config.input_artifacts.model:
             for _k, _channels in self.config.input_artifacts.model.items():
@@ -279,9 +283,9 @@ class FlowWraps(WrapsABC):
                 if isinstance(_channels, list):
                     input_artifacts[_k] = []
                     for _channel in _channels:
-                        input_artifacts[_k].append(self._intput_model_artifacts(_channel))
+                        input_artifacts[_k].append(self._intput_model_artifacts(_k, _channel))
                 else:
-                    input_artifacts[_k] = self._intput_model_artifacts(_channels)
+                    input_artifacts[_k] = self._intput_model_artifacts(_k, _channels)
                 if not input_artifacts[_k]:
                     input_artifacts.pop(_k)
         return input_artifacts
@@ -331,24 +335,28 @@ class FlowWraps(WrapsABC):
         return output_artifacts
 
     @property
-    def component_define(self):
+    def component_define(self) -> ComponentIOArtifactsTypeSpec:
+        if not self._component_define:
+            self.set_component_define()
+        return self._component_define
+
+    def set_component_define(self):
         define = self.backend.get_component_define(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
             stage=self.config.stage
         )
         if define:
-            return ComponentIOArtifactsTypeSpec(**define)
-        else:
-            return None
+            self._component_define = ComponentIOArtifactsTypeSpec(**define)
 
-    def _intput_data_artifacts(self, channel):
+    def _intput_data_artifacts(self, key, channel):
         if self.config.role not in channel.roles:
+            logging.info(f"role {self.config.role} does not require intput data artifacts")
             return
         # data reference conversion
         meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
         query_field = {}
-        logging.info(channel)
+        logging.info(f"get key[{key}] channel[{channel}]")
         if isinstance(channel, DataWarehouseChannelSpec):
             # external data reference -> data meta
             if channel.name and channel.namespace:
@@ -374,12 +382,19 @@ class FlowWraps(WrapsABC):
                 "task_name": channel.producer_task,
                 "output_key": channel.output_artifact_key
             }
+        logging.info(f"query data: [{query_field}]")
         resp = self.mlmd.query_data_meta(**query_field)
         logging.debug(resp.text)
         resp_json = resp.json()
         if resp_json.get("code") != 0:
+            # Judging whether to optional
+            for input_data_define in self.component_define.inputs.data:
+                if input_data_define.name == key and input_data_define.optional:
+                    logging.info(f"component define input data name {key} optional {input_data_define.optional}")
+                    return
             raise ValueError(f"Get data artifacts failed: {query_field}, response: {resp.text}")
         resp_data = resp_json.get("data", [])
+        logging.info(f"success")
         if len(resp_data) == 1:
             data = resp_data[0]
             schema = data.get("meta", {})
@@ -400,8 +415,9 @@ class FlowWraps(WrapsABC):
         else:
             raise RuntimeError(resp_data)
 
-    def _intput_model_artifacts(self, channel):
+    def _intput_model_artifacts(self, key, channel):
         if self.config.role not in channel.roles:
+            logging.info(f"role {self.config.role} does not require intput model artifacts")
             return
         # model reference conversion
         meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
@@ -411,6 +427,7 @@ class FlowWraps(WrapsABC):
             "role": self.config.role,
             "party_id": self.config.party_id
         }
+        logging.info(f"get key[{key}] channel[{channel}]")
         if isinstance(channel, ModelWarehouseChannelSpec):
             # external model reference -> download to local
             if channel.model_id and channel.model_version:
@@ -429,25 +446,26 @@ class FlowWraps(WrapsABC):
                 "model_version": self.config.model_version
             })
 
+        logging.info(f"query model: [{query_field}]")
+
         # this job output data reference -> data meta
         input_model_base = os.path.join(self.task_input_dir, "model")
         os.makedirs(input_model_base, exist_ok=True)
         _io = io.BytesIO()
         resp = self.mlmd.download_model(**query_field)
-        _write = False
-        for chunk in resp.iter_content(1024):
-            if chunk:
-                _io.write(chunk)
-                _write = True
-
-        if not _write:
-            logging.info(resp.text)
+        try:
+            for chunk in resp.iter_content(1024):
+                if chunk:
+                    _io.write(chunk)
+            _io.seek(0)
+            model = tarfile.open(fileobj=_io)
+        except Exception as e:
+            for input_data_define in self.component_define.inputs.model:
+                if input_data_define.name == key and input_data_define.optional:
+                    logging.info(f"component define input model name {key} optional {input_data_define.optional}")
+                    return
             raise RuntimeError(f"Download model failed: {query_field}")
-
-        _io.seek(0)
-        model = tarfile.open(fileobj=_io)
-
-        logging.info(model.getnames())
+        logging.info(f"get model channel success, model names: {model.getnames()}")
         metas = []
         file_names = model.getnames()
         for name in file_names:
