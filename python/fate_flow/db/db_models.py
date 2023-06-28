@@ -227,6 +227,7 @@ class PipelineModelMeta(DataBaseModel):
     f_task_name = CharField(max_length=50, index=True)
     f_storage_key = CharField(max_length=100)
     f_output_key = CharField(max_length=20)
+    f_type_name = CharField(max_length=20)
     f_meta_data = JSONField(null=True)
     f_storage_engine = CharField(max_length=30, null=True, index=True)
 

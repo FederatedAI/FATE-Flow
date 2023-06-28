@@ -30,7 +30,7 @@ class Worker(BaseAPI):
             "execution_id": execution_id,
         })
 
-    def save_model(self, model_id, model_version, execution_id, output_key, fp):
+    def save_model(self, model_id, model_version, execution_id, output_key, type_name, fp):
         files = {"file": fp}
         return self.client.send_file(
             endpoint="/worker/model/save",
@@ -39,7 +39,8 @@ class Worker(BaseAPI):
                 "model_id": model_id,
                 "model_version": model_version,
                 "execution_id": execution_id,
-                "output_key": output_key
+                "output_key": output_key,
+                "type_name": type_name
             })
 
     def save_data_tracking(self, execution_id, output_key, meta_data, uri, namespace, name, overview, source, data_type,

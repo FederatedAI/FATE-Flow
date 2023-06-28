@@ -29,7 +29,8 @@ from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpe
     TaskConfigSpec, ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
     ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta
 
-from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, TaskStatus, ComputingEngine
+from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, TaskStatus, ComputingEngine, \
+    JsonModelArtifactType
 
 from fate_flow.hub.components_wraps import WrapsABC
 from fate_flow.manager.data.data_manager import DataManager
@@ -205,9 +206,11 @@ class FlowWraps(WrapsABC):
                     with open(meta_path, "w") as fp:
                         output_model.metadata.model_key = model_key
                         output_model.metadata.index = output_model.metadata.source.output_index
+                        output_model.metadata.type_name = output_model.type_name
                         yaml.dump(output_model.metadata.dict(), fp)
                     # tar and send to server
                     tar_io = self._tar_model(tar_io=tar_io, path=path)
+                    type_name = output_model.type_name
                 else:
                     logging.warning(f"Model path no found: {_path}")
             else:
@@ -218,7 +221,8 @@ class FlowWraps(WrapsABC):
             model_version=self.config.model_version,
             execution_id=self.config.party_task_id,
             output_key=output_key,
-            fp=tar_io
+            fp=tar_io,
+            type_name=type_name
         )
         logging.info(resp.text)
 
@@ -437,15 +441,20 @@ class FlowWraps(WrapsABC):
 
         logging.info(model.getnames())
         metas = []
-        for name in model.getnames():
+        file_names = model.getnames()
+        for name in file_names:
             if name.endswith("yaml"):
                 fp = model.extractfile(name).read()
                 model_meta = yaml.safe_load(fp)
-                model_key = model_meta.get("model_key")
-                model_fp = model.extractfile(model_key).read()
+                model_meta = Metadata.parse_obj(model_meta)
+                model_key = model_meta.model_key
                 input_model_file = os.path.join(input_model_base, model_key)
-                with open(input_model_file, "wb") as fw:
-                    fw.write(model_fp)
+                if model_meta.type_name not in [JsonModelArtifactType.type_name]:
+                    self._write_model_dir(model, input_model_file)
+                else:
+                    model_fp = model.extractfile(model_key).read()
+                    with open(input_model_file, "wb") as fw:
+                        fw.write(model_fp)
                 meta.uri = f"file://{input_model_file}"
                 meta.metadata = model_meta
                 metas.append(meta)
@@ -454,6 +463,16 @@ class FlowWraps(WrapsABC):
         if len(metas) == 1:
             return metas[0]
         return metas
+
+    @staticmethod
+    def _write_model_dir(model, path):
+        for name in model.getnames():
+            if not name.endswith("yaml"):
+                model_fp = model.extractfile(name).read()
+                input_model_file = os.path.join(path, name)
+                os.makedirs(path, exist_ok=True)
+                with open(input_model_file, "wb") as fw:
+                    fw.write(model_fp)
 
     def report_status(self, code, error=""):
         if self.task_end_with_success(code):
