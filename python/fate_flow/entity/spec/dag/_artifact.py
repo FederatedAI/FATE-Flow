@@ -46,6 +46,8 @@ class Metadata(pydantic.BaseModel):
     model_overview: Optional[dict] = {}
     data_overview: Optional[DataOverview]
     source: Optional[ArtifactSource] = None
+    model_key: Optional[str]
+    index: Optional[Union[int, None]] = None
 
     class Config:
         extra = "forbid"
