@@ -267,7 +267,9 @@ class FlowWraps(WrapsABC):
                 if isinstance(_channels, list):
                     input_artifacts[_k] = []
                     for _channel in _channels:
-                        input_artifacts[_k].append(self._intput_data_artifacts(_channel))
+                        _artifacts = self._intput_data_artifacts(_channel)
+                        if _artifacts:
+                            input_artifacts[_k].append(_artifacts)
                 else:
                     input_artifacts[_k] = self._intput_data_artifacts(_channels)
 
@@ -280,6 +282,8 @@ class FlowWraps(WrapsABC):
                         input_artifacts[_k].append(self._intput_model_artifacts(_channel))
                 else:
                     input_artifacts[_k] = self._intput_model_artifacts(_channels)
+                if not input_artifacts[_k]:
+                    input_artifacts.pop(_k)
         return input_artifacts
 
     def _preprocess_output_artifacts(self):
@@ -339,6 +343,8 @@ class FlowWraps(WrapsABC):
             return None
 
     def _intput_data_artifacts(self, channel):
+        if self.config.role not in channel.roles:
+            return
         # data reference conversion
         meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
         query_field = {}
@@ -395,6 +401,8 @@ class FlowWraps(WrapsABC):
             raise RuntimeError(resp_data)
 
     def _intput_model_artifacts(self, channel):
+        if self.config.role not in channel.roles:
+            return
         # model reference conversion
         meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
         query_field = {
