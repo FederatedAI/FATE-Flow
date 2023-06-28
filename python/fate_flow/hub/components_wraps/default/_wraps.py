@@ -105,6 +105,7 @@ class FlowWraps(WrapsABC):
         return config
 
     def run_component(self, config):
+        self._set_env()
         task_parameters = config.dict()
         logging.info("start run task")
         os.makedirs(self.task_input_dir, exist_ok=True)
@@ -301,7 +302,6 @@ class FlowWraps(WrapsABC):
             os.environ["STANDALONE_DATA_PATH"] = STANDALONE_DATA_HOME
 
     def _output_artifacts(self, type_name, is_multi, name):
-        self._set_env()
         output_artifacts = ArtifactOutputApplySpec(uri="", type_name=type_name)
         if type_name in [DataframeArtifactType.type_name, TableArtifactType.type_name]:
             if self.config.conf.computing.type == ComputingEngine.STANDALONE:
