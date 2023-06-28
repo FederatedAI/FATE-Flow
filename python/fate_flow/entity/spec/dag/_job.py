@@ -32,7 +32,7 @@ class TaskSpec(BaseModel):
 
 
 class PartyTaskRefSpec(BaseModel):
-    parameters: Dict[Any, Any]
+    parameters: Optional[Dict[Any, Any]]
     inputs: Optional[SourceInputArtifacts]
     conf: Optional[Dict]
 
