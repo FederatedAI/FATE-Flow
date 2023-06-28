@@ -12,10 +12,19 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from typing import Literal, Union, List, Dict
+from typing import Literal, Union, List, Dict, Optional
 
 import pydantic
 from pydantic import typing
+
+
+class MetricData(pydantic.BaseModel):
+    namespace: Optional[str] = None
+    name: str
+    type: str
+    groups: str
+    metadata: Dict[str, str] = {}
+    data: Union[List, Dict]
 
 
 class DirectoryDataPool(pydantic.BaseModel):

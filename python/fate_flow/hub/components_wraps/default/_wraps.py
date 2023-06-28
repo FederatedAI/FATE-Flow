@@ -295,11 +295,16 @@ class FlowWraps(WrapsABC):
                         output_artifacts[data.name] = _output_artifacts[0]
         return output_artifacts
 
+    def _set_env(self):
+        if self.config.conf.computing.type == ComputingEngine.STANDALONE or \
+                self.config.conf.federation.type == ComputingEngine.STANDALONE:
+            os.environ["STANDALONE_DATA_PATH"] = STANDALONE_DATA_HOME
+
     def _output_artifacts(self, type_name, is_multi, name):
+        self._set_env()
         output_artifacts = ArtifactOutputApplySpec(uri="", type_name=type_name)
         if type_name in [DataframeArtifactType.type_name, TableArtifactType.type_name]:
             if self.config.conf.computing.type == ComputingEngine.STANDALONE:
-                os.environ["STANDALONE_DATA_PATH"] = STANDALONE_DATA_HOME
                 uri = f"{self.config.conf.computing.type}://{STANDALONE_DATA_HOME}/{self.config.task_id}/{uuid.uuid1().hex}"
             else:
                 uri = f"{self.config.conf.computing.type}:///{self.config.task_id}/{uuid.uuid1().hex}"
