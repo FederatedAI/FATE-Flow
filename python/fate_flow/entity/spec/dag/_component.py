@@ -75,6 +75,7 @@ class ArtifactTypeSpec(BaseModel):
 class ComponentIOArtifactTypeSpec(BaseModel):
     name: str
     is_multi: bool
+    optional: bool
     types: List[ArtifactTypeSpec]
 
 
