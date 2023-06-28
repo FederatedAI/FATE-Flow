@@ -34,18 +34,21 @@ class IOHandle(object):
         return self._name
 
     @staticmethod
-    def file_key(model_id, model_version, dir_name, file_name):
-        return os.path.join(model_id, model_version, dir_name, file_name)
+    def file_key(model_id, model_version, role, party_id, dir_name, file_name):
+        return os.path.join(model_id, model_version, role, party_id, dir_name, file_name)
 
     def download(self, model_id, model_version, role, party_id, task_name, output_key):
         model_metas = ModelMeta.query(model_id=model_id, model_version=model_version, task_name=task_name,
                                       output_key=output_key, role=role, party_id=party_id)
+        if not model_metas:
+            raise ValueError("No found model")
         return self._download(storage_key=model_metas[0].f_storage_key)
 
-    def upload(self, model_file: FileStorage, job_id, task_name, output_key, model_id, model_version, role, party_id):
-        storage_key = self.file_key(model_id, model_version, task_name, output_key)
+    def upload(self, model_file: FileStorage, job_id, task_name, output_key, model_id, model_version, role,
+               party_id, type_name):
+        storage_key = self.file_key(model_id, model_version, role, party_id, task_name, output_key)
         metas = self._upload(model_file=model_file, storage_key=storage_key)
-        self.log_meta(metas,  storage_key, job_id=job_id, task_name=task_name, model_id=model_id,
+        self.log_meta(metas,  storage_key, job_id=job_id, task_name=task_name, model_id=model_id, type_name=type_name,
                       model_version=model_version, output_key=output_key, role=role, party_id=party_id)
 
     def save_as(self, storage_key, dir_path):
@@ -66,7 +69,7 @@ class IOHandle(object):
         self.delete_meta(job_id=job_id, role=role, party_id=party_id, task_name=task_name, storage_engine=self.name)
 
     def log_meta(self, model_metas, storage_key, model_id, model_version, job_id, task_name,
-                 output_key, role, party_id):
+                 output_key, role, party_id, type_name):
         model_info = {
             "storage_key": storage_key,
             "storage_engine": self.name,
@@ -77,7 +80,8 @@ class IOHandle(object):
             "party_id": party_id,
             "task_name": task_name,
             "output_key": output_key,
-            "meta_data": model_metas
+            "meta_data": model_metas,
+            "type_name": type_name
         }
         ModelMeta.save(**model_info)
 

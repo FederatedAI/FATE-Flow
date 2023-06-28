@@ -66,7 +66,8 @@ def query_task_status(execution_id):
 @API.Input.form(model_version=fields.String(required=True))
 @API.Input.form(execution_id=fields.String(required=True))
 @API.Input.form(output_key=fields.String(required=True))
-def upload_model(model_id, model_version, execution_id, output_key):
+@API.Input.form(type_name=fields.String(required=True))
+def upload_model(model_id, model_version, execution_id, output_key, type_name):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     file = request.files['file']
     PipelinedModel.upload_model(
@@ -77,7 +78,8 @@ def upload_model(model_id, model_version, execution_id, output_key):
         party_id=task.f_party_id,
         output_key=output_key,
         model_id=model_id,
-        model_version=model_version
+        model_version=model_version,
+        type_name=type_name
     )
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
 

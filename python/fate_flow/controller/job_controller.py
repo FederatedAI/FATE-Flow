@@ -331,8 +331,7 @@ class JobInheritance:
         target_task_list = [task for task in task_list if task.f_task_name in inheritance.task_list]
         cls.load_logs(job, inheritance)
         cls.load_output_tracking(job.f_job_id, source_task_list, target_task_list)
-        cls.load_data_meta()
-        cls.load_model_meta(job.f_job_id, source_task_list, target_task_list)
+        cls.load_model_meta(job.f_job_id, source_task_list, target_task_list, job.f_model_id, job.f_model_version)
         cls.load_metric(job.f_job_id, source_task_list, target_task_list)
         cls.load_status(job.f_job_id, source_task_list, target_task_list)
 
@@ -374,12 +373,7 @@ class JobInheritance:
         schedule_logger(job_id).info("load output tracking success")
 
     @classmethod
-    def load_data_meta(cls):
-        # todo:
-        pass
-
-    @classmethod
-    def load_model_meta(cls, job_id, source_task_list, target_task_list):
+    def load_model_meta(cls, job_id, source_task_list, target_task_list, model_id, model_version):
         def callback(target_task, source_task):
             _model_metas = ModelMeta.query(
                 job_id=source_task.f_job_id,
@@ -394,7 +388,9 @@ class JobInheritance:
                     "task_id": target_task.f_task_id,
                     "task_version": target_task.f_task_version,
                     "role": target_task.f_role,
-                    "party_id": target_task.f_party_id
+                    "party_id": target_task.f_party_id,
+                    "model_id": model_id,
+                    "model_version": model_version
                 })
                 ModelMeta.save(**_md)
         schedule_logger(job_id).info("start load model meta")
