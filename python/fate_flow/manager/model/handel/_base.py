@@ -12,9 +12,11 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import collections
 import json
 import os.path
 import tarfile
+from typing import Union, List
 
 from ruamel import yaml
 from werkzeug.datastructures import FileStorage
@@ -36,16 +38,14 @@ class IOHandle(object):
         return os.path.join(model_id, model_version, dir_name, file_name)
 
     def download(self, model_id, model_version, role, party_id, task_name, output_key):
-        from fate_flow.utils.schedule_utils import schedule_logger
-        schedule_logger('wzh').info(f"model_id={model_id}, model_version={model_version}, task_name={task_name}, output_key={output_key}, role={role}, party_id={party_id}")
         model_metas = ModelMeta.query(model_id=model_id, model_version=model_version, task_name=task_name,
                                       output_key=output_key, role=role, party_id=party_id)
         return self._download(storage_key=model_metas[0].f_storage_key)
 
     def upload(self, model_file: FileStorage, job_id, task_name, output_key, model_id, model_version, role, party_id):
         storage_key = self.file_key(model_id, model_version, task_name, output_key)
-        model_meta = self._upload(model_file=model_file, storage_key=storage_key)
-        self.log_meta(model_meta, storage_key, job_id=job_id, task_name=task_name, model_id=model_id,
+        metas = self._upload(model_file=model_file, storage_key=storage_key)
+        self.log_meta(metas,  storage_key, job_id=job_id, task_name=task_name, model_id=model_id,
                       model_version=model_version, output_key=output_key, role=role, party_id=party_id)
 
     def save_as(self, storage_key, dir_path):
@@ -65,7 +65,8 @@ class IOHandle(object):
             self._delete(storage_key=meta.f_storage_key)
         self.delete_meta(job_id=job_id, role=role, party_id=party_id, task_name=task_name, storage_engine=self.name)
 
-    def log_meta(self, model_meta: Metadata, storage_key, model_id, model_version, job_id, task_name, output_key, role, party_id):
+    def log_meta(self, model_metas, storage_key, model_id, model_version, job_id, task_name,
+                 output_key, role, party_id):
         model_info = {
             "storage_key": storage_key,
             "storage_engine": self.name,
@@ -76,7 +77,7 @@ class IOHandle(object):
             "party_id": party_id,
             "task_name": task_name,
             "output_key": output_key,
-            "meta_data": model_meta.dict()
+            "meta_data": model_metas
         }
         ModelMeta.save(**model_info)
 
@@ -100,10 +101,13 @@ class IOHandle(object):
         return _meta_info
 
     def read(self, job_id, role, party_id, task_name):
-        model_metas = ModelMeta.query(job_id=job_id, role=role, party_id=party_id, task_name=task_name, reverse=True)
-        if not model_metas:
+        models = ModelMeta.query(job_id=job_id, role=role, party_id=party_id, task_name=task_name, reverse=True)
+        if not models:
             raise NoFoundModelOutput(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
-        return self._read(model_metas[0].f_storage_key)
+        model_dict = {}
+        for model in models:
+            model_dict[model.f_output_key] = self._read(model.f_storage_key, model.f_meta_data)
+        return model_dict
 
     @property
     def _name(self):
@@ -115,7 +119,7 @@ class IOHandle(object):
     def _download(self, **kwargs):
         raise NotImplementedError()
 
-    def _read(self, storage_key):
+    def _read(self, storage_key, metas):
         raise NotImplementedError()
 
     def _delete(self, storage_key):
@@ -128,22 +132,29 @@ class IOHandle(object):
         raise NotImplementedError()
 
     @classmethod
-    def read_meta(cls, _tar: tarfile.TarFile) -> Metadata:
+    def read_meta(cls, _tar: tarfile.TarFile) -> Union[Metadata, List[Metadata]]:
+        meta_list = []
         for name in _tar.getnames():
             if name.endswith("yaml"):
                 fp = _tar.extractfile(name).read()
                 meta = yaml.safe_load(fp)
-                return Metadata.parse_obj(meta)
+                meta_list.append(meta)
+        return meta_list
 
     @classmethod
-    def read_model(cls, _tar: tarfile.TarFile):
+    def read_model(cls, _tar: tarfile.TarFile, metas):
         model_cache = {}
-        model_meta = cls.read_meta(_tar)
-        for model in model_meta.model_overview.party.models:
-            if model.file_format == ModelFileFormat.JSON:
-                fp = _tar.extractfile(model.name).read()
-                model_cache[model.name] = json.loads(fp)
-        return model_cache
+        for _meta in metas:
+            meta = Metadata(**_meta)
+            try:
+                fp = _tar.extractfile(meta.model_key).read()
+                _json_model = json.loads(fp)
+                if meta.index is None:
+                    return _json_model
+                model_cache[meta.index] = _json_model
+            except Exception as e:
+                pass
+        return [model_cache[_k] for _k in sorted(model_cache)]
 
     @staticmethod
     def update_meta():

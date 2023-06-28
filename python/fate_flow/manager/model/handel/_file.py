@@ -38,8 +38,8 @@ class FileHandle(IOHandle):
         _path = self._generate_model_storage_path(storage_key)
         os.makedirs(os.path.dirname(_path), exist_ok=True)
         model_file.save(_path)
-        model_meta = self.read_meta(self._tar_io(_path))
-        return model_meta
+        model_metas = self.read_meta(self._tar_io(_path))
+        return model_metas
 
     def _download(self, storage_key):
         _p = self._generate_model_storage_path(storage_key)
@@ -54,13 +54,12 @@ class FileHandle(IOHandle):
         _path = self._generate_model_storage_path(storage_key)
         os.makedirs(os.path.dirname(_path), exist_ok=True)
         shutil.copy(file, _path)
-        model_meta = self.read_meta(self._tar_io(_path))
-        return model_meta
+        return self.read_meta(self._tar_io(_path))
 
-    def _read(self, storage_key):
+    def _read(self, storage_key, metas):
         _p = self._generate_model_storage_path(storage_key)
         _tar_io = self._tar_io(_p)
-        return self.read_model(_tar_io)
+        return self.read_model(_tar_io, metas)
 
     def _delete(self, storage_key):
         _p = self._generate_model_storage_path(storage_key)

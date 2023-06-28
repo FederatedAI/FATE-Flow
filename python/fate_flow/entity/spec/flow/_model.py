@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from datetime import datetime
-from typing import List
+from typing import List, Optional, Dict, Any, Union
 
 import pydantic
 
@@ -62,3 +62,6 @@ class MLModelSpec(pydantic.BaseModel):
 class Metadata(pydantic.BaseModel):
     metadata: dict
     model_overview: MLModelSpec
+    model_key: str
+    index: Optional[Union[int, None]] = None
+    source: Optional[Dict[str, Any]] = None

@@ -36,19 +36,19 @@ class MysqlHandel(IOHandle):
     def _upload(self, model_file: FileStorage, storage_key):
         memory = io.BytesIO()
         model_file.save(memory)
-        model_meta = self.read_meta(self._tar_io(memory))
+        metas = self.read_meta(self._tar_io(memory))
         self.engine.store(memory, storage_key)
-        return model_meta
+        return metas
 
     def _download(self, storage_key):
         memory = self.engine.read(storage_key)
         memory.seek(0)
         return send_file(memory, download_name=storage_key, as_attachment=True)
 
-    def _read(self, storage_key):
+    def _read(self, storage_key, metas):
         memory = self.engine.read(storage_key)
         _tar_io = self._tar_io(memory)
-        return self.read_model(_tar_io)
+        return self.read_model(_tar_io, metas)
 
     def _delete(self, storage_key):
         self.engine.delete(storage_key=storage_key)

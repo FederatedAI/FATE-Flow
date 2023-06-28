@@ -19,6 +19,7 @@ import os.path
 import tarfile
 import traceback
 import uuid
+from typing import Union, List
 
 import yaml
 
@@ -149,12 +150,9 @@ class FlowWraps(WrapsABC):
             # push model
             for key, models in output_meta.io_meta.outputs.model.items():
                 if isinstance(models, list):
-                    for model in models:
-                        output_model = ArtifactOutputSpec(**model)
-                        self._push_model(key, output_model)
+                    self._push_model(key, [ArtifactOutputSpec(**model) for model in models])
                 else:
-                    output_model = ArtifactOutputSpec(**models)
-                    self._push_model(key, output_model)
+                    self._push_model(key, [ArtifactOutputSpec(**models)])
 
             # push metric
             for key, metrics in output_meta.io_meta.outputs.metric.items():
@@ -189,46 +187,51 @@ class FlowWraps(WrapsABC):
         )
         logging.info(resp.text)
 
-    def _push_model(self, output_key, output_model: ArtifactOutputSpec):
-        logging.info(f"output data: {output_model}")
+    def _push_model(self, output_key, output_models: List[ArtifactOutputSpec]):
+        logging.info(f"output data: {output_key} {output_models}")
         logging.info("save model")
-        engine, address = DataManager.uri_to_address(output_model.uri)
-        if engine == StorageEngine.FILE:
-            _path = address.path
-            if os.path.exists(_path):
-                if os.path.isdir(_path):
-                    path = _path
-                    meta_path = os.path.join(path, "meta.yaml")
+        tar_io = io.BytesIO()
+        for output_model in output_models:
+            engine, address = DataManager.uri_to_address(output_model.uri)
+            if engine == StorageEngine.FILE:
+                _path = address.path
+                if os.path.exists(_path):
+                    if os.path.isdir(_path):
+                        path = _path
+                    else:
+                        path = os.path.dirname(_path)
+                    model_key = os.path.basename(_path)
+                    meta_path = os.path.join(path, f"{model_key}.meta.yaml")
                     with open(meta_path, "w") as fp:
+                        output_model.metadata.model_key = model_key
+                        output_model.metadata.index = output_model.metadata.source.output_index
                         yaml.dump(output_model.metadata.dict(), fp)
-
+                    # tar and send to server
+                    tar_io = self._tar_model(tar_io=tar_io, path=path)
                 else:
-                    path = os.path.dirname(_path)
-                    meta_path = os.path.join(path, "meta.yaml")
-                    with open(meta_path, "w") as fp:
-                        yaml.dump(output_model.metadata.dict(), fp)
-                # tar and send to server
-                _io = io.BytesIO()
-                with tarfile.open(fileobj=_io, mode="x:tar") as tar:
-                    for _root, _dir, _files in os.walk(path):
-                        for _f in _files:
-                            full_path = os.path.join(_root, _f)
-                            rel_path = os.path.relpath(full_path, path)
-                            tar.add(full_path, rel_path)
-                _io.seek(0)
-                logging.info(output_model.metadata.dict())
-                resp = self.mlmd.save_model(
-                    model_id=self.config.model_id,
-                    model_version=self.config.model_version,
-                    execution_id=self.config.party_task_id,
-                    output_key=output_key,
-                    fp=_io
-                )
-                logging.info(resp.text)
+                    logging.warning(f"Model path no found: {_path}")
             else:
-                logging.warning(f"Model path no found: {_path}")
-        else:
-            raise ValueError(f"Engine {engine} is not supported")
+                raise ValueError(f"Engine {engine} is not supported")
+
+        resp = self.mlmd.save_model(
+            model_id=self.config.model_id,
+            model_version=self.config.model_version,
+            execution_id=self.config.party_task_id,
+            output_key=output_key,
+            fp=tar_io
+        )
+        logging.info(resp.text)
+
+    @staticmethod
+    def _tar_model(tar_io, path):
+        with tarfile.open(fileobj=tar_io, mode="x:tar") as tar:
+            for _root, _dir, _files in os.walk(path):
+                for _f in _files:
+                    full_path = os.path.join(_root, _f)
+                    rel_path = os.path.relpath(full_path, path)
+                    tar.add(full_path, rel_path)
+        tar_io.seek(0)
+        return tar_io
 
     def _push_metric(self, output_key, output_metric: ArtifactOutputSpec):
         logging.info(f"output metric: {output_metric}")
@@ -426,30 +429,31 @@ class FlowWraps(WrapsABC):
                 _write = True
 
         if not _write:
-            raise RuntimeError(resp.text)
+            logging.info(resp.text)
+            raise RuntimeError(f"Download model failed: {query_field}")
 
         _io.seek(0)
         model = tarfile.open(fileobj=_io)
 
-        model_meta = {}
-        count = 0
-        input_model_file = ""
         logging.info(model.getnames())
+        metas = []
         for name in model.getnames():
-            fp = model.extractfile(name).read()
             if name.endswith("yaml"):
+                fp = model.extractfile(name).read()
                 model_meta = yaml.safe_load(fp)
-            else:
-                count += 1
-                input_model_file = os.path.join(input_model_base, name)
+                model_key = model_meta.get("model_key")
+                model_fp = model.extractfile(model_key).read()
+                input_model_file = os.path.join(input_model_base, model_key)
                 with open(input_model_file, "wb") as fw:
-                    fw.write(fp)
-        if count > 1:
-            meta.uri = f"file://{input_model_base}"
-        else:
-            meta.uri = f"file://{input_model_file}"
-        meta.metadata = model_meta
-        return meta
+                    fw.write(model_fp)
+                meta.uri = f"file://{input_model_file}"
+                meta.metadata = model_meta
+                metas.append(meta)
+        if not metas:
+            raise RuntimeError(f"Download model failed: {query_field}")
+        if len(metas) == 1:
+            return metas[0]
+        return metas
 
     def report_status(self, code, error=""):
         if self.task_end_with_success(code):
