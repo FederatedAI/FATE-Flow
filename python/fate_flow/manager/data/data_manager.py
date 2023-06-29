@@ -106,17 +106,57 @@ class DataManager:
         elif table.data_type == DataType.TABLE:
             for _k, _v in table.collect():
                 yield table.meta.get_id_delimiter().join([_k, _v])
+        else:
+            return []
+
+    @staticmethod
+    def display_data(table_metas):
+        datas = {}
+        for key, metas in table_metas.items():
+            datas[key] = []
+            for meta in metas:
+                if meta.data_type in [DataType.DATAFRAME, DataType.TABLE]:
+                    datas[key].append({"data": meta.get_part_of_data(), "metadata": meta.get_data_meta()})
+                else:
+                    continue
+        return datas
 
     @classmethod
-    def download_output_data(cls, tar_file_name, **kwargs):
+    def query_output_data_table(cls, **kwargs):
         data_list = OutputDataTracking.query(**kwargs)
         outputs = {}
         for data in data_list:
             if data.f_output_key not in outputs:
                 outputs[data.f_output_key] = []
-            data_table_meta = storage.StorageTableMeta(name=data.f_name, namespace=data.f_namespace)
-            outputs[data.f_output_key].append(data_table_meta)
+            outputs[data.f_output_key].append({"namespace": data.f_namespace, "name": data.f_name})
+        return outputs
+
+    @classmethod
+    def download_output_data(cls, tar_file_name, **kwargs):
+        outputs = {}
+        for key, tables in cls.query_output_data_table(**kwargs).items():
+            if key not in outputs:
+                outputs[key] = []
+            for table in tables:
+                outputs[key].append(storage.StorageTableMeta(
+                    name=table.get("name"),
+                    namespace=table.get("namespace")
+                ))
+
         return cls.send_table(outputs, tar_file_name=tar_file_name)
+
+    @classmethod
+    def display_output_data(cls, **kwargs):
+        outputs = {}
+        for key, tables in cls.query_output_data_table(**kwargs).items():
+            if key not in outputs:
+                outputs[key] = []
+            for table in tables:
+                outputs[key].append(storage.StorageTableMeta(
+                    name=table.get("name"),
+                    namespace=table.get("namespace")
+                ))
+        return cls.display_data(outputs)
 
     @staticmethod
     def delete_data(namespace, name):
