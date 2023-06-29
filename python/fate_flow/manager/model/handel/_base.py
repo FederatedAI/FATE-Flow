@@ -34,8 +34,12 @@ class IOHandle(object):
         return self._name
 
     @staticmethod
-    def file_key(model_id, model_version, role, party_id, dir_name, file_name):
-        return os.path.join(model_id, model_version, role, party_id, dir_name, file_name)
+    def storage_key(model_id, model_version, role, party_id, task_name, output_key):
+        return os.path.join(model_id, model_version, role, party_id, task_name, output_key)
+
+    @staticmethod
+    def parse_storage_key(storage_key):
+        return storage_key.split(os.sep)
 
     def download(self, model_id, model_version, role, party_id, task_name, output_key):
         model_metas = ModelMeta.query(model_id=model_id, model_version=model_version, task_name=task_name,
@@ -46,19 +50,19 @@ class IOHandle(object):
 
     def upload(self, model_file: FileStorage, job_id, task_name, output_key, model_id, model_version, role,
                party_id, type_name):
-        storage_key = self.file_key(model_id, model_version, role, party_id, task_name, output_key)
+        storage_key = self.storage_key(model_id, model_version, role, party_id, task_name, output_key)
         metas = self._upload(model_file=model_file, storage_key=storage_key)
         self.log_meta(metas,  storage_key, job_id=job_id, task_name=task_name, model_id=model_id, type_name=type_name,
                       model_version=model_version, output_key=output_key, role=role, party_id=party_id)
 
-    def save_as(self, storage_key, dir_path):
-        file_path = os.path.join(dir_path, storage_key)
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        return self._save_as(storage_key, file_path)
+    def save_as(self, storage_key, temp_path):
+        os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+        return self._save_as(storage_key, temp_path)
 
-    def load(self, file, storage_key, model_id, model_version):
-        model_meta = self._load(file=file, storage_key=storage_key)
-        self.log_meta(model_meta, storage_key, model_id=model_id, model_version=model_version)
+    def load(self, file, storage_key, model_id, model_version, role, party_id, task_name, output_key):
+        metas = self._load(file=file, storage_key=storage_key)
+        self.log_meta(metas, storage_key, model_id=model_id, model_version=model_version, role=role, party_id=party_id,
+                      task_name=task_name, output_key=output_key)
 
     def delete(self, job_id, role, party_id, task_name):
         model_metas = ModelMeta.query(job_id=job_id, role=role, party_id=party_id, task_name=task_name, reverse=True)
@@ -68,8 +72,8 @@ class IOHandle(object):
             self._delete(storage_key=meta.f_storage_key)
         self.delete_meta(job_id=job_id, role=role, party_id=party_id, task_name=task_name, storage_engine=self.name)
 
-    def log_meta(self, model_metas, storage_key, model_id, model_version, job_id, task_name,
-                 output_key, role, party_id, type_name):
+    def log_meta(self, model_metas, storage_key, model_id, model_version, output_key, task_name, role, party_id,
+                 job_id="", type_name=""):
         model_info = {
             "storage_key": storage_key,
             "storage_engine": self.name,
