@@ -35,19 +35,17 @@ class StorageTable(StorageTableBase):
             address=address,
             partitions=partitions,
             options=options,
-            engine=StorageEngine.EGGROLL,
-            store_type=store_type,
+            engine=StorageEngine.EGGROLL
         )
+        self._store_type = store_type
         self._context = context
         self._options["store_type"] = self._store_type
         self._options["total_partitions"] = partitions
         self._options["create_if_missing"] = True
-        self._table = self._context.load(namespace=self.namespace, name=self.name, options=self._options)
-        self._meta_table = self._context.load(namespace=self.namespace, name=self.meta_name, options=self._options)
+        self._table = self._context.load(namespace=self.address.namespace, name=self.address.name, options=self._options)
 
     def _save_as(self, address, name, namespace, partitions=None, **kwargs):
-        self._table.save_as(name=name, namespace=namespace)
-
+        self._table.save_as(name=address.name, namespace=address.namespace)
         table = StorageTable(
             context=self._context,
             address=address,
@@ -60,16 +58,11 @@ class StorageTable(StorageTableBase):
     def _put_all(self, kv_list: Iterable, **kwargs):
         return self._table.put_all(kv_list)
 
-    def _put_meta(self, kv_list: Iterable, **kwargs):
-        return self._meta_table.put_all(kv_list)
-
-
     def _collect(self, **kwargs) -> list:
         return self._table.get_all(**kwargs)
 
     def _destroy(self):
         self._table.destroy()
-        self._meta_table.destory()
 
     def _count(self, **kwargs):
         return self._table.count()

@@ -15,45 +15,159 @@
 #
 from webargs import fields
 
-from fate_flow.entity.types import ReturnCode, Code
-from fate_flow.manager.model_manager import PipelinedModel
-from fate_flow.manager.output_manager import OutputMetric
+from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import NoFoundTask
+from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.manager.model.model_manager import PipelinedModel
+from fate_flow.manager.metric.metric_manager import OutputMetric
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.utils.api_utils import get_json_result, validate_request_json, validate_request_params
+from fate_flow.utils.api_utils import API
 
 
 @manager.route('/metric/key/query', methods=['GET'])
-@validate_request_params(job_id=fields.String(required=True), role=fields.String(required=True),
-                         party_id=fields.String(required=True), task_name=fields.String(required=True))
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
 def query_metric_key(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
-        return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
     metric_keys = OutputMetric(job_id=job_id, role=role, party_id=party_id, task_name=task_name,
                                task_id=tasks[0].f_task_id, task_version=tasks[0].f_task_version).query_metric_keys()
-    return get_json_result(code=Code.SUCCESS, message='success', data=metric_keys)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success', data=metric_keys)
 
 
 @manager.route('/metric/query', methods=['GET'])
-@validate_request_params(job_id=fields.String(required=True), role=fields.String(required=True),
-                         party_id=fields.String(required=True), task_name=fields.String(required=True),
-                         filters=fields.Dict(required=False))
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(filters=fields.Dict(required=False))
 def query_metric(job_id, role, party_id, task_name, filters=None):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
-        return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
     metrics = OutputMetric(job_id=job_id, role=role, party_id=party_id, task_name=task_name, task_id=tasks[0].f_task_id,
                            task_version=tasks[0].f_task_version).read_metrics(filters)
-    return get_json_result(code=Code.SUCCESS, message='success', data=metrics)
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success', data=metrics)
+
+
+@manager.route('/metric/delete', methods=['POST'])
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+def delete_metric(job_id, role, party_id, task_name):
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+    if not tasks:
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
+    metric_keys = OutputMetric(
+        job_id=job_id, role=role, party_id=party_id, task_name=task_name,
+        task_id=tasks[0].f_task_id, task_version=tasks[0].f_task_version
+    ).delete_metrics()
+    return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success', data=metric_keys)
 
 
 @manager.route('/model/query', methods=['GET'])
-@validate_request_params(job_id=fields.String(required=True), role=fields.String(required=True),
-                         party_id=fields.String(required=True), task_name=fields.String(required=True))
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
 def query_model(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
-        return get_json_result(code=ReturnCode.TASK.NO_FOUND, message="no found task")
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
+    task = tasks[0]
+    model_data = PipelinedModel.read_model(task.f_job_id, task.f_role, task.f_party_id, task.f_task_name)
+    return API.Output.json(data=model_data)
 
-    model_data, message = PipelinedModel(role=role, party_id=party_id, job_id=job_id).read_model_data(task_name)
-    return get_json_result(code=Code.SUCCESS, message=message, data=model_data)
+
+@manager.route('/model/delete', methods=['POST'])
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+def delete_model(job_id, role, party_id, task_name):
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+    if not tasks:
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
+    task = tasks[0]
+    PipelinedModel.delete_model(
+        job_id=task.f_job_id,
+        role=task.f_role,
+        party_id=task.f_party_id,
+        task_name=task.f_task_name)
+    return API.Output.json()
+
+
+@manager.route('/data/download', methods=['GET'])
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(output_key=fields.String(required=False))
+def output_data_download(job_id, role, party_id, task_name, output_key=None):
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+    if not tasks:
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
+    task = tasks[0]
+    return DataManager.download_output_data(
+        job_id=task.f_job_id,
+        role=task.f_role,
+        party_id=task.f_party_id,
+        task_name=task.f_task_name,
+        task_id=task.f_task_id,
+        task_version=task.f_task_version,
+        output_key=output_key,
+        tar_file_name=f"{job_id}_{role}_{party_id}_{task_name}"
+
+    )
+
+
+@manager.route('/data/table', methods=['GET'])
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+def output_data_table(job_id, role, party_id, task_name):
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+    if not tasks:
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
+    task = tasks[0]
+    return DataManager.query_output_data_table(
+        job_id=task.f_job_id,
+        role=task.f_role,
+        party_id=task.f_party_id,
+        task_name=task.f_task_name,
+        task_id=task.f_task_id,
+        task_version=task.f_task_version
+    )
+
+
+@manager.route('/data/display', methods=['GET'])
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+def output_data_display(job_id, role, party_id, task_name):
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+    if not tasks:
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
+    task = tasks[0]
+    return DataManager.display_output_data(
+        job_id=task.f_job_id,
+        role=task.f_role,
+        party_id=task.f_party_id,
+        task_name=task.f_task_name,
+        task_id=task.f_task_id,
+        task_version=task.f_task_version
+    )

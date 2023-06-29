@@ -15,7 +15,7 @@
 #
 from fate_flow.engine.storage import StorageSessionBase, StorageEngine
 from fate_flow.engine.storage.standalone._standalone import Session
-from fate_flow.entity.address_types import AddressABC, StandaloneAddress
+from fate_flow.entity.types import AddressABC, StandaloneAddress
 
 
 class StorageSession(StorageSessionBase):

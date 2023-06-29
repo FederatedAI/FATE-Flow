@@ -16,31 +16,90 @@ from .resource import BaseAPI
 
 
 class Worker(BaseAPI):
+    def report_task_status(self, status, execution_id, error=""):
+        endpoint = '/worker/task/status'
+        return self.client.post(endpoint=endpoint, json={
+            "status": status,
+            "execution_id": execution_id,
+            "error": error
+        })
 
-    def task_parameters(self, task_info):
-        endpoint = '/party/{}/{}/{}/{}/{}/{}/report'.format(
-            task_info["job_id"],
-            task_info["component_name"],
-            task_info["task_id"],
-            task_info["task_version"],
-            task_info["role"],
-            task_info["party_id"]
+    def query_task_status(self, execution_id):
+        endpoint = '/worker/task/status'
+        return self.client.get(endpoint=endpoint, json={
+            "execution_id": execution_id,
+        })
+
+    def save_model(self, model_id, model_version, execution_id, output_key, type_name, fp):
+        files = {"file": fp}
+        return self.client.send_file(
+            endpoint="/worker/model/save",
+            files=files,
+            data={
+                "model_id": model_id,
+                "model_version": model_version,
+                "execution_id": execution_id,
+                "output_key": output_key,
+                "type_name": type_name
+            })
+
+    def save_data_tracking(self, execution_id, output_key, meta_data, uri, namespace, name, overview, source, data_type,
+                           index, partitions=None):
+        return self.client.post(
+            endpoint="/worker/data/tracking/save",
+            json={
+                "execution_id": execution_id,
+                "output_key": output_key,
+                "meta_data": meta_data,
+                "uri": uri,
+                "namespace": namespace,
+                "name": name,
+                "overview": overview,
+                "source": source,
+                "data_type": data_type,
+                "index": index,
+                "partitions": partitions
+            })
+
+    def query_data_meta(self, job_id=None, role=None, party_id=None, task_name=None, output_key=None, namespace=None,
+                        name=None):
+        # [job_id, role, party_id, task_name, output_key] or [name, namespace]
+        if namespace and name:
+            params = {
+                    "namespace": namespace,
+                    "name": name
+            }
+        else:
+            params = {
+                "job_id": job_id,
+                "role": role,
+                "party_id": party_id,
+                "task_name": task_name,
+                "output_key": output_key
+            }
+        return self.client.get(
+            endpoint="/worker/data/tracking/query",
+            params=params
         )
-        return self.client.post(endpoint=endpoint, json=task_info)
 
-    def report_task(self, task_info):
-        endpoint = '/party/{}/{}/{}/{}/{}/{}/report'.format(
-            task_info["job_id"],
-            task_info["component_name"],
-            task_info["task_id"],
-            task_info["task_version"],
-            task_info["role"],
-            task_info["party_id"]
+    def download_model(self, model_id, model_version, task_name, output_key, role, party_id):
+        return self.client.get(
+            endpoint="/worker/model/download",
+            params={
+                "model_id": model_id,
+                "model_version": model_version,
+                "task_name": task_name,
+                "output_key": output_key,
+                "role": role,
+                "party_id": party_id
+            }
         )
-        return self.client.post(endpoint=endpoint, json=task_info)
 
-    def output_metric(self, content):
-        return self.client.post(endpoint="/worker/metric/write", json=content)
-
-    def write_model(self, content):
-        return self.client.post(endpoint="/worker/model/write", json=content)
+    def save_metric(self, execution_id, data):
+        return self.client.post(
+            endpoint="/worker/metric/save",
+            json={
+                "execution_id": execution_id,
+                "data": data,
+                "incomplete": True
+            })

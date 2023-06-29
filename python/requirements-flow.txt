@@ -16,3 +16,6 @@ ruamel-yaml==0.16.10
 pyyaml==5.4.1
 networkx
 psutil>=5.7.0
+casbin_peewee_adapter
+casbin
+pymysql

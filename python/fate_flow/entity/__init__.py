@@ -13,5 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from ._base import BaseEntity, BaseModel
-from .types import RetCode
+
+from ._base import BaseEntity, BaseModel, CustomEnum
+
+__all__ = ["BaseEntity", "BaseModel", "CustomEnum"]

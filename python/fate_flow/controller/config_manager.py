@@ -13,7 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.manager.resource_manager import ResourceManager
+from fate_flow.manager.service.resource_manager import ResourceManager
+from fate_flow.manager.service.service_manager import ServerRegistry
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 
 
@@ -22,3 +23,4 @@ class ConfigManager:
     def load(cls):
         JobDefaultConfig.load()
         ResourceManager.initialize()
+        ServerRegistry.load()

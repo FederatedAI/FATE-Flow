@@ -13,9 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.settings import FATE_FLOW_JOB_DEFAULT_CONFIG_PATH, stat_logger
+from fate_flow.runtime.system_settings import FATE_FLOW_JOB_DEFAULT_CONFIG_PATH
 from .reload_config_base import ReloadConfigBase
 from ..utils import file_utils
+from ..utils.log import getLogger
+
+stat_logger = getLogger()
 
 
 class JobDefaultConfig(ReloadConfigBase):
@@ -38,7 +41,7 @@ class JobDefaultConfig(ReloadConfigBase):
     end_status_job_scheduling_updates = None
     auto_retries = None
     auto_retry_delay = None
-    federated_status_collect_type = None
+    sync_type = None
     detect_connect_max_retry_count = None
     detect_connect_long_retry_count = None
 

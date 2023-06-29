@@ -26,7 +26,10 @@ import queue
 import threading
 import weakref
 import os
-from fate_flow.settings import stat_logger
+
+from fate_flow.utils.log import getLogger
+
+stat_logger = getLogger()
 
 # Workers are created as daemon threads. This is done to allow the interpreter
 # to exit when there are still idle threads in a ThreadPoolExecutor's thread
@@ -54,7 +57,9 @@ def _python_exit():
     for t, q in items:
         t.join()
 
+
 atexit.register(_python_exit)
+
 
 class _WorkItem(object):
     def __init__(self, future, fn, args, kwargs):
@@ -75,6 +80,7 @@ class _WorkItem(object):
             self = None
         else:
             self.future.set_result(result)
+
 
 def _worker(executor_reference, work_queue):
     try:
@@ -99,8 +105,8 @@ def _worker(executor_reference, work_queue):
     except BaseException:
         _base.LOGGER.critical('Exception in worker', exc_info=True)
 
-class ThreadPoolExecutor(_base.Executor):
 
+class ThreadPoolExecutor(_base.Executor):
     # Used to assign unique thread names when thread_name_prefix is not supplied.
     _counter = itertools.count().__next__
 
@@ -126,6 +132,10 @@ class ThreadPoolExecutor(_base.Executor):
         self._shutdown_lock = threading.Lock()
         self._thread_name_prefix = (thread_name_prefix or
                                     ("ThreadPoolExecutor-%d" % self._counter()))
+
+    @property
+    def max_workers(self):
+        return self._max_workers
 
     def submit(self, fn, *args, **kwargs):
         with self._shutdown_lock:

@@ -15,9 +15,8 @@
 #
 from functools import wraps
 
-from fate_flow.entity import RetCode
-from fate_flow.entity.run_status import FederatedSchedulingStatusCode
-from fate_flow.entity.types import Code
+from fate_flow.entity.code import FederatedSchedulingStatusCode
+from fate_flow.entity.code import ReturnCode
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils.log_utils import schedule_logger
@@ -79,7 +78,7 @@ def return_federated_response(federated_response):
     for dest_role in federated_response.keys():
         for party_id in federated_response[dest_role].keys():
             retcode_set.add(federated_response[dest_role][party_id]["code"])
-    if len(retcode_set) == 1 and Code.SUCCESS in retcode_set:
+    if len(retcode_set) == 1 and ReturnCode.Base.SUCCESS in retcode_set:
         federated_scheduling_status_code = FederatedSchedulingStatusCode.SUCCESS
     else:
         federated_scheduling_status_code = FederatedSchedulingStatusCode.FAILED
@@ -93,8 +92,8 @@ class FederatedScheduler:
     # Job
     @classmethod
     @federated
-    def create_job(cls, job_id, roles, job_info):
-        return RuntimeConfig.SCHEDULE_CLIENT.federated.create_job(job_id, roles, command_body=job_info)
+    def create_job(cls, job_id, roles, initiator_party_id, job_info):
+        return RuntimeConfig.SCHEDULE_CLIENT.federated.create_job(job_id, roles, initiator_party_id=initiator_party_id, command_body=job_info)
 
     @classmethod
     @federated
@@ -165,8 +164,8 @@ class FederatedScheduler:
     # scheduler
     @classmethod
     @schedule_job
-    def request_create_job(cls, party_id, command_body):
-        return RuntimeConfig.SCHEDULE_CLIENT.scheduler.create_job(party_id, command_body)
+    def request_create_job(cls, party_id, initiator_party_id, command_body):
+        return RuntimeConfig.SCHEDULE_CLIENT.scheduler.create_job(party_id, initiator_party_id, command_body)
 
     @classmethod
     @schedule_job

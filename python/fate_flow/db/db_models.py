@@ -20,9 +20,8 @@ from fate_flow.db.base_models import DataBaseModel, JSONField, DateTimeField
 
 
 class Job(DataBaseModel):
-    # multi-party common configuration
     f_job_id = CharField(max_length=25, index=True)
-    f_name = CharField(max_length=500, null=True, default='')
+    f_user_name = CharField(max_length=500, null=True, default='')
     f_description = TextField(null=True, default='')
     f_tag = CharField(max_length=50, null=True, default='')
     f_dag = JSONField()
@@ -32,6 +31,9 @@ class Job(DataBaseModel):
     f_scheduler_party_id = CharField(max_length=50)
     f_status = CharField(max_length=50)
     f_status_code = IntegerField(null=True)
+
+    f_inheritance = JSONField(null=True)
+
     # this party configuration
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=50, index=True)
@@ -81,10 +83,12 @@ class Task(DataBaseModel):
     f_run_pid = IntegerField(null=True)
     f_party_status = CharField(max_length=50)
     f_provider_info = JSONField(null=True)
+    f_provider_name = CharField(max_length=50)
     f_task_parameters = JSONField(null=True)
     f_engine_conf = JSONField(null=True)
     f_kill_status = BooleanField(default=False)
     f_error_report = TextField(default="")
+    f_sync_type = CharField(max_length=20)
 
     f_start_time = BigIntegerField(null=True)
     f_start_date = DateTimeField(null=True)
@@ -105,40 +109,14 @@ class TrackingOutputInfo(DataBaseModel):
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=50, index=True)
     f_output_key = CharField(max_length=30)
-    f_type = CharField(max_length=10, null=True)
+    f_index = IntegerField()
     f_uri = CharField(max_length=200, null=True)
-    f_meta = JSONField()
+    f_namespace = CharField(max_length=200)
+    f_name = CharField(max_length=200)
 
     class Meta:
-        db_table = "t_tracking_output"
-        primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id', 'f_type', 'f_output_key')
-
-
-class PipelineModelInfo(DataBaseModel):
-    f_role = CharField(max_length=50)
-    f_party_id = CharField(max_length=50)
-    f_job_id = CharField(max_length=25, index=True)
-    f_model_id = CharField(max_length=100, index=True)
-    f_model_version = IntegerField(index=True)
-
-    class Meta:
-        db_table = "t_model_info"
-        primary_key = CompositeKey('f_job_id')
-
-
-class PipelineModelMeta(DataBaseModel):
-    f_model_id = CharField(max_length=100)
-    f_model_version = IntegerField()
-    f_job_id = CharField(max_length=100, index=True)
-    f_role = CharField(max_length=50, index=True)
-    f_party_id = CharField(max_length=50, index=True)
-    f_task_name = CharField(max_length=100, index=True)
-    f_component = CharField(max_length=30, null=True)
-    f_model_name = CharField(max_length=30, null=True)
-
-    class Meta:
-        db_table = 't_model_meta'
-        primary_key = CompositeKey('f_job_id', 'f_role', 'f_party_id', 'f_task_name', 'f_model_name')
+        db_table = "t_tracking_data_output"
+        primary_key = CompositeKey('f_job_id', 'f_task_id', 'f_task_version', 'f_role', 'f_party_id', 'f_output_key', 'f_uri')
 
 
 class EngineRegistry(DataBaseModel):
@@ -205,13 +183,79 @@ class Metric(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
     f_role = CharField(max_length=10, index=True)
     f_party_id = CharField(max_length=50)
-    f_task_name = CharField(max_length=30, index=True)
+    f_task_name = CharField(max_length=50, index=True)
     f_task_id = CharField(max_length=100)
     f_task_version = BigIntegerField(null=True)
     f_namespace = CharField(max_length=30, index=True, null=True)
     f_name = CharField(max_length=30, index=True)
-    f_type = CharField()
-    f_groups = JSONField()
+    f_type = CharField(max_length=30, index=True)
+    f_groups = CharField(max_length=30, index=True)
     f_metadata = JSONField()
     f_data = JSONField()
-    f_incomplete = BooleanField()
+
+
+class ProviderInfo(DataBaseModel):
+    f_provider_name = CharField(max_length=100, primary_key=True)
+    f_name = CharField(max_length=20, index=True)
+    f_version = CharField(max_length=20)
+    f_device = CharField(max_length=20)
+    f_metadata = JSONField()
+
+    class Meta:
+        db_table = "t_provider_info"
+
+
+class ComponentInfo(DataBaseModel):
+    f_provider_name = CharField(max_length=100)
+    f_name = CharField(max_length=20, index=True)
+    f_version = CharField(max_length=20)
+    f_device = CharField(max_length=20)
+    f_component_name = CharField(max_length=20)
+    f_component_entrypoint = JSONField(null=True)
+    f_component_params = JSONField(null=True)
+
+    class Meta:
+        db_table = "t_component_info"
+        primary_key = CompositeKey("f_provider_name", "f_component_name")
+
+
+class PipelineModelMeta(DataBaseModel):
+    f_model_id = CharField(max_length=100)
+    f_model_version = IntegerField()
+    f_job_id = CharField(max_length=25, index=True)
+    f_role = CharField(max_length=50, index=True)
+    f_party_id = CharField(max_length=50, index=True)
+    f_task_name = CharField(max_length=50, index=True)
+    f_storage_key = CharField(max_length=100)
+    f_output_key = CharField(max_length=20)
+    f_type_name = CharField(max_length=20)
+    f_meta_data = JSONField(null=True)
+    f_storage_engine = CharField(max_length=30, null=True, index=True)
+
+    class Meta:
+        db_table = 't_model_meta'
+        primary_key = CompositeKey('f_job_id', 'f_storage_key', "f_storage_engine")
+
+
+class ServerRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30, index=True)
+    f_host = CharField(max_length=30)
+    f_port = IntegerField()
+    f_protocol = CharField(max_length=10)
+
+    class Meta:
+        db_table = "t_server"
+
+
+class ServiceRegistryInfo(DataBaseModel):
+    f_server_name = CharField(max_length=30)
+    f_service_name = CharField(max_length=30)
+    f_url = CharField(max_length=100)
+    f_method = CharField(max_length=10)
+    f_params = JSONField(null=True)
+    f_data = JSONField(null=True)
+    f_headers = JSONField(null=True)
+
+    class Meta:
+        db_table = "t_service"
+        primary_key = CompositeKey('f_server_name', 'f_service_name')

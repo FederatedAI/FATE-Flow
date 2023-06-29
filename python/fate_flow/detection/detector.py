@@ -15,8 +15,8 @@
 #
 import time
 
-from fate_flow.engine.computing import build_engine
-from fate_flow.entity.run_status import TaskStatus, JobStatus
+from fate_flow.engine.devices import build_engine
+from fate_flow.entity.types import TaskStatus, JobStatus
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -37,7 +37,7 @@ class Detector(Cron):
         count = 0
         try:
             running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING)
-            detect_logger().info(f'running task test: {running_tasks}')
+            detect_logger().info(f'running task: {running_tasks}')
             stop_job_ids = set()
             for task in running_tasks:
                 if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST:
@@ -45,7 +45,7 @@ class Detector(Cron):
                     continue
                 count += 1
                 try:
-                    process_exist = build_engine().is_alive(task)
+                    process_exist = build_engine(task.f_provider_name).is_alive(task)
                     if not process_exist:
                         msg = f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id}"
                         detect_logger(job_id=task.f_job_id).info(

@@ -21,7 +21,7 @@ import os
 from logging.handlers import TimedRotatingFileHandler
 from threading import RLock
 
-from fate_flow.utils.file_utils import get_fate_flow_directory
+from fate_flow.runtime.system_settings import LOG_SHARE
 
 
 class LoggerFactory(object):
@@ -33,7 +33,7 @@ class LoggerFactory(object):
 
     LOG_DIR = None
     PARENT_LOG_DIR = None
-    log_share = True
+    log_share = LOG_SHARE
 
     append_to_parent_log = None
 
@@ -50,14 +50,12 @@ class LoggerFactory(object):
     schedule_logger_dict = {}
 
     @staticmethod
-    def set_directory(directory=None, parent_log_dir=None, append_to_parent_log=None, force=False):
+    def set_directory(directory, parent_log_dir=None, append_to_parent_log=None, force=False):
         if parent_log_dir:
             LoggerFactory.PARENT_LOG_DIR = parent_log_dir
         if append_to_parent_log:
             LoggerFactory.append_to_parent_log = append_to_parent_log
         with LoggerFactory.lock:
-            if not directory:
-                directory = get_fate_flow_directory()
             if not LoggerFactory.LOG_DIR or force:
                 LoggerFactory.LOG_DIR = directory
             if LoggerFactory.log_share:
@@ -172,6 +170,8 @@ class LoggerFactory(object):
 
     @staticmethod
     def assemble_global_handler(logger):
+        if isinstance(LoggerFactory.LEVEL, str):
+            LoggerFactory.LEVEL = logging._nameToLevel[LoggerFactory.LEVEL]
         if LoggerFactory.LOG_DIR:
             for level in LoggerFactory.levels:
                 if level >= LoggerFactory.LEVEL:
