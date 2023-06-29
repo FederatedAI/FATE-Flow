@@ -34,7 +34,7 @@ from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, Tas
 
 from fate_flow.hub.components_wraps import WrapsABC
 from fate_flow.manager.data.data_manager import DataManager
-from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
+from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, DEFAULT_OUTPUT_DATA_PARTITIONS
 from fate_flow.utils import job_utils
 
 
@@ -145,12 +145,9 @@ class FlowWraps(WrapsABC):
                 return
             for key, datas in output_meta.io_meta.outputs.data.items():
                 if isinstance(datas, list):
-                    for data in datas:
-                        output_data = ArtifactOutputSpec(**data)
-                        self._push_data(key, output_data)
+                    self._push_data(key, [ArtifactOutputSpec(**data) for data in datas])
                 else:
-                    output_data = ArtifactOutputSpec(**datas)
-                    self._push_data(key, output_data)
+                    self._push_data(key, [ArtifactOutputSpec(**datas)])
 
             # push model
             for key, models in output_meta.io_meta.outputs.model.items():
@@ -170,31 +167,35 @@ class FlowWraps(WrapsABC):
                     self._push_metric(key, output_metric)
         # self.report_status(output_meta.status.code, output_meta.status.exceptions)
 
-    def _push_data(self, output_key, output_data: ArtifactOutputSpec):
-        logging.debug(f"output data: {output_data}")
-        namespace = output_data.metadata.namespace
-        name = output_data.metadata.name
-        if not namespace and not name:
-            namespace, name = self._default_output_info()
-        logging.info(f"save data tracking to {namespace}, {name}")
-        overview = output_data.metadata.data_overview
-        source = output_data.metadata.source
-        resp = self.mlmd.save_data_tracking(
-            execution_id=self.config.party_task_id,
-            output_key=output_key,
-            meta_data=output_data.metadata.metadata.get("schema", {}),
-            uri=output_data.uri,
-            namespace=namespace,
-            name=name,
-            overview=overview.dict() if overview else {},
-            source=source.dict() if source else {},
-            data_type=output_data.type_name
-        )
-        logging.info(resp.text)
+    def _push_data(self, output_key, output_datas: List[ArtifactOutputSpec]):
+        logging.info("save data")
+        logging.info(f"key[{output_key}] output_datas[{output_datas}]")
+        for index, output_data in enumerate(output_datas):
+            namespace = output_data.metadata.namespace
+            name = output_data.metadata.name
+            if not namespace and not name:
+                namespace, name = self._default_output_info()
+            logging.info(f"save data tracking to {namespace}, {name}")
+            overview = output_data.metadata.data_overview
+            source = output_data.metadata.source
+            resp = self.mlmd.save_data_tracking(
+                execution_id=self.config.party_task_id,
+                output_key=output_key,
+                meta_data=output_data.metadata.metadata.get("schema", {}),
+                uri=output_data.uri,
+                namespace=namespace,
+                name=name,
+                overview=overview.dict() if overview else {},
+                source=source.dict() if source else {},
+                data_type=output_data.type_name,
+                index=index,
+                partitions=DEFAULT_OUTPUT_DATA_PARTITIONS
+            )
+            logging.info(resp.text)
 
     def _push_model(self, output_key, output_models: List[ArtifactOutputSpec]):
-        logging.info(f"output data: {output_key} {output_models}")
         logging.info("save model")
+        logging.info(f"key[{output_key}] output_models[{output_models}]")
         tar_io = io.BytesIO()
         for output_model in output_models:
             engine, address = DataManager.uri_to_address(output_model.uri)
@@ -496,7 +497,7 @@ class FlowWraps(WrapsABC):
             if not name.endswith("yaml"):
                 model_fp = model.extractfile(name).read()
                 input_model_file = os.path.join(path, name)
-                os.makedirs(path, exist_ok=True)
+                os.makedirs(os.path.dirname(input_model_file), exist_ok=True)
                 with open(input_model_file, "wb") as fw:
                     fw.write(model_fp)
 

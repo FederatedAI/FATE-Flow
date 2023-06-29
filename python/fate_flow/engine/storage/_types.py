@@ -16,7 +16,7 @@
 DEFAULT_ID_DELIMITER = ","
 
 
-class StorageType:
+class DataType:
     TABLE = "table"
     DATAFRAME = "dataframe"
     FILE = "file"

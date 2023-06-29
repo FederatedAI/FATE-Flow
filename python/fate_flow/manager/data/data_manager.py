@@ -20,8 +20,9 @@ from tempfile import TemporaryDirectory
 from flask import send_file
 
 from fate_flow.engine import storage
-from fate_flow.engine.storage import Session, StorageEngine
+from fate_flow.engine.storage import Session, StorageEngine, DataType
 from fate_flow.entity.types import EggRollAddress, StandaloneAddress, HDFSAddress, PathAddress
+from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.utils.io_utils import URI
 
 
@@ -31,7 +32,6 @@ class DataManager:
             cls,
             output_tables_meta,
             tar_file_name="",
-            limit=-1,
             need_head=True,
             download_dir="",
 
@@ -41,44 +41,22 @@ class DataManager:
         output_data_file_list = []
         output_data_meta_file_list = []
         with TemporaryDirectory() as output_tmp_dir:
-            for output_name, output_table_meta in output_tables_meta.items():
-                output_data_count = 0
-                if not download_dir:
-                    output_data_file_path = "{}/{}.csv".format(output_tmp_dir, output_name)
-                    output_data_meta_file_path = "{}/{}.meta".format(output_tmp_dir, output_name)
-                else:
-                    output_data_file_path = "{}/{}.csv".format(download_dir, output_name)
-                    output_data_meta_file_path = "{}/{}.meta".format(download_dir, output_name)
-                os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
-                with open(output_data_file_path, 'w') as fw:
+            for output_name, output_table_metas in output_tables_meta.items():
+                if not isinstance(output_table_metas, list):
+                    output_table_metas = [output_table_metas]
+                for index, output_table_meta in enumerate(output_table_metas):
+                    if not download_dir:
+                        output_data_file_path = "{}/{}/{}.csv".format(output_tmp_dir, output_name, index)
+                        output_data_meta_file_path = "{}/{}/{}.meta".format(output_tmp_dir, output_name, index)
+                    else:
+                        output_data_file_path = "{}/{}/{}.csv".format(download_dir, output_name, index)
+                        output_data_meta_file_path = "{}/{}/{}.meta".format(download_dir, output_name, index)
+                    os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
                     with Session() as sess:
-                        output_table = sess.get_table(name=output_table_meta.get_name(),
-                                                      namespace=output_table_meta.get_namespace())
-                        if output_table:
-                            for _, data in output_table.collect():
-                                for v in data:
-                                    # save meta
-                                    if output_data_count == 0:
-                                        output_data_file_list.append(output_data_file_path)
-                                        data_meta = output_table.meta.get_data_meta()
-                                        header = cls.get_data_header(output_table_meta.get_id_delimiter(), data_meta)
-                                        output_data_meta_file_list.append(output_data_meta_file_path)
-                                        with open(output_data_meta_file_path, 'w') as f:
-                                            json.dump({'header': header}, f, indent=4)
-                                        if need_head and header and output_table_meta.get_have_head():
-                                            if isinstance(header, list):
-                                                header = output_table_meta.get_id_delimiter().join(header)
-                                            fw.write(f'{header}\n')
-                                    delimiter = output_table_meta.get_id_delimiter()
-                                    if isinstance(v, str):
-                                        fw.write('{}\n'.format(v))
-                                    elif isinstance(v, list):
-                                        fw.write('{}\n'.format(delimiter.join([str(_v) for _v in v])))
-                                    else:
-                                        raise ValueError(type(v))
-                                    output_data_count += 1
-                                    if output_data_count == limit:
-                                        break
+                        table = sess.get_table(
+                            name=output_table_meta.get_name(),
+                            namespace=output_table_meta.get_namespace())
+                        cls.write_data_to_file(output_data_file_path, output_data_meta_file_path, table, need_head)
             if download_dir:
                 return
             # tar
@@ -90,6 +68,51 @@ class DataManager:
                         os.path.relpath(output_data_meta_file_list[index], output_tmp_dir))
             tar.close()
             return send_file(output_data_tarfile, download_name=tar_file_name, as_attachment=True)
+
+    @classmethod
+    def write_data_to_file(cls, output_data_file_path, output_data_meta_file_path, table, need_head):
+        with open(output_data_file_path, 'w') as fw:
+            data_meta = table.meta.get_data_meta()
+            header = cls.get_data_header(table.meta.get_id_delimiter(), data_meta)
+            with open(output_data_meta_file_path, 'w') as f:
+                json.dump({'header': header}, f, indent=4)
+            if table:
+                write_header = False
+                for v in cls.collect_data(table=table):
+                    # save meta
+                    if not write_header and need_head and header and table.meta.get_have_head():
+                        if isinstance(header, list):
+                            header = table.meta.get_id_delimiter().join(header)
+                            fw.write(f'{header}\n')
+                        write_header = True
+                    delimiter = table.meta.get_id_delimiter()
+                    if isinstance(v, str):
+                        fw.write('{}\n'.format(v))
+                    elif isinstance(v, list):
+                        fw.write('{}\n'.format(delimiter.join([str(_v) for _v in v])))
+                    else:
+                        raise ValueError(type(v))
+
+    @staticmethod
+    def collect_data(table):
+        if table.data_type == DataType.DATAFRAME:
+            for _, data in table.collect():
+                for v in data:
+                    yield v
+        elif table.data_type == DataType.TABLE:
+            for _k, _v in table.collect():
+                yield table.meta.get_id_delimiter().join([_k, _v])
+
+    @classmethod
+    def download_output_data(cls, tar_file_name, **kwargs):
+        data_list = OutputDataTracking.query(**kwargs)
+        outputs = {}
+        for data in data_list:
+            if data.f_output_key not in outputs:
+                outputs[data.f_output_key] = []
+            data_table_meta = storage.StorageTableMeta(name=data.f_name, namespace=data.f_namespace)
+            outputs[data.f_output_key].append(data_table_meta)
+            return cls.send_table(outputs, tar_file_name=tar_file_name)
 
     @staticmethod
     def delete_data(namespace, name):

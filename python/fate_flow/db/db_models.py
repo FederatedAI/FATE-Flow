@@ -109,6 +109,7 @@ class TrackingOutputInfo(DataBaseModel):
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=50, index=True)
     f_output_key = CharField(max_length=30)
+    f_index = IntegerField()
     f_uri = CharField(max_length=200, null=True)
     f_namespace = CharField(max_length=200)
     f_name = CharField(max_length=200)

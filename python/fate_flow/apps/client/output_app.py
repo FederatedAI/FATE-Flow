@@ -17,6 +17,7 @@ from webargs import fields
 
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.job import NoFoundTask
+from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.metric.metric_manager import OutputMetric
 from fate_flow.operation.job_saver import JobSaver
@@ -103,3 +104,28 @@ def delete_model(job_id, role, party_id, task_name):
         party_id=task.f_party_id,
         task_name=task.f_task_name)
     return API.Output.json()
+
+
+@manager.route('/data/download', methods=['GET'])
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(output_key=fields.String(required=False))
+def output_data_download(job_id, role, party_id, task_name, output_key=None):
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+    if not tasks:
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
+    task = tasks[0]
+    return DataManager.download_output_data(
+        job_id=task.f_job_id,
+        role=task.f_role,
+        party_id=task.f_party_id,
+        task_name=task.f_task_name,
+        task_id=task.f_task_id,
+        task_version=task.f_task_version,
+        output_key=output_key,
+        tar_file_name=f"{job_id}_{role}_{party_id}_{task_name}"
+
+    )
