@@ -110,7 +110,9 @@ class APIClient(requests.Session):
             "source_host": self.host,
             "source_port": self.port,
         })
-        if not is_local and self.remote_host and self.remote_port:
+        if is_local:
+            return self.remote_on_http(**kwargs)
+        if self.remote_host and self.remote_port:
             kwargs.update({
                 "host": self.remote_host,
                 "port": self.remote_port,
