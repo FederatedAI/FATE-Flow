@@ -51,6 +51,8 @@ class DataManager:
                     else:
                         output_data_file_path = "{}/{}/{}.csv".format(download_dir, output_name, index)
                         output_data_meta_file_path = "{}/{}/{}.meta".format(download_dir, output_name, index)
+                    output_data_file_list.append(output_data_file_path)
+                    output_data_meta_file_list.append(output_data_meta_file_path)
                     os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
                     with Session() as sess:
                         table = sess.get_table(
@@ -60,6 +62,8 @@ class DataManager:
             if download_dir:
                 return
             # tar
+            from fate_flow.utils.schedule_utils import schedule_logger
+            schedule_logger("wzh").info(output_data_file_path)
             output_data_tarfile = "{}/{}".format(output_tmp_dir, tar_file_name)
             tar = tarfile.open(output_data_tarfile, mode='w:gz')
             for index in range(0, len(output_data_file_list)):
@@ -112,7 +116,7 @@ class DataManager:
                 outputs[data.f_output_key] = []
             data_table_meta = storage.StorageTableMeta(name=data.f_name, namespace=data.f_namespace)
             outputs[data.f_output_key].append(data_table_meta)
-            return cls.send_table(outputs, tar_file_name=tar_file_name)
+        return cls.send_table(outputs, tar_file_name=tar_file_name)
 
     @staticmethod
     def delete_data(namespace, name):
