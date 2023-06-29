@@ -35,17 +35,17 @@ class StorageTable(StorageTableBase):
             address=address,
             partitions=partitions,
             options=options,
-            engine=StorageEngine.EGGROLL,
-            store_type=store_type,
+            engine=StorageEngine.EGGROLL
         )
+        self._store_type = store_type
         self._context = context
         self._options["store_type"] = self._store_type
         self._options["total_partitions"] = partitions
         self._options["create_if_missing"] = True
-        self._table = self._context.load(namespace=self.namespace, name=self.name, options=self._options)
+        self._table = self._context.load(namespace=self.address.namespace, name=self.address.name, options=self._options)
 
     def _save_as(self, address, name, namespace, partitions=None, **kwargs):
-        self._table.save_as(name=name, namespace=namespace)
+        self._table.save_as(name=address.name, namespace=address.namespace)
         table = StorageTable(
             context=self._context,
             address=address,
