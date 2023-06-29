@@ -60,9 +60,9 @@ class PipelinedModel(object):
         with TemporaryDirectory() as temp_dir:
             for _k in _key_list:
                 temp_path = os.path.join(temp_dir, _k)
-                cls.handle.save_as(storage_key=_k, dir_path=temp_path)
+                cls.handle.save_as(storage_key=_k, temp_path=temp_path)
             os.makedirs(dir_path, exist_ok=True)
-            shutil.make_archive(os.path.join(dir_path, f"{model_id}_{model_version}_{role}_{party_id}"), 'zip', temp_path)
+            shutil.make_archive(os.path.join(dir_path, f"{model_id}_{model_version}_{role}_{party_id}"), 'zip', temp_dir)
 
     @classmethod
     def import_model(cls, model_id, model_version, path, temp_dir):
@@ -73,8 +73,11 @@ class PipelinedModel(object):
                 model_path = os.path.join(dirpath, filename)
                 # exclude original model packs
                 if model_path != path:
-                    storage_key = model_path.strip(temp_dir)
-                    cls.handle.load(model_path, storage_key, model_id, model_version)
+                    _storage_key = model_path.lstrip(f"{temp_dir}{os.sep}")
+                    _, _, role, party_id, task_name, output_key = cls.handle.parse_storage_key(_storage_key)
+                    storage_key = cls.handle.storage_key(model_id, model_version, role, party_id, task_name, output_key)
+                    cls.handle.load(model_path, storage_key, model_id, model_version, role=role, party_id=party_id,
+                                    task_name=task_name, output_key=output_key)
 
     @classmethod
     def get_model_storage_key(cls, **kwargs):
