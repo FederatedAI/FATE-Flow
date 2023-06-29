@@ -49,7 +49,7 @@ class ComponentManager(Base):
             role=role,
             party_id=party_id
         )
-        result = JobController.request_create_job(dag_schema.dict())
+        result = JobController.request_create_job(dag_schema.dict(), is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
         return result
@@ -66,7 +66,7 @@ class ComponentManager(Base):
             role=role,
             party_id=party_id
         )
-        result = JobController.request_create_job(dag_schema.dict())
+        result = JobController.request_create_job(dag_schema.dict(), is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
         return result

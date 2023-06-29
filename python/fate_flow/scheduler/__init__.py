@@ -23,7 +23,7 @@ def init_scheduler():
     remote_host, remote_port, remote_protocol, grpc_channel = get_federated_proxy_address()
 
     protocol = remote_protocol if remote_protocol else PROXY_PROTOCOL
-    RuntimeConfig.set_schedule_client(FlowSchedulerApi(host=HOST, port=HTTP_PORT, protocol=protocol,
+    RuntimeConfig.set_schedule_client(FlowSchedulerApi(host=HOST, port=HTTP_PORT,
                                                        api_version=API_VERSION, timeout=HTTP_REQUEST_TIMEOUT,
                                                        remote_protocol=protocol, remote_host=remote_host,
                                                        remote_port=remote_port, grpc_channel=grpc_channel,
