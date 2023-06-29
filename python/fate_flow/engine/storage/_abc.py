@@ -144,6 +144,11 @@ class StorageTableABC(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def data_type(self):
+        ...
+
+    @property
+    @abc.abstractmethod
     def meta(self) -> StorageTableMetaABC:
         ...
 

@@ -19,6 +19,7 @@ from webargs import fields
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.job import NoFoundTask
 from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.metric.metric_manager import OutputMetric
@@ -113,6 +114,14 @@ def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, o
             "task_name": task_name,
             "output_key": output_key
         }
+        tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+        if not tasks:
+            return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                                task_name=task_name))
+        data_info.update({
+            "task_id": tasks[0].f_task_id,
+            "task_version": tasks[0].f_task_version
+        })
         data_list = OutputDataTracking.query(**data_info)
         if not data_list:
             return API.Output.json(code=ReturnCode.Task.NO_FOUND_MODEL_OUTPUT, message="failed")
@@ -136,7 +145,9 @@ def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, o
 @API.Input.json(partitions=fields.Int(required=False))
 @API.Input.json(source=fields.Dict(required=True))
 @API.Input.json(data_type=fields.String(required=True))
-def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name, overview, source, data_type, partitions=None):
+@API.Input.json(index=fields.Int(required=True))
+def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name, overview, source, data_type, index,
+                       partitions=None):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     data_info = {
         "uri": uri,
@@ -148,13 +159,14 @@ def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name
         "task_version": task.f_task_version,
         "task_name": task.f_task_name,
         "namespace": namespace,
-        "name": name
+        "name": name,
+        "index": index
     }
     OutputDataTracking.create(data_info)
     DataManager.create_data_table(
         namespace=namespace, name=name, uri=uri, partitions=partitions,
         data_meta=meta_data, source=source, data_type=data_type,
-        count=overview.get("count", None), part_of_data=overview.get("samples", []),
+        count=overview.get("count", None), part_of_data=overview.get("samples", [])
     )
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
 

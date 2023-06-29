@@ -62,6 +62,10 @@ class StorageTableBase(StorageTableABC):
         return self._partitions
 
     @property
+    def data_type(self):
+        return self.meta.data_type
+
+    @property
     def options(self):
         return self._options
 

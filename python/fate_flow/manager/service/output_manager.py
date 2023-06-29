@@ -12,16 +12,19 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from typing import List
+
 from fate_flow.db.base_models import BaseModelOperate
 from fate_flow.db.db_models import TrackingOutputInfo
+from fate_flow.utils.wraps_utils import filter_parameters
 
 
 class OutputDataTracking(BaseModelOperate):
     @classmethod
     def create(cls, entity_info):
-        # name, namespace, key, meta, job_id, role, party_id, task_id, task_version
         cls._create_entity(TrackingOutputInfo, entity_info)
 
     @classmethod
-    def query(cls, reverse=False, **kwargs):
-        return cls._query(TrackingOutputInfo, reverse=reverse, **kwargs)
+    @filter_parameters()
+    def query(cls, reverse=False, **kwargs) -> List[TrackingOutputInfo]:
+        return cls._query(TrackingOutputInfo, reverse=reverse, order_by="index", **kwargs)
