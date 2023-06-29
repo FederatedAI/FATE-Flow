@@ -18,24 +18,21 @@ import networkx as nx
 import copy
 
 from pydantic import BaseModel
-from typing import Dict, Union
+from typing import Dict, Union, List
 
-from ._federation import StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, PulsarFederationSpec, \
-    RabbitMQFederationSpec
-from fate_flow.entity.dag_structures import ComponentSpec, RuntimeInputDefinition, ModelWarehouseChannelSpec, InputChannelSpec, DAGSchema,\
-    RuntimeTaskOutputChannelSpec, TaskScheduleSpec, TaskRuntimeInputSpec, IOArtifact, OutputSpec, \
-    OutputMetricSpec, OutputModelSpec, OutputDataSpec, MLMDSpec, LOGGERSpec, ComputingBackendSpec, \
-    RuntimeConfSpec
-
-from fate_flow.entity.types import ArtifactSourceType
-from fate_flow.manager.output_manager import OutputDataTracking
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.entity.spec.dag import DataWarehouseChannelSpec, ModelWarehouseChannelSpec, \
+    RuntimeTaskOutputChannelSpec, ComponentSpec, EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec, \
+    StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \
+    PulsarFederationSpec, RabbitMQFederationSpec, FlowLogger, MLMDSpec, TaskRuntimeConfSpec, \
+    DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts
+from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.settings import ENGINES, LOCAL_DATA_STORE_PATH, BASE_URI, PROXY, FATE_FLOW_CONF_PATH
+from fate_flow.runtime.system_settings import ENGINES, PROXY, FATE_FLOW_CONF_PATH, HOST, HTTP_PORT, PROTOCOL, \
+    API_VERSION
 from fate_flow.utils import job_utils, file_utils
-from fate_flow.entity.engine_types import StorageEngine, EngineType, FederationEngine
-from fate_flow.entity.scheduler_structures import SchedulerInfoSpec
-from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputArtifactType, ArtifactSourceType, \
+    ComputingEngine
+from fate_flow.entity.spec.flow import SchedulerInfoSpec
 from .. import TaskParserABC, JobParserABC
 
 
@@ -120,9 +117,11 @@ class TaskNodeInfo(object):
 
 
 class TaskParser(TaskParserABC):
-    def __init__(self, task_node, job_id, task_name, role, party_id, task_id="", execution_id="",
-                 task_version=None, parties=None):
+    def __init__(self, task_node, job_id, task_name, role, party_id, task_id="", execution_id="", model_id="",
+                 model_version="", task_version=None, parties=None, provider=None):
         self.task_node = task_node
+        self.model_id = model_id
+        self.model_version = model_version
         self.job_id = job_id
         self.task_name = task_name
         self.role = role
@@ -131,6 +130,7 @@ class TaskParser(TaskParserABC):
         self.task_version = task_version
         self.execution_id = execution_id
         self.parties = parties
+        self._provider = None
 
     @property
     def need_run(self):
@@ -166,102 +166,34 @@ class TaskParser(TaskParserABC):
 
     @property
     def task_runtime_conf(self):
-        return self.task_node.conf
+        _rc = self.task_node.conf.get(self.role, {}).get(self.party_id, {})
+        return _rc if _rc else {}
+
+    @property
+    def provider(self):
+        if not self._provider:
+            provider_name = self.task_runtime_conf.get("provider")
+            self._provider = ProviderManager.check_provider_name(provider_name)
+        return self._provider
+
+    @property
+    def provider_name(self):
+        return ProviderManager.parser_provider_name(self.provider)[0]
 
     @property
     def input_parameters(self):
         return self.task_node.runtime_parameters.get(self.role, {}).get(self.party_id, {})
 
-    @property
-    def input_artifacts(self):
-        task_artifacts = {}
-        if self.task_node.upstream_inputs:
-            for k, v in self.task_node.upstream_inputs.items():
-                if isinstance(v, dict):
-                    task_artifacts[k] = v
-                else:
-                    _data = self.get_artifacts_data(k, v)
-                    if _data:
-                        task_artifacts[k] = _data
-        return task_artifacts
-
-    def get_model_warehouse_source(self, channel: ModelWarehouseChannelSpec):
-        jobs = JobSaver.query_job(model_id=channel.model_id, model_version=channel.model_version, role=self.role, party_id=self.party_id)
-        if jobs:
-            job_id = jobs[0].f_job_id
-            return job_id
-        else:
-            raise Exception("no found model warehouse")
-
-    def get_artifacts_data(self, name, channel: InputChannelSpec):
-        job_id = self.job_id
-        if isinstance(channel, ModelWarehouseChannelSpec):
-            job_id = self.get_model_warehouse_source(channel)
-        data = OutputDataTracking.query(task_name=channel.producer_task, output_key=channel.output_artifact_key,
-                                        role=self.role, party_id=self.party_id,  job_id=job_id)
-        if data:
-            data = data[-1]
-            return IOArtifact(name=name, uri=data.f_uri, metadata=data.f_meta).dict()
-        return {}
-
-    def generate_task_outputs(self):
-        return OutputSpec(
-            model=self.get_output_model_store_conf(),
-            data=self.get_output_data_store_conf(),
-            metric=self.get_output_data_metric_conf(),
-        )
-
-    def get_output_model_store_conf(self):
-        model_id, model_version = job_utils.generate_model_info(job_id=self.job_id)
-        _type = JobDefaultConfig.task_default_conf.get("output").get("model").get("type")
-        _format = JobDefaultConfig.task_default_conf.get("output").get("model").get("format")
-
-        return OutputModelSpec(
-            type=_type,
-            metadata={
-                "uri": f"{BASE_URI}/worker/task/model/{self.job_id}/{self.role}/{self.party_id}/{model_id}/{str(model_version)}/{self.component_ref}/{self.task_name}",
-                "format": _format
-            }
-        )
-
-    def get_output_data_store_conf(self):
-        _type = JobDefaultConfig.task_default_conf.get("output").get("data").get("type")
-        _format = JobDefaultConfig.task_default_conf.get("output").get("data").get("format")
-
-        if ENGINES.get(EngineType.STORAGE) in [StorageEngine.STANDALONE, StorageEngine.LOCALFS]:
-            os.makedirs(os.path.join(LOCAL_DATA_STORE_PATH, self.job_id, self.execution_id), exist_ok=True)
-            return OutputDataSpec(type=_type, metadata={
-                "uri": f"file:///{LOCAL_DATA_STORE_PATH}/{self.job_id}/{self.execution_id}",
-                "format": _format
-            })
-        elif ENGINES.get(EngineType.STORAGE) == StorageEngine.EGGROLL:
-            return OutputDataSpec(type=_type, metadata={
-                "uri": f"eggroll:///output_data_{self.execution_id}",
-                "format": _format
-            })
-
-    def get_output_data_metric_conf(self):
-        _type = JobDefaultConfig.task_default_conf.get("output").get("metric").get("type")
-        _format = JobDefaultConfig.task_default_conf.get("output").get("metric").get("format")
-
-        return OutputMetricSpec(
-            type=_type,
-            metadata={
-                "uri": f"{BASE_URI}/worker/task/metric/{self.job_id}/{self.role}/"
-                       f"{self.party_id}/{self.task_name}/{self.task_id}/{self.task_version}",
-                "format": _format
-            })
-
     @staticmethod
     def generate_mlmd():
         _type = "flow"
-        _statu_uri = f"{BASE_URI}/worker/task/status"
-        _tracking_uri = f'{BASE_URI}/worker/task/output/tracking'
         return MLMDSpec(
             type=_type,
             metadata={
-                "statu_uri": _statu_uri,
-                "tracking_uri": _tracking_uri
+                "host": HOST,
+                "port": HTTP_PORT,
+                "protocol": PROTOCOL,
+                "api_version": API_VERSION
             })
 
     def generate_logger_conf(self):
@@ -269,14 +201,30 @@ class TaskParser(TaskParserABC):
         log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id, self.task_name)
         if logger_conf.get("metadata"):
             logger_conf.get("metadata").update({"basepath": log_dir})
-        return LOGGERSpec(**logger_conf)
+        return FlowLogger(**logger_conf)
 
     @staticmethod
     def generate_device():
         return JobDefaultConfig.task_default_conf.get("device")
 
     def generate_computing_conf(self):
-        return ComputingBackendSpec(type=ENGINES.get(EngineType.COMPUTING).lower(), metadata={"computing_id": self.computing_id})
+        if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.STANDALONE:
+            return StandaloneComputingSpec(
+                type=ENGINES.get(EngineType.COMPUTING).lower(),
+                metadata={"computing_id": self.computing_id}
+            )
+
+        if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.EGGROLL:
+            return EggrollComputingSpec(
+                type=ENGINES.get(EngineType.COMPUTING).lower(),
+                metadata={"computing_id": self.computing_id}
+            )
+
+        if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.SPARK:
+            return SparkComputingSpec(
+                type=ENGINES.get(EngineType.COMPUTING).lower(),
+                metadata={"computing_id": self.computing_id}
+            )
 
     def generate_federation_conf(self):
         parties_info = []
@@ -332,9 +280,7 @@ class TaskParser(TaskParserABC):
 
     @property
     def task_conf(self):
-        return RuntimeConfSpec(
-            output=self.generate_task_outputs(),
-            mlmd=self.generate_mlmd(),
+        return TaskRuntimeConfSpec(
             logger=self.generate_logger_conf(),
             device=self.generate_device(),
             computing=self.generate_computing_conf(),
@@ -342,22 +288,25 @@ class TaskParser(TaskParserABC):
         )
 
     @property
-    def task_parameters(self) -> TaskScheduleSpec:
-        return TaskScheduleSpec(
+    def task_parameters(self) -> PreTaskConfigSpec:
+        return PreTaskConfigSpec(
+            model_id=self.model_id,
+            model_version=self.model_version,
+            job_id=self.job_id,
             task_id=self.task_id,
+            task_version=self.task_version,
+            task_name=self.task_name,
+            provider_name=self.provider_name,
             party_task_id=self.execution_id,
             component=self.component_ref,
             role=self.role,
             stage=self.stage,
             party_id=self.party_id,
-            inputs=TaskRuntimeInputSpec(parameters=self.input_parameters).dict(),
-            conf=self.task_conf
+            parameters=self.input_parameters,
+            input_artifacts=self.task_node.upstream_inputs.get(self.role).get(self.party_id),
+            conf=self.task_conf,
+            mlmd=self.generate_mlmd()
         )
-
-    def update_runtime_artifacts(self, task_parameters):
-        task_parameters["inputs"].update({"artifacts": self.input_artifacts})
-        schedule_logger(job_id=self.job_id).info(f"update artifacts: {self.input_artifacts}")
-        return task_parameters
 
 
 class JobParser(JobParserABC):
@@ -384,7 +333,7 @@ class JobParser(JobParserABC):
             if not task_spec.conf:
                 task_conf = copy.deepcopy(job_conf)
             else:
-                task_conf = copy.deepcopy(task_spec.conf).update(job_conf)
+                task_conf = copy.deepcopy(job_conf).update(task_spec.conf)
             if task_spec.stage:
                 task_stage = task_spec.stage
 
@@ -395,13 +344,55 @@ class JobParser(JobParserABC):
                 self._tasks[name].component_spec = component_specs[name]
             self._init_task_runtime_parameters_and_conf(name, dag_schema, task_conf)
 
-            if not task_spec.inputs or not task_spec.inputs.artifacts:
+            self._init_upstream_inputs(name, dag_schema.dag)
+
+    def _init_upstream_inputs(self, name, dag: DAGSpec):
+        task_spec = dag.tasks[name]
+        common_upstream_inputs = dict()
+        if task_spec.inputs:
+            common_upstream_inputs = self._get_upstream_inputs(name, task_spec)
+
+        upstream_inputs = dict()
+        role_keys = set([party.role for party in dag.parties])
+        for party in dag.parties:
+            if party.role not in role_keys:
+                continue
+            upstream_inputs[party.role] = dict()
+            for party_id in party.party_id:
+                upstream_inputs[party.role][party_id] = copy.deepcopy(common_upstream_inputs)
+
+        party_tasks = dag.party_tasks
+        if not party_tasks:
+            self._tasks[name].upstream_inputs = upstream_inputs
+            return
+
+        for site_name, party_tasks_spec in party_tasks.items():
+            if name not in party_tasks_spec.tasks:
+                continue
+            party_task_spec = party_tasks_spec.tasks[name]
+            if not party_task_spec.inputs:
+                continue
+            party_upstream_inputs = self._get_upstream_inputs(name, party_task_spec)
+            for party in party_tasks_spec.parties:
+                for party_id in party.party_id:
+                    upstream_inputs[party.role][party_id].update(party_upstream_inputs)
+
+        self._tasks[name].upstream_inputs = upstream_inputs
+
+    def _get_upstream_inputs(self, name, task_spec):
+        upstream_inputs = dict()
+        runtime_roles = self._tasks[name].runtime_roles
+        input_artifacts = task_spec.inputs
+
+        for input_type in InputArtifactType.types():
+            artifacts = getattr(input_artifacts, input_type)
+            if not artifacts:
                 continue
 
-            upstream_inputs = dict()
-            runtime_roles = self._tasks[name].runtime_roles
-            for input_key, output_specs_dict in task_spec.inputs.artifacts.items():
-                upstream_inputs[input_key] = dict()
+            upstream_inputs[input_type] = dict()
+
+            for input_key, output_specs_dict in artifacts.items():
+                upstream_inputs[input_type][input_key] = dict()
                 for artifact_source, channel_spec_list in output_specs_dict.items():
                     if artifact_source == ArtifactSourceType.MODEL_WAREHOUSE:
                         if isinstance(channel_spec_list, list):
@@ -409,47 +400,57 @@ class JobParser(JobParserABC):
                             for channel in channel_spec_list:
                                 model_warehouse_channel = ModelWarehouseChannelSpec(**channel.dict(exclude_defaults=True))
                                 if model_warehouse_channel.model_id is None:
-                                    model_warehouse_channel.model_id = self._conf.get("model_id", None)
-                                    model_warehouse_channel.model_version = self._conf.get("model_version", None)
+                                    model_warehouse_channel.model_id = \
+                                        self._conf.get("model_warehouse", {}).get("model_id", None)
+                                    model_warehouse_channel.model_version = \
+                                        self._conf.get("model_warehouse", {}).get("model_version", None)
                                 inputs.append(model_warehouse_channel)
                         else:
                             inputs = ModelWarehouseChannelSpec(**channel_spec_list.dict(exclude_defaults=True))
                             if inputs.model_id is None:
-                                inputs.model_id = self._conf.get("model_id", None)
-                                inputs.model_version = self._conf.get("model_version", None)
+                                inputs.model_id = self._conf.get("model_warehouse", {}).get("model_id", None)
+                                inputs.model_version = self._conf.get("model_warehouse", {}).get("model_version", None)
 
-                        upstream_inputs[input_key] = inputs
+                        upstream_inputs[input_type][input_key] = inputs
                         continue
                     else:
+                        if artifact_source == ArtifactSourceType.DATA_WAREHOUSE:
+                            channel_spec = DataWarehouseChannelSpec
+                        else:
+                            channel_spec = RuntimeTaskOutputChannelSpec
                         if isinstance(channel_spec_list, list):
-                            inputs = [RuntimeTaskOutputChannelSpec(**channel.dict(exclude_defaults=True))
+                            inputs = [channel_spec(**channel.dict(exclude_defaults=True))
                                       for channel in channel_spec_list]
                         else:
-                            inputs = RuntimeTaskOutputChannelSpec(**channel_spec_list.dict(exclude_defaults=True))
+                            inputs = channel_spec(**channel_spec_list.dict(exclude_defaults=True))
 
-                        upstream_inputs[input_key] = inputs
+                        upstream_inputs[input_type][input_key] = inputs
 
                     if not isinstance(channel_spec_list, list):
                         channel_spec_list = [channel_spec_list]
 
                     for channel_spec in channel_spec_list:
-                        dependent_task = channel_spec.producer_task
-                        self._add_edge(dependent_task, name)
+                        if isinstance(channel_spec, RuntimeTaskOutputChannelSpec):
+                            dependent_task = channel_spec.producer_task
+                            self._add_edge(dependent_task, name)
 
-            upstream_inputs = self.check_and_add_runtime_roles(upstream_inputs, runtime_roles)
-            self._tasks[name].upstream_inputs = upstream_inputs
+        upstream_inputs = self.check_and_add_runtime_roles(upstream_inputs, runtime_roles)
+        return upstream_inputs
 
     @staticmethod
     def check_and_add_runtime_roles(upstream_inputs, runtime_roles):
         correct_inputs = copy.deepcopy(upstream_inputs)
-        for input_key, channel_list in upstream_inputs.items():
-            if isinstance(channel_list, list):
-                for idx, channel in enumerate(channel_list):
-                    if channel.roles is None:
-                        correct_inputs[input_key][idx].roles = runtime_roles
-            else:
-                if channel_list.roles is None:
-                    correct_inputs[input_key].roles = runtime_roles
+        for input_type in InputArtifactType.types():
+            if input_type not in upstream_inputs:
+                continue
+            for input_key, channel_list in upstream_inputs[input_type].items():
+                if isinstance(channel_list, list):
+                    for idx, channel in enumerate(channel_list):
+                        if channel.roles is None:
+                            correct_inputs[input_type][input_key][idx].roles = runtime_roles
+                else:
+                    if channel_list.roles is None:
+                        correct_inputs[input_type][input_key].roles = runtime_roles
 
         return correct_inputs
 
@@ -468,8 +469,8 @@ class JobParser(JobParserABC):
             role_keys = role_keys & task_role_keys
 
         common_parameters = dict()
-        if task_spec.inputs and task_spec.inputs.parameters:
-            common_parameters = task_spec.inputs.parameters
+        if task_spec.parameters:
+            common_parameters = task_spec.parameters
 
         task_parameters = dict()
         task_conf = dict()
@@ -505,9 +506,7 @@ class JobParser(JobParserABC):
                         for party_id in party.party_id:
                             task_conf[party.role][party_id].update(party_task_conf)
 
-                if not party_task_spec.inputs:
-                    continue
-                parameters = party_task_spec.inputs.parameters
+                parameters = party_task_spec.parameters
 
                 if parameters:
                     for party in party_parties:
@@ -526,20 +525,61 @@ class JobParser(JobParserABC):
         return nx.topological_sort(self._dag)
 
     @classmethod
-    def infer_dependent_tasks(cls, task_input: RuntimeInputDefinition):
-        if not task_input or not task_input.artifacts:
+    def infer_dependent_tasks(cls, input_artifacts):
+        print (input_artifacts)
+        if not input_artifacts:
             return []
-        dependent_task_list = list()
-        for artifact_name, artifact_channel in task_input.artifacts.items():
-            for artifact_source_type, channels in artifact_channel.items():
-                if artifact_source_type == ArtifactSourceType.MODEL_WAREHOUSE:
-                    continue
 
-                if not isinstance(channels, list):
-                    channels = [channels]
-                for channel in channels:
-                    dependent_task_list.append(channel.producer_task)
+        dependent_task_list = list()
+        for input_type in InputArtifactType.types():
+            artifacts = getattr(input_artifacts, input_type)
+            if not artifacts:
+                continue
+            for artifact_name, artifact_channel in artifacts.items():
+                for artifact_source_type, channels in artifact_channel.items():
+                    if artifact_source_type in [ArtifactSourceType.MODEL_WAREHOUSE, ArtifactSourceType.DATA_WAREHOUSE]:
+                        continue
+
+                    if not isinstance(channels, list):
+                        channels = [channels]
+                    for channel in channels:
+                        dependent_task_list.append(channel.producer_task)
+
         return dependent_task_list
+
+    @property
+    def task_parser(self):
+        return TaskParser
+
+    @property
+    def component_ref_list(self):
+        _list = []
+        for name in self.topological_sort():
+            node = self.get_task_node(name)
+            if node:
+                _list.append(node.component_ref)
+        return _list
+
+    def dataset_list(self, role, party_id) -> List[DataSet]:
+        _list = []
+        for task_name in self.topological_sort():
+            task_node = self.get_task_node(task_name)
+            if task_node.component_ref == "reader":
+                name = task_node.runtime_parameters.get(role, {}).get(party_id, {}).get("name", "")
+                namespace = task_node.runtime_parameters.get(role, {}).get(party_id, {}).get("name", "namespace")
+                if name and namespace:
+                    _list.append(DataSet(**{
+                        "name": name,
+                        "namespace": namespace
+                    }))
+        return _list
+
+    def role_parameters(self, role, party_id):
+        _dict = {}
+        for task_name in self.topological_sort():
+            task_node = self.get_task_node(task_name)
+            _dict[task_node.component_ref] = task_node.runtime_parameters.get(role, {}).get(party_id, {})
+        return _dict
 
 
 class Party(BaseModel):
@@ -558,7 +598,7 @@ class DagSchemaParser(object):
             parties=[party.dict() for party in self.dag_schema.dag.parties],
             initiator_party_id=self.dag_schema.dag.conf.initiator_party_id,
             scheduler_party_id=self.dag_schema.dag.conf.scheduler_party_id,
-            federated_status_collect_type=self.dag_schema.dag.conf.federated_status_collect_type,
+            federated_status_collect_type=self.dag_schema.dag.conf.sync_type,
             model_id=self.dag_schema.dag.conf.model_id,
             model_version=self.dag_schema.dag.conf.model_version
         )

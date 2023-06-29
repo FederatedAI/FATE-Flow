@@ -32,10 +32,6 @@ class TaskParserABC(metaclass=ABCMeta):
     def task_parameters(self):
         ...
 
-    @abc.abstractmethod
-    def update_runtime_artifacts(self, task_parameters):
-        ...
-
 
 class JobParserABC(metaclass=ABCMeta):
     @property
@@ -50,4 +46,21 @@ class JobParserABC(metaclass=ABCMeta):
 
     @abc.abstractmethod
     def get_task_node(self, task_name):
+        ...
+
+    @property
+    def task_parser(self):
+        return TaskParserABC
+
+    @property
+    @abc.abstractmethod
+    def component_ref_list(self):
+        ...
+
+    @abc.abstractmethod
+    def dataset_list(self, role, party_id):
+        ...
+
+    @abc.abstractmethod
+    def role_parameters(self, role, party_id):
         ...

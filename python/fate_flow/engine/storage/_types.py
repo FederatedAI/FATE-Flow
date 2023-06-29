@@ -16,7 +16,13 @@
 DEFAULT_ID_DELIMITER = ","
 
 
-class StorageTableOrigin(object):
+class DataType:
+    TABLE = "table"
+    DATAFRAME = "dataframe"
+    FILE = "file"
+
+
+class StorageOrigin(object):
     TABLE_BIND = "table_bind"
     READER = "reader"
     UPLOAD = "upload"
@@ -30,6 +36,7 @@ class StorageEngine(object):
     MYSQL = 'mysql'
     SIMPLE = 'simple'
     PATH = 'path'
+    FILE = 'file'
     HIVE = 'hive'
     LOCALFS = 'localfs'
     API = 'api'

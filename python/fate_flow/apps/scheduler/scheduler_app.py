@@ -14,25 +14,30 @@
 #  limitations under the License.
 from webargs import fields
 
-from fate_flow.entity.dag_structures import DAGSchema
+from fate_flow.errors.job import UpdateTaskFailed
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.scheduler.job_scheduler import DAGScheduler
-from fate_flow.utils.api_utils import get_json_result, validate_request_json, task_request_json
+from fate_flow.utils.api_utils import API
 
 page_name = 'scheduler'
 
 
 @manager.route('/job/create', methods=['POST'])
-@validate_request_json(dag_schema=fields.Dict(required=True))
+@API.Input.json(dag_schema=fields.Dict(required=True))
 def create_job(dag_schema):
-    submit_result = DAGScheduler.submit(DAGSchema(**dag_schema))
-    return get_json_result(**submit_result)
+    submit_result = DAGScheduler.submit(dag_schema)
+    return API.Output.json(**submit_result)
 
 
 @manager.route('/task/report', methods=['POST'])
-@task_request_json(status=fields.String(required=False))
+@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(role=fields.String(required=True))
+@API.Input.json(party_id=fields.String(required=True))
+@API.Input.json(task_id=fields.String(required=True))
+@API.Input.json(task_version=fields.Integer(required=True))
+@API.Input.json(status=fields.String(required=False))
 def report_task(job_id, role, party_id, task_id, task_version, status=None):
-    ScheduleJobSaver.update_task_status(task_info={
+    status = ScheduleJobSaver.update_task_status(task_info={
         "job_id": job_id,
         "role": role,
         "party_id": party_id,
@@ -40,19 +45,25 @@ def report_task(job_id, role, party_id, task_id, task_version, status=None):
         "task_version": task_version,
         "status": status
     })
-    return get_json_result(code=0, message='success')
+    if status:
+        return API.Output.json()
+    return API.Output.fate_flow_exception(UpdateTaskFailed(
+        job_id=job_id, role=role, party_id=party_id,
+        task_id=task_id, task_version=task_version, status=status)
+    )
 
 
 @manager.route('/job/stop', methods=['POST'])
-@validate_request_json(job_id=fields.String(required=True), stop_status=fields.String(required=False))
+@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(stop_status=fields.String(required=False))
 def stop_job(job_id, stop_status=None):
     retcode, retmsg = DAGScheduler.stop_job(job_id=job_id,
                                             stop_status=stop_status)
-    return get_json_result(code=retcode, message=retmsg)
+    return API.Output.json(code=retcode, message=retmsg)
 
 
 @manager.route('/job/rerun', methods=['POST'])
-@validate_request_json(job_id=fields.String(required=True))
+@API.Input.json(job_id=fields.String(required=True))
 def rerun_job(job_id):
-    DAGScheduler.set_job_rerun(job_id=job_id, auto=False)
-    return get_json_result()
+    DAGScheduler.rerun_job(job_id=job_id, auto=False)
+    return API.Output.json()

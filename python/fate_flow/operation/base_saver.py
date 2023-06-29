@@ -15,17 +15,33 @@
 #
 
 import operator
+from functools import reduce
+from typing import Type, Union, Dict
 
-from fate_flow.db.base_models import DB, BaseModelOperate
+from fate_flow.db.base_models import DB, BaseModelOperate, DataBaseModel
 from fate_flow.db.db_models import Task, Job
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleTaskStatus, ScheduleJob
-from fate_flow.entity.run_status import JobStatus, TaskStatus, EndStatus
+from fate_flow.entity.types import JobStatus, TaskStatus, EndStatus
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import schedule_logger, sql_logger
 
 
 class BaseSaver(BaseModelOperate):
     STATUS_FIELDS = ["status", "party_status"]
+    OPERATION = {
+            '==': operator.eq,
+            '<': operator.lt,
+            '<=': operator.le,
+            '>': operator.gt,
+            '>=': operator.ge,
+            '!=': operator.ne,
+            '<<': operator.lshift,
+            '>>': operator.rshift,
+            '%': operator.mod,
+            '**': operator.pow,
+            '^': operator.xor,
+            '~': operator.inv,
+        }
 
     @classmethod
     def _create_job(cls, job_obj, job_info):
@@ -38,7 +54,8 @@ class BaseSaver(BaseModelOperate):
     @classmethod
     @DB.connection_context()
     def _delete_job(cls, job_obj, job_id):
-        job_obj.delete().where(job_obj.f_job_id == job_id)
+        _op = job_obj.delete().where(job_obj.f_job_id == job_id)
+        return _op.execute() > 0
 
     @classmethod
     def _update_job_status(cls, job_obj, job_info):
@@ -140,11 +157,16 @@ class BaseSaver(BaseModelOperate):
 
     @classmethod
     @DB.connection_context()
-    def update_entity_table(cls, entity_model, entity_info):
+    def update_entity_table(cls, entity_model, entity_info, filters: list = None):
         query_filters = []
         primary_keys = entity_model.get_primary_keys_name()
-        for p_k in primary_keys:
-            query_filters.append(operator.attrgetter(p_k)(entity_model) == entity_info[p_k.lstrip("f").lstrip("_")])
+        if not filters:
+            for p_k in primary_keys:
+                query_filters.append(operator.attrgetter(p_k)(entity_model) == entity_info[p_k.lstrip("f").lstrip("_")])
+        else:
+            for _k in filters:
+                p_k = f"f_{_k}"
+                query_filters.append(operator.attrgetter(p_k)(entity_model) == entity_info[_k])
         objs = entity_model.select().where(*query_filters)
         if objs:
             obj = objs[0]
@@ -221,3 +243,46 @@ class BaseSaver(BaseModelOperate):
             elif task.f_task_version > tasks_group[task.f_task_id].f_task_version:
                 tasks_group[task.f_task_id] = task
         return tasks_group
+
+    @classmethod
+    @DB.connection_context()
+    def _list(cls, model: Type[DataBaseModel], limit: int = 0, offset: int = 0,
+              query: dict = None, order_by: Union[str, list, tuple] = None):
+        data = model.select()
+        if query:
+            data = data.where(cls.query_dict2expression(model, query))
+        count = data.count()
+
+        if not order_by:
+            order_by = 'create_time'
+        if not isinstance(order_by, (list, tuple)):
+            order_by = (order_by, 'asc')
+        order_by, order = order_by
+        order_by = getattr(model, f'f_{order_by}')
+        order_by = getattr(order_by, order)()
+        data = data.order_by(order_by)
+
+        if limit > 0:
+            data = data.limit(limit)
+        if offset > 0:
+            data = data.offset(offset)
+        return list(data), count
+
+    @classmethod
+    def query_dict2expression(cls, model: Type[DataBaseModel], query: Dict[str, Union[bool, int, str, list, tuple]]):
+        expression = []
+        for field, value in query.items():
+            if not isinstance(value, (list, tuple)):
+                value = ('==', value)
+            op, *val = value
+
+            field = getattr(model, f'f_{field}')
+            value = cls.OPERATION[op](field, val[0]) if op in cls.OPERATION else getattr(field, op)(*val)
+
+            expression.append(value)
+
+        return reduce(operator.iand, expression)
+
+    @property
+    def supported_operators(self):
+        return

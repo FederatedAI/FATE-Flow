@@ -19,7 +19,7 @@ import typing
 import traceback
 import logging
 
-from fate_flow.utils.file_utils import get_fate_flow_directory
+from fate_flow.runtime.system_settings import FATE_FLOW_LOG_DIR, LOG_DIR
 from fate_flow.utils.log import LoggerFactory, getLogger
 
 
@@ -67,14 +67,9 @@ def exception_to_trace_string(ex):
     return "".join(traceback.TracebackException.from_exception(ex).format())
 
 
-def get_logger_base_dir():
-    job_log_dir = get_fate_flow_directory('logs')
-    return job_log_dir
-
-
 def get_job_logger(job_id, log_type):
-    fate_flow_log_dir = get_fate_flow_directory('logs', 'fate_flow')
-    job_log_dir = get_fate_flow_directory('logs', job_id)
+    fate_flow_log_dir = FATE_FLOW_LOG_DIR
+    job_log_dir = os.path.join(LOG_DIR, job_id)
     if not job_id:
         log_dirs = [fate_flow_log_dir]
     else:

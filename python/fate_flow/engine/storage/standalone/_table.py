@@ -19,7 +19,6 @@ from fate_flow.engine.storage import StandaloneStoreType, StorageEngine, Storage
 from fate_flow.engine.storage.standalone._standalone import Session
 
 
-
 class StorageTable(StorageTableBase):
     def __init__(
         self,
@@ -38,30 +37,19 @@ class StorageTable(StorageTableBase):
             partitions=partitions,
             options=options,
             engine=StorageEngine.STANDALONE,
-            store_type=store_type,
         )
+        self._store_type = store_type
         self._session = session
         self._table = self._session.create_table(
-            namespace=self.namespace,
-            name=self.name,
+            namespace=self.address.namespace,
+            name=self.address.name,
             partitions=partitions,
             need_cleanup=self._store_type == StandaloneStoreType.ROLLPAIR_IN_MEMORY,
             error_if_exist=False,
         )
-        self._meta_table = self._session.create_table(
-            namespace=self.namespace,
-            name=self.meta_name,
-            partitions=partitions,
-            need_cleanup=self._store_type == StandaloneStoreType.ROLLPAIR_IN_MEMORY,
-            error_if_exist=False,
-        )
-
 
     def _put_all(self, kv_list: Iterable, **kwargs):
         return self._table.put_all(kv_list)
-
-    def _put_meta(self, kv_list: Iterable, **kwargs):
-        return self._meta_table.put_all(kv_list)
 
     def _collect(self, **kwargs):
         return self._table.collect(**kwargs)
@@ -71,10 +59,9 @@ class StorageTable(StorageTableBase):
 
     def _destroy(self):
         self._table.destroy()
-        self._meta_table.destroy()
 
     def _save_as(self, address, name, namespace, partitions=None, **kwargs):
-        self._table.save_as(name=name, namespace=namespace)
+        self._table.save_as(name=address.name, namespace=address.namespace)
 
         table = StorageTable(
             session=self._session,
