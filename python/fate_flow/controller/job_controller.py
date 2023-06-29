@@ -29,7 +29,7 @@ from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.runtime.system_settings import PARTY_ID, LOG_DIR
+from fate_flow.runtime.system_settings import PARTY_ID, LOG_DIR, LOCAL_PARTY_ID
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.job_utils import get_job_log_directory, save_job_dag
 from fate_flow.utils.log_utils import schedule_logger
@@ -37,13 +37,16 @@ from fate_flow.utils.log_utils import schedule_logger
 
 class JobController(object):
     @classmethod
-    def request_create_job(cls, dag_schema: dict, user_name: str = None):
+    def request_create_job(cls, dag_schema: dict, user_name: str = None, is_local=False):
         dag_schema = DAGSchema(**dag_schema)
         if not dag_schema.dag.conf:
             dag_schema.dag.conf = JobConfSpec()
         dag_schema.dag.conf.initiator_party_id = PARTY_ID
         if not dag_schema.dag.conf.scheduler_party_id:
-            dag_schema.dag.conf.scheduler_party_id = PARTY_ID
+            if not is_local:
+                dag_schema.dag.conf.scheduler_party_id = PARTY_ID
+            else:
+                dag_schema.dag.conf.scheduler_party_id = LOCAL_PARTY_ID
         JobInheritance.check(dag_schema.dag.conf.inheritance)
 
         response = FederatedScheduler.request_create_job(
