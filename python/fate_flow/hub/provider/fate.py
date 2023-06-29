@@ -23,6 +23,8 @@ class LocalFateEntrypoint(EntrypointABC):
 
     @property
     def component_list(self):
+        if self.provider.python_path not in sys.path:
+            sys.path.append(self.provider.python_path)
         from fate.components.core import list_components
         # {'buildin': [], 'thirdparty': []}
         components = list_components()
