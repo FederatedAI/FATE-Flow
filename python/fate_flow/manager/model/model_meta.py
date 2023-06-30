@@ -14,6 +14,7 @@
 #  limitations under the License.
 from fate_flow.db.base_models import BaseModelOperate
 from fate_flow.db.db_models import PipelineModelMeta
+from fate_flow.utils.wraps_utils import filter_parameters
 
 
 class ModelMeta(BaseModelOperate):
@@ -22,9 +23,11 @@ class ModelMeta(BaseModelOperate):
         cls._create_entity(PipelineModelMeta, meta_info)
 
     @classmethod
+    @filter_parameters()
     def query(cls, **kwargs):
         return cls._query(PipelineModelMeta, **kwargs)
 
     @classmethod
+    @filter_parameters()
     def delete(cls, **kwargs):
         return cls._delete(PipelineModelMeta, **kwargs)
