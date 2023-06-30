@@ -210,7 +210,7 @@ class ComponentInfo(DataBaseModel):
     f_name = CharField(max_length=20, index=True)
     f_version = CharField(max_length=20)
     f_device = CharField(max_length=20)
-    f_component_name = CharField(max_length=20)
+    f_component_name = CharField(max_length=50)
     f_component_entrypoint = JSONField(null=True)
     f_component_params = JSONField(null=True)
 
