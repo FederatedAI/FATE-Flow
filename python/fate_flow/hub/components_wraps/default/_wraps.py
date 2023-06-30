@@ -134,7 +134,10 @@ class FlowWraps(WrapsABC):
                 output_meta = ComponentOutputMeta.parse_obj(result)
                 logging.debug(output_meta)
         else:
-            output_meta = ComponentOutputMeta(status=ComponentOutputMeta.status(code=1, exceptions=p.stdout))
+            logging.info(task_result)
+            output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
+                code=1, exceptions="Task output no found"
+            ))
         return output_meta
 
     def push_output(self, output_meta: ComponentOutputMeta):
