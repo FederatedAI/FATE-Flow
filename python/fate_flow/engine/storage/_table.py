@@ -104,6 +104,7 @@ class StorageTableBase(StorageTableABC):
                                 **kwargs)
 
     def create_meta(self, **kwargs):
+        self.destroy_if_exists()
         table_meta = StorageTableMeta(name=self._name, namespace=self._namespace, new=True)
         table_meta.set_metas(**kwargs)
         table_meta.address = self._address
@@ -114,6 +115,13 @@ class StorageTableBase(StorageTableABC):
         self._meta = table_meta
 
         return table_meta
+
+    def destroy_if_exists(self):
+        table_meta = StorageTableMeta(name=self._name, namespace=self._namespace)
+        if table_meta:
+            table_meta.destroy_metas()
+            return True
+        return False
 
     def check_address(self):
         return True
