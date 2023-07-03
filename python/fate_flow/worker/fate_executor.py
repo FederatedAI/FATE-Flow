@@ -13,21 +13,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import argparse
-
-from fate_flow.entity import BaseEntity
-from fate_flow.utils.log import getLogger
 
 
 class FateSubmit:
     @staticmethod
     def run():
-        import click
-        from fate.components.entrypoint.component_cli import component
-
-        cli = click.Group()
-        cli.add_command(component)
-        cli(prog_name="python -m fate.components")
+        import runpy
+        runpy.run_module(mod_name='fate.components', run_name='__main__')
 
 
 if __name__ == "__main__":
