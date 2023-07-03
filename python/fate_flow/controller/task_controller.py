@@ -265,7 +265,6 @@ class TaskController(object):
         update_status = JobSaver.update_task_status(task_info=task_info)
         if update_status and EndStatus.contains(task_info.get("party_status")):
             ResourceManager.return_task_resource(**task_info)
-            cls.clean_task(task=task)
         if "party_status" in task_info:
             report_task_info = {
                 "job_id": task_info.get("job_id"),
@@ -315,6 +314,7 @@ class TaskController(object):
             backend_engine = build_engine(task.f_provider_name)
             if backend_engine:
                 backend_engine.kill(task)
+                backend_engine.cleanup(task)
             WorkerManager.kill_task_all_workers(task)
         except Exception as e:
             schedule_logger(task.f_job_id).exception(e)
