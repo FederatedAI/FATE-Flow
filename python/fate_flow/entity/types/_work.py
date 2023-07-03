@@ -25,3 +25,5 @@ class WorkerName(CustomEnum):
     TASK_ENTRYPOINT = "task_entrypoint"
     TASK_EXECUTE = "task_execute"
     COMPONENT_DEFINE = "component_define"
+    TASK_CLEAN = "task_clean"
+    TASK_EXECUTE_CLEAN = "execute_clean"

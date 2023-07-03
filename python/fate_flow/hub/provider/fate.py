@@ -31,7 +31,3 @@ class LocalFateEntrypoint(EntrypointABC):
         _list = components.get('buildin', [])
         _list.extend(components.get("thirdparty", []))
         return _list
-
-    def __enter__(self):
-        if self.provider.python_path not in sys.path:
-            sys.path.append(self.provider.python_path)

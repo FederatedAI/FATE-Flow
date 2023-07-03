@@ -43,7 +43,7 @@ class WorkerManager:
             task_version=task_info.get("task_version")
         )
         params_env = {}
-        if task_info:
+        if task_parameters:
             params_env = cls.get_env(task_info.get("job_id"), task_parameters)
         extra_env.update(params_env)
         if executable:
@@ -71,9 +71,9 @@ class WorkerManager:
     @classmethod
     def get_process_dirs(cls, job_id, role, party_id, task_name, task_version):
         config_dir = job_utils.get_job_directory(job_id, role, party_id, task_name, str(task_version))
-        log_dir = job_utils.get_job_log_directory(job_id, role, party_id, task_name)
+        log_dir = job_utils.get_job_log_directory(job_id, role, party_id, task_name, "process")
         os.makedirs(config_dir, exist_ok=True)
-        return  config_dir, log_dir
+        return config_dir, log_dir
 
     @classmethod
     def get_config(cls, config_dir, config):
@@ -85,7 +85,6 @@ class WorkerManager:
 
     @classmethod
     def get_env(cls, job_id, task_parameters):
-        # todo: api callback params
         env = {
             "FATE_JOB_ID": job_id,
             "FATE_TASK_CONFIG": yaml.dump(task_parameters),

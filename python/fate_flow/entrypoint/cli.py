@@ -20,7 +20,7 @@ import traceback
 import click
 
 from fate_flow.components.entrypoint.component import execute_component
-from fate_flow.entity.spec.dag import PreTaskConfigSpec, TaskConfigSpec
+from fate_flow.entity.spec.dag import PreTaskConfigSpec, TaskConfigSpec, TaskCleanupConfigSpec
 from fate_flow.hub.flow_hub import FlowHub
 
 
@@ -45,6 +45,21 @@ def entrypoint(config, env_name):
     logger.debug("logger installed")
     logger.debug(f"task config: {task_config}")
     FlowHub.load_components_wraps(config=task_config).run()
+
+
+@component.command()
+@click.option("--config", required=False, type=click.File(), help="config path")
+@click.option("--env-name", required=False, type=str, help="env name for config")
+def cleanup(config, env_name):
+    configs = {}
+    load_config_from_env(configs, env_name)
+    load_config_from_file(configs, config)
+    task_config = PreTaskConfigSpec.parse_obj(configs)
+    task_config.conf.logger.install()
+    logger = logging.getLogger(__name__)
+    logger.debug("logger installed")
+    logger.debug(f"task config: {task_config}")
+    FlowHub.load_components_wraps(config=task_config).cleanup()
 
 
 @component.command()
