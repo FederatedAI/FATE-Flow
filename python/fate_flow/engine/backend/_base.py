@@ -16,7 +16,6 @@
 
 
 import abc
-import json
 import logging
 import os
 import sys
@@ -67,6 +66,21 @@ class LocalEngine(object):
                 return yaml.safe_load(fr)
         return {}
 
+    @classmethod
+    def cleanup(cls, provider_name, task_info, config):
+        cmd = cls.generate_cleanup_cmd(provider_name)
+
+        if cmd:
+            logging.info(f"start clean task, cmd {cmd}")
+            p = WorkerManager.start_task_worker(
+                worker_name=WorkerName.TASK_EXECUTE_CLEAN,
+                task_info=task_info,
+                common_cmd=cmd,
+                task_parameters=config
+            )
+            p.wait()
+            logging.info(f"clean success, stdout: {p.stdout}")
+
     @staticmethod
     def generate_component_run_cmd(provider_name, output_path=""):
         if provider_name == ProviderName.FATE:
@@ -116,5 +130,20 @@ class LocalEngine(object):
                 stage,
                 "--output-path",
                 define_file
+            ]
+        return cmd
+
+    @staticmethod
+    def generate_cleanup_cmd(provider_name):
+        cmd = []
+        if provider_name == ProviderName.FATE:
+            from fate_flow.worker.fate_executor import FateSubmit
+            module_file_path = sys.modules[FateSubmit.__module__].__file__
+            cmd = [
+                module_file_path,
+                "component",
+                "cleanup",
+                "--env-name",
+                "FATE_TASK_CONFIG",
             ]
         return cmd
