@@ -25,7 +25,7 @@ from fate_flow.runtime.system_settings import ENGINES
 
 class ComponentManager(Base):
     @classmethod
-    def upload(cls, file, head, partitions, meta, namespace, name, extend_sid, role, party_id):
+    def upload(cls, file, head, partitions, meta, namespace, name, extend_sid):
         parameters = {
             "file": file,
             "head": head,
@@ -45,9 +45,7 @@ class ComponentManager(Base):
         dag_schema = cls.local_dag_schema(
             task_name="upload_0",
             component_ref="upload",
-            parameters=parameters,
-            role=role,
-            party_id=party_id
+            parameters=parameters
         )
         result = JobController.request_create_job(dag_schema.dict(), is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:
@@ -55,16 +53,14 @@ class ComponentManager(Base):
         return result
 
     @classmethod
-    def dataframe_transformer(cls, data_warehouse, namespace, name, role, party_id):
+    def dataframe_transformer(cls, data_warehouse, namespace, name):
         provider = ProviderManager.get_default_fate_provider()
         dag_schema = cls.local_dag_schema(
             task_name="transformer_0",
             component_ref="dataframe_transformer",
             parameters={"namespace": namespace, "name": name},
             inputs={"data": {"table": {"data_warehouse": data_warehouse}}},
-            provider=provider,
-            role=role,
-            party_id=party_id
+            provider=provider
         )
         result = JobController.request_create_job(dag_schema.dict(), is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:

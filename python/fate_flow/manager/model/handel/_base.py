@@ -64,13 +64,16 @@ class IOHandle(object):
         self.log_meta(metas, storage_key, model_id=model_id, model_version=model_version, role=role, party_id=party_id,
                       task_name=task_name, output_key=output_key)
 
-    def delete(self, job_id, role, party_id, task_name):
-        model_metas = ModelMeta.query(job_id=job_id, role=role, party_id=party_id, task_name=task_name, reverse=True)
+    def delete(self, **kwargs):
+        model_metas = ModelMeta.query(storage_engine=self.name, **kwargs)
         if not model_metas:
-            raise NoFoundModelOutput(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+            raise NoFoundModelOutput(**kwargs)
         for meta in model_metas:
-            self._delete(storage_key=meta.f_storage_key)
-        self.delete_meta(job_id=job_id, role=role, party_id=party_id, task_name=task_name, storage_engine=self.name)
+            try:
+                self._delete(storage_key=meta.f_storage_key)
+            except:
+                pass
+        return self.delete_meta(storage_engine=self.name, **kwargs)
 
     def log_meta(self, model_metas, storage_key, model_id, model_version, output_key, task_name, role, party_id,
                  job_id="", type_name=""):

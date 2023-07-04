@@ -40,13 +40,20 @@ class LocalEngine(EngineABC):
         )
 
     def kill(self, task):
-        kill_status_code = process_utils.kill_task_executor_process(task)
-        # session stop
-        if kill_status_code is KillProcessRetCode.KILLED or task.f_status not in {TaskStatus.WAITING}:
-            job_utils.start_session_stop(task)
+        process_utils.kill_task_executor_process(task)
 
     def is_alive(self, task):
         return process_utils.check_process(pid=int(task.f_run_pid), task=task)
+
+    def cleanup(self, task: Task):
+        return WorkerManager.start_task_worker(
+            worker_name=WorkerName.TASK_CLEAN,
+            task_info=task.to_human_model_dict(),
+            extra_env={"PYTHONPATH": self.provider.python_path},
+            executable=[self.provider.python_env],
+            common_cmd=self.generate_cleanup_cmd(),
+            task_parameters=task.f_component_parameters
+        )
 
     @staticmethod
     def generate_cmd():
@@ -56,6 +63,19 @@ class LocalEngine(EngineABC):
             module_file_path,
             "component",
             "entrypoint",
+            "--env-name",
+            "FATE_TASK_CONFIG",
+        ]
+        return common_cmd
+
+    @staticmethod
+    def generate_cleanup_cmd():
+        from fate_flow.entrypoint.runner import Submit
+        module_file_path = sys.modules[Submit.__module__].__file__
+        common_cmd = [
+            module_file_path,
+            "component",
+            "cleanup",
             "--env-name",
             "FATE_TASK_CONFIG",
         ]

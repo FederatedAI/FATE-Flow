@@ -17,7 +17,8 @@ from fate_flow.entity.spec.dag._output import ComponentOutputMeta, MetricData
 from fate_flow.entity.spec.dag._party import PartySpec
 from fate_flow.entity.spec.dag._job import DAGSchema, DAGSpec, JobConfSpec, TaskConfSpec, TaskSpec, PartyTaskSpec, \
     InheritConfSpec, PartyTaskRefSpec
-from fate_flow.entity.spec.dag._task import TaskConfigSpec, PreTaskConfigSpec, TaskRuntimeConfSpec
+from fate_flow.entity.spec.dag._task import TaskConfigSpec, PreTaskConfigSpec, TaskRuntimeConfSpec, \
+    TaskCleanupConfigSpec
 from fate_flow.entity.spec.dag._artifact import RuntimeTaskOutputChannelSpec, DataWarehouseChannelSpec, \
     ModelWarehouseChannelSpec, SourceInputArtifactSpec, RuntimeInputArtifacts, FlowRuntimeInputArtifacts,\
     ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
