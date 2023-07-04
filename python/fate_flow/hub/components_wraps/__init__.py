@@ -22,13 +22,5 @@ class WrapsABC(metaclass=ABCMeta):
         ...
 
     @abc.abstractmethod
-    def preprocess(self):
-        ...
-
-    @abc.abstractmethod
-    def push_output(self, output_meta):
-        ...
-
-    @abc.abstractmethod
-    def run_component(self, config):
+    def cleanup(self):
         ...

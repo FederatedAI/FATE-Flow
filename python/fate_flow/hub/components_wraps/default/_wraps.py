@@ -25,9 +25,9 @@ import yaml
 
 from fate_flow.engine.backend import build_backend
 from fate_flow.engine.storage import StorageEngine
-from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpec, ComponentIOArtifactsTypeSpec,\
+from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpec, ComponentIOArtifactsTypeSpec, \
     TaskConfigSpec, ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
-    ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta
+    ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta, TaskCleanupConfigSpec
 
 from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, TaskStatus, ComputingEngine, \
     JsonModelArtifactType
@@ -80,6 +80,17 @@ class FlowWraps(WrapsABC):
             logging.exception(e)
         finally:
             self.report_status(code, exceptions)
+
+    def cleanup(self):
+        config = TaskCleanupConfigSpec(
+            computing=self.config.conf.computing,
+            federation=self.config.conf.federation
+        )
+        return self.backend.cleanup(
+            provider_name=self.config.provider_name,
+            config=config.dict(),
+            task_info=self.task_info
+        )
 
     def preprocess(self):
         # input
@@ -134,7 +145,10 @@ class FlowWraps(WrapsABC):
                 output_meta = ComponentOutputMeta.parse_obj(result)
                 logging.debug(output_meta)
         else:
-            output_meta = ComponentOutputMeta(status=ComponentOutputMeta.status(code=1, exceptions=p.stdout))
+            logging.info(task_result)
+            output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
+                code=1, exceptions="Task output no found"
+            ))
         return output_meta
 
     def push_output(self, output_meta: ComponentOutputMeta):

@@ -68,9 +68,22 @@ def import_model(model_id, model_version):
 
 
 @manager.route('/delete', methods=['POST'])
-def delete_model():
-    # todo:
-    return API.Output.json()
+@API.Input.json(model_id=fields.String(required=True))
+@API.Input.json(model_version=fields.String(required=True))
+@API.Input.json(role=fields.String(required=False))
+@API.Input.json(party_id=fields.String(required=False))
+@API.Input.json(task_name=fields.String(required=False))
+@API.Input.json(output_key=fields.String(required=False))
+def delete_model(model_id, model_version, role=None, party_id=None, task_name=None, output_key=None):
+    count = PipelinedModel.delete_model(
+        model_id=model_id,
+        model_version=model_version,
+        party_id=party_id,
+        role=role,
+        task_name=task_name,
+        output_key=output_key
+    )
+    return API.Output.json(data={"count": count})
 
 
 @manager.route('/store', methods=['POST'])
