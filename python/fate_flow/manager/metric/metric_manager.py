@@ -33,6 +33,8 @@ class OutputMetric:
         self.task_version = task_version
 
     def save_output_metrics(self, data):
+        if not data or not isinstance(data, list):
+            raise RuntimeError(f"Save metric data failed, data is {data}")
         return self._insert_metrics_into_db(
             self.job_id, self.role, self.party_id, self.task_id, self.task_version,  self.task_name, data
         )

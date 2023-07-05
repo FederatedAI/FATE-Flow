@@ -60,7 +60,8 @@ class LocalEngine(object):
                 common_cmd=cmd
             )
             p.wait()
-            logging.info(p.stdout)
+            if p.stderr:
+                logging.exception(f"Get component define failed: {p.stderr}")
         if os.path.exists(define_file):
             with open(define_file, "r") as fr:
                 return yaml.safe_load(fr)
@@ -71,7 +72,7 @@ class LocalEngine(object):
         cmd = cls.generate_cleanup_cmd(provider_name)
 
         if cmd:
-            logging.info(f"start clean task, cmd {cmd}")
+            logging.info(f"start clean task, config: {config}")
             p = WorkerManager.start_task_worker(
                 worker_name=WorkerName.TASK_EXECUTE_CLEAN,
                 task_info=task_info,
@@ -79,7 +80,8 @@ class LocalEngine(object):
                 task_parameters=config
             )
             p.wait()
-            logging.info(f"clean success, stdout: {p.stdout}")
+            logging.info(f"clean success")
+            logging.debug(f"clean stderr: {p.stderr}")
 
     @staticmethod
     def generate_component_run_cmd(provider_name, output_path=""):
