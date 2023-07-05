@@ -25,6 +25,7 @@ import yaml
 
 from fate_flow.engine.backend import build_backend
 from fate_flow.engine.storage import StorageEngine
+from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpec, ComponentIOArtifactsTypeSpec, \
     TaskConfigSpec, ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
     ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta, TaskCleanupConfigSpec
@@ -72,10 +73,14 @@ class FlowWraps(WrapsABC):
             config = self.preprocess()
             output_meta = self.run_component(config)
             self.push_output(output_meta)
-            code, exceptions = output_meta.status.code, output_meta.status.exceptions
+            code = output_meta.status.code
+            exceptions = None
+            if output_meta.status.code != ReturnCode.Base.SUCCESS:
+                code = ReturnCode.Task.COMPONENT_RUN_FAILED
+                exceptions = output_meta.status.exceptions
         except Exception as e:
             traceback.format_exc()
-            code = -1
+            code = ReturnCode.Task.TASK_RUN_FAILED
             exceptions = str(e)
             logging.exception(e)
         finally:
@@ -99,6 +104,7 @@ class FlowWraps(WrapsABC):
         input_artifacts = self._preprocess_input_artifacts()
         logging.info("success")
         logging.debug(input_artifacts)
+        logging.info(f"PYTHON PATH: {os.environ.get('PYTHONPATH')}")
 
         # output
         logging.info("start generating output artifacts")
@@ -141,13 +147,16 @@ class FlowWraps(WrapsABC):
         logging.info("finish task")
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
-                result = json.load(f)
-                output_meta = ComponentOutputMeta.parse_obj(result)
-                logging.debug(output_meta)
+                try:
+                    result = json.load(f)
+                    output_meta = ComponentOutputMeta.parse_obj(result)
+                    logging.debug(output_meta)
+                except:
+                    logging.exception(f"Task run failed, you can see the task result file for details: {task_result}")
         else:
-            logging.info(task_result)
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
-                code=1, exceptions="Task output no found"
+                code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
+                exceptions=f"Task output no found, process output stderr: {p.stderr}"
             ))
         return output_meta
 
@@ -155,7 +164,7 @@ class FlowWraps(WrapsABC):
         if self.task_end_with_success(output_meta.status.code):
             # push output data to server
             if not output_meta.io_meta:
-                logging.info("no io meta, pass push")
+                logging.info("No found io meta, pass push")
                 return
             for key, datas in output_meta.io_meta.outputs.data.items():
                 if isinstance(datas, list):
@@ -265,11 +274,12 @@ class FlowWraps(WrapsABC):
             if os.path.exists(_path):
                 with open(_path, "r") as f:
                     data = json.load(f)
-                    resp = self.mlmd.save_metric(
-                        execution_id=self.config.party_task_id,
-                        data=data
-                    )
-                    logging.info(resp.text)
+                    if data:
+                        resp = self.mlmd.save_metric(
+                            execution_id=self.config.party_task_id,
+                            data=data
+                        )
+                        logging.info(resp.text)
             else:
                 logging.warning(f"Metric path no found: {_path}")
         else:
