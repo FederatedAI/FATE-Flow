@@ -368,7 +368,7 @@ class JobParser(JobParserABC):
             return
 
         for site_name, party_tasks_spec in party_tasks.items():
-            if name not in party_tasks_spec.tasks:
+            if not party_tasks_spec.tasks or name not in party_tasks_spec.tasks:
                 continue
             party_task_spec = party_tasks_spec.tasks[name]
             if not party_task_spec.inputs:
@@ -490,22 +490,22 @@ class JobParser(JobParserABC):
         if dag.party_tasks:
             party_tasks = dag.party_tasks
             for site_name, party_tasks_spec in party_tasks.items():
-                if task_name not in party_tasks_spec.tasks:
+                if party_tasks_spec.conf:
+                    for party in party_tasks_spec.parties:
+                        if party.role in task_parameters:
+                            for party_id in party.party_id:
+                                task_conf[party.role][party_id].update(party_tasks_spec.conf)
+
+                if not party_tasks_spec.tasks or task_name not in party_tasks_spec.tasks:
                     continue
 
-                party_task_conf = copy.deepcopy(global_task_conf)
-                if party_task_conf.conf:
-                    party_task_conf.update(party_tasks_spec.conf)
                 party_parties = party_tasks_spec.parties
                 party_task_spec = party_tasks_spec.tasks[task_name]
 
-                if party_task_spec.conf:
-                    _conf = copy.deepcopy(party_task_spec.conf)
-                    party_task_conf = _conf.update(party_task_conf)
                 for party in party_parties:
                     if party.role in task_parameters:
                         for party_id in party.party_id:
-                            task_conf[party.role][party_id].update(party_task_conf)
+                            task_conf[party.role][party_id].update(party_task_spec.conf)
 
                 parameters = party_task_spec.parameters
 
