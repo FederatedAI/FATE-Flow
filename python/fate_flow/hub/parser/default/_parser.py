@@ -333,7 +333,8 @@ class JobParser(JobParserABC):
             if not task_spec.conf:
                 task_conf = copy.deepcopy(job_conf)
             else:
-                task_conf = copy.deepcopy(job_conf).update(task_spec.conf)
+                task_conf = copy.deepcopy(job_conf)
+                task_conf.update(task_spec.conf)
             if task_spec.stage:
                 task_stage = task_spec.stage
 
@@ -492,9 +493,9 @@ class JobParser(JobParserABC):
                 if task_name not in party_tasks_spec.tasks:
                     continue
 
-                party_task_conf = copy.deepcopy(party_tasks_spec.conf) if party_tasks_spec.conf else dict()
-                party_task_conf.update(global_task_conf)
-
+                party_task_conf = copy.deepcopy(global_task_conf)
+                if party_task_conf.conf:
+                    party_task_conf.update(party_tasks_spec.conf)
                 party_parties = party_tasks_spec.parties
                 party_task_spec = party_tasks_spec.tasks[task_name]
 
