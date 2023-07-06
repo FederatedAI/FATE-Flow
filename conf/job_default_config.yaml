@@ -1,10 +1,6 @@
 # resource
-total_cores_overweight_percent: 1  # 1 means no overweight
-total_memory_overweight_percent: 1  # 1 means no overweight
 task_parallelism: 1
 task_cores: 4
-task_memory: 0  # mb
-max_cores_percent_per_job: 1  # 1 means total
 
 # scheduling
 job_timeout: 259200 # s

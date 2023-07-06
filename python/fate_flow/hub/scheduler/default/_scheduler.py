@@ -20,14 +20,16 @@ from fate_flow.entity.code import SchedulingStatusCode, FederatedSchedulingStatu
 from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.db.base_models import DB
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
+from fate_flow.entity.spec.dag._job import EngineRunSpec
 from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation, \
-    FederatedCommunicationType, AutoRerunStatus
+    FederatedCommunicationType, AutoRerunStatus, ComputingEngine, EngineType
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.job import NoFoundJob
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.hub.scheduler import JobSchedulerABC
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
+from fate_flow.runtime.system_settings import ENGINES
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.utils import job_utils, schedule_utils, wraps_utils
 from fate_flow.utils.base_utils import current_timestamp, json_dumps
@@ -99,6 +101,16 @@ class DAGScheduler(JobSchedulerABC):
             dag_schema.dag.conf.model_id, dag_schema.dag.conf.model_version = job_utils.generate_model_info(job_id)
         if not dag_schema.dag.conf.auto_retries:
             dag_schema.dag.conf.auto_retries = JobDefaultConfig.auto_retries
+
+    @classmethod
+    def adapt_party_parameters(cls, dag_schema: DAGSchema):
+        task_cores = JobDefaultConfig.task_cores
+        if not dag_schema.dag.conf.engine:
+            engine_name = ENGINES.get(EngineType.COMPUTING).lower()
+
+            if engine_name == ComputingEngine.STANDALONE:
+                if dag_schema.dag.conf.task_cores:
+                    dag_schema.dag.conf.task_cores = task_cores
 
     def run_do(self):
         # waiting

@@ -22,16 +22,8 @@ stat_logger = getLogger()
 
 
 class JobDefaultConfig(ReloadConfigBase):
-    # component provider
-    default_component_provider_path = None
-
-    # Resource
-    total_cores_overweight_percent = None
-    total_memory_overweight_percent = None
     task_parallelism = None
     task_cores = None
-    task_memory = None
-    max_cores_percent_per_job = None
 
     # scheduling
     remote_request_timeout = None

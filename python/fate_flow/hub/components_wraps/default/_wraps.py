@@ -78,6 +78,7 @@ class FlowWraps(WrapsABC):
             if output_meta.status.code != ReturnCode.Base.SUCCESS:
                 code = ReturnCode.Task.COMPONENT_RUN_FAILED
                 exceptions = output_meta.status.exceptions
+                logging.exception(exceptions)
         except Exception as e:
             traceback.format_exc()
             code = ReturnCode.Task.TASK_RUN_FAILED
