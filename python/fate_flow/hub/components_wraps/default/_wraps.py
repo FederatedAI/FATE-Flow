@@ -479,6 +479,8 @@ class FlowWraps(WrapsABC):
         os.makedirs(input_model_base, exist_ok=True)
         _io = io.BytesIO()
         resp = self.mlmd.download_model(**query_field)
+        if resp.headers.get('content-type') == 'application/json':
+            raise RuntimeError(f"Download model failed, {resp.text}")
         try:
             for chunk in resp.iter_content(1024):
                 if chunk:
