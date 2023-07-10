@@ -24,6 +24,7 @@ from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.service.worker_manager import WorkerManager
+from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType
 from fate_flow.entity.code import FederatedSchedulingStatusCode
@@ -91,6 +92,9 @@ class TaskController(object):
             task.f_execution_id = execution_id
             task.f_provider_name = task_parser.provider
             task.f_sync_type = dag_schema.dag.conf.sync_type
+            if role == "local":
+                task.f_run_ip = RuntimeConfig.JOB_SERVER_HOST
+                task.f_run_port = RuntimeConfig.HTTP_PORT
             JobSaver.create_task(task.to_human_model_dict())
 
     @staticmethod
