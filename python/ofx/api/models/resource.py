@@ -176,8 +176,10 @@ class APIClient(requests.Session):
                 if t >= try_times - 1:
                     raise e
             else:
-                return json.loads(bytes.decode(_return.body.value))
-                # return json.loads(bytes.decode(_return.payload))
+                try:
+                    return json.loads(bytes.decode(_return.body.value))
+                except Exception:
+                    raise RuntimeError(bytes.decode(_return.body.value))
             finally:
                 channel.close()
 
@@ -204,7 +206,10 @@ class APIClient(requests.Session):
                 if t >= try_times - 1:
                     raise Exception(str(e))
             else:
-                return json.loads(bytes.decode(_return.payload))
+                try:
+                    return json.loads(bytes.decode(_return.payload))
+                except Exception:
+                    raise RuntimeError(bytes.decode(_return.payload))
             finally:
                 channel.close()
 
