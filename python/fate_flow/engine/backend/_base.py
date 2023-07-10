@@ -81,7 +81,6 @@ class LocalEngine(object):
             )
             p.wait()
             logging.info(f"clean success")
-            logging.debug(f"clean stderr: {p.stderr}")
 
     @staticmethod
     def generate_component_run_cmd(provider_name, output_path=""):
