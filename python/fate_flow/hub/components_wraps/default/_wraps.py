@@ -293,7 +293,6 @@ class FlowWraps(WrapsABC):
         input_artifacts = {}
         if self.config.input_artifacts.data:
             for _k, _channels in self.config.input_artifacts.data.items():
-                input_artifacts[_k] = None
                 if isinstance(_channels, list):
                     input_artifacts[_k] = []
                     for _channel in _channels:
@@ -302,10 +301,11 @@ class FlowWraps(WrapsABC):
                             input_artifacts[_k].append(_artifacts)
                 else:
                     input_artifacts[_k] = self._intput_data_artifacts(_k, _channels)
+                if not input_artifacts[_k]:
+                    input_artifacts.pop(_k)
 
         if self.config.input_artifacts.model:
             for _k, _channels in self.config.input_artifacts.model.items():
-                input_artifacts[_k] = None
                 if isinstance(_channels, list):
                     input_artifacts[_k] = []
                     for _channel in _channels:
