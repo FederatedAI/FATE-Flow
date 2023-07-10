@@ -501,11 +501,11 @@ class JobParser(JobParserABC):
 
                 party_parties = party_tasks_spec.parties
                 party_task_spec = party_tasks_spec.tasks[task_name]
-
-                for party in party_parties:
-                    if party.role in task_parameters:
-                        for party_id in party.party_id:
-                            task_conf[party.role][party_id].update(party_task_spec.conf)
+                if party_task_spec.conf:
+                    for party in party_parties:
+                        if party.role in task_parameters:
+                            for party_id in party.party_id:
+                                task_conf[party.role][party_id].update(party_task_spec.conf)
 
                 parameters = party_task_spec.parameters
 
