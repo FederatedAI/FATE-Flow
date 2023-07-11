@@ -175,3 +175,13 @@ def save_metric(execution_id, data):
     OutputMetric(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id, task_name=task.f_task_name,
                  task_id=task.f_task_id, task_version=task.f_task_version).save_output_metrics(data)
     return API.Output.json()
+
+
+@manager.route('/metric/save/<execution_id>', methods=["POST"])
+@API.Input.json(data=fields.List(fields.Dict()))
+@API.Output.runtime_exception(code=ReturnCode.API.COMPONENT_OUTPUT_EXCEPTION)
+def save_metrics(execution_id, data):
+    task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
+    OutputMetric(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id, task_name=task.f_task_name,
+                 task_id=task.f_task_id, task_version=task.f_task_version).save_output_metrics(data)
+    return API.Output.json()

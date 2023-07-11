@@ -66,6 +66,10 @@ class APIClient(requests.Session):
         return self.request('DELETE', url=self._set_url(endpoint), **self._set_request_timeout(kwargs))
 
     @property
+    def url(self):
+        return self._url
+
+    @property
     def _url(self):
         if self.version:
             return f"{self.base_url}/{self.version}"

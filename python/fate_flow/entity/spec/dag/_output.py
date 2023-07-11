@@ -19,11 +19,13 @@ from pydantic import typing
 
 
 class MetricData(pydantic.BaseModel):
-    namespace: Optional[str] = None
+    class Group(pydantic.BaseModel):
+        name: str
+        index: Optional[int]
     name: str
-    type: str
-    groups: str
-    metadata: Dict[str, str] = {}
+    type: Optional[str]
+    groups: List[Group]
+    step_axis: Optional[str]
     data: Union[List, Dict]
 
 

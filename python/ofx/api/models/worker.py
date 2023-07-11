@@ -104,3 +104,7 @@ class Worker(BaseAPI):
                 "execution_id": execution_id,
                 "data": data
             })
+
+    def get_metric_save_url(self, execution_id):
+        endpoint = f"/worker/metric/save/{execution_id}"
+        return f"{self.client.url}{endpoint}"

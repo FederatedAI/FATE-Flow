@@ -284,7 +284,7 @@ class FlowWraps(WrapsABC):
             else:
                 logging.warning(f"Metric path no found: {_path}")
         else:
-            raise ValueError(f"Engine {engine} is not supported")
+            pass
 
     @staticmethod
     def log_response(resp, req_info):
@@ -334,13 +334,15 @@ class FlowWraps(WrapsABC):
         else:
             # data
             for key in define.outputs.dict().keys():
+                if key == "metric":
+                    pass
                 datas = getattr(define.outputs, key, None)
                 if datas:
                     for data in datas:
                         _output_artifacts = []
                         for data_type in data.types:
-                            _output_artifacts.append(self._output_artifacts(data_type.type_name, data.is_multi, data.name))
-                        # todo: multi-type strategy
+                            _output_artifacts.append(self._output_artifacts(data_type.type_name, data.is_multi,
+                                                                            data.name, key))
                         output_artifacts[data.name] = _output_artifacts[0]
         return output_artifacts
 
@@ -349,7 +351,7 @@ class FlowWraps(WrapsABC):
                 self.config.conf.federation.type == ComputingEngine.STANDALONE:
             os.environ["STANDALONE_DATA_PATH"] = STANDALONE_DATA_HOME
 
-    def _output_artifacts(self, type_name, is_multi, name):
+    def _output_artifacts(self, type_name, is_multi, name, output_type=None):
         output_artifacts = ArtifactOutputApplySpec(uri="", type_name=type_name)
         if type_name in [DataframeArtifactType.type_name, TableArtifactType.type_name]:
             if self.config.conf.computing.type == ComputingEngine.STANDALONE:
@@ -360,10 +362,15 @@ class FlowWraps(WrapsABC):
                 # replace "{index}"
                 uri += "_{index}"
         else:
-            path = os.path.join(self.task_output_dir, name)
-            uri = os.path.join(f"file://{path}", type_name)
-            if is_multi:
-                uri += "_{index}"
+            if output_type == "metric":
+                # http path
+                uri = self.mlmd.get_metric_save_url(execution_id=self.config.party_task_id)
+            else:
+                # local file path
+                path = os.path.join(self.task_output_dir, name)
+                uri = os.path.join(f"file://{path}", type_name)
+                if is_multi:
+                    uri += "_{index}"
         output_artifacts.uri = uri
         return output_artifacts
 
