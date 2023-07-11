@@ -12,28 +12,54 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from fate_flow.components import LOCAL, Output, DatasetArtifact, cpn
-from fate_flow.manager.components.download import Download, DownloadParam
+import logging
+
+from fate_flow.components import cpn
+from fate_flow.engine import storage
+from fate_flow.manager.data.data_manager import DataManager
 
 
-@cpn.component(roles=[LOCAL])
-@cpn.parameter("dir_name", type=str, default=None, optional=False)
-@cpn.parameter("namespace", type=str, default=None, optional=False)
-@cpn.parameter("name", type=str, default=None, optional=False)
-@cpn.artifact("output_data", type=Output[DatasetArtifact], roles=[LOCAL])
+@cpn.component()
 def download(
-        job_id, dir_name, namespace, name,  output_data
+    config
 ):
-    download_data(job_id, dir_name, namespace, name,  output_data)
+    download_data(config)
 
 
-def download_data(job_id, dir_name, namespace, name,  output_data):
+def download_data(config):
+    job_id = config.pop("job_id")
     download_object = Download()
-    data = download_object.run(
+    download_object.run(
         parameters=DownloadParam(
-            namespace=namespace,
-            name=name,
-            dir_name=dir_name
-        ),
-        job_id=job_id
+            **config
+        )
     )
+
+
+class DownloadParam(object):
+    def __init__(
+            self,
+            namespace,
+            name,
+            path,
+    ):
+        self.name = name
+        self.namespace = namespace
+        self.path = path
+
+
+class Download:
+    def __init__(self):
+        self.parameters = None
+        self.table = None
+        self.data_meta = {}
+
+    def run(self, parameters: DownloadParam):
+        data_table_meta = storage.StorageTableMeta(name=parameters.name, namespace=parameters.namespace)
+        download_dir = parameters.path
+        logging.info("start download data")
+        DataManager.send_table(
+            output_tables_meta={"data": data_table_meta},
+            download_dir=download_dir
+        )
+        logging.info(f"download data success, download path: {parameters.path}")

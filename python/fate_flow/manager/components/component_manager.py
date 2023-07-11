@@ -66,3 +66,16 @@ class ComponentManager(Base):
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
         return result
+
+    @classmethod
+    def download(cls, namespace, name, path):
+        dag_schema = cls.local_dag_schema(
+            task_name="download_0",
+            component_ref="download",
+            parameters=dict(namespace=namespace, name=name, path=path)
+        )
+        result = JobController.request_create_job(dag_schema.dict(), is_local=True)
+        if result.get("code") == ReturnCode.Base.SUCCESS:
+            result["data"] = {"name": name, "namespace": namespace, "path": path}
+        return result
+
