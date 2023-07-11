@@ -19,7 +19,7 @@ import threading
 import yaml
 
 from fate_flow.db.base_models import DB
-from fate_flow.db.db_models import Job
+from fate_flow.db.db_models import Job, Task
 from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.runtime.system_settings import LOG_DIR, JOB_DIR, WORKERS_DIR
 from fate_flow.utils.base_utils import fate_uuid
@@ -113,15 +113,29 @@ def generate_model_info(job_id):
 
 @DB.connection_context()
 def get_job_resource_info(job_id, role, party_id):
-    jobs = Job.select(Job.f_dag).where(
+    jobs = Job.select(Job.f_cores, Job.f_memory).where(
         Job.f_job_id == job_id,
         Job.f_role == role,
         Job.f_party_id == party_id)
-
     if jobs:
         job = jobs[0]
-        dag_schema = DAGSchema(**job.f_dag)
-        return dag_schema.dag.conf.task_cores, dag_schema.dag.conf.task_parallelism
+        return job.f_cores, job.f_memory
+    else:
+        return None, None
+
+
+@DB.connection_context()
+def get_task_resource_info(job_id, role, party_id, task_id, task_version):
+    tasks = Task.select(Task.f_task_cores, Task.f_memory).where(
+        Task.f_job_id == job_id,
+        Task.f_role == role,
+        Task.f_party_id == party_id,
+        Task.f_task_id == task_id,
+        Task.f_task_version == task_version
+    )
+    if tasks:
+        task = tasks[0]
+        return task.f_task_cores, task.f_memory
     else:
         return None, None
 

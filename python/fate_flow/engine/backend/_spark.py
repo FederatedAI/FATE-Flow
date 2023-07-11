@@ -24,7 +24,7 @@ from fate_flow.utils import job_utils, process_utils
 
 
 class SparkEngine(LocalEngine):
-    def run(self, task_info, run_parameters, output_path, run_parameters_path, config_dir, log_dir, cwd_dir, provider_name, **kwargs):
+    def run(self, task_info, run_parameters, output_path, engine_run, run_parameters_path, config_dir, log_dir, cwd_dir, provider_name, **kwargs):
         # todo: get spark home from server registry
         spark_home = None
         if not spark_home:
@@ -35,19 +35,18 @@ class SparkEngine(LocalEngine):
                 raise RuntimeError("can not import pyspark")
             except Exception as e:
                 raise RuntimeError("can not import pyspark")
-        spark_submit_config = run_parameters.get("conf", {}).get("computing", {}).get("metadata", {}).get("spark_run", {})
 
-        deploy_mode = spark_submit_config.get("deploy-mode", "client")
+        deploy_mode = engine_run.get("deploy-mode", "client")
         if deploy_mode not in ["client"]:
             raise ValueError(f"deploy mode {deploy_mode} not supported")
 
         spark_submit_cmd = os.path.join(spark_home, "bin/spark-submit")
         process_cmd = [spark_submit_cmd, f"--name={task_info.get('task_id')}#{task_info.get('role')}"]
-        for k, v in spark_submit_config.items():
+        for k, v in engine_run.items():
             if k != "conf":
                 process_cmd.append(f"--{k}={v}")
-        if "conf" in spark_submit_config:
-            for ck, cv in spark_submit_config["conf"].items():
+        if "conf" in engine_run:
+            for ck, cv in engine_run["conf"].items():
                 process_cmd.append(f"--conf")
                 process_cmd.append(f"{ck}={cv}")
         extra_env = {"SPARK_HOME": spark_home}

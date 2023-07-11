@@ -28,6 +28,7 @@ from fate_flow.manager.model.model_meta import ModelMeta
 from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
+from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.runtime.system_settings import PARTY_ID, LOG_DIR, LOCAL_PARTY_ID
 from fate_flow.utils.base_utils import current_timestamp
@@ -102,10 +103,12 @@ class JobController(object):
             "model_id": dag_schema.dag.conf.model_id,
             "model_version": dag_schema.dag.conf.model_version
         }
-        if dag_schema.dag.conf.inheritance:
-            job_info.update({"inheritance": dag_schema.dag.conf.inheritance.dict()})
+        party_parameters, task_run, task_cores = RuntimeConfig.SCHEDULER.adapt_party_parameters(dag_schema, role)
+        schedule_logger(job_id).info(f"party_job_parameters: {party_parameters}")
+        schedule_logger(job_id).info(f"role {role} party_id {party_id} task run: {task_run}, task cores {task_cores}")
+        job_info.update(party_parameters)
         JobSaver.create_job(job_info=job_info)
-        TaskController.create_tasks(job_id, role, party_id, dag_schema)
+        TaskController.create_tasks(job_id, role, party_id, dag_schema, task_run=task_run, task_cores=task_cores)
 
     @classmethod
     def start_job(cls, job_id, role, party_id, extra_info=None):
