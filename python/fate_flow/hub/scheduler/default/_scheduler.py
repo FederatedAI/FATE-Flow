@@ -114,8 +114,9 @@ class DAGScheduler(JobSchedulerABC):
     @classmethod
     def calculate_resource(cls, dag_schema: DAGSchema, role):
         cores = dag_schema.dag.conf.cores if dag_schema.dag.conf.cores else JobDefaultConfig.job_cores
-        task_run = dag_schema.dag.conf.task.run
-        if not task_run:
+        if dag_schema.dag.conf.task and dag_schema.dag.conf.task.run:
+            task_run = dag_schema.dag.conf.task.run
+        else:
             task_run = {}
         task_cores = cores
         default_task_run = deepcopy(JobDefaultConfig.task_run.get(ENGINES.get(EngineType.COMPUTING), {}))
