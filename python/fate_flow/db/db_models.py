@@ -39,7 +39,7 @@ class Job(DataBaseModel):
     f_party_id = CharField(max_length=50, index=True)
     f_progress = IntegerField(null=True, default=0)
     f_model_id = CharField(max_length=100, null=True)
-    f_model_version = IntegerField(null=True, default=0)
+    f_model_version = CharField(max_length=10)
 
     f_engine_name = CharField(max_length=50, null=True)
     f_cores = IntegerField(default=0)
@@ -187,11 +187,10 @@ class Metric(DataBaseModel):
     f_task_name = CharField(max_length=50, index=True)
     f_task_id = CharField(max_length=100)
     f_task_version = BigIntegerField(null=True)
-    f_namespace = CharField(max_length=30, index=True, null=True)
     f_name = CharField(max_length=30, index=True)
-    f_type = CharField(max_length=30, index=True)
-    f_groups = CharField(max_length=30, index=True)
-    f_metadata = JSONField()
+    f_type = CharField(max_length=30, index=True, null=True)
+    f_groups = JSONField(index=True)
+    f_step_axis = CharField(max_length=30, index=True, null=True)
     f_data = JSONField()
 
 
@@ -222,7 +221,7 @@ class ComponentInfo(DataBaseModel):
 
 class PipelineModelMeta(DataBaseModel):
     f_model_id = CharField(max_length=100)
-    f_model_version = IntegerField()
+    f_model_version = CharField(max_length=10)
     f_job_id = CharField(max_length=25, index=True)
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=50, index=True)

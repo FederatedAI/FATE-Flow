@@ -43,8 +43,7 @@ class OutputMetric:
         metrics = self.read_metrics()
         for metric in metrics:
             self._insert_metrics_into_db(
-                job_id, role, party_id, task_id, task_version, task_name, MetricData(**metric),
-                incomplete=metric.get("incomplete")
+                job_id, role, party_id, task_id, task_version, task_name, MetricData(**metric)
             )
 
     @DB.connection_context()
@@ -59,11 +58,10 @@ class OutputMetric:
             "f_role": role,
             "f_party_id": party_id,
             "f_task_name": task_name,
-            "f_namespace": data.get("namespace", ""),
             "f_name": data.get("name"),
             "f_type": data.get("type"),
             "f_groups": data.get("groups"),
-            "f_metadata": data.get("metadata"),
+            "f_step_axis": data.get("step_axis"),
             "f_data": data.get("data")
 
         } for data in data_list]
@@ -78,7 +76,7 @@ class OutputMetric:
             if not filters_args:
                 filters_args = {}
             tracking_metric_model = self.get_model_class(self.job_id)
-            key_list = ["namespace", "name", "type", "groups", "incomplete"]
+            key_list = ["name", "type", "groups", "step_axis"]
             filters = [
                 tracking_metric_model.f_job_id == self.job_id,
                 tracking_metric_model.f_role == self.role,
@@ -91,12 +89,11 @@ class OutputMetric:
                     if v is not None:
                         filters.append(operator.attrgetter(f"f_{k}")(tracking_metric_model) == v)
             metrics = tracking_metric_model.select(
-                tracking_metric_model.f_namespace,
                 tracking_metric_model.f_name,
                 tracking_metric_model.f_type,
                 tracking_metric_model.f_groups,
-                tracking_metric_model.f_data,
-                tracking_metric_model.f_metadata
+                tracking_metric_model.f_step_axis,
+                tracking_metric_model.f_data
             ).where(*filters)
             return [metric.to_human_model_dict() for metric in metrics]
         except Exception as e:
@@ -108,10 +105,10 @@ class OutputMetric:
         try:
             tracking_metric_model = self.get_model_class(self.job_id)
             metrics = tracking_metric_model.select(
-                tracking_metric_model.f_namespace,
                 tracking_metric_model.f_name,
                 tracking_metric_model.f_type,
-                tracking_metric_model.f_groups
+                tracking_metric_model.f_groups,
+                tracking_metric_model.f_step_axis
             ).where(
                 tracking_metric_model.f_job_id == self.job_id,
                 tracking_metric_model.f_role == self.role,

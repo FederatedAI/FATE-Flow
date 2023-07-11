@@ -40,6 +40,8 @@ class StorageEngine(object):
     HIVE = 'hive'
     LOCALFS = 'localfs'
     API = 'api'
+    HTTP = 'http'
+    HTTPS = 'https'
 
 
 class StandaloneStoreType(object):

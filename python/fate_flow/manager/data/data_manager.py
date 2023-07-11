@@ -21,7 +21,7 @@ from flask import send_file
 
 from fate_flow.engine import storage
 from fate_flow.engine.storage import Session, StorageEngine, DataType
-from fate_flow.entity.types import EggRollAddress, StandaloneAddress, HDFSAddress, PathAddress
+from fate_flow.entity.types import EggRollAddress, StandaloneAddress, HDFSAddress, PathAddress, ApiAddress
 from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.utils.io_utils import URI
 
@@ -62,8 +62,6 @@ class DataManager:
             if download_dir:
                 return
             # tar
-            from fate_flow.utils.schedule_utils import schedule_logger
-            schedule_logger("wzh").info(output_data_file_path)
             output_data_tarfile = "{}/{}".format(output_tmp_dir, tar_file_name)
             tar = tarfile.open(output_data_tarfile, mode='w:gz')
             for index in range(0, len(output_data_file_list)):
@@ -193,6 +191,8 @@ class DataManager:
             address = HDFSAddress(path=uri_schema.path)
         elif uri_schema.schema() in [StorageEngine.PATH, StorageEngine.FILE]:
             address = PathAddress(path=uri_schema.path)
+        elif uri_schema.schema() in [StorageEngine.HTTP]:
+            address = ApiAddress(url=uri_schema.path)
         else:
             raise ValueError(f"uri {uri} engine could not be converted to an address")
         return engine, address

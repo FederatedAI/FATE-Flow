@@ -91,6 +91,25 @@ class FileURI(ConcrateURI):
 
 
 @dataclass
+class HttpURI(ConcrateURI):
+    path: str
+
+    @classmethod
+    def schema(cls):
+        return "http"
+
+    @classmethod
+    def from_uri(cls, uri: URI):
+        return HttpURI(uri.path)
+
+    def create_file(self, name):
+        return HttpURI(path=f"{self.path}/{name}")
+
+    def to_string(self):
+        return f"{self.path}"
+
+
+@dataclass
 class EggrollURI(ConcrateURI):
     namespace: str
     name: str

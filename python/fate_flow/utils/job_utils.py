@@ -92,10 +92,6 @@ def get_task_directory(job_id, role, party_id, task_name, task_version, input=Fa
     else:
         return get_job_directory(job_id, role, party_id, task_name, str(task_version))
 
-def start_session_stop(task):
-    # todo: session stop
-    pass
-
 
 def get_general_worker_directory(worker_name, worker_id, *args):
     return os.path.join(WORKERS_DIR, worker_name, worker_id, *args)
@@ -107,7 +103,7 @@ def get_general_worker_log_directory(worker_name, worker_id, *args):
 
 def generate_model_info(job_id):
     model_id = job_id
-    model_version = 0
+    model_version = "0"
     return model_id, model_version
 
 
