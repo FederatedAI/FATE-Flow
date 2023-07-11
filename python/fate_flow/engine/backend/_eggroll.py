@@ -27,7 +27,7 @@ class EggrollEngine(LocalEngine):
             parameters.conf.computing.metadata.options.update(engine_run)
         return WorkerManager.start_task_worker(
             worker_name=WorkerName.TASK_EXECUTE,
-            task_info=parameters.dict(),
+            task_info=task_info,
             common_cmd=self.generate_component_run_cmd(provider_name, output_path),
-            task_parameters=run_parameters
+            task_parameters=parameters.dict()
         )
