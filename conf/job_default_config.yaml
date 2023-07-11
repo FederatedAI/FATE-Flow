@@ -1,41 +1,22 @@
 # resource
-task_parallelism: 1
-task_cores: 4
-
-# scheduling
+job_cores: 4
+task_run:
+  spark:
+    num-executors: 2
+    executor-cores: 2
+  eggroll:
+    eggroll.session.processors.per.node: 4
+  standalone:
+    cores: 4
 job_timeout: 259200 # s
 remote_request_timeout: 30000  # ms
 federated_command_trys: 3
-end_status_job_scheduling_time_limit: 300000 # ms
-end_status_job_scheduling_updates: 1
-auto_retries: 1
-auto_retry_delay: 1  #seconds
-# It can also be specified in the job configuration using the sync_type parameter
+auto_retries: 0
 sync_type: callback # poll or callback
-detect_connect_max_retry_count: 3
-detect_connect_long_retry_count: 2
-
-# upload
-upload_block_max_bytes: 104857600 # bytes
-
-#component output
-output_data_summary_count_limit: 100
-
-task_default_conf:
-  logger:
-    type: flow
-    metadata:
-      level: DEBUG
-      debug_mode: true
-  device:
-    type: CPU
-  output:
-    data:
-      type: directory
-      format: dataframe
-    model:
-      type: directory
-      format: json
-    metric:
-      type: directory
-      format: json
+task_logger:
+  type: flow
+  metadata:
+    level: DEBUG
+    debug_mode: true
+task_device:
+  type: CPU

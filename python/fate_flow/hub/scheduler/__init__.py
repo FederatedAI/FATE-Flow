@@ -54,3 +54,8 @@ class JobSchedulerABC:
 
         """
 
+    @classmethod
+    def adapt_party_parameters(cls, dag_schema, role):
+        """
+        """
+

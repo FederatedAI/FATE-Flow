@@ -141,6 +141,7 @@ class FlowWraps(WrapsABC):
         p = self.backend.run(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
+            engine_run=self.config.engine_run,
             run_parameters=task_parameters,
             output_path=task_result
         )
@@ -189,7 +190,6 @@ class FlowWraps(WrapsABC):
                 else:
                     output_metric = ArtifactOutputSpec(**metrics)
                     self._push_metric(key, output_metric)
-        # self.report_status(output_meta.status.code, output_meta.status.exceptions)
 
     def _push_data(self, output_key, output_datas: List[ArtifactOutputSpec]):
         logging.info("save data")
@@ -215,7 +215,7 @@ class FlowWraps(WrapsABC):
                 index=index,
                 partitions=DEFAULT_OUTPUT_DATA_PARTITIONS
             )
-            logging.info(resp.text)
+            self.log_response(resp, req_info="save data tracking")
 
     def _push_model(self, output_key, output_models: List[ArtifactOutputSpec]):
         logging.info("save model")
@@ -253,7 +253,7 @@ class FlowWraps(WrapsABC):
             fp=tar_io,
             type_name=type_name
         )
-        logging.info(resp.text)
+        self.log_response(resp, req_info="save model")
 
     @staticmethod
     def _tar_model(tar_io, path):
@@ -280,11 +280,18 @@ class FlowWraps(WrapsABC):
                             execution_id=self.config.party_task_id,
                             data=data
                         )
-                        logging.info(resp.text)
+                        self.log_response(resp, req_info="save metric")
             else:
                 logging.warning(f"Metric path no found: {_path}")
         else:
             raise ValueError(f"Engine {engine} is not supported")
+
+    @staticmethod
+    def log_response(resp, req_info):
+        try:
+            logging.info(resp.json())
+        except Exception:
+            logging.exception(f"{req_info}: {resp.text}")
 
     def _default_output_info(self):
         return f"output_data_{self.config.task_id}_{self.config.task_version}", uuid.uuid1().hex
@@ -540,7 +547,7 @@ class FlowWraps(WrapsABC):
                 status=TaskStatus.FAILED,
                 error=error
             )
-        logging.info(resp.text)
+        self.log_response(resp, req_info="report status")
 
     @staticmethod
     def task_end_with_success(code):

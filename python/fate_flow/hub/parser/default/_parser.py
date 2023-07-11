@@ -197,7 +197,7 @@ class TaskParser(TaskParserABC):
             })
 
     def generate_logger_conf(self):
-        logger_conf = JobDefaultConfig.task_default_conf.get("logger")
+        logger_conf = JobDefaultConfig.task_logger
         log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id, self.task_name)
         if logger_conf.get("metadata"):
             logger_conf.get("metadata").update({"basepath": log_dir})
@@ -205,7 +205,7 @@ class TaskParser(TaskParserABC):
 
     @staticmethod
     def generate_device():
-        return JobDefaultConfig.task_default_conf.get("device")
+        return JobDefaultConfig.task_device
 
     def generate_computing_conf(self):
         if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.STANDALONE:

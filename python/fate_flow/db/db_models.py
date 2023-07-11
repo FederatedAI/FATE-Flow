@@ -42,7 +42,6 @@ class Job(DataBaseModel):
     f_model_version = IntegerField(null=True, default=0)
 
     f_engine_name = CharField(max_length=50, null=True)
-    f_engine_type = CharField(max_length=10, null=True)
     f_cores = IntegerField(default=0)
     f_memory = IntegerField(default=0)  # MB
     f_remaining_cores = IntegerField(default=0)
@@ -75,6 +74,9 @@ class Task(DataBaseModel):
     f_status = CharField(max_length=50, index=True)
     f_status_code = IntegerField(null=True)
     f_component_parameters = JSONField(null=True)
+    f_task_run = JSONField(null=True)
+    f_memory = IntegerField(default=0)
+    f_task_cores = IntegerField(default=0)
 
     f_worker_id = CharField(null=True, max_length=100)
     f_cmd = JSONField(null=True)
@@ -127,7 +129,6 @@ class EngineRegistry(DataBaseModel):
     f_memory = IntegerField()  # MB
     f_remaining_cores = IntegerField()
     f_remaining_memory = IntegerField()  # MB
-    f_nodes = IntegerField()
 
     class Meta:
         db_table = "t_engine_registry"
