@@ -32,7 +32,7 @@ def upload(
 
 
 def upload_data(config):
-    job_id = config.pop("job_id", "wzh")
+    job_id = config.pop("job_id")
     upload_object = Upload()
     data = upload_object.run(
         parameters=UploadParam(
