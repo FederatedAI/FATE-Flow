@@ -85,7 +85,14 @@ def upload_model(model_id, model_version, execution_id, output_key, type_name):
 @API.Input.params(output_key=fields.String(required=True))
 @API.Output.runtime_exception(code=ReturnCode.API.COMPONENT_OUTPUT_EXCEPTION)
 def download_model(model_id, model_version, role, party_id, task_name, output_key):
-    return PipelinedModel.download_model(model_id, model_version, role, party_id, task_name, output_key)
+    return PipelinedModel.download_model(
+        model_id=model_id,
+        model_version=model_version,
+        role=role,
+        party_id=party_id,
+        task_name=task_name,
+        output_key=output_key
+    )
 
 
 @manager.route('/data/tracking/query', methods=['GET'])

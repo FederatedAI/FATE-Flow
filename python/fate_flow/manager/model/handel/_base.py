@@ -41,9 +41,10 @@ class IOHandle(object):
     def parse_storage_key(storage_key):
         return storage_key.split(os.sep)
 
-    def download(self, model_id, model_version, role, party_id, task_name, output_key):
+    def download(self, job_id=None, model_id=None, model_version=None, role=None, party_id=None, task_name=None,
+                 output_key=None):
         model_metas = ModelMeta.query(model_id=model_id, model_version=model_version, task_name=task_name,
-                                      output_key=output_key, role=role, party_id=party_id)
+                                      output_key=output_key, role=role, party_id=party_id, job_id=job_id)
         if not model_metas:
             raise ValueError("No found model")
         return self._download(storage_key=model_metas[0].f_storage_key)
