@@ -28,7 +28,7 @@ class TaskSpec(BaseModel):
     inputs: Optional[RuntimeInputArtifacts]
     parties: Optional[List[PartySpec]]
     conf: Optional[Dict[Any, Any]]
-    stage: Optional[Union[Literal["train", "predict", "default"]]]
+    stage: Optional[Union[Literal["train", "predict", "default", "cross_validation"]]]
 
 
 class PartyTaskRefSpec(BaseModel):
@@ -80,7 +80,7 @@ class JobConfSpec(BaseModel):
 class DAGSpec(BaseModel):
     parties: List[PartySpec]
     conf: Optional[JobConfSpec]
-    stage: Optional[Union[Literal["train", "predict", "default"]]]
+    stage: Optional[Union[Literal["train", "predict", "default", "cross_validation"]]]
     tasks: Dict[str, TaskSpec]
     party_tasks: Optional[Dict[str, PartyTaskSpec]]
 
