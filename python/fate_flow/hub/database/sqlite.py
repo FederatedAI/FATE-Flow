@@ -18,7 +18,7 @@ from peewee import Insert
 from fate_flow.runtime.system_settings import SQLITE_PATH
 
 
-def get_database_connection(config):
+def get_database_connection(config, decrypt_key):
     Insert.on_conflict = lambda self, *args, **kwargs: self.on_conflict_replace()
     from playhouse.apsw_ext import APSWDatabase
     path = config.get("path")
