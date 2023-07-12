@@ -25,8 +25,8 @@ from fate_flow.manager.model.handel import IOHandle
 
 
 class TencentCosHandel(IOHandle):
-    def __init__(self, engine_address: TencentCosStorageSpec):
-        self.engine = TencentCosStorage(engine_address.dict())
+    def __init__(self, engine_address: TencentCosStorageSpec, decrypt_key: str = None):
+        self.engine = TencentCosStorage(engine_address.dict(), decrypt_key)
 
     @property
     def _name(self):

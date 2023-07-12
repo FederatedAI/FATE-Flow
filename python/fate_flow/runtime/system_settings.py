@@ -19,7 +19,7 @@ from grpc._cython import cygrpc
 
 from fate_flow.entity.types import ComputingEngine
 from fate_flow.utils import engine_utils, file_utils
-from fate_flow.utils.conf_utils import get_base_config, decrypt_database_config
+from fate_flow.utils.conf_utils import get_base_config
 from fate_flow.utils.file_utils import get_project_base_directory, get_fate_flow_directory
 
 from fate_flow.settings import *
@@ -55,7 +55,6 @@ PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol", "http")
 PROXY_NAME = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy_name")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol", "http")
 PROXY = get_base_config("federation")
-FORCE_USE_SQLITE = get_base_config("force_use_sqlite")
 ENGINES = engine_utils.get_engines()
 IS_STANDALONE = engine_utils.is_standalone()
 WORKER = get_base_config("worker", {})
@@ -64,7 +63,7 @@ CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "casbin_model.conf")
 PERMISSION_CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "permission_casbin_model.conf")
 SERVICE_CONF_NAME = "service_conf.yaml"
 
-DATABASE = decrypt_database_config()
+DATABASE = get_base_config("database", {})
 
 
 IGNORE_RESOURCE_ROLES = {"arbiter"}
@@ -94,6 +93,8 @@ CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", False)
 SITE_AUTHENTICATION = AUTHENTICATION_CONF.get("site", False)
 # permission
 PERMISSION_SWITCH = AUTHENTICATION_CONF.get("permission", False)
+
+ENCRYPT_CONF = get_base_config("encrypt")
 
 PARTY_ID = get_base_config("party_id", "")
 LOCAL_PARTY_ID = "0"
