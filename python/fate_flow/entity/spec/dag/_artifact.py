@@ -128,6 +128,9 @@ class RuntimeTaskOutputChannelSpec(pydantic.BaseModel):
     output_artifact_key: str
     roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
 
+    class Config:
+        extra = "forbid"
+
 
 class DataWarehouseChannelSpec(pydantic.BaseModel):
     job_id: Optional[str]
@@ -137,13 +140,19 @@ class DataWarehouseChannelSpec(pydantic.BaseModel):
     namespace: Optional[str]
     name: Optional[str]
 
+    class Config:
+        extra = "forbid"
+
 
 class ModelWarehouseChannelSpec(pydantic.BaseModel):
     model_id: Optional[str]
-    model_version: Optional[int]
+    model_version: Optional[str]
     producer_task: str
     output_artifact_key: str
     roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
+
+    class Config:
+        extra = "forbid"
 
 
 InputArtifactSpec = TypeVar("InputArtifactSpec",

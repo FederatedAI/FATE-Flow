@@ -95,7 +95,6 @@ class PermissionController(object):
 
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
-    @AppManager.check_app_id
     def get_permissions_for_user(app_id):
         return FATE_CASBIN.get_permissions_for_user(app_id)
 

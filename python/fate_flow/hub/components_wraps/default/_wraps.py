@@ -25,6 +25,7 @@ import yaml
 
 from fate_flow.engine.backend import build_backend
 from fate_flow.engine.storage import StorageEngine
+from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpec, ComponentIOArtifactsTypeSpec, \
     TaskConfigSpec, ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
     ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta, TaskCleanupConfigSpec
@@ -72,10 +73,15 @@ class FlowWraps(WrapsABC):
             config = self.preprocess()
             output_meta = self.run_component(config)
             self.push_output(output_meta)
-            code, exceptions = output_meta.status.code, output_meta.status.exceptions
+            code = output_meta.status.code
+            exceptions = None
+            if output_meta.status.code != ReturnCode.Base.SUCCESS:
+                code = ReturnCode.Task.COMPONENT_RUN_FAILED
+                exceptions = output_meta.status.exceptions
+                logging.exception(exceptions)
         except Exception as e:
             traceback.format_exc()
-            code = -1
+            code = ReturnCode.Task.TASK_RUN_FAILED
             exceptions = str(e)
             logging.exception(e)
         finally:
@@ -99,6 +105,7 @@ class FlowWraps(WrapsABC):
         input_artifacts = self._preprocess_input_artifacts()
         logging.info("success")
         logging.debug(input_artifacts)
+        logging.info(f"PYTHON PATH: {os.environ.get('PYTHONPATH')}")
 
         # output
         logging.info("start generating output artifacts")
@@ -134,6 +141,7 @@ class FlowWraps(WrapsABC):
         p = self.backend.run(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
+            engine_run=self.config.engine_run,
             run_parameters=task_parameters,
             output_path=task_result
         )
@@ -141,13 +149,16 @@ class FlowWraps(WrapsABC):
         logging.info("finish task")
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
-                result = json.load(f)
-                output_meta = ComponentOutputMeta.parse_obj(result)
-                logging.debug(output_meta)
+                try:
+                    result = json.load(f)
+                    output_meta = ComponentOutputMeta.parse_obj(result)
+                    logging.debug(output_meta)
+                except:
+                    logging.exception(f"Task run failed, you can see the task result file for details: {task_result}")
         else:
-            logging.info(task_result)
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
-                code=1, exceptions="Task output no found"
+                code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
+                exceptions=f"Task output no found, process output stderr: {p.stderr}"
             ))
         return output_meta
 
@@ -155,7 +166,7 @@ class FlowWraps(WrapsABC):
         if self.task_end_with_success(output_meta.status.code):
             # push output data to server
             if not output_meta.io_meta:
-                logging.info("no io meta, pass push")
+                logging.info("No found io meta, pass push")
                 return
             for key, datas in output_meta.io_meta.outputs.data.items():
                 if isinstance(datas, list):
@@ -179,7 +190,6 @@ class FlowWraps(WrapsABC):
                 else:
                     output_metric = ArtifactOutputSpec(**metrics)
                     self._push_metric(key, output_metric)
-        # self.report_status(output_meta.status.code, output_meta.status.exceptions)
 
     def _push_data(self, output_key, output_datas: List[ArtifactOutputSpec]):
         logging.info("save data")
@@ -205,7 +215,7 @@ class FlowWraps(WrapsABC):
                 index=index,
                 partitions=DEFAULT_OUTPUT_DATA_PARTITIONS
             )
-            logging.info(resp.text)
+            self.log_response(resp, req_info="save data tracking")
 
     def _push_model(self, output_key, output_models: List[ArtifactOutputSpec]):
         logging.info("save model")
@@ -243,7 +253,7 @@ class FlowWraps(WrapsABC):
             fp=tar_io,
             type_name=type_name
         )
-        logging.info(resp.text)
+        self.log_response(resp, req_info="save model")
 
     @staticmethod
     def _tar_model(tar_io, path):
@@ -265,15 +275,23 @@ class FlowWraps(WrapsABC):
             if os.path.exists(_path):
                 with open(_path, "r") as f:
                     data = json.load(f)
-                    resp = self.mlmd.save_metric(
-                        execution_id=self.config.party_task_id,
-                        data=data
-                    )
-                    logging.info(resp.text)
+                    if data:
+                        resp = self.mlmd.save_metric(
+                            execution_id=self.config.party_task_id,
+                            data=data
+                        )
+                        self.log_response(resp, req_info="save metric")
             else:
                 logging.warning(f"Metric path no found: {_path}")
         else:
-            raise ValueError(f"Engine {engine} is not supported")
+            pass
+
+    @staticmethod
+    def log_response(resp, req_info):
+        try:
+            logging.info(resp.json())
+        except Exception:
+            logging.exception(f"{req_info}: {resp.text}")
 
     def _default_output_info(self):
         return f"output_data_{self.config.task_id}_{self.config.task_version}", uuid.uuid1().hex
@@ -282,7 +300,6 @@ class FlowWraps(WrapsABC):
         input_artifacts = {}
         if self.config.input_artifacts.data:
             for _k, _channels in self.config.input_artifacts.data.items():
-                input_artifacts[_k] = None
                 if isinstance(_channels, list):
                     input_artifacts[_k] = []
                     for _channel in _channels:
@@ -291,10 +308,11 @@ class FlowWraps(WrapsABC):
                             input_artifacts[_k].append(_artifacts)
                 else:
                     input_artifacts[_k] = self._intput_data_artifacts(_k, _channels)
+                if not input_artifacts[_k]:
+                    input_artifacts.pop(_k)
 
         if self.config.input_artifacts.model:
             for _k, _channels in self.config.input_artifacts.model.items():
-                input_artifacts[_k] = None
                 if isinstance(_channels, list):
                     input_artifacts[_k] = []
                     for _channel in _channels:
@@ -316,13 +334,15 @@ class FlowWraps(WrapsABC):
         else:
             # data
             for key in define.outputs.dict().keys():
+                if key == "metric":
+                    pass
                 datas = getattr(define.outputs, key, None)
                 if datas:
                     for data in datas:
                         _output_artifacts = []
                         for data_type in data.types:
-                            _output_artifacts.append(self._output_artifacts(data_type.type_name, data.is_multi, data.name))
-                        # todo: multi-type strategy
+                            _output_artifacts.append(self._output_artifacts(data_type.type_name, data.is_multi,
+                                                                            data.name, key))
                         output_artifacts[data.name] = _output_artifacts[0]
         return output_artifacts
 
@@ -331,7 +351,7 @@ class FlowWraps(WrapsABC):
                 self.config.conf.federation.type == ComputingEngine.STANDALONE:
             os.environ["STANDALONE_DATA_PATH"] = STANDALONE_DATA_HOME
 
-    def _output_artifacts(self, type_name, is_multi, name):
+    def _output_artifacts(self, type_name, is_multi, name, output_type=None):
         output_artifacts = ArtifactOutputApplySpec(uri="", type_name=type_name)
         if type_name in [DataframeArtifactType.type_name, TableArtifactType.type_name]:
             if self.config.conf.computing.type == ComputingEngine.STANDALONE:
@@ -342,10 +362,15 @@ class FlowWraps(WrapsABC):
                 # replace "{index}"
                 uri += "_{index}"
         else:
-            path = os.path.join(self.task_output_dir, name)
-            uri = os.path.join(f"file://{path}", type_name)
-            if is_multi:
-                uri += "_{index}"
+            if output_type == "metric":
+                # http path
+                uri = self.mlmd.get_metric_save_url(execution_id=self.config.party_task_id)
+            else:
+                # local file path
+                path = os.path.join(self.task_output_dir, name)
+                uri = os.path.join(f"file://{path}", type_name)
+                if is_multi:
+                    uri += "_{index}"
         output_artifacts.uri = uri
         return output_artifacts
 
@@ -468,6 +493,8 @@ class FlowWraps(WrapsABC):
         os.makedirs(input_model_base, exist_ok=True)
         _io = io.BytesIO()
         resp = self.mlmd.download_model(**query_field)
+        if resp.headers.get('content-type') == 'application/json':
+            raise RuntimeError(f"Download model failed, {resp.text}")
         try:
             for chunk in resp.iter_content(1024):
                 if chunk:
@@ -527,7 +554,7 @@ class FlowWraps(WrapsABC):
                 status=TaskStatus.FAILED,
                 error=error
             )
-        logging.info(resp.text)
+        self.log_response(resp, req_info="report status")
 
     @staticmethod
     def task_end_with_success(code):

@@ -135,6 +135,7 @@ class PathAddress(AddressBase):
     def engine_path(self):
         return f"file:///{self.path}"
 
+
 class ApiAddress(AddressBase):
     def __init__(self, method="POST", url=None, header=None, body=None, connector_name=None):
         self.method = method
@@ -151,6 +152,10 @@ class ApiAddress(AddressBase):
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def engine_path(self):
+        return self.url
 
 
 class MysqlAddress(AddressBase):

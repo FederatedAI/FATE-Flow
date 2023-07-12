@@ -34,6 +34,7 @@ page_name = 'worker'
 @API.Input.json(execution_id=fields.String(required=True))
 @API.Input.json(status=fields.String(required=True))
 @API.Input.json(error=fields.String(required=False))
+@API.Output.runtime_exception(code=ReturnCode.API.COMPONENT_OUTPUT_EXCEPTION)
 def report_task_status(status, execution_id, error=None):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     task_info = {
@@ -51,23 +52,13 @@ def report_task_status(status, execution_id, error=None):
     return API.Output.json()
 
 
-@manager.route('/task/status', methods=['GET'])
-@API.Input.params(execution_id=fields.String(required=True))
-def query_task_status(execution_id):
-    task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
-
-    task_info = {
-        "status": task.f_status,
-    }
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=task_info)
-
-
 @manager.route('/model/save', methods=['POST'])
 @API.Input.form(model_id=fields.String(required=True))
 @API.Input.form(model_version=fields.String(required=True))
 @API.Input.form(execution_id=fields.String(required=True))
 @API.Input.form(output_key=fields.String(required=True))
 @API.Input.form(type_name=fields.String(required=True))
+@API.Output.runtime_exception(code=ReturnCode.API.COMPONENT_OUTPUT_EXCEPTION)
 def upload_model(model_id, model_version, execution_id, output_key, type_name):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     file = request.files['file']
@@ -92,8 +83,16 @@ def upload_model(model_id, model_version, execution_id, output_key, type_name):
 @API.Input.params(party_id=fields.String(required=True))
 @API.Input.params(task_name=fields.String(required=True))
 @API.Input.params(output_key=fields.String(required=True))
+@API.Output.runtime_exception(code=ReturnCode.API.COMPONENT_OUTPUT_EXCEPTION)
 def download_model(model_id, model_version, role, party_id, task_name, output_key):
-    return PipelinedModel.download_model(model_id, model_version, role, party_id, task_name, output_key)
+    return PipelinedModel.download_model(
+        model_id=model_id,
+        model_version=model_version,
+        role=role,
+        party_id=party_id,
+        task_name=task_name,
+        output_key=output_key
+    )
 
 
 @manager.route('/data/tracking/query', methods=['GET'])
@@ -104,6 +103,7 @@ def download_model(model_id, model_version, role, party_id, task_name, output_ke
 @API.Input.params(output_key=fields.String(required=False))
 @API.Input.params(namespace=fields.String(required=False))
 @API.Input.params(name=fields.String(required=False))
+@API.Output.runtime_exception(code=ReturnCode.API.COMPONENT_OUTPUT_EXCEPTION)
 def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, output_key=None, namespace=None, name=None):
     tracking_list = []
     if not namespace and not name:
@@ -122,6 +122,7 @@ def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, o
             "task_id": tasks[0].f_task_id,
             "task_version": tasks[0].f_task_version
         })
+
         data_list = OutputDataTracking.query(**data_info)
         if not data_list:
             return API.Output.json(code=ReturnCode.Task.NO_FOUND_MODEL_OUTPUT, message="failed")
@@ -146,6 +147,7 @@ def query_data_tracking(job_id=None, role=None, party_id=None, task_name=None, o
 @API.Input.json(source=fields.Dict(required=True))
 @API.Input.json(data_type=fields.String(required=True))
 @API.Input.json(index=fields.Int(required=True))
+@API.Output.runtime_exception(code=ReturnCode.API.COMPONENT_OUTPUT_EXCEPTION)
 def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name, overview, source, data_type, index,
                        partitions=None):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
@@ -174,7 +176,18 @@ def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name
 @manager.route('/metric/save', methods=["POST"])
 @API.Input.json(execution_id=fields.String(required=True))
 @API.Input.json(data=fields.List(fields.Dict()))
+@API.Output.runtime_exception(code=ReturnCode.API.COMPONENT_OUTPUT_EXCEPTION)
 def save_metric(execution_id, data):
+    task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
+    OutputMetric(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id, task_name=task.f_task_name,
+                 task_id=task.f_task_id, task_version=task.f_task_version).save_output_metrics(data)
+    return API.Output.json()
+
+
+@manager.route('/metric/save/<execution_id>', methods=["POST"])
+@API.Input.json(data=fields.List(fields.Dict()))
+@API.Output.runtime_exception(code=ReturnCode.API.COMPONENT_OUTPUT_EXCEPTION)
+def save_metrics(execution_id, data):
     task = JobSaver.query_task_by_execution_id(execution_id=execution_id)
     OutputMetric(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id, task_name=task.f_task_name,
                  task_id=task.f_task_id, task_version=task.f_task_version).save_output_metrics(data)

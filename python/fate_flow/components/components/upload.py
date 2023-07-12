@@ -32,7 +32,7 @@ def upload(
 
 
 def upload_data(config):
-    job_id = config.pop("job_id", "wzh")
+    job_id = config.pop("job_id")
     upload_object = Upload()
     data = upload_object.run(
         parameters=UploadParam(
@@ -197,24 +197,25 @@ class Upload:
         return table_count
 
     def update_schema(self, fp):
+        id_index = 0
         read_status = False
         if self.parameters.head is True:
             data_head = fp.readline()
-            self.update_table_meta(data_head)
+            id_index = self.update_table_meta(data_head)
             read_status = True
         else:
-            # self.update_table_schema()
             pass
-        return read_status
+        return id_index, read_status
 
     def upload_file(self, input_file, job_id, input_feature_count=None, table=None):
         if not table:
             table = self.table
         part_of_data = []
         with open(input_file, "r") as fp:
-            if self.update_schema(fp):
+            id_index, read_status = self.update_schema(fp)
+            if read_status:
                 input_feature_count -= 1
-            self.table.put_all(self.kv_generator(input_feature_count, fp, job_id, part_of_data))
+            self.table.put_all(self.kv_generator(input_feature_count, fp, job_id, part_of_data, id_index=id_index))
             table.meta.update_metas(part_of_data=part_of_data)
 
     def get_line(self):
@@ -225,14 +226,23 @@ class Upload:
         return line
 
     @staticmethod
-    def get_data_line(values, delimiter, **kwargs):
-        return values[0], delimiter.join(list(map(str, values[1:])))
+    def get_data_line(values, delimiter, id_index, **kwargs):
+        if id_index:
+            k = values[id_index]
+            v = delimiter.join([
+                delimiter.join(values[:id_index]),
+                delimiter.join(values[id_index + 1:])
+            ]).strip(delimiter)
+        else:
+            k = values[0]
+            v = delimiter.join(list(map(str, values[1:])))
+        return k, v
 
     @staticmethod
-    def get_sid_data_line(values, delimiter, fate_uuid, line_index):
+    def get_sid_data_line(values, delimiter, fate_uuid, line_index, **kwargs):
         return fate_uuid + str(line_index), delimiter.join(list(map(str, values[:])))
 
-    def kv_generator(self, input_feature_count, fp, job_id, part_of_data):
+    def kv_generator(self, input_feature_count, fp, job_id, part_of_data, id_index):
         fate_uuid = uuid.uuid1().hex
         get_line = self.get_line()
         line_index = 0
@@ -247,6 +257,7 @@ class Upload:
                         line_index=line_index,
                         delimiter=self.parameters.meta.delimiter,
                         fate_uuid=fate_uuid,
+                        id_index=id_index
                     )
                     yield k, v
                     line_index += 1
@@ -272,21 +283,39 @@ class Upload:
 
     def update_table_meta(self, data_head):
         logging.info(f"data head: {data_head}")
-        schema = self.get_header_schema(
+        update_schema, id_index = self.get_header_schema(
             header_line=data_head
         )
         self.data_meta.update(self.parameters.meta.to_dict())
-        self.data_meta.update(schema)
+        self.data_meta.update(update_schema)
         self.table.meta.update_metas(data_meta=self.data_meta)
+        return id_index
 
     def get_header_schema(self, header_line):
         delimiter = self.parameters.meta.delimiter
         sample_id_name = self.parameters.meta.sample_id_name
+        sample_id_index = 0
         if self.parameters.extend_sid:
             sample_id_name = "extend_sid"
             header = delimiter.join([sample_id_name, header_line]).strip()
         else:
+            header_list = header_line.split(delimiter)
             if not sample_id_name:
-                sample_id_name = header_line.split(delimiter)[0]
+                # default set sample_id_index = 0
+                sample_id_name = header_list[0]
+            else:
+                if sample_id_name not in header_line:
+                    raise RuntimeError(f"No found sample id {sample_id_name} in header")
+                sample_id_index = header_list.index(sample_id_name)
+                if sample_id_index > 0:
+                    header_line = self.join_in_index_line(delimiter, header_list, sample_id_index)
             header = header_line.strip()
-        return {'header': header, "sample_id_name": sample_id_name}
+        return {'header': header, "sample_id_name": sample_id_name}, sample_id_index
+
+    @staticmethod
+    def join_in_index_line(delimiter, values, id_index):
+        return delimiter.join([
+            values[id_index],
+            delimiter.join(values[:id_index]),
+            delimiter.join(values[id_index + 1:])
+        ]).strip(delimiter)

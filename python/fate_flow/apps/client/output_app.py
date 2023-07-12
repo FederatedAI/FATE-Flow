@@ -87,6 +87,21 @@ def query_model(job_id, role, party_id, task_name):
     return API.Output.json(data=model_data)
 
 
+@manager.route('/model/download', methods=['GET'])
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
+def download(job_id, role, party_id, task_name):
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+    if not tasks:
+        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
+                                                            task_name=task_name))
+    task = tasks[0]
+    return PipelinedModel.download_model(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id,
+                                         task_name=task.f_task_name)
+
+
 @manager.route('/model/delete', methods=['POST'])
 @API.Input.json(job_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))

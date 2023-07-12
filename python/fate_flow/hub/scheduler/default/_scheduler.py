@@ -13,24 +13,26 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from copy import deepcopy
+
 from pydantic import typing
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import SchedulingStatusCode, FederatedSchedulingStatusCode
 from fate_flow.entity.spec.dag import DAGSchema
-from fate_flow.db.base_models import DB
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
 from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation, \
-    FederatedCommunicationType, AutoRerunStatus
+    FederatedCommunicationType, AutoRerunStatus, ComputingEngine, EngineType
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.job import NoFoundJob
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.hub.scheduler import JobSchedulerABC
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
+from fate_flow.runtime.system_settings import ENGINES, COMPUTING_CONF, IGNORE_RESOURCE_ROLES
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.utils import job_utils, schedule_utils, wraps_utils
-from fate_flow.utils.base_utils import current_timestamp, json_dumps
+from fate_flow.utils.base_utils import json_dumps
 from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
 
 
@@ -39,7 +41,8 @@ class DAGScheduler(JobSchedulerABC):
     def submit(cls, dag_schema):
         dag_schema = DAGSchema(**dag_schema)
         job_id = job_utils.generate_job_id()
-        schedule_logger(job_id).info(f"submit job, dag {dag_schema.dag.dict()}, schema version {dag_schema.schema_version}")
+        schedule_logger(job_id).info(
+            f"submit job, dag {dag_schema.dag.dict()}, schema version {dag_schema.schema_version}")
         submit_result = {
             "job_id": job_id,
             "data": {}
@@ -100,6 +103,50 @@ class DAGScheduler(JobSchedulerABC):
         if not dag_schema.dag.conf.auto_retries:
             dag_schema.dag.conf.auto_retries = JobDefaultConfig.auto_retries
 
+    @classmethod
+    def adapt_party_parameters(cls, dag_schema: DAGSchema, role):
+        cores, task_run, task_cores = cls.calculate_resource(dag_schema, role)
+        job_info = {"cores": cores, "remaining_cores": cores}
+        if dag_schema.dag.conf.inheritance:
+            job_info.update({"inheritance": dag_schema.dag.conf.inheritance.dict()})
+        return job_info, task_run, task_cores
+
+    @classmethod
+    def calculate_resource(cls, dag_schema: DAGSchema, role):
+        cores = dag_schema.dag.conf.cores if dag_schema.dag.conf.cores else JobDefaultConfig.job_cores
+        if dag_schema.dag.conf.task and dag_schema.dag.conf.task.run:
+            task_run = dag_schema.dag.conf.task.run
+        else:
+            task_run = {}
+        task_cores = cores
+        default_task_run = deepcopy(JobDefaultConfig.task_run.get(ENGINES.get(EngineType.COMPUTING), {}))
+        if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.SPARK:
+            if "num-executors" not in task_run:
+                task_run["num-executors"] = default_task_run.get("num-executors")
+            if "executor-cores" not in task_run:
+                task_run["executor-cores"] = default_task_run.get("executor-cores")
+            task_cores = int(task_run.get("num-executors")) * (task_run.get("executor-cores"))
+            if task_cores > cores:
+                cores = task_cores
+        if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.EGGROLL:
+            if "eggroll.session.processors.per.node" not in task_run:
+                task_run["eggroll.session.processors.per.node"] = \
+                    default_task_run.get("eggroll.session.processors.per.node")
+            task_cores = int(task_run.get("eggroll.session.processors.per.node")) * COMPUTING_CONF.get(
+                ComputingEngine.EGGROLL).get("nodes")
+            if task_cores > cores:
+                cores = task_cores
+        if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.STANDALONE:
+            if "cores" not in task_run:
+                task_run["cores"] = default_task_run.get("cores")
+            task_cores = int(task_run.get("cores"))
+            if task_cores > cores:
+                cores = task_cores
+        if role == IGNORE_RESOURCE_ROLES:
+            cores = 0
+            task_cores = 0
+        return cores, task_run, task_cores
+
     def run_do(self):
         # waiting
         schedule_logger().info("start schedule waiting jobs")
@@ -159,27 +206,6 @@ class DAGScheduler(JobSchedulerABC):
                 schedule_logger(job.f_job_id).error("schedule job failed")
         schedule_logger().info("schedule rerun jobs finished")
 
-        # end
-        schedule_logger().info("start schedule end status jobs to update status")
-        jobs = ScheduleJobSaver.query_job(status=set(EndStatus.status_list()),
-                                          end_time=[current_timestamp() - JobDefaultConfig.end_status_job_scheduling_time_limit,
-                                                    current_timestamp()])
-        schedule_logger().info(f"have {len(jobs)} end status jobs")
-        for job in jobs:
-            schedule_logger().info(f"schedule end status job {job.f_job_id}")
-            try:
-                update_status = self.end_scheduling_updates(job_id=job.f_job_id)
-                if update_status:
-                    schedule_logger(job.f_job_id).info("try update status by scheduling like running job")
-                else:
-                    schedule_logger(job.f_job_id).info("the number of updates has been exceeded")
-                    continue
-                self.schedule_running_job(job=job, force_sync_status=True, lock=True)
-            except Exception as e:
-                schedule_logger(job.f_job_id).exception(e)
-                schedule_logger(job.f_job_id).error("schedule job failed")
-        schedule_logger().info("schedule end status jobs finished")
-
     @classmethod
     def apply_job_resource(cls, job):
         apply_status_code, federated_response = FederatedScheduler.resource_for_job(
@@ -205,7 +231,7 @@ class DAGScheduler(JobSchedulerABC):
                 else:
                     failed_party.append({"role": dest_role, "party_id": [dest_party_id]})
         schedule_logger(job.f_job_id).info("job apply resource failed on {}, rollback {}".format(failed_party,
-                                                                                           rollback_party))
+                                                                                                 rollback_party))
         if rollback_party:
             return_status_code, federated_response = FederatedScheduler.resource_for_job(
                 job_id=job.f_job_id,
@@ -237,12 +263,14 @@ class DAGScheduler(JobSchedulerABC):
         tasks_status = dict([(task.f_task_name, task.f_status) for task in tasks])
         schedule_logger(job_id=job.f_job_id).info(f"task_scheduling_status_code: {task_scheduling_status_code}, "
                                                   f"tasks_status: {tasks_status.values()}")
-        new_job_status = self.calculate_job_status(task_scheduling_status_code=task_scheduling_status_code, tasks_status=tasks_status.values())
+        new_job_status = self.calculate_job_status(task_scheduling_status_code=task_scheduling_status_code,
+                                                   tasks_status=tasks_status.values())
         if new_job_status == JobStatus.WAITING and job.f_cancel_signal:
             new_job_status = JobStatus.CANCELED
         total, finished_count = self.calculate_job_progress(tasks_status=tasks_status)
         new_progress = float(finished_count) / total * 100
-        schedule_logger(job.f_job_id).info(f"job status is {new_job_status}, calculate by task status list: {tasks_status}")
+        schedule_logger(job.f_job_id).info(
+            f"job status is {new_job_status}, calculate by task status list: {tasks_status}")
         if new_job_status != job.f_status or new_progress != job.f_progress:
             # Make sure to update separately, because these two fields update with anti-weight logic
             if int(new_progress) - job.f_progress > 0:
@@ -303,10 +331,12 @@ class DAGScheduler(JobSchedulerABC):
                     return JobStatus.RUNNING
                 else:
                     pass
-            for status in sorted(InterruptStatus.status_list(), key=lambda s: StatusSet.get_level(status=s), reverse=True):
+            for status in sorted(InterruptStatus.status_list(), key=lambda s: StatusSet.get_level(status=s),
+                                 reverse=True):
                 if status in tmp_status_set:
                     return status
-            if tmp_status_set == {TaskStatus.WAITING, TaskStatus.SUCCESS} and task_scheduling_status_code == SchedulingStatusCode.NO_NEXT:
+            if tmp_status_set == {TaskStatus.WAITING,
+                                  TaskStatus.SUCCESS} and task_scheduling_status_code == SchedulingStatusCode.NO_NEXT:
                 return JobStatus.CANCELED
 
             raise Exception("calculate job status failed, all task status: {}".format(tasks_status))
@@ -352,18 +382,6 @@ class DAGScheduler(JobSchedulerABC):
                 return ReturnCode.Job.KILL_FAILED, json_dumps(response)
         else:
             raise NoFoundJob(job_id=job_id)
-
-    @classmethod
-    @DB.connection_context()
-    def end_scheduling_updates(cls, job_id):
-        operate = ScheduleJob.update({
-            ScheduleJob.f_end_scheduling_updates: ScheduleJob.f_end_scheduling_updates + 1}
-        ).where(
-            ScheduleJob.f_job_id == job_id,
-            ScheduleJob.f_end_scheduling_updates < JobDefaultConfig.end_status_job_scheduling_updates
-        )
-        update_status = operate.execute() > 0
-        return update_status
 
     @classmethod
     def update_job_on_scheduler(cls, schedule_job: ScheduleJob, update_fields: list):
@@ -432,7 +450,7 @@ class TaskScheduler(object):
                 schedule_logger(job.f_job_id).info(f"sync task status {task.f_status} to {new_task_status}")
                 task.f_status = new_task_status
                 FederatedScheduler.sync_task_status(task_id=task.f_task_id, command_body={"status": task.f_status})
-                ScheduleJobSaver.update_task_status(task.to_human_model_dict(),  scheduler_status=True)
+                ScheduleJobSaver.update_task_status(task.to_human_model_dict(), scheduler_status=True)
             if InterruptStatus.contains(new_task_status):
                 task_interrupt = True
                 job_interrupt = True
@@ -440,7 +458,7 @@ class TaskScheduler(object):
                 waiting_tasks[task.f_task_name] = task
             elif task_status_have_update and EndStatus.contains(task.f_status) or task_interrupt:
                 schedule_logger(task.f_job_id).info(f"stop task with status: {task.f_status}")
-                FederatedScheduler.stop_task(task_id=task.f_task_id,  command_body={"status": task.f_status})
+                FederatedScheduler.stop_task(task_id=task.f_task_id, command_body={"status": task.f_status})
                 if not canceled and AutoRerunStatus.contains(task.f_status):
                     if task.f_auto_retries > 0:
                         auto_rerun_tasks.append(task)
@@ -464,7 +482,8 @@ class TaskScheduler(object):
                     scheduling_status_code = SchedulingStatusCode.HAVE_NEXT
                     status_code = cls.start_task(job=job, task=waiting_task)
                     if status_code == SchedulingStatusCode.NO_RESOURCE:
-                        schedule_logger(job.f_job_id).info(f"task {waiting_task.f_task_id} can not apply resource, wait for the next round of scheduling")
+                        schedule_logger(job.f_job_id).info(
+                            f"task {waiting_task.f_task_id} can not apply resource, wait for the next round of scheduling")
                         break
                     elif status_code == SchedulingStatusCode.FAILED:
                         schedule_logger(job.f_job_id).info(f"task status code: {status_code}")
@@ -543,7 +562,8 @@ class TaskScheduler(object):
         for _role in federated_response.keys():
             for _party_id, party_response in federated_response[_role].items():
                 if party_response["code"] == ReturnCode.Base.SUCCESS:
-                    schedule_logger(job.f_job_id).info(f"collect party id {_party_id} task info: {party_response['data']}")
+                    schedule_logger(job.f_job_id).info(
+                        f"collect party id {_party_id} task info: {party_response['data']}")
                     ScheduleJobSaver.update_task_status(task_info=party_response["data"])
                 elif set_status:
                     tmp_task_info = {
@@ -561,7 +581,9 @@ class TaskScheduler(object):
         tasks_on_all_party = ScheduleJobSaver.query_task(task_id=task_id, task_version=task_version)
         tasks_party_status = [task.f_status for task in tasks_on_all_party]
         status = cls.calculate_multi_party_task_status(tasks_party_status)
-        schedule_logger(job_id=job_id).info("task {} {} status is {}, calculate by task party status list: {}".format(task_id, task_version, status, tasks_party_status))
+        schedule_logger(job_id=job_id).info(
+            "task {} {} status is {}, calculate by task party status list: {}".format(task_id, task_version, status,
+                                                                                      tasks_party_status))
         return status
 
     @classmethod
@@ -573,7 +595,8 @@ class TaskScheduler(object):
         if len(tmp_status_set) == 1:
             return tmp_status_set.pop()
         else:
-            for status in sorted(InterruptStatus.status_list(), key=lambda s: StatusSet.get_level(status=s), reverse=True):
+            for status in sorted(InterruptStatus.status_list(), key=lambda s: StatusSet.get_level(status=s),
+                                 reverse=True):
                 if status in tmp_status_set:
                     return status
             if TaskStatus.RUNNING in tmp_status_set:

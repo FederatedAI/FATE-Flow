@@ -83,6 +83,8 @@ HEADERS = {
 BASE_URI = f"{PROTOCOL}://{HOST}:{HTTP_PORT}/{API_VERSION}"
 
 HOOK_MODULE = get_base_config("hook_module")
+# computing
+COMPUTING_CONF = get_base_config("computing", {})
 
 # authentication
 AUTHENTICATION_CONF = get_base_config("authentication", {})

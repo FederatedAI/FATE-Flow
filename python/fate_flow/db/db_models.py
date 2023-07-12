@@ -39,10 +39,9 @@ class Job(DataBaseModel):
     f_party_id = CharField(max_length=50, index=True)
     f_progress = IntegerField(null=True, default=0)
     f_model_id = CharField(max_length=100, null=True)
-    f_model_version = IntegerField(null=True, default=0)
+    f_model_version = CharField(max_length=10)
 
     f_engine_name = CharField(max_length=50, null=True)
-    f_engine_type = CharField(max_length=10, null=True)
     f_cores = IntegerField(default=0)
     f_memory = IntegerField(default=0)  # MB
     f_remaining_cores = IntegerField(default=0)
@@ -75,6 +74,9 @@ class Task(DataBaseModel):
     f_status = CharField(max_length=50, index=True)
     f_status_code = IntegerField(null=True)
     f_component_parameters = JSONField(null=True)
+    f_task_run = JSONField(null=True)
+    f_memory = IntegerField(default=0)
+    f_task_cores = IntegerField(default=0)
 
     f_worker_id = CharField(null=True, max_length=100)
     f_cmd = JSONField(null=True)
@@ -127,7 +129,6 @@ class EngineRegistry(DataBaseModel):
     f_memory = IntegerField()  # MB
     f_remaining_cores = IntegerField()
     f_remaining_memory = IntegerField()  # MB
-    f_nodes = IntegerField()
 
     class Meta:
         db_table = "t_engine_registry"
@@ -186,11 +187,10 @@ class Metric(DataBaseModel):
     f_task_name = CharField(max_length=50, index=True)
     f_task_id = CharField(max_length=100)
     f_task_version = BigIntegerField(null=True)
-    f_namespace = CharField(max_length=30, index=True, null=True)
     f_name = CharField(max_length=30, index=True)
-    f_type = CharField(max_length=30, index=True)
-    f_groups = CharField(max_length=30, index=True)
-    f_metadata = JSONField()
+    f_type = CharField(max_length=30, index=True, null=True)
+    f_groups = JSONField(index=True)
+    f_step_axis = CharField(max_length=30, index=True, null=True)
     f_data = JSONField()
 
 
@@ -221,7 +221,7 @@ class ComponentInfo(DataBaseModel):
 
 class PipelineModelMeta(DataBaseModel):
     f_model_id = CharField(max_length=100)
-    f_model_version = IntegerField()
+    f_model_version = CharField(max_length=10)
     f_job_id = CharField(max_length=25, index=True)
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=50, index=True)

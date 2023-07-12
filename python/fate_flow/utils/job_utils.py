@@ -19,7 +19,7 @@ import threading
 import yaml
 
 from fate_flow.db.base_models import DB
-from fate_flow.db.db_models import Job
+from fate_flow.db.db_models import Job, Task
 from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.runtime.system_settings import LOG_DIR, JOB_DIR, WORKERS_DIR
 from fate_flow.utils.base_utils import fate_uuid
@@ -92,10 +92,6 @@ def get_task_directory(job_id, role, party_id, task_name, task_version, input=Fa
     else:
         return get_job_directory(job_id, role, party_id, task_name, str(task_version))
 
-def start_session_stop(task):
-    # todo: session stop
-    pass
-
 
 def get_general_worker_directory(worker_name, worker_id, *args):
     return os.path.join(WORKERS_DIR, worker_name, worker_id, *args)
@@ -107,21 +103,35 @@ def get_general_worker_log_directory(worker_name, worker_id, *args):
 
 def generate_model_info(job_id):
     model_id = job_id
-    model_version = 0
+    model_version = "0"
     return model_id, model_version
 
 
 @DB.connection_context()
 def get_job_resource_info(job_id, role, party_id):
-    jobs = Job.select(Job.f_dag).where(
+    jobs = Job.select(Job.f_cores, Job.f_memory).where(
         Job.f_job_id == job_id,
         Job.f_role == role,
         Job.f_party_id == party_id)
-
     if jobs:
         job = jobs[0]
-        dag_schema = DAGSchema(**job.f_dag)
-        return dag_schema.dag.conf.task_cores, dag_schema.dag.conf.task_parallelism
+        return job.f_cores, job.f_memory
+    else:
+        return None, None
+
+
+@DB.connection_context()
+def get_task_resource_info(job_id, role, party_id, task_id, task_version):
+    tasks = Task.select(Task.f_task_cores, Task.f_memory).where(
+        Task.f_job_id == job_id,
+        Task.f_role == role,
+        Task.f_party_id == party_id,
+        Task.f_task_id == task_id,
+        Task.f_task_version == task_version
+    )
+    if tasks:
+        task = tasks[0]
+        return task.f_task_cores, task.f_memory
     else:
         return None, None
 

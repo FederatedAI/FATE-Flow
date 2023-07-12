@@ -38,9 +38,8 @@ class ResourceManager(object):
     @classmethod
     @DB.connection_context()
     def register_engine(cls, engine_type, engine_name, engine_config):
-        nodes = engine_config.get("nodes", 1)
-        cores = engine_config.get("cores_per_node", 0) * nodes * JobDefaultConfig.total_cores_overweight_percent
-        memory = engine_config.get("memory_per_node", 0) * nodes * JobDefaultConfig.total_memory_overweight_percent
+        cores = engine_config.get("cores", 0)
+        memory = engine_config.get("memory", 0)
         filters = [EngineRegistry.f_engine_type == engine_type, EngineRegistry.f_engine_name == engine_name]
         resources = EngineRegistry.select().where(*filters)
         if resources:
@@ -53,7 +52,6 @@ class ResourceManager(object):
                     cores - resource.f_cores)
             update_fields[EngineRegistry.f_remaining_memory] = EngineRegistry.f_remaining_memory + (
                     memory - resource.f_memory)
-            update_fields[EngineRegistry.f_nodes] = nodes
             operate = EngineRegistry.update(update_fields).where(*filters)
             update_status = operate.execute() > 0
             if update_status:
@@ -71,13 +69,11 @@ class ResourceManager(object):
             resource.f_memory = memory
             resource.f_remaining_cores = cores
             resource.f_remaining_memory = memory
-            resource.f_nodes = nodes
             try:
                 resource.save(force_insert=True)
             except Exception as e:
                 stat_logger.warning(e)
             stat_logger.info(f"create {engine_type} engine {engine_name} registration information")
-
 
     @classmethod
     def apply_for_job_resource(cls, job_id, role, party_id):
@@ -92,12 +88,11 @@ class ResourceManager(object):
     @DB.connection_context()
     def resource_for_job(cls, job_id, role, party_id, operation_type: ResourceOperation):
         operate_status = False
-        cores, memory = cls.calculate_job_resource(job_id=job_id, role=role, party_id=party_id)
+        cores, memory = cls.query_job_resource(job_id=job_id, role=role, party_id=party_id)
         engine_name = ENGINES.get(EngineType.COMPUTING)
         try:
             with DB.atomic():
                 updates = {
-                    Job.f_engine_type: EngineType.COMPUTING,
                     Job.f_engine_name: engine_name,
                     Job.f_cores: cores,
                     Job.f_memory: memory,
@@ -108,8 +103,6 @@ class ResourceManager(object):
                     Job.f_party_id == party_id,
                 ]
                 if operation_type is ResourceOperation.APPLY:
-                    updates[Job.f_remaining_cores] = cores
-                    updates[Job.f_remaining_memory] = memory
                     updates[Job.f_resource_in_use] = True
                     updates[Job.f_apply_resource_time] = base_utils.current_timestamp()
                     filters.append(Job.f_resource_in_use == False)
@@ -128,7 +121,6 @@ class ResourceManager(object):
                                                                memory=memory,
                                                                operation_type=operation_type,
                                                                )
-                    filters.append(EngineRegistry.f_engine_type == EngineType.COMPUTING)
                     filters.append(EngineRegistry.f_engine_name == engine_name)
                     operate = EngineRegistry.update(updates).where(*filters)
                     apply_status = operate.execute() > 0
@@ -164,7 +156,7 @@ class ResourceManager(object):
     @classmethod
     @DB.connection_context()
     def resource_for_task(cls, task_info, operation_type):
-        cores_per_task, memory_per_task = cls.calculate_task_resource(task_info=task_info)
+        cores_per_task, memory_per_task = cls.query_task_resource(task_info=task_info)
         schedule_logger(task_info["job_id"]).info(f"cores_per_task:{cores_per_task}, memory_per_task:{memory_per_task}")
         if cores_per_task or memory_per_task:
             filters, updates = cls.update_resource_sql(resource_model=Job,
@@ -196,30 +188,20 @@ class ResourceManager(object):
         return operate_status
 
     @classmethod
-    def calculate_job_resource(cls, job_id, role, party_id):
-        cores = 0
-        memory = 0
-        if role in IGNORE_RESOURCE_ROLES:
-            return cores, memory
-        task_cores, task_parallelism = job_utils.get_job_resource_info(job_id, role, party_id)
-        if not task_cores:
-            task_cores = JobDefaultConfig.task_cores
-        if not task_parallelism:
-            task_parallelism = JobDefaultConfig.task_parallelism
-
-        cores = int(task_cores) * int(task_parallelism)
-        return cores, memory
+    def query_job_resource(cls, job_id, role, party_id):
+        cores, memory = job_utils.get_job_resource_info(job_id, role, party_id)
+        return int(cores), memory
 
     @classmethod
-    def calculate_task_resource(cls, task_info: dict = None):
+    def query_task_resource(cls, task_info: dict = None):
         cores_per_task = 0
         memory_per_task = 0
         if task_info["role"] in IGNORE_RESOURCE_ROLES:
             return cores_per_task, memory_per_task
-        cores_per_task, task_parallelism = job_utils.get_job_resource_info(task_info["job_id"], task_info["role"], task_info["party_id"])
-        if not cores_per_task:
-            cores_per_task = JobDefaultConfig.task_cores
-        return cores_per_task, memory_per_task
+        task_cores, memory = job_utils.get_task_resource_info(
+            task_info["job_id"], task_info["role"], task_info["party_id"], task_info["task_id"], task_info["task_version"]
+        )
+        return task_cores, memory
 
     @classmethod
     def update_resource_sql(cls, resource_model: typing.Union[EngineRegistry, Job], cores, memory, operation_type: ResourceOperation):

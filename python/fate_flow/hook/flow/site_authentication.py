@@ -29,21 +29,21 @@ def signature(parm: SignatureParameters) -> SignatureReturn:
     sign = hashlib.md5(str(key + app.f_app_token).encode("utf8")).hexdigest().lower()
 
     return SignatureReturn(signature={
-        "signature": sign,
-        "app_id": app.f_app_id,
-        "nonce": nonce,
-        "timestamp": timestamp,
-        "initiator_party_id": initiator_party_id
+        "Signature": sign,
+        "appId": app.f_app_id,
+        "Nonce": nonce,
+        "Timestamp": timestamp,
+        "initiatorPartyId": initiator_party_id
     })
 
 
 @HookManager.register_site_authentication_hook
 def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
-    app_id = parm.headers.get("app_id")
-    timestamp = parm.headers.get("timestamp")
-    nonce = parm.headers.get("nonce")
-    sign = parm.headers.get("signature")
-    initiator_party_id = parm.headers.get("initiator_party_id")
+    app_id = parm.headers.get("appId")
+    timestamp = parm.headers.get("Timestamp")
+    nonce = parm.headers.get("Nonce")
+    sign = parm.headers.get("Signature")
+    initiator_party_id = parm.headers.get("initiatorPartyId")
     check_parameters(app_id, timestamp, nonce, sign)
     if Authentication.md5_verify(app_id, timestamp, nonce, sign, initiator_party_id):
         if PermissionController.enforcer(app_id, parm.path, parm.method):
@@ -57,10 +57,10 @@ def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
 
 def check_parameters(app_id, time_stamp, nonce, sign):
     if not app_id:
-        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter: app-id")
+        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter: appId")
     if not time_stamp or not isinstance(time_stamp, str):
-        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter:timestamp")
+        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter:timeStamp")
     if not nonce or not isinstance(time_stamp, str) or len(nonce) != 4:
-        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter: nonce")
+        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter: Nonce")
     if not sign:
-        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter: signature")
+        raise ValueError(ReturnCode.API.INVALID_PARAMETER, "invalid parameter: Signature")

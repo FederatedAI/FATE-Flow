@@ -23,7 +23,7 @@ from fate_flow.utils.api_utils import API
 page_name = "data"
 
 
-@manager.route('/upload', methods=['POST'])
+@manager.route('/component/upload', methods=['POST'])
 @API.Input.json(file=fields.String(required=True))
 @API.Input.json(head=fields.Bool(required=True))
 @API.Input.json(partitions=fields.Integer(required=True))
@@ -38,7 +38,18 @@ def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_
     return API.Output.json(**result)
 
 
-@manager.route('/dataframe/transformer', methods=['POST'])
+@manager.route('/component/download', methods=['POST'])
+@API.Input.json(name=fields.String(required=True))
+@API.Input.json(namespace=fields.String(required=True))
+@API.Input.json(path=fields.String(required=False))
+def download_data(namespace, name, path):
+    result = ComponentManager.download(
+        path=path, namespace=namespace, name=name
+    )
+    return API.Output.json(**result)
+
+
+@manager.route('/component/dataframe/transformer', methods=['POST'])
 @API.Input.json(data_warehouse=fields.Dict(required=True))
 @API.Input.json(namespace=fields.String(required=True))
 @API.Input.json(name=fields.String(required=True))

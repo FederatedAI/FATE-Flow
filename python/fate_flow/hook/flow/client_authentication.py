@@ -7,11 +7,11 @@ from fate_flow.hook.common.parameters import AuthenticationReturn, Authenticatio
 
 @HookManager.register_client_authentication_hook
 def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
-    app_id = parm.headers.get("app_id")
-    user_name = parm.headers.get("user_name")
-    timestamp = parm.headers.get("timestamp")
-    nonce = parm.headers.get("nonce")
-    signature = parm.headers.get("signature")
+    app_id = parm.headers.get("appId")
+    user_name = parm.headers.get("userName")
+    timestamp = parm.headers.get("Timestamp")
+    nonce = parm.headers.get("Nonce")
+    signature = parm.headers.get("Signature")
     check_parameters(app_id, user_name, timestamp, nonce, signature)
     if Authentication.md5_verify(app_id, timestamp, nonce, signature, user_name):
         if PermissionController.enforcer(app_id, parm.path, parm.method):
@@ -25,10 +25,10 @@ def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
 
 def check_parameters(app_id, user_name, time_stamp, nonce, signature):
     if not app_id:
-        raise InvalidParameter(name="app-id")
+        raise InvalidParameter(name="appId")
     if not time_stamp or not isinstance(time_stamp, str):
-        raise InvalidParameter(name="timestamp")
+        raise InvalidParameter(name="Timestamp")
     if not nonce or not isinstance(time_stamp, str) or len(nonce) != 4:
-        raise InvalidParameter(name="nonce")
+        raise InvalidParameter(name="Nonce")
     if not signature:
-        raise InvalidParameter(name="signature")
+        raise InvalidParameter(name="Signature")

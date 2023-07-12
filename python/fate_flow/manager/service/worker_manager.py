@@ -35,7 +35,7 @@ class WorkerManager:
         if not extra_env:
             extra_env = {}
         worker_id = uuid1().hex
-        config_dir, log_dir = cls.get_process_dirs(
+        config_dir, std_dir = cls.get_process_dirs(
             job_id=task_info.get("job_id"),
             role=task_info.get("role"),
             party_id=task_info.get("party_id"),
@@ -52,8 +52,8 @@ class WorkerManager:
             process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
         process_cmd.extend(common_cmd)
         p = process_utils.run_subprocess(job_id=task_info.get("job_id"), config_dir=config_dir, process_cmd=process_cmd,
-                                         added_env=extra_env, log_dir=log_dir, cwd_dir=config_dir,
-                                         process_name=worker_name.value, process_id=worker_id)
+                                         added_env=extra_env, std_dir=std_dir, cwd_dir=config_dir,
+                                         process_name=worker_name.value)
         if record:
             cls.save_worker_info(task_info=task_info, worker_name=worker_name, worker_id=worker_id,
                                  run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=task_parameters,
@@ -71,9 +71,9 @@ class WorkerManager:
     @classmethod
     def get_process_dirs(cls, job_id, role, party_id, task_name, task_version):
         config_dir = job_utils.get_job_directory(job_id, role, party_id, task_name, str(task_version))
-        log_dir = job_utils.get_job_log_directory(job_id, role, party_id, task_name, "process")
+        std_dir = job_utils.get_job_log_directory(job_id, role, party_id, task_name, "stdout")
         os.makedirs(config_dir, exist_ok=True)
-        return config_dir, log_dir
+        return config_dir, std_dir
 
     @classmethod
     def get_config(cls, config_dir, config):

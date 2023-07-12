@@ -41,6 +41,7 @@ class PreTaskConfigSpec(pydantic.BaseModel):
     input_artifacts: FlowRuntimeInputArtifacts = {}
     conf: TaskRuntimeConfSpec
     mlmd: MLMDSpec
+    engine_run: Optional[Dict[str, Any]] = {}
 
 
 class TaskConfigSpec(pydantic.BaseModel):
