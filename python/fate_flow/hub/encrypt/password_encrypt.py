@@ -33,7 +33,7 @@ def pwdecrypt(private_key, encrypt_msg):
 
 
 def test_encrypt_decrypt():
-    msg = "root@123."
+    msg = "fate"
     private_key, public_key = rsa_key_generate()
     encrypt_text = encrypt_data(public_key, msg)
     print(encrypt_text)
