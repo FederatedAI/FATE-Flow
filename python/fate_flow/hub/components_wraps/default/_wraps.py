@@ -289,7 +289,9 @@ class FlowWraps(WrapsABC):
     @staticmethod
     def log_response(resp, req_info):
         try:
-            logging.info(resp.json())
+            resp_json = resp.json()
+            if resp_json.get("code") != ReturnCode.Base.SUCCESS:
+                logging.exception(f"{req_info}: {resp.text}")
         except Exception:
             logging.exception(f"{req_info}: {resp.text}")
 
