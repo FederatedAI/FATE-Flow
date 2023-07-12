@@ -28,7 +28,7 @@ class TaskSpec(BaseModel):
     inputs: Optional[RuntimeInputArtifacts]
     parties: Optional[List[PartySpec]]
     conf: Optional[Dict[Any, Any]]
-    stage: Optional[Union[Literal["train", "predict", "default"]]]
+    stage: Optional[Union[Literal["train", "predict", "default", "cross_validation"]]]
 
 
 class PartyTaskRefSpec(BaseModel):
@@ -39,13 +39,17 @@ class PartyTaskRefSpec(BaseModel):
 
 class PartyTaskSpec(BaseModel):
     parties: Optional[List[PartySpec]]
-    tasks: Dict[str, PartyTaskRefSpec]
+    tasks: Optional[Dict[str, PartyTaskRefSpec]] = {}
     conf: Optional[dict]
 
 
+class EngineRunSpec(BaseModel):
+    name: str
+    conf: Optional[Dict]
+
+
 class TaskConfSpec(BaseModel):
-    task_cores: Optional[int]
-    engine: Optional[Dict[str, Any]]
+    run: Optional[Dict]
     provider: Optional[str]
 
 
@@ -62,7 +66,7 @@ class JobConfSpec(BaseModel):
     scheduler_party_id: Optional[str]
     initiator_party_id: Optional[str]
     inheritance: Optional[InheritConfSpec]
-    task_parallelism: Optional[int]
+    cores: Optional[int]
     task_cores: Optional[int]
     sync_type: Optional[Union[Literal["poll", "callback"]]]
     auto_retries: Optional[int]
@@ -70,12 +74,13 @@ class JobConfSpec(BaseModel):
     model_version: Optional[Union[str, int]]
     model_warehouse: Optional[PipelineModel]
     task: Optional[TaskConfSpec]
+    engine: Optional[EngineRunSpec]
 
 
 class DAGSpec(BaseModel):
     parties: List[PartySpec]
     conf: Optional[JobConfSpec]
-    stage: Optional[Union[Literal["train", "predict", "default"]]]
+    stage: Optional[Union[Literal["train", "predict", "default", "cross_validation"]]]
     tasks: Dict[str, TaskSpec]
     party_tasks: Optional[Dict[str, PartyTaskSpec]]
 

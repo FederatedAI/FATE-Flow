@@ -15,9 +15,10 @@
 #
 import random
 import time
+from functools import wraps
 
 import marshmallow
-from flask import jsonify, send_file
+from flask import jsonify, send_file, request as flask_request
 
 from webargs.flaskparser import parser
 
@@ -102,6 +103,22 @@ class API:
         def fate_flow_exception(e: FateFlowError):
             return API.Output.json(code=e.code, message=e.message)
 
+        @staticmethod
+        def runtime_exception(code):
+            def _outer(func):
+                @wraps(func)
+                def _wrapper(*args, **kwargs):
+                    try:
+                        return func(*args, **kwargs)
+                    except Exception as e:
+                        if isinstance(e, FateFlowError):
+                            raise e
+                        else:
+                            message = f"Request uri {flask_request.base_url} failed: {str(e)}"
+                            return API.Output.json(code=code, message=message)
+                return _wrapper
+            return _outer
+
 
 def get_federated_proxy_address():
     # protocol = CoordinationCommunicationProtocol.HTTP
@@ -127,7 +144,8 @@ def get_federated_proxy_address():
 
 
 def generate_headers(party_id, body, initiator_party_id=""):
-    return HookManager.site_signature(SignatureParameters(party_id=party_id, body=body, initiator_party_id=initiator_party_id))
+    return HookManager.site_signature(
+        SignatureParameters(party_id=party_id, body=body, initiator_party_id=initiator_party_id))
 
 
 def get_exponential_backoff_interval(retries, full_jitter=False):
@@ -143,7 +161,7 @@ def get_exponential_backoff_interval(retries, full_jitter=False):
 
 
 def federated_coordination_on_http(method, host, port, endpoint, json_body, headers=None, params=None,
-                timeout=JobDefaultConfig.remote_request_timeout):
+                                   timeout=JobDefaultConfig.remote_request_timeout):
     url = f'http://{host}:{port}/{API_VERSION}{endpoint}'
     for t in range(REQUEST_TRY_TIMES):
         try:

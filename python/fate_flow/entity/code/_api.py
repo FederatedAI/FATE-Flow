@@ -33,6 +33,9 @@ class ReturnCode:
         KILL_FAILED = 2003
         RESOURCE_EXCEPTION = 2004
         NO_FOUND_MODEL_OUTPUT = 2005
+        TASK_RUN_FAILED = 2006
+        COMPONENT_RUN_FAILED = 2007
+        NO_FOUND_RUN_RESULT = 2008
 
     class Site:
         IS_STANDALONE = 3000
@@ -50,6 +53,7 @@ class ReturnCode:
         NO_PERMISSION = 5005
         PERMISSION_OPERATE_ERROR = 5006
         NO_FOUND_FILE = 5007
+        COMPONENT_OUTPUT_EXCEPTION = 5008
 
     class Server:
         EXCEPTION = 6000

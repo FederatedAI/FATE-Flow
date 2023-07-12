@@ -197,7 +197,7 @@ class TaskParser(TaskParserABC):
             })
 
     def generate_logger_conf(self):
-        logger_conf = JobDefaultConfig.task_default_conf.get("logger")
+        logger_conf = JobDefaultConfig.task_logger
         log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id, self.task_name)
         if logger_conf.get("metadata"):
             logger_conf.get("metadata").update({"basepath": log_dir})
@@ -205,7 +205,7 @@ class TaskParser(TaskParserABC):
 
     @staticmethod
     def generate_device():
-        return JobDefaultConfig.task_default_conf.get("device")
+        return JobDefaultConfig.task_device
 
     def generate_computing_conf(self):
         if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.STANDALONE:
@@ -333,7 +333,8 @@ class JobParser(JobParserABC):
             if not task_spec.conf:
                 task_conf = copy.deepcopy(job_conf)
             else:
-                task_conf = copy.deepcopy(job_conf).update(task_spec.conf)
+                task_conf = copy.deepcopy(job_conf)
+                task_conf.update(task_spec.conf)
             if task_spec.stage:
                 task_stage = task_spec.stage
 
@@ -367,7 +368,7 @@ class JobParser(JobParserABC):
             return
 
         for site_name, party_tasks_spec in party_tasks.items():
-            if name not in party_tasks_spec.tasks:
+            if not party_tasks_spec.tasks or name not in party_tasks_spec.tasks:
                 continue
             party_task_spec = party_tasks_spec.tasks[name]
             if not party_task_spec.inputs:
@@ -489,22 +490,22 @@ class JobParser(JobParserABC):
         if dag.party_tasks:
             party_tasks = dag.party_tasks
             for site_name, party_tasks_spec in party_tasks.items():
-                if task_name not in party_tasks_spec.tasks:
-                    continue
+                if party_tasks_spec.conf:
+                    for party in party_tasks_spec.parties:
+                        if party.role in task_parameters:
+                            for party_id in party.party_id:
+                                task_conf[party.role][party_id].update(party_tasks_spec.conf)
 
-                party_task_conf = copy.deepcopy(party_tasks_spec.conf) if party_tasks_spec.conf else dict()
-                party_task_conf.update(global_task_conf)
+                if not party_tasks_spec.tasks or task_name not in party_tasks_spec.tasks:
+                    continue
 
                 party_parties = party_tasks_spec.parties
                 party_task_spec = party_tasks_spec.tasks[task_name]
-
                 if party_task_spec.conf:
-                    _conf = copy.deepcopy(party_task_spec.conf)
-                    party_task_conf = _conf.update(party_task_conf)
-                for party in party_parties:
-                    if party.role in task_parameters:
-                        for party_id in party.party_id:
-                            task_conf[party.role][party_id].update(party_task_conf)
+                    for party in party_parties:
+                        if party.role in task_parameters:
+                            for party_id in party.party_id:
+                                task_conf[party.role][party_id].update(party_task_spec.conf)
 
                 parameters = party_task_spec.parameters
 

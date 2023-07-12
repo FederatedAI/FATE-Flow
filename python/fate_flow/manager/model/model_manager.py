@@ -43,8 +43,8 @@ class PipelinedModel(object):
                                  party_id, type_name)
 
     @classmethod
-    def download_model(cls, model_id, model_version, role, party_id, task_name, output_key):
-        return cls.handle.download(model_id, model_version, role, party_id, task_name, output_key)
+    def download_model(cls, **kwargs):
+        return cls.handle.download(**kwargs)
 
     @classmethod
     def read_model(cls, job_id, role, party_id, task_name):

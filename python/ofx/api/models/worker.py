@@ -17,6 +17,8 @@ from .resource import BaseAPI
 
 class Worker(BaseAPI):
     def report_task_status(self, status, execution_id, error=""):
+        if not error:
+            error = ""
         endpoint = '/worker/task/status'
         return self.client.post(endpoint=endpoint, json={
             "status": status,
@@ -100,6 +102,9 @@ class Worker(BaseAPI):
             endpoint="/worker/metric/save",
             json={
                 "execution_id": execution_id,
-                "data": data,
-                "incomplete": True
+                "data": data
             })
+
+    def get_metric_save_url(self, execution_id):
+        endpoint = f"/worker/metric/save/{execution_id}"
+        return f"{self.client.url}{endpoint}"

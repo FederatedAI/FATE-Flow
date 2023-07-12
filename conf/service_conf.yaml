@@ -67,16 +67,14 @@ federation:
     port: 9370
 computing:
   standalone:
-    cores_per_node: 20
-    nodes: 1
+    cores: 32
   eggroll:
-    cores_per_node: 16
-    nodes: 1
+    cores: 32
+    nodes: 2
   spark:
     # default use SPARK_HOME environment variable
     home:
-    cores_per_node: 20
-    nodes: 2
+    cores: 32
 hook_module:
   client_authentication: fate_flow.hook.flow.client_authentication
   site_authentication: fate_flow.hook.flow.site_authentication

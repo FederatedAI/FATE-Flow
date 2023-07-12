@@ -66,6 +66,10 @@ class APIClient(requests.Session):
         return self.request('DELETE', url=self._set_url(endpoint), **self._set_request_timeout(kwargs))
 
     @property
+    def url(self):
+        return self._url
+
+    @property
     def _url(self):
         if self.version:
             return f"{self.base_url}/{self.version}"
@@ -176,8 +180,10 @@ class APIClient(requests.Session):
                 if t >= try_times - 1:
                     raise e
             else:
-                return json.loads(bytes.decode(_return.body.value))
-                # return json.loads(bytes.decode(_return.payload))
+                try:
+                    return json.loads(bytes.decode(_return.body.value))
+                except Exception:
+                    raise RuntimeError(bytes.decode(_return.body.value))
             finally:
                 channel.close()
 
@@ -204,7 +210,10 @@ class APIClient(requests.Session):
                 if t >= try_times - 1:
                     raise Exception(str(e))
             else:
-                return json.loads(bytes.decode(_return.payload))
+                try:
+                    return json.loads(bytes.decode(_return.payload))
+                except Exception:
+                    raise RuntimeError(bytes.decode(_return.payload))
             finally:
                 channel.close()
 

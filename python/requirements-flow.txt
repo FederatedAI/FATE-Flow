@@ -19,3 +19,6 @@ psutil>=5.7.0
 casbin_peewee_adapter
 casbin
 pymysql
+kazoo
+shortuuid
+cos-python-sdk-v5==1.9.10

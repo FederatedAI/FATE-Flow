@@ -189,10 +189,8 @@ class BaseDataBase:
             from playhouse.apsw_ext import APSWDatabase
             self.database_connection = APSWDatabase(SQLITE_PATH)
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
-            LOGGER.info('init sqlite database on standalone mode successfully')
         else:
             self.database_connection = PooledMySQLDatabase(db_name, **database_config)
-            LOGGER.info('init mysql database on cluster mode successfully')
 
 
 class DatabaseLock:

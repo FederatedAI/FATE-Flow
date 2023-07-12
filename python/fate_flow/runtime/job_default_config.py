@@ -22,36 +22,16 @@ stat_logger = getLogger()
 
 
 class JobDefaultConfig(ReloadConfigBase):
-    # component provider
-    default_component_provider_path = None
-
-    # Resource
-    total_cores_overweight_percent = None
-    total_memory_overweight_percent = None
-    task_parallelism = None
-    task_cores = None
-    task_memory = None
-    max_cores_percent_per_job = None
-
-    # scheduling
+    job_cores = None
+    task_run = None
     remote_request_timeout = None
     federated_command_trys = None
     job_timeout = None
-    end_status_job_scheduling_time_limit = None
-    end_status_job_scheduling_updates = None
     auto_retries = None
-    auto_retry_delay = None
     sync_type = None
-    detect_connect_max_retry_count = None
-    detect_connect_long_retry_count = None
 
-    # upload
-    upload_block_max_bytes = None  # bytes
-
-    # component output
-    output_data_summary_count_limit = None
-
-    task_default_conf = None
+    task_logger = None
+    task_device = None
 
     @classmethod
     def load(cls):

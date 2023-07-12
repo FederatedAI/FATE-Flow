@@ -14,16 +14,20 @@
 #  limitations under the License.
 #
 from fate_flow.engine.backend._base import LocalEngine
-from fate_flow.entity.types import WorkerName
+from fate_flow.entity.spec.dag import TaskConfigSpec
+from fate_flow.entity.types import WorkerName, ComputingEngine
 from fate_flow.manager.service.worker_manager import WorkerManager
 
 
 class EggrollEngine(LocalEngine):
-    def run(self, task_info, run_parameters, provider_name, output_path):
+    def run(self, task_info, run_parameters, engine_run, provider_name, output_path):
+        parameters = TaskConfigSpec.parse_obj(run_parameters)
+        if parameters.conf.computing.type == ComputingEngine.EGGROLL:
+            # update eggroll options
+            parameters.conf.computing.metadata.options.update(engine_run)
         return WorkerManager.start_task_worker(
             worker_name=WorkerName.TASK_EXECUTE,
             task_info=task_info,
             common_cmd=self.generate_component_run_cmd(provider_name, output_path),
-            task_parameters=run_parameters
+            task_parameters=parameters.dict()
         )
-
