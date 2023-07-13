@@ -37,7 +37,7 @@ class LoggerConfigBuilder:
         self.formatters = formatters
         if self.formatters is None:
             default_format = (
-                "'%(asctime)s %(levelname)-8s %(name)s:%(lineno)s %(message)s'"
+                "'%(asctime)s - %(levelname)-8s - %(name)s - %(funcName)s:%(lineno)d - %(message)s'"
             )
             self.formatters = {
                 "root": {"format": default_format},

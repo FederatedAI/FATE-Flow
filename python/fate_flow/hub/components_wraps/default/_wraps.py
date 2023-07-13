@@ -38,6 +38,7 @@ from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, DEFAULT_OUTPUT_DATA_PARTITIONS
 from fate_flow.utils import job_utils
 
+logger = logging.getLogger(__name__)
 
 class FlowWraps(WrapsABC):
     def __init__(self, config: PreTaskConfigSpec):
@@ -78,12 +79,12 @@ class FlowWraps(WrapsABC):
             if output_meta.status.code != ReturnCode.Base.SUCCESS:
                 code = ReturnCode.Task.COMPONENT_RUN_FAILED
                 exceptions = output_meta.status.exceptions
-                logging.exception(exceptions)
+                logger.exception(exceptions)
         except Exception as e:
             traceback.format_exc()
             code = ReturnCode.Task.TASK_RUN_FAILED
             exceptions = str(e)
-            logging.exception(e)
+            logger.exception(e)
         finally:
             self.report_status(code, exceptions)
 
@@ -100,17 +101,17 @@ class FlowWraps(WrapsABC):
 
     def preprocess(self):
         # input
-        logging.info("start generating input artifacts")
-        logging.info(self.config.input_artifacts)
+        logger.info("start generating input artifacts")
+        logger.info(self.config.input_artifacts)
         input_artifacts = self._preprocess_input_artifacts()
-        logging.info("success")
-        logging.debug(input_artifacts)
-        logging.info(f"PYTHON PATH: {os.environ.get('PYTHONPATH')}")
+        logger.info("success")
+        logger.debug(input_artifacts)
+        logger.info(f"PYTHON PATH: {os.environ.get('PYTHONPATH')}")
 
         # output
-        logging.info("start generating output artifacts")
+        logger.info("start generating output artifacts")
         output_artifacts = self._preprocess_output_artifacts()
-        logging.info(f"output_artifacts: {output_artifacts}")
+        logger.info(f"output_artifacts: {output_artifacts}")
         config = TaskConfigSpec(
             job_id=self.config.job_id,
             task_id=self.config.task_id,
@@ -125,13 +126,13 @@ class FlowWraps(WrapsABC):
             conf=self.config.conf,
             task_name=self.config.task_name
         )
-        logging.debug(config)
+        logger.debug(config)
         return config
 
     def run_component(self, config):
         self._set_env()
         task_parameters = config.dict()
-        logging.info("start run task")
+        logger.info("start run task")
         os.makedirs(self.task_input_dir, exist_ok=True)
         os.makedirs(self.task_output_dir, exist_ok=True)
         task_parameters_file = os.path.join(self.task_input_dir, "task_parameters.yaml")
@@ -146,15 +147,15 @@ class FlowWraps(WrapsABC):
             output_path=task_result
         )
         p.wait()
-        logging.info("finish task")
+        logger.info("finish task")
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
                 try:
                     result = json.load(f)
                     output_meta = ComponentOutputMeta.parse_obj(result)
-                    logging.debug(output_meta)
+                    logger.debug(output_meta)
                 except:
-                    logging.exception(f"Task run failed, you can see the task result file for details: {task_result}")
+                    logger.exception(f"Task run failed, you can see the task result file for details: {task_result}")
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
@@ -166,7 +167,7 @@ class FlowWraps(WrapsABC):
         if self.task_end_with_success(output_meta.status.code):
             # push output data to server
             if not output_meta.io_meta:
-                logging.info("No found io meta, pass push")
+                logger.info("No found io meta, pass push")
                 return
             for key, datas in output_meta.io_meta.outputs.data.items():
                 if isinstance(datas, list):
@@ -192,14 +193,14 @@ class FlowWraps(WrapsABC):
                     self._push_metric(key, output_metric)
 
     def _push_data(self, output_key, output_datas: List[ArtifactOutputSpec]):
-        logging.info("save data")
-        logging.info(f"key[{output_key}] output_datas[{output_datas}]")
+        logger.info("save data")
+        logger.info(f"key[{output_key}] output_datas[{output_datas}]")
         for index, output_data in enumerate(output_datas):
             namespace = output_data.metadata.namespace
             name = output_data.metadata.name
             if not namespace and not name:
                 namespace, name = self._default_output_info()
-            logging.info(f"save data tracking to {namespace}, {name}")
+            logger.info(f"save data tracking to {namespace}, {name}")
             overview = output_data.metadata.data_overview
             source = output_data.metadata.source
             resp = self.mlmd.save_data_tracking(
@@ -218,8 +219,8 @@ class FlowWraps(WrapsABC):
             self.log_response(resp, req_info="save data tracking")
 
     def _push_model(self, output_key, output_models: List[ArtifactOutputSpec]):
-        logging.info("save model")
-        logging.info(f"key[{output_key}] output_models[{output_models}]")
+        logger.info("save model")
+        logger.info(f"key[{output_key}] output_models[{output_models}]")
         tar_io = io.BytesIO()
         for output_model in output_models:
             engine, address = DataManager.uri_to_address(output_model.uri)
@@ -241,7 +242,7 @@ class FlowWraps(WrapsABC):
                     tar_io = self._tar_model(tar_io=tar_io, path=path)
                     type_name = output_model.type_name
                 else:
-                    logging.warning(f"Model path no found: {_path}")
+                    logger.warning(f"Model path no found: {_path}")
             else:
                 raise ValueError(f"Engine {engine} is not supported")
 
@@ -267,8 +268,8 @@ class FlowWraps(WrapsABC):
         return tar_io
 
     def _push_metric(self, output_key, output_metric: ArtifactOutputSpec):
-        logging.info(f"output metric: {output_metric}")
-        logging.info("save metric")
+        logger.info(f"output metric: {output_metric}")
+        logger.info("save metric")
         engine, address = DataManager.uri_to_address(output_metric.uri)
         if engine == StorageEngine.FILE:
             _path = address.path
@@ -282,16 +283,16 @@ class FlowWraps(WrapsABC):
                         )
                         self.log_response(resp, req_info="save metric")
             else:
-                logging.warning(f"Metric path no found: {_path}")
+                logger.warning(f"Metric path no found: {_path}")
         else:
             pass
 
     @staticmethod
     def log_response(resp, req_info):
         try:
-            logging.info(resp.json())
+            logger.info(resp.json())
         except Exception:
-            logging.exception(f"{req_info}: {resp.text}")
+            logger.exception(f"{req_info}: {resp.text}")
 
     def _default_output_info(self):
         return f"output_data_{self.config.task_id}_{self.config.task_version}", uuid.uuid1().hex
@@ -325,9 +326,9 @@ class FlowWraps(WrapsABC):
 
     def _preprocess_output_artifacts(self):
         # get component define
-        logging.debug("get component define")
+        logger.debug("get component define")
         define = self.component_define
-        logging.info(f"component define: {define}")
+        logger.info(f"component define: {define}")
         output_artifacts = {}
         if not define:
             return output_artifacts
@@ -391,12 +392,12 @@ class FlowWraps(WrapsABC):
 
     def _intput_data_artifacts(self, key, channel):
         if self.config.role not in channel.roles:
-            logging.info(f"role {self.config.role} does not require intput data artifacts")
+            logger.info(f"role {self.config.role} does not require intput data artifacts")
             return
         # data reference conversion
         meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
         query_field = {}
-        logging.info(f"get key[{key}] channel[{channel}]")
+        logger.info(f"get key[{key}] channel[{channel}]")
         if isinstance(channel, DataWarehouseChannelSpec):
             # external data reference -> data meta
             if channel.name and channel.namespace:
@@ -422,19 +423,19 @@ class FlowWraps(WrapsABC):
                 "task_name": channel.producer_task,
                 "output_key": channel.output_artifact_key
             }
-        logging.info(f"query data: [{query_field}]")
+        logger.info(f"query data: [{query_field}]")
         resp = self.mlmd.query_data_meta(**query_field)
-        logging.debug(resp.text)
+        logger.debug(resp.text)
         resp_json = resp.json()
         if resp_json.get("code") != 0:
             # Judging whether to optional
             for input_data_define in self.component_define.inputs.data:
                 if input_data_define.name == key and input_data_define.optional:
-                    logging.info(f"component define input data name {key} optional {input_data_define.optional}")
+                    logger.info(f"component define input data name {key} optional {input_data_define.optional}")
                     return
             raise ValueError(f"Get data artifacts failed: {query_field}, response: {resp.text}")
         resp_data = resp_json.get("data", [])
-        logging.info(f"success")
+        logger.info(f"success")
         if len(resp_data) == 1:
             data = resp_data[0]
             schema = data.get("meta", {})
@@ -457,7 +458,7 @@ class FlowWraps(WrapsABC):
 
     def _intput_model_artifacts(self, key, channel):
         if self.config.role not in channel.roles:
-            logging.info(f"role {self.config.role} does not require intput model artifacts")
+            logger.info(f"role {self.config.role} does not require intput model artifacts")
             return
         # model reference conversion
         meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
@@ -467,7 +468,7 @@ class FlowWraps(WrapsABC):
             "role": self.config.role,
             "party_id": self.config.party_id
         }
-        logging.info(f"get key[{key}] channel[{channel}]")
+        logger.info(f"get key[{key}] channel[{channel}]")
         if isinstance(channel, ModelWarehouseChannelSpec):
             # external model reference -> download to local
             if channel.model_id and channel.model_version:
@@ -486,7 +487,7 @@ class FlowWraps(WrapsABC):
                 "model_version": self.config.model_version
             })
 
-        logging.info(f"query model: [{query_field}]")
+        logger.info(f"query model: [{query_field}]")
 
         # this job output data reference -> data meta
         input_model_base = os.path.join(self.task_input_dir, "model")
@@ -504,10 +505,10 @@ class FlowWraps(WrapsABC):
         except Exception as e:
             for input_data_define in self.component_define.inputs.model:
                 if input_data_define.name == key and input_data_define.optional:
-                    logging.info(f"component define input model name {key} optional {input_data_define.optional}")
+                    logger.info(f"component define input model name {key} optional {input_data_define.optional}")
                     return
             raise RuntimeError(f"Download model failed: {query_field}")
-        logging.info(f"get model channel success, model names: {model.getnames()}")
+        logger.info(f"get model channel success, model names: {model.getnames()}")
         metas = []
         file_names = model.getnames()
         for name in file_names:
