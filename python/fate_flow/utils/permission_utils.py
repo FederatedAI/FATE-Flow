@@ -21,7 +21,7 @@ from fate_flow.hub.flow_hub import FlowHub
 def get_permission_parameters(role, party_id, initiator_party_id, job_info) -> PermissionCheckParameters:
     dag_schema = DAGSchema(**job_info['dag_schema'])
     job_parser = FlowHub.load_job_parser(dag_schema)
-    component_list = job_parser.component_ref_list
+    component_list = job_parser.component_ref_list(role, party_id)
     dataset_list = job_parser.dataset_list(role, party_id)
     component_parameters = job_parser.role_parameters(role, party_id)
     return PermissionCheckParameters(
