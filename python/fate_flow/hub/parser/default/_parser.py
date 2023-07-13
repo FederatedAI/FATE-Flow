@@ -12,27 +12,26 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import copy
 import os
+from typing import Dict, Union, List
 
 import networkx as nx
-import copy
-
 from pydantic import BaseModel
-from typing import Dict, Union, List
 
 from fate_flow.entity.spec.dag import DataWarehouseChannelSpec, ModelWarehouseChannelSpec, \
     RuntimeTaskOutputChannelSpec, ComponentSpec, EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec, \
     StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \
     PulsarFederationSpec, RabbitMQFederationSpec, FlowLogger, MLMDSpec, TaskRuntimeConfSpec, \
-    DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts
+    DAGSchema, DAGSpec, PreTaskConfigSpec
+from fate_flow.entity.spec.flow import SchedulerInfoSpec
+from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputArtifactType, ArtifactSourceType, \
+    ComputingEngine
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import ENGINES, PROXY, FATE_FLOW_CONF_PATH, HOST, HTTP_PORT, PROTOCOL, \
     API_VERSION
 from fate_flow.utils import job_utils, file_utils
-from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputArtifactType, ArtifactSourceType, \
-    ComputingEngine
-from fate_flow.entity.spec.flow import SchedulerInfoSpec
 from .. import TaskParserABC, JobParserABC
 
 
@@ -198,10 +197,18 @@ class TaskParser(TaskParserABC):
 
     def generate_logger_conf(self):
         logger_conf = JobDefaultConfig.task_logger
-        log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id, self.task_name)
-        if logger_conf.get("metadata"):
-            logger_conf.get("metadata").update({"basepath": log_dir})
-        return FlowLogger(**logger_conf)
+        task_log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id, self.task_name)
+        job_party_log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id)
+
+        # TODO: fix?
+        level = logger_conf.get("metadata", {}).get("level", "DEBUG")
+        delay = True
+        formatters = None
+        return FlowLogger.create(task_log_dir=task_log_dir,
+                                 job_party_log_dir=job_party_log_dir,
+                                 level=level,
+                                 delay=delay,
+                                 formatters=formatters)
 
     @staticmethod
     def generate_device():
@@ -260,8 +267,10 @@ class TaskParser(TaskParserABC):
                 federation_id=self.federation_id,
                 parties=parties,
                 route_table=PulsarFederationSpec.MetadataSpec.RouteTable(
-                    route={k: PulsarFederationSpec.MetadataSpec.RouteTable.Route(**v) for k, v in route_table.items() if k!= "default"},
-                    default=PulsarFederationSpec.MetadataSpec.RouteTable.Default(**route_table.get("default", {})) if route_table.get("default") else None
+                    route={k: PulsarFederationSpec.MetadataSpec.RouteTable.Route(**v) for k, v in route_table.items() if
+                           k != "default"},
+                    default=PulsarFederationSpec.MetadataSpec.RouteTable.Default(
+                        **route_table.get("default", {})) if route_table.get("default") else None
                 ),
                 pulsar_config=PulsarFederationSpec.MetadataSpec.PulsarConfig(**proxy_conf)
             ))
@@ -399,7 +408,8 @@ class JobParser(JobParserABC):
                         if isinstance(channel_spec_list, list):
                             inputs = []
                             for channel in channel_spec_list:
-                                model_warehouse_channel = ModelWarehouseChannelSpec(**channel.dict(exclude_defaults=True))
+                                model_warehouse_channel = ModelWarehouseChannelSpec(
+                                    **channel.dict(exclude_defaults=True))
                                 if model_warehouse_channel.model_id is None:
                                     model_warehouse_channel.model_id = \
                                         self._conf.get("model_warehouse", {}).get("model_id", None)
@@ -527,7 +537,7 @@ class JobParser(JobParserABC):
 
     @classmethod
     def infer_dependent_tasks(cls, input_artifacts):
-        print (input_artifacts)
+        print(input_artifacts)
         if not input_artifacts:
             return []
 
