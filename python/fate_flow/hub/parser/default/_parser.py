@@ -552,27 +552,37 @@ class JobParser(JobParserABC):
     def task_parser(self):
         return TaskParser
 
-    @property
-    def component_ref_list(self):
+    def component_ref_list(self, role, party_id):
         _list = []
         for name in self.topological_sort():
             node = self.get_task_node(name)
             if node:
-                _list.append(node.component_ref)
+                if self.task_parser(
+                        task_node=self.get_task_node(task_name=name),
+                        job_id="", task_name=name, role=role, party_id=party_id
+                ).need_run:
+                    _list.append(node.component_ref)
         return _list
 
     def dataset_list(self, role, party_id) -> List[DataSet]:
+        def append_dataset(datasets, channel):
+            if isinstance(channel, DataWarehouseChannelSpec):
+                if channel.name and channel.namespace:
+                    datasets.append(DataSet(**{
+                        "name": channel.name,
+                        "namespace": channel.namespace
+                    }))
         _list = []
         for task_name in self.topological_sort():
             task_node = self.get_task_node(task_name)
-            if task_node.component_ref == "reader":
-                name = task_node.runtime_parameters.get(role, {}).get(party_id, {}).get("name", "")
-                namespace = task_node.runtime_parameters.get(role, {}).get(party_id, {}).get("name", "namespace")
-                if name and namespace:
-                    _list.append(DataSet(**{
-                        "name": name,
-                        "namespace": namespace
-                    }))
+            input_artifacts = FlowRuntimeInputArtifacts(**task_node.upstream_inputs.get(role, {}).get(party_id, {}))
+            if input_artifacts.data:
+                for _k, _channels in input_artifacts.data.items():
+                    if isinstance(_channels, list):
+                        for _channel in _channels:
+                            append_dataset(_list, _channel)
+                    else:
+                        append_dataset(_list, _channels)
         return _list
 
     def role_parameters(self, role, party_id):
