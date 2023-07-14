@@ -8,7 +8,7 @@ class FateFlowError(Exception):
         suffix = ""
         if kwargs:
             for k, v in kwargs.items():
-                if v and not callable(v):
+                if v is not None and not callable(v):
                     if suffix:
                         suffix += ","
                     suffix += f"{k}[{v}]"

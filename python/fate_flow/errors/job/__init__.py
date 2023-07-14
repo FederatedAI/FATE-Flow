@@ -17,6 +17,11 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.errors import FateFlowError
 
 
+class JobParamsError(FateFlowError):
+    code = ReturnCode.Job.PARAMS_ERROR
+    message = 'Job params error'
+
+
 class NoFoundJob(FateFlowError):
     code = ReturnCode.Job.NOT_FOUND
     message = 'No found job'
