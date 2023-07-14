@@ -71,8 +71,8 @@ def request_rerun_job(job_id=None):
 @API.Input.params(description=fields.String(required=False))
 @API.Input.params(partner=fields.String(required=False))
 @API.Input.params(party_id=fields.String(required=False))
-@API.Input.params(role=fields.Dict(required=False))
-@API.Input.params(status=fields.Dict(required=False))
+@API.Input.params(role=fields.List(fields.Str(), required=False))
+@API.Input.params(status=fields.List(fields.Str(), required=False))
 @API.Input.params(order_by=fields.String(required=False))
 @API.Input.params(order=fields.String(required=False))
 @API.Input.headers(user_name=fields.String(required=False))
@@ -152,9 +152,9 @@ def clean_job(job_id):
 
 
 @manager.route('/dag/dependency', methods=['GET'])
-@API.Input.json(job_id=fields.String(required=True))
-@API.Input.json(role=fields.String(required=True))
-@API.Input.json(party_id=fields.String(required=True))
+@API.Input.params(job_id=fields.String(required=True))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
 def dag_dependency(job_id, role, party_id):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id)
     if not jobs:

@@ -17,7 +17,7 @@ from functools import wraps
 from fate_flow.db.base_models import BaseModelOperate
 from fate_flow.db.permission_models import AppInfo, PartnerAppInfo
 from fate_flow.entity.types import AppType
-from fate_flow.errors.job import NoFoundAppid
+from fate_flow.errors.job import NoFoundAppid, IsExistsRole
 from fate_flow.runtime.system_settings import ADMIN_KEY, CLIENT_AUTHENTICATION, APP_TOKEN_LENGTH, SITE_AUTHENTICATION, \
     PARTY_ID
 from fate_flow.utils.base_utils import generate_random_id
@@ -112,7 +112,10 @@ class AppManager(BaseModelOperate):
         @wraps(func)
         def _wrapper(*args, **kwargs):
             if kwargs.get("app_id"):
-                if not AppManager.query_app(app_id=kwargs.get("app_id")):
+                app_info = AppManager.query_app(app_id=kwargs.get("app_id"))
+                if not app_info:
                     raise NoFoundAppid(app_id=kwargs.get("app_id"))
+                if kwargs.get("role") and app_info[0].f_app_type != kwargs.get("role"):
+                    raise IsExistsRole(role=app_info[0].f_app_type)
             return func(*args, **kwargs)
         return _wrapper
