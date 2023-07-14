@@ -1,25 +1,35 @@
-force_use_sqlite: true
-use_registry: false
 party_id: "9999"
+use_registry: false
+encrypt:
+  key_0:
+    module: fate_flow.hub.encrypt.password_encrypt#pwdecrypt
+    # base on: fate_flow/conf/
+    private_path: private_key.pem
 fateflow:
   host: 127.0.0.1
   http_port: 9380
   grpc_port: 9360
   proxy_name: rollsite
-  # Nginx load balancing
   nginx:
     host:
     http_port:
     grpc_port:
 database:
-  name: fate_flow
-  user: fate
-  passwd: fate
-  host: 127.0.0.1
-  port: 3306
-  max_connections: 100
-  stale_timeout: 30
-# engine services
+  engine: sqlite
+  # encrypt passwd key
+  decrypt_key:
+  mysql:
+    name: fate_flow
+    user: fate
+    passwd: fate
+    host: 127.0.0.1
+    port: 3306
+    max_connections: 100
+    stale_timeout: 30
+  sqlite:
+    # default fate_flow/runtime/system_settings: SQLITE_PATH
+    # /xxx/xxx.sqlite
+    path:
 default_engines:
   computing: standalone
   federation: standalone
@@ -85,6 +95,8 @@ authentication:
   permission: false
 model_store:
   engine: file
+  # encrypt passwd key
+  decrypt_key:
   file:
     # default fate_flow/runtime/system_settings: MODEL_STORE_PATH
     path:
@@ -103,7 +115,7 @@ model_store:
     Bucket:
 zookeeper:
   hosts:
-   - 127.0.0.1:2181
+    - 127.0.0.1:2181
   use_acl: true
   user: fate
   password: fate

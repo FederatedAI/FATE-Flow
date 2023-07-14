@@ -27,12 +27,14 @@ from fate_flow.runtime.system_settings import MODEL_STORE
 
 class PipelinedModel(object):
     engine = MODEL_STORE.get("engine")
+    decrypt_key = MODEL_STORE.get("decrypt_key")
     if engine == ModelStorageEngine.FILE:
         handle = FileHandle(engine_address=FileStorageSpec(**MODEL_STORE.get(engine)))
     elif engine == ModelStorageEngine.MYSQL:
-        handle = MysqlHandel(engine_address=MysqlStorageSpec(**MODEL_STORE.get(engine)))
+        handle = MysqlHandel(engine_address=MysqlStorageSpec(**MODEL_STORE.get(engine)), decrypt_key=decrypt_key)
     elif engine == ModelStorageEngine.TENCENT_COS:
-        handle = TencentCosHandel(engine_address=TencentCosStorageSpec(**MODEL_STORE.get(engine)))
+        handle = TencentCosHandel(engine_address=TencentCosStorageSpec(**MODEL_STORE.get(engine)),
+                                  decrypt_key=decrypt_key)
     else:
         raise ValueError(f"Model storage engine {engine} is not supported.")
 

@@ -46,9 +46,7 @@ class StorageTableMetaModel(DataBaseModel):
     f_description = TextField(default='')
 
     f_read_access_time = BigIntegerField(null=True)
-    f_read_access_date = DateTimeField(null=True)
     f_write_access_time = BigIntegerField(null=True)
-    f_write_access_date = DateTimeField(null=True)
 
     class Meta:
         db_table = "t_storage_table_meta"
