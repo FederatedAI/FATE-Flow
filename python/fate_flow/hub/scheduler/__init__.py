@@ -59,3 +59,7 @@ class JobSchedulerABC:
         """
         """
 
+    @classmethod
+    def check_job_parameters(cls, dag_schema):
+        """
+        """
