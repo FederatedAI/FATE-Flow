@@ -443,7 +443,7 @@ class BaseModelOperate:
         for f_k, f_v in kwargs.items():
             attr_name = "f_%s" % f_k
             filters.append(operator.attrgetter(attr_name)(entity_model) == f_v)
-        return entity_model.delete().where(*filters).execute()
+        return entity_model.delete().where(*filters).execute() > 0
 
     @classmethod
     def safe_save(cls, model, defaults, **kwargs):

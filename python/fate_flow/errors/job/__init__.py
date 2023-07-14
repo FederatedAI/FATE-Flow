@@ -140,3 +140,8 @@ class PermissionOperateError(FateFlowError):
 class NoFoundFile(FateFlowError):
     code = ReturnCode.API.NO_FOUND_FILE
     message = "No Found File"
+
+
+class IsExistsRole(FateFlowError):
+    code = ReturnCode.API.IS_EXISTS_ROLE
+    message = "Role Is Exists"
