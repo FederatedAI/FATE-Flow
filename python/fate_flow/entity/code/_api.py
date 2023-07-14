@@ -54,6 +54,7 @@ class ReturnCode:
         PERMISSION_OPERATE_ERROR = 5006
         NO_FOUND_FILE = 5007
         COMPONENT_OUTPUT_EXCEPTION = 5008
+        IS_EXISTS_ROLE = 5009
 
     class Server:
         EXCEPTION = 6000
