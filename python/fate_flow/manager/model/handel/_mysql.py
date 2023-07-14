@@ -26,8 +26,8 @@ from fate_flow.manager.model.handel import IOHandle
 
 
 class MysqlHandel(IOHandle):
-    def __init__(self, engine_address: MysqlStorageSpec):
-        self.engine = MysqlModelStorage(engine_address.dict())
+    def __init__(self, engine_address: MysqlStorageSpec, decrypt_key=None):
+        self.engine = MysqlModelStorage(engine_address.dict(), decrypt_key=decrypt_key)
 
     @property
     def _name(self):
