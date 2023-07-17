@@ -104,7 +104,7 @@ class FlowWraps(WrapsABC):
         logger.info("start generating input artifacts")
         logger.info(self.config.input_artifacts)
         input_artifacts = self._preprocess_input_artifacts()
-        logger.info("success")
+        logger.info("input artifacts are ready")
         logger.debug(input_artifacts)
         logger.info(f"PYTHON PATH: {os.environ.get('PYTHONPATH')}")
 
@@ -438,7 +438,7 @@ class FlowWraps(WrapsABC):
                     return
             raise ValueError(f"Get data artifacts failed: {query_field}, response: {resp.text}")
         resp_data = resp_json.get("data", [])
-        logger.info(f"success")
+        logger.info(f"intput data artifacts are ready")
         if len(resp_data) == 1:
             data = resp_data[0]
             schema = data.get("meta", {})
@@ -511,7 +511,7 @@ class FlowWraps(WrapsABC):
                     logger.info(f"component define input model name {key} optional {input_data_define.optional}")
                     return
             raise RuntimeError(f"Download model failed: {query_field}")
-        logger.info(f"get model channel success, model names: {model.getnames()}")
+        logger.info(f"intput model artifacts are ready: {model.getnames()}")
         metas = []
         file_names = model.getnames()
         for name in file_names:
