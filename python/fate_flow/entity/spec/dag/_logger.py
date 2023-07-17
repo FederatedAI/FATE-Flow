@@ -12,6 +12,9 @@ class FlowLogger(pydantic.BaseModel):
     config: dict
 
     def install(self):
+        for _name, _conf in self.config.get("handlers", {}).items():
+            if _conf.get("filename"):
+                os.makedirs(os.path.dirname(_conf.get("filename")), exist_ok=True)
         logging.config.dictConfig(self.config)
 
     @classmethod
@@ -23,7 +26,6 @@ class FlowLogger(pydantic.BaseModel):
         delay: bool,
         formatters: Optional[dict] = None,
     ):
-        os.makedirs(task_log_dir, exist_ok=True)
         return FlowLogger(
             config=LoggerConfigBuilder(
                 level, formatters, delay, task_log_dir, job_party_log_dir
@@ -37,7 +39,7 @@ class LoggerConfigBuilder:
         self.formatters = formatters
         if self.formatters is None:
             default_format = (
-                "'%(asctime)s - %(levelname)-8s - %(name)s - %(funcName)s:%(lineno)d - %(message)s'"
+                "[%(levelname)s][%(asctime)-8s][%(process)s][%(module)s.%(funcName)s][line:%(lineno)d]: %(message)s"
             )
             self.formatters = {
                 "root": {"format": default_format},
@@ -54,13 +56,11 @@ class LoggerConfigBuilder:
 
         # add loggers
         root_logger_dir = os.path.join(log_base_dir, "root")
-        os.makedirs(root_logger_dir, exist_ok=True)
         self._add_root_loggers(
             log_base_dir=root_logger_dir, formatter_name="root", delay=delay
         )
 
         component_logger_dir = os.path.join(log_base_dir, "component")
-        os.makedirs(component_logger_dir, exist_ok=True)
         self._add_component_loggers(
             log_base_dir=component_logger_dir,
             formatter_name="component",
