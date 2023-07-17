@@ -17,6 +17,11 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.errors import FateFlowError
 
 
+class JobParamsError(FateFlowError):
+    code = ReturnCode.Job.PARAMS_ERROR
+    message = 'Job params error'
+
+
 class NoFoundJob(FateFlowError):
     code = ReturnCode.Job.NOT_FOUND
     message = 'No found job'
@@ -140,3 +145,8 @@ class PermissionOperateError(FateFlowError):
 class NoFoundFile(FateFlowError):
     code = ReturnCode.API.NO_FOUND_FILE
     message = "No Found File"
+
+
+class IsExistsRole(FateFlowError):
+    code = ReturnCode.API.IS_EXISTS_ROLE
+    message = "Role Is Exists"

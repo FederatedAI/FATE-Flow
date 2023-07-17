@@ -30,7 +30,7 @@ from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.runtime.system_settings import PARTY_ID, LOG_DIR, LOCAL_PARTY_ID
+from fate_flow.runtime.system_settings import PARTY_ID, LOCAL_PARTY_ID
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.job_utils import get_job_log_directory, save_job_dag
 from fate_flow.utils.log_utils import schedule_logger
@@ -48,18 +48,18 @@ class JobController(object):
                 dag_schema.dag.conf.scheduler_party_id = PARTY_ID
             else:
                 dag_schema.dag.conf.scheduler_party_id = LOCAL_PARTY_ID
-        JobInheritance.check(dag_schema.dag.conf.inheritance)
+        RuntimeConfig.SCHEDULER.check_job_parameters(dag_schema)
 
         response = FederatedScheduler.request_create_job(
             party_id=dag_schema.dag.conf.scheduler_party_id,
             initiator_party_id=dag_schema.dag.conf.initiator_party_id,
             command_body={
-                "dag_schema": dag_schema.dict()
+                "dag_schema": dag_schema.dict(exclude_defaults=True)
             })
         if user_name and response.get("code") == ReturnCode.Base.SUCCESS:
             JobSaver.update_job_user(job_id=response.get("job_id"), user_name=user_name)
         if response and isinstance(response, dict) and response.get("code") == ReturnCode.Base.SUCCESS:
-            save_job_dag(job_id=response.get("job_id"), dag=dag_schema.dict())
+            save_job_dag(job_id=response.get("job_id"), dag=dag_schema.dict(exclude_defaults=True))
         return response
 
     @classmethod
@@ -308,6 +308,11 @@ class JobInheritance:
     def check(cls, inheritance: InheritConfSpec = None):
         if not inheritance:
             return
+        if not inheritance.task_list:
+            raise InheritanceFailed(
+                task_list=inheritance.task_list,
+                position="dag_schema.dag.conf.inheritance.task_list"
+            )
         inheritance_jobs = JobSaver.query_job(job_id=inheritance.job_id)
         inheritance_tasks = JobSaver.query_task(job_id=inheritance.job_id)
         if not inheritance_jobs:

@@ -17,6 +17,7 @@ from copy import deepcopy
 
 from pydantic import typing
 
+from fate_flow.controller.job_controller import JobInheritance
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import SchedulingStatusCode, FederatedSchedulingStatusCode
 from fate_flow.entity.spec.dag import DAGSchema
@@ -24,9 +25,10 @@ from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
 from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation, \
     FederatedCommunicationType, AutoRerunStatus, ComputingEngine, EngineType
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import NoFoundJob
+from fate_flow.errors.job import NoFoundJob, JobParamsError
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.hub.scheduler import JobSchedulerABC
+from fate_flow.manager.model.model_meta import ModelMeta
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import ENGINES, COMPUTING_CONF, IGNORE_RESOURCE_ROLES
@@ -37,6 +39,21 @@ from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
 
 
 class DAGScheduler(JobSchedulerABC):
+    @classmethod
+    def check_job_parameters(cls, dag_schema: DAGSchema):
+        # check inheritance
+        JobInheritance.check(dag_schema.dag.conf.inheritance)
+
+        # check model warehouse
+        model_warehouse = dag_schema.dag.conf.model_warehouse
+        if model_warehouse:
+            if not ModelMeta.query(model_id=model_warehouse.model_id, model_version=model_warehouse.model_version):
+                raise JobParamsError(
+                    model_id=model_warehouse.model_id,
+                    model_version=model_warehouse.model_version,
+                    position="dag_schema.dag.conf.model_warehouse"
+                )
+
     @classmethod
     def submit(cls, dag_schema):
         dag_schema = DAGSchema(**dag_schema)

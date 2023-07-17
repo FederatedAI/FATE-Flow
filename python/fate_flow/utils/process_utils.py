@@ -201,10 +201,10 @@ def kill_task_executor_process(task: Task, only_child=False):
             return KillProcessRetCode.ERROR_PID
         for child in p.children(recursive=True):
             if check_process(pid=child.pid, task=task):
-                kill(p)
+                child.kill()
         if not only_child:
             if check_process(pid, task=task):
-                kill(p)
+                p.kill()
         schedule_logger(task.f_job_id).info("successfully stop task {} {} {} process pid:{}".format(
             task.f_task_id, task.f_role, task.f_party_id, pid))
         return KillProcessRetCode.KILLED

@@ -15,7 +15,7 @@
 #
 from peewee import CharField, TextField, IntegerField, BooleanField, BigIntegerField, CompositeKey
 
-from fate_flow.db.base_models import DataBaseModel, JSONField, DateTimeField
+from fate_flow.db.base_models import DataBaseModel, JSONField
 
 
 class ScheduleJob(DataBaseModel):
@@ -38,9 +38,7 @@ class ScheduleJob(DataBaseModel):
     f_end_scheduling_updates = IntegerField(null=True, default=0)
 
     f_start_time = BigIntegerField(null=True)
-    f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)
-    f_end_date = DateTimeField(null=True)
     f_elapsed = BigIntegerField(null=True)
 
     class Meta:
@@ -61,9 +59,7 @@ class ScheduleTask(DataBaseModel):
     f_status = CharField(max_length=50)
 
     f_start_time = BigIntegerField(null=True)
-    f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)
-    f_end_date = DateTimeField(null=True)
     f_elapsed = BigIntegerField(null=True)
 
     class Meta:
