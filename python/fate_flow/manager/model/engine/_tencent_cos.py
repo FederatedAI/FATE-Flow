@@ -20,7 +20,7 @@ from fate_flow.db.base_models import LOGGER
 
 
 class TencentCosStorage(object):
-    def __init__(self, storage_address):
+    def __init__(self, storage_address, decrypt_key=None):
         self.Bucket = storage_address.get("Bucket")
         self.client = self.init_client(storage_address)
 

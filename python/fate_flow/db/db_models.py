@@ -16,7 +16,7 @@
 import datetime
 
 from peewee import CharField, TextField, BigIntegerField, IntegerField, BooleanField, CompositeKey, BigAutoField
-from fate_flow.db.base_models import DataBaseModel, JSONField, DateTimeField
+from fate_flow.db.base_models import DataBaseModel, JSONField
 
 
 class Job(DataBaseModel):
@@ -51,9 +51,7 @@ class Job(DataBaseModel):
     f_return_resource_time = BigIntegerField(null=True)
 
     f_start_time = BigIntegerField(null=True)
-    f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)
-    f_end_date = DateTimeField(null=True)
     f_elapsed = BigIntegerField(null=True)
 
     class Meta:
@@ -93,9 +91,7 @@ class Task(DataBaseModel):
     f_sync_type = CharField(max_length=20)
 
     f_start_time = BigIntegerField(null=True)
-    f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)
-    f_end_date = DateTimeField(null=True)
     f_elapsed = BigIntegerField(null=True)
 
     class Meta:
@@ -150,9 +146,7 @@ class WorkerInfo(DataBaseModel):
     f_config = JSONField(null=True)
     f_cmd = JSONField(null=True)
     f_start_time = BigIntegerField(null=True)
-    f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)
-    f_end_date = DateTimeField(null=True)
 
     class Meta:
         db_table = "t_worker"
@@ -189,7 +183,7 @@ class Metric(DataBaseModel):
     f_task_version = BigIntegerField(null=True)
     f_name = CharField(max_length=30, index=True)
     f_type = CharField(max_length=30, index=True, null=True)
-    f_groups = JSONField(index=True)
+    f_groups = JSONField()
     f_step_axis = CharField(max_length=30, index=True, null=True)
     f_data = JSONField()
 

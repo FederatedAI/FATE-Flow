@@ -146,7 +146,7 @@ class FlowWraps(WrapsABC):
             run_parameters=task_parameters,
             output_path=task_result
         )
-        p.wait()
+        exit_code = p.wait()
         logger.info("finish task")
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
@@ -159,7 +159,7 @@ class FlowWraps(WrapsABC):
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
-                exceptions=f"Task output no found, process output stderr: {p.stderr}"
+                exceptions=f"Task output no found. Process exit code {exit_code}"
             ))
         return output_meta
 
@@ -291,6 +291,9 @@ class FlowWraps(WrapsABC):
     def log_response(resp, req_info):
         try:
             logger.info(resp.json())
+            resp_json = resp.json()
+            if resp_json.get("code") != ReturnCode.Base.SUCCESS:
+                logging.exception(f"{req_info}: {resp.text}")
         except Exception:
             logger.exception(f"{req_info}: {resp.text}")
 

@@ -29,24 +29,19 @@ from peewee import (
     IntegerField,
     Metadata,
     Model,
-    TextField,
-    Insert
+    TextField
 )
 from playhouse.pool import PooledMySQLDatabase
 
-from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.runtime.system_settings import DATABASE, IS_STANDALONE, FORCE_USE_SQLITE, SQLITE_PATH
+from fate_flow.hub.flow_hub import FlowHub
+
+from fate_flow.runtime.system_settings import DATABASE
 from fate_flow.utils.base_utils import json_dumps, json_loads, date_string_to_timestamp, \
     current_timestamp, timestamp_to_date
 from fate_flow.utils.log_utils import getLogger, sql_logger
 from fate_flow.utils.object_utils import from_dict_hook
 
-if IS_STANDALONE or FORCE_USE_SQLITE:
-    from playhouse.apsw_ext import DateTimeField
-else:
-    from peewee import DateTimeField
-
-CONTINUOUS_FIELD_TYPE = {IntegerField, FloatField, DateTimeField}
+CONTINUOUS_FIELD_TYPE = {IntegerField, FloatField}
 AUTO_DATE_TIMESTAMP_FIELD_PREFIX = {
     "create",
     "start",
@@ -180,17 +175,10 @@ def remove_field_name_prefix(field_name):
 @singleton
 class BaseDataBase:
     def __init__(self):
-        database_config = DATABASE.copy()
-        db_name = database_config.pop("name")
-        if IS_STANDALONE or FORCE_USE_SQLITE:
-            # sqlite does not support other options
-            Insert.on_conflict = lambda self, *args, **kwargs: self.on_conflict_replace()
-
-            from playhouse.apsw_ext import APSWDatabase
-            self.database_connection = APSWDatabase(SQLITE_PATH)
-            RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
-        else:
-            self.database_connection = PooledMySQLDatabase(db_name, **database_config)
+        engine_name = DATABASE.get("engine")
+        config = DATABASE.get(engine_name)
+        decrypt_key = DATABASE.get("decrypt_key")
+        self.database_connection = FlowHub.load_database(engine_name, config, decrypt_key)
 
 
 class DatabaseLock:
@@ -251,9 +239,7 @@ def close_connection():
 
 class BaseModel(Model):
     f_create_time = BigIntegerField(null=True)
-    f_create_date = DateTimeField(null=True)
     f_update_time = BigIntegerField(null=True)
-    f_update_date = DateTimeField(null=True)
 
     def to_json(self):
         # This function is obsolete
@@ -457,7 +443,7 @@ class BaseModelOperate:
         for f_k, f_v in kwargs.items():
             attr_name = "f_%s" % f_k
             filters.append(operator.attrgetter(attr_name)(entity_model) == f_v)
-        return entity_model.delete().where(*filters).execute()
+        return entity_model.delete().where(*filters).execute() > 0
 
     @classmethod
     def safe_save(cls, model, defaults, **kwargs):

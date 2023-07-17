@@ -12,6 +12,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from importlib import import_module
+
 from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.entity.types import ProviderName, ProviderDevice
 from fate_flow.runtime.component_provider import ComponentProvider
@@ -42,3 +44,16 @@ class FlowHub:
         if name == "default":
             from fate_flow.hub.components_wraps.default import FlowWraps
             return FlowWraps(config)
+
+    @staticmethod
+    def load_database(engine_name, config, decrypt_key):
+        try:
+            return getattr(import_module(f"fate_flow.hub.database.{engine_name}"), "get_database_connection")(
+                config, decrypt_key)
+        except Exception as e:
+            try:
+                import_module(f"fate_flow.hub.database.{engine_name}")
+            except:
+                raise SystemError(f"Not support database engine {engine_name}")
+            raise SystemError(f"load engine {engine_name} function "
+                              f"fate_flow.hub.database.{engine_name}.get_database_connection failed: {e}")

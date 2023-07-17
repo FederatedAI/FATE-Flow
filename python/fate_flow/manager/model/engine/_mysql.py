@@ -21,7 +21,7 @@ from peewee import PeeweeException, CharField, IntegerField, CompositeKey
 from playhouse.pool import PooledMySQLDatabase
 
 from fate_flow.db.base_models import LOGGER, BaseModel, LongTextField
-from fate_flow.utils.conf_utils import decrypt_database_config
+from fate_flow.utils.password_utils import decrypt_database_config
 
 DB = PooledMySQLDatabase(None)
 SLICE_MAX_SIZE = 1024 * 1024 * 8
@@ -39,8 +39,8 @@ class MachineLearningModel(BaseModel):
 
 
 class MysqlModelStorage(object):
-    def __init__(self, storage_address):
-        self.init_db(storage_address)
+    def __init__(self, storage_address, decrypt_key=None):
+        self.init_db(storage_address, decrypt_key)
 
     def exists(self, storage_key: str):
         try:
@@ -126,10 +126,10 @@ class MysqlModelStorage(object):
         return _io
 
     @staticmethod
-    def init_db(storage_address):
+    def init_db(storage_address, decrypt_key):
         _storage_address = deepcopy(storage_address)
         database = _storage_address.pop('name')
-        _storage_address = decrypt_database_config(_storage_address, 'passwd')
+        decrypt_database_config(_storage_address, decrypt_key=decrypt_key)
         DB.init(database, **_storage_address)
 
     @staticmethod

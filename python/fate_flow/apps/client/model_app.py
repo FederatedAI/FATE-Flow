@@ -36,19 +36,19 @@ def migrate():
     return API.Output.json()
 
 
-@manager.route('/local/export', methods=['POST'])
+@manager.route('/export', methods=['POST'])
 @API.Input.json(model_id=fields.String(required=True))
 @API.Input.json(model_version=fields.String(required=True))
 @API.Input.json(party_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
-@API.Input.json(dir_path=fields.String(required=True))
-def export(model_id, model_version, party_id, role, dir_path):
+@API.Input.json(path=fields.String(required=True))
+def export(model_id, model_version, party_id, role, path):
     file_list = PipelinedModel.export_model(
         model_id=model_id,
         model_version=model_version,
         party_id=party_id,
         role=role,
-        dir_path=dir_path
+        dir_path=path
     )
     return API.Output.json(data=file_list)
 

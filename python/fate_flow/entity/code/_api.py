@@ -19,12 +19,13 @@ class ReturnCode:
         SUCCESS = 0
 
     class Job:
-        NOT_FOUND = 1000
-        CREATE_JOB_FAILED = 1001
-        UPDATE_FAILED = 1002
-        KILL_FAILED = 1003
-        RESOURCE_EXCEPTION = 1004
-        INHERITANCE_FAILED = 1005
+        PARAMS_ERROR = 1000
+        NOT_FOUND = 1001
+        CREATE_JOB_FAILED = 1002
+        UPDATE_FAILED = 1003
+        KILL_FAILED = 1004
+        RESOURCE_EXCEPTION = 1005
+        INHERITANCE_FAILED = 1006
 
     class Task:
         NOT_FOUND = 2000
@@ -54,6 +55,7 @@ class ReturnCode:
         PERMISSION_OPERATE_ERROR = 5006
         NO_FOUND_FILE = 5007
         COMPONENT_OUTPUT_EXCEPTION = 5008
+        IS_EXISTS_ROLE = 5009
 
     class Server:
         EXCEPTION = 6000

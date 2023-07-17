@@ -56,10 +56,10 @@ def query_metric(job_id, role, party_id, task_name, filters=None):
 
 
 @manager.route('/metric/delete', methods=['POST'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(task_name=fields.String(required=True))
+@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(role=fields.String(required=True))
+@API.Input.json(party_id=fields.String(required=True))
+@API.Input.json(task_name=fields.String(required=True))
 def delete_metric(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
