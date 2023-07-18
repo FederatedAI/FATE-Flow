@@ -142,4 +142,5 @@ REQUEST_MAX_WAIT_SEC = 300
 
 DEFAULT_OUTPUT_DATA_PARTITIONS = 16
 
-STANDALONE_DATA_HOME = os.path.join(file_utils.get_project_base_directory(), "data")
+STANDALONE_DATA_HOME = os.path.join(file_utils.get_fate_flow_directory(), "data")
+LOCALFS_DATA_HOME = os.path.join(file_utils.get_fate_flow_directory(), "localfs")

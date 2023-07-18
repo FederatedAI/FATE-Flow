@@ -215,16 +215,20 @@ class HiveAddress(AddressBase):
             "database": self.database}
 
 
-class LocalFSAddress(AddressBase):
+class FileAddress(AddressBase):
     def __init__(self, path=None, connector_name=None):
         self.path = path
-        super(LocalFSAddress, self).__init__(connector_name=connector_name)
+        super(FileAddress, self).__init__(connector_name=connector_name)
 
     def __hash__(self):
-        return (self.path).__hash__()
+        return self.path.__hash__()
 
     def __str__(self):
-        return f"LocalFSAddress(path={self.path})"
+        return f"FileAddress(path={self.path})"
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def engine_path(self):
+        return f"file:///{self.path}"

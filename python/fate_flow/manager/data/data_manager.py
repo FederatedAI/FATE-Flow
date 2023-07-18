@@ -14,7 +14,9 @@
 #  limitations under the License.
 import json
 import os
+import pickle
 import tarfile
+import uuid
 from tempfile import TemporaryDirectory
 
 from flask import send_file
@@ -23,7 +25,11 @@ from fate_flow.engine import storage
 from fate_flow.engine.storage import Session, StorageEngine, DataType
 from fate_flow.entity.types import EggRollAddress, StandaloneAddress, HDFSAddress, PathAddress, ApiAddress
 from fate_flow.manager.service.output_manager import OutputDataTracking
+from fate_flow.runtime.system_settings import LOCALFS_DATA_HOME, STANDALONE_DATA_HOME
+from fate_flow.utils import job_utils
 from fate_flow.utils.io_utils import URI
+
+DELIMITER = '\t'
 
 
 class DataManager:
@@ -226,3 +232,73 @@ class DataManager:
             for field in data_meta.get("fields", []):
                 header.append(field.get("name"))
         return header
+
+    @staticmethod
+    def deserialize_data(m):
+        fields = m.partition(DELIMITER)
+        return fields[0], pickle.loads(bytes.fromhex(fields[2]))
+
+    @staticmethod
+    def serialize_data(k, v):
+        return f"{k}{DELIMITER}{pickle.dumps(v).hex()}"
+
+
+class DatasetManager:
+    @staticmethod
+    def task_output_name(task_id, task_version):
+        return f"output_data_{task_id}_{task_version}", uuid.uuid1().hex
+
+    @staticmethod
+    def get_output_name(uri):
+        namespace, name = uri.split("/")[-2], uri.split("/")[-1]
+        return namespace, name
+
+    @classmethod
+    def upload_data_path(cls, name, namespace, prefix=None, storage_engine=StorageEngine.HDFS):
+        if storage_engine == StorageEngine.HDFS:
+            return cls.default_hdfs_path(data_type="input", name=name, namespace=namespace, prefix=prefix)
+        elif storage_engine == StorageEngine.FILE:
+            return cls.default_localfs_path(data_type="input", name=name, namespace=namespace)
+
+    @classmethod
+    def output_data_uri(cls, storage_engine, task_id, is_multi=False):
+        if storage_engine == StorageEngine.STANDALONE:
+            uri = f"{storage_engine}://{STANDALONE_DATA_HOME}/{task_id}/{uuid.uuid1().hex}"
+        elif storage_engine == StorageEngine.HDFS:
+            uri = f"{storage_engine}://{cls.default_output_fs_path(uuid.uuid1().hex, task_id)}"
+        elif storage_engine == StorageEngine.FILE:
+            uri = f"file://{cls.default_output_fs_path(uuid.uuid1().hex, task_id, storage_engine=storage_engine)}"
+        else:
+            # egg: eggroll
+            uri = f"{storage_engine}:///{task_id}/{uuid.uuid1().hex}"
+
+        if is_multi:
+            # replace "{index}"
+            uri += "_{index}"
+        return uri
+
+    @classmethod
+    def output_local_uri(cls, name, type_name, task_info, is_multi=False):
+        path = job_utils.get_task_directory(**task_info, output=True)
+        uri = os.path.join(f"file://{path}", name, type_name)
+        if is_multi:
+            # replace "{index}"
+            uri += "_{index}"
+
+    @classmethod
+    def default_output_fs_path(cls, name, namespace, prefix=None, storage_engine=StorageEngine.HDFS):
+        if storage_engine == StorageEngine.HDFS:
+            return cls.default_hdfs_path(data_type="output", name=name, namespace=namespace, prefix=prefix)
+        elif storage_engine == StorageEngine.FILE:
+            return cls.default_localfs_path(data_type="output", name=name, namespace=namespace)
+
+    @staticmethod
+    def default_localfs_path(name, namespace, data_type):
+        return os.path.join(LOCALFS_DATA_HOME, namespace, name)
+
+    @staticmethod
+    def default_hdfs_path(data_type, name, namespace, prefix=None):
+        p = f"/fate/{data_type}/{namespace}/{name}"
+        if prefix:
+            p = f"{prefix}/{p}"
+        return p

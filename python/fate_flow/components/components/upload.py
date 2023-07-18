@@ -20,6 +20,7 @@ from typing import Union
 from fate_flow.components import cpn
 from fate_flow.engine.storage import Session, StorageEngine, DataType, StorageTableMeta, StorageOrigin
 from fate_flow.entity.spec.dag import ArtifactSource
+from fate_flow.manager.data.data_manager import DatasetManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
 from fate_flow.utils.file_utils import get_fate_flow_directory
 
@@ -157,6 +158,14 @@ class Upload:
                 }
                 if storage_engine == StorageEngine.STANDALONE:
                     upload_address.update({"home": STANDALONE_DATA_HOME})
+            elif storage_engine in {StorageEngine.HDFS, StorageEngine.FILE}:
+                upload_address = {
+                    "path": DatasetManager.upload_data_path(
+                        name=name,
+                        namespace=namespace,
+                        storage_engine=storage_engine
+                    )
+                }
             else:
                 raise RuntimeError(f"can not support this storage engine: {storage_engine}")
             address_dict.update(upload_address)

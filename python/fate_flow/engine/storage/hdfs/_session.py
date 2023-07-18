@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 from fate_flow.engine.storage import StorageSessionBase, StorageEngine
-from fate_flow.engine.storage.hdfs import StorageTable
+from fate_flow.engine.storage.hdfs._table import StorageTable
 from fate_flow.entity.types import AddressABC, HDFSAddress
 
 
@@ -24,8 +24,13 @@ class StorageSession(StorageSessionBase):
 
     def table(self, address: AddressABC, name, namespace, partitions, store_type=None, options=None, **kwargs):
         if isinstance(address, HDFSAddress):
-            return StorageTable(address=address, name=name, namespace=namespace,
-                                partitions=partitions, store_type=store_type, options=options)
+            return StorageTable(
+                address=address,
+                name=name,
+                namespace=namespace,
+                partitions=partitions,
+                options=options
+            )
         raise NotImplementedError(f"address type {type(address)} not supported with hdfs storage")
 
     def cleanup(self, name, namespace):
