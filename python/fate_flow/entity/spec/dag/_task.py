@@ -14,6 +14,7 @@ from fate_flow.entity.spec.dag._mlmd import MLMDSpec
 class TaskRuntimeConfSpec(pydantic.BaseModel):
     device: Union[CPUSpec, GPUSpec]
     computing: Union[StandaloneComputingSpec, EggrollComputingSpec, SparkComputingSpec]
+    storage: Optional[str]
     federation: Union[
         StandaloneFederationSpec,
         RollSiteFederationSpec,

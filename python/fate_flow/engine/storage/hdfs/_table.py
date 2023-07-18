@@ -14,14 +14,13 @@
 #  limitations under the License.
 #
 import io
-import os
 from typing import Iterable
 
 from pyarrow import fs
 
 from fate_flow.engine.storage import StorageTableBase
-from fate_flow.engine.storage._types import HDFSStoreType, StorageEngine
-from fate_flow.engine.storage.hdfs import _hdfs_utils as hdfs_utils
+from fate_flow.engine.storage._types import StorageEngine
+from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.utils.log import getLogger
 
 
@@ -35,7 +34,6 @@ class StorageTable(StorageTableBase):
             name: str = None,
             namespace: str = None,
             partitions: int = 1,
-            store_type: HDFSStoreType = HDFSStoreType.DISK,
             options=None,
     ):
         super(StorageTable, self).__init__(
@@ -44,16 +42,8 @@ class StorageTable(StorageTableBase):
             address=address,
             partitions=partitions,
             options=options,
-            engine=StorageEngine.HDFS,
-            store_type=store_type,
+            engine=StorageEngine.HDFS
         )
-        # tricky way to load libhdfs
-        try:
-            from pyarrow import HadoopFileSystem
-
-            HadoopFileSystem(self.path)
-        except Exception as e:
-            LOGGER.warning(f"load libhdfs failed: {e}")
         self._hdfs_client = fs.HadoopFileSystem.from_uri(self.path)
 
     def check_address(self):
@@ -78,14 +68,14 @@ class StorageTable(StorageTableBase):
         counter = self._meta.get_count() if self._meta.get_count() else 0
         with io.TextIOWrapper(stream) as writer:
             for k, v in kv_list:
-                writer.write(hdfs_utils.serialize(k, v))
-                writer.write(hdfs_utils.NEWLINE)
+                writer.write(DataManager.serialize_data(k, v))
+                writer.write("\n")
                 counter = counter + 1
         self._meta.update_metas(count=counter)
 
     def _collect(self, **kwargs) -> list:
         for line in self._as_generator():
-            yield hdfs_utils.deserialize(line.rstrip())
+            yield DataManager.deserialize_data(line.rstrip())
 
     def _read(self) -> list:
         for line in self._as_generator():
@@ -101,19 +91,6 @@ class StorageTable(StorageTableBase):
         for _ in self._as_generator():
             count += 1
         return count
-
-    def _save_as(
-            self, address, partitions=None, name=None, namespace=None, **kwargs
-    ):
-        self._hdfs_client.copy_file(src=self.file_path, dst=address.path)
-        table = StorageTable(
-            address=address,
-            partitions=partitions,
-            name=name,
-            namespace=namespace,
-            **kwargs,
-        )
-        return table
 
     def close(self):
         pass
@@ -140,8 +117,11 @@ class StorageTable(StorageTableBase):
             raise FileNotFoundError(f"file {file} not found")
 
         elif info.type == fs.FileType.File:
-            for line in self._read_buffer_lines():
-                yield line
+            with io.TextIOWrapper(
+                buffer=self._hdfs_client.open_input_stream(self.path), encoding="utf-8"
+            ) as reader:
+                for line in reader:
+                    yield line
         else:
             selector = fs.FileSelector(file)
             file_infos = self._hdfs_client.get_file_info(selector)
@@ -157,42 +137,3 @@ class StorageTable(StorageTableBase):
                 ) as reader:
                     for line in reader:
                         yield line
-
-    def _read_buffer_lines(self):
-        path = self.file_path
-        buffer = self._hdfs_client.open_input_file(path)
-        offset = 0
-        block_size = 1024 * 1024 * 10
-        size = buffer.size()
-
-        while offset < size:
-            block_index = 1
-            buffer_block = buffer.read_at(block_size, offset)
-            if offset + block_size >= size:
-                for line in self._read_lines(buffer_block):
-                    yield line
-                break
-            if buffer_block.endswith(b"\n"):
-                for line in self._read_lines(buffer_block):
-                    yield line
-                offset += block_size
-                continue
-            end_index = -1
-            buffer_len = len(buffer_block)
-            while not buffer_block[:end_index].endswith(b"\n"):
-                if offset + block_index * block_size >= size:
-                    break
-                end_index -= 1
-                if abs(end_index) == buffer_len:
-                    block_index += 1
-                    buffer_block = buffer.read_at(block_index * block_size, offset)
-                    end_index = block_index * block_size
-            for line in self._read_lines(buffer_block[:end_index]):
-                yield line
-            offset += len(buffer_block[:end_index])
-
-    @staticmethod
-    def _read_lines(buffer_block):
-        with io.TextIOWrapper(buffer=io.BytesIO(buffer_block), encoding="utf-8") as reader:
-            for line in reader:
-                yield line

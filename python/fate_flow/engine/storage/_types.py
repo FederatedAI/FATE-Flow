@@ -38,7 +38,6 @@ class StorageEngine(object):
     PATH = 'path'
     FILE = 'file'
     HIVE = 'hive'
-    LOCALFS = 'localfs'
     API = 'api'
     HTTP = 'http'
     HTTPS = 'https'

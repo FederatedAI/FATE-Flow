@@ -34,7 +34,7 @@ from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, Tas
     JsonModelArtifactType
 
 from fate_flow.hub.components_wraps import WrapsABC
-from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.manager.data.data_manager import DataManager, DatasetManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, DEFAULT_OUTPUT_DATA_PARTITIONS
 from fate_flow.utils import job_utils
 
@@ -199,7 +199,7 @@ class FlowWraps(WrapsABC):
             namespace = output_data.metadata.namespace
             name = output_data.metadata.name
             if not namespace and not name:
-                namespace, name = self._default_output_info()
+                namespace, name = DatasetManager.get_output_name(output_data.uri)
             logger.info(f"save data tracking to {namespace}, {name}")
             overview = output_data.metadata.data_overview
             source = output_data.metadata.source
@@ -358,23 +358,14 @@ class FlowWraps(WrapsABC):
     def _output_artifacts(self, type_name, is_multi, name, output_type=None):
         output_artifacts = ArtifactOutputApplySpec(uri="", type_name=type_name)
         if type_name in [DataframeArtifactType.type_name, TableArtifactType.type_name]:
-            if self.config.conf.computing.type == ComputingEngine.STANDALONE:
-                uri = f"{self.config.conf.computing.type}://{STANDALONE_DATA_HOME}/{self.config.task_id}/{uuid.uuid1().hex}"
-            else:
-                uri = f"{self.config.conf.computing.type}:///{self.config.task_id}/{uuid.uuid1().hex}"
-            if is_multi:
-                # replace "{index}"
-                uri += "_{index}"
+            uri = DatasetManager.output_data_uri(self.config.conf.storage, self.config.task_id, is_multi=is_multi)
         else:
             if output_type == "metric":
-                # http path
+                # api path
                 uri = self.mlmd.get_metric_save_url(execution_id=self.config.party_task_id)
             else:
                 # local file path
-                path = os.path.join(self.task_output_dir, name)
-                uri = os.path.join(f"file://{path}", type_name)
-                if is_multi:
-                    uri += "_{index}"
+                uri = DatasetManager.output_local_uri(task_info=self.task_info, name=name, type_name=type_name, is_multi=is_multi)
         output_artifacts.uri = uri
         return output_artifacts
 

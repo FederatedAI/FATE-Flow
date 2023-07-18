@@ -233,6 +233,10 @@ class TaskParser(TaskParserABC):
                 metadata={"computing_id": self.computing_id}
             )
 
+    @staticmethod
+    def generate_storage_conf():
+        return ENGINES.get(EngineType.STORAGE).lower()
+
     def generate_federation_conf(self):
         parties_info = []
         for party in self.parties:
@@ -293,7 +297,8 @@ class TaskParser(TaskParserABC):
             logger=self.generate_logger_conf(),
             device=self.generate_device(),
             computing=self.generate_computing_conf(),
-            federation=self.generate_federation_conf()
+            federation=self.generate_federation_conf(),
+            storage=self.generate_storage_conf()
         )
 
     @property
