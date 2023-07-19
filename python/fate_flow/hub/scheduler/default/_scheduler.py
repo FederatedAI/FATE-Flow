@@ -298,11 +298,10 @@ class DAGScheduler(JobSchedulerABC):
                 self.update_job_on_scheduler(schedule_job=job, update_fields=["progress"])
             if new_job_status != job.f_status:
                 job.f_status = new_job_status
-                if EndStatus.contains(job.f_status):
-                    FederatedScheduler.save_pipelined_model(job_id=job.f_job_id, roles=job.f_parties)
-                FederatedScheduler.sync_job_status(job_id=job.f_job_id, roles=job.f_parties,
-                                                   job_info={"job_id": job.f_job_id,
-                                                             "status": job.f_status})
+                FederatedScheduler.sync_job_status(
+                    job_id=job.f_job_id, roles=job.f_parties,
+                    job_info={"job_id": job.f_job_id, "status": new_job_status}
+                )
                 self.update_job_on_scheduler(schedule_job=job, update_fields=["status"])
         if EndStatus.contains(job.f_status):
             self.finish(job=job, end_status=job.f_status)
@@ -613,7 +612,7 @@ class TaskScheduler(object):
             return tmp_status_set.pop()
         else:
             for status in sorted(InterruptStatus.status_list(), key=lambda s: StatusSet.get_level(status=s),
-                                 reverse=True):
+                                 reverse=False):
                 if status in tmp_status_set:
                     return status
             if TaskStatus.RUNNING in tmp_status_set:
