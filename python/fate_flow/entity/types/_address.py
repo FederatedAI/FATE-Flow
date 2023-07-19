@@ -133,7 +133,7 @@ class PathAddress(AddressBase):
 
     @property
     def engine_path(self):
-        return f"file:///{self.path}"
+        return f"file://{self.path}"
 
 
 class ApiAddress(AddressBase):
@@ -231,4 +231,4 @@ class FileAddress(AddressBase):
 
     @property
     def engine_path(self):
-        return f"file:///{self.path}"
+        return f"file://{self.path}"
