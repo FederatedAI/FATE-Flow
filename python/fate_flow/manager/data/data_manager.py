@@ -24,6 +24,7 @@ from flask import send_file
 from fate_flow.engine import storage
 from fate_flow.engine.storage import Session, StorageEngine, DataType
 from fate_flow.entity.types import EggRollAddress, StandaloneAddress, HDFSAddress, PathAddress, ApiAddress
+from fate_flow.errors.job import NoFoundTable
 from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.runtime.system_settings import LOCALFS_DATA_HOME, STANDALONE_DATA_HOME
 from fate_flow.utils import job_utils
@@ -219,7 +220,7 @@ class DataManager:
             }
             display_data = data_table_meta.part_of_data
             return data, display_data
-        return {}
+        raise NoFoundTable(name=name, namespace=namespace)
 
     @staticmethod
     def get_data_header(delimiter, data_meta):
