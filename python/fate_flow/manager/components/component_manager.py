@@ -20,7 +20,7 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.types import EngineType
 from fate_flow.manager.components.base import Base
 from fate_flow.manager.service.provider_manager import ProviderManager
-from fate_flow.runtime.system_settings import ENGINES
+from fate_flow.runtime.system_settings import ENGINES, STORAGE
 
 
 class ComponentManager(Base):
@@ -41,7 +41,9 @@ class ComponentManager(Base):
             "name": name,
             "namespace": namespace
         })
-
+        address = STORAGE.get(ENGINES.get(EngineType.STORAGE))
+        if address:
+            parameters.update({"address": address})
         dag_schema = cls.local_dag_schema(
             task_name="upload_0",
             component_ref="upload",

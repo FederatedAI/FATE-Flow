@@ -285,6 +285,7 @@ class DatasetManager:
         if is_multi:
             # replace "{index}"
             uri += "_{index}"
+        return uri
 
     @classmethod
     def default_output_fs_path(cls, name, namespace, prefix=None, storage_engine=StorageEngine.HDFS):
