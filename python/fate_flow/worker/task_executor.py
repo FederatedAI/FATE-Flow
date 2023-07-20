@@ -77,7 +77,7 @@ class TaskExecutor(BaseTaskWorker):
                                                            train_runtime_conf=job_configuration.train_runtime_conf,
                                                            pipeline_dsl=None)
 
-            job_parameters = dsl_parser.get_job_parameters(job_configuration.runtime_conf)
+            job_parameters = dsl_parser.get_job_parameters(job_configuration.runtime_conf, int(job_configuration.runtime_conf.get("dsl_version", "1")))
             user_name = job_parameters.get(args.role, {}).get(args.party_id, {}).get("user", '')
             LOGGER.info(f"user name:{user_name}")
             task_parameters = RunParameters(**task_parameters_conf)
@@ -151,9 +151,10 @@ class TaskExecutor(BaseTaskWorker):
             if set(roles) == {"local"}:
                 LOGGER.info(f"only local roles, pass init federation")
             else:
-                sess.init_federation(federation_session_id=args.federation_session_id,
-                                     runtime_conf=component_parameters_on_party,
-                                     service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
+                if self.is_master:
+                    sess.init_federation(federation_session_id=args.federation_session_id,
+                                         runtime_conf=component_parameters_on_party,
+                                         service_conf=job_parameters.engines_address.get(EngineType.FEDERATION, {}))
             LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
             LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
             LOGGER.info(f"task input dsl {task_input_dsl}")
@@ -227,7 +228,7 @@ class TaskExecutor(BaseTaskWorker):
                     output_table_list.append({"namespace": persistent_table_namespace, "name": persistent_table_name})
             self.log_output_data_table_tracker(args.job_id, input_table_list, output_table_list)
 
-            if cpn_output.model:
+            if cpn_output.model and self.is_master:
                 getattr(
                     tracker_client if predict_tracker_client is None else predict_tracker_client,
                     'save_component_output_model',
@@ -267,8 +268,10 @@ class TaskExecutor(BaseTaskWorker):
                 LOGGER.info("start destroy sessions")
                 sess.destroy_all_sessions()
                 LOGGER.info("destroy all sessions success")
-            except Exception as e:
-                LOGGER.exception(e)
+            except Exception as _e:
+                LOGGER.exception(_e)
+            if self.args.is_deepspeed:
+                raise RuntimeError(e)
         finally:
             try:
                 self.report_info["end_time"] = current_timestamp()
@@ -282,6 +285,13 @@ class TaskExecutor(BaseTaskWorker):
         LOGGER.info(msg)
         print(msg)
         return self.report_info
+
+    @property
+    def is_master(self):
+        # deepspeed rank 0
+        if not os.getenv("RANK"):
+            return True
+        return int(os.getenv("RANK")) == 0
 
     @classmethod
     def log_output_data_table_tracker(cls, job_id, input_table_list, output_table_list):

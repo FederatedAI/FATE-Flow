@@ -22,8 +22,14 @@ federated_status_collect_type: PUSH
 detect_connect_max_retry_count: 3
 detect_connect_long_retry_count: 2
 
+task_process_classpath: true
+
 # upload
 upload_block_max_bytes: 104857600 # bytes
 
 #component output
 output_data_summary_count_limit: 100
+
+# gpu
+task_world_size: 2
+resource_waiting_timeout: 21600 # s

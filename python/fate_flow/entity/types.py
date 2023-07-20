@@ -148,3 +148,8 @@ class TaskCleanResourceType(CustomEnum):
 
 class ExternalStorage(CustomEnum):
     MYSQL = "MYSQL"
+
+
+class TaskLauncher(CustomEnum):
+    DEFAULT = "default"
+    DEEPSPEED = "deepspeed"
