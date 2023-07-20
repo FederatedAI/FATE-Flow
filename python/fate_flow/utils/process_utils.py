@@ -56,7 +56,7 @@ def run_subprocess(job_id, config_dir, process_cmd, process_name, added_env: dic
     if added_env:
         for name, value in added_env.items():
             if name.endswith("PATH") and subprocess_env.get(name) is not None:
-                value = subprocess_env[name] + ":" + value
+                value += ':' + subprocess_env[name]
             subprocess_env[name] = value
     logger.info(f"RUN ENV: {subprocess_env}")
     p = subprocess.Popen(process_cmd,
