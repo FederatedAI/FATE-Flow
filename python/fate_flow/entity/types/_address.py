@@ -108,9 +108,12 @@ class HDFSAddress(AddressBase):
     @property
     def engine_path(self):
         if not self.name_node:
-            return f"hdfs:///{self.path}"
+            return f"hdfs://{self.path}"
         else:
-            return f"hdfs:///{self.name_node}{self.path}"
+            if "hdfs" not in self.name_node:
+                return f"hdfs://{self.name_node}{self.path}"
+            else:
+                return f"{self.name_node}{self.path}"
 
     @property
     def connector(self):
