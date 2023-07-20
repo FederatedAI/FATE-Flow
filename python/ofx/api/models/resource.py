@@ -183,7 +183,7 @@ class APIClient(requests.Session):
                 try:
                     return json.loads(bytes.decode(_return.body.value))
                 except Exception:
-                    raise RuntimeError(bytes.decode(_return.body.value))
+                    raise RuntimeError(f"{_return}, {_call}")
             finally:
                 channel.close()
 
@@ -213,7 +213,7 @@ class APIClient(requests.Session):
                 try:
                     return json.loads(bytes.decode(_return.payload))
                 except Exception:
-                    raise RuntimeError(bytes.decode(_return.payload))
+                    raise RuntimeError(f"{_return}, {_call}")
             finally:
                 channel.close()
 
