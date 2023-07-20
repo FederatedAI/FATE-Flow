@@ -26,7 +26,7 @@ from fate_flow.engine.storage import Session, StorageEngine, DataType
 from fate_flow.entity.types import EggRollAddress, StandaloneAddress, HDFSAddress, PathAddress, ApiAddress
 from fate_flow.errors.job import NoFoundTable
 from fate_flow.manager.service.output_manager import OutputDataTracking
-from fate_flow.runtime.system_settings import LOCALFS_DATA_HOME, STANDALONE_DATA_HOME
+from fate_flow.runtime.system_settings import LOCALFS_DATA_HOME, STANDALONE_DATA_HOME, STORAGE
 from fate_flow.utils import job_utils
 from fate_flow.utils.io_utils import URI
 
@@ -195,7 +195,7 @@ class DataManager:
         elif uri_schema.schema() == StorageEngine.STANDALONE:
             address = StandaloneAddress(namespace=uri_schema.namespace, name=uri_schema.name)
         elif uri_schema.schema() == StorageEngine.HDFS:
-            address = HDFSAddress(path=uri_schema.path)
+            address = HDFSAddress(path=uri_schema.path, name_node=uri_schema.authority)
         elif uri_schema.schema() in [StorageEngine.PATH, StorageEngine.FILE]:
             address = PathAddress(path=uri_schema.path)
         elif uri_schema.schema() in [StorageEngine.HTTP]:
@@ -266,7 +266,7 @@ class DatasetManager:
         if storage_engine == StorageEngine.STANDALONE:
             uri = f"{storage_engine}://{STANDALONE_DATA_HOME}/{task_id}/{uuid.uuid1().hex}"
         elif storage_engine == StorageEngine.HDFS:
-            uri = f"{storage_engine}://{cls.default_output_fs_path(uuid.uuid1().hex, task_id)}"
+            uri = cls.default_output_fs_path(uuid.uuid1().hex, task_id, storage_engine=storage_engine)
         elif storage_engine == StorageEngine.FILE:
             uri = f"file://{cls.default_output_fs_path(uuid.uuid1().hex, task_id, storage_engine=storage_engine)}"
         else:
@@ -290,7 +290,8 @@ class DatasetManager:
     @classmethod
     def default_output_fs_path(cls, name, namespace, prefix=None, storage_engine=StorageEngine.HDFS):
         if storage_engine == StorageEngine.HDFS:
-            return cls.default_hdfs_path(data_type="output", name=name, namespace=namespace, prefix=prefix)
+            return f'{STORAGE.get(storage_engine).get("name_node")}' \
+                   f'{cls.default_hdfs_path(data_type="output", name=name, namespace=namespace, prefix=prefix)}'
         elif storage_engine == StorageEngine.FILE:
             return cls.default_localfs_path(data_type="output", name=name, namespace=namespace)
 
