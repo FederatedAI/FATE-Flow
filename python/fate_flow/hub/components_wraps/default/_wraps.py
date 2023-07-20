@@ -297,9 +297,6 @@ class FlowWraps(WrapsABC):
         except Exception:
             logger.exception(f"{req_info}: {resp.text}")
 
-    def _default_output_info(self):
-        return f"output_data_{self.config.task_id}_{self.config.task_version}", uuid.uuid1().hex
-
     def _preprocess_input_artifacts(self):
         input_artifacts = {}
         if self.config.input_artifacts.data:

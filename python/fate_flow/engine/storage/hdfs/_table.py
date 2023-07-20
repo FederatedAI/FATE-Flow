@@ -44,6 +44,12 @@ class StorageTable(StorageTableBase):
             options=options,
             engine=StorageEngine.HDFS
         )
+        try:
+            from pyarrow import HadoopFileSystem
+            HadoopFileSystem(self.path)
+        except Exception as e:
+            LOGGER.warning(f"load libhdfs failed: {e}")
+
         self._hdfs_client = fs.HadoopFileSystem.from_uri(self.path)
 
     def check_address(self):

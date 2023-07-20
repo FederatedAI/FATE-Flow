@@ -24,8 +24,7 @@ from fate_flow.utils import job_utils, process_utils
 
 
 class SparkEngine(LocalEngine):
-    def run(self, task_info, run_parameters, output_path, engine_run, run_parameters_path, config_dir, log_dir, cwd_dir, provider_name, **kwargs):
-        # todo: get spark home from server registry
+    def run(self, task_info, run_parameters, output_path, engine_run, provider_name):
         spark_home = None
         if not spark_home:
             try:

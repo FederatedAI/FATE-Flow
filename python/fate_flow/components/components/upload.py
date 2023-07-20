@@ -103,6 +103,7 @@ class UploadParam(Param):
             head=1,
             partitions=10,
             extend_sid=False,
+            address: dict = {},
             meta: dict = {}
     ):
         self.name = name
@@ -113,6 +114,7 @@ class UploadParam(Param):
         self.partitions = partitions
         self.extend_sid = extend_sid
         self.meta = MetaParam(**meta)
+        self.storage_address = address
 
 
 class Upload:
@@ -124,8 +126,7 @@ class Upload:
     def run(self, parameters: UploadParam, job_id=""):
         self.parameters = parameters
         logging.info(self.parameters.to_dict())
-
-        storage_address = {}
+        storage_address = self.parameters.storage_address
         if not os.path.isabs(parameters.file):
             parameters.file = os.path.join(
                 get_fate_flow_directory(), parameters.file

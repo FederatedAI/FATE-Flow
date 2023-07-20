@@ -25,7 +25,6 @@ from fate_flow.utils.log import getLogger
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import Task
 from fate_flow.entity.types import ProcessRole
-from fate_flow.runtime.system_settings import SUBPROCESS_STD_LOG_NAME
 
 stat_logger = getLogger()
 
