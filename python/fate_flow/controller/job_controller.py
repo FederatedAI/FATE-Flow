@@ -40,16 +40,7 @@ class JobController(object):
     @classmethod
     def request_create_job(cls, dag_schema: dict, user_name: str = None, is_local=False):
         dag_schema = DAGSchema(**dag_schema)
-        if not dag_schema.dag.conf:
-            dag_schema.dag.conf = JobConfSpec()
-        dag_schema.dag.conf.initiator_party_id = PARTY_ID
-        if not dag_schema.dag.conf.scheduler_party_id:
-            if not is_local:
-                dag_schema.dag.conf.scheduler_party_id = PARTY_ID
-            else:
-                dag_schema.dag.conf.scheduler_party_id = LOCAL_PARTY_ID
-        RuntimeConfig.SCHEDULER.check_job_parameters(dag_schema)
-
+        RuntimeConfig.SCHEDULER.check_job_parameters(dag_schema, is_local)
         response = FederatedScheduler.request_create_job(
             party_id=dag_schema.dag.conf.scheduler_party_id,
             initiator_party_id=dag_schema.dag.conf.initiator_party_id,

@@ -40,6 +40,7 @@ from fate_flow.utils import job_utils
 
 logger = logging.getLogger(__name__)
 
+
 class FlowWraps(WrapsABC):
     def __init__(self, config: PreTaskConfigSpec):
         self.config = config
@@ -257,13 +258,18 @@ class FlowWraps(WrapsABC):
         self.log_response(resp, req_info="save model")
 
     @staticmethod
-    def _tar_model(tar_io, path):
+    def no_metadata_filter(tarinfo):
+        tarinfo.pax_headers = {}
+        return tarinfo
+
+    @classmethod
+    def _tar_model(cls, tar_io, path):
         with tarfile.open(fileobj=tar_io, mode="x:tar") as tar:
             for _root, _dir, _files in os.walk(path):
                 for _f in _files:
                     full_path = os.path.join(_root, _f)
                     rel_path = os.path.relpath(full_path, path)
-                    tar.add(full_path, rel_path)
+                    tar.add(full_path, rel_path, filter=cls.no_metadata_filter)
         tar_io.seek(0)
         return tar_io
 
@@ -386,7 +392,12 @@ class FlowWraps(WrapsABC):
             logger.info(f"role {self.config.role} does not require intput data artifacts")
             return
         # data reference conversion
-        meta = ArtifactInputApplySpec(metadata=Metadata(metadata={}), uri="")
+        meta = ArtifactInputApplySpec(
+            metadata=Metadata(
+                metadata=dict(options=dict(partitions=self.config.computing_partitions))
+            ),
+            uri=""
+        )
         query_field = {}
         logger.info(f"get key[{key}] channel[{channel}]")
         if isinstance(channel, DataWarehouseChannelSpec):
@@ -430,7 +441,7 @@ class FlowWraps(WrapsABC):
         if len(resp_data) == 1:
             data = resp_data[0]
             schema = data.get("meta", {})
-            meta.metadata.metadata = {"schema": schema}
+            meta.metadata.metadata.update({"schema": schema})
             meta.metadata.source = data.get("source", {})
             meta.uri = data.get("path")
             return meta
@@ -438,7 +449,7 @@ class FlowWraps(WrapsABC):
             meta_list = []
             for data in resp_data:
                 schema = data.get("meta", {})
-                meta.metadata.metadata = {"schema": schema}
+                meta.metadata.metadata.update({"schema": schema})
                 meta.uri = data.get("path")
                 meta.metadata.source = data.get("source", {})
                 meta.type_name = data.get("data_type")
@@ -507,12 +518,12 @@ class FlowWraps(WrapsABC):
                 fp = model.extractfile(name).read()
                 model_meta = yaml.safe_load(fp)
                 model_meta = Metadata.parse_obj(model_meta)
-                model_key = model_meta.model_key
-                input_model_file = os.path.join(input_model_base, model_key)
+                model_task_id = model_meta.source.task_id if model_meta.source.task_id else ""
+                input_model_file = os.path.join(input_model_base, "_".join([model_task_id, model_meta.model_key]))
                 if model_meta.type_name not in [JsonModelArtifactType.type_name]:
                     self._write_model_dir(model, input_model_file)
                 else:
-                    model_fp = model.extractfile(model_key).read()
+                    model_fp = model.extractfile(model_meta.model_key).read()
                     with open(input_model_file, "wb") as fw:
                         fw.write(model_fp)
                 meta.uri = f"file://{input_model_file}"

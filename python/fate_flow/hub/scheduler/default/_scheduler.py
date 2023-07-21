@@ -20,7 +20,7 @@ from pydantic import typing
 from fate_flow.controller.job_controller import JobInheritance
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import SchedulingStatusCode, FederatedSchedulingStatusCode
-from fate_flow.entity.spec.dag import DAGSchema
+from fate_flow.entity.spec.dag import DAGSchema, JobConfSpec
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
 from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation, \
     FederatedCommunicationType, AutoRerunStatus, ComputingEngine, EngineType
@@ -31,7 +31,7 @@ from fate_flow.hub.scheduler import JobSchedulerABC
 from fate_flow.manager.model.model_meta import ModelMeta
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.runtime.system_settings import ENGINES, COMPUTING_CONF, IGNORE_RESOURCE_ROLES
+from fate_flow.runtime.system_settings import ENGINES, COMPUTING_CONF, IGNORE_RESOURCE_ROLES, PARTY_ID, LOCAL_PARTY_ID
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.utils import job_utils, schedule_utils, wraps_utils
 from fate_flow.utils.base_utils import json_dumps
@@ -40,7 +40,18 @@ from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
 
 class DAGScheduler(JobSchedulerABC):
     @classmethod
-    def check_job_parameters(cls, dag_schema: DAGSchema):
+    def check_job_parameters(cls, dag_schema: DAGSchema, is_local: bool = False):
+        if not dag_schema.dag.conf:
+            dag_schema.dag.conf = JobConfSpec()
+        dag_schema.dag.conf.initiator_party_id = PARTY_ID
+        if not dag_schema.dag.conf.scheduler_party_id:
+            if not is_local:
+                dag_schema.dag.conf.scheduler_party_id = PARTY_ID
+            else:
+                dag_schema.dag.conf.scheduler_party_id = LOCAL_PARTY_ID
+        if not dag_schema.dag.conf.computing_partitions:
+            dag_schema.dag.conf.computing_partitions = JobDefaultConfig.computing_partitions
+
         # check inheritance
         JobInheritance.check(dag_schema.dag.conf.inheritance)
 
