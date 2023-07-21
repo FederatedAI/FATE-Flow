@@ -23,6 +23,7 @@ stat_logger = getLogger()
 
 class JobDefaultConfig(ReloadConfigBase):
     job_cores = None
+    computing_partitions = None
     task_run = None
     remote_request_timeout = None
     federated_command_trys = None

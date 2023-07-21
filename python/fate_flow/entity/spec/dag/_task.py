@@ -43,6 +43,7 @@ class PreTaskConfigSpec(pydantic.BaseModel):
     conf: TaskRuntimeConfSpec
     mlmd: MLMDSpec
     engine_run: Optional[Dict[str, Any]] = {}
+    computing_partitions: int = None
 
 
 class TaskConfigSpec(pydantic.BaseModel):
