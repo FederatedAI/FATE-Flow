@@ -120,11 +120,6 @@ class FederatedScheduler:
     def update_job(cls, job_id, roles, command_body=None):
         return RuntimeConfig.SCHEDULE_CLIENT.federated.update_job(job_id, roles, command_body)
 
-    @classmethod
-    @federated
-    def save_pipelined_model(cls, job_id, roles):
-        return RuntimeConfig.SCHEDULE_CLIENT.federated.save_pipelined_model(job_id, roles)
-
     # task
     @classmethod
     @federated_task

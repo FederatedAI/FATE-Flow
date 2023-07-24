@@ -68,6 +68,7 @@ class JobConfSpec(BaseModel):
     inheritance: Optional[InheritConfSpec]
     cores: Optional[int]
     task_cores: Optional[int]
+    computing_partitions: Optional[int]
     sync_type: Optional[Union[Literal["poll", "callback"]]]
     auto_retries: Optional[int]
     model_id: Optional[str]

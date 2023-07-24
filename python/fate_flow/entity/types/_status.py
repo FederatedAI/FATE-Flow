@@ -67,7 +67,7 @@ class JobStatus(BaseStatus):
             StatusSet.RUNNING: [StatusSet.CANCELED, StatusSet.TIMEOUT, StatusSet.FAILED, StatusSet.SUCCESS],
             StatusSet.CANCELED: [StatusSet.WAITING],
             StatusSet.TIMEOUT: [StatusSet.FAILED, StatusSet.SUCCESS, StatusSet.WAITING],
-            StatusSet.FAILED: [StatusSet.WAITING],
+            StatusSet.FAILED: [StatusSet.WAITING, StatusSet.CANCELED],
             StatusSet.SUCCESS: [StatusSet.WAITING],
         }
 

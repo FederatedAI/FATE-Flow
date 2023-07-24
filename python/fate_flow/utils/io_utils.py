@@ -187,3 +187,22 @@ class HdfsURI(ConcrateURI):
             return f"hdfs://{self.authority}{self.path}"
         else:
             return f"hdfs://{self.path}"
+
+
+@dataclass
+class LocalfsURI(ConcrateURI):
+    path: str
+
+    @classmethod
+    def schema(cls):
+        return "path"
+
+    @classmethod
+    def from_uri(cls, uri: URI):
+        return LocalfsURI(uri.path)
+
+    def create_file(self, name):
+        return LocalfsURI(path=f"{self.path}/{name}")
+
+    def to_string(self):
+        return f"{self.path}"

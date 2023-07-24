@@ -108,9 +108,12 @@ class HDFSAddress(AddressBase):
     @property
     def engine_path(self):
         if not self.name_node:
-            return f"hdfs:///{self.path}"
+            return f"hdfs://{self.path}"
         else:
-            return f"hdfs:///{self.name_node}{self.path}"
+            if "hdfs" not in self.name_node:
+                return f"hdfs://{self.name_node}{self.path}"
+            else:
+                return f"{self.name_node}{self.path}"
 
     @property
     def connector(self):
@@ -133,7 +136,7 @@ class PathAddress(AddressBase):
 
     @property
     def engine_path(self):
-        return f"file:///{self.path}"
+        return f"file://{self.path}"
 
 
 class ApiAddress(AddressBase):
@@ -215,16 +218,20 @@ class HiveAddress(AddressBase):
             "database": self.database}
 
 
-class LocalFSAddress(AddressBase):
+class FileAddress(AddressBase):
     def __init__(self, path=None, connector_name=None):
         self.path = path
-        super(LocalFSAddress, self).__init__(connector_name=connector_name)
+        super(FileAddress, self).__init__(connector_name=connector_name)
 
     def __hash__(self):
-        return (self.path).__hash__()
+        return self.path.__hash__()
 
     def __str__(self):
-        return f"LocalFSAddress(path={self.path})"
+        return f"FileAddress(path={self.path})"
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def engine_path(self):
+        return f"file://{self.path}"

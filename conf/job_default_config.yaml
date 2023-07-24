@@ -1,5 +1,6 @@
 # resource
 job_cores: 4
+computing_partitions: 8
 task_run:
   spark:
     num-executors: 2
