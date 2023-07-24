@@ -19,7 +19,7 @@ from functools import wraps
 from fate_flow.entity.code import ReturnCode
 
 from flask import request as flask_request
-from fate_flow.errors.job import NoFoundTask, ResponseException, NoFoundINSTANCE
+from fate_flow.errors.server_error import NoFoundTask, ResponseException, NoFoundINSTANCE
 from fate_flow.hook import HookManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig

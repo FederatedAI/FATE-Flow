@@ -32,7 +32,7 @@ from shortuuid import ShortUUID
 from fate_flow.db import ServiceRegistryInfo, ServerRegistryInfo
 from fate_flow.db.base_models import DB
 from fate_flow.entity.types import FlowInstance
-from fate_flow.errors.error_services import ServiceNotSupported, ServicesError, ZooKeeperNotConfigured, \
+from fate_flow.errors.zookeeper_error import ServiceNotSupported, ServicesError, ZooKeeperNotConfigured, \
     MissingZooKeeperUsernameOrPassword, ZooKeeperBackendError
 from fate_flow.runtime.reload_config_base import ReloadConfigBase
 from fate_flow.runtime.system_settings import RANDOM_INSTANCE_ID, HOST, HTTP_PORT, GRPC_PORT, ZOOKEEPER_REGISTRY, \

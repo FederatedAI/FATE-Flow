@@ -19,7 +19,7 @@ from tempfile import TemporaryDirectory
 from flask import request
 from webargs import fields
 
-from fate_flow.errors.job import NoFoundFile
+from fate_flow.errors.server_error import NoFoundFile
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.utils.api_utils import API
 

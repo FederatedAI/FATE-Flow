@@ -17,7 +17,7 @@ from typing import Optional, Union
 
 import pydantic
 
-from fate_flow.errors.job import FileNoFound
+from fate_flow.errors.server_error import FileNoFound
 
 
 class BaseProvider(pydantic.BaseModel):

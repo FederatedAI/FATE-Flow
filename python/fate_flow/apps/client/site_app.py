@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import IsStandalone
+from fate_flow.errors.server_error import IsStandalone
 from fate_flow.runtime.system_settings import PARTY_ID, IS_STANDALONE
 from fate_flow.utils.api_utils import API
 

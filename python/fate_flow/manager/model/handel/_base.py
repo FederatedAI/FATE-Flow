@@ -22,8 +22,7 @@ from ruamel import yaml
 from werkzeug.datastructures import FileStorage
 
 from fate_flow.entity.spec.flow import Metadata
-from fate_flow.entity.types import ModelFileFormat
-from fate_flow.errors.job import NoFoundModelOutput
+from fate_flow.errors.server_error import NoFoundModelOutput
 from fate_flow.manager.model.model_meta import ModelMeta
 from fate_flow.operation.job_saver import JobSaver
 
