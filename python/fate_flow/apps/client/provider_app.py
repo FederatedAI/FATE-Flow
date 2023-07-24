@@ -26,7 +26,7 @@ from fate_flow.utils.api_utils import API
 @API.Input.json(version=fields.String(required=True))
 @API.Input.json(metadata=fields.Dict(required=True))
 def register(name, device, version, metadata):
-    provider = ProviderManager.get_provider(name=name, device=device, version=version, metadata=metadata)
+    provider = ProviderManager.get_provider(name=name, device=device, version=version, metadata=metadata, check=True)
     if provider:
         operator_type = ProviderManager.register_provider(provider)
         return API.Output.json(message=f"{operator_type} success")
