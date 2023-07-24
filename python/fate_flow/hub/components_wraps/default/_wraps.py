@@ -197,6 +197,9 @@ class FlowWraps(WrapsABC):
         logger.info("save data")
         logger.info(f"key[{output_key}] output_datas[{output_datas}]")
         for index, output_data in enumerate(output_datas):
+            if output_data.consumed is False:
+                # filter invalid output data
+                continue
             namespace = output_data.metadata.namespace
             name = output_data.metadata.name
             if not namespace and not name:
