@@ -148,19 +148,6 @@ class StorageTableBase(StorageTableABC):
         self.meta.destroy_metas()
         self._destroy()
 
-    def save_as(self, address, name, namespace, partitions=None, **kwargs):
-        table = self._save_as(address, name, namespace, partitions, **kwargs)
-        table.create_meta(**kwargs)
-        return table
-
-    def _update_read_access_time(self, read_access_time=None):
-        read_access_time = current_timestamp() if not read_access_time else read_access_time
-        self._meta.update_metas(read_access_time=read_access_time)
-
-    def _update_write_access_time(self, write_access_time=None):
-        write_access_time = current_timestamp() if not write_access_time else write_access_time
-        self._meta.update_metas(write_access_time=write_access_time)
-
     # to be implemented
     def _put_all(self, kv_list: Iterable, **kwargs):
         raise NotImplementedError()

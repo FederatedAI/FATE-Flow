@@ -17,6 +17,7 @@ venv
 /logs/
 /jobs/
 /audit/
+/localfs/
 .vscode/*
 /temp/
 /tmp

@@ -40,7 +40,7 @@ class StorageEngine(object):
     SIMPLE = "simple"
     PATH = "path"
     HIVE = "hive"
-    LOCALFS = "localfs"
+    FILE = "file"
     API = "api"
 
 

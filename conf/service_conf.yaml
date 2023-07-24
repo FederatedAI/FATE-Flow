@@ -85,6 +85,9 @@ computing:
     # default use SPARK_HOME environment variable
     home:
     cores: 32
+storage:
+  hdfs:
+    name_node: hdfs://fate-cluster
 hook_module:
   client_authentication: fate_flow.hook.flow.client_authentication
   site_authentication: fate_flow.hook.flow.site_authentication

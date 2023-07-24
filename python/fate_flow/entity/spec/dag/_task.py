@@ -14,6 +14,7 @@ from fate_flow.entity.spec.dag._mlmd import MLMDSpec
 class TaskRuntimeConfSpec(pydantic.BaseModel):
     device: Union[CPUSpec, GPUSpec]
     computing: Union[StandaloneComputingSpec, EggrollComputingSpec, SparkComputingSpec]
+    storage: Optional[str]
     federation: Union[
         StandaloneFederationSpec,
         RollSiteFederationSpec,
@@ -42,6 +43,7 @@ class PreTaskConfigSpec(pydantic.BaseModel):
     conf: TaskRuntimeConfSpec
     mlmd: MLMDSpec
     engine_run: Optional[Dict[str, Any]] = {}
+    computing_partitions: int = None
 
 
 class TaskConfigSpec(pydantic.BaseModel):

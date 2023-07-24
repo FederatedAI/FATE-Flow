@@ -60,6 +60,6 @@ class JobSchedulerABC:
         """
 
     @classmethod
-    def check_job_parameters(cls, dag_schema):
+    def check_job_parameters(cls, dag_schema, is_local):
         """
         """

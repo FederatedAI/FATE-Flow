@@ -14,23 +14,18 @@
 #  limitations under the License.
 #
 from fate_flow.engine.storage import StorageSessionBase, StorageEngine
-from fate_flow.engine.storage.hdfs._table import StorageTable
-from fate_flow.entity.types import AddressABC, HDFSAddress
+from fate_flow.engine.storage.file._table import StorageTable
+from fate_flow.entity.types import AddressABC, FileAddress
 
 
 class StorageSession(StorageSessionBase):
     def __init__(self, session_id, options=None):
-        super(StorageSession, self).__init__(session_id=session_id, engine=StorageEngine.HDFS)
+        super(StorageSession, self).__init__(session_id=session_id, engine=StorageEngine.FILE)
 
-    def table(self, address: AddressABC, name, namespace, partitions, store_type=None, options=None, **kwargs):
-        if isinstance(address, HDFSAddress):
-            return StorageTable(
-                address=address,
-                name=name,
-                namespace=namespace,
-                partitions=partitions,
-                options=options
-            )
+    def table(self, address: AddressABC, name, namespace, partitions, storage_type=None, options=None, **kwargs):
+        if isinstance(address, FileAddress):
+            return StorageTable(address=address, name=name, namespace=namespace,
+                                partitions=partitions)
         raise NotImplementedError(f"address type {type(address)} not supported with hdfs storage")
 
     def cleanup(self, name, namespace):

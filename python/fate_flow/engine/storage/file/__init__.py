@@ -13,17 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.engine.storage.file._session import StorageSession
+from fate_flow.engine.storage.file._table import StorageTable
 
-import pickle
-
-DELIMITER = '\t'
-NEWLINE = '\n'
-
-
-def deserialize(m):
-    fields = m.partition(DELIMITER)
-    return fields[0], pickle.loads(bytes.fromhex(fields[2]))
-
-
-def serialize(k, v):
-    return f"{k}{DELIMITER}{pickle.dumps(v).hex()}"
+__all__ = ["StorageTable", "StorageSession"]

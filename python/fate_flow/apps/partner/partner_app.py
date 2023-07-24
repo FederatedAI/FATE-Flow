@@ -93,15 +93,6 @@ def partner_job_update(job_id, role, party_id, progress):
         return API.Output.fate_flow_exception(UpdateJobFailed(**job_info))
 
 
-@manager.route('/job/pipeline/save', methods=['POST'])
-@API.Input.json(job_id=fields.String(required=True))
-@API.Input.json(role=fields.String(required=True))
-@API.Input.json(party_id=fields.String(required=True))
-def save_pipeline(job_id, role, party_id):
-    # todo:
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
-
-
 @manager.route('/job/resource/apply', methods=['POST'])
 @API.Input.json(job_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
