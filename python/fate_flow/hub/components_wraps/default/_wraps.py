@@ -246,16 +246,16 @@ class FlowWraps(WrapsABC):
                     logger.warning(f"Model path no found: {_path}")
             else:
                 raise ValueError(f"Engine {engine} is not supported")
-
-        resp = self.mlmd.save_model(
-            model_id=self.config.model_id,
-            model_version=self.config.model_version,
-            execution_id=self.config.party_task_id,
-            output_key=output_key,
-            fp=tar_io,
-            type_name=type_name
-        )
-        self.log_response(resp, req_info="save model")
+        if output_models:
+            resp = self.mlmd.save_model(
+                model_id=self.config.model_id,
+                model_version=self.config.model_version,
+                execution_id=self.config.party_task_id,
+                output_key=output_key,
+                fp=tar_io,
+                type_name=type_name
+            )
+            self.log_response(resp, req_info="save model")
 
     @staticmethod
     def no_metadata_filter(tarinfo):
