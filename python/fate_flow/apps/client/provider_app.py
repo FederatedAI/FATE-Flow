@@ -15,7 +15,7 @@
 #
 from webargs import fields
 
-from fate_flow.errors.job import DeviceNotSupported
+from fate_flow.errors.server_error import DeviceNotSupported
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.utils.api_utils import API
 

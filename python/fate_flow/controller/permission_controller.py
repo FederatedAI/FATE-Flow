@@ -1,5 +1,5 @@
 from fate_flow.db.casbin_models import PERMISSION_CASBIN as PC
-from fate_flow.errors.job import NoPermission, PermissionOperateError
+from fate_flow.errors.server_error import NoPermission, PermissionOperateError
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.utils.log_utils import getLogger
 from fate_flow.entity.types import PermissionParameters, DataSet, PermissionType

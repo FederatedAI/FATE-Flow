@@ -21,7 +21,7 @@ from fate_flow.db import Job
 from fate_flow.entity.spec.dag import DAGSchema, JobConfSpec, InheritConfSpec
 from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import NoFoundJob, InheritanceFailed
+from fate_flow.errors.server_error import NoFoundJob, InheritanceFailed
 from fate_flow.manager.metric.metric_manager import OutputMetric
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.model.model_meta import ModelMeta

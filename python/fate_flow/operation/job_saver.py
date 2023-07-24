@@ -18,7 +18,7 @@ import time
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job, Task
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import NoFoundTask
+from fate_flow.errors.server_error import NoFoundTask
 from fate_flow.operation.base_saver import BaseSaver
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTask, ScheduleTaskStatus
 
