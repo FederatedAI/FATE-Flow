@@ -230,7 +230,7 @@ class DataManager:
             if isinstance(header, str):
                 header = header.split(delimiter)
         else:
-            for field in data_meta.get("fields", []):
+            for field in data_meta.get("schema_meta", {}).get("fields", []):
                 header.append(field.get("name"))
         return header
 
