@@ -61,11 +61,6 @@ class TaskController(object):
         )
         need_run = task_parser.need_run
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
-        task_parameters = task_parser.task_parameters
-        task_parameters.engine_run = task_run
-        task_parameters.computing_partitions = dag_schema.dag.conf.computing_partitions
-        schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
-                                     f" {task_parameters.dict()}, provider: {task_parser.provider}")
         if is_scheduler:
             if need_run:
                 task = ScheduleTask()
@@ -80,6 +75,11 @@ class TaskController(object):
                 task.f_parties = [party.dict() for party in dag_schema.dag.parties]
                 ScheduleJobSaver.create_task(task.to_human_model_dict())
         else:
+            task_parameters = task_parser.task_parameters
+            task_parameters.engine_run = task_run
+            task_parameters.computing_partitions = dag_schema.dag.conf.computing_partitions
+            schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
+                                         f" {task_parameters.dict()}, provider: {task_parser.provider}")
             schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} "
                                          f"provider: {task_parser.provider}")
             task = Task()
