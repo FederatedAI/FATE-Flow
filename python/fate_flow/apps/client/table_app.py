@@ -18,7 +18,7 @@ from webargs import fields
 from fate_flow.engine import storage
 from fate_flow.engine.storage import Session
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import NoFoundTable
+from fate_flow.errors.server_error import NoFoundTable
 from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.utils.api_utils import API
 

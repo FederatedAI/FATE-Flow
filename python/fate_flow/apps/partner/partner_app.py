@@ -19,8 +19,8 @@ from fate_flow.controller.job_controller import JobController
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.types import TaskStatus
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import CreateJobFailed, UpdateJobFailed, KillFailed, JobResourceException, NoFoundTask, \
-    StartTaskFailed, UpdateTaskFailed, KillTaskFailed, TaskResourceException
+from fate_flow.errors.server_error import CreateJobFailed, UpdateJobFailed, KillFailed, JobResourceException,\
+    NoFoundTask, StartTaskFailed, UpdateTaskFailed, KillTaskFailed, TaskResourceException
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API, stat_logger

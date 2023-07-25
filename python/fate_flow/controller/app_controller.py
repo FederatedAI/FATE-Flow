@@ -17,7 +17,7 @@ import hashlib
 import time
 
 from fate_flow.db.casbin_models import FATE_CASBIN
-from fate_flow.errors.job import RequestExpired, NoFoundAppid, InvalidParameter
+from fate_flow.errors.server_error import RequestExpired, NoFoundAppid, InvalidParameter
 from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import CLIENT_AUTHENTICATION, SITE_AUTHENTICATION

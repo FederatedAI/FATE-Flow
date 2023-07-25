@@ -36,13 +36,13 @@ def count(log_type, job_id, role=None, party_id=None, task_name=None):
 @manager.route('/query', methods=['GET'])
 @API.Input.params(log_type=fields.String(required=True))
 @API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=False))
-@API.Input.params(party_id=fields.String(required=False))
-@API.Input.params(task_name=fields.String(required=False))
+@API.Input.params(role=fields.String(required=True))
+@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(task_name=fields.String(required=True))
 @API.Input.params(begin=fields.Integer(required=False))
 @API.Input.params(end=fields.Integer(required=False))
 @API.Input.params(instance_id=fields.String(required=False))
 @cluster_route
-def get(log_type, job_id, begin, end, role=None, party_id=None, task_name=None):
+def get(log_type, job_id, role, party_id, task_name=None, begin=None, end=None):
     data = LogManager(log_type, job_id, role=role, party_id=party_id, task_name=task_name).cat_log(begin=begin, end=end)
     return API.Output.json(data=data)

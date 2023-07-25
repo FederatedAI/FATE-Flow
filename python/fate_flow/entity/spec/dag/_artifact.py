@@ -93,6 +93,7 @@ class ArtifactOutputSpec(pydantic.BaseModel):
     uri: str
     metadata: Metadata
     type_name: str
+    consumed: Optional[bool] = None
 
 
 class URI:
