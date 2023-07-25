@@ -20,13 +20,13 @@ import yaml
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
 from fate_flow.engine.devices import build_engine
-from fate_flow.entity.spec.dag import DAGSchema
+from fate_flow.entity.spec.dag import DAGSchema, LauncherSpec
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType
+from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType, LauncherType
 from fate_flow.entity.code import FederatedSchedulingStatusCode
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils import job_utils
@@ -99,10 +99,25 @@ class TaskController(object):
             task.f_sync_type = dag_schema.dag.conf.sync_type
             task.f_task_run = task_run
             task.f_task_cores = task_cores
-            if role == "local":
-                task.f_run_ip = RuntimeConfig.JOB_SERVER_HOST
-                task.f_run_port = RuntimeConfig.HTTP_PORT
+            cls.update_local(task)
+            cls.update_launcher_config(task, task_parser.task_runtime_launcher)
             JobSaver.create_task(task.to_human_model_dict())
+
+    @staticmethod
+    def update_local(task):
+        # HA need route to local
+        if task.f_role == "local":
+            task.f_run_ip = RuntimeConfig.JOB_SERVER_HOST
+            task.f_run_port = RuntimeConfig.HTTP_PORT
+
+    @staticmethod
+    def update_launcher_config(task, task_runtime_launcher):
+        # support deepspeed and other launcher
+        schedule_logger(task.f_job_id).info(f"task runtime launcher: {task_runtime_launcher}")
+        launcher = LauncherSpec.parse_obj(task_runtime_launcher)
+        if launcher.name and launcher.name != LauncherType.DEFAULT:
+            task.f_launcher_name = launcher.name
+            task.f_launcher_conf = launcher.conf
 
     @staticmethod
     def create_schedule_tasks(job: ScheduleJob, dag_schema):

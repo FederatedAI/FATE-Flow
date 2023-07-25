@@ -29,3 +29,4 @@ from fate_flow.entity.spec.dag._federation import StandaloneFederationSpec, Roll
     PulsarFederationSpec, RabbitMQFederationSpec
 from fate_flow.entity.spec.dag._logger import FlowLogger
 from fate_flow.entity.spec.dag._mlmd import MLMDSpec
+from fate_flow.entity.spec.dag._device import LauncherSpec

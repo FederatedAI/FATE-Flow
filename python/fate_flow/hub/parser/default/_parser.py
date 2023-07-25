@@ -169,6 +169,10 @@ class TaskParser(TaskParserABC):
         return _rc if _rc else {}
 
     @property
+    def task_runtime_launcher(self):
+        return self.task_runtime_conf.get("launcher", {})
+
+    @property
     def provider(self):
         if not self._provider:
             provider_name = self.task_runtime_conf.get("provider")

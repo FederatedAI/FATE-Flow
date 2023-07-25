@@ -55,3 +55,8 @@ class CoordinationProxyService(object):
 class FederatedCommunicationType(object):
     POLL = "poll"
     CALLBACK = "callback"
+
+
+class LauncherType(object):
+    DEFAULT = "default"
+    DEEPSPEED = "deepspeed"

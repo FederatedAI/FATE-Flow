@@ -12,22 +12,4 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from typing import Literal
-
-import pydantic
-from pydantic import typing
-
-
-class CPUSpec(pydantic.BaseModel):
-    type: Literal["CPU"]
-    metadata: dict = {}
-
-
-class GPUSpec(pydantic.BaseModel):
-    type: Literal["GPU"]
-    metadata: dict = {}
-
-
-class LauncherSpec(pydantic.BaseModel):
-    name: str = "default"
-    conf: dict = {}
+#
