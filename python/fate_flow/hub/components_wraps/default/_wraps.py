@@ -80,12 +80,12 @@ class FlowWraps(WrapsABC):
             if output_meta.status.code != ReturnCode.Base.SUCCESS:
                 code = ReturnCode.Task.COMPONENT_RUN_FAILED
                 exceptions = output_meta.status.exceptions
-                logger.exception(exceptions)
+                logger.error(exceptions)
         except Exception as e:
             traceback.format_exc()
             code = ReturnCode.Task.TASK_RUN_FAILED
             exceptions = str(e)
-            logger.exception(e)
+            logger.error(e)
         finally:
             self.report_status(code, exceptions)
 
@@ -156,11 +156,11 @@ class FlowWraps(WrapsABC):
                     output_meta = ComponentOutputMeta.parse_obj(result)
                     logger.debug(output_meta)
                 except:
-                    logger.exception(f"Task run failed, you can see the task result file for details: {task_result}")
+                    logger.error(f"Task run failed, you can see the task result file for details: {task_result}")
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
-                exceptions=f"Task output no found. Process exit code {exit_code}"
+                exceptions=f"No found task output. Process exit code {exit_code}. "
             ))
         return output_meta
 
@@ -195,8 +195,11 @@ class FlowWraps(WrapsABC):
 
     def _push_data(self, output_key, output_datas: List[ArtifactOutputSpec]):
         logger.info("save data")
-        logger.info(f"key[{output_key}] output_datas[{output_datas}]")
+        # logger.debug(f"key[{output_key}] output_datas[{output_datas}]")
         for index, output_data in enumerate(output_datas):
+            if output_data.consumed is False:
+                # filter invalid output data
+                continue
             namespace = output_data.metadata.namespace
             name = output_data.metadata.name
             if not namespace and not name:
@@ -243,19 +246,19 @@ class FlowWraps(WrapsABC):
                     tar_io = self._tar_model(tar_io=tar_io, path=path)
                     type_name = output_model.type_name
                 else:
-                    logger.warning(f"Model path no found: {_path}")
+                    logger.warning(f"No found model path: {_path}")
             else:
                 raise ValueError(f"Engine {engine} is not supported")
-
-        resp = self.mlmd.save_model(
-            model_id=self.config.model_id,
-            model_version=self.config.model_version,
-            execution_id=self.config.party_task_id,
-            output_key=output_key,
-            fp=tar_io,
-            type_name=type_name
-        )
-        self.log_response(resp, req_info="save model")
+        if output_models:
+            resp = self.mlmd.save_model(
+                model_id=self.config.model_id,
+                model_version=self.config.model_version,
+                execution_id=self.config.party_task_id,
+                output_key=output_key,
+                fp=tar_io,
+                type_name=type_name
+            )
+            self.log_response(resp, req_info="save model")
 
     @staticmethod
     def no_metadata_filter(tarinfo):
@@ -289,7 +292,7 @@ class FlowWraps(WrapsABC):
                         )
                         self.log_response(resp, req_info="save metric")
             else:
-                logger.warning(f"Metric path no found: {_path}")
+                logger.warning(f"No found metric path: {_path}")
         else:
             pass
 
@@ -301,7 +304,7 @@ class FlowWraps(WrapsABC):
             if resp_json.get("code") != ReturnCode.Base.SUCCESS:
                 logging.exception(f"{req_info}: {resp.text}")
         except Exception:
-            logger.exception(f"{req_info}: {resp.text}")
+            logger.error(f"{req_info}: {resp.text}")
 
     def _preprocess_input_artifacts(self):
         input_artifacts = {}

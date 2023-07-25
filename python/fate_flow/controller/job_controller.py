@@ -21,7 +21,7 @@ from fate_flow.db import Job
 from fate_flow.entity.spec.dag import DAGSchema, JobConfSpec, InheritConfSpec
 from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import NoFoundJob, InheritanceFailed
+from fate_flow.errors.server_error import NoFoundJob, InheritanceFailed
 from fate_flow.manager.metric.metric_manager import OutputMetric
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.model.model_meta import ModelMeta
@@ -410,7 +410,7 @@ class JobInheritance:
                 task_id=source_task.f_task_id,
                 task_version=source_task.f_task_version
             ).save_as(
-                job_id=target_task.f_task_id,
+                job_id=target_task.f_job_id,
                 role=target_task.f_role,
                 party_id=target_task.f_party_id,
                 task_name=target_task.f_task_name,
@@ -432,8 +432,8 @@ class JobInheritance:
                 "party_id": target_task.f_party_id
             }
             update_info = {}
-            update_list = ["cmd", "elapsed", "end_date", "end_time", "engine_conf", "party_status", "run_ip",
-                           "run_pid", "start_date", "start_time", "status", "worker_id"]
+            update_list = ["cmd", "elapsed", "end_time", "engine_conf", "party_status", "run_ip",
+                           "run_pid", "start_time", "status", "worker_id"]
             for k in update_list:
                 update_info[k] = getattr(source_task, f"f_{k}")
             task_info.update(update_info)

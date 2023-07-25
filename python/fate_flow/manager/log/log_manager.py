@@ -22,7 +22,7 @@ class LogManager:
     def __init__(self, log_type, job_id, party_id="", role="", task_name="", **kwargs):
         self.log_type = log_type
         self.job_id = job_id
-        self.party_id = str(party_id)
+        self.party_id = party_id
         self.role = role
         self.task_name = task_name
 

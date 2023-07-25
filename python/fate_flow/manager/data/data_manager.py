@@ -24,7 +24,7 @@ from flask import send_file
 from fate_flow.engine import storage
 from fate_flow.engine.storage import Session, StorageEngine, DataType
 from fate_flow.entity.types import EggRollAddress, StandaloneAddress, HDFSAddress, PathAddress, ApiAddress
-from fate_flow.errors.job import NoFoundTable
+from fate_flow.errors.server_error import NoFoundTable
 from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.runtime.system_settings import LOCALFS_DATA_HOME, STANDALONE_DATA_HOME, STORAGE
 from fate_flow.utils import job_utils
@@ -230,7 +230,7 @@ class DataManager:
             if isinstance(header, str):
                 header = header.split(delimiter)
         else:
-            for field in data_meta.get("fields", []):
+            for field in data_meta.get("schema_meta", {}).get("fields", []):
                 header.append(field.get("name"))
         return header
 

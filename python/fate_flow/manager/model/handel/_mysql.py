@@ -64,7 +64,7 @@ class MysqlHandel(IOHandle):
         memory = self.engine.read(storage_key)
         memory.seek(0)
         with open(path, "wb") as f:
-            f.write(memory)
+            f.write(memory.read())
         return path
 
     @staticmethod

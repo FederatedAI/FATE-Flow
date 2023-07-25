@@ -2,7 +2,7 @@ import hashlib
 
 from fate_flow.controller.app_controller import PermissionController, Authentication
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import NoFoundAppid
+from fate_flow.errors.server_error import NoFoundAppid
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import SignatureParameters, SignatureReturn, AuthenticationParameters, \
     AuthenticationReturn

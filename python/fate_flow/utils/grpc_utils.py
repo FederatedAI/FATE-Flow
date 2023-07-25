@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.errors.job import ResponseException
+from fate_flow.errors.server_error import ResponseException
 from fate_flow.proto.osx import osx_pb2, osx_pb2_grpc
 from fate_flow.proto.rollsite import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
 
