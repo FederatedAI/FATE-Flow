@@ -213,7 +213,9 @@ class ResourceManager(object):
             updates = {resource_model.f_remaining_cores: resource_model.f_remaining_cores - cores,
                        resource_model.f_remaining_memory: resource_model.f_remaining_memory - memory}
         elif operation_type is ResourceOperation.RETURN:
-            filters = []
+            filters = [
+                resource_model.f_remaining_cores + cores <= resource_model.f_cores
+            ]
             updates = {resource_model.f_remaining_cores: resource_model.f_remaining_cores + cores,
                        resource_model.f_remaining_memory: resource_model.f_remaining_memory + memory}
         else:

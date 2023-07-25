@@ -410,7 +410,7 @@ class JobInheritance:
                 task_id=source_task.f_task_id,
                 task_version=source_task.f_task_version
             ).save_as(
-                job_id=target_task.f_task_id,
+                job_id=target_task.f_job_id,
                 role=target_task.f_role,
                 party_id=target_task.f_party_id,
                 task_name=target_task.f_task_name,
@@ -432,8 +432,8 @@ class JobInheritance:
                 "party_id": target_task.f_party_id
             }
             update_info = {}
-            update_list = ["cmd", "elapsed", "end_date", "end_time", "engine_conf", "party_status", "run_ip",
-                           "run_pid", "start_date", "start_time", "status", "worker_id"]
+            update_list = ["cmd", "elapsed", "end_time", "engine_conf", "party_status", "run_ip",
+                           "run_pid", "start_time", "status", "worker_id"]
             for k in update_list:
                 update_info[k] = getattr(source_task, f"f_{k}")
             task_info.update(update_info)
