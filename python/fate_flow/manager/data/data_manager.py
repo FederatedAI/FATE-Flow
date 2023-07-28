@@ -148,6 +148,9 @@ class DataManager:
                     namespace=table.get("namespace")
                 ))
 
+        if not outputs:
+            raise NoFoundTable()
+
         return cls.send_table(outputs, tar_file_name=tar_file_name)
 
     @classmethod
