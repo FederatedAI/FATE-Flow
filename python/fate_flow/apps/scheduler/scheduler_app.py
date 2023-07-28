@@ -14,7 +14,7 @@
 #  limitations under the License.
 from webargs import fields
 
-from fate_flow.errors.job import UpdateTaskFailed
+from fate_flow.errors.server_error import UpdateTaskFailed
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.scheduler.job_scheduler import DAGScheduler
 from fate_flow.utils.api_utils import API

@@ -18,8 +18,7 @@ import logging
 import os.path
 import tarfile
 import traceback
-import uuid
-from typing import Union, List
+from typing import List
 
 import yaml
 
@@ -45,7 +44,7 @@ class FlowWraps(WrapsABC):
     def __init__(self, config: PreTaskConfigSpec):
         self.config = config
         self.mlmd = self.load_mlmd(config.mlmd)
-        self.backend = build_backend(backend_name=self.config.conf.computing.type)
+        self.backend = build_backend(backend_name=self.config.conf.computing.type, launcher_name=self.config.launcher_name)
         self._component_define = None
 
     @property
@@ -80,12 +79,12 @@ class FlowWraps(WrapsABC):
             if output_meta.status.code != ReturnCode.Base.SUCCESS:
                 code = ReturnCode.Task.COMPONENT_RUN_FAILED
                 exceptions = output_meta.status.exceptions
-                logger.exception(exceptions)
+                logger.error(exceptions)
         except Exception as e:
             traceback.format_exc()
             code = ReturnCode.Task.TASK_RUN_FAILED
             exceptions = str(e)
-            logger.exception(e)
+            logger.error(e)
         finally:
             self.report_status(code, exceptions)
 
@@ -97,7 +96,8 @@ class FlowWraps(WrapsABC):
         return self.backend.cleanup(
             provider_name=self.config.provider_name,
             config=config.dict(),
-            task_info=self.task_info
+            task_info=self.task_info,
+            party_task_id=self.config.party_task_id
         )
 
     def preprocess(self):
@@ -136,16 +136,19 @@ class FlowWraps(WrapsABC):
         logger.info("start run task")
         os.makedirs(self.task_input_dir, exist_ok=True)
         os.makedirs(self.task_output_dir, exist_ok=True)
-        task_parameters_file = os.path.join(self.task_input_dir, "task_parameters.yaml")
+        conf_path = os.path.join(self.task_input_dir, "task_parameters.yaml")
         task_result = os.path.join(self.task_output_dir, "task_result.yaml")
-        with open(task_parameters_file, "w") as f:
+        with open(conf_path, "w") as f:
             yaml.dump(task_parameters, f)
         p = self.backend.run(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
             engine_run=self.config.engine_run,
+            launcher_conf=self.config.launcher_conf,
             run_parameters=task_parameters,
-            output_path=task_result
+            output_path=task_result,
+            conf_path=conf_path,
+            session_id=self.config.party_task_id
         )
         exit_code = p.wait()
         logger.info("finish task")
@@ -156,11 +159,11 @@ class FlowWraps(WrapsABC):
                     output_meta = ComponentOutputMeta.parse_obj(result)
                     logger.debug(output_meta)
                 except:
-                    logger.exception(f"Task run failed, you can see the task result file for details: {task_result}")
+                    logger.error(f"Task run failed, you can see the task result file for details: {task_result}")
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
-                exceptions=f"Task output no found. Process exit code {exit_code}"
+                exceptions=f"No found task output. Process exit code {exit_code}. "
             ))
         return output_meta
 
@@ -195,8 +198,11 @@ class FlowWraps(WrapsABC):
 
     def _push_data(self, output_key, output_datas: List[ArtifactOutputSpec]):
         logger.info("save data")
-        logger.info(f"key[{output_key}] output_datas[{output_datas}]")
+        # logger.debug(f"key[{output_key}] output_datas[{output_datas}]")
         for index, output_data in enumerate(output_datas):
+            if output_data.consumed is False:
+                # filter invalid output data
+                continue
             namespace = output_data.metadata.namespace
             name = output_data.metadata.name
             if not namespace and not name:
@@ -243,19 +249,19 @@ class FlowWraps(WrapsABC):
                     tar_io = self._tar_model(tar_io=tar_io, path=path)
                     type_name = output_model.type_name
                 else:
-                    logger.warning(f"Model path no found: {_path}")
+                    logger.warning(f"No found model path: {_path}")
             else:
                 raise ValueError(f"Engine {engine} is not supported")
-
-        resp = self.mlmd.save_model(
-            model_id=self.config.model_id,
-            model_version=self.config.model_version,
-            execution_id=self.config.party_task_id,
-            output_key=output_key,
-            fp=tar_io,
-            type_name=type_name
-        )
-        self.log_response(resp, req_info="save model")
+        if output_models:
+            resp = self.mlmd.save_model(
+                model_id=self.config.model_id,
+                model_version=self.config.model_version,
+                execution_id=self.config.party_task_id,
+                output_key=output_key,
+                fp=tar_io,
+                type_name=type_name
+            )
+            self.log_response(resp, req_info="save model")
 
     @staticmethod
     def no_metadata_filter(tarinfo):
@@ -289,7 +295,7 @@ class FlowWraps(WrapsABC):
                         )
                         self.log_response(resp, req_info="save metric")
             else:
-                logger.warning(f"Metric path no found: {_path}")
+                logger.warning(f"No found metric path: {_path}")
         else:
             pass
 
@@ -301,7 +307,7 @@ class FlowWraps(WrapsABC):
             if resp_json.get("code") != ReturnCode.Base.SUCCESS:
                 logging.exception(f"{req_info}: {resp.text}")
         except Exception:
-            logger.exception(f"{req_info}: {resp.text}")
+            logger.error(f"{req_info}: {resp.text}")
 
     def _preprocess_input_artifacts(self):
         input_artifacts = {}
@@ -341,8 +347,6 @@ class FlowWraps(WrapsABC):
         else:
             # data
             for key in define.outputs.dict().keys():
-                if key == "metric":
-                    pass
                 datas = getattr(define.outputs, key, None)
                 if datas:
                     for data in datas:

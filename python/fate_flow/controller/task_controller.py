@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import copy
 import os
 
 import yaml
@@ -20,13 +21,14 @@ import yaml
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
 from fate_flow.engine.devices import build_engine
-from fate_flow.entity.spec.dag import DAGSchema
+from fate_flow.entity.spec.dag import DAGSchema, LauncherSpec
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.service.worker_manager import WorkerManager
+from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType
+from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType, LauncherType
 from fate_flow.entity.code import FederatedSchedulingStatusCode
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils import job_utils
@@ -61,11 +63,6 @@ class TaskController(object):
         )
         need_run = task_parser.need_run
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
-        task_parameters = task_parser.task_parameters
-        task_parameters.engine_run = task_run
-        task_parameters.computing_partitions = dag_schema.dag.conf.computing_partitions
-        schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
-                                     f" {task_parameters.dict()}, provider: {task_parser.provider}")
         if is_scheduler:
             if need_run:
                 task = ScheduleTask()
@@ -80,8 +77,11 @@ class TaskController(object):
                 task.f_parties = [party.dict() for party in dag_schema.dag.parties]
                 ScheduleJobSaver.create_task(task.to_human_model_dict())
         else:
-            schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} "
-                                         f"provider: {task_parser.provider}")
+            task_parameters = task_parser.task_parameters
+            task_parameters.engine_run = task_run
+            task_parameters.computing_partitions = dag_schema.dag.conf.computing_partitions
+            schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
+                                         f" {task_parameters.dict()}, provider: {task_parser.provider}")
             task = Task()
             task.f_job_id = job_id
             task.f_role = role
@@ -93,16 +93,34 @@ class TaskController(object):
             task.f_scheduler_party_id = dag_schema.dag.conf.scheduler_party_id
             task.f_status = TaskStatus.WAITING if need_run else TaskStatus.PASS
             task.f_party_status = TaskStatus.WAITING
-            task.f_component_parameters = task_parameters.dict()
             task.f_execution_id = execution_id
             task.f_provider_name = task_parser.provider
             task.f_sync_type = dag_schema.dag.conf.sync_type
             task.f_task_run = task_run
             task.f_task_cores = task_cores
-            if role == "local":
-                task.f_run_ip = RuntimeConfig.JOB_SERVER_HOST
-                task.f_run_port = RuntimeConfig.HTTP_PORT
+            cls.update_local(task)
+            cls.update_launcher_config(task, task_parser.task_runtime_launcher, task_parameters)
+            task.f_component_parameters = task_parameters.dict()
             JobSaver.create_task(task.to_human_model_dict())
+
+    @staticmethod
+    def update_local(task):
+        # HA need route to local
+        if task.f_role == "local":
+            task.f_run_ip = RuntimeConfig.JOB_SERVER_HOST
+            task.f_run_port = RuntimeConfig.HTTP_PORT
+
+    @staticmethod
+    def update_launcher_config(task, task_runtime_launcher, task_parameters):
+        # support deepspeed and other launcher
+        schedule_logger(task.f_job_id).info(f"task runtime launcher: {task_runtime_launcher}")
+        launcher = LauncherSpec.parse_obj(task_runtime_launcher)
+        if launcher.name and launcher.name != LauncherType.DEFAULT:
+            task_parameters.launcher_name = task.f_launcher_name = launcher.name
+            launcher_conf = copy.deepcopy(JobDefaultConfig.launcher.get(task_parameters.launcher_name))
+            if launcher.conf:
+                launcher_conf.update(launcher.conf)
+            task_parameters.launcher_conf = task.f_launcher_conf = launcher_conf
 
     @staticmethod
     def create_schedule_tasks(job: ScheduleJob, dag_schema):

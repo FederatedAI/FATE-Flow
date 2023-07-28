@@ -19,7 +19,7 @@ from webargs import fields
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import NoFoundTask
+from fate_flow.errors.server_error import NoFoundTask
 from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.metric.metric_manager import OutputMetric

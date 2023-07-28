@@ -40,11 +40,10 @@ class OutputMetric:
         )
 
     def save_as(self, job_id, role, party_id, task_name, task_id, task_version):
-        metrics = self.read_metrics()
-        for metric in metrics:
-            self._insert_metrics_into_db(
-                job_id, role, party_id, task_id, task_version, task_name, MetricData(**metric)
-            )
+        data_list = self.read_metrics()
+        self._insert_metrics_into_db(
+            job_id, role, party_id, task_id, task_version, task_name, data_list
+        )
 
     @DB.connection_context()
     def _insert_metrics_into_db(self, job_id, role, party_id, task_id, task_version, task_name, data_list):

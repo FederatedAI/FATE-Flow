@@ -67,9 +67,13 @@ class LocalEngine(object):
                 return yaml.safe_load(fr)
         return {}
 
-    @classmethod
-    def cleanup(cls, provider_name, task_info, config):
-        cmd = cls.generate_cleanup_cmd(provider_name)
+    def _cleanup1(self, **kwargs):
+        # backend cleanup
+        pass
+
+    def _cleanup2(self, provider_name, task_info, config, **kwargs):
+        # engine cleanup: computing、federation ..
+        cmd = self.generate_cleanup_cmd(provider_name)
 
         if cmd:
             logging.info(f"start clean task, config: {config}")
@@ -82,35 +86,33 @@ class LocalEngine(object):
             p.wait()
             logging.info(f"clean success")
 
+    def cleanup(self, provider_name, task_info, config, party_task_id, **kwargs):
+        self._cleanup1(session_id=party_task_id, task_info=task_info)
+        self._cleanup2(provider_name, task_info, config, **kwargs)
+
     @staticmethod
     def generate_component_run_cmd(provider_name, output_path=""):
         if provider_name == ProviderName.FATE:
             from fate_flow.worker.fate_executor import FateSubmit
             module_file_path = sys.modules[FateSubmit.__module__].__file__
-            common_cmd = [
-                module_file_path,
-                "component",
-                "execute",
-                "--env-name",
-                "FATE_TASK_CONFIG",
-                "--execution-final-meta-path",
-                output_path
-            ]
 
         elif provider_name == ProviderName.FATE_FLOW:
             from fate_flow.worker.fate_flow_executor import FateFlowSubmit
             module_file_path = sys.modules[FateFlowSubmit.__module__].__file__
-            common_cmd = [
-                module_file_path,
-                "component",
-                "execute",
-                "--env-name",
-                "FATE_TASK_CONFIG",
-                "--execution-final-meta-path",
-                output_path
-            ]
+
         else:
             raise ValueError(f"load provider {provider_name} failed")
+
+        common_cmd = [
+            module_file_path,
+            "component",
+            "execute",
+            "--env-name",
+            "FATE_TASK_CONFIG",
+            "--execution-final-meta-path",
+            output_path
+        ]
+
         return common_cmd
 
     @staticmethod

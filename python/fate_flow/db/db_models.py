@@ -82,13 +82,15 @@ class Task(DataBaseModel):
     f_run_port = IntegerField(null=True)
     f_run_pid = IntegerField(null=True)
     f_party_status = CharField(max_length=50)
-    f_provider_info = JSONField(null=True)
     f_provider_name = CharField(max_length=50)
     f_task_parameters = JSONField(null=True)
     f_engine_conf = JSONField(null=True)
     f_kill_status = BooleanField(default=False)
     f_error_report = TextField(default="")
     f_sync_type = CharField(max_length=20)
+
+    f_launcher_name = CharField(max_length=20, null=True)
+    f_launcher_conf = JSONField(null=True)
 
     f_start_time = BigIntegerField(null=True)
     f_end_time = BigIntegerField(null=True)
