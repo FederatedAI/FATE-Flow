@@ -16,6 +16,7 @@ import logging
 
 from fate_flow.components import cpn
 from fate_flow.engine import storage
+from fate_flow.errors.server_error import NoFoundTable
 from fate_flow.manager.data.data_manager import DataManager
 
 
@@ -56,6 +57,8 @@ class Download:
 
     def run(self, parameters: DownloadParam):
         data_table_meta = storage.StorageTableMeta(name=parameters.name, namespace=parameters.namespace)
+        if not data_table_meta:
+            raise NoFoundTable(name=parameters.name, namespace=parameters.namespace)
         download_dir = parameters.path
         logging.info("start download data")
         DataManager.send_table(
