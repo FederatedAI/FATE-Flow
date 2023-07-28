@@ -1,6 +1,6 @@
 from fate_flow.controller.app_controller import Authentication, PermissionController
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import InvalidParameter
+from fate_flow.errors.server_error import InvalidParameter
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import AuthenticationReturn, AuthenticationParameters
 

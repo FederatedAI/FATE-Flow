@@ -15,6 +15,7 @@
 from typing import Literal
 
 import pydantic
+from pydantic import typing
 
 
 class CPUSpec(pydantic.BaseModel):
@@ -25,3 +26,8 @@ class CPUSpec(pydantic.BaseModel):
 class GPUSpec(pydantic.BaseModel):
     type: Literal["GPU"]
     metadata: dict = {}
+
+
+class LauncherSpec(pydantic.BaseModel):
+    name: str = "default"
+    conf: dict = {}

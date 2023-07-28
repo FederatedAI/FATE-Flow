@@ -14,7 +14,7 @@
 #  limitations under the License.
 import logging
 import os
-import uuid
+import secrets
 from typing import Union
 
 from fate_flow.components import cpn
@@ -253,7 +253,7 @@ class Upload:
         return fate_uuid + str(line_index), delimiter.join(list(map(str, values[:])))
 
     def kv_generator(self, input_feature_count, fp, job_id, part_of_data, id_index):
-        fate_uuid = uuid.uuid1().hex
+        fate_uuid = secrets.token_bytes(16).hex()
         get_line = self.get_line()
         line_index = 0
         logging.info(input_feature_count)

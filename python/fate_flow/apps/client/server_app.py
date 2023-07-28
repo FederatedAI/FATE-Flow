@@ -15,7 +15,7 @@
 #
 from webargs import fields
 
-from fate_flow.errors.job import NoFoundServer
+from fate_flow.errors.server_error import NoFoundServer
 from fate_flow.manager.service.service_manager import ServiceRegistry, ServerRegistry
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils.api_utils import API

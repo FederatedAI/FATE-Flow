@@ -22,3 +22,4 @@ pymysql
 kazoo
 shortuuid
 cos-python-sdk-v5==1.9.10
+typing-extensions==4.5.0

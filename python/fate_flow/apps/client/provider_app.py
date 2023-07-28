@@ -15,7 +15,7 @@
 #
 from webargs import fields
 
-from fate_flow.errors.job import DeviceNotSupported
+from fate_flow.errors.server_error import DeviceNotSupported
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.utils.api_utils import API
 
@@ -26,7 +26,7 @@ from fate_flow.utils.api_utils import API
 @API.Input.json(version=fields.String(required=True))
 @API.Input.json(metadata=fields.Dict(required=True))
 def register(name, device, version, metadata):
-    provider = ProviderManager.get_provider(name=name, device=device, version=version, metadata=metadata)
+    provider = ProviderManager.get_provider(name=name, device=device, version=version, metadata=metadata, check=True)
     if provider:
         operator_type = ProviderManager.register_provider(provider)
         return API.Output.json(message=f"{operator_type} success")

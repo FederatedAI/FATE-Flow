@@ -23,7 +23,7 @@ from fate_flow.entity.spec.dag import DataWarehouseChannelSpec, ModelWarehouseCh
     RuntimeTaskOutputChannelSpec, ComponentSpec, EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec, \
     StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \
     PulsarFederationSpec, RabbitMQFederationSpec, FlowLogger, MLMDSpec, TaskRuntimeConfSpec, \
-    DAGSchema, DAGSpec, PreTaskConfigSpec
+    DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts
 from fate_flow.entity.spec.flow import SchedulerInfoSpec
 from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputArtifactType, ArtifactSourceType, \
     ComputingEngine
@@ -167,6 +167,10 @@ class TaskParser(TaskParserABC):
     def task_runtime_conf(self):
         _rc = self.task_node.conf.get(self.role, {}).get(self.party_id, {})
         return _rc if _rc else {}
+
+    @property
+    def task_runtime_launcher(self):
+        return self.task_runtime_conf.get("launcher", {})
 
     @property
     def provider(self):

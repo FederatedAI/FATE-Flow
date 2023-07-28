@@ -25,7 +25,7 @@ from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
 from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation, \
     FederatedCommunicationType, AutoRerunStatus, ComputingEngine, EngineType
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.job import NoFoundJob, JobParamsError
+from fate_flow.errors.server_error import NoFoundJob, JobParamsError
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.hub.scheduler import JobSchedulerABC
 from fate_flow.manager.model.model_meta import ModelMeta
