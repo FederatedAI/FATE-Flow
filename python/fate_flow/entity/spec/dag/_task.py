@@ -44,6 +44,8 @@ class PreTaskConfigSpec(pydantic.BaseModel):
     mlmd: MLMDSpec
     engine_run: Optional[Dict[str, Any]] = {}
     computing_partitions: int = None
+    launcher_name: Optional[str] = "default"
+    launcher_conf: Optional[Dict] = {}
 
 
 class TaskConfigSpec(pydantic.BaseModel):

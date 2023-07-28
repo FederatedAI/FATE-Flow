@@ -18,8 +18,7 @@ import logging
 import os.path
 import tarfile
 import traceback
-import uuid
-from typing import Union, List
+from typing import List
 
 import yaml
 
@@ -45,7 +44,7 @@ class FlowWraps(WrapsABC):
     def __init__(self, config: PreTaskConfigSpec):
         self.config = config
         self.mlmd = self.load_mlmd(config.mlmd)
-        self.backend = build_backend(backend_name=self.config.conf.computing.type)
+        self.backend = build_backend(backend_name=self.config.conf.computing.type, launcher_name=self.config.launcher_name)
         self._component_define = None
 
     @property
@@ -97,7 +96,8 @@ class FlowWraps(WrapsABC):
         return self.backend.cleanup(
             provider_name=self.config.provider_name,
             config=config.dict(),
-            task_info=self.task_info
+            task_info=self.task_info,
+            party_task_id=self.config.party_task_id
         )
 
     def preprocess(self):
@@ -136,16 +136,19 @@ class FlowWraps(WrapsABC):
         logger.info("start run task")
         os.makedirs(self.task_input_dir, exist_ok=True)
         os.makedirs(self.task_output_dir, exist_ok=True)
-        task_parameters_file = os.path.join(self.task_input_dir, "task_parameters.yaml")
+        conf_path = os.path.join(self.task_input_dir, "task_parameters.yaml")
         task_result = os.path.join(self.task_output_dir, "task_result.yaml")
-        with open(task_parameters_file, "w") as f:
+        with open(conf_path, "w") as f:
             yaml.dump(task_parameters, f)
         p = self.backend.run(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
             engine_run=self.config.engine_run,
+            launcher_conf=self.config.launcher_conf,
             run_parameters=task_parameters,
-            output_path=task_result
+            output_path=task_result,
+            conf_path=conf_path,
+            session_id=self.config.party_task_id
         )
         exit_code = p.wait()
         logger.info("finish task")
@@ -344,8 +347,6 @@ class FlowWraps(WrapsABC):
         else:
             # data
             for key in define.outputs.dict().keys():
-                if key == "metric":
-                    pass
                 datas = getattr(define.outputs, key, None)
                 if datas:
                     for data in datas:

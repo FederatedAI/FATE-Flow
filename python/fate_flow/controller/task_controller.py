@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import copy
 import os
 
 import yaml
@@ -24,6 +25,7 @@ from fate_flow.entity.spec.dag import DAGSchema, LauncherSpec
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.service.worker_manager import WorkerManager
+from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType, LauncherType
@@ -80,8 +82,6 @@ class TaskController(object):
             task_parameters.computing_partitions = dag_schema.dag.conf.computing_partitions
             schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
                                          f" {task_parameters.dict()}, provider: {task_parser.provider}")
-            schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} "
-                                         f"provider: {task_parser.provider}")
             task = Task()
             task.f_job_id = job_id
             task.f_role = role
@@ -93,14 +93,14 @@ class TaskController(object):
             task.f_scheduler_party_id = dag_schema.dag.conf.scheduler_party_id
             task.f_status = TaskStatus.WAITING if need_run else TaskStatus.PASS
             task.f_party_status = TaskStatus.WAITING
-            task.f_component_parameters = task_parameters.dict()
             task.f_execution_id = execution_id
             task.f_provider_name = task_parser.provider
             task.f_sync_type = dag_schema.dag.conf.sync_type
             task.f_task_run = task_run
             task.f_task_cores = task_cores
             cls.update_local(task)
-            cls.update_launcher_config(task, task_parser.task_runtime_launcher)
+            cls.update_launcher_config(task, task_parser.task_runtime_launcher, task_parameters)
+            task.f_component_parameters = task_parameters.dict()
             JobSaver.create_task(task.to_human_model_dict())
 
     @staticmethod
@@ -111,13 +111,16 @@ class TaskController(object):
             task.f_run_port = RuntimeConfig.HTTP_PORT
 
     @staticmethod
-    def update_launcher_config(task, task_runtime_launcher):
+    def update_launcher_config(task, task_runtime_launcher, task_parameters):
         # support deepspeed and other launcher
         schedule_logger(task.f_job_id).info(f"task runtime launcher: {task_runtime_launcher}")
         launcher = LauncherSpec.parse_obj(task_runtime_launcher)
         if launcher.name and launcher.name != LauncherType.DEFAULT:
-            task.f_launcher_name = launcher.name
-            task.f_launcher_conf = launcher.conf
+            task_parameters.launcher_name = task.f_launcher_name = launcher.name
+            launcher_conf = copy.deepcopy(JobDefaultConfig.launcher.get(task_parameters.launcher_name))
+            if launcher.conf:
+                launcher_conf.update(launcher.conf)
+            task_parameters.launcher_conf = task.f_launcher_conf = launcher_conf
 
     @staticmethod
     def create_schedule_tasks(job: ScheduleJob, dag_schema):

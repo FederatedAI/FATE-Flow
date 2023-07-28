@@ -15,12 +15,18 @@
 #
 from fate_flow.engine.backend._eggroll import EggrollEngine
 from fate_flow.engine.backend._spark import SparkEngine
-from fate_flow.entity.types import ComputingEngine
+from fate_flow.engine.backend.eggroll_deepspeed import EggrollDeepspeedEngine
+from fate_flow.entity.types import ComputingEngine, LauncherType
 
 
-def build_backend(backend_name: str):
+def build_backend(backend_name: str, launcher_name: str = LauncherType.DEFAULT):
     if backend_name in {ComputingEngine.EGGROLL, ComputingEngine.STANDALONE}:
-        backend = EggrollEngine()
+        if launcher_name == LauncherType.DEEPSPEED:
+            backend = EggrollDeepspeedEngine()
+        elif not launcher_name or launcher_name == LauncherType.DEFAULT:
+            backend = EggrollEngine()
+        else:
+            raise ValueError(f'backend "{backend_name}" launcher {launcher_name} is not supported')
     elif backend_name == ComputingEngine.SPARK:
         backend = SparkEngine()
     else:
