@@ -20,7 +20,7 @@ from fate_flow.manager.service.worker_manager import WorkerManager
 
 
 class EggrollEngine(LocalEngine):
-    def run(self, task_info, run_parameters, engine_run, provider_name, output_path):
+    def run(self, task_info, run_parameters, engine_run, provider_name, output_path, **kwargs):
         parameters = TaskConfigSpec.parse_obj(run_parameters)
         if parameters.conf.computing.type == ComputingEngine.EGGROLL:
             # update eggroll options

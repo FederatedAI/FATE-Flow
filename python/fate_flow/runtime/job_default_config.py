@@ -33,6 +33,7 @@ class JobDefaultConfig(ReloadConfigBase):
 
     task_logger = None
     task_device = None
+    launcher = None
 
     @classmethod
     def load(cls):
