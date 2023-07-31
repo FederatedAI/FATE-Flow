@@ -25,7 +25,7 @@ from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.hub.provider import EntrypointABC
 from fate_flow.runtime.system_settings import DEFAULT_FATE_PROVIDER_PATH, DEFAULT_PROVIDER, FATE_FLOW_PROVIDER_PATH
 from fate_flow.runtime.component_provider import ComponentProvider
-from fate_flow.utils.version import get_versions
+from fate_flow.utils.version import get_versions, get_default_fate_version, get_flow_version
 from fate_flow.utils.wraps_utils import filter_parameters
 
 
@@ -118,7 +118,7 @@ class ProviderManager(BaseModelOperate):
     def get_fate_flow_provider(cls):
         return cls.get_provider(
             name="fate_flow",
-            version=get_versions()["FATEFlow"],
+            version=get_flow_version(),
             device=ProviderDevice.LOCAL,
             metadata={
                 "path": FATE_FLOW_PROVIDER_PATH,
@@ -131,7 +131,7 @@ class ProviderManager(BaseModelOperate):
             raise Exception(f"default fate provider not exists: {DEFAULT_FATE_PROVIDER_PATH}")
         return cls.get_provider(
             name="fate",
-            version=get_versions()["FATE"],
+            version=get_default_fate_version(),
             device=ProviderDevice.LOCAL,
             metadata={
                 "path": DEFAULT_FATE_PROVIDER_PATH,
