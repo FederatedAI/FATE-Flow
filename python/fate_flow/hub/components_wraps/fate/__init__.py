@@ -12,10 +12,6 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from fate_flow.hub.parser.default._parser import TaskNodeInfo, JobParser, TaskParser, DagSchemaParser
+from fate_flow.hub.components_wraps.fate._wraps import FlowWraps
 
-__all__ = [
-    "TaskNodeInfo", "JobParser", "TaskParser", "DagSchemaParser"
-]
-
-
+__all__ = ["FlowWraps"]

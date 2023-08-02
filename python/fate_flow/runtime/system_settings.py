@@ -26,6 +26,7 @@ from fate_flow.settings import *
 
 # Server
 API_VERSION = "v2"
+INTERCONN_API_VERSION = "v1"
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
 CASBIN_TABLE_NAME = "fate_casbin"
@@ -145,3 +146,9 @@ DEFAULT_OUTPUT_DATA_PARTITIONS = 16
 
 STANDALONE_DATA_HOME = os.path.join(file_utils.get_fate_flow_directory(), "data")
 LOCALFS_DATA_HOME = os.path.join(file_utils.get_fate_flow_directory(), "localfs")
+
+# hub module settings
+# define： xxx.class_name
+DEFAULT_JOB_PARSER_MODULE = "fate_flow.hub.parser.fate.JobParser"
+DEFAULT_JOB_SCHEDULER_MODULE = "fate_flow.hub.scheduler.fate.DAGScheduler"
+DEFAULT_COMPONENTS_WRAPS_MODULE = "fate_flow.hub.components_wraps.fate.FlowWraps"

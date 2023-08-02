@@ -24,7 +24,6 @@ from fate_flow.entity.spec.dag import DataWarehouseChannelSpec, ModelWarehouseCh
     StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \
     PulsarFederationSpec, RabbitMQFederationSpec, FlowLogger, MLMDSpec, TaskRuntimeConfSpec, \
     DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts
-from fate_flow.entity.spec.flow import SchedulerInfoSpec
 from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputArtifactType, ArtifactSourceType, \
     ComputingEngine
 from fate_flow.manager.service.provider_manager import ProviderManager
@@ -615,20 +614,3 @@ class JobParser(JobParserABC):
 class Party(BaseModel):
     role: str
     party_id: Union[str, int]
-
-
-class DagSchemaParser(object):
-    def __init__(self, dag_schema):
-        self.dag_schema = DAGSchema(**dag_schema)
-
-    @property
-    def job_schedule_info(self) -> SchedulerInfoSpec:
-        return SchedulerInfoSpec(
-            dag=self.dag_schema.dict(),
-            parties=[party.dict() for party in self.dag_schema.dag.parties],
-            initiator_party_id=self.dag_schema.dag.conf.initiator_party_id,
-            scheduler_party_id=self.dag_schema.dag.conf.scheduler_party_id,
-            federated_status_collect_type=self.dag_schema.dag.conf.sync_type,
-            model_id=self.dag_schema.dag.conf.model_id,
-            model_version=self.dag_schema.dag.conf.model_version
-        )

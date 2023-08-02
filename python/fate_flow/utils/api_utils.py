@@ -63,7 +63,7 @@ class API:
 
     class Output:
         @staticmethod
-        def json(code=ReturnCode.Base.SUCCESS, message='success', data=None, job_id=None):
+        def json(code=ReturnCode.Base.SUCCESS, message='success', data=None, job_id=None, **kwargs):
             result_dict = {
                 "code": code,
                 "message": message,
@@ -75,6 +75,9 @@ class API:
             for key, value in result_dict.items():
                 if value is not None:
                     response[key] = value
+            # extra resp
+            for key, value in kwargs.items():
+                response[key] = value
             return jsonify(response)
 
         @staticmethod
