@@ -233,6 +233,7 @@ class StorageTableMeta(StorageTableMetaABC):
         table_meta.f_create_time = current_timestamp()
         table_meta.f_data_meta = {}
         table_meta.f_part_of_data = []
+        table_meta.f_source = {}
         for k, v in self.to_dict().items():
             attr_name = 'f_%s' % k
             if hasattr(StorageTableMetaModel, attr_name):

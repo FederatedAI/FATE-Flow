@@ -30,7 +30,7 @@ from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import AuthenticationParameters
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import API_VERSION, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION, \
-    ADMIN_PAGE, PARTY_ID
+    ADMIN_PAGE, PARTY_ID, INTERCONN_API_VERSION
 from fate_flow.utils.api_utils import API
 from fate_flow.utils.base_utils import CustomJSONEncoder
 
@@ -38,6 +38,7 @@ from fate_flow.utils.base_utils import CustomJSONEncoder
 __all__ = ['app']
 
 app_list = ["client", "partner", "scheduler", "worker"]
+interop_app_list = ["interop"]
 
 Request.json = property(lambda self: self.get_json(force=True, silent=True))
 
@@ -45,14 +46,14 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.errorhandler(422)(API.Output.args_error_response)
 app.errorhandler(Exception)(API.Output.server_error_response)
-app.json_encoder = CustomJSONEncoder
+app.json_provider_class = CustomJSONEncoder
 
 
 def search_pages_path(pages_dir):
     return [path for path in pages_dir.glob('*_app.py') if not path.name.startswith('.')]
 
 
-def register_page(page_path, func=None):
+def register_page(page_path, func=None, prefix=API_VERSION):
     page_name = page_path.stem.rstrip('app').rstrip("_")
     module_name = '.'.join(page_path.parts[page_path.parts.index('apps')-1:-1] + (page_name, ))
 
@@ -78,7 +79,7 @@ def register_page(page_path, func=None):
     sys.modules[module_name] = page
     spec.loader.exec_module(page)
     page_name = getattr(page, 'page_name', page_name)
-    url_prefix = f'/{API_VERSION}/{page_name}'
+    url_prefix = f'/{prefix}/{page_name}'
     app.register_blueprint(page.manager, url_prefix=url_prefix)
     return page_name, [(os.path.join(url_prefix, rule_methods[0].lstrip("/")), rule_methods[1]) for rule_methods in rule_methods_list]
 
@@ -114,6 +115,8 @@ def init_apps():
     }
     for key in app_list:
         urls_dict[key] = [register_page(path, before_request_func.get(key)) for path in search_pages_path(Path(__file__).parent / key)]
+    for key in interop_app_list:
+        urls_dict[key] = [register_page(path, prefix=INTERCONN_API_VERSION) for path in search_pages_path(Path(__file__).parent / key)]
     if CLIENT_AUTHENTICATION or SITE_AUTHENTICATION:
         _init_permission_group(urls=urls_dict)
 

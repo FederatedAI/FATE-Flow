@@ -12,24 +12,35 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+#
 from importlib import import_module
 
-from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.entity.types import ProviderName, ProviderDevice
 from fate_flow.runtime.component_provider import ComponentProvider
+from fate_flow.runtime.system_settings import DEFAULT_JOB_PARSER_MODULE, DEFAULT_JOB_SCHEDULER_MODULE, \
+    DEFAULT_COMPONENTS_WRAPS_MODULE
 
 
 class FlowHub:
     @staticmethod
-    def load_job_parser(dag):
-        if isinstance(dag, DAGSchema):
-            from fate_flow.hub.parser.default import JobParser
-            return JobParser(dag)
+    def load_job_parser(dag, module_name=DEFAULT_JOB_PARSER_MODULE):
+        class_name = module_name.split(".")[-1]
+        module = ".".join(module_name.split(".")[:-1])
+        return getattr(import_module(module), class_name)(dag)
 
     @staticmethod
-    def load_job_scheduler():
-        from fate_flow.hub.scheduler.default import DAGScheduler
-        return DAGScheduler()
+    def load_job_scheduler(module_name=DEFAULT_JOB_SCHEDULER_MODULE):
+        class_name = module_name.split(".")[-1]
+        module = ".".join(module_name.split(".")[:-1])
+        return getattr(import_module(module), class_name)()
+
+    @staticmethod
+    def load_components_wraps(config, module_name=None):
+        if not module_name:
+            module_name = DEFAULT_COMPONENTS_WRAPS_MODULE
+        class_name = module_name.split(".")[-1]
+        module = ".".join(module_name.split(".")[:-1])
+        return getattr(import_module(module), class_name)(config)
 
     @staticmethod
     def load_provider_entrypoint(provider: ComponentProvider):
@@ -38,12 +49,6 @@ class FlowHub:
             from fate_flow.hub.provider.fate import LocalFateEntrypoint
             entrypoint = LocalFateEntrypoint(provider)
         return entrypoint
-
-    @staticmethod
-    def load_components_wraps(config, name="default"):
-        if name == "default":
-            from fate_flow.hub.components_wraps.default import FlowWraps
-            return FlowWraps(config)
 
     @staticmethod
     def load_database(engine_name, config, decrypt_key):

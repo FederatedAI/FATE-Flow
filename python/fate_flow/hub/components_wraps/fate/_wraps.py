@@ -446,8 +446,11 @@ class FlowWraps(WrapsABC):
             data = resp_data[0]
             schema = data.get("meta", {})
             meta.metadata.metadata.update({"schema": schema})
-            meta.metadata.source = data.get("source", {})
+
             meta.uri = data.get("path")
+            source = data.get("source", {})
+            if source:
+                meta.metadata.source = source
             return meta
         elif len(resp_data) > 1:
             meta_list = []
@@ -455,8 +458,10 @@ class FlowWraps(WrapsABC):
                 schema = data.get("meta", {})
                 meta.metadata.metadata.update({"schema": schema})
                 meta.uri = data.get("path")
-                meta.metadata.source = data.get("source", {})
                 meta.type_name = data.get("data_type")
+                source = data.get("source", {})
+                if source:
+                    meta.metadata.source = source
                 meta_list.append(meta)
             return meta_list
         else:
