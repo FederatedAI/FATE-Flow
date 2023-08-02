@@ -16,7 +16,7 @@
 from webargs import fields
 
 from fate_flow.engine import storage
-from fate_flow.engine.storage import Session
+from fate_flow.engine.storage import Session, StorageEngine
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundTable
 from fate_flow.manager.data.data_manager import DataManager
@@ -47,3 +47,17 @@ def delete_table(namespace, name):
         return API.Output.json()
     else:
         return API.Output.fate_flow_exception(NoFoundTable(name=name, namespace=namespace))
+
+
+@manager.route('/bind/path', methods=['POST'])
+@API.Input.json(namespace=fields.String(required=True))
+@API.Input.json(name=fields.String(required=True))
+@API.Input.json(path=fields.String(required=True))
+def bind_path(namespace, name, path):
+    address = storage.StorageTableMeta.create_address(storage_engine=StorageEngine.PATH, address_dict={"path": path})
+    storage_meta = storage.StorageTableBase(
+        namespace=namespace, name=name, address=address,
+        engine=StorageEngine.PATH, options=None, partitions=None
+    )
+    storage_meta.create_meta()
+    return API.Output.json()

@@ -12,24 +12,10 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
-import os
+from fate_flow.hub.parser.fate._parser import TaskNodeInfo, JobParser, TaskParser
 
-import dotenv
-import typing
-
-from fate_flow.runtime.system_settings import VERSION_FILE_PATH
+__all__ = [
+    "TaskNodeInfo", "JobParser", "TaskParser"
+]
 
 
-def get_versions() -> typing.Mapping[str, typing.Any]:
-    return dotenv.dotenv_values(
-        dotenv_path=VERSION_FILE_PATH
-    )
-
-
-def get_flow_version() -> typing.Optional[str]:
-    return get_versions().get("FATEFlow")
-
-
-def get_default_fate_version() -> typing.Optional[str]:
-    return get_versions().get("FATE")
