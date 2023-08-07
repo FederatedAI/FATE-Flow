@@ -243,13 +243,14 @@ class StorageTableMeta(StorageTableMetaABC):
             if rows != 1:
                 raise Exception("create table meta failed")
         except peewee.IntegrityError as e:
-            if e.args[0] == 1062:
-                # warning
-                pass
-            elif isinstance(e.args[0], str) and "UNIQUE constraint failed" in e.args[0]:
-                pass
-            else:
-                raise e
+            # if e.args[0] == 1062:
+            #     # warning
+            #     pass
+            # elif isinstance(e.args[0], str) and "UNIQUE constraint failed" in e.args[0]:
+            #     pass
+            # else:
+            #     raise e
+            pass
         except Exception as e:
             raise e
 

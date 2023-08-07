@@ -134,6 +134,10 @@ class BaseSaver(BaseModelOperate):
         for status_field in cls.STATUS_FIELDS:
             if entity_info.get(status_field) and hasattr(entity_model, f"f_{status_field}"):
                 if status_field in ["status", "party_status"]:
+                    # update end time
+                    if hasattr(obj, "f_start_time") and obj.f_start_time:
+                        update_info["end_time"] = current_timestamp()
+                        update_info['elapsed'] = update_info['end_time'] - obj.f_start_time
                     update_info[status_field] = entity_info[status_field]
                     old_status = getattr(obj, f"f_{status_field}")
                     new_status = update_info[status_field]
