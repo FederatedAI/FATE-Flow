@@ -74,3 +74,6 @@ class ContainerdEngine(EngineABC):
     def is_alive(self, task: Task):
         return self.manager.is_running(self._get_name(task))
 
+    def cleanup(self, task: Task):
+        pass
+
