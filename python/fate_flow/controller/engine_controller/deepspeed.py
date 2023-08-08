@@ -96,13 +96,13 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
         with open(config_path, 'w') as fw:
             fw.write(json_dumps(submit_conf))
         session_id = self.generate_session_id()
-        process_cmd, pid = self.submit(task, config_path, session_id)
+        process_cmd, pid = self.submit(task, config_path, session_id, log_dir=log_dir)
         WorkerManager.save_worker_info(task=task, worker_name=WorkerName.TASK_EXECUTOR, worker_id=worker_id,
                                        run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=pid, cmd=process_cmd)
         return {"worker_id": worker_id, "cmd": cmd, "deepspeed_id": session_id, "run_pid": pid}
 
     @staticmethod
-    def submit(task, config_path, session_id):
+    def submit(task, config_path, session_id, log_dir):
         conf_dir = job_utils.get_job_directory(job_id=task.f_job_id)
         os.makedirs(conf_dir, exist_ok=True)
         process_cmd = [
@@ -116,7 +116,9 @@ class EggrollDeepspeedEngine(EngineABC, ABC):
             '--component_name', task.f_component_name,
             '--config', config_path,
             '--job_server', f"{RuntimeConfig.JOB_SERVER_HOST}:{RuntimeConfig.HTTP_PORT}",
-            '--session_id', session_id
+            '--session_id', session_id,
+            '--log_dir', log_dir,
+            "--parent_log_dir", os.path.dirname(log_dir)
         ]
         process_name = "deepspeed_submit"
         log_dir = job_utils.get_job_log_directory(job_id=task.f_job_id)
