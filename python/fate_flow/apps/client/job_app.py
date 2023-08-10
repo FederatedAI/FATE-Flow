@@ -24,6 +24,7 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundJob, NoFoundTask, FileNoFound
 from fate_flow.utils import job_utils
 from fate_flow.utils.api_utils import API
+from fate_flow.manager import pipeline as pipeline_manager
 
 
 @manager.route('/submit', methods=['POST'])
@@ -159,5 +160,5 @@ def dag_dependency(job_id, role, party_id):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id)
     if not jobs:
         return API.Output.fate_flow_exception(NoFoundJob(job_id=job_id))
-    # todo
-    return API.Output.json(data={})
+    data = pipeline_manager.pipeline_dag_dependency(jobs[0])
+    return API.Output.json(data=data)

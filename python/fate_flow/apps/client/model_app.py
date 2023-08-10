@@ -54,8 +54,8 @@ def export(model_id, model_version, party_id, role, path):
 
 
 @manager.route('/import', methods=['POST'])
-@API.Input.params(model_id=fields.String(required=True))
-@API.Input.params(model_version=fields.String(required=True))
+@API.Input.form(model_id=fields.String(required=True))
+@API.Input.form(model_version=fields.String(required=True))
 def import_model(model_id, model_version):
     file = request.files.get('file')
     if not file:
