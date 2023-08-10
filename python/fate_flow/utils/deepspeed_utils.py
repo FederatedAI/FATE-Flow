@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import logging
+
 from fate_arch.common.log import getLogger
 from fate_flow.db.runtime_config import RuntimeConfig
 from fate_flow.entity.run_status import TaskStatus
@@ -38,9 +40,17 @@ class Submit(BaseWorker):
                 options=config.get("options")
             )
             schedule_logger(self.args.job_id).info(f"submit deepspeed task success")
+
             logger = getLogger()
-            for _type in ["info", "error", "debug"]:
-                client.write_logs_to(log_type=_type.upper(), logging=getattr(logger, _type))
+            threads = []
+            for handle in logger.handlers:
+                handle.setFormatter(logging.Formatter("%(message)s"))
+            for _type in ["DEBUG", "INFO", "ERROR"]:
+                threads.extend(
+                    client.write_logs_to(log_type=_type, logging=getattr(logger, _type.lower()))
+                )
+            for thread in threads:
+                thread.join()
         except Exception as e:
             task_info = {
                 "job_id": self.args.job_id,
