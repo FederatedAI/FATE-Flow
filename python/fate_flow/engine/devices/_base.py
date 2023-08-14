@@ -35,3 +35,7 @@ class EngineABC(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def is_alive(self, task: Task):
         ...
+
+    @abc.abstractmethod
+    def cleanup(self, task: Task):
+        ...

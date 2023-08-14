@@ -29,7 +29,9 @@ from fate_flow.entity.types import ProcessRole
 stat_logger = getLogger()
 
 
-def run_subprocess(job_id, config_dir, process_cmd, process_name, added_env: dict = None, std_dir=None, cwd_dir=None):
+def run_subprocess(
+        job_id, config_dir, process_cmd, process_name, added_env: dict = None, std_dir=None, cwd_dir=None, stderr=None
+):
     logger = schedule_logger(job_id) if job_id else stat_logger
     process_cmd = [str(cmd) for cmd in process_cmd]
     logger.info("start process command: \n{}".format(" ".join(process_cmd)))
@@ -41,6 +43,8 @@ def run_subprocess(job_id, config_dir, process_cmd, process_name, added_env: dic
     std_path = get_std_path(std_dir=std_dir, process_name=process_name)
 
     std = open(std_path, 'w')
+    if not stderr:
+        stderr = std
     pid_path = os.path.join(config_dir, "pid", f"{process_name}")
     os.makedirs(os.path.dirname(pid_path), exist_ok=True)
 
@@ -61,7 +65,7 @@ def run_subprocess(job_id, config_dir, process_cmd, process_name, added_env: dic
     logger.info(f"RUN ENV: {subprocess_env}")
     p = subprocess.Popen(process_cmd,
                          stdout=std,
-                         stderr=std,
+                         stderr=stderr,
                          startupinfo=startupinfo,
                          cwd=cwd_dir,
                          env=subprocess_env

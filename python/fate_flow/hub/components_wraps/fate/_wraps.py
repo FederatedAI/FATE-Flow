@@ -140,7 +140,7 @@ class FlowWraps(WrapsABC):
         task_result = os.path.join(self.task_output_dir, "task_result.yaml")
         with open(conf_path, "w") as f:
             yaml.dump(task_parameters, f)
-        p = self.backend.run(
+        self.backend.run(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
             engine_run=self.config.engine_run,
@@ -148,9 +148,9 @@ class FlowWraps(WrapsABC):
             run_parameters=task_parameters,
             output_path=task_result,
             conf_path=conf_path,
-            session_id=self.config.party_task_id
+            session_id=self.config.party_task_id,
+            sync=True
         )
-        exit_code = p.wait()
         logger.info("finish task")
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
