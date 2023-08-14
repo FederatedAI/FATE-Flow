@@ -22,6 +22,7 @@ from fate_flow.manager.components.base import Base
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.system_settings import ENGINES, STORAGE
 from fate_flow.engine import storage
+from fate_flow.errors.server_error import ExistsTable
 
 class ComponentManager(Base):
     @classmethod
@@ -58,7 +59,7 @@ class ComponentManager(Base):
     def dataframe_transformer(cls, data_warehouse, namespace, name):
         data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
         if data_table_meta:
-            return {'code': 100, 'message': 'The data table already exists.'}
+            raise ExistsTable(name=name, namespace=namespace)
         provider = ProviderManager.get_default_fate_provider()
         dag_schema = cls.local_dag_schema(
             task_name="transformer_0",

@@ -24,7 +24,7 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundJob, NoFoundTask, FileNoFound
 from fate_flow.utils import job_utils
 from fate_flow.utils.api_utils import API
-from fate_flow.manager import pipeline as pipeline_manager
+from fate_flow.manager.pipeline import pipeline as pipeline_manager
 
 
 @manager.route('/submit', methods=['POST'])

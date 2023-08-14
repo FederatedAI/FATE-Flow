@@ -66,6 +66,7 @@ class ReturnCode:
 
     class Table:
         NO_FOUND = 7001
+        EXISTS = 7002
 
     class File:
         FILE_NOT_FOUND = 8001
