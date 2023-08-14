@@ -23,6 +23,7 @@ from fate_flow.entity.types import ModelStorageEngine
 from fate_flow.manager.model.handel import FileHandle, MysqlHandel, TencentCosHandel
 from fate_flow.manager.model.model_meta import ModelMeta
 from fate_flow.runtime.system_settings import MODEL_STORE
+from fate_flow.errors.server_error import NoFoundModelOutput
 
 
 class PipelinedModel(object):
@@ -60,7 +61,7 @@ class PipelinedModel(object):
     def export_model(cls, model_id, model_version, role, party_id, dir_path):
         _key_list = cls.get_model_storage_key(model_id=model_id, model_version=model_version, role=role, party_id=party_id)
         if not _key_list:
-            raise ValueError(f"Not found model,check params model_id,model_version, role, party_id is right.")
+            raise NoFoundModelOutput(model_id=model_id, model_version=model_version, role=role, party_id=party_id)
         with TemporaryDirectory() as temp_dir:
             for _k in _key_list:
                 temp_path = os.path.join(temp_dir, _k)
