@@ -132,6 +132,11 @@ class NoFoundTable(FateFlowError):
     message = "No found table"
 
 
+class ExistsTable(FateFlowError):
+    code = ReturnCode.Table.EXISTS
+    message = "Exists table"
+
+
 class NoPermission(FateFlowError):
     code = ReturnCode.API.NO_PERMISSION
     message = "No Permission"
