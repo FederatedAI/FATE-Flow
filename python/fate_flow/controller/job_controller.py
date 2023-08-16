@@ -292,6 +292,16 @@ class JobController(object):
                 pass
         JobSaver.delete_job(job_id=job_id)
 
+    @staticmethod
+    def add_nodes(job_id, role, party_id, nodes):
+        job_info = {
+            "job_id": job_id,
+            "role": role,
+            "party_id": party_id,
+            "description": nodes
+        }
+        return JobSaver.update_job(job_info)
+
 
 class JobInheritance:
     @classmethod

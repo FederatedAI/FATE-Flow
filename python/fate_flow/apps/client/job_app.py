@@ -152,6 +152,16 @@ def clean_job(job_id):
     return API.Output.json()
 
 
+@manager.route('/nodes/add', methods=['POST'])
+@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(role=fields.String(required=True))
+@API.Input.json(party_id=fields.String(required=True))
+@API.Input.json(nodes=fields.String(required=True))
+def add_nodes(job_id, role, party_id, nodes):
+    JobController.add_nodes(job_id=job_id, role=role, party_id=party_id, nodes=nodes)
+    return API.Output.json()
+
+
 @manager.route('/dag/dependency', methods=['GET'])
 @API.Input.params(job_id=fields.String(required=True))
 @API.Input.params(role=fields.String(required=True))
