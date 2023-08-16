@@ -22,7 +22,7 @@ from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
 from fate_flow.utils.base_utils import generate_random_id
-from fate_flow.utils.wraps_utils import switch_function
+from fate_flow.utils.wraps_utils import switch_function,  check_permission
 
 
 class Authentication(object):
@@ -76,7 +76,8 @@ class PermissionController(object):
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @AppManager.check_app_id
-    def add_role_for_user(app_id, role):
+    @check_permission
+    def add_role_for_user(app_id, role, init=False):
         PermissionController.check_permission_role(role)
         return FATE_CASBIN.add_role_for_user(app_id, role)
 

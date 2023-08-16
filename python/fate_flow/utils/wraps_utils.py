@@ -19,7 +19,7 @@ from functools import wraps
 from fate_flow.entity.code import ReturnCode
 
 from flask import request as flask_request
-from fate_flow.errors.server_error import NoFoundTask, ResponseException, NoFoundINSTANCE
+from fate_flow.errors.server_error import NoFoundTask, ResponseException, NoFoundINSTANCE, NoPermission
 from fate_flow.hook import HookManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
@@ -29,6 +29,7 @@ from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.utils.permission_utils import get_permission_parameters
 from fate_flow.utils.requests_utils import request
 from fate_flow.utils.schedule_utils import schedule_signal
+from fate_flow.db.casbin_models import FATE_CASBIN
 
 
 def filter_parameters(filter_value=None):
@@ -176,4 +177,18 @@ def create_job_request_check(func):
             if permission_return.code != ReturnCode.Base.SUCCESS:
                 return API.Output.fate_flow_exception(permission_return)
         return func(*_args, **_kwargs)
+    return _wrapper
+
+
+def check_permission(func):
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        _init = kwargs.get("init", False)
+        if not _init:
+            app_id = flask_request.headers.get("Appid")
+            if app_id != "admin":
+                ret = FATE_CASBIN.has_role_for_user(app_id, "super_client")
+                if not ret:
+                    raise NoPermission
+        return func(*args, **kwargs)
     return _wrapper
