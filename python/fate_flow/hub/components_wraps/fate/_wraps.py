@@ -163,7 +163,7 @@ class FlowWraps(WrapsABC):
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
-                exceptions=f"No found task output. Process exit code {exit_code}. "
+                exceptions=f"No found task output. Process exit code. "
             ))
         return output_meta
 
