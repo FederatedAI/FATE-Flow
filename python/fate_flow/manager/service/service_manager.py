@@ -196,7 +196,7 @@ class ServicesDB(abc.ABC):
         servers = {}
         for znode, value in self.get_urls('flow-server', True):
             instance = FlowInstance(**json.loads(value))
-            servers[instance.instance_id] = instance
+            servers[instance.instance_id] = instance.to_dict()
         return servers
 
 
