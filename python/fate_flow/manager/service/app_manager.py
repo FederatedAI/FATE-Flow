@@ -112,10 +112,7 @@ class AppManager(BaseModelOperate):
         @wraps(func)
         def _wrapper(*args, **kwargs):
             if kwargs.get("app_id"):
-                app_info = AppManager.query_app(app_id=kwargs.get("app_id"))
-                if not app_info:
+                if not AppManager.query_app(app_id=kwargs.get("app_id")):
                     raise NoFoundAppid(app_id=kwargs.get("app_id"))
-                if kwargs.get("role") and app_info[0].f_app_type != kwargs.get("role"):
-                    raise IsExistsRole(role=app_info[0].f_app_type)
             return func(*args, **kwargs)
         return _wrapper
