@@ -138,8 +138,8 @@ def _init_permission_group(urls: dict):
                     else:
                         PermissionController.add_policy(super_role, rule, method)
                         PermissionController.add_policy(role, rule, method)
-        PermissionController.add_role_for_user("admin", super_role)
-    PermissionController.add_role_for_user(PARTY_ID, "site")
+        PermissionController.add_role_for_user("admin", super_role, init=True)
+    PermissionController.add_role_for_user(PARTY_ID, "site", init=True)
 
 
 init_apps()
