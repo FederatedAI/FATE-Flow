@@ -6,7 +6,7 @@
 ##### 1.3 集群部署
 
 ### 2. 使用指南
-fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以参考[FATE Client部署]()将其部署上。以下的使用操作均基于cli编写，你也可以通过SDK或者Pipeline中找到对应的操作接口。
+fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以使用`pip install fate_client==2.0.0.beta`下载。以下的使用操作均基于cli编写，你也可以通过SDK或者Pipeline中找到对应的操作接口。
 #### 2.1 数据上传
 在2.0-beta版本中，数据上传分为两步：
 - upload: 将数据上传到FATE支持存储服务中 
@@ -19,12 +19,12 @@ fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部�
 ```shell
 flow data upload -c examples/upload/upload_guest.json
 ```
-- 需要记录返回的name和namespace
+- 需要记录返回的name和namespace，作为transformer的参数。
 ##### 2.1.1.3 上传host方数据
 ```shell
 flow data upload -c examples/upload/upload_host.json
 ```
-- 需要记录返回的name和namespace
+- 需要记录返回的name和namespace，作为transformer的参数。
 ##### 2.1.1.4 上传结果
 ```json
 {
@@ -37,7 +37,7 @@ flow data upload -c examples/upload/upload_host.json
     "message": "success"
 }
 ```
-其中"namespace"和"name"是这份数据在fate中的标识，后续使用时可直接引用。
+其中"namespace"和"name"是这份数据在fate中的标识，以便下面后续transformer阶段使用时可直接引用。
 
 ##### 2.1.1.5 数据查询
 因为upload为异步操作，需要确认是否上传成功才可进行后续操作。
@@ -88,13 +88,13 @@ flow table query --namespace upload --name 36491bc8-3fef-11ee-be05-16b977118319
  - transformer配置位于[transformer-examples](../examples/transformer)
 ##### 2.1.2.2 transformer guest
 - 配置路径位于： examples/transformer/transformer_guest.json
-- 修改配置中"data_warehouse"的"namespace"和"name"：guest数据upload阶段的[输出表](#上传结果)
+- 修改配置中"data_warehouse"的"namespace"和"name"：上面upload guest阶段的输出
 ```shell
 flow data transformer -c examples/transformer/transformer_guest.json
 ```
 ##### 2.1.2.3 transformer host
 - 配置路径位于： examples/transformer/transformer_host.json
-- 修改配置中"data_warehouse"的"namespace"和"name"：host数据upload阶段的[输出表](#上传结果)
+- 修改配置中"data_warehouse"的"namespace"和"name"：上面upload host阶段的输出
 ```shell
 flow data transformer -c examples/transformer/transformer_host.json
 ```
@@ -110,7 +110,8 @@ flow data transformer -c examples/transformer/transformer_host.json
     "message": "success"
 }
 ```
-其中"namespace"和"name"是这份数据在fate中的标识，后续使用时可直接引用。
+其中"namespace"和"name"是这份数据在fate中的标识，后续建模作业中使用。
+
 ##### 2.1.2.5 查看数据是否上传成功
 
 因为transformer也是异步操作，需要确认是否上传成功才可进行后续操作。
@@ -124,11 +125,11 @@ flow table query --namespace breast_hetero_host --name experiment
 
 #### 2.2 开始FATE作业
 ##### 2.2.1 提交作业
-当你的数据准备好后，你可以自定义作业[DAG](), 然后提交作业给FATE Flow
+当你的数据准备好后，可以开始提交作业给FATE Flow：
 - 训练job配置example位于[lr-train](../examples/lr/train_lr.yaml);
 - 预测job配置example位于[lr-predict](../examples/lr/predict_lr.yaml);预测任务需要修改"dag.conf.model_warehouse"成训练作业的输出模型。
 - 训练和预测job配置中站点id为"9998"和"9999"。如果你的部署环境为集群版，需要替换成真实的站点id；单机版可使用默认配置。
-- 如果想要使用自己的数据，可以更改配置中guest和host的data_warehouse的两份表名为[自定义数据上传的结果](#transformer结果)
+- 如果想要使用自己的数据，可以更改配置中guest和host的data_warehouse的namespace和name
 - 提交作业的命令为:
 ```shell
 flow job submit -c examples/lr/train_lr.yaml 
@@ -153,7 +154,6 @@ flow job submit -c examples/lr/train_lr.yaml
 ```shell
 flow job query -j $job_id
 ```
-- 其中-j参数为job id, 来自[提交作业](#提交作业)的返回结果
 
 ##### 2.2.3 停止作业
 在作业的运行过程时，你可以通过停止作业命令来终止当前作业
