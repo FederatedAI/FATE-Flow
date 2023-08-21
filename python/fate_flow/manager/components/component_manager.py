@@ -56,10 +56,17 @@ class ComponentManager(Base):
         return result
 
     @classmethod
-    def dataframe_transformer(cls, data_warehouse, namespace, name):
+    def dataframe_transformer(cls, data_warehouse, namespace, name, drop):
         data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
         if data_table_meta:
-            raise ExistsTable(name=name, namespace=namespace)
+            if not drop:
+                raise ExistsTable(
+                    name=name,
+                    namespace=namespace,
+                    warning="If you want to ignore this error and continue transformer, "
+                            "you can set the parameter of 'drop' to 'true' "
+                )
+            data_table_meta.destroy_metas()
         provider = ProviderManager.get_default_fate_provider()
         dag_schema = cls.local_dag_schema(
             task_name="transformer_0",
