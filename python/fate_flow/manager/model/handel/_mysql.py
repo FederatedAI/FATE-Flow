@@ -43,7 +43,7 @@ class MysqlHandel(IOHandle):
     def _download(self, storage_key):
         memory = self.engine.read(storage_key)
         memory.seek(0)
-        return send_file(memory, download_name=storage_key, as_attachment=True)
+        return send_file(memory, download_name=storage_key, as_attachment=True, mimetype='application/x-tar')
 
     def _read(self, storage_key, metas):
         memory = self.engine.read(storage_key)
