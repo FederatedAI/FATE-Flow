@@ -1,18 +1,11 @@
 {
-  "file": "xxx/fate_flow/examples/data/breast_hetero_guest.csv",
+  "file": "examples/data/breast_hetero_guest.csv",
   "head": true,
   "partitions": 16,
   "extend_sid": true,
   "meta": {
     "delimiter": ",",
-    "dtype": "'float32",
-    "input_format": "dense",
-    "label_type": "int",
-    "match_id_name": "id",
-    "match_id_range": 0,
-    "sample_id_name": "id",
-    "tag_value_delimiter": ":",
-    "tag_with_value": false,
-    "weight_type": "float32"
+    "label_name": "y",
+    "match_id_name": "id"
   }
 }
