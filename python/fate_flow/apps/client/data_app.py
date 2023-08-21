@@ -53,8 +53,9 @@ def download_data(namespace, name, path):
 @API.Input.json(data_warehouse=fields.Dict(required=True))
 @API.Input.json(namespace=fields.String(required=True))
 @API.Input.json(name=fields.String(required=True))
-def transformer_data(data_warehouse, namespace, name):
-    result = ComponentManager.dataframe_transformer(data_warehouse, namespace, name)
+@API.Input.json(drop=fields.Bool(required=False))
+def transformer_data(data_warehouse, namespace, name, drop=True):
+    result = ComponentManager.dataframe_transformer(data_warehouse, namespace, name, drop)
     return API.Output.json(**result)
 
 

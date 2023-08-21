@@ -1,0 +1,182 @@
+dag:
+  parties:
+  - party_id:
+    - '9999'
+    role: guest
+  - party_id:
+    - '9998'
+    role: host
+  - party_id:
+    - '9998'
+    role: arbiter
+  party_tasks:
+    guest_9999:
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      tasks:
+        psi_0:
+          inputs:
+            data:
+              input_data:
+                data_warehouse:
+                  name: breast_hetero_guest
+                  namespace: experiment
+                  roles:
+                  - guest
+    host_9998:
+      parties:
+      - party_id:
+        - '9998'
+        role: host
+      tasks:
+        psi_0:
+          inputs:
+            data:
+              input_data:
+                data_warehouse:
+                  name: breast_hetero_host
+                  namespace: experiment
+                  roles:
+                  - host
+  stage: train
+  tasks:
+    binning_0:
+      component_ref: hetero_feature_binning
+      dependent_tasks:
+      - psi_0
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: output_data
+              producer_task: psi_0
+        model: {}
+      parameters:
+        adjustment_factor: 0.5
+        bin_col: null
+        bin_idx: null
+        category_col: null
+        category_idx: null
+        local_only: false
+        method: quantile
+        n_bins: 10
+        relative_error: 1.0e-06
+        skip_metrics: false
+        split_pt_dict: null
+        transform_method: null
+        use_anonymous: false
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      - party_id:
+        - '9998'
+        role: host
+    evaluation_0:
+      component_ref: evaluation
+      dependent_tasks:
+      - lr_0
+      inputs:
+        data:
+          input_data:
+            task_output_artifact:
+            - output_artifact_key: train_output_data
+              producer_task: lr_0
+              roles:
+              - guest
+      parameters:
+        default_eval_setting: binary
+        label_column_name: y
+        metrics: null
+        predict_column_name: null
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      stage: default
+    lr_0:
+      component_ref: coordinated_lr
+      dependent_tasks:
+      - selection_0
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: train_output_data
+              producer_task: selection_0
+              roles:
+              - guest
+              - host
+        model: {}
+      parameters:
+        batch_size: null
+        early_stop: diff
+        epochs: 10
+        init_param:
+          fit_intercept: true
+          method: zeros
+        learning_rate_scheduler:
+          method: linear
+          scheduler_params:
+            start_factor: 0.7
+            total_iters: 100
+        optimizer:
+          alpha: 0.001
+          method: SGD
+          optimizer_params:
+            lr: 0.1
+          penalty: l2
+        output_cv_data: true
+        threshold: 0.5
+        tol: 0.0001
+    psi_0:
+      component_ref: psi
+      inputs:
+        data: {}
+      parameters: {}
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      - party_id:
+        - '9998'
+        role: host
+      stage: default
+    selection_0:
+      component_ref: hetero_feature_selection
+      dependent_tasks:
+      - binning_0
+      - psi_0
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: output_data
+              producer_task: psi_0
+        model:
+          input_models:
+            task_output_artifact:
+            - output_artifact_key: output_model
+              producer_task: binning_0
+      parameters:
+        iv_param:
+          filter_type: threshold
+          metrics: iv
+          threshold: 0.1
+        keep_one: true
+        manual_param: null
+        method:
+        - iv
+        select_col: null
+        statistic_param: null
+        use_anonymous: false
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      - party_id:
+        - '9998'
+        role: host
+schema_version: 2.0.0.alpha
