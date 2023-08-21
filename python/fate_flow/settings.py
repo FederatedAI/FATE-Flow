@@ -28,7 +28,7 @@ JOB_DIR = ""
 
 # sqlite
 SQLITE_FILE_DIR = ""
-SQLITE_FILE_NAME = "fate_sqlite.db"
+SQLITE_FILE_NAME = "fate_flow_sqlite.db"
 
 
 # Client Manager

@@ -136,7 +136,9 @@ def download_job_logs(job_id):
                 rel_path = os.path.relpath(full_path, job_log_dir)
                 tar.add(full_path, rel_path)
     memory_file.seek(0)
-    return API.Output.file(memory_file, attachment_filename=f'job_{job_id}_log.tar.gz', as_attachment=True)
+    return API.Output.file(
+        memory_file, attachment_filename=f'job_{job_id}_log.tar.gz', as_attachment=True, mimetype="application/gzip"
+    )
 
 
 @manager.route('/queue/clean', methods=['POST'])
