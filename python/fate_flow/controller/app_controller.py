@@ -77,6 +77,7 @@ class PermissionController(object):
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @AppManager.check_app_id
     @check_permission
+    @AppManager.check_app_type
     def add_role_for_user(app_id, role, init=False):
         PermissionController.check_permission_role(role)
         return FATE_CASBIN.add_role_for_user(app_id, role)
@@ -84,6 +85,8 @@ class PermissionController(object):
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @AppManager.check_app_id
+    @check_permission
+    @AppManager.check_app_type
     def delete_role_for_user(app_id, role):
         PermissionController.check_permission_role(role)
         return FATE_CASBIN.delete_role_for_suer(app_id, role)
