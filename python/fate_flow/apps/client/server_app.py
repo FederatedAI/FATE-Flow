@@ -15,6 +15,7 @@
 #
 from webargs import fields
 
+from fate_flow.apps.desc import SERVER_NAME, HOST, PORT, PROTOCOL, SERVICE_NAME, URI, METHOD, PARAMS, DATA, HEADERS
 from fate_flow.errors.server_error import NoFoundServer
 from fate_flow.manager.service.service_manager import ServiceRegistry, ServerRegistry
 from fate_flow.runtime.runtime_config import RuntimeConfig
@@ -34,7 +35,7 @@ def query_all():
 
 
 @manager.route('/query', methods=['GET'])
-@API.Input.params(server_name=fields.String(required=True))
+@API.Input.params(server_name=fields.String(required=True), desc=SERVER_NAME)
 def query_server(server_name):
     server_list = ServerRegistry.query_server_info_from_db(server_name)
     if not server_list:
@@ -43,25 +44,25 @@ def query_server(server_name):
 
 
 @manager.route('/registry', methods=['POST'])
-@API.Input.json(server_name=fields.String(required=True))
-@API.Input.json(host=fields.String(required=True))
-@API.Input.json(port=fields.Integer(required=True))
-@API.Input.json(protocol=fields.String(required=False))
+@API.Input.json(server_name=fields.String(required=True), desc=SERVER_NAME)
+@API.Input.json(host=fields.String(required=True), desc=HOST)
+@API.Input.json(port=fields.Integer(required=True), desc=PORT)
+@API.Input.json(protocol=fields.String(required=False), desc=PROTOCOL)
 def register_server(server_name, host, port, protocol="http"):
     server_info = ServerRegistry.register(server_name, host, port, protocol)
     return API.Output.json(data=server_info)
 
 
 @manager.route('/delete', methods=['POST'])
-@API.Input.json(server_name=fields.String(required=True))
+@API.Input.json(server_name=fields.String(required=True), desc=SERVER_NAME)
 def delete_server(server_name):
     status = ServerRegistry.delete_server_from_db(server_name)
     return API.Output.json(message="success" if status else "failed")
 
 
 @manager.route('/service/query', methods=['GET'])
-@API.Input.params(server_name=fields.String(required=True))
-@API.Input.params(service_name=fields.String(required=True))
+@API.Input.params(server_name=fields.String(required=True), desc=SERVER_NAME)
+@API.Input.params(service_name=fields.String(required=True), desc=SERVICE_NAME)
 def query_service(server_name, service_name):
     service_list = ServiceRegistry.load_service(server_name=server_name, service_name=service_name)
     if not service_list:
@@ -70,14 +71,14 @@ def query_service(server_name, service_name):
 
 
 @manager.route('/service/registry', methods=['POST'])
-@API.Input.json(server_name=fields.String(required=True))
-@API.Input.json(service_name=fields.String(required=True))
-@API.Input.json(uri=fields.String(required=True))
-@API.Input.json(method=fields.String(required=False))
-@API.Input.json(params=fields.Dict(required=False))
-@API.Input.json(data=fields.Dict(required=False))
-@API.Input.json(headers=fields.Dict(required=False))
-@API.Input.json(protocol=fields.String(required=False))
+@API.Input.json(server_name=fields.String(required=True), desc=SERVER_NAME)
+@API.Input.json(service_name=fields.String(required=True), desc=SERVICE_NAME)
+@API.Input.json(uri=fields.String(required=True), desc=URI)
+@API.Input.json(method=fields.String(required=False), desc=METHOD)
+@API.Input.json(params=fields.Dict(required=False), desc=PARAMS)
+@API.Input.json(data=fields.Dict(required=False), desc=DATA)
+@API.Input.json(headers=fields.Dict(required=False), desc=HEADERS)
+@API.Input.json(protocol=fields.String(required=False), desc=PROTOCOL)
 def registry_service(server_name, service_name, uri, method="POST", params=None, data=None, headers=None, protocol="http"):
     ServiceRegistry.save_service_info(server_name=server_name, service_name=service_name, uri=uri, method=method,
                                       params=params, data=data, headers=headers, protocol=protocol)
@@ -85,8 +86,8 @@ def registry_service(server_name, service_name, uri, method="POST", params=None,
 
 
 @manager.route('/service/delete', methods=['POST'])
-@API.Input.json(server_name=fields.String(required=True))
-@API.Input.json(service_name=fields.String(required=True))
+@API.Input.json(server_name=fields.String(required=True), desc=SERVER_NAME)
+@API.Input.json(service_name=fields.String(required=True), desc=SERVICE_NAME)
 def delete_service(server_name, service_name):
     status = ServiceRegistry.delete(server_name, service_name)
     return API.Output.json(message="success" if status else "failed")

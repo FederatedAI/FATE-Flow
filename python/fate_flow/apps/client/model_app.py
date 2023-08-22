@@ -19,6 +19,7 @@ from tempfile import TemporaryDirectory
 from flask import request
 from webargs import fields
 
+from fate_flow.apps.desc import MODEL_ID, MODEL_VERSION, PARTY_ID, ROLE, SERVER_DIR_PATH, TASK_NAME, OUTPUT_KEY
 from fate_flow.errors.server_error import NoFoundFile
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.utils.api_utils import API
@@ -37,11 +38,11 @@ def migrate():
 
 
 @manager.route('/export', methods=['POST'])
-@API.Input.json(model_id=fields.String(required=True))
-@API.Input.json(model_version=fields.String(required=True))
-@API.Input.json(party_id=fields.String(required=True))
-@API.Input.json(role=fields.String(required=True))
-@API.Input.json(path=fields.String(required=True))
+@API.Input.json(model_id=fields.String(required=True), desc=MODEL_ID)
+@API.Input.json(model_version=fields.String(required=True), desc=MODEL_VERSION)
+@API.Input.json(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.json(role=fields.String(required=True), desc=ROLE)
+@API.Input.json(path=fields.String(required=True), desc=SERVER_DIR_PATH)
 def export(model_id, model_version, party_id, role, path):
     file_list = PipelinedModel.export_model(
         model_id=model_id,
@@ -54,8 +55,8 @@ def export(model_id, model_version, party_id, role, path):
 
 
 @manager.route('/import', methods=['POST'])
-@API.Input.form(model_id=fields.String(required=True))
-@API.Input.form(model_version=fields.String(required=True))
+@API.Input.form(model_id=fields.String(required=True), desc=MODEL_ID)
+@API.Input.form(model_version=fields.String(required=True), desc=MODEL_VERSION)
 def import_model(model_id, model_version):
     file = request.files.get('file')
     if not file:
@@ -68,12 +69,12 @@ def import_model(model_id, model_version):
 
 
 @manager.route('/delete', methods=['POST'])
-@API.Input.json(model_id=fields.String(required=True))
-@API.Input.json(model_version=fields.String(required=True))
-@API.Input.json(role=fields.String(required=False))
-@API.Input.json(party_id=fields.String(required=False))
-@API.Input.json(task_name=fields.String(required=False))
-@API.Input.json(output_key=fields.String(required=False))
+@API.Input.json(model_id=fields.String(required=True), desc=MODEL_ID)
+@API.Input.json(model_version=fields.String(required=True), desc=MODEL_VERSION)
+@API.Input.json(role=fields.String(required=False), desc=ROLE)
+@API.Input.json(party_id=fields.String(required=False), desc=PARTY_ID)
+@API.Input.json(task_name=fields.String(required=False), desc=TASK_NAME)
+@API.Input.json(output_key=fields.String(required=False), desc=OUTPUT_KEY)
 def delete_model(model_id, model_version, role=None, party_id=None, task_name=None, output_key=None):
     count = PipelinedModel.delete_model(
         model_id=model_id,
