@@ -136,7 +136,9 @@ def download_job_logs(job_id):
                 rel_path = os.path.relpath(full_path, job_log_dir)
                 tar.add(full_path, rel_path)
     memory_file.seek(0)
-    return API.Output.file(memory_file, attachment_filename=f'job_{job_id}_log.tar.gz', as_attachment=True)
+    return API.Output.file(
+        memory_file, attachment_filename=f'job_{job_id}_log.tar.gz', as_attachment=True, mimetype="application/gzip"
+    )
 
 
 @manager.route('/queue/clean', methods=['POST'])
@@ -149,6 +151,16 @@ def clean_queue():
 @API.Input.json(job_id=fields.String(required=True))
 def clean_job(job_id):
     JobController.clean_job(job_id=job_id)
+    return API.Output.json()
+
+
+@manager.route('/notes/add', methods=['POST'])
+@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(role=fields.String(required=True))
+@API.Input.json(party_id=fields.String(required=True))
+@API.Input.json(notes=fields.String(required=True))
+def add_notes(job_id, role, party_id, notes):
+    JobController.add_notes(job_id=job_id, role=role, party_id=party_id, notes=notes)
     return API.Output.json()
 
 

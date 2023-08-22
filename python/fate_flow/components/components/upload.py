@@ -61,7 +61,7 @@ class MetaParam(Param):
             match_id_list: list = None,
             match_id_range: int = 0,
             label_name: Union[None, str] = None,
-            label_type: str = "int",
+            label_type: str = "int32",
             weight_name: Union[None, str] = None,
             weight_type: str = "float32",
             header: str = None,
@@ -76,7 +76,7 @@ class MetaParam(Param):
     ):
         self.sample_id_name = sample_id_name
         self.match_id_name = match_id_name
-        self.match_id_lis = match_id_list
+        self.match_id_list = match_id_list
         self.match_id_range = match_id_range
         self.label_name = label_name
         self.label_type = label_type

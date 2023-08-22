@@ -13,7 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import logging
 import os
+import subprocess
 import sys
 from uuid import uuid1
 
@@ -31,9 +33,11 @@ from fate_flow.utils.log_utils import failed_log, schedule_logger, start_log, su
 class WorkerManager:
     @classmethod
     def start_task_worker(cls, worker_name, task_info, task_parameters=None, executable=None, common_cmd=None,
-                          extra_env: dict = None, record=False, **kwargs):
+                          extra_env: dict = None, record=False, stderr=None, sync=False, **kwargs):
         if not extra_env:
             extra_env = {}
+        if sync:
+            stderr = subprocess.PIPE
         worker_id = uuid1().hex
         config_dir, std_dir = cls.get_process_dirs(
             job_id=task_info.get("job_id"),
@@ -53,7 +57,7 @@ class WorkerManager:
         process_cmd.extend(common_cmd)
         p = process_utils.run_subprocess(job_id=task_info.get("job_id"), config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=extra_env, std_dir=std_dir, cwd_dir=config_dir,
-                                         process_name=worker_name.value)
+                                         process_name=worker_name.value, stderr=stderr)
         if record:
             cls.save_worker_info(task_info=task_info, worker_name=worker_name, worker_id=worker_id,
                                  run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=p.pid, config=task_parameters,
@@ -66,6 +70,11 @@ class WorkerManager:
                 "run_port": RuntimeConfig.HTTP_PORT
             }
         else:
+            if sync:
+                _code = p.wait()
+                _e = p.stderr.read()
+                if _e and _code:
+                    logging.error(f"process {worker_name.value} run error[code:{_code}]\n: {_e.decode()}")
             return p
 
     @classmethod

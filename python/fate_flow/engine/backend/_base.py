@@ -54,17 +54,15 @@ class LocalEngine(object):
         cmd = cls.generate_component_define_cmd(provider_name, component_ref, role, stage, define_file)
         logging.debug(f"load define cmd: {cmd}")
         if cmd:
-            p = WorkerManager.start_task_worker(
+            WorkerManager.start_task_worker(
                 worker_name=WorkerName.COMPONENT_DEFINE,
                 task_info=task_info,
-                common_cmd=cmd
+                common_cmd=cmd,
+                sync=True
             )
-            p.wait()
-            if p.stderr:
-                logging.exception(f"Get component define failed: {p.stderr}")
-        if os.path.exists(define_file):
-            with open(define_file, "r") as fr:
-                return yaml.safe_load(fr)
+            if os.path.exists(define_file):
+                with open(define_file, "r") as fr:
+                    return yaml.safe_load(fr)
         return {}
 
     def _cleanup1(self, **kwargs):
@@ -77,13 +75,13 @@ class LocalEngine(object):
 
         if cmd:
             logging.info(f"start clean task, config: {config}")
-            p = WorkerManager.start_task_worker(
+            WorkerManager.start_task_worker(
                 worker_name=WorkerName.TASK_EXECUTE_CLEAN,
                 task_info=task_info,
                 common_cmd=cmd,
-                task_parameters=config
+                task_parameters=config,
+                sync=True
             )
-            p.wait()
             logging.info(f"clean success")
 
     def cleanup(self, provider_name, task_info, config, party_task_id, **kwargs):

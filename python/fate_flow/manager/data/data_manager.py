@@ -62,6 +62,8 @@ class DataManager:
                     output_data_meta_file_list.append(output_data_meta_file_path)
                     os.makedirs(os.path.dirname(output_data_file_path), exist_ok=True)
                     with Session() as sess:
+                        if not output_table_meta:
+                            raise NoFoundTable()
                         table = sess.get_table(
                             name=output_table_meta.get_name(),
                             namespace=output_table_meta.get_namespace())
@@ -76,7 +78,7 @@ class DataManager:
                 tar.add(output_data_meta_file_list[index],
                         os.path.relpath(output_data_meta_file_list[index], output_tmp_dir))
             tar.close()
-            return send_file(output_data_tarfile, download_name=tar_file_name, as_attachment=True)
+            return send_file(output_data_tarfile, download_name=tar_file_name, as_attachment=True, mimetype='application/gzip')
 
     @classmethod
     def write_data_to_file(cls, output_data_file_path, output_data_meta_file_path, table, need_head):

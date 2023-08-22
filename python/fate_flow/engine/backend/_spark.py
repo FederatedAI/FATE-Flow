@@ -55,5 +55,6 @@ class SparkEngine(LocalEngine):
             task_parameters=run_parameters,
             common_cmd=self.generate_component_run_cmd(provider_name, output_path),
             extra_env=extra_env,
-            executable=process_cmd
+            executable=process_cmd,
+            sync=True
         )

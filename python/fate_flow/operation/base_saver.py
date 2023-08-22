@@ -22,6 +22,7 @@ from fate_flow.db.base_models import DB, BaseModelOperate, DataBaseModel
 from fate_flow.db.db_models import Task, Job
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleTaskStatus, ScheduleJob
 from fate_flow.entity.types import JobStatus, TaskStatus, EndStatus
+from fate_flow.errors.server_error import NoFoundJob, NoFoundTask
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import schedule_logger, sql_logger
 
@@ -175,6 +176,10 @@ class BaseSaver(BaseModelOperate):
         if objs:
             obj = objs[0]
         else:
+            if entity_model.__name__ == Job.__name__:
+                raise NoFoundJob()
+            if entity_model.__name__ == Job.__name__:
+                raise NoFoundTask()
             raise Exception("can not found the {}".format(entity_model.__name__))
         update_filters = query_filters[:]
         update_info = {}
