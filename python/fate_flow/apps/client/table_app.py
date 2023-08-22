@@ -15,6 +15,7 @@
 #
 from webargs import fields
 
+from fate_flow.apps.desc import NAMESPACE, NAME, DISPLAY, SERVER_FILE_PATH
 from fate_flow.engine import storage
 from fate_flow.engine.storage import Session, StorageEngine
 from fate_flow.entity.code import ReturnCode
@@ -26,9 +27,9 @@ page_name = "table"
 
 
 @manager.route('/query', methods=['GET'])
-@API.Input.params(namespace=fields.String(required=True))
-@API.Input.params(name=fields.String(required=True))
-@API.Input.params(display=fields.Bool(required=False))
+@API.Input.params(namespace=fields.String(required=True), desc=NAMESPACE)
+@API.Input.params(name=fields.String(required=True), desc=NAME)
+@API.Input.params(display=fields.Bool(required=False), desc=DISPLAY)
 def query_table(namespace, name, display=False):
     data, display_data = DataManager.get_data_info(namespace, name)
     if data:
@@ -40,8 +41,8 @@ def query_table(namespace, name, display=False):
 
 
 @manager.route('/delete', methods=['POST'])
-@API.Input.json(namespace=fields.String(required=True))
-@API.Input.json(name=fields.String(required=True))
+@API.Input.json(namespace=fields.String(required=True), desc=NAMESPACE)
+@API.Input.json(name=fields.String(required=True), desc=NAME)
 def delete_table(namespace, name):
     if DataManager.delete_data(namespace, name):
         return API.Output.json()
@@ -50,9 +51,9 @@ def delete_table(namespace, name):
 
 
 @manager.route('/bind/path', methods=['POST'])
-@API.Input.json(namespace=fields.String(required=True))
-@API.Input.json(name=fields.String(required=True))
-@API.Input.json(path=fields.String(required=True))
+@API.Input.json(namespace=fields.String(required=True), desc=NAMESPACE)
+@API.Input.json(name=fields.String(required=True), desc=NAME)
+@API.Input.json(path=fields.String(required=True), desc=SERVER_FILE_PATH)
 def bind_path(namespace, name, path):
     address = storage.StorageTableMeta.create_address(storage_engine=StorageEngine.PATH, address_dict={"path": path})
     storage_meta = storage.StorageTableBase(

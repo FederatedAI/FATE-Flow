@@ -19,6 +19,8 @@ import tarfile
 
 from webargs import fields
 
+from fate_flow.apps.desc import DAG_SCHEMA, USER_NAME, JOB_ID, ROLE, PARTY_ID, STATUS, LIMIT, PAGE, PARTNER, ORDER_BY, \
+    ORDER, DESCRIPTION, TASK_NAME, TASK_ID, TASK_VERSION, NODES
 from fate_flow.controller.job_controller import JobController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundJob, NoFoundTask, FileNoFound
@@ -28,19 +30,19 @@ from fate_flow.manager.pipeline import pipeline as pipeline_manager
 
 
 @manager.route('/submit', methods=['POST'])
-@API.Input.json(dag_schema=fields.Dict(required=True))
-@API.Input.headers(user_name=fields.String(required=False))
+@API.Input.json(dag_schema=fields.Dict(required=True), desc=DAG_SCHEMA)
+@API.Input.headers(user_name=fields.String(required=False), desc=USER_NAME)
 def submit_job(dag_schema, user_name=None):
     submit_result = JobController.request_create_job(dag_schema, user_name)
     return API.Output.json(**submit_result)
 
 
 @manager.route('/query', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=False))
-@API.Input.params(role=fields.String(required=False))
-@API.Input.params(party_id=fields.String(required=False))
-@API.Input.params(status=fields.String(required=False))
-@API.Input.headers(user_name=fields.String(required=False))
+@API.Input.params(job_id=fields.String(required=False), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=False), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=False), desc=PARTY_ID)
+@API.Input.params(status=fields.String(required=False), desc=STATUS)
+@API.Input.headers(user_name=fields.String(required=False), desc=USER_NAME)
 def query_job(job_id=None, role=None, party_id=None, status=None, user_name=None):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id, status=status, user_name=user_name)
     if not jobs:
@@ -49,14 +51,14 @@ def query_job(job_id=None, role=None, party_id=None, status=None, user_name=None
 
 
 @manager.route('/stop', methods=['POST'])
-@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(job_id=fields.String(required=True), desc=JOB_ID)
 def request_stop_job(job_id=None):
     stop_result = JobController.request_stop_job(job_id=job_id)
     return API.Output.json(**stop_result)
 
 
 @manager.route('/rerun', methods=['POST'])
-@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(job_id=fields.String(required=True), desc=JOB_ID)
 def request_rerun_job(job_id=None):
     jobs = JobController.query_job(job_id=job_id)
     if not jobs:
@@ -66,17 +68,17 @@ def request_rerun_job(job_id=None):
 
 
 @manager.route('/list/query', methods=['GET'])
-@API.Input.params(limit=fields.Integer(required=False))
-@API.Input.params(page=fields.Integer(required=False))
-@API.Input.params(job_id=fields.String(required=False))
-@API.Input.params(description=fields.String(required=False))
-@API.Input.params(partner=fields.String(required=False))
-@API.Input.params(party_id=fields.String(required=False))
-@API.Input.params(role=fields.List(fields.Str(), required=False))
-@API.Input.params(status=fields.List(fields.Str(), required=False))
-@API.Input.params(order_by=fields.String(required=False))
-@API.Input.params(order=fields.String(required=False))
-@API.Input.headers(user_name=fields.String(required=False))
+@API.Input.params(limit=fields.Integer(required=False), desc=LIMIT)
+@API.Input.params(page=fields.Integer(required=False), desc=PAGE)
+@API.Input.params(job_id=fields.String(required=False), desc=JOB_ID)
+@API.Input.params(description=fields.String(required=False), desc=DESCRIPTION)
+@API.Input.params(partner=fields.String(required=False), desc=PARTNER)
+@API.Input.params(party_id=fields.String(required=False), desc=PARTY_ID)
+@API.Input.params(role=fields.List(fields.Str(), required=False), desc=ROLE)
+@API.Input.params(status=fields.List(fields.Str(), required=False), desc=STATUS)
+@API.Input.params(order_by=fields.String(required=False), desc=ORDER_BY)
+@API.Input.params(order=fields.String(required=False), desc=ORDER)
+@API.Input.headers(user_name=fields.String(required=False), desc=USER_NAME)
 def query_job_list(limit=0, page=0, job_id=None, description=None, partner=None, party_id=None, role=None, status=None,
                    order_by=None, order=None, user_name=None):
     count, data = JobController.query_job_list(
@@ -87,13 +89,13 @@ def query_job_list(limit=0, page=0, job_id=None, description=None, partner=None,
 
 
 @manager.route('/task/query', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=False))
-@API.Input.params(role=fields.String(required=False))
-@API.Input.params(party_id=fields.String(required=False))
-@API.Input.params(status=fields.String(required=False))
-@API.Input.params(task_name=fields.String(required=False))
-@API.Input.params(task_id=fields.String(required=False))
-@API.Input.params(task_version=fields.Integer(required=False))
+@API.Input.params(job_id=fields.String(required=False), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=False),desc=ROLE)
+@API.Input.params(party_id=fields.String(required=False), desc=PARTY_ID)
+@API.Input.params(status=fields.String(required=False), desc=STATUS)
+@API.Input.params(task_name=fields.String(required=False), desc=TASK_NAME)
+@API.Input.params(task_id=fields.String(required=False), desc=TASK_ID)
+@API.Input.params(task_version=fields.Integer(required=False), desc=TASK_VERSION)
 def query_task(job_id=None, role=None, party_id=None, status=None, task_name=None, task_id=None, task_version=None):
     tasks = JobController.query_tasks(job_id=job_id, role=role, party_id=party_id, status=status, task_name=task_name,
                                       task_id=task_id, task_version=task_version)
@@ -104,14 +106,14 @@ def query_task(job_id=None, role=None, party_id=None, status=None, task_name=Non
 
 
 @manager.route('/task/list/query', methods=['GET'])
-@API.Input.params(limit=fields.Integer(required=False))
-@API.Input.params(page=fields.Integer(required=False))
-@API.Input.params(job_id=fields.String(required=False))
-@API.Input.params(role=fields.String(required=False))
-@API.Input.params(party_id=fields.String(required=False))
-@API.Input.params(task_name=fields.String(required=False))
-@API.Input.params(order_by=fields.String(required=False))
-@API.Input.params(order=fields.String(required=False))
+@API.Input.params(limit=fields.Integer(required=False), desc=LIMIT)
+@API.Input.params(page=fields.Integer(required=False), desc=PAGE)
+@API.Input.params(job_id=fields.String(required=False), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=False), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=False), desc=PARTY_ID)
+@API.Input.params(task_name=fields.String(required=False), desc=TASK_NAME)
+@API.Input.params(order_by=fields.String(required=False), desc=ORDER_BY)
+@API.Input.params(order=fields.String(required=False), desc=ORDER)
 def query_task_list(limit=0, page=0, job_id=None, role=None, party_id=None, task_name=None, order_by=None, order=None):
     count, data = JobController.query_task_list(
         limit, page, job_id, role, party_id, task_name, order_by, order
@@ -123,7 +125,7 @@ def query_task_list(limit=0, page=0, job_id=None, role=None, party_id=None, task
 
 
 @manager.route('/log/download', methods=['POST'])
-@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(job_id=fields.String(required=True), desc=JOB_ID)
 def download_job_logs(job_id):
     job_log_dir = job_utils.get_job_log_directory(job_id=job_id)
     if not os.path.exists(job_log_dir):
@@ -148,26 +150,26 @@ def clean_queue():
 
 
 @manager.route('/clean', methods=['POST'])
-@API.Input.json(job_id=fields.String(required=True))
+@API.Input.json(job_id=fields.String(required=True), desc=JOB_ID)
 def clean_job(job_id):
     JobController.clean_job(job_id=job_id)
     return API.Output.json()
 
 
 @manager.route('/notes/add', methods=['POST'])
-@API.Input.json(job_id=fields.String(required=True))
-@API.Input.json(role=fields.String(required=True))
-@API.Input.json(party_id=fields.String(required=True))
-@API.Input.json(notes=fields.String(required=True))
+@API.Input.json(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.json(role=fields.String(required=True), desc=ROLE)
+@API.Input.json(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.json(notes=fields.String(required=True), desc=NODES)
 def add_notes(job_id, role, party_id, notes):
     JobController.add_notes(job_id=job_id, role=role, party_id=party_id, notes=notes)
     return API.Output.json()
 
 
 @manager.route('/dag/dependency', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
+@API.Input.params(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=True), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
 def dag_dependency(job_id, role, party_id):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id)
     if not jobs:
