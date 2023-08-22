@@ -152,6 +152,6 @@ class NoFoundFile(FateFlowError):
     message = "No Found File"
 
 
-class IsExistsRole(FateFlowError):
-    code = ReturnCode.API.IS_EXISTS_ROLE
-    message = "Role Is Exists"
+class RoleTypeError(FateFlowError):
+    code = ReturnCode.API.ROLE_TYPE_ERROR
+    message = "Role Type Error"

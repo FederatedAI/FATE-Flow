@@ -17,7 +17,7 @@ from functools import wraps
 from fate_flow.db.base_models import BaseModelOperate
 from fate_flow.db.permission_models import AppInfo, PartnerAppInfo
 from fate_flow.entity.types import AppType
-from fate_flow.errors.server_error import NoFoundAppid, IsExistsRole
+from fate_flow.errors.server_error import NoFoundAppid, RoleTypeError
 from fate_flow.runtime.system_settings import ADMIN_KEY, CLIENT_AUTHENTICATION, APP_TOKEN_LENGTH, SITE_AUTHENTICATION, \
     PARTY_ID
 from fate_flow.utils.base_utils import generate_random_id
@@ -114,5 +114,21 @@ class AppManager(BaseModelOperate):
             if kwargs.get("app_id"):
                 if not AppManager.query_app(app_id=kwargs.get("app_id")):
                     raise NoFoundAppid(app_id=kwargs.get("app_id"))
+            return func(*args, **kwargs)
+        return _wrapper
+
+    @staticmethod
+    def check_app_type(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            if kwargs.get("app_id"):
+                app_info = AppManager.query_app(app_id=kwargs.get("app_id"))
+                if not app_info:
+                    raise NoFoundAppid(app_id=kwargs.get("app_id"))
+                role = kwargs.get("role")
+                if role == "super_client":
+                    role = "client"
+                if role != app_info[0].f_app_type:
+                    raise RoleTypeError(role=kwargs.get("role"))
             return func(*args, **kwargs)
         return _wrapper
