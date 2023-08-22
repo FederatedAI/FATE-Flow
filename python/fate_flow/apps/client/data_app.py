@@ -15,6 +15,8 @@
 #
 from webargs import fields
 
+from fate_flow.apps.desc import SERVER_FILE_PATH, HEAD, PARTITIONS, META, EXTEND_SID, NAMESPACE, NAME, DATA_WAREHOUSE, \
+    DROP
 from fate_flow.engine import storage
 from fate_flow.manager.components.component_manager import ComponentManager
 from fate_flow.manager.data.data_manager import DataManager
@@ -24,13 +26,13 @@ page_name = "data"
 
 
 @manager.route('/component/upload', methods=['POST'])
-@API.Input.json(file=fields.String(required=True))
-@API.Input.json(head=fields.Bool(required=True))
-@API.Input.json(partitions=fields.Integer(required=True))
-@API.Input.json(meta=fields.Dict(required=True))
-@API.Input.json(extend_sid=fields.Bool(required=False))
-@API.Input.json(namespace=fields.String(required=False))
-@API.Input.json(name=fields.String(required=False))
+@API.Input.json(file=fields.String(required=True), desc=SERVER_FILE_PATH)
+@API.Input.json(head=fields.Bool(required=True), desc=HEAD)
+@API.Input.json(partitions=fields.Integer(required=True), desc=PARTITIONS)
+@API.Input.json(meta=fields.Dict(required=True), desc=META)
+@API.Input.json(extend_sid=fields.Bool(required=False), desc=EXTEND_SID)
+@API.Input.json(namespace=fields.String(required=False), desc=NAMESPACE)
+@API.Input.json(name=fields.String(required=False), desc=NAME)
 def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_sid=False):
     result = ComponentManager.upload(
         file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
@@ -39,9 +41,9 @@ def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_
 
 
 @manager.route('/component/download', methods=['POST'])
-@API.Input.json(name=fields.String(required=True))
-@API.Input.json(namespace=fields.String(required=True))
-@API.Input.json(path=fields.String(required=False))
+@API.Input.json(name=fields.String(required=True), desc=NAME)
+@API.Input.json(namespace=fields.String(required=True), desc=NAMESPACE)
+@API.Input.json(path=fields.String(required=False), desc=SERVER_FILE_PATH)
 def download_data(namespace, name, path):
     result = ComponentManager.download(
         path=path, namespace=namespace, name=name
@@ -50,19 +52,19 @@ def download_data(namespace, name, path):
 
 
 @manager.route('/component/dataframe/transformer', methods=['POST'])
-@API.Input.json(data_warehouse=fields.Dict(required=True))
-@API.Input.json(namespace=fields.String(required=True))
-@API.Input.json(name=fields.String(required=True))
-@API.Input.json(drop=fields.Bool(required=False))
+@API.Input.json(data_warehouse=fields.Dict(required=True), desc=DATA_WAREHOUSE)
+@API.Input.json(namespace=fields.String(required=True), desc=NAMESPACE)
+@API.Input.json(name=fields.String(required=True), desc=NAME)
+@API.Input.json(drop=fields.Bool(required=False), desc=DROP)
 def transformer_data(data_warehouse, namespace, name, drop=True):
     result = ComponentManager.dataframe_transformer(data_warehouse, namespace, name, drop)
     return API.Output.json(**result)
 
 
 @manager.route('/download', methods=['GET'])
-@API.Input.params(name=fields.String(required=True))
-@API.Input.params(namespace=fields.String(required=True))
-@API.Input.params(header=fields.String(required=False))
+@API.Input.params(name=fields.String(required=True), desc=NAME)
+@API.Input.params(namespace=fields.String(required=True), desc=NAMESPACE)
+@API.Input.params(header=fields.String(required=False), desc=HEAD)
 def download(namespace, name, header=None):
     data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
     return DataManager.send_table(
