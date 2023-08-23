@@ -15,16 +15,17 @@
 #
 from webargs import fields
 
+from fate_flow.apps.desc import PROVIDER_NAME, DEVICE, VERSION, COMPONENT_METADATA, PROVIDER_ALL_NAME
 from fate_flow.errors.server_error import DeviceNotSupported
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.utils.api_utils import API
 
 
 @manager.route('/register', methods=['POST'])
-@API.Input.json(name=fields.String(required=True))
-@API.Input.json(device=fields.String(required=True))
-@API.Input.json(version=fields.String(required=True))
-@API.Input.json(metadata=fields.Dict(required=True))
+@API.Input.json(name=fields.String(required=True), desc=PROVIDER_NAME)
+@API.Input.json(device=fields.String(required=True), desc=DEVICE)
+@API.Input.json(version=fields.String(required=True), desc=VERSION)
+@API.Input.json(metadata=fields.Dict(required=True), desc=COMPONENT_METADATA)
 def register(name, device, version, metadata):
     provider = ProviderManager.get_provider(name=name, device=device, version=version, metadata=metadata, check=True)
     if provider:
@@ -35,20 +36,20 @@ def register(name, device, version, metadata):
 
 
 @manager.route('/query', methods=['GET'])
-@API.Input.params(name=fields.String(required=False))
-@API.Input.params(device=fields.String(required=False))
-@API.Input.params(version=fields.String(required=False))
-@API.Input.params(provider_name=fields.String(required=False))
+@API.Input.params(name=fields.String(required=False), desc=PROVIDER_NAME)
+@API.Input.params(device=fields.String(required=False), desc=DEVICE)
+@API.Input.params(version=fields.String(required=False), desc=VERSION)
+@API.Input.params(provider_name=fields.String(required=False), desc=PROVIDER_ALL_NAME)
 def query(name=None, device=None, version=None, provider_name=None):
     providers = ProviderManager.query_provider(name=name, device=device, version=version, provider_name=provider_name)
     return API.Output.json(data=[provider.to_human_model_dict() for provider in providers])
 
 
 @manager.route('/delete', methods=['POST'])
-@API.Input.json(name=fields.String(required=False))
-@API.Input.json(device=fields.String(required=False))
-@API.Input.json(version=fields.String(required=False))
-@API.Input.json(provider_name=fields.String(required=False))
+@API.Input.json(name=fields.String(required=False), desc=PROVIDER_NAME)
+@API.Input.json(device=fields.String(required=False), desc=DEVICE)
+@API.Input.json(version=fields.String(required=False), desc=VERSION)
+@API.Input.json(provider_name=fields.String(required=False), desc=PROVIDER_ALL_NAME)
 def delete(name=None, device=None, version=None, provider_name=None):
     result = ProviderManager.delete_provider(name=name, device=device, version=version, provider_name=provider_name)
     return API.Output.json(data=result)

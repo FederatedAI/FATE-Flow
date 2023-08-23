@@ -15,6 +15,7 @@
 #
 from webargs import fields
 
+from fate_flow.apps.desc import JOB_ID, ROLE, PARTY_ID, TASK_NAME, FILTERS, OUTPUT_KEY
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundTask
 from fate_flow.manager.data.data_manager import DataManager
@@ -25,10 +26,10 @@ from fate_flow.utils.api_utils import API
 
 
 @manager.route('/metric/key/query', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=True), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
 def query_metric_key(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
@@ -40,11 +41,11 @@ def query_metric_key(job_id, role, party_id, task_name):
 
 
 @manager.route('/metric/query', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(task_name=fields.String(required=True))
-@API.Input.params(filters=fields.Dict(required=False))
+@API.Input.params(job_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.params(role=fields.String(required=True), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
+@API.Input.params(filters=fields.Dict(required=False), desc=FILTERS)
 def query_metric(job_id, role, party_id, task_name, filters=None):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
@@ -56,10 +57,10 @@ def query_metric(job_id, role, party_id, task_name, filters=None):
 
 
 @manager.route('/metric/delete', methods=['POST'])
-@API.Input.json(job_id=fields.String(required=True))
-@API.Input.json(role=fields.String(required=True))
-@API.Input.json(party_id=fields.String(required=True))
-@API.Input.json(task_name=fields.String(required=True))
+@API.Input.json(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.json(role=fields.String(required=True), desc=ROLE)
+@API.Input.json(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.json(task_name=fields.String(required=True), desc=TASK_NAME)
 def delete_metric(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
@@ -73,10 +74,10 @@ def delete_metric(job_id, role, party_id, task_name):
 
 
 @manager.route('/model/query', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=True), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
 def query_model(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
@@ -88,10 +89,10 @@ def query_model(job_id, role, party_id, task_name):
 
 
 @manager.route('/model/download', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=True), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
 def download(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
@@ -103,10 +104,10 @@ def download(job_id, role, party_id, task_name):
 
 
 @manager.route('/model/delete', methods=['POST'])
-@API.Input.json(job_id=fields.String(required=True))
-@API.Input.json(role=fields.String(required=True))
-@API.Input.json(party_id=fields.String(required=True))
-@API.Input.json(task_name=fields.String(required=True))
+@API.Input.json(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.json(role=fields.String(required=True), desc=ROLE)
+@API.Input.json(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.json(task_name=fields.String(required=True), desc=TASK_NAME)
 def delete_model(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
@@ -122,11 +123,11 @@ def delete_model(job_id, role, party_id, task_name):
 
 
 @manager.route('/data/download', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(task_name=fields.String(required=True))
-@API.Input.params(output_key=fields.String(required=False))
+@API.Input.params(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=True), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
+@API.Input.params(output_key=fields.String(required=False), desc=OUTPUT_KEY)
 def output_data_download(job_id, role, party_id, task_name, output_key=None):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
@@ -147,10 +148,10 @@ def output_data_download(job_id, role, party_id, task_name, output_key=None):
 
 
 @manager.route('/data/table', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=True), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
 def output_data_table(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
@@ -168,10 +169,10 @@ def output_data_table(job_id, role, party_id, task_name):
 
 
 @manager.route('/data/display', methods=['GET'])
-@API.Input.params(job_id=fields.String(required=True))
-@API.Input.params(role=fields.String(required=True))
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(task_name=fields.String(required=True))
+@API.Input.params(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=True), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
 def output_data_display(job_id, role, party_id, task_name):
     tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
     if not tasks:
