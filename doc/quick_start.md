@@ -13,7 +13,7 @@ fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部�
 - transformer: 将数据转化成dataframe
 ##### 2.1.1 upload
 ##### 2.1.1.1 配置及数据
- - 上传配置位于[upload-examples](../examples/upload)，上传数据位于[upload-data](../examples/data)
+ - 上传配置位于[examples-upload](../examples/upload)，上传数据位于[upload-data](../examples/data)
  - 你也可以使用自己的数据，并修改upload配置中的"meta"信息。
 ##### 2.1.1.2 上传guest方数据
 ```shell
@@ -85,7 +85,7 @@ flow table query --namespace upload --name 36491bc8-3fef-11ee-be05-16b977118319
 
 ##### 2.1.2 transformer
 ##### 2.1.2.1 配置
- - transformer配置位于[transformer-examples](../examples/transformer)
+ - transformer配置位于[examples-transformer](../examples/transformer)
 ##### 2.1.2.2 transformer guest
 - 配置路径位于： examples/transformer/transformer_guest.json
 - 修改配置中"data_warehouse"的"namespace"和"name"：上面upload guest阶段的输出
@@ -116,10 +116,10 @@ flow data transformer -c examples/transformer/transformer_host.json
 
 因为transformer也是异步操作，需要确认是否上传成功才可进行后续操作。
 ```shell
-flow table query --namespace breast_hetero_guest --name experiment
+flow table query --namespace experiment  --name breast_hetero_guest
 ```
 ```shell
-flow table query --namespace breast_hetero_host --name experiment
+flow table query --namespace experiment  --name breast_hetero_host
 ```
 若返回的code为0即为上传成功。
 
