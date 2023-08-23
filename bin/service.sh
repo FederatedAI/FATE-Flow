@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #
 #  Copyright 2019 The FATE Authors. All Rights Reserved.
 #
@@ -15,172 +14,410 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+# -----------------------------------------------------------------------------
+# Service Control Script for a FATE Flow Server Application
+# -----------------------------------------------------------------------------
+#
+# This script is used to manage the lifecycle (start, stop, restart, and check status) of a server application.
+# The server application listens on two ports: an HTTP port and a gRPC port.
+# The settings for these ports, as well as other configurations, are read from a YAML file.
+#
+# Dependencies:
+#   - lsof: To check which processes are listening on which ports.
+#   - sed, awk: For text processing, mainly for parsing the YAML configuration.
+#
+# Usage:
+#   ./service.sh {start|stop|status|restart [sleep_time]}
+#   sleep_time: Optional. Number of seconds to wait between stop and start during restart. Default is 10 seconds.
+#
+# Assumptions:
+#   - The script assumes the presence of a configuration file named 'service_conf.yaml' in a relative directory.
+#   - The configuration file is structured in a specific way that the parsing logic expects.
+#
+# -----------------------------------------------------------------------------
 
-if [[ -z "${FATE_PROJECT_BASE}" ]]; then
-    PROJECT_BASE=$(cd "$(dirname "$0")";cd ../;cd ../;pwd)
-else
-    PROJECT_BASE="${FATE_PROJECT_BASE}"
-fi
-FATE_FLOW_BASE=${PROJECT_BASE}/fate_flow
-echo "PROJECT_BASE: "${PROJECT_BASE}
+# --------------- Color Definitions ---------------
+esc_c="\e[0m"
+error_c="\e[31m"
+ok_c="\e[32m"
+highlight_c="\e[43m"
 
-# source init_env.sh
-INI_ENV_SCRIPT=${FATE_FLOW_BASE}/bin/init_env.sh
-echo $INI_ENV_SCRIPT
-if test -f "${INI_ENV_SCRIPT}"; then
-  source $INI_ENV_SCRIPT
-  echo "PYTHONPATH: "${PYTHONPATH}
-else
-  echo "file not found: ${INI_ENV_SCRIPT}"
-  exit
-fi
+# --------------- Logging Functions ---------------
+print_info() {
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local overwrite=$2
 
-log_dir=${FATE_FLOW_BASE}/logs
-
-module=fate_flow_server.py
-
-parse_yaml() {
-   local prefix=$2
-   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
-   sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
-   awk -F$fs '{
-      indent = length($1)/2;
-      vname[indent] = $2;
-      for (i in vname) {if (i > indent) {delete vname[i]}}
-      if (length($3) > 0) {
-         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
-      }
-   }'
-}
-
-getport() {
-    service_conf_path=${PROJECT_BASE}/fate_flow/conf/service_conf.yaml
-    if test -f "${service_conf_path}"; then
-      echo "found service conf: ${service_conf_path}"
-      eval $(parse_yaml ${service_conf_path} "service_config_")
-      echo "fate flow http port: ${service_config_fateflow_http_port}, grpc port: ${service_config_fateflow_grpc_port}"
-      echo
+    # Check if we need to overwrite the current line
+    if [ "$overwrite" == "overwrite" ]; then
+        echo -ne "\r${ok_c}[${timestamp}][MS]${esc_c} $1"
     else
-      echo "service conf not found: ${service_conf_path}"
-      exit
+        echo -e "${ok_c}[${timestamp}][MS]${esc_c} $1"
     fi
 }
-
-getport
-
-getpid() {
-    echo "check process by http port and grpc port"
-    pid1=`lsof -i:${service_config_fateflow_http_port} | grep 'LISTEN' | awk 'NR==1 {print $2}'`
-    pid2=`lsof -i:${service_config_fateflow_grpc_port} | grep 'LISTEN' | awk 'NR==1 {print $2}'`
-    if [[ -n ${pid1} && "x"${pid1} = "x"${pid2} ]];then
-        pid=$pid1
-    elif [[ -z ${pid1} && -z ${pid2} ]];then
-        pid=
-    fi
-}
-
-mklogsdir() {
-    if [[ ! -d $log_dir ]]; then
-        mkdir -p $log_dir
-    fi
-}
-
-status() {
-    getpid
-    if [[ -n ${pid} ]]; then
-        echo "status:`ps aux | grep ${pid} | grep -v grep`"
-        lsof -i:${service_config_fateflow_http_port} | grep 'LISTEN'
-        lsof -i:${service_config_fateflow_grpc_port} | grep 'LISTEN'
+print_ok() {
+    local overwrite=$2
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    if [ "$overwrite" == "overwrite" ]; then
+        echo -ne "\r${ok_c}[${timestamp}][OK]${esc_c} $1"
     else
-        echo "service not running"
+        echo -e "${ok_c}[${timestamp}][OK]${esc_c} $1"
     fi
 }
 
+print_error() {
+    local overwrite=$3
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    if [ "$overwrite" == "overwrite" ]; then
+        echo -ne "\r${error_c}[${timestamp}][ER]${esc_c} $1: $2"
+    else
+        echo -e "${error_c}[${timestamp}][ER]${esc_c} $1: $2"
+    fi
+}
+
+# --------------- Util Functions ---------------
+# Check if the dependencies are installed on the system
+check_dependencies() {
+    local missing_deps=0
+
+    for dep in lsof sed awk; do
+        if ! command -v "$dep" &>/dev/null; then
+            print_error "Missing dependency" "$dep"
+            missing_deps=1
+        fi
+    done
+
+    if [ "$missing_deps" -eq 1 ]; then
+        print_error "Please install the missing dependencies and try again."
+        exit 1
+    fi
+}
+
+# Get the PID of the process using a specific port
+get_pid() {
+    local port=$1
+    lsof -i:${port} | grep 'LISTEN' | awk 'NR==1 {print $2}'
+}
+
+# Extract the specified port from a specified section of the YAML file
+get_port_from_yaml() {
+    local yaml_file=$1
+    local section=$2
+    local port_key=$3
+    local s='[[:space:]]*'
+    local w='[a-zA-Z0-9_]*'
+    local fs=$(echo @ | tr @ '\034') # Set fs back to the ASCII "file separator"
+
+    sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" $yaml_file |
+        awk -F$fs -v section="$section" -v port_key="$port_key" '
+    {
+        indent = length($1)/2;
+        vname[indent] = $2;
+        for (i in vname) {if (i > indent) {delete vname[i]}}
+        if (length($3) > 0) {
+            vn=""; 
+            for (i=0; i<indent; i++) {
+                vn=(vn ? vn "." : "") vname[i];  # Concatenate using a dot
+            }
+            if (vn == section && $2 == port_key) print $3;
+        }
+    }'
+}
+
+# Function to load configuration details from the YAML file
+load_config() {
+    print_info "-------------------------------load config-------------------------------"
+    check_dependencies
+    # Check if the FATE_PROJECT_BASE is set, if not, determine it
+    [ -z "${FATE_PROJECT_BASE}" ] && PROJECT_BASE=$(
+        cd "$(dirname "$0")/../.."
+        pwd
+    ) || PROJECT_BASE="${FATE_PROJECT_BASE}"
+    FATE_FLOW_BASE="${PROJECT_BASE}/fate_flow"
+    ENTRYPOINT=${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py
+    if [ ! -f "${ENTRYPOINT}" ]; then
+        print_error "Service entrypoint not found." ${ENTRYPOINT}
+        exit 1
+    fi
+
+    # Logs
+    LOG_DIR="${FATE_FLOW_BASE}/logs"
+    [ ! -d "${LOG_DIR}" ] && mkdir -p "${LOG_DIR}"
+    LOG_STDERR="${LOG_DIR}/error.log"
+    LOG_STDOUT="${LOG_DIR}/console.log"
+
+    print_info "Checking service configuration..."
+    CONF_PATH="${PROJECT_BASE}/fate_flow/conf/service_conf.yaml"
+    if [ -f "${CONF_PATH}" ]; then
+        print_ok "Service configuration file found." ${CONF_PATH}
+    else
+        print_error "Service configuration not found." ${CONF_PATH}
+        exit 1
+    fi
+
+    # Initialize environment
+    print_info "Initializing environment..."
+    INI_ENV_SCRIPT="${FATE_FLOW_BASE}/bin/init_env.sh"
+    if [ -f "${INI_ENV_SCRIPT}" ]; then
+        source "${INI_ENV_SCRIPT}"
+        print_ok "Environment initialized successfully." ${INI_ENV_SCRIPT}
+    else
+        print_error "Environment file not found" ${INI_ENV_SCRIPT}
+        exit 1
+    fi
+
+    # load ports
+    print_info "Retrieving http port..."
+    local section="fateflow"
+    http_port=$(get_port_from_yaml $CONF_PATH $section "http_port")
+    if [ -z "$http_port" ]; then
+        print_error "Retrieve http port failed" "please check ${CONF_PATH}"
+        exit 1
+    else
+        print_ok "HTTP port set to ${highlight_c}${http_port}${esc_c}"
+    fi
+    print_info "Retrieving gPRC port..."
+    grpc_port=$(get_port_from_yaml $CONF_PATH $section "grpc_port")
+    if [ -z "$grpc_port" ]; then
+        print_error "Retrieve gRPC port failed" "please check ${CONF_PATH}"
+        exit 1
+    else
+        print_ok "gRPC port set to ${highlight_c}${grpc_port}${esc_c}"
+    fi
+
+}
+
+# --------------- Functions for start---------------
+# Check if the service is up and running
+check_service_up() {
+    local pid=$1
+    local timeout_ms=$2
+    local interval_ms=$3
+    local http_port=$4
+    local grpc_port=$5
+    local elapsed_ms=0
+    local spin_state=0
+
+    while ((elapsed_ms < timeout_ms)); do
+        if ! kill -0 "${pid}" 2>/dev/null; then
+            print_error "Process with PID ${pid} is not running." "" "overwrite"
+            echo
+            return 1
+        fi
+
+        if lsof -i :${http_port} | grep -q LISTEN && lsof -i :${grpc_port} | grep -q LISTEN; then
+            print_ok "Service started successfully!" "overwrite"
+            echo
+            return 0
+        fi
+
+        # Update spinning wheel
+        case $spin_state in
+            0) spinner_char="/" ;;
+            1) spinner_char="-" ;;
+            2) spinner_char="\\" ;;
+            3) spinner_char="|" ;;
+        esac
+        print_info "$spinner_char" "overwrite"
+        spin_state=$(((spin_state + 1) % 4))
+        sleep $((interval_ms / 1000)).$((interval_ms % 1000))
+        elapsed_ms=$((elapsed_ms + interval_ms))
+    done
+    print_error "Service did not start up within the expected time." "" "overwrite"
+    echo
+    return 1
+}
+# Draw a progress bar for visual feedback
+draw_progress_bar() {
+    local completed=$1
+    local total=$2
+    local msg="$3"
+    local progress_bar="["
+
+    # Print completed part
+    for ((i = 0; i < completed; i++)); do
+        progress_bar+=" "
+    done
+
+    # Print pending part
+    for ((i = completed; i < total; i++)); do
+        progress_bar+="-"
+    done
+    progress_bar+="]${msg}"
+    print_info "$progress_bar" "overwrite"
+}
+
+# Checks if a port is active and returns the PID of the process using it.
+# Parameters:
+#   $1 - The port number to check.
+# Returns:
+#   PID of the process using the port, or an empty string if the port is not active.
+check_port_active() {
+    local port=$1
+    lsof -i:${port} | grep 'LISTEN' | awk 'NR==1 {print $2}'
+}
+
+# Start service
 start() {
-    getpid
-    if [[ ${pid} == "" ]]; then
-        mklogsdir
-        if [[ $1x == "front"x ]];then
-          export FATE_PROJECT_BASE=${PROJECT_BASE}
-          exec python ${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py >> "${log_dir}/console.log" 2>>"${log_dir}/error.log"
-          unset FATE_PROJECT_BASE
-        else
-          export FATE_PROJECT_BASE=${PROJECT_BASE}
-          nohup python ${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py >> "${log_dir}/console.log" 2>>"${log_dir}/error.log" &
-          unset FATE_PROJECT_BASE
-        fi
-        for((i=1;i<=100;i++));
-        do
-            sleep 0.1
-            getpid
-            if [[ -n ${pid} ]]; then
-                echo "service start sucessfully. pid: ${pid}"
-                return
-            fi
-        done
-        if [[ -n ${pid} ]]; then
-           echo "service start sucessfully. pid: ${pid}"
-        else
-           echo "service start failed, please check ${log_dir}/error.log and ${log_dir}/console.log"
-        fi
+    print_info "--------------------------------starting--------------------------------"
+    print_info "Verifying if HTTP port ${highlight_c}${http_port}${esc_c} is not active..."
+    pid1=$(check_port_active $http_port)
+    if [ -n "${pid1}" ]; then
+        print_error "HTTP port ${highlight_c}${http_port}${esc_c} is already active. Process ID (PID): ${highlight_c}${pid1}${esc_c}"
+        exit 1
     else
-        echo "service already started. pid: ${pid}"
+        print_ok "HTTP port ${highlight_c}${http_port}${esc_c} not active"
+    fi
+
+    print_info "Verifying if gRPC port ${highlight_c}${grpc_port}${esc_c} is not active..."
+    pid2=$(check_port_active $grpc_port)
+    if [ -n "${pid2}" ]; then
+        print_error "gRPC port ${highlight_c}${grpc_port}${esc_c} is already active. Process ID (PID): ${highlight_c}${pid2}${esc_c}"
+        exit 1
+    else
+        print_ok "gRPC port ${highlight_c}${grpc_port}${esc_c} not active"
+    fi
+
+    print_info "Starting services..."
+    local startup_error_tmp=$(mktemp)
+    if [ "$1" = "front" ]; then
+        exec FATE_PROJECT_BASE="${PROJECT_BASE}" python "${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py" >>"${LOG_STDOUT}" 2>>"${LOG_STDERR}"
+    else
+        export FATE_PROJECT_BASE="${PROJECT_BASE}"
+        nohup python "${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py" >>"${LOG_STDOUT}" 2> >(tee -a "${LOG_STDERR}" >>"${startup_error_tmp}") &
+        unset FATE_PROJECT_BASE
+        pid=$!
+        print_info "Process ID (PID): ${highlight_c}${pid}${esc_c}"
+        if ! check_service_up "${pid}" 5000 250 ${http_port} ${grpc_port}; then
+            print_info "stderr:"
+            cat "${startup_error_tmp}"
+            rm "${startup_error_tmp}"
+            print_info "Please check ${LOG_STDERR} and ${LOG_STDOUT} for more details"
+            exit 1
+        fi
     fi
 }
 
+# --------------- Functions for stop---------------
+# Function to kill a process
+kill_process() {
+    local pid=$1
+    local signal=$2
+    kill ${signal} "${pid}" 2>/dev/null
+}
+
+# Stop service
+stop_port() {
+    local port=$1
+    local name=$2
+    local pid=$(get_pid ${port})
+
+    print_info "Stopping $name ${highlight_c}${port}${esc_c}..."
+    if [ -n "${pid}" ]; then
+        for _ in {1..100}; do
+            sleep 0.1
+            kill_process "${pid}"
+            pid=$(get_pid ${port})
+            if [ -z "${pid}" ]; then
+                print_ok "Stop $name ${highlight_c}${port}${esc_c} success (SIGTERM)"
+                return
+            fi
+        done
+        kill_process "${pid}" -9 && print_ok "Stop port success (SIGKILL)" || print_error "Stop port failed"
+    else
+        print_ok "Stop $name ${highlight_c}${port}${esc_c} success(NOT ACTIVE)"
+    fi
+}
 stop() {
-    getpid
-    if [[ -n ${pid} ]]; then
-        echo "killing: `ps aux | grep ${pid} | grep -v grep`"
-        for((i=1;i<=100;i++));
-        do
-            sleep 0.1
-            kill ${pid}
-            getpid
-            if [[ ! -n ${pid} ]]; then
-                echo "killed by SIGTERM"
-                return
-            fi
-        done
-        kill -9 ${pid}
-        if [[ $? -eq 0 ]]; then
-            echo "killed by SIGKILL"
-        else
-            echo "kill error"
-        fi
+    print_info "--------------------------------stopping--------------------------------"
+    stop_port ${http_port} "HTTP port"
+    stop_port ${grpc_port} "gRPC port"
+}
+
+# --------------- Functions for status---------------
+# Check the status of the service
+status() {
+    print_info "---------------------------------status---------------------------------"
+    # Check http_port
+    pid1=$(check_port_active $http_port)
+    if [ -n "${pid1}" ]; then
+        print_ok "Check http port ${highlight_c}${http_port}${esc_c} is active: PID=${highlight_c}${pid1}${esc_c}"
     else
-        echo "service not running"
+        print_error "http port not active"
+    fi
+
+    # Check grpc_port
+    pid2=$(check_port_active $grpc_port)
+    if [ -n "${pid2}" ]; then
+        print_ok "Check grpc port ${highlight_c}${grpc_port}${esc_c} is active: PID=${highlight_c}${pid2}${esc_c}"
+    else
+        print_error "grpc port not active"
+    fi
+
+    # Check if both PIDs are the same
+    if [ -n "${pid1}" ] && [ -n "${pid2}" ]; then
+        if [ "${pid1}" == "${pid2}" ]; then
+            print_ok "Check http port and grpc port from same process: PID=${highlight_c}${pid2}${esc_c}"
+        else
+            print_error "Found http port and grpc port active but from different process: ${highlight_c}${pid2}${esc_c}!=${highlight_c}${pid2}${esc_c}"
+        fi
     fi
 }
 
+# --------------- Functions for info---------------
+# Print usage information for the script
+print_usage() {
+    echo -e "${ok_c}FATE Flow${esc_c}"
+    echo "---------"
+    echo -e "${ok_c}Usage:${esc_c}"
+    echo -e "  $0 start          - Start the server application."
+    echo -e "  $0 stop           - Stop the server application."
+    echo -e "  $0 status         - Check and report the status of the server application."
+    echo -e "  $0 restart [time] - Restart the server application. Optionally, specify a sleep time (in seconds) between stop and start."
+    echo ""
+    echo -e "${ok_c}Examples:${esc_c}"
+    echo "  $0 start"
+    echo "  $0 restart 5"
+    echo ""
+    echo -e "${ok_c}Notes:${esc_c}"
+    echo "  - The restart command, if given an optional sleep time, will wait for the specified number of seconds between stopping and starting the service."
+    echo "    If not provided, it defaults to 10 seconds."
+    echo "  - Ensure that the required configuration file 'service_conf.yaml' is properly set up in the expected directory."
+    echo ""
+    echo "For more detailed information, refer to the script's documentation or visit the official documentation website."
+}
 
+# --------------- Main---------------
+# Main case for control
 case "$1" in
     start)
+        load_config
         start
         status
         ;;
-
     starting)
+        load_config
         start front
         ;;
-
     stop)
+        load_config
         stop
         ;;
-
     status)
+        load_config
         status
         ;;
-
     restart)
+        load_config
         stop
-        sleep 10
+        sleep_time=${2:-5}
+        print_info "Waiting ${sleep_time} seconds"
+        sleep $sleep_time
         start
         status
         ;;
     *)
-        echo "usage: $0 {start|stop|status|restart}"
-        exit -1
+        print_usage
+        exit 1
+        ;;
 esac
