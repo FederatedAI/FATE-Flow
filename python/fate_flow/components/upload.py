@@ -18,6 +18,7 @@ import shutil
 import sys
 import time
 import uuid
+import ast
 
 from fate_arch import storage, session
 from fate_arch.common import EngineType, log, path_utils
@@ -100,7 +101,10 @@ class UploadParam(BaseParam):
     @staticmethod
     def update_meta(params):
         if params.with_meta:
-            _meta = SchemaMetaParam(**params.meta).to_dict()
+            if isinstance(params.meta, str):
+                _meta = SchemaMetaParam(**ast.literal_eval(params.meta)).to_dict()
+            else:
+                _meta = SchemaMetaParam(**params.meta).to_dict()
             if params.extend_sid:
                 _meta["with_match_id"] = True
         else:
