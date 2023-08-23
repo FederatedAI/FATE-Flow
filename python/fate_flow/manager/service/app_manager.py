@@ -21,7 +21,7 @@ from fate_flow.errors.server_error import NoFoundAppid, RoleTypeError
 from fate_flow.runtime.system_settings import ADMIN_KEY, CLIENT_AUTHENTICATION, APP_TOKEN_LENGTH, SITE_AUTHENTICATION, \
     PARTY_ID
 from fate_flow.utils.base_utils import generate_random_id
-from fate_flow.utils.wraps_utils import filter_parameters, switch_function
+from fate_flow.utils.wraps_utils import filter_parameters, switch_function, check_permission
 
 
 class AppManager(BaseModelOperate):
@@ -38,7 +38,8 @@ class AppManager(BaseModelOperate):
 
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
-    def create_app(cls, app_type, app_name, app_id=None, app_token=None):
+    @check_permission
+    def create_app(cls, app_type, app_name, app_id=None, app_token=None, init=True):
         if not app_id:
             app_id = cls.generate_app_id()
         if not app_token:
@@ -72,13 +73,15 @@ class AppManager(BaseModelOperate):
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @filter_parameters()
-    def delete_app(cls, **kwargs):
+    @check_permission
+    def delete_app(cls, init=True, **kwargs):
         return cls._delete(AppInfo, **kwargs)
 
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @filter_parameters()
-    def delete_partner_app(cls, **kwargs):
+    @check_permission
+    def delete_partner_app(cls, init=True, **kwargs):
         return cls._delete(PartnerAppInfo, **kwargs)
 
     @classmethod
