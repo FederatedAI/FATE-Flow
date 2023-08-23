@@ -15,6 +15,7 @@
 #
 from webargs import fields
 
+from fate_flow.apps.desc import PERMISSION_APP_ID, PERMISSION_ROLE, PARTY_ID, COMPONENT, DATASET
 from fate_flow.controller.app_controller import PermissionController
 from fate_flow.controller.permission_controller import ResourcePermissionController
 from fate_flow.entity.code import ReturnCode
@@ -27,8 +28,8 @@ page_name = PERMISSION_MANAGER_PAGE
 
 
 @manager.route('/grant', methods=['POST'])
-@API.Input.json(app_id=fields.String(required=True))
-@API.Input.json(role=fields.String(required=True))
+@API.Input.json(app_id=fields.String(required=True), desc=PERMISSION_APP_ID)
+@API.Input.json(role=fields.String(required=True), desc=PERMISSION_ROLE)
 def grant(app_id, role):
     for roles in PermissionController.get_roles_for_user(app_id=app_id):
         PermissionController.delete_role_for_user(app_id=app_id, role=roles)
@@ -37,15 +38,15 @@ def grant(app_id, role):
 
 
 @manager.route('/delete', methods=['POST'])
-@API.Input.json(app_id=fields.String(required=True))
-@API.Input.json(role=fields.String(required=True))
+@API.Input.json(app_id=fields.String(required=True), desc=PERMISSION_APP_ID)
+@API.Input.json(role=fields.String(required=True), desc=PERMISSION_ROLE)
 def delete(app_id, role):
     status = PermissionController.delete_role_for_user(app_id=app_id, role=role)
     return API.Output.json(data={"status": status})
 
 
 @manager.route('/query', methods=['GET'])
-@API.Input.params(app_id=fields.String(required=True))
+@API.Input.params(app_id=fields.String(required=True), desc=PERMISSION_APP_ID)
 def query(app_id):
     permissions = {}
     for role in PermissionController.get_roles_for_user(app_id=app_id):
@@ -59,9 +60,9 @@ def query_roles():
 
 
 @manager.route('/resource/grant', methods=['post'])
-@API.Input.json(party_id=fields.String(required=True))
-@API.Input.json(component=fields.String(required=False))
-@API.Input.json(dataset=fields.List(fields.Dict(), required=False))
+@API.Input.json(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.json(component=fields.String(required=False), desc=COMPONENT)
+@API.Input.json(dataset=fields.List(fields.Dict(), required=False), desc=DATASET)
 def grant_resource_permission(party_id, component=None, dataset=None):
     parameters = PermissionParameters(party_id=party_id, component=component, dataset=dataset)
     ResourcePermissionController(party_id).grant_or_delete(parameters)
@@ -69,9 +70,9 @@ def grant_resource_permission(party_id, component=None, dataset=None):
 
 
 @manager.route('/resource/delete', methods=['post'])
-@API.Input.json(party_id=fields.String(required=True))
-@API.Input.json(component=fields.String(required=False))
-@API.Input.json(dataset=fields.List(fields.Dict(), required=False))
+@API.Input.json(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.json(component=fields.String(required=False), desc=COMPONENT)
+@API.Input.json(dataset=fields.List(fields.Dict(), required=False), desc=DATASET)
 def delete_resource_permission(party_id, component=None, dataset=None):
     parameters = PermissionParameters(party_id=party_id, component=component, dataset=dataset, is_delete=True)
     ResourcePermissionController(parameters.party_id).grant_or_delete(parameters)
@@ -79,9 +80,9 @@ def delete_resource_permission(party_id, component=None, dataset=None):
 
 
 @manager.route('/resource/query', methods=['get'])
-@API.Input.params(party_id=fields.String(required=True))
-@API.Input.params(component=fields.String(required=False))
-@API.Input.params(dataset=fields.Dict(required=False))
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
+@API.Input.params(component=fields.String(required=False), desc=COMPONENT)
+@API.Input.params(dataset=fields.Dict(required=False), desc=DATASET)
 def query_resource_privilege(party_id, component=None, dataset=None):
     parameters = PermissionParameters(party_id=party_id, component=component, dataset=dataset)
     data = ResourcePermissionController(parameters.party_id).query()
