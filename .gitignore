@@ -39,3 +39,6 @@ venv
 /python/fate_flow/localfs
 /python/fate_flow/*.env
 /python/fate_flow/conf
+/python/build
+/python/dist
+/python/*.egg-info
