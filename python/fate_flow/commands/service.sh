@@ -17,7 +17,7 @@
 #
 
 PROJECT_BASE=$1
-LOG_DIR="/Users/tonly/FATE/fate_flow/logs"
+LOG_DIR=$PROJECT_BASE/logs
 
 
 parse_yaml() {
