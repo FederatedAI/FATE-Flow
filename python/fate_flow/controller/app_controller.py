@@ -93,7 +93,7 @@ class PermissionController(object):
         app_info = AppManager.query_app(app_id=app_id)
         if grant_role == "super_client":
             grant_role = "client"
-        if grant_role != app_info[0].f_app_type:
+        if grant_role and grant_role != app_info[0].f_app_type:
             raise RoleTypeError(role=grant_role)
         return FATE_CASBIN.delete_role_for_suer(app_id, role_type)
 
