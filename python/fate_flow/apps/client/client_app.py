@@ -28,14 +28,14 @@ page_name = APP_MANAGER_PAGE
 @manager.route('/client/create', methods=['POST'])
 @API.Input.json(app_name=fields.String(required=True), desc=APP_NAME)
 def create_client_app(app_name):
-    data = AppManager.create_app(app_name=app_name, app_type=AppType.CLIENT)
+    data = AppManager.create_app(app_name=app_name, app_type=AppType.CLIENT, init=False)
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=data)
 
 
 @manager.route('/client/delete', methods=['POST'])
 @API.Input.json(app_id=fields.String(required=True), desc=APP_ID)
 def delete_client_app(app_id):
-    status = AppManager.delete_app(app_id=app_id, app_type=AppType.CLIENT)
+    status = AppManager.delete_app(app_id=app_id, app_type=AppType.CLIENT, init=False)
     return API.Output.json(data={"status": status})
 
 
@@ -80,7 +80,7 @@ def create_partner_app(party_id, app_id, app_token):
 @manager.route('/partner/delete', methods=['POST'])
 @API.Input.json(party_id=fields.String(required=True), desc=PARTY_ID)
 def delete_partner_app(party_id):
-    status = AppManager.delete_partner_app(party_id=party_id)
+    status = AppManager.delete_partner_app(party_id=party_id, init=False)
     return API.Output.json(data={"status": status})
 
 
