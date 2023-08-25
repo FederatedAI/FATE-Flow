@@ -28,17 +28,17 @@ class AppManager(BaseModelOperate):
     @classmethod
     def init(cls):
         if CLIENT_AUTHENTICATION or SITE_AUTHENTICATION:
-            if cls.query_app(app_name="admin"):
+            if cls.query_app(app_name="admin", init=True):
                 cls._delete(AppInfo, app_name="admin")
-            cls.create_app(app_name="admin", app_id="admin", app_token=ADMIN_KEY, app_type="admin")
-            app_info = cls.create_app(app_name=PARTY_ID, app_id=PARTY_ID, app_type=AppType.SITE)
+            cls.create_app(app_name="admin", app_id="admin", app_token=ADMIN_KEY, app_type="admin", init=True)
+            app_info = cls.create_app(app_name=PARTY_ID, app_id=PARTY_ID, app_type=AppType.SITE, init=True)
             if app_info:
                 cls.create_partner_app(party_id=PARTY_ID, app_id=app_info.get("app_id"),
                                        app_token=app_info.get("app_token"))
 
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
-    @check_permission
+    @check_permission(operate="create", types="client")
     def create_app(cls, app_type, app_name, app_id=None, app_token=None, init=True):
         if not app_id:
             app_id = cls.generate_app_id()
@@ -73,21 +73,21 @@ class AppManager(BaseModelOperate):
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @filter_parameters()
-    @check_permission
-    def delete_app(cls, init=True, **kwargs):
+    @check_permission(operate="delete", types="client")
+    def delete_app(cls, init=False, **kwargs):
         return cls._delete(AppInfo, **kwargs)
 
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @filter_parameters()
-    @check_permission
-    def delete_partner_app(cls, init=True, **kwargs):
+    def delete_partner_app(cls, init=False, **kwargs):
         return cls._delete(PartnerAppInfo, **kwargs)
 
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @filter_parameters()
-    def query_app(cls, **kwargs):
+    @check_permission(operate="query", types="client")
+    def query_app(cls, init=False, **kwargs):
         return cls._query(AppInfo, **kwargs)
 
     @classmethod

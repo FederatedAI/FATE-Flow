@@ -180,15 +180,70 @@ def create_job_request_check(func):
     return _wrapper
 
 
-def check_permission(func):
-    @wraps(func)
-    def _wrapper(*args, **kwargs):
-        _init = kwargs.get("init", False)
-        if not _init:
-            app_id = flask_request.headers.get("Appid")
-            if app_id != "admin":
-                ret = FATE_CASBIN.has_role_for_user(app_id, "super_client")
-                if not ret:
+def check_permission(operate=None, types=None):
+    def _inner(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            _init = kwargs.get("init", False)
+            if not _init:
+                conf_app_id = flask_request.headers.get("Appid")
+                conf_roles_dct = [roles for roles in FATE_CASBIN.get_roles_for_user(conf_app_id)]
+
+                if conf_app_id == "admin":
+                    conf_role = conf_app_id
+                elif len(conf_roles_dct):
+                    if "super_client" in conf_roles_dct:
+                        conf_role = "super_client"
+                    else:
+                        conf_role = "client"
+                else:
                     raise NoPermission
-        return func(*args, **kwargs)
-    return _wrapper
+
+                if types == "client":
+                    app_id = kwargs.get("app_id")
+                    if app_id != "admin":
+                        app_id_role = "super_client" if FATE_CASBIN.has_role_for_user(app_id, "super_client") else "client"
+                    else:
+                        app_id_role = "admin"
+
+                    if operate == "query":
+                        if conf_role == "super_client":
+                            if app_id_role == "super_client" and conf_app_id != app_id:
+                                raise NoPermission
+                            if app_id_role != "client":
+                                raise NoPermission
+                        if conf_role == "client" and conf_app_id != app_id:
+                            raise NoPermission
+                    if operate == "delete" and (app_id == conf_app_id or (conf_role == "super_client" and app_id_role == "admin") or conf_role == "client" ):  # 查询操作
+                        raise NoPermission
+                        # if app_id == conf_app_id: raise NoPermission
+                        # if conf_role == "super_client" and app_id_role == "admin": raise NoPermission
+                        # if conf_role == "client": raise NoPermission
+                    if operate == "create" and conf_role == "client": raise NoPermission
+
+                if types == "permission":
+                    app_id = kwargs.get("app_id")
+                    if app_id != "admin":
+                        app_id_role = FATE_CASBIN.has_role_for_user(app_id, "super_client")
+                        app_id_role = "super_client" if app_id_role else "client"
+                    else:
+                        app_id_role = "admin"
+                    if operate == "query" and conf_role == "client" and conf_app_id != app_id:
+                        raise NoPermission
+                        # if conf_role == "client" and conf_app_id != app_id: raise NoPermission
+                    if operate == "grant":
+                        if conf_role == "admin" and app_id_role == "admin": raise NoPermission
+                        if conf_role == "super_client":
+                            app_id_role_client = FATE_CASBIN.get_roles_for_user(app_id)
+                            if app_id_role_client: raise NoPermission
+                        if conf_role == "client": raise NoPermission
+                    if operate == "delete" and ((conf_role == app_id_role) or
+                                                  (conf_role == "super_client" and app_id_role != "client") or
+                                                  (conf_role == "client")):
+                        raise NoPermission
+                        # if conf_role == app_id_role: raise NoPermission
+                        # if conf_role == "super_client" and app_id_role != "client": raise NoPermission
+                        # if conf_role == "client": raise NoPermission
+            return func(*args, **kwargs)
+        return _wrapper
+    return _inner
