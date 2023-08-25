@@ -236,10 +236,12 @@ def check_permission(operate=None, types=None):
                             if app_id_role_client: raise NoPermission
                             if grant_role == "super_client": raise NoPermission
                         if conf_role == "client": raise NoPermission
-                    if operate == "delete" and ((conf_role == app_id_role) or
-                                                  (conf_role == "super_client" and app_id_role != "client") or
-                                                  (conf_role == "client")):
-                        raise NoPermission
+                    if operate == "delete":
+                        grant_role = kwargs.get("grant_role", None)
+                        if grant_role and conf_role == "super_client" and grant_role == "super_client":raise NoPermission
+                        if conf_role == app_id_role: raise NoPermission
+                        if conf_role == "super_client" and app_id_role != "client":raise NoPermission
+                        if conf_role == "client":raise NoPermission
             return func(*args, **kwargs)
         return _wrapper
     return _inner
