@@ -17,7 +17,7 @@ import hashlib
 import time
 
 from fate_flow.db.casbin_models import FATE_CASBIN
-from fate_flow.errors.server_error import RequestExpired, NoFoundAppid, InvalidParameter
+from fate_flow.errors.server_error import RequestExpired, NoFoundAppid, InvalidParameter, RoleTypeError
 from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import CLIENT_AUTHENTICATION, SITE_AUTHENTICATION
@@ -76,7 +76,7 @@ class PermissionController(object):
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @AppManager.check_app_id
-    @check_permission
+    @check_permission(operate="grant", types="permission")
     @AppManager.check_app_type
     def add_role_for_user(app_id, role, init=False):
         PermissionController.check_permission_role(role)
@@ -85,15 +85,22 @@ class PermissionController(object):
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @AppManager.check_app_id
-    @check_permission
-    @AppManager.check_app_type
-    def delete_role_for_user(app_id, role):
+    @check_permission(operate="delete", types="permission")
+    # @AppManager.check_app_type
+    def delete_role_for_user(app_id, role, grant_role=None, init=False):
+        role_type = role
         PermissionController.check_permission_role(role)
-        return FATE_CASBIN.delete_role_for_suer(app_id, role)
+        app_info = AppManager.query_app(app_id=app_id)
+        if grant_role == "super_client":
+            grant_role = "client"
+        if grant_role and grant_role != app_info[0].f_app_type:
+            raise RoleTypeError(role=grant_role)
+        return FATE_CASBIN.delete_role_for_suer(app_id, role_type)
 
     @staticmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @AppManager.check_app_id
+    @check_permission(operate="query", types="permission")
     def get_roles_for_user(app_id):
         return FATE_CASBIN.get_roles_for_user(app_id)
 
