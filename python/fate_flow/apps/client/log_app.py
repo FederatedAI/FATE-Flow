@@ -39,7 +39,7 @@ def count(log_type, job_id, role=None, party_id=None, task_name=None):
 @API.Input.params(job_id=fields.String(required=True), desc=JOB_ID)
 @API.Input.params(role=fields.String(required=True), desc=ROLE)
 @API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
-@API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
+@API.Input.params(task_name=fields.String(required=False), desc=TASK_NAME)
 @API.Input.params(begin=fields.Integer(required=False), desc=BEGIN)
 @API.Input.params(end=fields.Integer(required=False), desc=END)
 @API.Input.params(instance_id=fields.String(required=False), desc=INSTANCE_ID)
