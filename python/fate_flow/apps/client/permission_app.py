@@ -32,7 +32,7 @@ page_name = PERMISSION_MANAGER_PAGE
 @API.Input.json(role=fields.String(required=True), desc=PERMISSION_ROLE)
 def grant(app_id, role):
     for roles in PermissionController.get_roles_for_user(app_id=app_id):
-        PermissionController.delete_role_for_user(app_id=app_id, role=roles)
+        PermissionController.delete_role_for_user(app_id=app_id, role=roles, grant_role=role)
     status = PermissionController.add_role_for_user(app_id=app_id, role=role)
     return API.Output.json(data={"status": status})
 
