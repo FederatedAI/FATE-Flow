@@ -1,9 +1,33 @@
 ## 快速入门
 
 ### 1. 环境部署
-##### 1.1 源码部署
-##### 1.2 单机版部署
-##### 1.3 集群部署
+#### 1.1 Pypi包
+说明：此方式的运行模式为单机模式
+##### 1.1.1 安装
+- 安装fate flow
+```shell
+pip install fate_flow
+```
+- 安装fate 
+```shell
+pip install fate
+```
+说明：当前仅支持linux、macos版本。windows某些依赖可能装不上
+##### 1.1.2 服务初始化
+```shell
+fate_flow init --ip 127.0.0.1 --port 9380 --home /data
+```
+- ip: 服务运行ip
+- port：服务运行时的http端口
+- home: 数据存储目录。主要包括：数据/模型/日志/作业配置/sqlite.db等内容
+
+##### 1.1.3 服务启停
+```shell
+fate_flow status/start/stop/restart
+```
+
+#### 1.2 单机版部署
+#### 1.3 集群部署
 
 ### 2. 使用指南
 fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以使用`pip install fate_client==2.0.0.beta`下载。以下的使用操作均基于cli编写，你也可以通过SDK或者Pipeline中找到对应的操作接口。
