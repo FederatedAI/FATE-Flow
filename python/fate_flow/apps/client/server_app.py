@@ -24,8 +24,8 @@ from fate_flow.utils.api_utils import API
 
 @manager.route('/fateflow', methods=['GET'])
 def fate_flow_server_info():
-    data = RuntimeConfig.SERVICE_DB.get_servers()
-    return API.Output.json(data=data)
+    datas = RuntimeConfig.SERVICE_DB.get_servers(to_dict=True)
+    return API.Output.json(data=datas)
 
 
 @manager.route('/query/all', methods=['GET'])
