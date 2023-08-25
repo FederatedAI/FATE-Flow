@@ -18,6 +18,7 @@ import os
 from grpc._cython import cygrpc
 
 from fate_flow.entity.types import ComputingEngine
+from fate_flow.runtime.env import is_in_virtualenv
 from fate_flow.utils import engine_utils, file_utils
 from fate_flow.utils.conf_utils import get_base_config
 from fate_flow.utils.file_utils import get_project_base_directory, get_fate_flow_directory
@@ -35,7 +36,6 @@ PERMISSION_MANAGER_PAGE = "permission"
 APP_MANAGER_PAGE = "app"
 
 ADMIN_PAGE = [PERMISSION_MANAGER_PAGE, APP_MANAGER_PAGE]
-TEMP_DIRECTORY = os.path.join(get_fate_flow_directory(), "temp")
 FATE_FLOW_CONF_PATH = os.path.join(get_fate_flow_directory(), "conf")
 
 FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_CONF_PATH, "job_default_config.yaml")
@@ -73,7 +73,7 @@ IGNORE_RESOURCE_ROLES = {"arbiter"}
 SUPPORT_IGNORE_RESOURCE_ENGINES = {
     ComputingEngine.EGGROLL, ComputingEngine.STANDALONE
 }
-DEFAULT_FATE_PROVIDER_PATH = get_project_base_directory("python")
+DEFAULT_FATE_PROVIDER_PATH = (DEFAULT_FATE_DIR or get_project_base_directory("python")) if not is_in_virtualenv() else ""
 
 HEADERS = {
     "Content-Type": "application/json",

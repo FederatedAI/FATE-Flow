@@ -59,6 +59,8 @@ def run_subprocess(
     subprocess_env["PROCESS_ROLE"] = ProcessRole.WORKER.value
     if added_env:
         for name, value in added_env.items():
+            if not value:
+                continue
             if name.endswith("PATH") and subprocess_env.get(name) is not None:
                 value += ':' + subprocess_env[name]
             subprocess_env[name] = value

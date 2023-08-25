@@ -25,9 +25,11 @@ from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.hub.provider import EntrypointABC
 from fate_flow.runtime.system_settings import DEFAULT_FATE_PROVIDER_PATH, DEFAULT_PROVIDER, FATE_FLOW_PROVIDER_PATH
 from fate_flow.runtime.component_provider import ComponentProvider
+from fate_flow.utils.log import getLogger
 from fate_flow.utils.version import get_versions, get_default_fate_version, get_flow_version
 from fate_flow.utils.wraps_utils import filter_parameters
 
+stat_logger = getLogger("fate_flow_stat")
 
 class ProviderManager(BaseModelOperate):
     @classmethod
@@ -106,8 +108,11 @@ class ProviderManager(BaseModelOperate):
     def register_default_providers(cls):
         # register fate flow
         cls.register_provider(cls.get_fate_flow_provider())
-        # register fate
-        cls.register_provider(cls.get_default_fate_provider())
+        # try to register fate
+        try:
+            cls.register_provider(cls.get_default_fate_provider())
+        except Exception as e:
+            stat_logger.exception(e)
 
     @classmethod
     def get_all_components(cls):
@@ -127,8 +132,6 @@ class ProviderManager(BaseModelOperate):
 
     @classmethod
     def get_default_fate_provider(cls):
-        if not os.path.exists(DEFAULT_FATE_PROVIDER_PATH):
-            raise Exception(f"default fate provider not exists: {DEFAULT_FATE_PROVIDER_PATH}")
         return cls.get_provider(
             name="fate",
             version=get_default_fate_version(),
