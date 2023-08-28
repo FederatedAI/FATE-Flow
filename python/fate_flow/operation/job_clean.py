@@ -55,22 +55,14 @@ class JobClean(object):
                                                                                    task.f_party_id,
                                                                                    task.f_component_name))
                     stat_logger.exception(e)
-                try:
-                    # clean metric data
-                    stat_logger.info('start delete {} {} {} {} metric data'.format(task.f_job_id, task.f_role,
-                                                                                   task.f_party_id,
-                                                                                   task.f_component_name))
-                    delete_metric_data({'job_id': task.f_job_id,
-                                        'role': task.f_role,
-                                        'party_id': task.f_party_id,
-                                        'component_name': task.f_component_name})
-                    stat_logger.info('delete {} {} {} {} metric data success'.format(task.f_job_id, task.f_role,
-                                                                                     task.f_party_id,
-                                                                                     task.f_component_name))
-                except Exception as e:
-                    stat_logger.info('delete {} {} {} {} metric data failed'.format(task.f_job_id, task.f_role,
-                                                                                    task.f_party_id,
-                                                                                    task.f_component_name))
-                    stat_logger.exception(e)
+            # according to job_id to clean metric data
+            try:
+                # clean metric data
+                stat_logger.info('start delete {} metric data'.format(kwargs["job_id"]))
+                delete_metric_data({'job_id': kwargs["job_id"]})
+                stat_logger.info('delete {} metric data success'.format(kwargs["job_id"]))
+            except Exception as e:
+                stat_logger.info('delete {} metric data failed'.format(kwargs["job_id"]))
+                stat_logger.exception(e)
         else:
             raise Exception('no found task')

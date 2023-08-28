@@ -402,7 +402,7 @@ def delete_metric_data_from_db(metric_info):
 
 def get_delete_filters(tracking_metric_model, metric_info):
     delete_filters = []
-    primary_keys = ["job_id", "role", "party_id", "component_name"]
+    primary_keys = ["job_id"]
     for key in primary_keys:
         if key in metric_info:
             delete_filters.append(operator.attrgetter("f_%s" % key)(tracking_metric_model) == metric_info[key])
