@@ -14,7 +14,12 @@ def authentication(parm: AuthenticationParameters) -> AuthenticationReturn:
     signature = parm.headers.get("Signature")
     check_parameters(app_id, user_name, timestamp, nonce, signature)
     if Authentication.md5_verify(app_id, timestamp, nonce, signature, user_name):
-        if PermissionController.enforcer(app_id, parm.path, parm.method):
+        exists_permission = False
+        for roles in PermissionController.get_roles_for_user(app_id=app_id):
+            if PermissionController.enforcer(app_id, parm.path, parm.method, roles):
+                exists_permission = True
+                break
+        if exists_permission:
             return AuthenticationReturn(code=ReturnCode.Base.SUCCESS, message="success")
         else:
             return AuthenticationReturn(code=ReturnCode.API.AUTHENTICATION_FAILED,
