@@ -1,9 +1,33 @@
 ## 快速入门
 
 ### 1. 环境部署
-##### 1.1 源码部署
-##### 1.2 单机版部署
-##### 1.3 集群部署
+#### 1.1 Pypi包
+说明：此方式的运行模式为单机模式
+##### 1.1.1 安装
+- 安装fate flow
+```shell
+pip install fate_flow
+```
+- 安装fate 
+```shell
+pip install fate
+```
+说明：当前仅支持linux、macos版本。windows某些依赖可能装不上
+##### 1.1.2 服务初始化
+```shell
+fate_flow init --ip 127.0.0.1 --port 9380 --home /data
+```
+- ip: 服务运行ip
+- port：服务运行时的http端口
+- home: 数据存储目录。主要包括：数据/模型/日志/作业配置/sqlite.db等内容
+
+##### 1.1.3 服务启停
+```shell
+fate_flow status/start/stop/restart
+```
+
+#### 1.2 单机版部署
+#### 1.3 集群部署
 
 ### 2. 使用指南
 fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以使用`pip install fate_client==2.0.0.beta`下载。以下的使用操作均基于cli编写，你也可以通过SDK或者Pipeline中找到对应的操作接口。
@@ -13,7 +37,7 @@ fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部�
 - transformer: 将数据转化成dataframe
 ##### 2.1.1 upload
 ##### 2.1.1.1 配置及数据
- - 上传配置位于[upload-examples](../examples/upload)，上传数据位于[upload-data](../examples/data)
+ - 上传配置位于[examples-upload](../examples/upload)，上传数据位于[upload-data](../examples/data)
  - 你也可以使用自己的数据，并修改upload配置中的"meta"信息。
 ##### 2.1.1.2 上传guest方数据
 ```shell
@@ -85,7 +109,7 @@ flow table query --namespace upload --name 36491bc8-3fef-11ee-be05-16b977118319
 
 ##### 2.1.2 transformer
 ##### 2.1.2.1 配置
- - transformer配置位于[transformer-examples](../examples/transformer)
+ - transformer配置位于[examples-transformer](../examples/transformer)
 ##### 2.1.2.2 transformer guest
 - 配置路径位于： examples/transformer/transformer_guest.json
 - 修改配置中"data_warehouse"的"namespace"和"name"：上面upload guest阶段的输出
@@ -116,10 +140,10 @@ flow data transformer -c examples/transformer/transformer_host.json
 
 因为transformer也是异步操作，需要确认是否上传成功才可进行后续操作。
 ```shell
-flow table query --namespace breast_hetero_guest --name experiment
+flow table query --namespace experiment  --name breast_hetero_guest
 ```
 ```shell
-flow table query --namespace breast_hetero_host --name experiment
+flow table query --namespace experiment  --name breast_hetero_host
 ```
 若返回的code为0即为上传成功。
 
