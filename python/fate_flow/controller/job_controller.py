@@ -18,6 +18,7 @@ import shutil
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.db import Job
+from fate_flow.engine.storage import Session
 from fate_flow.entity.spec.dag import DAGSchema, JobConfSpec, InheritConfSpec
 from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
 from fate_flow.entity.code import ReturnCode
@@ -267,7 +268,13 @@ class JobController(object):
 
     @classmethod
     def clean_job(cls, job_id):
+        jobs = JobSaver.query_job(job_id=job_id)
         tasks = JobSaver.query_task(job_id=job_id)
+        if not jobs:
+            raise NoFoundJob(job_id=job_id)
+        FederatedScheduler.request_stop_job(
+            party_id=jobs[0].f_scheduler_party_id,job_id=jobs[0].f_job_id, stop_status=JobStatus.CANCELED
+        )
         for task in tasks:
             # metric
             try:
@@ -280,7 +287,22 @@ class JobController(object):
                 pass
 
             # data
-            # todo
+            try:
+                datas = OutputDataTracking.query(
+                    job_id=task.f_job_id,
+                    role=task.f_role,
+                    party_id=task.f_party_id,
+                    task_name=task.f_task_name,
+                    task_id=task.f_task_id,
+                    task_version=task.f_task_version
+                )
+                with Session() as sess:
+                    for data in datas:
+                        table = sess.get_table(name=data.f_name, namespace=data.f_namespace)
+                        if table:
+                            table.destroy()
+            except Exception as e:
+                pass
 
             # model
             try:
@@ -290,7 +312,7 @@ class JobController(object):
                                                     f' {task.f_task_name} model success')
             except Exception as e:
                 pass
-        JobSaver.delete_job(job_id=job_id)
+        # JobSaver.delete_job(job_id=job_id)
 
     @staticmethod
     def add_notes(job_id, role, party_id, notes):
