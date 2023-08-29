@@ -17,17 +17,15 @@
 import json
 import os
 
-from cachetools import LRUCache, cached
 from ruamel import yaml
 
+from fate_flow.runtime.env import is_in_virtualenv
+
 PROJECT_BASE = os.getenv("FATE_PROJECT_BASE") or os.getenv("FATE_DEPLOY_BASE")
-FATE_BASE = os.getenv("FATE_BASE")
-READTHEDOC = os.getenv("READTHEDOC")
 
 
 def get_project_base_directory(*args):
     global PROJECT_BASE
-    global READTHEDOC
     if PROJECT_BASE is None:
         PROJECT_BASE = os.path.abspath(
             os.path.join(
@@ -36,96 +34,42 @@ def get_project_base_directory(*args):
                 os.pardir,
             )
         )
-        if READTHEDOC is None:
-            PROJECT_BASE = os.path.abspath(
-                os.path.join(
-                    PROJECT_BASE,
-                    os.pardir,
-                )
-            )
     if args:
         return os.path.join(PROJECT_BASE, *args)
     return PROJECT_BASE
 
 
 def get_fate_flow_directory(*args):
-    FATE_FLOW_BASE = os.path.abspath(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            os.pardir,
-            os.pardir,
-            os.pardir,
+    if is_in_virtualenv():
+        fate_flow_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                os.pardir
+            )
         )
-    )
+    else:
+        fate_flow_dir = os.path.abspath(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                os.pardir,
+                os.pardir,
+                os.pardir,
+            )
+        )
     if args:
-        return os.path.join(FATE_FLOW_BASE, *args)
-    return FATE_FLOW_BASE
-
-
-@cached(cache=LRUCache(maxsize=10))
-def load_json_conf(conf_path):
-    if os.path.isabs(conf_path):
-        json_conf_path = conf_path
-    else:
-        json_conf_path = os.path.join(get_project_base_directory(), conf_path)
-    try:
-        with open(json_conf_path) as f:
-            return json.load(f)
-    except BaseException:
-        raise EnvironmentError(
-            "loading json file config from '{}' failed!".format(json_conf_path)
-        )
-
-
-def dump_json_conf(config_data, conf_path):
-    if os.path.isabs(conf_path):
-        json_conf_path = conf_path
-    else:
-        json_conf_path = os.path.join(get_project_base_directory(), conf_path)
-    try:
-        with open(json_conf_path, "w") as f:
-            json.dump(config_data, f, indent=4)
-    except BaseException:
-        raise EnvironmentError(
-            "loading json file config from '{}' failed!".format(json_conf_path)
-        )
-
-
-def load_json_conf_real_time(conf_path):
-    if os.path.isabs(conf_path):
-        json_conf_path = conf_path
-    else:
-        json_conf_path = os.path.join(get_project_base_directory(), conf_path)
-    try:
-        with open(json_conf_path) as f:
-            return json.load(f)
-    except BaseException:
-        raise EnvironmentError(
-            "loading json file config from '{}' failed!".format(json_conf_path)
-        )
+        return os.path.join(fate_flow_dir, *args)
+    return fate_flow_dir
 
 
 def load_yaml_conf(conf_path):
     if not os.path.isabs(conf_path):
-        conf_path = os.path.join(get_project_base_directory(), conf_path)
+        conf_path = os.path.join(get_fate_flow_directory(), conf_path)
     try:
         with open(conf_path) as f:
             return yaml.safe_load(f)
     except Exception as e:
         raise EnvironmentError(
             "loading yaml file config from {} failed:".format(conf_path), e
-        )
-
-
-def rewrite_yaml_conf(conf_path, config):
-    if not os.path.isabs(conf_path):
-        conf_path = os.path.join(get_project_base_directory(), conf_path)
-    try:
-        with open(conf_path, "w") as f:
-            yaml.dump(config, f, Dumper=yaml.RoundTripDumper)
-    except Exception as e:
-        raise EnvironmentError(
-            "rewrite yaml file config {} failed:".format(conf_path), e
         )
 
 
