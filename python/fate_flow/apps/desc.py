@@ -45,6 +45,7 @@ NAME = "Name of the data table"
 DATA_WAREHOUSE = "Data output, content like: {name: xxx, namespace: xxx}"
 DROP = "Whether to destroy data if it already exists"
 DOWNLOAD_HEADER = "Whether to download the data's head as the first row"
+DOWN_TYPE = "Data Download Type"
 
 # output
 FILTERS = "Filter conditions"
