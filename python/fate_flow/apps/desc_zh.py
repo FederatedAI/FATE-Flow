@@ -45,7 +45,7 @@ NAME = "数据表名"
 DATA_WAREHOUSE = "数据输出，内容如:{name: xxx, namespace: xxx}"
 DROP = "当数据存在时是否需要先销毁"
 DOWNLOAD_HEADER = "是否需要下载数据的Head作为第一行"
-DOWNLOAD_TYPE = "下载方式：同步,异步"
+DOWN_TYPE = "下载方式：同步,异步"
 
 # output
 FILTERS = "过滤条件"
