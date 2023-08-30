@@ -21,24 +21,25 @@ from fate_flow.errors.server_error import NoFoundAppid, RoleTypeError
 from fate_flow.runtime.system_settings import ADMIN_KEY, CLIENT_AUTHENTICATION, APP_TOKEN_LENGTH, SITE_AUTHENTICATION, \
     PARTY_ID
 from fate_flow.utils.base_utils import generate_random_id
-from fate_flow.utils.wraps_utils import filter_parameters, switch_function
+from fate_flow.utils.wraps_utils import filter_parameters, switch_function, check_permission
 
 
 class AppManager(BaseModelOperate):
     @classmethod
     def init(cls):
         if CLIENT_AUTHENTICATION or SITE_AUTHENTICATION:
-            if cls.query_app(app_name="admin"):
+            if cls.query_app(app_name="admin", init=True):
                 cls._delete(AppInfo, app_name="admin")
-            cls.create_app(app_name="admin", app_id="admin", app_token=ADMIN_KEY, app_type="admin")
-            app_info = cls.create_app(app_name=PARTY_ID, app_id=PARTY_ID, app_type=AppType.SITE)
+            cls.create_app(app_name="admin", app_id="admin", app_token=ADMIN_KEY, app_type="admin", init=True)
+            app_info = cls.create_app(app_name=PARTY_ID, app_id=PARTY_ID, app_type=AppType.SITE, init=True)
             if app_info:
                 cls.create_partner_app(party_id=PARTY_ID, app_id=app_info.get("app_id"),
                                        app_token=app_info.get("app_token"))
 
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
-    def create_app(cls, app_type, app_name, app_id=None, app_token=None):
+    @check_permission(operate="create", types="client")
+    def create_app(cls, app_type, app_name, app_id=None, app_token=None, init=True):
         if not app_id:
             app_id = cls.generate_app_id()
         if not app_token:
@@ -72,19 +73,21 @@ class AppManager(BaseModelOperate):
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @filter_parameters()
-    def delete_app(cls, **kwargs):
+    @check_permission(operate="delete", types="client")
+    def delete_app(cls, init=False, **kwargs):
         return cls._delete(AppInfo, **kwargs)
 
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @filter_parameters()
-    def delete_partner_app(cls, **kwargs):
+    def delete_partner_app(cls, init=False, **kwargs):
         return cls._delete(PartnerAppInfo, **kwargs)
 
     @classmethod
     @switch_function(CLIENT_AUTHENTICATION or SITE_AUTHENTICATION)
     @filter_parameters()
-    def query_app(cls, **kwargs):
+    @check_permission(operate="query", types="client")
+    def query_app(cls, init=False, **kwargs):
         return cls._query(AppInfo, **kwargs)
 
     @classmethod
