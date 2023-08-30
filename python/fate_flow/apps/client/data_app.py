@@ -66,10 +66,10 @@ def transformer_data(data_warehouse, namespace, name, drop=True):
 @API.Input.params(namespace=fields.String(required=True), desc=NAMESPACE)
 @API.Input.params(header=fields.String(required=False), desc=HEAD)
 @API.Input.params(path=fields.String(required=False), desc=SERVER_FILE_PATH)
-@API.Input.params(sync=fields.String(required=False), desc=DOWN_TYPE)
-def download(namespace, name, header=None, path=None, sync=True):
+@API.Input.params(types=fields.String(required=False), desc=DOWN_TYPE)
+def download(namespace, name, header=None, path=None, types=None):
     data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
-    if sync:
+    if types == "sync":
         return DataManager.send_table(
                 output_tables_meta={"data": data_table_meta},
                 tar_file_name=f'download_data_{namespace}_{name}.tar.gz',
