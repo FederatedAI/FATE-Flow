@@ -207,12 +207,15 @@ class TaskController(object):
         kill_status = False
         try:
             # kill task executor
-            backend_engine = build_engine(
-                task.f_engine_conf.get("computing_engine"),
-                task.f_is_deepspeed
-                )
-            if backend_engine:
-                backend_engine.kill(task)
+            try:
+                backend_engine = build_engine(
+                    task.f_engine_conf.get("computing_engine"),
+                    task.f_is_deepspeed
+                    )
+                if backend_engine:
+                    backend_engine.kill(task)
+            except Exception as e:
+                schedule_logger(task.f_job_id).exception(e)
             WorkerManager.kill_task_all_workers(task)
         except Exception as e:
             schedule_logger(task.f_job_id).exception(e)
