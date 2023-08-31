@@ -69,7 +69,7 @@ class Detector(Cron):
                     process_exist = build_engine(task.f_engine_conf.get("computing_engine")).is_alive(task)
                     if not process_exist:
                         msg = f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id}"
-                        detect_logger(job_id=task.f_job_id).info(f"{msg} with {task.f_party_status} process {task.f_run_pid} does not exist")
+                        detect_logger(job_id=task.f_job_id).error(f"{msg} with {task.f_party_status} process {task.f_run_pid} does not exist")
                         time.sleep(3)
                         _tasks = JobSaver.query_task(task_id=task.f_task_id, task_version=task.f_task_version, role=task.f_role, party_id=task.f_party_id)
                         if _tasks:
