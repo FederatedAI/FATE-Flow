@@ -89,7 +89,7 @@ class LocalEngine(object):
         self._cleanup2(provider_name, task_info, config, **kwargs)
 
     @staticmethod
-    def generate_component_run_cmd(provider_name, output_path=""):
+    def generate_component_run_cmd(provider_name, conf_path, output_path=""):
         if provider_name == ProviderName.FATE:
             from fate_flow.worker.fate_executor import FateSubmit
             module_file_path = sys.modules[FateSubmit.__module__].__file__
@@ -105,8 +105,8 @@ class LocalEngine(object):
             module_file_path,
             "component",
             "execute",
-            "--env-name",
-            "FATE_TASK_CONFIG",
+            "--config",
+            conf_path,
             "--execution-final-meta-path",
             output_path
         ]
