@@ -29,7 +29,7 @@ class EggrollEngine(LocalEngine):
             parameters.conf.computing.metadata.options.update(engine_run)
             with open(conf_path, "w") as f:
                 # update parameters
-                yaml.dump(parameters, f)
+                yaml.dump(parameters.dict(), f)
         return WorkerManager.start_task_worker(
             worker_name=WorkerName.TASK_EXECUTE,
             task_info=task_info,
