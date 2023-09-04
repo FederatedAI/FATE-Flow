@@ -1,0 +1,7 @@
+{
+  "party_id": "9999",
+  "component": "reader",
+  "dataset": [{
+    "name": "xxx", "namespace": "xxx"
+  }]
+}

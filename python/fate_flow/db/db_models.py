@@ -75,6 +75,7 @@ class Task(DataBaseModel):
     f_task_run = JSONField(null=True)
     f_memory = IntegerField(default=0)
     f_task_cores = IntegerField(default=0)
+    f_resource_in_use = BooleanField(default=False)
 
     f_worker_id = CharField(null=True, max_length=100)
     f_cmd = JSONField(null=True)
