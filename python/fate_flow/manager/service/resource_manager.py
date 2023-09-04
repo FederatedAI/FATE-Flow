@@ -16,7 +16,7 @@
 from pydantic import typing
 
 from fate_flow.db.base_models import DB
-from fate_flow.db.db_models import EngineRegistry, Job
+from fate_flow.db.db_models import EngineRegistry, Job, Task
 from fate_flow.entity.types import EngineType, ResourceOperation
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import IGNORE_RESOURCE_ROLES, ENGINES
@@ -157,19 +157,46 @@ class ResourceManager(object):
     @DB.connection_context()
     def resource_for_task(cls, task_info, operation_type):
         cores_per_task, memory_per_task = cls.query_task_resource(task_info=task_info)
-        schedule_logger(task_info["job_id"]).info(f"cores_per_task:{cores_per_task}, memory_per_task:{memory_per_task}")
+        schedule_logger(task_info["job_id"]).info(f"{operation_type} cores_per_task:{cores_per_task}, memory_per_task:{memory_per_task}")
+        operate_status = False
         if cores_per_task or memory_per_task:
-            filters, updates = cls.update_resource_sql(resource_model=Job,
-                                                       cores=cores_per_task,
-                                                       memory=memory_per_task,
-                                                       operation_type=operation_type,
-                                                       )
-            filters.append(Job.f_job_id == task_info["job_id"])
-            filters.append(Job.f_role == task_info["role"])
-            filters.append(Job.f_party_id == task_info["party_id"])
-            filters.append(Job.f_resource_in_use == True)
-            operate = Job.update(updates).where(*filters)
-            operate_status = operate.execute() > 0
+            try:
+                with DB.atomic():
+                    updates = {}
+                    filters = [
+                        Task.f_job_id == task_info["job_id"],
+                        Task.f_role == task_info["role"],
+                        Task.f_party_id == task_info["party_id"],
+                        Task.f_task_id == task_info["task_id"],
+                        Task.f_task_version == task_info["task_version"]
+                    ]
+                    if operation_type is ResourceOperation.APPLY:
+                        updates[Task.f_resource_in_use] = True
+                        filters.append(Task.f_resource_in_use == False)
+                    elif operation_type is ResourceOperation.RETURN:
+                        updates[Task.f_resource_in_use] = False
+                        filters.append(Task.f_resource_in_use == True)
+                    operate = Task.update(updates).where(*filters)
+                    record_status = operate.execute() > 0
+                    if not record_status:
+                        raise RuntimeError(f"record task {task_info['task_id']} {task_info['task_version']} resource"
+                                           f"{operation_type} failed on {{task_info['role']}} {{task_info['party_id']}}")
+                    filters, updates = cls.update_resource_sql(resource_model=Job,
+                                                               cores=cores_per_task,
+                                                               memory=memory_per_task,
+                                                               operation_type=operation_type,
+                                                               )
+                    filters.append(Job.f_job_id == task_info["job_id"])
+                    filters.append(Job.f_role == task_info["role"])
+                    filters.append(Job.f_party_id == task_info["party_id"])
+                    filters.append(Job.f_resource_in_use == True)
+                    operate = Job.update(updates).where(*filters)
+                    operate_status = operate.execute() > 0
+                    if not operate_status:
+                        raise RuntimeError(f"record task {task_info['task_id']} {task_info['task_version']} job resource "
+                                           f"{operation_type} failed on {{task_info['role']}} {{task_info['party_id']}}")
+            except:
+                operate_status = False
         else:
             operate_status = True
         if operate_status:
