@@ -153,6 +153,9 @@ class DAGScheduler(JobSchedulerABC):
                 task_run["num-executors"] = default_task_run.get("num-executors")
             if "executor-cores" not in task_run:
                 task_run["executor-cores"] = default_task_run.get("executor-cores")
+            if role in IGNORE_RESOURCE_ROLES:
+                task_run["num-executors"] = 1
+                task_run["executor-cores"] = 1
             task_cores = int(task_run.get("num-executors")) * (task_run.get("executor-cores"))
             if task_cores > cores:
                 cores = task_cores
@@ -164,13 +167,17 @@ class DAGScheduler(JobSchedulerABC):
                 ComputingEngine.EGGROLL).get("nodes")
             if task_cores > cores:
                 cores = task_cores
+            if role in IGNORE_RESOURCE_ROLES:
+                task_run["eggroll.session.processors.per.node"] = 1
         if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.STANDALONE:
             if "cores" not in task_run:
                 task_run["cores"] = default_task_run.get("cores")
             task_cores = int(task_run.get("cores"))
             if task_cores > cores:
                 cores = task_cores
-        if role == IGNORE_RESOURCE_ROLES:
+            if role in IGNORE_RESOURCE_ROLES:
+                task_run["cores"] = 1
+        if role in IGNORE_RESOURCE_ROLES:
             cores = 0
             task_cores = 0
         return cores, task_run, task_cores
