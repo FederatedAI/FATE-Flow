@@ -21,7 +21,7 @@ from fate_flow.entity.types import ComputingEngine
 from fate_flow.runtime.env import is_in_virtualenv
 from fate_flow.utils import engine_utils, file_utils
 from fate_flow.utils.conf_utils import get_base_config
-from fate_flow.utils.file_utils import get_project_base_directory, get_fate_flow_directory
+from fate_flow.utils.file_utils import get_fate_flow_directory, get_fate_python_path
 
 from fate_flow.settings import *
 
@@ -73,8 +73,7 @@ IGNORE_RESOURCE_ROLES = {"arbiter"}
 SUPPORT_IGNORE_RESOURCE_ENGINES = {
     ComputingEngine.EGGROLL, ComputingEngine.STANDALONE
 }
-DEFAULT_FATE_PROVIDER_PATH = (DEFAULT_FATE_DIR or get_project_base_directory("python")) if not is_in_virtualenv() else ""
-
+DEFAULT_FATE_PROVIDER_PATH = (DEFAULT_FATE_DIR or get_fate_python_path()) if not is_in_virtualenv() else ""
 HEADERS = {
     "Content-Type": "application/json",
     "Connection": "close",
