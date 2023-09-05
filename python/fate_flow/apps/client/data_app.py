@@ -16,7 +16,7 @@
 from webargs import fields
 
 from fate_flow.apps.desc import SERVER_FILE_PATH, HEAD, PARTITIONS, META, EXTEND_SID, NAMESPACE, NAME, DATA_WAREHOUSE, \
-    DROP, DOWN_TYPE
+    DROP
 from fate_flow.engine import storage
 from fate_flow.manager.components.component_manager import ComponentManager
 from fate_flow.manager.data.data_manager import DataManager
