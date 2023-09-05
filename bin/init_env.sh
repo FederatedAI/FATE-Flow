@@ -18,7 +18,7 @@
 
 fate_project_base=$(cd `dirname "$(realpath "${BASH_SOURCE[0]:-${(%):-%x}}")"`; cd ../;cd ../;pwd)
 export FATE_PROJECT_BASE=$fate_project_base
-export FATE_DEPLOY_BASE=$fate_project_base
+export FATE_PYTHONPATH=
 export EGGROLL_HOME=
 export PYTHONPATH=
 export FATE_ENV=
