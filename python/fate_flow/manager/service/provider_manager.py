@@ -46,10 +46,10 @@ class ProviderManager(BaseModelOperate):
     def get_provider(cls, name, device, version, metadata, check=False) -> Union[ComponentProvider, None]:
         if device == ProviderDevice.LOCAL:
             metadata = LocalProviderSpec(check, **metadata)
-        elif type == ProviderDevice.DOCKER:
-            metadata = DockerProviderSpec(check,**metadata)
-        elif type == ProviderDevice.K8S:
-            metadata = K8sProviderSpec(check,**metadata)
+        elif device == ProviderDevice.DOCKER:
+            metadata = DockerProviderSpec(check, **metadata)
+        elif device == ProviderDevice.K8S:
+            metadata = K8sProviderSpec(check, **metadata)
         else:
             return None
         return ComponentProvider(ProviderSpec(name=name, device=device, version=version, metadata=metadata))
