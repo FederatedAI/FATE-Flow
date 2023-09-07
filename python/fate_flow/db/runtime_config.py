@@ -38,6 +38,7 @@ class RuntimeConfig(ReloadConfigBase):
     SERVICE_DB = None
     LOAD_COMPONENT_REGISTRY = False
     LOAD_CONFIG_MANAGER = False
+    SESSION_LIST = []
 
     @classmethod
     def init_config(cls, **kwargs):
