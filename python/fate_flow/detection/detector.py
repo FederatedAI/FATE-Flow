@@ -225,12 +225,12 @@ class Detector(Cron):
         detect_logger().info(f'start detect expired session by ttl {ttl/1000} s')
         try:
             session_records = Session.query_sessions(create_time=[None, current_timestamp() - ttl])
-            manager_session_id_list = []
             for session_record in session_records:
                 manager_session_id = session_record.f_manager_session_id
-                if manager_session_id in manager_session_id_list:
+                if manager_session_id in RuntimeConfig.SESSION_LIST:
                     continue
-                manager_session_id_list.append(manager_session_id)
+                else:
+                    RuntimeConfig.SESSION_LIST.append(manager_session_id)
                 detect_logger().info(f'start destroy session {manager_session_id}')
                 try:
                     sess = Session(session_id=manager_session_id, options={"logger": detect_logger()})
@@ -238,6 +238,10 @@ class Detector(Cron):
                 except Exception as e:
                     detect_logger().error(f'stop session {manager_session_id} error', e)
                 finally:
+                    try:
+                        RuntimeConfig.SESSION_LIST.remove(manager_session_id)
+                    except:
+                        pass
                     detect_logger().info(f'stop session {manager_session_id} successfully')
         except Exception as e:
             detect_logger().error('detect expired session error', e)
