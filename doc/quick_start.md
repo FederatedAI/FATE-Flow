@@ -1,21 +1,25 @@
 ## 快速入门
 
 ### 1. 环境部署
-#### 1.1 Pypi包
+以下三种模式可根据需求自行选择一种
+#### 1.1 Pypi包安装
 说明：此方式的运行模式为单机模式
 ##### 1.1.1 安装
+- [conda](https://docs.conda.io/projects/miniconda/en/latest/)环境准备及安装
+- 创建虚拟环境
+```shell
+# fate的运行环境为python>=3.8
+conda create -n fate_env python=3.8
+conda activate fate_env
+```
 - 安装fate flow
 ```shell
-pip install fate_flow
+pip install fate_flow[fate,fate_cliet]
 ```
-- 安装fate 
-```shell
-pip install fate
-```
-说明：当前仅支持linux、macos版本。windows某些依赖可能装不上
+
 ##### 1.1.2 服务初始化
 ```shell
-fate_flow init --ip 127.0.0.1 --port 9380 --home /data
+fate_flow init --ip 127.0.0.1 --port 9380 --home $HOME_DIR
 ```
 - ip: 服务运行ip
 - port：服务运行时的http端口
@@ -27,10 +31,14 @@ fate_flow status/start/stop/restart
 ```
 
 #### 1.2 单机版部署
+参考[单机版部署](https://github.com/FederatedAI/FATE/blob/dev-2.0.0-beta/deploy/standalone-deploy/README.zh.md)
+
 #### 1.3 集群部署
+参考[allinone部署](https://github.com/FederatedAI/FATE/blob/dev-2.0.0-beta/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.zh.md)
 
 ### 2. 使用指南
-fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以使用`pip install fate_client==2.0.0.beta`下载。以下的使用操作均基于cli编写，你也可以通过SDK或者Pipeline中找到对应的操作接口。
+fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以使用`pip install fate_client`下载，以下的使用操作均基于cli编写。
+
 #### 2.1 数据上传
 在2.0-beta版本中，数据上传分为两步：
 - upload: 将数据上传到FATE支持存储服务中 
@@ -545,3 +553,9 @@ flow output download-data -j $job_id -r $role -p $party_id -tn $task_name -o $do
 }
 
 ```
+
+### 3.更多文档
+- [Restful-api](./swagger/swagger.json)
+- [CLI](https://github.com/FederatedAI/FATE-Client/blob/dev-2.0.0-beta/python/fate_client/flow_cli/build/doc)
+- [Pipeline](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-beta/doc/tutorial)
+- [FATE算法](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-beta/doc/2.0/components)
