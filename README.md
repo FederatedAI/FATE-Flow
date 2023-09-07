@@ -20,8 +20,6 @@ Providing production-level service capabilities:
 - High Availability
 - CLI, REST API, Python API
 
-For detailed introduction, please refer to [FATE Flow Overall Design](https://federatedai.github.io/FATE-Flow/latest/fate_flow/#overall-design)
-
 ## Deployment
 
 Please refer to [FATE](https://github.com/FederatedAI/FATE)
