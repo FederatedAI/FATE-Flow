@@ -5,8 +5,49 @@ import fate_flow
 from setuptools import find_packages, setup, Command
 
 packages = find_packages(".")
-install_requires = []
-extras_require = {}
+install_requires = [
+    "apsw<=3.10",
+    "Flask==2.2.5",
+    "grpcio==1.46.3",
+    "grpcio-tools==1.46.3",
+    "requests<2.26.0",
+    "urllib3==1.26.5",
+    "ruamel-yaml==0.16.10",
+    "cachetools==3.0.0",
+    "filelock==3.3.1",
+    "pydantic==1.10.7",
+    "webargs",
+    "peewee==3.9.3",
+    "python-dotenv==0.13.0",
+    "pyyaml==5.4.1",
+    "networkx",
+    "psutil>=5.7.0",
+    "casbin_peewee_adapter",
+    "casbin",
+    "pymysql",
+    "kazoo",
+    "shortuuid",
+    "cos-python-sdk-v5==1.9.10",
+    "typing-extensions==4.5.0"
+]
+extras_require = {
+    "rabbitmq": ["pika==1.2.1"],
+    "pulsar": ["pulsar-client==2.10.2"],
+    "spark": ["pyspark"],
+    "eggroll": [
+        "grpcio==1.46.3",
+        "grpcio-tools==1.46.3",
+        "numba==0.56.4",
+        "protobuf==3.19.6",
+        "pyarrow==6.0.1",
+        "mmh3==3.0.0",
+        "cachetools>=3.0.0",
+        "cloudpickle==2.1.0",
+        "psutil>=5.7.0",
+    ],
+    "all": ["fate_flow[rabbitmq,pulsar,spark,eggroll]"],
+}
+
 
 CONF_NAME = "conf"
 PACKAGE_NAME = "fate_flow"
@@ -58,7 +99,7 @@ setup(
     install_requires=install_requires,
     extras_require=extras_require,
     package_data={
-        "fate_flow": [f"{CONF_NAME}/*", ENV_NAME]
+        "fate_flow": [f"{CONF_NAME}/*", ENV_NAME, "commands/*"]
     },
     python_requires=">=3.8",
     cmdclass={

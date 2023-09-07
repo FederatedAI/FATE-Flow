@@ -4,7 +4,7 @@
 
 FATE Flow是一个联邦学习端到端全流程的多方联合任务安全调度平台, 基于:
 
-- [共享状态调度架构](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/41684.pdf)
+- 共享状态调度架构
 - 跨数据中心的多方安全通信
 
 提供生产级服务能力:
@@ -20,7 +20,6 @@ FATE Flow是一个联邦学习端到端全流程的多方联合任务安全调�
 - 系统高可用
 - CLI、REST API、Python API
 
-详细介绍请参考[FATE Flow整体设计](https://federatedai.github.io/FATE-Flow/latest/zh/fate_flow/)
 
 ## 部署
 

@@ -1,0 +1,2179 @@
+{
+    "swagger": "2.0",
+    "basePath": "/v2",
+    "paths": {
+        "/client/client/create": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_client_CreateClientApp",
+                "parameters": [
+                    {
+                        "description": "App name for the client",
+                        "name": "app_name",
+                        "type": "string",
+                        "in": "formData"
+                    }
+                ],
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/client/client/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_client_DeleteClientApp",
+                "parameters": [
+                    {
+                        "description": "App ID for the client",
+                        "name": "app_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/client/client/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_client_QueryClientApp",
+                "parameters": [
+                    {
+                        "description": "App ID for the client",
+                        "name": "app_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "App name for the client",
+                        "name": "app_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/client/partner/create": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_client_CreatePartnerApp",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "App ID for the site",
+                        "name": "app_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "App token for the site",
+                        "name": "app_token",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/client/partner/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_client_DeletePartnerApp",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/client/partner/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_client_QueryPartnerApp",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/client/site/create": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_client_CreateSiteApp",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/client/site/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_client_DeleteSiteApp",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/client/site/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_client_QuerySiteApp",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/data/component/dataframe/transformer": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_data_TransformerData",
+                "parameters": [
+                    {
+                        "description": "Data output, content like: {name: xxx, namespace: xxx}",
+                        "name": "data_warehouse",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Namespace of the data table",
+                        "name": "namespace",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Name of the data table",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Whether to destroy data if it already exists",
+                        "name": "drop",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "data"
+                ]
+            }
+        },
+        "/data/component/download": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_data_DownloadData",
+                "parameters": [
+                    {
+                        "description": "Name of the data table",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Namespace of the data table",
+                        "name": "namespace",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "File path on the server",
+                        "name": "path",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "data"
+                ]
+            }
+        },
+        "/data/component/upload": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_data_UploadData",
+                "parameters": [
+                    {
+                        "description": "File path on the server",
+                        "name": "file",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Whether the first row of the file is the data's head",
+                        "name": "head",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Number of data partitions",
+                        "name": "partitions",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Metadata of the data",
+                        "name": "meta",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Whether to automatically fill a column as data row ID",
+                        "name": "extend_sid",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Namespace of the data table",
+                        "name": "namespace",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Name of the data table",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "data"
+                ]
+            }
+        },
+        "/data/download": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_data_Download",
+                "parameters": [
+                    {
+                        "description": "Name of the data table",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Namespace of the data table",
+                        "name": "namespace",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Whether the first row of the file is the data's head",
+                        "name": "header",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "File path on the server",
+                        "name": "path",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Down Type:sync,async",
+                        "name": "types",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "data"
+                ]
+            }
+        },
+        "/job/clean": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_job_CleanJob",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/dag/dependency": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_job_DagDependency",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/list/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_job_QueryJobList",
+                "parameters": [
+                    {
+                        "description": "Limit of rows or entries",
+                        "name": "limit",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Page number",
+                        "name": "page",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Description information",
+                        "name": "description",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Participant information",
+                        "name": "partner",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Status of the job or task",
+                        "name": "status",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Field name for sorting",
+                        "name": "order_by",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Sorting order: asc/desc",
+                        "name": "order",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Username provided by the upper-level system",
+                        "name": "user_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/log/download": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_job_DownloadJobLogs",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/notes/add": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_job_AddNotes",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Tags and customizable information for tasks",
+                        "name": "notes",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_job_QueryJob",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Status of the job or task",
+                        "name": "status",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Username provided by the upper-level system",
+                        "name": "user_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/queue/clean": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_job_CleanQueue",
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/rerun": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_job_RequestRerunJob",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/stop": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_job_RequestStopJob",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/submit": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_job_SubmitJob",
+                "parameters": [
+                    {
+                        "description": "Definition and configuration of jobs, including the configuration of multiple tasks",
+                        "name": "dag_schema",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Username provided by the upper-level system",
+                        "name": "user_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/task/list/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_job_QueryTaskList",
+                "parameters": [
+                    {
+                        "description": "Limit of rows or entries",
+                        "name": "limit",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Page number",
+                        "name": "page",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Field name for sorting",
+                        "name": "order_by",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Sorting order: asc/desc",
+                        "name": "order",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/job/task/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_job_QueryTask",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Status of the job or task",
+                        "name": "status",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task version",
+                        "name": "task_version",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "job"
+                ]
+            }
+        },
+        "/log/count": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_log_Count",
+                "parameters": [
+                    {
+                        "description": "Log level or type",
+                        "name": "log_type",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Instance ID of the FATE Flow service",
+                        "name": "instance_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "log"
+                ]
+            }
+        },
+        "/log/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_log_Get",
+                "parameters": [
+                    {
+                        "description": "Log level or type",
+                        "name": "log_type",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Starting line number",
+                        "name": "begin",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Ending line number",
+                        "name": "end",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Instance ID of the FATE Flow service",
+                        "name": "instance_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "log"
+                ]
+            }
+        },
+        "/model/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_model_DeleteModel",
+                "parameters": [
+                    {
+                        "description": "Model ID",
+                        "name": "model_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Model version",
+                        "name": "model_version",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Primary key for output data or model of the task",
+                        "name": "output_key",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "model"
+                ]
+            }
+        },
+        "/model/export": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_model_Export",
+                "parameters": [
+                    {
+                        "description": "Model ID",
+                        "name": "model_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Model version",
+                        "name": "model_version",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Directory path on the server",
+                        "name": "path",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "model"
+                ]
+            }
+        },
+        "/model/import": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_model_ImportModel",
+                "parameters": [
+                    {
+                        "description": "Model ID",
+                        "name": "model_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Model version",
+                        "name": "model_version",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "model"
+                ]
+            }
+        },
+        "/model/load": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_model_Load",
+                "tags": [
+                    "model"
+                ]
+            }
+        },
+        "/model/migrate": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_model_Migrate",
+                "tags": [
+                    "model"
+                ]
+            }
+        },
+        "/model/restore": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_model_Restore",
+                "tags": [
+                    "model"
+                ]
+            }
+        },
+        "/model/store": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_model_Store",
+                "tags": [
+                    "model"
+                ]
+            }
+        },
+        "/output/data/display": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_output_OutputDataDisplay",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "output"
+                ]
+            }
+        },
+        "/output/data/download": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_output_OutputDataDownload",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Primary key for output data or model of the task",
+                        "name": "output_key",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "output"
+                ]
+            }
+        },
+        "/output/data/table": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_output_OutputDataTable",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "output"
+                ]
+            }
+        },
+        "/output/metric/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_output_DeleteMetric",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "output"
+                ]
+            }
+        },
+        "/output/metric/key/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_output_QueryMetricKey",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "output"
+                ]
+            }
+        },
+        "/output/metric/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_output_QueryMetric",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Filter conditions",
+                        "name": "filters",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "output"
+                ]
+            }
+        },
+        "/output/model/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_output_DeleteModel",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "output"
+                ]
+            }
+        },
+        "/output/model/download": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_output_Download",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "output"
+                ]
+            }
+        },
+        "/output/model/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_output_QueryModel",
+                "parameters": [
+                    {
+                        "description": "Job ID",
+                        "name": "job_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Role of the participant: guest/host/arbiter/local",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Task name",
+                        "name": "task_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "output"
+                ]
+            }
+        },
+        "/permission/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_permission_Delete",
+                "parameters": [
+                    {
+                        "description": "App ID",
+                        "name": "app_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Permission name",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "permission"
+                ]
+            }
+        },
+        "/permission/grant": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_permission_Grant",
+                "parameters": [
+                    {
+                        "description": "App ID",
+                        "name": "app_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Permission name",
+                        "name": "role",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "permission"
+                ]
+            }
+        },
+        "/permission/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_permission_Query",
+                "parameters": [
+                    {
+                        "description": "App ID",
+                        "name": "app_id",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "permission"
+                ]
+            }
+        },
+        "/permission/resource/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_permission_DeleteResourcePermission",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Component name",
+                        "name": "component",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "List of datasets",
+                        "name": "dataset",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "permission"
+                ]
+            }
+        },
+        "/permission/resource/grant": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_permission_GrantResourcePermission",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Component name",
+                        "name": "component",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "List of datasets",
+                        "name": "dataset",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "permission"
+                ]
+            }
+        },
+        "/permission/resource/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_permission_QueryResourcePrivilege",
+                "parameters": [
+                    {
+                        "description": "Site ID",
+                        "name": "party_id",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Component name",
+                        "name": "component",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "List of datasets",
+                        "name": "dataset",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "permission"
+                ]
+            }
+        },
+        "/permission/role/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_permission_QueryRoles",
+                "tags": [
+                    "permission"
+                ]
+            }
+        },
+        "/provider/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_provider_Delete",
+                "parameters": [
+                    {
+                        "description": "Component provider name",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Component running mode",
+                        "name": "device",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Component version",
+                        "name": "version",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Registered algorithm full name, provider + ':' + version + '@' + running mode, e.g., fate:2.0.0@local",
+                        "name": "provider_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "provider"
+                ]
+            }
+        },
+        "/provider/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_provider_Query",
+                "parameters": [
+                    {
+                        "description": "Component provider name",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Component running mode",
+                        "name": "device",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Component version",
+                        "name": "version",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Registered algorithm full name, provider + ':' + version + '@' + running mode, e.g., fate:2.0.0@local",
+                        "name": "provider_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "provider"
+                ]
+            }
+        },
+        "/provider/register": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_provider_Register",
+                "parameters": [
+                    {
+                        "description": "Component provider name",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Component running mode",
+                        "name": "device",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Component version",
+                        "name": "version",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Detailed information about component registration",
+                        "name": "metadata",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "provider"
+                ]
+            }
+        },
+        "/server/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_server_DeleteServer",
+                "parameters": [
+                    {
+                        "description": "Server name",
+                        "name": "server_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "server"
+                ]
+            }
+        },
+        "/server/fateflow": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_server_FateFlowServerInfo",
+                "tags": [
+                    "server"
+                ]
+            }
+        },
+        "/server/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_server_QueryServer",
+                "parameters": [
+                    {
+                        "description": "Server name",
+                        "name": "server_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "server"
+                ]
+            }
+        },
+        "/server/query/all": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_server_QueryAll",
+                "tags": [
+                    "server"
+                ]
+            }
+        },
+        "/server/registry": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_server_RegisterServer",
+                "parameters": [
+                    {
+                        "description": "Server name",
+                        "name": "server_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Host IP",
+                        "name": "host",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Service port",
+                        "name": "port",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Protocol: http/https",
+                        "name": "protocol",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "server"
+                ]
+            }
+        },
+        "/server/service/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_server_DeleteService",
+                "parameters": [
+                    {
+                        "description": "Server name",
+                        "name": "server_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Service name",
+                        "name": "service_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "server"
+                ]
+            }
+        },
+        "/server/service/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_server_QueryService",
+                "parameters": [
+                    {
+                        "description": "Server name",
+                        "name": "server_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Service name",
+                        "name": "service_name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "server"
+                ]
+            }
+        },
+        "/server/service/registry": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_server_RegistryService",
+                "parameters": [
+                    {
+                        "description": "Server name",
+                        "name": "server_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Service name",
+                        "name": "service_name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Service path",
+                        "name": "uri",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Request method: POST/GET, etc.",
+                        "name": "method",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Request header parameters",
+                        "name": "params",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Request body parameters",
+                        "name": "data",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Request headers",
+                        "name": "headers",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Protocol: http/https",
+                        "name": "protocol",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "server"
+                ]
+            }
+        },
+        "/site/info/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_site_QuerySiteInfo",
+                "tags": [
+                    "site"
+                ]
+            }
+        },
+        "/table/bind/path": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_table_BindPath",
+                "parameters": [
+                    {
+                        "description": "Namespace of the data table",
+                        "name": "namespace",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Name of the data table",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "File path on the server",
+                        "name": "path",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "table"
+                ]
+            }
+        },
+        "/table/delete": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_table_DeleteTable",
+                "parameters": [
+                    {
+                        "description": "Namespace of the data table",
+                        "name": "namespace",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Name of the data table",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "table"
+                ]
+            }
+        },
+        "/table/query": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_table_QueryTable",
+                "parameters": [
+                    {
+                        "description": "Namespace of the data table",
+                        "name": "namespace",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Name of the data table",
+                        "name": "name",
+                        "type": "string",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Whether to return preview data",
+                        "name": "display",
+                        "type": "string",
+                        "in": "query"
+                    }
+                ],
+                "tags": [
+                    "table"
+                ]
+            }
+        }
+    },
+    "info": {
+        "title": "FATE Flow restful api",
+        "version": "2.0.0-beta"
+    },
+    "produces": [
+        "application/json"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "tags": [
+        {
+            "name": "permission",
+            "description": "permission-Related Operations"
+        },
+        {
+            "name": "log",
+            "description": "log-Related Operations"
+        },
+        {
+            "name": "site",
+            "description": "site-Related Operations"
+        },
+        {
+            "name": "table",
+            "description": "table-Related Operations"
+        },
+        {
+            "name": "provider",
+            "description": "provider-Related Operations"
+        },
+        {
+            "name": "model",
+            "description": "model-Related Operations"
+        },
+        {
+            "name": "server",
+            "description": "server-Related Operations"
+        },
+        {
+            "name": "data",
+            "description": "data-Related Operations"
+        },
+        {
+            "name": "client",
+            "description": "client-Related Operations"
+        },
+        {
+            "name": "output",
+            "description": "output-Related Operations"
+        },
+        {
+            "name": "job",
+            "description": "job-Related Operations"
+        }
+    ],
+    "responses": {
+        "ParseError": {
+            "description": "When a mask can't be parsed"
+        },
+        "MaskError": {
+            "description": "When any error occurs on mask"
+        }
+    }
+}
