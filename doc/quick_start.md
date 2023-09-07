@@ -12,9 +12,9 @@
 conda create -n fate_env python=3.8
 conda activate fate_env
 ```
-- 安装fate flow
+- 安装fate flow及相关依赖
 ```shell
-pip install fate_flow[fate,fate_cliet]
+pip install fate_client[fate,fate_flow]==2.0.0.b0
 ```
 
 ##### 1.1.2 服务初始化
