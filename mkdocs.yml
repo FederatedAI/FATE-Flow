@@ -66,8 +66,11 @@ plugins:
       languages:
         - locale: zh
           name: 中文
+          build: true
         - locale: en
           name: English
+          build: true
+          default: true
   - markdown-include-snippet:
       base_path: doc
 
