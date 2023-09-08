@@ -64,7 +64,7 @@ plugins:
   - i18n:
       default_language: en
       languages:
-        zh: 中文
+        - zh: 中文
   - markdown-include-snippet:
       base_path: doc
 
