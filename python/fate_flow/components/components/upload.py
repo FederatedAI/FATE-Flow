@@ -67,8 +67,7 @@ class MetaParam(Param):
             header: str = None,
             delimiter: str = ",",
             dtype: Union[str, dict] = "float32",
-            anonymous_role: str = None,
-            anonymous_party_id: str = None,
+            anonymous_site_name: str = None,
             na_values: Union[str, list, dict] = None,
             input_format: str = "dense",
             tag_with_value: bool = False,
@@ -85,8 +84,7 @@ class MetaParam(Param):
         self.header = header
         self.delimiter = delimiter
         self.dtype = dtype
-        self.anonymous_role = anonymous_role
-        self.anonymous_party_id = anonymous_party_id
+        self.anonymous_site_name=anonymous_site_name
         self.na_values = na_values
         self.input_format = input_format
         self.tag_with_value = tag_with_value
