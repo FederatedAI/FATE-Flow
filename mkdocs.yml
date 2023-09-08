@@ -9,25 +9,9 @@ nav:
   - Home: index.md
   - Docs:
     #- ... | flat | *.md
-    - document_navigation.md
     - fate_flow.md
-    - fate_flow_data_access.md
-    - fate_flow_component_registry.md
-    - fate_flow_job_scheduling.md
-    - fate_flow_resource_management.md
-    - fate_flow_tracking.md
-    - fate_flow_monitoring.md
-    - fate_flow_model_registry.md
-    - fate_flow_authority_management.md
-    - fate_flow_permission_management.md
-    - fate_flow_server_operation.md
-    - fate_flow_service_registry.md
-    - fate_flow_model_migration.md
-    - fate_flow_client.md
-    - fate_flow_http_api_call_demo.md
-    - configuration_instruction.md
-    - system_operational.md
-    - faq.md
+    - quick_start.md
+    - system_conf.md
   - API: swagger/index.md
 
 theme:
@@ -64,7 +48,13 @@ plugins:
   - i18n:
       default_language: en
       languages:
-        zh: 中文
+        - locale: zh
+          name: 中文
+          build: true
+        - locale: en
+          name: English
+          build: true
+          default: true
   - markdown-include-snippet:
       base_path: doc
 
