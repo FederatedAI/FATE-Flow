@@ -56,7 +56,7 @@ class ComponentManager(Base):
         return result
 
     @classmethod
-    def dataframe_transformer(cls, data_warehouse, namespace, name, drop):
+    def dataframe_transformer(cls, data_warehouse, namespace, name, drop, site_name):
         data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
         if data_table_meta:
             if not drop:
@@ -71,7 +71,7 @@ class ComponentManager(Base):
         dag_schema = cls.local_dag_schema(
             task_name="transformer_0",
             component_ref="dataframe_transformer",
-            parameters={"namespace": namespace, "name": name},
+            parameters={"namespace": namespace, "name": name, "site_name": site_name},
             inputs={"data": {"table": {"data_warehouse": data_warehouse}}},
             provider=provider
         )

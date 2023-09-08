@@ -16,7 +16,7 @@
 from webargs import fields
 
 from fate_flow.apps.desc import SERVER_FILE_PATH, HEAD, PARTITIONS, META, EXTEND_SID, NAMESPACE, NAME, DATA_WAREHOUSE, \
-    DROP
+    DROP, SITE_NAME
 from fate_flow.engine import storage
 from fate_flow.manager.components.component_manager import ComponentManager
 from fate_flow.manager.data.data_manager import DataManager
@@ -56,9 +56,10 @@ def download_data(namespace, name, path):
 @API.Input.json(data_warehouse=fields.Dict(required=True), desc=DATA_WAREHOUSE)
 @API.Input.json(namespace=fields.String(required=True), desc=NAMESPACE)
 @API.Input.json(name=fields.String(required=True), desc=NAME)
+@API.Input.json(site_name=fields.String(required=False), desc=SITE_NAME)
 @API.Input.json(drop=fields.Bool(required=False), desc=DROP)
-def transformer_data(data_warehouse, namespace, name, drop=True):
-    result = ComponentManager.dataframe_transformer(data_warehouse, namespace, name, drop)
+def transformer_data(data_warehouse, namespace, name, drop=True, site_name=None):
+    result = ComponentManager.dataframe_transformer(data_warehouse, namespace, name, drop, site_name)
     return API.Output.json(**result)
 
 
