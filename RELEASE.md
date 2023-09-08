@@ -1,3 +1,11 @@
+# Release 1.11.2
+## Major Features and Improvements
+* Support real-time log retrieval and display for FATE LLM tasks.
+* Optimize the logic of the job clean interface.
+
+## Bug Fixes
+* Fix the thread accumulation caused by the session cleanup timeout bug.
+
 # Release 1.11.1
 ## Major Features and Improvements
 * Support distributed training with multiple gpus for FATE-LLM by Eggroll
