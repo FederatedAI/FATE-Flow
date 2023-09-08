@@ -67,7 +67,6 @@ class MetaParam(Param):
             header: str = None,
             delimiter: str = ",",
             dtype: Union[str, dict] = "float32",
-            anonymous_site_name: str = None,
             na_values: Union[str, list, dict] = None,
             input_format: str = "dense",
             tag_with_value: bool = False,
