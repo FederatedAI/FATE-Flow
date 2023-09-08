@@ -1,0 +1,2381 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../fate_flow_monitoring/">
+      
+      
+        <link rel="next" href="../fate_flow_authority_management/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.8">
+    
+    
+      
+        <title>联合模型注册中心 - FATE Flow</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.046329b4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../mkdocs/css/termynal.css">
+    
+      <link rel="stylesheet" href="../../mkdocs/css/custom.css">
+    
+      <link rel="stylesheet" href="../../mkdocs/css/extra.css">
+    
+      <link rel="stylesheet" href="../../mkdocs/css/landing.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../" title="FATE Flow" class="md-header__button md-logo" aria-label="FATE Flow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FATE Flow
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              联合模型注册中心
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../fate_flow_model_registry/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/FederatedAI/FATE-Flow" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    FederatedAI/FATE-Flow
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../document_navigation/" class="md-tabs__link">
+          
+  
+    
+  
+  Docs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../swagger/" class="md-tabs__link">
+        
+  
+    
+  
+  API
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="FATE Flow" class="md-nav__button md-logo" aria-label="FATE Flow" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    FATE Flow
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/FederatedAI/FATE-Flow" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    FederatedAI/FATE-Flow
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Docs
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Docs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../document_navigation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    文档导航
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    整体设计
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_data_access/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    数据接入
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_component_registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    任务组件注册中心
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_job_scheduling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    多方联合作业&任务调度
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_resource_management/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    多方资源协调
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    数据流动追踪
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_monitoring/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    作业实时监测
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    联合模型注册中心
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    联合模型注册中心
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    1. 说明
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 说明">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    本地磁盘存储
+  </a>
+  
+    <nav class="md-nav" aria-label="本地磁盘存储">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    目录结构
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    远端存储引擎
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-model" class="md-nav__link">
+    2. Model
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load" class="md-nav__link">
+    load
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bind" class="md-nav__link">
+    bind
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import" class="md-nav__link">
+    import
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    export
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrate" class="md-nav__link">
+    migrate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-list" class="md-nav__link">
+    tag-list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-model" class="md-nav__link">
+    tag-model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy" class="md-nav__link">
+    deploy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-predict-dsl" class="md-nav__link">
+    get-predict-dsl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-predict-conf" class="md-nav__link">
+    get-predict-conf
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-model-info" class="md-nav__link">
+    get-model-info
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#homo-convert" class="md-nav__link">
+    homo-convert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#homo-deploy" class="md-nav__link">
+    homo-deploy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-checkpoint" class="md-nav__link">
+    3. Checkpoint
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Checkpoint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    4. 存储引擎配置
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 存储引擎配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable_model_store" class="md-nav__link">
+    enable_model_store
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model_store_address" class="md-nav__link">
+    model_store_address
+  </a>
+  
+    <nav class="md-nav" aria-label="model_store_address">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    腾讯云对象存储
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mysql" class="md-nav__link">
+    MySQL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    Redis
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_authority_management/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    认证方案
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_permission_management/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    多方合作权限管理
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_server_operation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    服务端操作
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_service_registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    服务注册中心
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_model_migration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    集群间模型迁移
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    命令行客户端
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fate_flow_http_api_call_demo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    REST API 调用
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration_instruction/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    配置说明
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../system_operational/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    系统运维
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    常见问题
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swagger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    1. 说明
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 说明">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    本地磁盘存储
+  </a>
+  
+    <nav class="md-nav" aria-label="本地磁盘存储">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    目录结构
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    远端存储引擎
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-model" class="md-nav__link">
+    2. Model
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load" class="md-nav__link">
+    load
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bind" class="md-nav__link">
+    bind
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import" class="md-nav__link">
+    import
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    export
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrate" class="md-nav__link">
+    migrate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-list" class="md-nav__link">
+    tag-list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-model" class="md-nav__link">
+    tag-model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy" class="md-nav__link">
+    deploy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-predict-dsl" class="md-nav__link">
+    get-predict-dsl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-predict-conf" class="md-nav__link">
+    get-predict-conf
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-model-info" class="md-nav__link">
+    get-model-info
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#homo-convert" class="md-nav__link">
+    homo-convert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#homo-deploy" class="md-nav__link">
+    homo-deploy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-checkpoint" class="md-nav__link">
+    3. Checkpoint
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Checkpoint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    get
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    4. 存储引擎配置
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 存储引擎配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable_model_store" class="md-nav__link">
+    enable_model_store
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model_store_address" class="md-nav__link">
+    model_store_address
+  </a>
+  
+    <nav class="md-nav" aria-label="model_store_address">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    腾讯云对象存储
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mysql" class="md-nav__link">
+    MySQL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    Redis
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="_1">联合模型注册中心<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="1">1. 说明<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>由 FATE 训练的模型会自动保存到本地并记录在 FATE-Flow 的数据库中，每个组件运行完成后保存的模型称为 Pipeline 模型，在组件运行时定时保存的模型称为 Checkpoint 模型。Checkpoint 模型也可以用于组件运行意外中断后，重试时的“断点续传”。</p>
+<p>Checkpoint 模型的支持自 1.7.0 加入，默认是不保存的，如需启用，则要向 DSL 中加入 callback <code>ModelCheckpoint</code>。</p>
+<h3 id="_2">本地磁盘存储<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>Pipeline 模型存储于 <code>model_local_cache/&lt;party_model_id&gt;/&lt;model_version&gt;/variables/data/&lt;component_name&gt;/&lt;model_alias&gt;</code>。</p>
+</li>
+<li>
+<p>Checkpoint 模型存储于 <code>model_local_cache/&lt;party_model_id&gt;/&lt;model_version&gt;/checkpoint/&lt;component_name&gt;/&lt;step_index&gt;#&lt;step_name&gt;</code>。</p>
+</li>
+</ul>
+<h4 id="_3">目录结构<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>tree model_local_cache/guest#9999#arbiter-10000#guest-9999#host-10000#model/202112181502241234200
+
+model_local_cache/guest#9999#arbiter-10000#guest-9999#host-10000#model/202112181502241234200
+├── checkpoint
+│   ├── data_transform_0
+│   ├── evaluation_0
+│   ├── hetero_linr_0
+│   │   ├── 0#step_name
+│   │   │   ├── HeteroLinearRegressionMeta.json
+│   │   │   ├── HeteroLinearRegressionMeta.pb
+│   │   │   ├── HeteroLinearRegressionParam.json
+│   │   │   ├── HeteroLinearRegressionParam.pb
+│   │   │   └── database.yaml
+│   │   ├── 1#step_name
+│   │   │   ├── HeteroLinearRegressionMeta.json
+│   │   │   ├── HeteroLinearRegressionMeta.pb
+│   │   │   ├── HeteroLinearRegressionParam.json
+│   │   │   ├── HeteroLinearRegressionParam.pb
+│   │   │   └── database.yaml
+│   │   ├── 2#step_name
+│   │   │   ├── HeteroLinearRegressionMeta.json
+│   │   │   ├── HeteroLinearRegressionMeta.pb
+│   │   │   ├── HeteroLinearRegressionParam.json
+│   │   │   ├── HeteroLinearRegressionParam.pb
+│   │   │   └── database.yaml
+│   │   ├── 3#step_name
+│   │   │   ├── HeteroLinearRegressionMeta.json
+│   │   │   ├── HeteroLinearRegressionMeta.pb
+│   │   │   ├── HeteroLinearRegressionParam.json
+│   │   │   ├── HeteroLinearRegressionParam.pb
+│   │   │   └── database.yaml
+│   │   └── 4#step_name
+│   │       ├── HeteroLinearRegressionMeta.json
+│   │       ├── HeteroLinearRegressionMeta.pb
+│   │       ├── HeteroLinearRegressionParam.json
+│   │       ├── HeteroLinearRegressionParam.pb
+│   │       └── database.yaml
+│   ├── hetero_linr_1
+│   ├── intersection_0
+│   └── reader_0
+├── define
+│   ├── define_meta.yaml
+│   ├── proto
+│   │   └── pipeline.proto
+│   └── proto_generated_python
+│       ├── __pycache__
+│       │   └── pipeline_pb2.cpython-36.pyc
+│       └── pipeline_pb2.py
+├── run_parameters
+│   ├── data_transform_0
+│   │   └── run_parameters.json
+│   ├── hetero_linr_0
+│   │   └── run_parameters.json
+│   ├── hetero_linr_1
+│   │   └── run_parameters.json
+│   └── pipeline
+│       └── run_parameters.json
+└── variables
+    ├── data
+    │   ├── data_transform_0
+    │   │   └── model
+    │   │       ├── DataTransformMeta
+    │   │       ├── DataTransformMeta.json
+    │   │       ├── DataTransformParam
+    │   │       └── DataTransformParam.json
+    │   ├── hetero_linr_0
+    │   │   └── model
+    │   │       ├── HeteroLinearRegressionMeta
+    │   │       ├── HeteroLinearRegressionMeta.json
+    │   │       ├── HeteroLinearRegressionParam
+    │   │       └── HeteroLinearRegressionParam.json
+    │   ├── hetero_linr_1
+    │   │   └── model
+    │   │       ├── HeteroLinearRegressionMeta
+    │   │       ├── HeteroLinearRegressionMeta.json
+    │   │       ├── HeteroLinearRegressionParam
+    │   │       └── HeteroLinearRegressionParam.json
+    │   └── pipeline
+    │       └── pipeline
+    │           ├── Pipeline
+    │           └── Pipeline.json
+    └── index
+
+32 directories, 47 files
+</code></pre></div>
+<p><strong><code>checkpoint</code></strong></p>
+<p>此目录存储组件运行过程中，每轮迭代产生的模型，不是所有组件都支持 checkpoint。</p>
+<p>以 <code>checkpoint/hetero_linr_0/2#step_name</code> 为例：</p>
+<p><code>hetero_linr_0</code> 是 <code>component_name</code>；<code>2</code> 是 <code>step_index</code>，即迭代次数；<code>step_name</code> 目前只做占位符，没有使用。</p>
+<p><code>HeteroLinearRegressionMeta.json</code>, <code>HeteroLinearRegressionMeta.pb</code>, <code>HeteroLinearRegressionParam.json</code>, <code>HeteroLinearRegressionParam.pb</code> 都是训练产生的数据，可以理解为模型文件。<code>database.yaml</code> 主要记录上述文件的 hash 以作校验，还存储有 <code>step_index</code>, <code>step_name</code>, <code>create_time</code>。</p>
+<p><strong><code>define</code></strong></p>
+<p>该目录储存作业的基本信息，在作业初始化时创建。<code>pipeline</code> 不是一个组件，而是代表整个作业。</p>
+<p><code>define/proto/pipeline.proto</code> 和 <code>define/proto/pipeline_pb2.py</code> 目前没有使用。</p>
+<p><code>define/define_meta.yaml</code> 记录组件列表，包括 <code>component_name</code>, <code>componet_module_name</code>, <code>model_alias</code>。</p>
+<p><strong><code>run_parameters</code></strong></p>
+<p>此目录存储组件的配置信息，也称为 DSL。</p>
+<p><code>run_parameters/pipeline/run_parameters.json</code> 为一个空的 object <code>{}</code>。</p>
+<p><strong><code>variables</code></strong></p>
+<p>此目录存储组件运行结束后产生的模型，与最后一轮迭代产生的模型一致。</p>
+<p>以 <code>variables/data/hetero_linr_0/model</code> 为例：</p>
+<p><code>hetero_linr_0</code> 是 <code>component_name</code>；<code>model</code> 是 <code>model_alias</code>。</p>
+<p><code>HeteroLinearRegressionMeta</code>, <code>HeteroLinearRegressionMeta.json</code>, <code>HeteroLinearRegressionParam</code> <code>HeteroLinearRegressionParam.json</code> 与 <code>checkpoint</code> 目录下的文件格式完全一致，除了 <code>.pb</code> 文件去掉了扩展名。</p>
+<p><code>variables/data/pipeline/</code>存储作业的详细信息。</p>
+<p><code>variables/index/</code> 目前没有使用。</p>
+<h3 id="_4">远端存储引擎<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>本地磁盘并不可靠，因此模型有丢失的风险，FATE-Flow 支持导出模型到指定存储引擎、从指定存储引擎导入以及自动发布模型时推送模型到引擎存储。</p>
+<p>存储引擎支持腾讯云对象存储、MySQL 和 Redis, 具体请参考<a href="#4-存储引擎配置">存储引擎配置</a></p>
+<h2 id="2-model">2. Model<a class="headerlink" href="#2-model" title="Permanent link">&para;</a></h2>
+<h3 id="load">load<a class="headerlink" href="#load" title="Permanent link">&para;</a></h3>
+<p>向 Fate-Serving 加载 <code>deploy</code> 生成的模型。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>load<span class="w"> </span>-c<span class="w"> </span>examples/model/publish_load_model.json
+flow<span class="w"> </span>model<span class="w"> </span>load<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>是</td>
+<td>配置文件</td>
+</tr>
+<tr>
+<td>job_id</td>
+<td><code>-j</code></td>
+<td><code>--job-id</code></td>
+<td>是</td>
+<td>任务 ID</td>
+</tr>
+</tbody>
+</table>
+<p><strong>样例</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091122168817080&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="bind">bind<a class="headerlink" href="#bind" title="Permanent link">&para;</a></h3>
+<p>向 Fate-Serving 绑定 <code>deploy</code> 生成的模型。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span><span class="nb">bind</span><span class="w"> </span>-c<span class="w"> </span>examples/model/bind_model_service.json
+flow<span class="w"> </span>model<span class="w"> </span><span class="nb">bind</span><span class="w"> </span>-c<span class="w"> </span>examples/model/bind_model_service.json<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>否</td>
+<td>配置文件</td>
+</tr>
+<tr>
+<td>job_id</td>
+<td><code>-j</code></td>
+<td><code>--job-id</code></td>
+<td>是</td>
+<td>任务 ID</td>
+</tr>
+</tbody>
+</table>
+<p><strong>样例</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;service id is 123&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="import">import<a class="headerlink" href="#import" title="Permanent link">&para;</a></h3>
+<p>从本地或存储引擎中导入模型。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>import<span class="w"> </span>-c<span class="w"> </span>examples/model/import_model.json
+flow<span class="w"> </span>model<span class="w"> </span>import<span class="w"> </span>-c<span class="w"> </span>examples/model/restore_model.json<span class="w"> </span>--from-database
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>否</td>
+<td>配置文件</td>
+</tr>
+<tr>
+<td>from_database</td>
+<td></td>
+<td><code>--from-database</code></td>
+<td>是</td>
+<td>从存储引擎中导入模型</td>
+</tr>
+</tbody>
+</table>
+<p><strong>样例</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202208261102212849780&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;arbiter-10000#guest-9999#host-10000#model&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;foobar&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;9999&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guest&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="export">export<a class="headerlink" href="#export" title="Permanent link">&para;</a></h3>
+<p>导出模型到本地或存储引擎中。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-c<span class="w"> </span>examples/model/export_model.json
+flow<span class="w"> </span>model<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-c<span class="w"> </span>examples/model/store_model.json<span class="w"> </span>--to-database
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>否</td>
+<td>配置文件</td>
+</tr>
+<tr>
+<td>to_database</td>
+<td></td>
+<td><code>--to-database</code></td>
+<td>是</td>
+<td>将模型导出到存储引擎中</td>
+</tr>
+</tbody>
+</table>
+<p><strong>样例</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;board_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8080/index.html#/dashboard?job_id=202111091124582110490&amp;role=local&amp;party_id=0&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/job_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091124582110490&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;logs_directory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/logs/202111091124582110490&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;model_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local-0#model&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091124582110490&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;pipeline_dsl_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/pipeline_dsl.json&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;runtime_conf_on_party_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/local/0/job_runtime_on_party_conf.json&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/job_runtime_conf.json&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;train_runtime_conf_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/root/Codes/FATE-Flow/jobs/202111091124582110490/train_runtime_conf.json&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091124582110490&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="migrate">migrate<a class="headerlink" href="#migrate" title="Permanent link">&para;</a></h3>
+<p>迁移模型。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>migrate<span class="w"> </span>-c<span class="w"> </span>examples/model/migrate_model.json
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>否</td>
+<td>配置文件</td>
+</tr>
+</tbody>
+</table>
+<p><strong>样例</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Migrating model successfully. The configuration of model has been modified automatically. New model id is: arbiter-100#guest-99#host-100#model, model version is: 202111091127392613050. Model files can be found at &#39;/root/Codes/FATE-Flow/temp/fate_flow/arbiter#100#arbiter-100#guest-99#host-100#model_202111091127392613050.zip&#39;.&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Migrating model successfully. The configuration of model has been modified automatically. New model id is: arbiter-100#guest-99#host-100#model, model version is: 202111091127392613050. Model files can be found at &#39;/root/Codes/FATE-Flow/temp/fate_flow/guest#99#arbiter-100#guest-99#host-100#model_202111091127392613050.zip&#39;.&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Migrating model successfully. The configuration of model has been modified automatically. New model id is: arbiter-100#guest-99#host-100#model, model version is: 202111091127392613050. Model files can be found at &#39;/root/Codes/FATE-Flow/temp/fate_flow/host#100#arbiter-100#guest-99#host-100#model_202111091127392613050.zip&#39;.&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;9999&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;10000&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;jobId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111091127392613050&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="tag-list">tag-list<a class="headerlink" href="#tag-list" title="Permanent link">&para;</a></h3>
+<p>获取模型的标签列表。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>tag-list<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>job_id</td>
+<td><code>-j</code></td>
+<td><code>--job_id</code></td>
+<td>否</td>
+<td>任务 ID</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tag-model">tag-model<a class="headerlink" href="#tag-model" title="Permanent link">&para;</a></h3>
+<p>从模型中添加或删除标签。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>tag-model<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;<span class="w"> </span>-t<span class="w"> </span>&lt;tag_name&gt;
+flow<span class="w"> </span>model<span class="w"> </span>tag-model<span class="w"> </span>-j<span class="w"> </span>&lt;job_id&gt;<span class="w"> </span>-t<span class="w"> </span>&lt;tag_name&gt;<span class="w"> </span>--remove
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>job_id</td>
+<td><code>-j</code></td>
+<td><code>--job_id</code></td>
+<td>否</td>
+<td>任务 ID</td>
+</tr>
+<tr>
+<td>tag_name</td>
+<td><code>-t</code></td>
+<td><code>--tag-name</code></td>
+<td>否</td>
+<td>标签名</td>
+</tr>
+<tr>
+<td>remove</td>
+<td></td>
+<td><code>--remove</code></td>
+<td>是</td>
+<td>移除指定的标签</td>
+</tr>
+</tbody>
+</table>
+<h3 id="deploy">deploy<a class="headerlink" href="#deploy" title="Permanent link">&para;</a></h3>
+<p>配置预测 DSL。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>deploy<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>否</td>
+<td>模型 ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>否</td>
+<td>模型版本</td>
+</tr>
+<tr>
+<td>cpn_list</td>
+<td></td>
+<td><code>--cpn-list</code></td>
+<td>是</td>
+<td>组件列表</td>
+</tr>
+<tr>
+<td>cpn_path</td>
+<td></td>
+<td><code>--cpn-path</code></td>
+<td>是</td>
+<td>从文件中读入组件列表</td>
+</tr>
+<tr>
+<td>dsl_path</td>
+<td></td>
+<td><code>--dsl-path</code></td>
+<td>是</td>
+<td>预测 DSL 文件</td>
+</tr>
+<tr>
+<td>cpn_step_index</td>
+<td></td>
+<td><code>--cpn-step-index</code></td>
+<td>是</td>
+<td>用指定的 Checkpoint 模型替换 Pipeline 模型<br />使用 <code>:</code> 分隔 component name 与 step index<br />例如 <code>--cpn-step-index cpn_a:123</code></td>
+</tr>
+<tr>
+<td>cpn_step_name</td>
+<td></td>
+<td><code>--cpn-step-name</code></td>
+<td>是</td>
+<td>用指定的 Checkpoint 模型替换 Pipeline 模型<br />使用 <code>:</code> 分隔 component name 与 step name<br />例如 <code>--cpn-step-name cpn_b:foobar</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>样例</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;model_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;arbiter-9999#guest-10000#host-9999#model&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;model_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202111032227378766180&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9999</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9999</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;arbiter&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deploy model of role arbiter 9999 success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;guest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deploy model of role guest 10000 success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;host&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;party_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deploy model of role host 9999 success&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="get-predict-dsl">get-predict-dsl<a class="headerlink" href="#get-predict-dsl" title="Permanent link">&para;</a></h3>
+<p>获取预测 DSL。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>get-predict-dsl<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>-o<span class="w"> </span>./examples/
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>否</td>
+<td>模型 ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>否</td>
+<td>模型版本</td>
+</tr>
+<tr>
+<td>output_path</td>
+<td><code>-o</code></td>
+<td><code>--output-path</code></td>
+<td>否</td>
+<td>输出路径</td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-predict-conf">get-predict-conf<a class="headerlink" href="#get-predict-conf" title="Permanent link">&para;</a></h3>
+<p>获取模型预测模板。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>get-predict-conf<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>-o<span class="w"> </span>./examples/
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>否</td>
+<td>模型 ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>否</td>
+<td>模型版本</td>
+</tr>
+<tr>
+<td>output_path</td>
+<td><code>-o</code></td>
+<td><code>--output-path</code></td>
+<td>否</td>
+<td>输出路径</td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-model-info">get-model-info<a class="headerlink" href="#get-model-info" title="Permanent link">&para;</a></h3>
+<p>获取模型信息。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>get-model-info<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;
+flow<span class="w"> </span>model<span class="w"> </span>get-model-info<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>--detail
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>否</td>
+<td>模型 ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>否</td>
+<td>模型版本</td>
+</tr>
+<tr>
+<td>role</td>
+<td><code>-r</code></td>
+<td><code>--role</code></td>
+<td>是</td>
+<td>Party 角色</td>
+</tr>
+<tr>
+<td>party_id</td>
+<td><code>-p</code></td>
+<td><code>--party-id</code></td>
+<td>是</td>
+<td>Party ID</td>
+</tr>
+<tr>
+<td>detail</td>
+<td></td>
+<td><code>--detail</code></td>
+<td>是</td>
+<td>展示详细信息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="homo-convert">homo-convert<a class="headerlink" href="#homo-convert" title="Permanent link">&para;</a></h3>
+<p>基于横向训练的模型，生成其他 ML 框架的模型文件。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>homo-convert<span class="w"> </span>-c<span class="w"> </span>examples/model/homo_convert_model.json
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>否</td>
+<td>配置文件</td>
+</tr>
+</tbody>
+</table>
+<h3 id="homo-deploy">homo-deploy<a class="headerlink" href="#homo-deploy" title="Permanent link">&para;</a></h3>
+<p>将横向训练后使用 <code>homo-convert</code> 生成的模型部署到在线推理系统中，当前支持创建基于 KFServing 的推理服务。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>model<span class="w"> </span>homo-deploy<span class="w"> </span>-c<span class="w"> </span>examples/model/homo_deploy_model.json
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conf_path</td>
+<td><code>-c</code></td>
+<td><code>--conf-path</code></td>
+<td>否</td>
+<td>配置文件</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-checkpoint">3. Checkpoint<a class="headerlink" href="#3-checkpoint" title="Permanent link">&para;</a></h2>
+<h3 id="list">list<a class="headerlink" href="#list" title="Permanent link">&para;</a></h3>
+<p>获取 Checkpoint 模型列表。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>checkpoint<span class="w"> </span>list<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>--role<span class="w"> </span>&lt;role&gt;<span class="w"> </span>--party-id<span class="w"> </span>&lt;party_id&gt;<span class="w"> </span>--component-name<span class="w"> </span>&lt;component_name&gt;
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>否</td>
+<td>模型 ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>否</td>
+<td>模型版本</td>
+</tr>
+<tr>
+<td>role</td>
+<td><code>-r</code></td>
+<td><code>--role</code></td>
+<td>否</td>
+<td>Party 角色</td>
+</tr>
+<tr>
+<td>party_id</td>
+<td><code>-p</code></td>
+<td><code>--party-id</code></td>
+<td>否</td>
+<td>Party ID</td>
+</tr>
+<tr>
+<td>component_name</td>
+<td><code>-cpn</code></td>
+<td><code>--component-name</code></td>
+<td>否</td>
+<td>组件名</td>
+</tr>
+</tbody>
+</table>
+<p><strong>样例</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-11-07T02:34:54.683015&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;step_index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;step_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;step_name&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;HeteroLogisticRegressionMeta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;buffer_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LRModelMeta&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;sha1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6871508f6e6228341b18031b3623f99a53a87147&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;HeteroLogisticRegressionParam&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;buffer_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LRModelParam&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;sha1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e3cb636fc93675684bff27117943f5bfa87f3029&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="get">get<a class="headerlink" href="#get" title="Permanent link">&para;</a></h3>
+<p>获取 Checkpoint 模型信息。</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>checkpoint<span class="w"> </span>get<span class="w"> </span>--model-id<span class="w"> </span>&lt;model_id&gt;<span class="w"> </span>--model-version<span class="w"> </span>&lt;model_version&gt;<span class="w"> </span>--role<span class="w"> </span>&lt;role&gt;<span class="w"> </span>--party-id<span class="w"> </span>&lt;party_id&gt;<span class="w"> </span>--component-name<span class="w"> </span>&lt;component_name&gt;<span class="w"> </span>--step-index<span class="w"> </span>&lt;step_index&gt;
+</code></pre></div>
+<p><strong>选项</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>短格式</th>
+<th>长格式</th>
+<th>可选参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model_id</td>
+<td></td>
+<td><code>--model-id</code></td>
+<td>否</td>
+<td>模型 ID</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td></td>
+<td><code>--model-version</code></td>
+<td>否</td>
+<td>模型版本</td>
+</tr>
+<tr>
+<td>role</td>
+<td><code>-r</code></td>
+<td><code>--role</code></td>
+<td>否</td>
+<td>Party 角色</td>
+</tr>
+<tr>
+<td>party_id</td>
+<td><code>-p</code></td>
+<td><code>--party-id</code></td>
+<td>否</td>
+<td>Party ID</td>
+</tr>
+<tr>
+<td>component_name</td>
+<td><code>-cpn</code></td>
+<td><code>--component-name</code></td>
+<td>否</td>
+<td>组件名</td>
+</tr>
+<tr>
+<td>step_index</td>
+<td></td>
+<td><code>--step-index</code></td>
+<td>是</td>
+<td>Step index，不可与 step_name 同时使用</td>
+</tr>
+<tr>
+<td>step_name</td>
+<td></td>
+<td><code>--step-name</code></td>
+<td>是</td>
+<td>Step name，不可与 step_index 同时使用</td>
+</tr>
+</tbody>
+</table>
+<p><strong>样例</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;retcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;retmsg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-11-07T02:34:54.683015&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;step_index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;step_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;step_name&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;HeteroLogisticRegressionMeta&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CgJMMhEtQxzr4jYaPxkAAAAAAADwPyIHcm1zcHJvcDD///////////8BOTMzMzMzM8M/QApKBGRpZmZYAQ==&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;HeteroLogisticRegressionParam&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Ig0KAng3EW1qASu+uuO/Ig0KAng0EcNi7a65ReG/Ig0KAng4EbJbl4gvVea/Ig0KAng2EcZwlVZTkOu/Ig0KAngwEVpG8dCbGvG/Ig0KAng5ESJNTx5MLve/Ig0KAngzEZ88H9P8qfO/Ig0KAng1EVfWP8JJv/K/Ig0KAngxEVS0xVXoTem/Ig0KAngyEaApgW32Q/K/KSiiE8AukPs/MgJ4MDICeDEyAngyMgJ4MzICeDQyAng1MgJ4NjICeDcyAng4MgJ4OUj///////////8B&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="4">4. 存储引擎配置<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<h3 id="enable_model_store"><code>enable_model_store</code><a class="headerlink" href="#enable_model_store" title="Permanent link">&para;</a></h3>
+<p>开启后，在调用 <code>/model/load</code> 时：如果模型文件在本地磁盘存在、但不在存储引擎中，则自动把模型文件上传至存储引擎；如果模型文件在存储引擎存在、但不在本地磁盘中，则自动把模型文件下载到本地磁盘。</p>
+<p>此配置不影响 <code>/model/store</code> 和 <code>/model/restore</code>。</p>
+<h3 id="model_store_address"><code>model_store_address</code><a class="headerlink" href="#model_store_address" title="Permanent link">&para;</a></h3>
+<p>此配置定义使用的存储引擎。</p>
+<h4 id="_5">腾讯云对象存储<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tencent_cos</span>
+<span class="c1"># 请从腾讯云控制台获取下列配置</span>
+<span class="nt">Region</span><span class="p">:</span>
+<span class="nt">SecretId</span><span class="p">:</span>
+<span class="nt">SecretKey</span><span class="p">:</span>
+<span class="nt">Bucket</span><span class="p">:</span>
+</code></pre></div>
+<h4 id="mysql">MySQL<a class="headerlink" href="#mysql" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysql</span>
+<span class="nt">database</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate_model</span>
+<span class="nt">user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate</span>
+<span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3306</span>
+<span class="c1"># 可选的数据库连接参数</span>
+<span class="nt">max_connections</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="nt">stale_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</code></pre></div>
+<h4 id="redis">Redis<a class="headerlink" href="#redis" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis</span>
+<span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
+<span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6379</span>
+<span class="nt">db</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="nt">password</span><span class="p">:</span>
+<span class="c1"># key 的超时时间，单位秒。默认 None，没有超时时间。</span>
+<span class="nt">ex</span><span class="p">:</span>
+</code></pre></div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            回到页面顶部
+          </button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © Copyright 2022 WeBank Co., Ltd. | All Rights Reserved.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "search": "../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      
+        <script src="../../mkdocs/js/termynal.js"></script>
+      
+        <script src="../../mkdocs/js/custom.js"></script>
+      
+        <script src="../../mkdocs/js/lottie-player.js"></script>
+      
+    
+  </body>
+</html>
