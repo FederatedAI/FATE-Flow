@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - 'main'
-      - 'develop-[0-9].[0-9].[0-9]'
+      - 'develop-[0-9]+.[0-9]+.[0-9]+'
+      - 'build-doc-[0-9]+.[0-9]+.[0-9]+'
 
   schedule:
     - cron: '0 8 * * *'
@@ -38,9 +39,14 @@ jobs:
       - name: build doc via mike
         shell: bash
         run: |
-          VERSION='${{ github.ref_name }}'
-          [ "$VERSION" == main ] && { VERSION=latest; ALIAS='main master'; }
-          VERSION="${VERSION#develop-}"
-
+          if [[ "${{ github.ref_name }}" == 'main' ]]; then
+            VERSION=latest
+            ALIAS='main master'
+          elif [[ "${{ github.ref_name }}" == 'develop-'* ]]; then
+            VERSION="${{ github.ref_name | replace('develop-', '') }}"
+          elif [[ "${{ github.ref_name }}" == 'build-doc-'* ]]; then
+            VERSION="${{ github.ref_name | replace('build-doc-', '') }}"
+          fi
+          
           mike deploy --push --update-aliases "$VERSION" $ALIAS
           mike set-default --push latest
