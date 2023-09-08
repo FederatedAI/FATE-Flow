@@ -92,13 +92,10 @@ def deploy(config_data):
                 )
             else:
                 train_dsl = json_loads(pipeline_model.train_dsl)
-                inference_dsl = parser.deploy_component(
-                    config_data.get(
-                        'cpn_list',
-                        list(train_dsl.get('components', {}).keys()),
-                    ),
-                    train_dsl,
-                )
+                cpn_list = config_data.get('cpn_list', list(train_dsl.get('components', {}).keys()), )
+                if 'exclude_cpn_list' in config_data:
+                    cpn_list = list(set(cpn_list).difference(set(config_data.get('exclude_cpn_list', {}))))
+                inference_dsl = parser.deploy_component(cpn_list, train_dsl,)
 
         cpn_list = list(inference_dsl.get('components', {}).keys())
 
