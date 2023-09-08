@@ -83,7 +83,6 @@ class MetaParam(Param):
         self.header = header
         self.delimiter = delimiter
         self.dtype = dtype
-        self.anonymous_site_name=anonymous_site_name
         self.na_values = na_values
         self.input_format = input_format
         self.tag_with_value = tag_with_value
