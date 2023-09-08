@@ -29,7 +29,7 @@ from fate_flow.utils.wraps_utils import cluster_route
 @API.Input.params(task_name=fields.String(required=False), desc=TASK_NAME)
 @API.Input.params(instance_id=fields.String(required=False), desc=INSTANCE_ID)
 @cluster_route
-def count(log_type, job_id, role=None, party_id=None, task_name=None):
+def count(log_type, job_id, role=None, party_id=None, task_name=None, instance_id=None):
     data = LogManager(log_type, job_id, role=role, party_id=party_id, task_name=task_name).count()
     return API.Output.json(data=data)
 
@@ -44,6 +44,6 @@ def count(log_type, job_id, role=None, party_id=None, task_name=None):
 @API.Input.params(end=fields.Integer(required=False), desc=END)
 @API.Input.params(instance_id=fields.String(required=False), desc=INSTANCE_ID)
 @cluster_route
-def get(log_type, job_id, role, party_id, task_name=None, begin=None, end=None):
+def get(log_type, job_id, role, party_id, task_name=None, begin=None, end=None, instance_id=None):
     data = LogManager(log_type, job_id, role=role, party_id=party_id, task_name=task_name).cat_log(begin=begin, end=end)
     return API.Output.json(data=data)
