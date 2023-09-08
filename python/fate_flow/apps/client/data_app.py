@@ -16,11 +16,12 @@
 from webargs import fields
 
 from fate_flow.apps.desc import SERVER_FILE_PATH, HEAD, PARTITIONS, META, EXTEND_SID, NAMESPACE, NAME, DATA_WAREHOUSE, \
-    DROP, DOWN_TYPE, SITE_NAME
+    DROP, SITE_NAME
 from fate_flow.engine import storage
 from fate_flow.manager.components.component_manager import ComponentManager
 from fate_flow.manager.data.data_manager import DataManager
 from fate_flow.utils.api_utils import API
+from fate_flow.errors.server_error import NoFoundTable
 
 page_name = "data"
 
@@ -66,16 +67,13 @@ def transformer_data(data_warehouse, namespace, name, drop=True, site_name=None)
 @API.Input.params(name=fields.String(required=True), desc=NAME)
 @API.Input.params(namespace=fields.String(required=True), desc=NAMESPACE)
 @API.Input.params(header=fields.String(required=False), desc=HEAD)
-@API.Input.params(path=fields.String(required=False), desc=SERVER_FILE_PATH)
-@API.Input.params(types=fields.String(required=False), desc=DOWN_TYPE)
-def download(namespace, name, header=None, path=None, types=None):
+def download(namespace, name, header=None):
     data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
-    if types == "sync":
-        return DataManager.send_table(
-                output_tables_meta={"data": data_table_meta},
-                tar_file_name=f'download_data_{namespace}_{name}.tar.gz',
-                need_head=header)
-    else:
-        result = ComponentManager.download(path=path, namespace=namespace, name=name)
-        return API.Output.json(**result)
+    if not data_table_meta:
+        raise NoFoundTable(name=name, namespace=namespace)
+    return DataManager.send_table(
+        output_tables_meta={"data": data_table_meta},
+        tar_file_name=f'download_data_{namespace}_{name}.tar.gz',
+        need_head=header
+    )
 
