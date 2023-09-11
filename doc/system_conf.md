@@ -1,35 +1,35 @@
-### 系统配置描述文档
-FATE Flow使用yaml定义系统配置，配置路径位于: conf/service_conf.yaml, 具体配置内容及其含义如下：
+# System Configuration
+FATE Flow uses YAML to define system configurations, and the configuration file is located at: `conf/service_conf.yaml`. The specific configuration contents and their meanings are as follows:
 
-| 配置项              | 说明 | 值                            |
+| Configuration Item | Description | Values |
 |----------------------|------|------------------------------|
-| party_id             | 本方站点id | 如: "9999", "10000            |
-| use_registry         | 是否使用注册中心，当前仅支持zookeeper模式，需要保证zookeeper的配置正确；<br/>注：若使用高可用模式，需保证该配置设置为true | true/false                   |
-| encrypt              | 加密模块 | 见[加密模块](#加密模块)               |
-| fateflow             | FATE Flow服务的配置，主要包括端口、命令通道服务、代理等 | 见[FateFlow配置](#fateflow配置)   |
-| database             | 数据库服务的配置信息 | 见[数据库配置](#数据库配置)             |
-| default_engines      | 系统的引擎服务，主要包括计算、存储和通信引擎 | 见[引擎配置](#引擎配置)               |
-| default_provider     | 组件的来源信息，主要包括提供方名称、组件版本和运行模式 | 见[默认注册算法配置](#默认注册算法配置)               |
-| federation           | 通信服务池 | 见[通信引擎池](#通信引擎池)             |
-| computing            | 计算服务池 | 见[计算引擎池](#计算引擎池)             |
-| storage              | 存储服务池 | 见[存储引擎池](#存储配置)              |
-| hook_module          | 钩子配置，当前支持客户端认证、站点端认证以及鉴权钩子 | 见[钩子模块配置](#钩子模块配置)           |
-| authentication       | 认证&&鉴权开关 | 见[认证开关](#认证开关)               |
-| model_store          | 模型存储配置 | 见[模型存储](#模型存储)               |
-| zookeeper            | zookeeper服务的配置 | 见[zookeeper配置](#zookeeper配置) |
+| party_id | Local site ID | For example, "9999", "10000" |
+| use_registry | Whether to use a registry center; currently, only ZooKeeper mode is supported, and it requires correct ZooKeeper configuration. Note: If using high availability mode, ensure this configuration is set to true. | true/false |
+| encrypt | Encryption module | See [Encryption Module](#encryption-module) |
+| fateflow | Configuration for the FATE Flow service, including ports, command channel service, and proxy | See [FateFlow Configuration](#fateflow-configuration) |
+| database | Configuration information for the database service | See [Database Configuration](#database-configuration) |
+| default_engines | System's engine services, including computing, storage, and communication engines | See [Engine Configuration](#engine-configuration) |
+| default_provider | Component source information, including provider name, component version, and execution mode | See [Default Registered Algorithm Configuration](#default-registered-algorithm-configuration) |
+| federation | Communication service pool | See [Communication Engine Pool](#communication-engine-pool) |
+| computing | Computing service pool | See [Computing Engine Pool](#computing-engine-pool) |
+| storage | Storage service pool | See [Storage Engine Pool](#storage-configuration) |
+| hook_module | Hook configuration, currently supports client authentication, site authentication, and authorization hooks | See [Hook Module Configuration](#hook-module-configuration) |
+| authentication | Authentication and authorization switches | See [Authentication Switch](#authentication-switch) |
+| model_store | Model storage configuration | See [Model Storage](#model-storage) |
+| zookeeper | ZooKeeper service configuration | See [ZooKeeper Configuration](#zookeeper-configuration) |
 
-#### 加密模块
+## Encryption Module
 ```yaml
 key_0:
   module: fate_flow.hub.encrypt.password_encrypt#pwdecrypt
   private_path: private_key.pem
 ```
-该加密模块主要用于密码(如mysql密码)等内容加密：
-- 其中"key_0"为加密模块的key(可以自定义名字)，便于其它配置中直接引用，多套加密模式共存。
-  - module: 加密模块，拼接规则为：加密模块 + "#" + 加密函数。
-  - private_path：密钥路径。如填相对路径，其根目录位于fate_flow/conf/
+This encryption module is primarily used for encrypting passwords (e.g., MySQL passwords):
+- "key_0" is the key for the encryption module (you can customize the name), making it easier to reference in other configurations when multiple encryption modes coexist.
+  - module: The encryption module, formatted as "encryption module" + "#" + "encryption function."
+  - private_path: The path to the encryption key. If you provide a relative path, its root directory is `fate_flow/conf/`.
 
-#### FateFlow配置
+## FateFlow Configuration
 ```yaml
 host: 127.0.0.1
 http_port: 9380
@@ -40,13 +40,13 @@ nginx:
   http_port:
   grpc_port:
 ```
-- host: 主机地址;
-- http_port：http端口号;
-- grpc_port: grpc端口号;
-- proxy_name: 命令通道服务名，支持osx/rollsite/nginx。详细配置需要在[通信引擎池](#通信引擎池) 里面配置;
-- nginx: 代理服务配置，用于负载均衡。
+- host: Host address.
+- http_port: HTTP port number.
+- grpc_port: gRPC port number.
+- proxy_name: Command channel service name, supporting osx/rollsite/nginx. Detailed configurations need to be set within [Communication Engine Pool](#communication-engine-pool).
+- nginx: Proxy service configuration for load balancing.
 
-#### 数据库配置
+## Database Configuration
 ```yaml
 engine: sqlite
 decrypt_key:
@@ -61,12 +61,12 @@ mysql:
 sqlite:
   path:
 ```
-- engine: 数据库引擎名字，如这里填"mysql"，则需要更新mysql的配置详细配置。
-- decrypt_key: 加密模块,需要从[加密模块](#加密模块)中选择。 若不配置，视为不使用密码加密；若使用，则需要将下面的passwd相应设置为密文。
-- mysql: mysql服务配置；若使用密码加密功能，需要将此配置中的"passwd"设置为密文，并在[加密模块](#加密模块)中配置密钥路径
-- sqlite: sqlite文件路径，默认路径为fate_flow/fate_flow_sqlite.db
+- engine: Database engine name. If set to "mysql" here, update the detailed MySQL configuration.
+- decrypt_key: Encryption module, selected from [Encryption Module](#encryption-module). If not configured, it's considered to not use password encryption. If used, you need to set the "passwd" below to ciphertext and configure the key path in [Encryption Module](#encryption-module).
+- mysql: MySQL service configuration. If using password encryption functionality, set the "passwd" in this configuration to ciphertext and configure the key path in [Encryption Module](#encryption-module).
+- sqlite: SQLite file path, default path is `fate_flow/fate_flow_sqlite.db`.
 
-#### 引擎配置
+## Engine Configuration
 ```yaml
 default_engines:
   computing: standalone
@@ -74,17 +74,17 @@ default_engines:
   storage: standalone
 ```
 
-- computing: 计算引擎，支持"standalone"、"eggroll"、"spark"
-- federation: 通信引擎，支持"standalone"、"rollsite"、"osx"、"rabbitmq"、"pulsar"
-- storage: 存储引擎，支持"standalone"、"eggroll"、"hdfs"
+- computing: Computing engine, supports "standalone," "eggroll," "spark."
+- federation: Communication engine, supports "standalone," "rollsite," "osx," "rabbitmq," "pulsar."
+- storage: Storage engine, supports "standalone," "eggroll," "hdfs."
 
-#### 默认注册算法配置
-- name: 算法名称
-- version: 算法版本，若不配置，则使用fateflow.env中的配置
-- device: 算法启动方式, local/docker/k8s等
+## Default Registered Algorithm Configuration
+- name: Algorithm name.
+- version: Algorithm version. If not configured, it uses the configuration in `fateflow.env`.
+- device: Algorithm launch mode, local/docker/k8s, etc.
 
-#### 通信引擎池
-##### pulsar
+## Communication Engine Pool
+### Pulsar
 ```yaml
 pulsar:
   host: 192.168.0.5
@@ -93,88 +93,84 @@ pulsar:
   cluster: standalone
   tenant: fl-tenant
   topic_ttl: 30
-  # default conf/pulsar_route_table.yaml
   route_table:
-  # mode: replication / client, default: replication
   mode: replication
   max_message_size: 1048576
 ```
-##### nginx:
+### Nginx:
 ```yaml
 nginx:
   host: 127.0.0.1
   http_port: 9300
   grpc_port: 9310
-  # http or grpc
   protocol: http
 ```
 
-##### rabbitmq
+### RabbitMQ
 ```yaml
 nginx:
   host: 127.0.0.1
   http_port: 9300
   grpc_port: 9310
-  # http or grpc
   protocol: http
 ```
 
-##### rollsite
+### Rollsite
 ```yaml
 rollsite:
   host: 127.0.0.1
   port: 9370
 ```
 
-##### osx
+### OSx
 ```yaml
   host: 127.0.0.1
   port: 9370
 ```
 
-#### 计算引擎池
-##### standalone
+## Computing Engine Pool
+### Standalone
 ```yaml
   cores: 32
 ```
-- cores: 资源总数
+- cores: Total resources.
 
-##### eggroll
+### Eggroll
 ```yaml
 eggroll:
   cores: 32
   nodes: 2
 ```
-- cores: 集群资源总数
-- nodes: 集群node-manager数量
+- cores: Total cluster resources.
+- nodes: Number of node managers in the cluster.
 
-##### spark
+### Spark
 ```yaml
 eggroll:
   home: 
   cores: 32
 ```
-- home: spark home目录，如果不填，将使用"pyspark"作为计算引擎。
-- cores: 资源总数
+- home: Spark home directory. If not filled, "pyspark" will be used as the computing engine.
+- cores: Total resources.
 
-#### 存储引擎池
+## Storage Engine Pool
 ```yaml
   hdfs:
     name_node: hdfs://fate-cluster
 ```
 
-## 钩子模块配置
+## Hook Module Configuration
 ```yaml
 hook_module:
   client_authentication: fate_flow.hook.flow.client_authentication
   site_authentication: fate_flow.hook.flow.site_authentication
   permission: fate_flow.hook.flow.permission
 ```
-- client_authentication: 客户端认证钩子
-- site_authentication: 站点认证钩子
-- permission: 权限认证钩子
+- client_authentication: Client authentication hook.
+- site_authentication: Site authentication hook.
+- permission: Permission authentication hook.
 
-## 认证开关
+## Authentication Switch
 ```yaml
 authentication:
   client: false
@@ -182,7 +178,7 @@ authentication:
   permission: false
 ```
 
-## 模型存储
+## Model Storage
 ```yaml
 model_store:
   engine: file
@@ -203,14 +199,13 @@ model_store:
     SecretKey:
     Bucket:
 ```
-- engine: 模型存储引擎，支持"file"、"mysql"和"tencent_cos"。
-- decrypt_key: 加密模块,需要从[加密模块](#加密模块)中选择。 若不配置，视为不使用密码加密；若使用，则需要将下面的passwd相应设置为密文。
-- file: 模型存储目录，默认位于： fate_flow/model
-- mysql: mysql服务配置；若使用密码加密功能，需要将此配置中的"passwd"设置为密文，并在[加密模块](#加密模块)中配置密钥路径
-- tencent_cos: 腾讯云密钥配置
+- engine: Model storage engine, supports "file," "mysql", and "tencent_cos".
+- decrypt_key: Encryption module, needs to be selected from [Encryption Module](#encryption-module). If not configured, it is assumed to not use password encryption. If used, you need to set the "passwd" below accordingly to ciphertext and configure the key path in [Encryption Module](#encryption-module).
+- file: Model storage directory, default location is `fate_flow/model`.
+- mysql: MySQL service configuration; if using password encryption functionality, you need to set the "passwd" in this configuration to ciphertext and configure the key path in [Encryption Module](#encryption-module).
+- tencent_cos: Tencent Cloud key configuration.
 
-
-#### zookeeper配置
+## ZooKeeper Configuration
 ```yaml
 zookeeper:
   hosts:
