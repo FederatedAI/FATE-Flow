@@ -20,7 +20,7 @@
     
     
       
-        <title>Quick start - FATE Flow</title>
+        <title>快速入门 - FATE Flow</title>
       
     
     
@@ -123,7 +123,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Quick start
+              快速入门
             
           </span>
         </div>
@@ -444,12 +444,14 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
   
   <span class="md-ellipsis">
-    Quick start
+    快速入门
   </span>
   
 
@@ -460,7 +462,7 @@
         
   
   <span class="md-ellipsis">
-    Quick start
+    快速入门
   </span>
   
 
@@ -472,6 +474,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -480,14 +484,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    快速入门
-  </a>
-  
-    <nav class="md-nav" aria-label="快速入门">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#1" class="md-nav__link">
     1. 环境部署
   </a>
@@ -547,8 +543,8 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#2" class="md-nav__link">
     2. 使用指南
   </a>
@@ -779,16 +775,11 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#3" class="md-nav__link">
     3.更多文档
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -811,7 +802,7 @@
         
   
   <span class="md-ellipsis">
-    System conf
+    系统配置描述文档
   </span>
   
 
@@ -864,6 +855,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -872,14 +865,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    快速入门
-  </a>
-  
-    <nav class="md-nav" aria-label="快速入门">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#1" class="md-nav__link">
     1. 环境部署
   </a>
@@ -939,8 +924,8 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#2" class="md-nav__link">
     2. 使用指南
   </a>
@@ -1171,16 +1156,11 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#3" class="md-nav__link">
     3.更多文档
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1202,14 +1182,12 @@
   
 
 
-  <h1>Quick start</h1>
-
-<h2 id="_1">快速入门<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
-<h3 id="1">1. 环境部署<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<h1 id="_1">快速入门<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="1">1. 环境部署<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
 <p>以下三种模式可根据需求自行选择一种</p>
-<h4 id="11-pypi">1.1 Pypi包安装<a class="headerlink" href="#11-pypi" title="Permanent link">&para;</a></h4>
+<h3 id="11-pypi">1.1 Pypi包安装<a class="headerlink" href="#11-pypi" title="Permanent link">&para;</a></h3>
 <p>说明：此方式的运行模式为单机模式</p>
-<h5 id="111">1.1.1 安装<a class="headerlink" href="#111" title="Permanent link">&para;</a></h5>
+<h4 id="111">1.1.1 安装<a class="headerlink" href="#111" title="Permanent link">&para;</a></h4>
 <ul>
 <li><a href="https://docs.conda.io/projects/miniconda/en/latest/">conda</a>环境准备及安装</li>
 <li>创建虚拟环境
@@ -1221,40 +1199,40 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>fate_client<span class="o">[</span>fate,fate_flow<span class="o">]==</span><span class="m">2</span>.0.0.b0
 </code></pre></div></li>
 </ul>
-<h5 id="112">1.1.2 服务初始化<a class="headerlink" href="#112" title="Permanent link">&para;</a></h5>
+<h4 id="112">1.1.2 服务初始化<a class="headerlink" href="#112" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>fate_flow<span class="w"> </span>init<span class="w"> </span>--ip<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">9380</span><span class="w"> </span>--home<span class="w"> </span><span class="nv">$HOME_DIR</span>
 </code></pre></div>
 - ip: 服务运行ip
 - port：服务运行时的http端口
 - home: 数据存储目录。主要包括：数据/模型/日志/作业配置/sqlite.db等内容</p>
-<h5 id="113">1.1.3 服务启停<a class="headerlink" href="#113" title="Permanent link">&para;</a></h5>
+<h4 id="113">1.1.3 服务启停<a class="headerlink" href="#113" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>fate_flow<span class="w"> </span>status/start/stop/restart
 </code></pre></div>
-<h4 id="12">1.2 单机版部署<a class="headerlink" href="#12" title="Permanent link">&para;</a></h4>
+<h3 id="12">1.2 单机版部署<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
 <p>参考<a href="https://github.com/FederatedAI/FATE/blob/v2.0.0-beta/deploy/standalone-deploy/README.md">单机版部署</a></p>
-<h4 id="13">1.3 集群部署<a class="headerlink" href="#13" title="Permanent link">&para;</a></h4>
+<h3 id="13">1.3 集群部署<a class="headerlink" href="#13" title="Permanent link">&para;</a></h3>
 <p>参考<a href="https://github.com/FederatedAI/FATE/blob/v2.0.0-beta/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.md">allinone部署</a></p>
-<h3 id="2">2. 使用指南<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
+<h2 id="2">2. 使用指南<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
 <p>fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以使用<code>pip install fate_client</code>下载，以下的使用操作均基于cli编写。</p>
-<h4 id="21">2.1 数据上传<a class="headerlink" href="#21" title="Permanent link">&para;</a></h4>
+<h3 id="21">2.1 数据上传<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
 <p>在2.0-beta版本中，数据上传分为两步：
 - upload: 将数据上传到FATE支持存储服务中 
 - transformer: 将数据转化成dataframe</p>
-<h5 id="211-upload">2.1.1 upload<a class="headerlink" href="#211-upload" title="Permanent link">&para;</a></h5>
-<h5 id="2111">2.1.1.1 配置及数据<a class="headerlink" href="#2111" title="Permanent link">&para;</a></h5>
+<h4 id="211-upload">2.1.1 upload<a class="headerlink" href="#211-upload" title="Permanent link">&para;</a></h4>
+<h4 id="2111">2.1.1.1 配置及数据<a class="headerlink" href="#2111" title="Permanent link">&para;</a></h4>
 <ul>
-<li>上传配置位于<a href="../examples/upload">examples-upload</a>，上传数据位于<a href="../examples/data">upload-data</a></li>
+<li>上传配置位于<a href="https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/upload">examples-upload</a>，上传数据位于<a href="https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/data">upload-data</a></li>
 <li>你也可以使用自己的数据，并修改upload配置中的"meta"信息。</li>
 </ul>
-<h5 id="2112-guest">2.1.1.2 上传guest方数据<a class="headerlink" href="#2112-guest" title="Permanent link">&para;</a></h5>
+<h4 id="2112-guest">2.1.1.2 上传guest方数据<a class="headerlink" href="#2112-guest" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>upload<span class="w"> </span>-c<span class="w"> </span>examples/upload/upload_guest.json
 </code></pre></div>
 - 需要记录返回的name和namespace，作为transformer的参数。</p>
-<h5 id="2113-host">2.1.1.3 上传host方数据<a class="headerlink" href="#2113-host" title="Permanent link">&para;</a></h5>
+<h4 id="2113-host">2.1.1.3 上传host方数据<a class="headerlink" href="#2113-host" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>upload<span class="w"> </span>-c<span class="w"> </span>examples/upload/upload_host.json
 </code></pre></div>
 - 需要记录返回的name和namespace，作为transformer的参数。</p>
-<h5 id="2114">2.1.1.4 上传结果<a class="headerlink" href="#2114" title="Permanent link">&para;</a></h5>
+<h4 id="2114">2.1.1.4 上传结果<a class="headerlink" href="#2114" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1266,7 +1244,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <span class="p">}</span>
 </code></pre></div>
 其中"namespace"和"name"是这份数据在fate中的标识，以便下面后续transformer阶段使用时可直接引用。</p>
-<h5 id="2115">2.1.1.5 数据查询<a class="headerlink" href="#2115" title="Permanent link">&para;</a></h5>
+<h4 id="2115">2.1.1.5 数据查询<a class="headerlink" href="#2115" title="Permanent link">&para;</a></h4>
 <p>因为upload为异步操作，需要确认是否上传成功才可进行后续操作。
 <div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span>query<span class="w"> </span>--namespace<span class="w"> </span>upload<span class="w"> </span>--name<span class="w"> </span>36491bc8-3fef-11ee-be05-16b977118319
 </code></pre></div>
@@ -1306,26 +1284,26 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <span class="p">}</span>
 </code></pre></div>
 若返回的code为0即为上传成功。</p>
-<h5 id="212-transformer">2.1.2 transformer<a class="headerlink" href="#212-transformer" title="Permanent link">&para;</a></h5>
-<h5 id="2121">2.1.2.1 配置<a class="headerlink" href="#2121" title="Permanent link">&para;</a></h5>
+<h4 id="212-transformer">2.1.2 transformer<a class="headerlink" href="#212-transformer" title="Permanent link">&para;</a></h4>
+<h4 id="2121">2.1.2.1 配置<a class="headerlink" href="#2121" title="Permanent link">&para;</a></h4>
 <ul>
-<li>transformer配置位于<a href="../examples/transformer">examples-transformer</a></li>
+<li>transformer配置位于<a href="https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/transformer">examples-transformer</a></li>
 </ul>
-<h5 id="2122-transformer-guest">2.1.2.2 transformer guest<a class="headerlink" href="#2122-transformer-guest" title="Permanent link">&para;</a></h5>
+<h4 id="2122-transformer-guest">2.1.2.2 transformer guest<a class="headerlink" href="#2122-transformer-guest" title="Permanent link">&para;</a></h4>
 <ul>
 <li>配置路径位于： examples/transformer/transformer_guest.json</li>
 <li>修改配置中"data_warehouse"的"namespace"和"name"：上面upload guest阶段的输出
 <div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>transformer<span class="w"> </span>-c<span class="w"> </span>examples/transformer/transformer_guest.json
 </code></pre></div></li>
 </ul>
-<h5 id="2123-transformer-host">2.1.2.3 transformer host<a class="headerlink" href="#2123-transformer-host" title="Permanent link">&para;</a></h5>
+<h4 id="2123-transformer-host">2.1.2.3 transformer host<a class="headerlink" href="#2123-transformer-host" title="Permanent link">&para;</a></h4>
 <ul>
 <li>配置路径位于： examples/transformer/transformer_host.json</li>
 <li>修改配置中"data_warehouse"的"namespace"和"name"：上面upload host阶段的输出
 <div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>transformer<span class="w"> </span>-c<span class="w"> </span>examples/transformer/transformer_host.json
 </code></pre></div></li>
 </ul>
-<h5 id="2124-transformer">2.1.2.4 transformer结果<a class="headerlink" href="#2124-transformer" title="Permanent link">&para;</a></h5>
+<h4 id="2124-transformer">2.1.2.4 transformer结果<a class="headerlink" href="#2124-transformer" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1337,18 +1315,18 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <span class="p">}</span>
 </code></pre></div>
 其中"namespace"和"name"是这份数据在fate中的标识，后续建模作业中使用。</p>
-<h5 id="2125">2.1.2.5 查看数据是否上传成功<a class="headerlink" href="#2125" title="Permanent link">&para;</a></h5>
+<h4 id="2125">2.1.2.5 查看数据是否上传成功<a class="headerlink" href="#2125" title="Permanent link">&para;</a></h4>
 <p>因为transformer也是异步操作，需要确认是否上传成功才可进行后续操作。
 <div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span>query<span class="w"> </span>--namespace<span class="w"> </span>experiment<span class="w">  </span>--name<span class="w"> </span>breast_hetero_guest
 </code></pre></div>
 <div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span>query<span class="w"> </span>--namespace<span class="w"> </span>experiment<span class="w">  </span>--name<span class="w"> </span>breast_hetero_host
 </code></pre></div>
 若返回的code为0即为上传成功。</p>
-<h4 id="22-fate">2.2 开始FATE作业<a class="headerlink" href="#22-fate" title="Permanent link">&para;</a></h4>
-<h5 id="221">2.2.1 提交作业<a class="headerlink" href="#221" title="Permanent link">&para;</a></h5>
+<h3 id="22-fate">2.2 开始FATE作业<a class="headerlink" href="#22-fate" title="Permanent link">&para;</a></h3>
+<h4 id="221">2.2.1 提交作业<a class="headerlink" href="#221" title="Permanent link">&para;</a></h4>
 <p>当你的数据准备好后，可以开始提交作业给FATE Flow：
-- 训练job配置example位于<a href="../examples/lr/train_lr.yaml">lr-train</a>;
-- 预测job配置example位于<a href="../examples/lr/predict_lr.yaml">lr-predict</a>;预测任务需要修改"dag.conf.model_warehouse"成训练作业的输出模型。
+- 训练job配置example位于<a href="https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/lr/train_lr.yaml">lr-train</a>;
+- 预测job配置example位于<a href="https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/lr/predict_lr.yaml">lr-predict</a>;预测任务需要修改"dag.conf.model_warehouse"成训练作业的输出模型。
 - 训练和预测job配置中站点id为"9998"和"9999"。如果你的部署环境为集群版，需要替换成真实的站点id；单机版可使用默认配置。
 - 如果想要使用自己的数据，可以更改配置中guest和host的data_warehouse的namespace和name
 - 提交作业的命令为:
@@ -1366,21 +1344,21 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <span class="p">}</span>
 </code></pre></div>
 这里的"data"内容即为该作业的输出模型。</p>
-<h5 id="222">2.2.2 查询作业<a class="headerlink" href="#222" title="Permanent link">&para;</a></h5>
+<h4 id="222">2.2.2 查询作业<a class="headerlink" href="#222" title="Permanent link">&para;</a></h4>
 <p>在作业的运行过程时，你可以通过查询命令获取作业的运行状态
 <div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>query<span class="w"> </span>-j<span class="w"> </span><span class="nv">$job_id</span>
 </code></pre></div></p>
-<h5 id="223">2.2.3 停止作业<a class="headerlink" href="#223" title="Permanent link">&para;</a></h5>
+<h4 id="223">2.2.3 停止作业<a class="headerlink" href="#223" title="Permanent link">&para;</a></h4>
 <p>在作业的运行过程时，你可以通过停止作业命令来终止当前作业
 <div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>stop<span class="w"> </span>-j<span class="w"> </span><span class="nv">$job_id</span>
 </code></pre></div></p>
-<h5 id="224">2.2.4 重跑作业<a class="headerlink" href="#224" title="Permanent link">&para;</a></h5>
+<h4 id="224">2.2.4 重跑作业<a class="headerlink" href="#224" title="Permanent link">&para;</a></h4>
 <p>在作业的运行过程时，如果运行失败，你可以通过重跑命令来重跑当前作业
 <div class="highlight"><pre><span></span><code>flow<span class="w"> </span>job<span class="w"> </span>rerun<span class="w"> </span>-j<span class="w"> </span><span class="nv">$job_id</span>
 </code></pre></div></p>
-<h4 id="23">2.3 获取作业输出结果<a class="headerlink" href="#23" title="Permanent link">&para;</a></h4>
+<h3 id="23">2.3 获取作业输出结果<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
 <p>作业的输出包括数据、模型和指标</p>
-<h5 id="231">2.3.1 输出指标<a class="headerlink" href="#231" title="Permanent link">&para;</a></h5>
+<h4 id="231">2.3.1 输出指标<a class="headerlink" href="#231" title="Permanent link">&para;</a></h4>
 <p>查询输出指标命令：
 <div class="highlight"><pre><span></span><code>flow<span class="w"> </span>output<span class="w"> </span>query-metric<span class="w"> </span>-j<span class="w"> </span><span class="nv">$job_id</span><span class="w"> </span>-r<span class="w"> </span><span class="nv">$role</span><span class="w"> </span>-p<span class="w"> </span><span class="nv">$party_id</span><span class="w"> </span>-tn<span class="w"> </span><span class="nv">$task_name</span>
 </code></pre></div>
@@ -1441,8 +1419,8 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<h5 id="232">2.3.2 输出模型<a class="headerlink" href="#232" title="Permanent link">&para;</a></h5>
-<h6 id="2321">2.3.2.1 查询模型<a class="headerlink" href="#2321" title="Permanent link">&para;</a></h6>
+<h4 id="232">2.3.2 输出模型<a class="headerlink" href="#232" title="Permanent link">&para;</a></h4>
+<h5 id="2321">2.3.2.1 查询模型<a class="headerlink" href="#2321" title="Permanent link">&para;</a></h5>
 <p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>output<span class="w"> </span>query-model<span class="w"> </span>-j<span class="w"> </span><span class="nv">$job_id</span><span class="w"> </span>-r<span class="w"> </span><span class="nv">$role</span><span class="w"> </span>-p<span class="w"> </span><span class="nv">$party_id</span><span class="w"> </span>-tn<span class="w"> </span><span class="nv">$task_name</span>
 </code></pre></div>
 如使用上面的训练dag提交任务，可以使用<code>flow output query-model -j 202308211911505128750 -r host -p 9998 -tn lr_0</code>查询。
@@ -1668,7 +1646,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<h6 id="2322">2.3.2.2 下载模型<a class="headerlink" href="#2322" title="Permanent link">&para;</a></h6>
+<h5 id="2322">2.3.2.2 下载模型<a class="headerlink" href="#2322" title="Permanent link">&para;</a></h5>
 <p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>output<span class="w"> </span>download-model<span class="w"> </span>-j<span class="w"> </span><span class="nv">$job_id</span><span class="w"> </span>-r<span class="w"> </span><span class="nv">$role</span><span class="w"> </span>-p<span class="w"> </span><span class="nv">$party_id</span><span class="w"> </span>-tn<span class="w"> </span><span class="nv">$task_name</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$download_dir</span>
 </code></pre></div>
 如使用上面的训练dag提交任务，可以使用<code>flow output download-model -j 202308211911505128750 -r host -p 9998 -tn lr_0 -o ./</code>下载。
@@ -1679,8 +1657,8 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;download success, please check the path: ./output_model_202308211911505128750_host_9998_lr_0&quot;</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<h5 id="233">2.3.3 输出数据<a class="headerlink" href="#233" title="Permanent link">&para;</a></h5>
-<h6 id="2331">2.3.3.1 查询数据表<a class="headerlink" href="#2331" title="Permanent link">&para;</a></h6>
+<h4 id="233">2.3.3 输出数据<a class="headerlink" href="#233" title="Permanent link">&para;</a></h4>
+<h5 id="2331">2.3.3.1 查询数据表<a class="headerlink" href="#2331" title="Permanent link">&para;</a></h5>
 <p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>output<span class="w"> </span>query-data-table<span class="w"> </span>-j<span class="w"> </span><span class="nv">$job_id</span><span class="w"> </span>-r<span class="w"> </span><span class="nv">$role</span><span class="w"> </span>-p<span class="w"> </span><span class="nv">$party_id</span><span class="w"> </span>-tn<span class="w"> </span><span class="nv">$task_name</span>
 </code></pre></div>
 如使用上面的训练dag提交任务，可以使用<code>flow output query-data-table -j 202308211911505128750 -r host -p 9998 -tn binning_0</code>查询。
@@ -1694,11 +1672,11 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <span class="w">    </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<h6 id="2332">2.3.3.2 预览数据<a class="headerlink" href="#2332" title="Permanent link">&para;</a></h6>
+<h5 id="2332">2.3.3.2 预览数据<a class="headerlink" href="#2332" title="Permanent link">&para;</a></h5>
 <p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>output<span class="w"> </span>display-data<span class="w"> </span>-j<span class="w"> </span><span class="nv">$job_id</span><span class="w"> </span>-r<span class="w"> </span><span class="nv">$role</span><span class="w"> </span>-p<span class="w"> </span><span class="nv">$party_id</span><span class="w"> </span>-tn<span class="w"> </span><span class="nv">$task_name</span>
 </code></pre></div>
 如使用上面的训练dag提交任务，可以使用<code>flow output display-data -j 202308211911505128750 -r host -p 9998 -tn binning_0</code>预览输出数据。</p>
-<h6 id="2333">2.3.3.3 下载数据<a class="headerlink" href="#2333" title="Permanent link">&para;</a></h6>
+<h5 id="2333">2.3.3.3 下载数据<a class="headerlink" href="#2333" title="Permanent link">&para;</a></h5>
 <p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>output<span class="w"> </span>download-data<span class="w"> </span>-j<span class="w"> </span><span class="nv">$job_id</span><span class="w"> </span>-r<span class="w"> </span><span class="nv">$role</span><span class="w"> </span>-p<span class="w"> </span><span class="nv">$party_id</span><span class="w"> </span>-tn<span class="w"> </span><span class="nv">$task_name</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$download_dir</span>
 </code></pre></div>
 如使用上面的训练dag提交任务，可以使用<code>flow output download-data -j 202308211911505128750 -r guest -p 9999 -tn lr_0 -o ./</code>下载输出数据。
@@ -1709,9 +1687,9 @@ conda<span class="w"> </span>activate<span class="w"> </span>fate_env
 <span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;download success, please check the path: ./output_data_202308211911505128750_guest_9999_lr_0&quot;</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<h3 id="3">3.更多文档<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
+<h2 id="3">3.更多文档<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="./swagger/swagger.json">Restful-api</a></li>
+<li><a href="https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/doc/swagger/swagger.yaml">Restful-api</a></li>
 <li><a href="https://github.com/FederatedAI/FATE-Client/blob/dev-2.0.0-beta/python/fate_client/flow_cli/build/doc">CLI</a></li>
 <li><a href="https://github.com/FederatedAI/FATE/tree/dev-2.0.0-beta/doc/tutorial">Pipeline</a></li>
 <li><a href="https://github.com/FederatedAI/FATE/tree/dev-2.0.0-beta/doc/2.0/components">FATE算法</a></li>
