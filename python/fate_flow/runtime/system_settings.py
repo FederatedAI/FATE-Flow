@@ -27,7 +27,6 @@ from fate_flow.settings import *
 
 # Server
 API_VERSION = "v2"
-INTERCONN_API_VERSION = "v1"
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
 CASBIN_TABLE_NAME = "fate_casbin"
