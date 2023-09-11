@@ -591,7 +591,16 @@
   <h1>API</h1>
 
 <h2 id="swagger-api">Swagger API<a class="headerlink" href="#swagger-api" title="Permanent link">&para;</a></h2>
-<p>!! SWAGGER ERROR: File swagger.yaml not found. !!</p>
+<p><link type="text/css" rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@3/swagger-ui.css"></p>
+<div id="swagger-ui">
+</div>
+<script src="https://unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js" charset="UTF-8"></script>
+<script>
+    SwaggerUIBundle({
+      url: 'swagger.yaml',
+      dom_id: '#swagger-ui',
+    })
+</script>
 
 
 
