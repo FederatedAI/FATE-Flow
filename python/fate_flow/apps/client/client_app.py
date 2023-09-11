@@ -57,14 +57,14 @@ def create_site_app(party_id):
 @manager.route('/site/delete', methods=['POST'])
 @API.Input.json(party_id=fields.String(required=True), desc=PARTY_ID)
 def delete_site_app(party_id):
-    status = AppManager.delete_app(app_name=party_id, app_type=AppType.SITE)
+    status = AppManager.delete_app(app_name=party_id, app_type=AppType.SITE, init=True)
     return API.Output.json(data={"status": status})
 
 
 @manager.route('/site/query', methods=['GET'])
 @API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
 def query_site_app(party_id=None):
-    apps = AppManager.query_app(app_name=party_id, app_type=AppType.SITE)
+    apps = AppManager.query_app(app_name=party_id, app_type=AppType.SITE,init=True)
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=[app.to_human_model_dict() for app in apps])
 
 
