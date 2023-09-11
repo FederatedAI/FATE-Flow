@@ -31,10 +31,10 @@ fate_flow status/start/stop/restart
 ```
 
 ### 1.2 单机版部署
-参考[单机版部署](https://github.com/FederatedAI/FATE/blob/v2.0.0-beta/deploy/standalone-deploy/README.md)
+参考[单机版部署](https://github.com/FederatedAI/FATE/blob/dev-2.0.0-beta/deploy/standalone-deploy/README.zh.md)
 
 ### 1.3 集群部署
-参考[allinone部署](https://github.com/FederatedAI/FATE/blob/v2.0.0-beta/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.md)
+参考[allinone部署](https://github.com/FederatedAI/FATE/blob/dev-2.0.0-beta/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.zh.md)
 
 ## 2. 使用指南
 fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以使用`pip install fate_client`下载，以下的使用操作均基于cli编写。
