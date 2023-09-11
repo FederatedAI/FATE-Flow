@@ -1,10 +1,10 @@
-## 快速入门
+# 快速入门
 
-### 1. 环境部署
+## 1. 环境部署
 以下三种模式可根据需求自行选择一种
-#### 1.1 Pypi包安装
+### 1.1 Pypi包安装
 说明：此方式的运行模式为单机模式
-##### 1.1.1 安装
+#### 1.1.1 安装
 - [conda](https://docs.conda.io/projects/miniconda/en/latest/)环境准备及安装
 - 创建虚拟环境
 ```shell
@@ -17,7 +17,7 @@ conda activate fate_env
 pip install fate_client[fate,fate_flow]==2.0.0.b0
 ```
 
-##### 1.1.2 服务初始化
+#### 1.1.2 服务初始化
 ```shell
 fate_flow init --ip 127.0.0.1 --port 9380 --home $HOME_DIR
 ```
@@ -25,39 +25,39 @@ fate_flow init --ip 127.0.0.1 --port 9380 --home $HOME_DIR
 - port：服务运行时的http端口
 - home: 数据存储目录。主要包括：数据/模型/日志/作业配置/sqlite.db等内容
 
-##### 1.1.3 服务启停
+#### 1.1.3 服务启停
 ```shell
 fate_flow status/start/stop/restart
 ```
 
-#### 1.2 单机版部署
+### 1.2 单机版部署
 参考[单机版部署](https://github.com/FederatedAI/FATE/blob/v2.0.0-beta/deploy/standalone-deploy/README.md)
 
-#### 1.3 集群部署
+### 1.3 集群部署
 参考[allinone部署](https://github.com/FederatedAI/FATE/blob/v2.0.0-beta/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.md)
 
-### 2. 使用指南
+## 2. 使用指南
 fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以使用`pip install fate_client`下载，以下的使用操作均基于cli编写。
 
-#### 2.1 数据上传
+### 2.1 数据上传
 在2.0-beta版本中，数据上传分为两步：
 - upload: 将数据上传到FATE支持存储服务中 
 - transformer: 将数据转化成dataframe
-##### 2.1.1 upload
-##### 2.1.1.1 配置及数据
- - 上传配置位于[examples-upload](../examples/upload)，上传数据位于[upload-data](../examples/data)
+#### 2.1.1 upload
+#### 2.1.1.1 配置及数据
+ - 上传配置位于[examples-upload](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/upload)，上传数据位于[upload-data](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/data)
  - 你也可以使用自己的数据，并修改upload配置中的"meta"信息。
-##### 2.1.1.2 上传guest方数据
+#### 2.1.1.2 上传guest方数据
 ```shell
 flow data upload -c examples/upload/upload_guest.json
 ```
 - 需要记录返回的name和namespace，作为transformer的参数。
-##### 2.1.1.3 上传host方数据
+#### 2.1.1.3 上传host方数据
 ```shell
 flow data upload -c examples/upload/upload_host.json
 ```
 - 需要记录返回的name和namespace，作为transformer的参数。
-##### 2.1.1.4 上传结果
+#### 2.1.1.4 上传结果
 ```json
 {
     "code": 0,
@@ -71,7 +71,7 @@ flow data upload -c examples/upload/upload_host.json
 ```
 其中"namespace"和"name"是这份数据在fate中的标识，以便下面后续transformer阶段使用时可直接引用。
 
-##### 2.1.1.5 数据查询
+#### 2.1.1.5 数据查询
 因为upload为异步操作，需要确认是否上传成功才可进行后续操作。
 ```shell
 flow table query --namespace upload --name 36491bc8-3fef-11ee-be05-16b977118319
@@ -115,22 +115,22 @@ flow table query --namespace upload --name 36491bc8-3fef-11ee-be05-16b977118319
 ```
 若返回的code为0即为上传成功。
 
-##### 2.1.2 transformer
-##### 2.1.2.1 配置
- - transformer配置位于[examples-transformer](../examples/transformer)
-##### 2.1.2.2 transformer guest
+#### 2.1.2 transformer
+#### 2.1.2.1 配置
+ - transformer配置位于[examples-transformer](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/transformer)
+#### 2.1.2.2 transformer guest
 - 配置路径位于： examples/transformer/transformer_guest.json
 - 修改配置中"data_warehouse"的"namespace"和"name"：上面upload guest阶段的输出
 ```shell
 flow data transformer -c examples/transformer/transformer_guest.json
 ```
-##### 2.1.2.3 transformer host
+#### 2.1.2.3 transformer host
 - 配置路径位于： examples/transformer/transformer_host.json
 - 修改配置中"data_warehouse"的"namespace"和"name"：上面upload host阶段的输出
 ```shell
 flow data transformer -c examples/transformer/transformer_host.json
 ```
-##### 2.1.2.4 transformer结果
+#### 2.1.2.4 transformer结果
 ```json
 {
     "code": 0,
@@ -144,7 +144,7 @@ flow data transformer -c examples/transformer/transformer_host.json
 ```
 其中"namespace"和"name"是这份数据在fate中的标识，后续建模作业中使用。
 
-##### 2.1.2.5 查看数据是否上传成功
+#### 2.1.2.5 查看数据是否上传成功
 
 因为transformer也是异步操作，需要确认是否上传成功才可进行后续操作。
 ```shell
@@ -155,11 +155,11 @@ flow table query --namespace experiment  --name breast_hetero_host
 ```
 若返回的code为0即为上传成功。
 
-#### 2.2 开始FATE作业
-##### 2.2.1 提交作业
+### 2.2 开始FATE作业
+#### 2.2.1 提交作业
 当你的数据准备好后，可以开始提交作业给FATE Flow：
-- 训练job配置example位于[lr-train](../examples/lr/train_lr.yaml);
-- 预测job配置example位于[lr-predict](../examples/lr/predict_lr.yaml);预测任务需要修改"dag.conf.model_warehouse"成训练作业的输出模型。
+- 训练job配置example位于[lr-train](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/lr/train_lr.yaml);
+- 预测job配置example位于[lr-predict](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/lr/predict_lr.yaml);预测任务需要修改"dag.conf.model_warehouse"成训练作业的输出模型。
 - 训练和预测job配置中站点id为"9998"和"9999"。如果你的部署环境为集群版，需要替换成真实的站点id；单机版可使用默认配置。
 - 如果想要使用自己的数据，可以更改配置中guest和host的data_warehouse的namespace和name
 - 提交作业的命令为:
@@ -181,27 +181,27 @@ flow job submit -c examples/lr/train_lr.yaml
 ```
 这里的"data"内容即为该作业的输出模型。
 
-##### 2.2.2 查询作业
+#### 2.2.2 查询作业
 在作业的运行过程时，你可以通过查询命令获取作业的运行状态
 ```shell
 flow job query -j $job_id
 ```
 
-##### 2.2.3 停止作业
+#### 2.2.3 停止作业
 在作业的运行过程时，你可以通过停止作业命令来终止当前作业
 ```shell
 flow job stop -j $job_id
 ```
 
-##### 2.2.4 重跑作业
+#### 2.2.4 重跑作业
 在作业的运行过程时，如果运行失败，你可以通过重跑命令来重跑当前作业
 ```shell
 flow job rerun -j $job_id
 ```
 
-#### 2.3 获取作业输出结果
+### 2.3 获取作业输出结果
 作业的输出包括数据、模型和指标
-##### 2.3.1 输出指标
+#### 2.3.1 输出指标
 查询输出指标命令：
 ```shell
 flow output query-metric -j $job_id -r $role -p $party_id -tn $task_name
@@ -267,8 +267,8 @@ flow output query-metric -j $job_id -r $role -p $party_id -tn $task_name
 ```
 
 
-##### 2.3.2 输出模型
-###### 2.3.2.1 查询模型
+#### 2.3.2 输出模型
+##### 2.3.2.1 查询模型
 ```shell
 flow output query-model -j $job_id -r $role -p $party_id -tn $task_name
 ```
@@ -498,7 +498,7 @@ flow output query-model -j $job_id -r $role -p $party_id -tn $task_name
 
 ```
 
-###### 2.3.2.2 下载模型
+##### 2.3.2.2 下载模型
 ```shell 
 flow output download-model -j $job_id -r $role -p $party_id -tn $task_name -o $download_dir
 ```
@@ -515,8 +515,8 @@ flow output download-model -j $job_id -r $role -p $party_id -tn $task_name -o $d
 ```
 
 
-##### 2.3.3 输出数据
-###### 2.3.3.1 查询数据表
+#### 2.3.3 输出数据
+##### 2.3.3.1 查询数据表
 ```shell
 flow output query-data-table -j $job_id -r $role -p $party_id -tn $task_name
 ```
@@ -533,13 +533,13 @@ flow output query-data-table -j $job_id -r $role -p $party_id -tn $task_name
 }
 ```
 
-###### 2.3.3.2 预览数据
+##### 2.3.3.2 预览数据
 ```shell
 flow output display-data -j $job_id -r $role -p $party_id -tn $task_name
 ```
 如使用上面的训练dag提交任务，可以使用`flow output display-data -j 202308211911505128750 -r host -p 9998 -tn binning_0`预览输出数据。
 
-###### 2.3.3.3 下载数据
+##### 2.3.3.3 下载数据
 ```shell
 flow output download-data -j $job_id -r $role -p $party_id -tn $task_name -o $download_dir
 ```
@@ -554,8 +554,8 @@ flow output download-data -j $job_id -r $role -p $party_id -tn $task_name -o $do
 
 ```
 
-### 3.更多文档
-- [Restful-api](./swagger/swagger.json)
+## 3.更多文档
+- [Restful-api](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/doc/swagger/swagger.yaml)
 - [CLI](https://github.com/FederatedAI/FATE-Client/blob/dev-2.0.0-beta/python/fate_client/flow_cli/build/doc)
 - [Pipeline](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-beta/doc/tutorial)
 - [FATE算法](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-beta/doc/2.0/components)
