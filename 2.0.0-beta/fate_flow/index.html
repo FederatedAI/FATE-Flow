@@ -813,12 +813,12 @@
 <li>Storage abstraction API</li>
 <li>Cross-party transfer abstraction API</li>
 </ul>
-<p><img alt="" src="./images/fate_flow_logical_arch.png" /></p>
+<p><img alt="" src="../images/fate_flow_logical_arch.png" /></p>
 <h2 id="2-service-architecture">2. Service Architecture<a class="headerlink" href="#2-service-architecture" title="Permanent link">&para;</a></h2>
 <h3 id="21-fate">2.1 FATE<a class="headerlink" href="#21-fate" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="./images/fate_arch.png" /></p>
+<p><img alt="" src="../images/fate_arch.png" /></p>
 <h3 id="22-fate-flow">2.2 FATE Flow<a class="headerlink" href="#22-fate-flow" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="./images/fate_flow_arch.png" /></p>
+<p><img alt="" src="../images/fate_flow_arch.png" /></p>
 <h2 id="3-scheduling-architecture">3. <a href="./fate_flow_job_scheduling.md">Scheduling Architecture</a><a class="headerlink" href="#3-scheduling-architecture" title="Permanent link">&para;</a></h2>
 <h3 id="31-a-new-scheduling-architecture-based-on-shared-state">3.1 A new scheduling architecture based on shared-state<a class="headerlink" href="#31-a-new-scheduling-architecture-based-on-shared-state" title="Permanent link">&para;</a></h3>
 <ul>
@@ -827,7 +827,7 @@
 <li>Improve the high availability and scalability of managed services</li>
 <li>Jobs can be intervened to support restart, rerun, parallel control, resource isolation, etc.</li>
 </ul>
-<p><img alt="" src="./images/fate_flow_scheduling_arch.png" /></p>
+<p><img alt="" src="../images/fate_flow_scheduling_arch.png" /></p>
 <h3 id="32-state-driven-scheduling">3.2 State-Driven Scheduling<a class="headerlink" href="#32-state-driven-scheduling" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Resource coordination</li>
@@ -836,7 +836,7 @@
 <li>Multi-party task state calculation of federal task state</li>
 <li>Upstream and downstream task states compute job states</li>
 </ul>
-<p><img alt="" src="./images/fate_flow_resource_process.png" /></p>
+<p><img alt="" src="../images/fate_flow_resource_process.png" /></p>
 <h2 id="4-multiparty-resource-coordination">4. <a href="./fate_flow_resource_management.md">Multiparty Resource Coordination</a><a class="headerlink" href="#4-multiparty-resource-coordination" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The total resource size of each engine is configured through the configuration file, and the system is subsequently interfaced</li>
@@ -866,9 +866,9 @@
 <li>Resource recovery detection</li>
 <li>Base engine session timeout detection</li>
 </ul>
-<p><img alt="" src="./images/fate_flow_detector.png" /></p>
+<p><img alt="" src="../images/fate_flow_detector.png" /></p>
 <h2 id="7-task-component-registry">7. <a href="./fate_flow_component_registry.md">Task Component Registry</a><a class="headerlink" href="#7-task-component-registry" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="./images/fate_flow_component_registry.png" /></p>
+<p><img alt="" src="../images/fate_flow_component_registry.png" /></p>
 <h2 id="8-multi-party-federated-model-registry">8. <a href="./fate_flow_model_registry.md">Multi-Party Federated Model Registry</a><a class="headerlink" href="#8-multi-party-federated-model-registry" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Using Google Protocol Buffer as the model storage protocol, using cross-language sharing, each algorithmic model consists of two parts: ModelParam &amp; ModelMeta</li>
@@ -879,8 +879,8 @@
 <li>The model IDs of the federated parties are the party identification information role, party_id, plus model_key</li>
 <li>The model version of the federated parties must be unique and consistent, and FATE-Flow directly sets it to job_id</li>
 </ul>
-<p><img alt="" src="./images/fate_flow_pipelined_model.png" style="height:400px;width:450px" /></p>
-<p><img alt="" src="./images/fate_flow_model_storage.png" style="height:400px;width:800px" /></p>
+<p><img alt="" src="../images/fate_flow_pipelined_model.png" style="height:400px;width:450px" /></p>
+<p><img alt="" src="../images/fate_flow_model_storage.png" style="height:400px;width:800px" /></p>
 <h2 id="9-data-access">9. <a href="./fate_flow_data_access.md">Data Access</a><a class="headerlink" href="#9-data-access" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Upload.</li>
@@ -895,9 +895,9 @@
 <li>When the job is running, Reader reads data from external storage via Meta and transfers it to FATE Storage</li>
 <li>Connecting to the Big Data ecosystem: HDFS, Hive/MySQL</li>
 </ul>
-<p><img alt="" src="./images/fate_flow_inputoutput.png" /></p>
+<p><img alt="" src="../images/fate_flow_inputoutput.png" /></p>
 <h2 id="10-multi-party-collaboration-authority-management">10. <a href="./fate_flow_authority_management.md">Multi-Party Collaboration Authority Management</a><a class="headerlink" href="#10-multi-party-collaboration-authority-management" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="./images/fate_flow_authorization.png" /></p>
+<p><img alt="" src="../images/fate_flow_authorization.png" /></p>
 
 
 
