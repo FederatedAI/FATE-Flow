@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - 'main'
-      - 'develop-[0-9]+.[0-9]+.[0-9]+'
-      - 'build-doc-[0-9]+.[0-9]+.[0-9]+'
+      - 'develop-[0-9].[0-9].[0-9]'
 
   schedule:
     - cron: '0 8 * * *'
@@ -13,12 +12,12 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: doc_generator_${{ github.ref_name }}
+  group: doc_generator_${{ github.ref }}  # 使用 github.ref 代替 github.ref_name
   cancel-in-progress: true
 
 jobs:
   doc_generator:
-    name: generate doc on branch ${{ github.ref_name }}
+    name: generate doc on branch ${{ github.ref }}
     runs-on: ubuntu-latest
     steps:
       - name: check out the repo
@@ -39,13 +38,13 @@ jobs:
       - name: build doc via mike
         shell: bash
         run: |
-          if [[ "${{ github.ref_name }}" == 'main' ]]; then
+          if [[ '${{ github.ref_name }}' == 'main' ]]; then
             VERSION=latest
             ALIAS='main master'
-          elif [[ "${{ github.ref_name }}" == 'develop-'* ]]; then
+          elif [[ '${{ github.ref_name }}' == 'develop-'* ]]; then
             VERSION="${{ github.ref_name | replace('develop-', '') }}"
-          elif [[ "${{ github.ref_name }}" == 'build-doc-'* ]]; then
-            VERSION="${{ github.ref_name | replace('build-doc-', '') }}"
+          elif [[ '${{ github.ref_name }}' == 'build-doc-'* ]]; then
+            VERSION='${{ github.ref_name | replace('build-doc-', '') }}'
           fi
           
           mike deploy --push --update-aliases "$VERSION" $ALIAS
