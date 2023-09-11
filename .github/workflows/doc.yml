@@ -43,7 +43,7 @@ jobs:
             VERSION=latest
             ALIAS='main master'
           elif [[ '${{ github.ref_name }}' == 'develop-'* ]]; then
-            VERSION="${{ github.ref_name | replace('develop-', '') }}"
+            VERSION='${{ github.ref_name | replace('develop-', '') }}'
           elif [[ '${{ github.ref_name }}' == 'build-doc-'* ]]; then
             VERSION='${{ github.ref_name | replace('build-doc-', '') }}'
           fi
