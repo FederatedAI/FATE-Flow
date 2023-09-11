@@ -1,4 +1,4 @@
-### 系统配置描述文档
+# 系统配置描述文档
 FATE Flow使用yaml定义系统配置，配置路径位于: conf/service_conf.yaml, 具体配置内容及其含义如下：
 
 | 配置项              | 说明 | 值                            |
@@ -18,7 +18,7 @@ FATE Flow使用yaml定义系统配置，配置路径位于: conf/service_conf.ya
 | model_store          | 模型存储配置 | 见[模型存储](#模型存储)               |
 | zookeeper            | zookeeper服务的配置 | 见[zookeeper配置](#zookeeper配置) |
 
-#### 加密模块
+## 加密模块
 ```yaml
 key_0:
   module: fate_flow.hub.encrypt.password_encrypt#pwdecrypt
@@ -29,7 +29,7 @@ key_0:
   - module: 加密模块，拼接规则为：加密模块 + "#" + 加密函数。
   - private_path：密钥路径。如填相对路径，其根目录位于fate_flow/conf/
 
-#### FateFlow配置
+## FateFlow配置
 ```yaml
 host: 127.0.0.1
 http_port: 9380
@@ -46,7 +46,7 @@ nginx:
 - proxy_name: 命令通道服务名，支持osx/rollsite/nginx。详细配置需要在[通信引擎池](#通信引擎池) 里面配置;
 - nginx: 代理服务配置，用于负载均衡。
 
-#### 数据库配置
+## 数据库配置
 ```yaml
 engine: sqlite
 decrypt_key:
@@ -66,7 +66,7 @@ sqlite:
 - mysql: mysql服务配置；若使用密码加密功能，需要将此配置中的"passwd"设置为密文，并在[加密模块](#加密模块)中配置密钥路径
 - sqlite: sqlite文件路径，默认路径为fate_flow/fate_flow_sqlite.db
 
-#### 引擎配置
+## 引擎配置
 ```yaml
 default_engines:
   computing: standalone
@@ -78,13 +78,13 @@ default_engines:
 - federation: 通信引擎，支持"standalone"、"rollsite"、"osx"、"rabbitmq"、"pulsar"
 - storage: 存储引擎，支持"standalone"、"eggroll"、"hdfs"
 
-#### 默认注册算法配置
+## 默认注册算法配置
 - name: 算法名称
 - version: 算法版本，若不配置，则使用fateflow.env中的配置
 - device: 算法启动方式, local/docker/k8s等
 
-#### 通信引擎池
-##### pulsar
+## 通信引擎池
+### pulsar
 ```yaml
 pulsar:
   host: 192.168.0.5
@@ -99,7 +99,7 @@ pulsar:
   mode: replication
   max_message_size: 1048576
 ```
-##### nginx:
+### nginx:
 ```yaml
 nginx:
   host: 127.0.0.1
@@ -109,7 +109,7 @@ nginx:
   protocol: http
 ```
 
-##### rabbitmq
+### rabbitmq
 ```yaml
 nginx:
   host: 127.0.0.1
@@ -119,27 +119,27 @@ nginx:
   protocol: http
 ```
 
-##### rollsite
+### rollsite
 ```yaml
 rollsite:
   host: 127.0.0.1
   port: 9370
 ```
 
-##### osx
+### osx
 ```yaml
   host: 127.0.0.1
   port: 9370
 ```
 
-#### 计算引擎池
-##### standalone
+## 计算引擎池
+### standalone
 ```yaml
   cores: 32
 ```
 - cores: 资源总数
 
-##### eggroll
+### eggroll
 ```yaml
 eggroll:
   cores: 32
@@ -148,7 +148,7 @@ eggroll:
 - cores: 集群资源总数
 - nodes: 集群node-manager数量
 
-##### spark
+### spark
 ```yaml
 eggroll:
   home: 
@@ -157,7 +157,7 @@ eggroll:
 - home: spark home目录，如果不填，将使用"pyspark"作为计算引擎。
 - cores: 资源总数
 
-#### 存储引擎池
+## 存储引擎池
 ```yaml
   hdfs:
     name_node: hdfs://fate-cluster
@@ -210,7 +210,7 @@ model_store:
 - tencent_cos: 腾讯云密钥配置
 
 
-#### zookeeper配置
+## zookeeper配置
 ```yaml
 zookeeper:
   hosts:
