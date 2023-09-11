@@ -5,14 +5,13 @@ grpcio==1.46.3
 grpcio-tools==1.46.3
 requests<2.26.0
 urllib3==1.26.5
-ruamel-yaml==0.16.10
+ruamel-yaml==0.16
 cachetools==3.0.0
 filelock==3.3.1
 pydantic==1.10.12
 webargs
 peewee==3.9.3
 python-dotenv==0.13.0
-ruamel-yaml==0.16.10
 pyyaml==5.4.1
 networkx
 psutil>=5.7.0
