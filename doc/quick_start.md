@@ -33,10 +33,10 @@ fate_flow status/start/stop/restart
 ```
 
 ### 1.2 Standalone Deployment
-Refer to [Standalone Deployment](https://github.com/FederatedAI/FATE/blob/v2.0.0-beta/deploy/standalone-deploy/README.md).
+Refer to [Standalone Deployment](https://github.com/FederatedAI/FATE/blob/dev-2.0.0-beta/deploy/standalone-deploy/README.zh.md).
 
 ### 1.3 Cluster Deployment
-Refer to [All-in-one Deployment](https://github.com/FederatedAI/FATE/blob/v2.0.0-beta/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.md).
+Refer to [All-in-one Deployment](https://github.com/FederatedAI/FATE/blob/dev-2.0.0-beta/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.zh.md).
 
 ## 2. User Guide
 FATE provides client tools including SDK, CLI, and Pipeline. If you don't have FATE Client deployed in your environment, you can download it using `pip install fate_client`. The following operations are based on CLI.
