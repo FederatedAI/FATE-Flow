@@ -120,7 +120,8 @@ def init_apps():
     }
     for key in app_list:
         urls_dict[key] = [register_page(path, before_request_func.get(key)) for path in search_pages_path(Path(__file__).parent / key)]
-    urls_dict.update(load_adapter_apps(register_page, get_app_module, search_pages_path))
+    # adapter extend apps
+    urls_dict.update(load_adapter_apps(register_page, search_pages_path))
     if CLIENT_AUTHENTICATION or SITE_AUTHENTICATION:
         _init_permission_group(urls=urls_dict)
 
