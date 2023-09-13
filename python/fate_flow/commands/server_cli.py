@@ -15,11 +15,12 @@
 #
 import os
 import subprocess
-
+import platform
 import click
 from ruamel import yaml
 
 import fate_flow
+from fate_flow.commands.service import manage_fate_service
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 HOME = os.path.dirname(fate_flow.__file__)
@@ -71,7 +72,10 @@ def start(**kwargs):
         fate_flow start
 
     """
-    run_command("start")
+    if platform.system().lower() == 'windows':
+        manage_fate_service(HOME, "start")
+    else:
+        run_command("start")
 
 
 @flow_server_cli.command('status', short_help='Query fate flow server status')
@@ -86,7 +90,10 @@ def status(**kwargs):
         fate_flow status
 
     """
-    run_command("status")
+    if platform.system().lower() == 'windows':
+        manage_fate_service(HOME, "status")
+    else:
+        run_command("status")
 
 
 @flow_server_cli.command('stop', short_help='Stop run flow server')
@@ -101,7 +108,10 @@ def stop(**kwargs):
         fate_flow stop
 
     """
-    run_command("stop")
+    if platform.system().lower() == 'windows':
+        manage_fate_service(HOME, "stop")
+    else:
+        run_command("stop")
 
 
 @flow_server_cli.command('restart', short_help='Restart fate flow server')
@@ -116,7 +126,10 @@ def restart(**kwargs):
         fate_flow restart
 
     """
-    run_command("restart")
+    if platform.system().lower() == 'windows':
+        manage_fate_service(HOME, "restart")
+    else:
+        run_command("restart")
 
 
 @flow_server_cli.command('version', short_help='Flow Server Version Command')
