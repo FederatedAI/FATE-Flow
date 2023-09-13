@@ -36,8 +36,6 @@ class WorkerManager:
                           extra_env: dict = None, record=False, stderr=None, sync=False, **kwargs):
         if not extra_env:
             extra_env = {}
-        if sync:
-            stderr = subprocess.PIPE
         worker_id = uuid1().hex
         config_dir, std_dir = cls.get_process_dirs(
             job_id=task_info.get("job_id"),
@@ -52,8 +50,6 @@ class WorkerManager:
         extra_env.update(params_env)
         if executable:
             process_cmd = executable
-            # fix spark stderr
-            stderr = None
         else:
             process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
         process_cmd.extend(common_cmd)
