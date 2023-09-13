@@ -22,6 +22,7 @@ export FATE_PYTHONPATH=
 export EGGROLL_HOME=
 export PYTHONPATH=
 export FATE_ENV=
+export SPARK_HOME=
 
 export FATE_LOG_LEVEL=DEBUG
 
