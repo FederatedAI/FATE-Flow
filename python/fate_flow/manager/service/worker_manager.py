@@ -52,6 +52,8 @@ class WorkerManager:
         extra_env.update(params_env)
         if executable:
             process_cmd = executable
+            # fix spark stderr
+            stderr = None
         else:
             process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
         process_cmd.extend(common_cmd)
@@ -72,7 +74,7 @@ class WorkerManager:
         else:
             if sync:
                 _code = p.wait()
-                _e = p.stderr.read()
+                _e = p.stderr.read() if p.stderr else None
                 if _e and _code:
                     logging.error(f"process {worker_name.value} run error[code:{_code}]\n: {_e.decode()}")
             return p
