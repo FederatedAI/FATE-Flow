@@ -36,8 +36,6 @@ class WorkerManager:
                           extra_env: dict = None, record=False, stderr=None, sync=False, **kwargs):
         if not extra_env:
             extra_env = {}
-        if sync:
-            stderr = subprocess.PIPE
         worker_id = uuid1().hex
         config_dir, std_dir = cls.get_process_dirs(
             job_id=task_info.get("job_id"),
@@ -72,7 +70,7 @@ class WorkerManager:
         else:
             if sync:
                 _code = p.wait()
-                _e = p.stderr.read()
+                _e = p.stderr.read() if p.stderr else None
                 if _e and _code:
                     logging.error(f"process {worker_name.value} run error[code:{_code}]\n: {_e.decode()}")
             return p

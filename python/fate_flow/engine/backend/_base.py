@@ -100,7 +100,7 @@ class LocalEngine(object):
 
         else:
             raise ValueError(f"load provider {provider_name} failed")
-
+        os.environ.pop("FATE_TASK_CONFIG", None)
         common_cmd = [
             module_file_path,
             "component",
