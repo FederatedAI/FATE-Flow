@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import errno
+import json
 import os
 import subprocess
 import time
@@ -64,7 +65,7 @@ def run_subprocess(
             if name.endswith("PATH") and subprocess_env.get(name) is not None:
                 value += ':' + subprocess_env[name]
             subprocess_env[name] = value
-    logger.info(f"RUN ENV: {subprocess_env}")
+    logger.info(f"RUN ENV：{json.dumps(subprocess_env)}")
     p = subprocess.Popen(process_cmd,
                          stdout=std,
                          stderr=stderr,
