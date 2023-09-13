@@ -154,6 +154,9 @@ def init_server(ip, port, home):
         print(f"port: {port}")
         config["fateflow"]["http_port"] = port
     if home:
+        if not os.path.isabs(home):
+            raise RuntimeError(f"Please use an absolute path: {home}")
+        os.makedirs(home, exist_ok=True)
         print(f"home: {home}")
         replace_settings(home)
 
