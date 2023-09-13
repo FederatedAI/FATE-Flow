@@ -15,17 +15,14 @@
 #
 import os
 
-from fate_flow.db.db_models import Task
 from fate_flow.engine.backend._base import LocalEngine
-from fate_flow.entity.code import KillProcessRetCode
-from fate_flow.entity.types import TaskStatus, WorkerName
+from fate_flow.entity.types import WorkerName
 from fate_flow.manager.service.worker_manager import WorkerManager
-from fate_flow.utils import job_utils, process_utils
 
 
 class SparkEngine(LocalEngine):
     def run(self, task_info, run_parameters, conf_path, output_path, engine_run, provider_name, **kwargs):
-        spark_home = None
+        spark_home = os.environ.get("SPARK_HOME", None)
         if not spark_home:
             try:
                 import pyspark
