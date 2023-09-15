@@ -328,4 +328,5 @@ The download result will be as follows:
 - [Restful-api](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0-beta/doc/swagger/swagger.yaml)
 - [CLI](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0-beta/python/fate_client/flow_cli/build/doc)
 - [Pipeline](https://github.com/FederatedAI/FATE/tree/v2.0.0-beta/doc/tutorial)
-- [FATE Algorithms](https://github.com/FederatedAI/FATE/tree/v2.0.0-beta/doc/2.0/components)
+- [FATE Quick Start](https://github.com/FederatedAI/FATE/tree/v2.0.0-beta/doc/2.0/quick_start.md)
+- [FATE Algorithms](https://github.com/FederatedAI/FATE/tree/v2.0.0-beta/doc/2.0/fate)
