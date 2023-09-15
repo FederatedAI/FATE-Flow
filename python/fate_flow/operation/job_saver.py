@@ -17,6 +17,8 @@ import time
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job, Task
+from fate_flow.entity.code import ReturnCode
+from fate_flow.errors.server_error import NoFoundTask
 from fate_flow.operation.base_saver import BaseSaver
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTask, ScheduleTaskStatus
 
@@ -47,8 +49,30 @@ class JobSaver(BaseSaver):
         return cls._update_job(Job, job_info)
 
     @classmethod
+    def update_job_user(cls, job_id, user_name):
+        return cls.update_entity_table(Job, {
+            "job_id": job_id,
+            "user_name": user_name
+        }, filters=["job_id"])
+
+    @classmethod
+    def list_job(cls, limit, offset, query, order_by):
+        return cls._list(Job, limit, offset, query, order_by)
+
+    @classmethod
+    def list_task(cls, limit, offset, query, order_by):
+        return cls._list(Task, limit, offset, query, order_by)
+
+    @classmethod
     def query_task(cls, only_latest=True, reverse=None, order_by=None, **kwargs):
         return cls._query_task(Task, only_latest=only_latest, reverse=reverse, order_by=order_by, **kwargs)
+
+    @classmethod
+    def query_task_by_execution_id(cls, execution_id):
+        tasks = cls.query_task(execution_id=execution_id)
+        if not tasks:
+            raise NoFoundTask(execution_id=execution_id)
+        return tasks[0]
 
     @classmethod
     def update_task_status(cls, task_info):
@@ -104,7 +128,7 @@ class ScheduleJobSaver(BaseSaver):
         task_obj = ScheduleTask
         if scheduler_status:
             task_obj = ScheduleTaskStatus
-        cls._update_task_status(task_obj, task_info)
+        return cls._update_task_status(task_obj, task_info)
 
     @classmethod
     def update_task(cls, task_info, report=False):

@@ -28,7 +28,7 @@ echo "PROJECT_BASE: "${PROJECT_BASE}
 INI_ENV_SCRIPT=${FATE_FLOW_BASE}/bin/init_env.sh
 echo $INI_ENV_SCRIPT
 if test -f "${INI_ENV_SCRIPT}"; then
-  source ${$INI_ENV_SCRIPT}/bin/init_env.sh
+  source $INI_ENV_SCRIPT
   echo "PYTHONPATH: "${PYTHONPATH}
 else
   echo "file not found: ${INI_ENV_SCRIPT}"

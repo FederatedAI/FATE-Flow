@@ -13,89 +13,114 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import json
+import random
+import time
+from functools import wraps
 
-from flask import (
-    Response, jsonify
-)
-from webargs import fields
-from webargs.flaskparser import use_kwargs
-from werkzeug.http import HTTP_STATUS_CODES
+import marshmallow
+from flask import jsonify, send_file, request as flask_request
 
-from fate_flow.entity.engine_types import CoordinationProxyService
-from fate_flow.entity.types import CoordinationCommunicationProtocol, FederatedMode, ReturnCode
-from fate_flow.settings import stat_logger, PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT
+from webargs.flaskparser import parser
 
+from fate_flow.entity.types import CoordinationProxyService, CoordinationCommunicationProtocol, FederatedMode
+from fate_flow.entity.code import ReturnCode
+from fate_flow.errors import FateFlowError
+from fate_flow.hook import HookManager
+from fate_flow.hook.common.parameters import SignatureParameters
+from fate_flow.runtime.job_default_config import JobDefaultConfig
+from fate_flow.runtime.system_settings import PROXY_NAME, ENGINES, PROXY, HOST, HTTP_PORT, API_VERSION, \
+    REQUEST_TRY_TIMES, REQUEST_MAX_WAIT_SEC, REQUEST_WAIT_SEC
+from fate_flow.utils.log import getLogger
+from fate_flow.utils.log_utils import schedule_logger, audit_logger
+from fate_flow.utils.requests_utils import request
 
-def get_json_result(code=ReturnCode.Base.SUCCESS, message='success', data=None, job_id=None, meta=None):
-    result_dict = {
-        "code": code,
-        "message": message,
-        "data": data,
-        "job_id": job_id,
-        "meta": meta,
-    }
+parser.unknown = marshmallow.EXCLUDE
 
-    response = {}
-    for key, value in result_dict.items():
-        if value is not None:
-            response[key] = value
-    return jsonify(response)
+stat_logger = getLogger()
 
 
-def server_error_response(e):
-    stat_logger.exception(e)
-    if len(e.args) > 1:
-        return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message=repr(e.args[0]), data=e.args[1])
-    return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message=repr(e))
+class API:
+    class Input:
+        @staticmethod
+        def params(**kwargs):
+            return parser.use_kwargs(kwargs, location='querystring')
 
+        @staticmethod
+        def form(**kwargs):
+            return parser.use_kwargs(kwargs, location='form')
 
-def args_error_response(e):
-    stat_logger.exception(e)
-    messages = e.data.get("messages", {})
-    return get_json_result(code=ReturnCode.Base.EXCEPTION_ERROR, message="Invalid request.", data=messages)
+        @staticmethod
+        def files(**kwargs):
+            return parser.use_kwargs(kwargs, location='files')
 
+        @staticmethod
+        def json(**kwargs):
+            return parser.use_kwargs(kwargs, location='json')
 
-def error_response(response_code, retmsg=None):
-    if retmsg is None:
-        retmsg = HTTP_STATUS_CODES.get(response_code, 'Unknown Error')
+        @staticmethod
+        def headers(**kwargs):
+            return parser.use_kwargs(kwargs, location="headers")
 
-    return Response(json.dumps({
-        'retmsg': retmsg,
-        'retcode': response_code,
-    }), status=response_code, mimetype='application/json')
+    class Output:
+        @staticmethod
+        def json(code=ReturnCode.Base.SUCCESS, message='success', data=None, job_id=None, **kwargs):
+            result_dict = {
+                "code": code,
+                "message": message,
+                "data": data,
+                "job_id": job_id,
+            }
 
+            response = {}
+            for key, value in result_dict.items():
+                if value is not None:
+                    response[key] = value
+            # extra resp
+            for key, value in kwargs.items():
+                response[key] = value
+            return jsonify(response)
 
-def validate_request_json(**kwargs):
-    return use_kwargs(kwargs, location='json')
+        @staticmethod
+        def file(path_or_file, attachment_filename, as_attachment, mimetype="application/octet-stream"):
+            return send_file(path_or_file, download_name=attachment_filename, as_attachment=as_attachment, mimetype=mimetype)
 
+        @staticmethod
+        def server_error_response(e):
+            if isinstance(e, FateFlowError):
+                return API.Output.json(code=e.code, message=e.message)
+            stat_logger.exception(e)
+            if len(e.args) > 1:
+                if isinstance(e.args[0], int):
+                    return API.Output.json(code=e.args[0], message=e.args[1])
+                else:
+                    return API.Output.json(code=ReturnCode.Server.EXCEPTION, message=repr(e))
+            return API.Output.json(code=ReturnCode.Server.EXCEPTION, message=repr(e))
 
-def validate_request_params(**kwargs):
-    return use_kwargs(kwargs, location='querystring')
+        @staticmethod
+        def args_error_response(e):
+            stat_logger.exception(e)
+            messages = e.data.get("messages", {})
+            return API.Output.json(code=ReturnCode.API.INVALID_PARAMETER, message="Invalid request.", data=messages)
 
+        @staticmethod
+        def fate_flow_exception(e: FateFlowError):
+            return API.Output.json(code=e.code, message=e.message)
 
-def job_request_json(**kwargs):
-    return validate_request_json(
-        job_id=fields.String(required=True),
-        role=fields.String(required=True),
-        party_id=fields.String(required=True),
-        **kwargs
-    )
-
-
-def task_request_json(**kwargs):
-    return validate_request_json(
-        job_id=fields.String(required=True),
-        task_id=fields.String(required=True),
-        task_version=fields.Integer(required=True),
-        role=fields.String(required=True),
-        party_id=fields.String(required=True),
-        **kwargs
-    )
-
-
-def validate_request_headers(**kwargs):
-    return use_kwargs(kwargs, location='headers')
+        @staticmethod
+        def runtime_exception(code):
+            def _outer(func):
+                @wraps(func)
+                def _wrapper(*args, **kwargs):
+                    try:
+                        return func(*args, **kwargs)
+                    except Exception as e:
+                        if isinstance(e, FateFlowError):
+                            raise e
+                        else:
+                            message = f"Request uri {flask_request.base_url} failed: {str(e)}"
+                            return API.Output.json(code=code, message=message)
+                return _wrapper
+            return _outer
 
 
 def get_federated_proxy_address():
@@ -119,3 +144,40 @@ def get_federated_proxy_address():
     else:
         raise RuntimeError(f"can not support coordinate proxy {PROXY_NAME}， all proxy {PROXY.keys()}")
     return host, port, protocol, PROXY_NAME
+
+
+def generate_headers(party_id, body, initiator_party_id=""):
+    return HookManager.site_signature(
+        SignatureParameters(party_id=party_id, body=body, initiator_party_id=initiator_party_id))
+
+
+def get_exponential_backoff_interval(retries, full_jitter=False):
+    """Calculate the exponential backoff wait time."""
+    # Will be zero if factor equals 0
+    countdown = min(REQUEST_MAX_WAIT_SEC, REQUEST_WAIT_SEC * (2 ** retries))
+    # Full jitter according to
+    # https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+    if full_jitter:
+        countdown = random.randrange(countdown + 1)
+    # Adjust according to maximum wait time and account for negative values.
+    return max(0, countdown)
+
+
+def federated_coordination_on_http(method, host, port, endpoint, json_body, headers=None, params=None,
+                                   timeout=JobDefaultConfig.remote_request_timeout):
+    url = f'http://{host}:{port}/{API_VERSION}{endpoint}'
+    for t in range(REQUEST_TRY_TIMES):
+        try:
+            response = request(
+                method=method, url=url, timeout=timeout,
+                headers=headers, json=json_body, params=params
+            )
+            response.raise_for_status()
+        except Exception as e:
+            schedule_logger().warning(f'http api error: {url}\n{e}')
+            if t >= REQUEST_TRY_TIMES - 1:
+                raise e
+        else:
+            audit_logger().info(f'http api response: {url}\n{response.text}')
+            return response.json()
+        time.sleep(get_exponential_backoff_interval(t))

@@ -1,0 +1,9 @@
+{
+  "name": "fate",
+  "device": "local",
+  "version": "2.0.0",
+  "metadata": {
+    "path": "xxx",
+    "venv": "xxx"
+  }
+}

@@ -15,8 +15,8 @@
 #
 import time
 
-from fate_flow.engine.computing import build_engine
-from fate_flow.entity.run_status import TaskStatus, JobStatus
+from fate_flow.engine.devices import build_engine
+from fate_flow.entity.types import TaskStatus, JobStatus
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
@@ -37,7 +37,7 @@ class Detector(Cron):
         count = 0
         try:
             running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING)
-            detect_logger().info(f'running task test: {running_tasks}')
+            detect_logger().info(f'running task: {running_tasks}')
             stop_job_ids = set()
             for task in running_tasks:
                 if task.f_run_ip != RuntimeConfig.JOB_SERVER_HOST:
@@ -45,7 +45,7 @@ class Detector(Cron):
                     continue
                 count += 1
                 try:
-                    process_exist = build_engine().is_alive(task)
+                    process_exist = build_engine(task.f_provider_name).is_alive(task)
                     if not process_exist:
                         msg = f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id}"
                         detect_logger(job_id=task.f_job_id).info(
@@ -107,7 +107,43 @@ class Detector(Cron):
 
     @classmethod
     def detect_cluster_instance_status(cls, task, stop_job_ids):
-        pass
+        detect_logger(job_id=task.f_job_id).info('start detect running task instance status')
+        try:
+            latest_tasks = JobSaver.query_task(task_id=task.f_task_id, role=task.f_role, party_id=task.f_party_id)
+
+            if len(latest_tasks) != 1:
+                detect_logger(job_id=task.f_job_id).error(
+                    f'query latest tasks of {task.f_task_id} failed, '
+                    f'have {len(latest_tasks)} tasks'
+                )
+                return
+
+            if task.f_task_version != latest_tasks[0].f_task_version:
+                detect_logger(job_id=task.f_job_id).info(
+                    f'{task.f_task_id} {task.f_task_version} is not the latest task, '
+                     'update task status to failed'
+                )
+                JobSaver.update_task_status({
+                    'task_id': task.f_task_id,
+                    'role': task.f_role,
+                    'party_id': task.f_party_id,
+                    'task_version': task.f_task_version,
+                    'status': JobStatus.FAILED,
+                    'party_status': JobStatus.FAILED,
+                })
+                return
+
+            instance_list = RuntimeConfig.SERVICE_DB.get_servers()
+            instance_list = {instance.http_address for instance_id, instance in instance_list.items()}
+
+            if f'{task.f_run_ip}:{task.f_run_port}' not in instance_list:
+                detect_logger(job_id=task.f_job_id).error(
+                     'detect cluster instance status failed, '
+                     'add task {task.f_task_id} {task.f_task_version} to stop list'
+                )
+                stop_job_ids.add(task.f_job_id)
+        except Exception as e:
+            detect_logger(job_id=task.f_job_id).exception(e)
 
 
 class FederatedDetector(Detector):

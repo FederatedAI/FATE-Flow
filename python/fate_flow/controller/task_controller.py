@@ -13,17 +13,23 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import copy
 import os
+
+import yaml
 
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
-from fate_flow.engine.computing import build_engine
-from fate_flow.entity.dag_structures import DAGSchema
+from fate_flow.engine.devices import build_engine
+from fate_flow.entity.spec.dag import DAGSchema, LauncherSpec
 from fate_flow.hub.flow_hub import FlowHub
-from fate_flow.manager.resource_manager import ResourceManager
-from fate_flow.manager.worker_manager import WorkerManager
+from fate_flow.manager.service.resource_manager import ResourceManager
+from fate_flow.manager.service.worker_manager import WorkerManager
+from fate_flow.runtime.job_default_config import JobDefaultConfig
+from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
-from fate_flow.entity.run_status import EndStatus, TaskStatus, FederatedSchedulingStatusCode
+from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType, LauncherType
+from fate_flow.entity.code import FederatedSchedulingStatusCode
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils import job_utils
 from fate_flow.utils.base_utils import current_timestamp, json_dumps
@@ -34,29 +40,29 @@ class TaskController(object):
     INITIATOR_COLLECT_FIELDS = ["status", "party_status", "start_time", "update_time", "end_time", "elapsed"]
 
     @classmethod
-    def create_tasks(cls, job_id: str, role: str, party_id: str, dag_schema: DAGSchema, is_scheduler=False):
+    def create_tasks(cls, job_id: str, role: str, party_id: str, dag_schema: DAGSchema, task_run=None, task_cores=None,
+                     is_scheduler=False):
         schedule_logger(job_id).info(f"start create {'scheduler' if is_scheduler else 'partner'} tasks ...")
         job_parser = FlowHub.load_job_parser(dag_schema)
         task_list = job_parser.topological_sort()
         for task_name in task_list:
-            cls.create_task(job_id, role, party_id, task_name, dag_schema, job_parser, is_scheduler)
+            cls.create_task(job_id, role, party_id, task_name, dag_schema, job_parser, task_run=task_run,
+                            is_scheduler=is_scheduler, task_cores=task_cores)
         schedule_logger(job_id).info("create tasks success")
 
     @classmethod
-    def create_task(cls, job_id, role, party_id, task_name, dag_schema, job_parser, is_scheduler, task_version=0):
-
+    def create_task(cls, job_id, role, party_id, task_name, dag_schema, job_parser, is_scheduler, task_run=None,
+                    task_cores=None, task_version=0):
         task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
         execution_id = job_utils.generate_session_id(task_id, task_version, role, party_id)
         task_node = job_parser.get_task_node(task_name=task_name)
-        task_parser = FlowHub.load_task_parser(
+        task_parser = job_parser.task_parser(
             task_node=task_node, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
-            task_id=task_id, execution_id=execution_id, task_version=task_version, parties=dag_schema.dag.parties
+            task_id=task_id, execution_id=execution_id, task_version=task_version, parties=dag_schema.dag.parties,
+            model_id=dag_schema.dag.conf.model_id, model_version=dag_schema.dag.conf.model_version
         )
         need_run = task_parser.need_run
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
-        task_parameters = task_parser.task_parameters.dict()
-        schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
-                                     f" {task_parameters}")
         if is_scheduler:
             if need_run:
                 task = ScheduleTask()
@@ -71,6 +77,11 @@ class TaskController(object):
                 task.f_parties = [party.dict() for party in dag_schema.dag.parties]
                 ScheduleJobSaver.create_task(task.to_human_model_dict())
         else:
+            task_parameters = task_parser.task_parameters
+            task_parameters.engine_run = task_run
+            task_parameters.computing_partitions = dag_schema.dag.conf.computing_partitions
+            schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
+                                         f" {task_parameters.dict()}, provider: {task_parser.provider}")
             task = Task()
             task.f_job_id = job_id
             task.f_role = role
@@ -82,9 +93,34 @@ class TaskController(object):
             task.f_scheduler_party_id = dag_schema.dag.conf.scheduler_party_id
             task.f_status = TaskStatus.WAITING if need_run else TaskStatus.PASS
             task.f_party_status = TaskStatus.WAITING
-            task.f_component_parameters = task_parameters
             task.f_execution_id = execution_id
+            task.f_provider_name = task_parser.provider
+            task.f_sync_type = dag_schema.dag.conf.sync_type
+            task.f_task_run = task_run
+            task.f_task_cores = task_cores
+            cls.update_local(task)
+            cls.update_launcher_config(task, task_parser.task_runtime_launcher, task_parameters)
+            task.f_component_parameters = task_parameters.dict()
             JobSaver.create_task(task.to_human_model_dict())
+
+    @staticmethod
+    def update_local(task):
+        # HA need route to local
+        if task.f_role == "local":
+            task.f_run_ip = RuntimeConfig.JOB_SERVER_HOST
+            task.f_run_port = RuntimeConfig.HTTP_PORT
+
+    @staticmethod
+    def update_launcher_config(task, task_runtime_launcher, task_parameters):
+        # support deepspeed and other launcher
+        schedule_logger(task.f_job_id).info(f"task runtime launcher: {task_runtime_launcher}")
+        launcher = LauncherSpec.parse_obj(task_runtime_launcher)
+        if launcher.name and launcher.name != LauncherType.DEFAULT:
+            task_parameters.launcher_name = task.f_launcher_name = launcher.name
+            launcher_conf = copy.deepcopy(JobDefaultConfig.launcher.get(task_parameters.launcher_name))
+            if launcher.conf:
+                launcher_conf.update(launcher.conf)
+            task_parameters.launcher_conf = task.f_launcher_conf = launcher_conf
 
     @staticmethod
     def create_schedule_tasks(job: ScheduleJob, dag_schema):
@@ -111,7 +147,7 @@ class TaskController(object):
                 "task_version": task_version,
                 "status": TaskStatus.WAITING,
                 "auto_retries": dag_schema.dag.conf.auto_retries if auto_retries is None else auto_retries,
-                "federated_status_collect_type": dag_schema.dag.conf.federated_status_collect_type
+                "sync_type": dag_schema.dag.conf.sync_type
             }
             ScheduleJobSaver.create_task_scheduler_status(task_info)
         schedule_logger(job_id).info("create schedule task status success")
@@ -132,25 +168,17 @@ class TaskController(object):
         try:
             task = JobSaver.query_task(task_id=task_id, task_version=task_version, role=role, party_id=party_id)[0]
             run_parameters = task.f_component_parameters
-            # update runtime parameters
-            job = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)[0]
-            dag_schema = DAGSchema(**job.f_dag)
-            job_parser = FlowHub.load_job_parser(dag_schema)
-            task_node = job_parser.get_task_node(task_name=task.f_task_name)
-            task_parser = FlowHub.load_task_parser(
-                task_node=task_node, job_id=job_id, task_name=task.f_task_name, role=role,
-                party_id=party_id, parties=dag_schema.dag.parties
-            )
-            task_parser.update_runtime_artifacts(run_parameters)
             schedule_logger(job_id).info(f"task run parameters: {run_parameters}")
             task_executor_process_start_status = False
 
-            config_dir = job_utils.get_task_directory(job_id, role, party_id, task.f_task_name, task_id, task_version)
+            config_dir = job_utils.get_task_directory(
+                job_id, role, party_id, task.f_task_name, task.f_task_version, input=True
+            )
             os.makedirs(config_dir, exist_ok=True)
-            run_parameters_path = os.path.join(config_dir, 'task_parameters.json')
+            run_parameters_path = os.path.join(config_dir, 'preprocess_parameters.yaml')
             with open(run_parameters_path, 'w') as fw:
-                fw.write(json_dumps(run_parameters, indent=True))
-            backend_engine = build_engine()
+                yaml.dump(run_parameters, fw)
+            backend_engine = build_engine(task.f_provider_name)
             run_info = backend_engine.run(task=task,
                                           run_parameters=run_parameters,
                                           run_parameters_path=run_parameters_path,
@@ -187,8 +215,8 @@ class TaskController(object):
         dag_schema = DAGSchema(**jobs[0].f_dag)
         job_parser = FlowHub.load_job_parser(dag_schema)
         cls.create_task(
-            task.f_job_id, task.f_role, task.f_party_id, task.f_task_name, dag_schema, job_parser, is_scheduler=False,
-            task_version=new_version
+            task.f_job_id, task.f_role, task.f_party_id, task.f_task_name, dag_schema, job_parser,
+            task_run=task.f_task_run, task_cores=task.f_task_cores, is_scheduler=False, task_version=new_version
         )
 
     @classmethod
@@ -247,20 +275,16 @@ class TaskController(object):
             return update_status
 
     @classmethod
-    def update_task_status(cls, task_info, scheduler_party_id=None):
-        if not scheduler_party_id:
-            scheduler_party_id = JobSaver.query_task(
+    def update_task_status(cls, task_info, scheduler_party_id=None, sync_type=None):
+        if not scheduler_party_id or not sync_type:
+            task = JobSaver.query_task(
                 task_id=task_info.get("task_id"),
                 task_version=task_info.get("task_version")
-            )[0].f_scheduler_party_id
+            )[0]
+            scheduler_party_id, sync_type = task.f_scheduler_party_id, task.f_sync_type
         update_status = JobSaver.update_task_status(task_info=task_info)
         if update_status and EndStatus.contains(task_info.get("party_status")):
             ResourceManager.return_task_resource(**task_info)
-            cls.clean_task(job_id=task_info["job_id"],
-                           task_id=task_info["task_id"],
-                           task_version=task_info["task_version"],
-                           role=task_info["role"],
-                           party_id=task_info["party_id"])
         if "party_status" in task_info:
             report_task_info = {
                 "job_id": task_info.get("job_id"),
@@ -270,7 +294,8 @@ class TaskController(object):
                 "task_version": task_info.get("task_version"),
                 "status": task_info.get("party_status")
             }
-            cls.report_task_to_scheduler(task_info=report_task_info, scheduler_party_id=scheduler_party_id)
+            if sync_type == FederatedCommunicationType.CALLBACK:
+                cls.report_task_to_scheduler(task_info=report_task_info, scheduler_party_id=scheduler_party_id)
         return update_status
 
     @classmethod
@@ -298,7 +323,7 @@ class TaskController(object):
             "party_status": stop_status,
             "kill_status": True
         }
-        cls.update_task_status(task_info=task_info, scheduler_party_id=task.f_scheduler_party_id)
+        cls.update_task_status(task_info=task_info, scheduler_party_id=task.f_scheduler_party_id, sync_type=task.f_sync_type)
         cls.update_task(task_info=task_info)
         return kill_status
 
@@ -306,9 +331,10 @@ class TaskController(object):
     def kill_task(cls, task: Task):
         kill_status = False
         try:
-            backend_engine = build_engine()
+            backend_engine = build_engine(task.f_provider_name)
             if backend_engine:
                 backend_engine.kill(task)
+                backend_engine.cleanup(task)
             WorkerManager.kill_task_all_workers(task)
         except Exception as e:
             schedule_logger(task.f_job_id).exception(e)
@@ -325,5 +351,12 @@ class TaskController(object):
             return kill_status
 
     @classmethod
-    def clean_task(cls, job_id, task_id, task_version, role, party_id):
-        pass
+    def clean_task(cls, task):
+        try:
+            backend_engine = build_engine(task.f_provider_name)
+            if backend_engine:
+                schedule_logger(task.f_job_id).info(f"start clean task:[{task.f_task_id} {task.f_task_version}]")
+                backend_engine.cleanup(task)
+            WorkerManager.kill_task_all_workers(task)
+        except Exception as e:
+            schedule_logger(task.f_job_id).exception(e)

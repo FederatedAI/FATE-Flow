@@ -15,8 +15,8 @@
 #
 from functools import wraps
 
-from fate_flow.entity.run_status import FederatedSchedulingStatusCode
-from fate_flow.entity.types import ReturnCode
+from fate_flow.entity.code import FederatedSchedulingStatusCode
+from fate_flow.entity.code import ReturnCode
 from fate_flow.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils.log_utils import schedule_logger
@@ -92,8 +92,8 @@ class FederatedScheduler:
     # Job
     @classmethod
     @federated
-    def create_job(cls, job_id, roles, job_info):
-        return RuntimeConfig.SCHEDULE_CLIENT.federated.create_job(job_id, roles, command_body=job_info)
+    def create_job(cls, job_id, roles, initiator_party_id, job_info):
+        return RuntimeConfig.SCHEDULE_CLIENT.federated.create_job(job_id, roles, initiator_party_id=initiator_party_id, command_body=job_info)
 
     @classmethod
     @federated
@@ -119,11 +119,6 @@ class FederatedScheduler:
     @federated
     def update_job(cls, job_id, roles, command_body=None):
         return RuntimeConfig.SCHEDULE_CLIENT.federated.update_job(job_id, roles, command_body)
-
-    @classmethod
-    @federated
-    def save_pipelined_model(cls, job_id, roles):
-        return RuntimeConfig.SCHEDULE_CLIENT.federated.save_pipelined_model(job_id, roles)
 
     # task
     @classmethod
@@ -164,8 +159,8 @@ class FederatedScheduler:
     # scheduler
     @classmethod
     @schedule_job
-    def request_create_job(cls, party_id, command_body):
-        return RuntimeConfig.SCHEDULE_CLIENT.scheduler.create_job(party_id, command_body)
+    def request_create_job(cls, party_id, initiator_party_id, command_body):
+        return RuntimeConfig.SCHEDULE_CLIENT.scheduler.create_job(party_id, initiator_party_id, command_body)
 
     @classmethod
     @schedule_job

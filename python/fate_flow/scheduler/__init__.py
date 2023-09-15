@@ -12,17 +12,21 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from fate_flow.hub.flow_hub import FlowHub
 from ofx.api.client import FlowSchedulerApi
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.settings import HOST, HTTP_PORT, PROXY_PROTOCOL, API_VERSION, HTTP_REQUEST_TIMEOUT
-from fate_flow.utils.api_utils import get_federated_proxy_address
+from fate_flow.runtime.system_settings import HOST, HTTP_PORT, PROXY_PROTOCOL, API_VERSION, HTTP_REQUEST_TIMEOUT
+from fate_flow.utils.api_utils import get_federated_proxy_address, generate_headers
 
 
 def init_scheduler():
     remote_host, remote_port, remote_protocol, grpc_channel = get_federated_proxy_address()
 
     protocol = remote_protocol if remote_protocol else PROXY_PROTOCOL
-    RuntimeConfig.set_schedule_client(FlowSchedulerApi(host=HOST, port=HTTP_PORT, protocol=protocol,
+    RuntimeConfig.set_schedule_client(FlowSchedulerApi(host=HOST, port=HTTP_PORT,
                                                        api_version=API_VERSION, timeout=HTTP_REQUEST_TIMEOUT,
                                                        remote_protocol=protocol, remote_host=remote_host,
-                                                       remote_port=remote_port, grpc_channel=grpc_channel))
+                                                       remote_port=remote_port, grpc_channel=grpc_channel,
+                                                       callback=generate_headers))
+
+    RuntimeConfig.set_scheduler(FlowHub.load_job_scheduler())

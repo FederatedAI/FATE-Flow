@@ -15,25 +15,65 @@
 #
 from webargs import fields
 
-from fate_flow.entity.types import ReturnCode
-from fate_flow.utils.api_utils import get_json_result, validate_request_json, validate_request_params
-from fate_flow.utils.data_upload import Upload, UploadParam
+from fate_flow.apps.desc import SERVER_FILE_PATH, HEAD, PARTITIONS, META, EXTEND_SID, NAMESPACE, NAME, DATA_WAREHOUSE, \
+    DROP, SITE_NAME
+from fate_flow.engine import storage
+from fate_flow.manager.components.component_manager import ComponentManager
+from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.utils.api_utils import API
+from fate_flow.errors.server_error import NoFoundTable
 
 page_name = "data"
 
 
-@manager.route('/upload', methods=['POST'])
-@validate_request_json(file=fields.String(required=True), head=fields.Bool(required=True),
-                       namespace=fields.String(required=True), name=fields.String(required=True),
-                       partitions=fields.Integer(required=True), storage_engine=fields.String(required=False),
-                       destroy=fields.Bool(required=False), meta=fields.Dict(required=True))
-def upload_data(file, head, partitions, namespace, name, meta, destroy=False, storage_engine=""):
-    data = Upload().run(parameters=UploadParam(file=file, head=head, partitions=partitions, namespace=namespace,
-                                               name=name, storage_engine=storage_engine, meta=meta, destroy=destroy))
-    return get_json_result(code=ReturnCode.Base.SUCCESS, message="success", data=data)
+@manager.route('/component/upload', methods=['POST'])
+@API.Input.json(file=fields.String(required=True), desc=SERVER_FILE_PATH)
+@API.Input.json(head=fields.Bool(required=True), desc=HEAD)
+@API.Input.json(partitions=fields.Integer(required=True), desc=PARTITIONS)
+@API.Input.json(meta=fields.Dict(required=True), desc=META)
+@API.Input.json(extend_sid=fields.Bool(required=False), desc=EXTEND_SID)
+@API.Input.json(namespace=fields.String(required=False), desc=NAMESPACE)
+@API.Input.json(name=fields.String(required=False), desc=NAME)
+def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_sid=False):
+    result = ComponentManager.upload(
+        file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
+    )
+    return API.Output.json(**result)
+
+
+@manager.route('/component/download', methods=['POST'])
+@API.Input.json(name=fields.String(required=True), desc=NAME)
+@API.Input.json(namespace=fields.String(required=True), desc=NAMESPACE)
+@API.Input.json(path=fields.String(required=False), desc=SERVER_FILE_PATH)
+def download_data(namespace, name, path):
+    result = ComponentManager.download(
+        path=path, namespace=namespace, name=name
+    )
+    return API.Output.json(**result)
+
+
+@manager.route('/component/dataframe/transformer', methods=['POST'])
+@API.Input.json(data_warehouse=fields.Dict(required=True), desc=DATA_WAREHOUSE)
+@API.Input.json(namespace=fields.String(required=True), desc=NAMESPACE)
+@API.Input.json(name=fields.String(required=True), desc=NAME)
+@API.Input.json(site_name=fields.String(required=False), desc=SITE_NAME)
+@API.Input.json(drop=fields.Bool(required=False), desc=DROP)
+def transformer_data(data_warehouse, namespace, name, drop=True, site_name=None):
+    result = ComponentManager.dataframe_transformer(data_warehouse, namespace, name, drop, site_name)
+    return API.Output.json(**result)
 
 
 @manager.route('/download', methods=['GET'])
-@validate_request_params(name=fields.String(required=True), namespace=fields.String(required=True))
-def download(name, namespace):
-    return get_json_result(code=ReturnCode.Base.SUCCESS, message="success")
+@API.Input.params(name=fields.String(required=True), desc=NAME)
+@API.Input.params(namespace=fields.String(required=True), desc=NAMESPACE)
+@API.Input.params(header=fields.String(required=False), desc=HEAD)
+def download(namespace, name, header=None):
+    data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
+    if not data_table_meta:
+        raise NoFoundTable(name=name, namespace=namespace)
+    return DataManager.send_table(
+        output_tables_meta={"data": data_table_meta},
+        tar_file_name=f'download_data_{namespace}_{name}.tar.gz',
+        need_head=header
+    )
+

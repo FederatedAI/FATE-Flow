@@ -16,9 +16,9 @@ from .resource import BaseAPI
 
 
 class Federated(BaseAPI):
-    def create_job(self, job_id, roles, command_body):
+    def create_job(self, job_id, roles, initiator_party_id, command_body):
         return self.job_command(job_id=job_id, roles=roles, command="create", command_body=command_body,
-                                parallel=False)
+                                initiator_party_id=initiator_party_id, parallel=False)
 
     def stop_job(self, job_id, roles):
         return self.job_command(job_id=job_id, roles=roles, command="stop")

@@ -15,6 +15,3 @@
 
 # spark
 -r requirements-spark.txt
-
-# fate
--r requirements-fate.txt

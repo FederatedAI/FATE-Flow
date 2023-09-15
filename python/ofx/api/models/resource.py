@@ -51,6 +51,10 @@ class APIClient(requests.Session):
         return self.request('POST', url=self._set_url(endpoint), data=data, json=json,
                             **self._set_request_timeout(kwargs))
 
+    def send_file(self, endpoint, data=None, json=None, params=None, files=None, **kwargs):
+        return self.request('POST', url=self._set_url(endpoint), data=data, json=json, files=files, params=params,
+                            **self._set_request_timeout(kwargs))
+
     def get(self, endpoint, **kwargs):
         kwargs.setdefault('allow_redirects', True)
         return self.request('GET', url=self._set_url(endpoint), **self._set_request_timeout(kwargs))
@@ -60,6 +64,10 @@ class APIClient(requests.Session):
 
     def delete(self, endpoint, **kwargs):
         return self.request('DELETE', url=self._set_url(endpoint), **self._set_request_timeout(kwargs))
+
+    @property
+    def url(self):
+        return self._url
 
     @property
     def _url(self):
@@ -81,7 +89,10 @@ class APIClient(requests.Session):
     def _set_url(self, endpoint):
         return f"{self._url}/{endpoint}"
 
-    def remote(self, job_id, method, endpoint, src_party_id, dest_party_id, src_role, json_body, local=False, extra_params=None):
+    def remote(self, job_id, method, endpoint, src_party_id, dest_party_id, src_role, json_body, is_local=False,
+               extra_params=None, headers=None):
+        if not headers:
+            headers = {}
         if self.version:
             endpoint = f"/{self.version}{endpoint}"
         kwargs = {
@@ -92,17 +103,20 @@ class APIClient(requests.Session):
             'dest_party_id': dest_party_id,
             'src_role': src_role,
             'json_body': json_body,
-
+            "headers": headers
         }
         if extra_params:
             kwargs.update(extra_params)
         if not self.remote_host and not self.remote_port and self.remote_protocol == "grpc":
-            raise Exception(f'{self.remote_protocol} coordination communication protocol need remote host and remote port.')
+            raise Exception(
+                f'{self.remote_protocol} coordination communication protocol need remote host and remote port.')
         kwargs.update({
             "source_host": self.host,
             "source_port": self.port,
         })
-        if not local and self.remote_host and self.remote_port:
+        if is_local:
+            return self.remote_on_http(**kwargs)
+        if self.remote_host and self.remote_port:
             kwargs.update({
                 "host": self.remote_host,
                 "port": self.remote_port,
@@ -120,24 +134,27 @@ class APIClient(requests.Session):
             return self.remote_on_http(**kwargs)
 
     def remote_on_http(self, method, endpoint, host=None, port=None, try_times=3, timeout=10,
-                       json_body=None, dest_party_id=None, service_name="fateflow", **kwargs):
+                       json_body=None, dest_party_id=None, service_name="fateflow", headers=None, **kwargs):
+        headers.update({
+            "dest-party-id": dest_party_id,
+            "service": service_name
+        })
         if host and port:
             url = f"{self.remote_protocol}://{host}:{port}{endpoint}"
         else:
             url = f"{self.base_url}{endpoint}"
         for t in range(try_times):
             try:
-                response = requests.request(method=method, url=url, timeout=timeout, json=json_body, headers={
-                    "dest-party-id": dest_party_id,
-                    "service": service_name
-                })
+                response = requests.request(method=method, url=url, timeout=timeout, json=json_body, headers=headers)
                 response.raise_for_status()
             except Exception as e:
                 if t >= try_times - 1:
                     raise e
             else:
-                return response.json()
-            # time.sleep(get_exponential_backoff_interval(t))
+                try:
+                    return response.json()
+                except:
+                    raise Exception(response.text)
 
     @staticmethod
     def remote_on_grpc_proxy(job_id, method, host, port, endpoint, src_party_id, dest_party_id, json_body,
@@ -163,8 +180,10 @@ class APIClient(requests.Session):
                 if t >= try_times - 1:
                     raise e
             else:
-                return json.loads(bytes.decode(_return.body.value))
-                # return json.loads(bytes.decode(_return.payload))
+                try:
+                    return json.loads(bytes.decode(_return.body.value))
+                except Exception:
+                    raise RuntimeError(f"{_return}, {_call}")
             finally:
                 channel.close()
 
@@ -191,18 +210,31 @@ class APIClient(requests.Session):
                 if t >= try_times - 1:
                     raise Exception(str(e))
             else:
-                return json.loads(bytes.decode(_return.payload))
+                try:
+                    return json.loads(bytes.decode(_return.payload))
+                except Exception:
+                    raise RuntimeError(f"{_return}, {_call}")
             finally:
                 channel.close()
 
 
 class BaseAPI:
-    def __init__(self, client: APIClient):
+    def __init__(self, client: APIClient, callback=None):
         self.client = client
+        self.callback = callback
 
     def federated_command(self, job_id, src_role, src_party_id, dest_role, dest_party_id, endpoint, body,
-                          federated_response, method='POST', only_scheduler=False, extra_params=None):
+                          federated_response, method='POST', only_scheduler=False, extra_params=None,
+                          initiator_party_id=""):
         try:
+            headers = {}
+            if self.callback:
+                result = self.callback(dest_party_id, body, initiator_party_id=initiator_party_id)
+                if result.code == 0:
+                    headers = result.signature if result.signature else {}
+                else:
+                    raise Exception(result.code, result.message)
+            headers.update({"initiator_party_id": initiator_party_id})
             response = self.client.remote(job_id=job_id,
                                           method=method,
                                           endpoint=endpoint,
@@ -210,7 +242,9 @@ class BaseAPI:
                                           src_party_id=src_party_id,
                                           dest_party_id=dest_party_id,
                                           json_body=body if body else {},
-                                          extra_params=extra_params)
+                                          extra_params=extra_params,
+                                          is_local=self.is_local(party_id=dest_party_id),
+                                          headers=headers)
             if only_scheduler:
                 return response
         except Exception as e:
@@ -222,7 +256,11 @@ class BaseAPI:
             return response
         federated_response[dest_role][dest_party_id] = response
 
-    def job_command(self, job_id, roles, command, command_body=None, parallel=False):
+    @staticmethod
+    def is_local(party_id):
+        return party_id == "0"
+
+    def job_command(self, job_id, roles, command, command_body=None, parallel=False, initiator_party_id=""):
         federated_response = {}
         api_type = "partner/job"
         threads = []
@@ -238,12 +276,13 @@ class BaseAPI:
                 command_body["party_id"] = dest_party_id
                 command_body["job_id"] = job_id
                 args = (job_id, "", "", dest_role, dest_party_id, endpoint, command_body, federated_response)
+                kwargs = {"initiator_party_id": initiator_party_id}
                 if parallel:
-                    t = threading.Thread(target=self.federated_command, args=args)
+                    t = threading.Thread(target=self.federated_command, args=args, kwargs=kwargs)
                     threads.append(t)
                     t.start()
                 else:
-                    self.federated_command(*args)
+                    self.federated_command(*args, initiator_party_id=initiator_party_id)
         for thread in threads:
             thread.join()
         return federated_response
@@ -264,7 +303,8 @@ class BaseAPI:
             dest_role, dest_party_id = task["role"], task["party_id"]
             federated_response[dest_role] = federated_response.get(dest_role, {})
             endpoint = f"/partner/task/{command}"
-            args = (task['job_id'], task['role'], task['party_id'], dest_role, dest_party_id, endpoint, command_body, federated_response)
+            args = (task['job_id'], task['role'], task['party_id'], dest_role, dest_party_id, endpoint, command_body,
+                    federated_response)
             if parallel:
                 t = threading.Thread(target=self.federated_command, args=args)
                 threads.append(t)
@@ -275,7 +315,7 @@ class BaseAPI:
             thread.join()
         return federated_response
 
-    def scheduler_command(self, command, party_id, command_body=None, method='POST'):
+    def scheduler_command(self, command, party_id, command_body=None, method='POST', initiator_party_id=""):
         try:
             federated_response = {}
             endpoint = f"/scheduler/{command}"
@@ -288,7 +328,8 @@ class BaseAPI:
                                               dest_party_id=party_id,
                                               body=command_body if command_body else {},
                                               federated_response=federated_response,
-                                              only_scheduler=True
+                                              only_scheduler=True,
+                                              initiator_party_id=initiator_party_id
                                               )
         except Exception as e:
             response = {
