@@ -15,11 +15,12 @@
 #
 from peewee import CharField, TextField, IntegerField, BooleanField, BigIntegerField, CompositeKey
 
-from fate_flow.db.base_models import DataBaseModel, JSONField, DateTimeField
+from fate_flow.db.base_models import DataBaseModel, JSONField
 
 
 class ScheduleJob(DataBaseModel):
     f_job_id = CharField(max_length=25, index=True)
+    f_priority = IntegerField(default=0)
     f_tag = CharField(max_length=50, null=True, default='')
     f_dag = JSONField(null=True)
     f_parties = JSONField()
@@ -29,20 +30,15 @@ class ScheduleJob(DataBaseModel):
     f_status_code = IntegerField(null=True)
 
     f_progress = IntegerField(null=True, default=0)
-    f_ready_signal = BooleanField(default=False)
-    f_ready_time = BigIntegerField(null=True)
+    f_schedule_signal = BooleanField(default=False)
+    f_schedule_time = BigIntegerField(null=True)
     f_cancel_signal = BooleanField(default=False)
     f_cancel_time = BigIntegerField(null=True)
     f_rerun_signal = BooleanField(default=False)
     f_end_scheduling_updates = IntegerField(null=True, default=0)
 
-    f_inheritance_info = JSONField(null=True)
-    f_inheritance_status = CharField(max_length=50, null=True)
-
     f_start_time = BigIntegerField(null=True)
-    f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)
-    f_end_date = DateTimeField(null=True)
     f_elapsed = BigIntegerField(null=True)
 
     class Meta:
@@ -63,9 +59,7 @@ class ScheduleTask(DataBaseModel):
     f_status = CharField(max_length=50)
 
     f_start_time = BigIntegerField(null=True)
-    f_start_date = DateTimeField(null=True)
     f_end_time = BigIntegerField(null=True)
-    f_end_date = DateTimeField(null=True)
     f_elapsed = BigIntegerField(null=True)
 
     class Meta:
@@ -80,7 +74,7 @@ class ScheduleTaskStatus(DataBaseModel):
     f_task_version = BigIntegerField()
     f_status = CharField(max_length=50)
     f_auto_retries = IntegerField(default=0)
-    f_federated_status_collect_type = CharField(max_length=10)
+    f_sync_type = CharField(max_length=10)
 
     class Meta:
         db_table = "t_schedule_task_status"

@@ -1,13 +1,10 @@
 {
-  "file": "/data/projects/fate/examples/data/breast_hetero_host.csv",
-  "head": 1,
-  "partitions": 4,
-  "namespace": "experiment",
-  "name": "host",
-  "storage_engine": "eggroll",
-  "destroy": 1,
+  "file": "examples/data/breast_hetero_host.csv",
+  "head": true,
+  "partitions": 16,
+  "extend_sid": true,
   "meta": {
     "delimiter": ",",
-    "dtype": "float32"
+    "match_id_name": "id"
   }
 }

@@ -22,10 +22,10 @@ import peewee
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.storage_models import StorageTableMetaModel
-from fate_flow.engine.abc import StorageTableMetaABC, StorageTableABC
+from fate_flow.engine.storage._abc import StorageTableMetaABC, StorageTableABC
 
 from fate_flow.engine.relation_ship import Relationship
-from fate_flow.entity.address_types import AddressABC
+from fate_flow.entity.types import AddressABC
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log import getLogger
 
@@ -33,14 +33,13 @@ LOGGER = getLogger("storage")
 
 
 class StorageTableBase(StorageTableABC):
-    def __init__(self, name, namespace, address, partitions, options, engine, store_type):
+    def __init__(self, name, namespace, address, partitions, options, engine):
         self._name = name
         self._namespace = namespace
         self._address = address
         self._partitions = partitions
         self._options = options if options else {}
         self._engine = engine
-        self._store_type = store_type
 
         self._meta = None
         self._read_access_time = None
@@ -49,10 +48,6 @@ class StorageTableBase(StorageTableABC):
     @property
     def name(self):
         return self._name
-
-    @property
-    def meta_name(self):
-        return f"{self.name}.meta"
 
     @property
     def namespace(self):
@@ -67,16 +62,16 @@ class StorageTableBase(StorageTableABC):
         return self._partitions
 
     @property
+    def data_type(self):
+        return self.meta.data_type
+
+    @property
     def options(self):
         return self._options
 
     @property
     def engine(self):
         return self._engine
-
-    @property
-    def store_type(self):
-        return self._store_type
 
     @property
     def meta(self):
@@ -95,13 +90,13 @@ class StorageTableBase(StorageTableABC):
         return self._write_access_time
 
     def update_meta(self,
-                    schema=None,
+                    data_meta=None,
                     count=None,
                     part_of_data=None,
                     description=None,
                     partitions=None,
                     **kwargs):
-        self._meta.update_metas(schema=schema,
+        self._meta.update_metas(data_meta=data_meta,
                                 count=count,
                                 part_of_data=part_of_data,
                                 description=description,
@@ -109,17 +104,24 @@ class StorageTableBase(StorageTableABC):
                                 **kwargs)
 
     def create_meta(self, **kwargs):
+        self.destroy_if_exists()
         table_meta = StorageTableMeta(name=self._name, namespace=self._namespace, new=True)
         table_meta.set_metas(**kwargs)
         table_meta.address = self._address
         table_meta.partitions = self._partitions
         table_meta.engine = self._engine
-        table_meta.store_type = self._store_type
         table_meta.options = self._options
         table_meta.create()
         self._meta = table_meta
 
         return table_meta
+
+    def destroy_if_exists(self):
+        table_meta = StorageTableMeta(name=self._name, namespace=self._namespace)
+        if table_meta:
+            table_meta.destroy_metas()
+            return True
+        return False
 
     def check_address(self):
         return True
@@ -127,10 +129,6 @@ class StorageTableBase(StorageTableABC):
     def put_all(self, kv_list: Iterable, **kwargs):
         # self._update_write_access_time()
         self._put_all(kv_list, **kwargs)
-
-    def put_meta(self, kv_list: Iterable, **kwargs):
-        # self._update_write_access_time()
-        self._put_meta(kv_list, **kwargs)
 
     def collect(self, **kwargs) -> list:
         # self._update_read_access_time()
@@ -150,24 +148,8 @@ class StorageTableBase(StorageTableABC):
         self.meta.destroy_metas()
         self._destroy()
 
-    def save_as(self, address, name, namespace, partitions=None, **kwargs):
-        table = self._save_as(address, name, namespace, partitions, **kwargs)
-        table.create_meta(**kwargs)
-        return table
-
-    def _update_read_access_time(self, read_access_time=None):
-        read_access_time = current_timestamp() if not read_access_time else read_access_time
-        self._meta.update_metas(read_access_time=read_access_time)
-
-    def _update_write_access_time(self, write_access_time=None):
-        write_access_time = current_timestamp() if not write_access_time else write_access_time
-        self._meta.update_metas(write_access_time=write_access_time)
-
     # to be implemented
     def _put_all(self, kv_list: Iterable, **kwargs):
-        raise NotImplementedError()
-
-    def _put_meta(self, kv_list: Iterable, **kwargs):
         raise NotImplementedError()
 
     def _collect(self, **kwargs) -> list:
@@ -196,16 +178,15 @@ class StorageTableMeta(StorageTableMetaABC):
         self.store_type = None
         self.options = None
         self.partitions = None
-        self.in_serialized = None
         self.have_head = None
-        self.delimiter = None
         self.extend_sid = False
         self.auto_increasing_sid = None
-        self.schema = None
+        self.data_meta = None
+        self.data_type = None
         self.count = None
         self.part_of_data = None
         self.description = None
-        self.origin = None
+        self.source = None
         self.disable = None
         self.create_time = None
         self.update_time = None
@@ -213,8 +194,8 @@ class StorageTableMeta(StorageTableMetaABC):
         self.write_access_time = None
         if self.options is None:
             self.options = {}
-        if self.schema is None:
-            self.schema = {}
+        if self.data_meta is None:
+            self.data_meta = {}
         if self.part_of_data is None:
             self.part_of_data = []
         if not new:
@@ -250,8 +231,9 @@ class StorageTableMeta(StorageTableMetaABC):
     def create(self):
         table_meta = StorageTableMetaModel()
         table_meta.f_create_time = current_timestamp()
-        table_meta.f_schema = {}
+        table_meta.f_data_meta = {}
         table_meta.f_part_of_data = []
+        table_meta.f_source = {}
         for k, v in self.to_dict().items():
             attr_name = 'f_%s' % k
             if hasattr(StorageTableMetaModel, attr_name):
@@ -261,13 +243,14 @@ class StorageTableMeta(StorageTableMetaABC):
             if rows != 1:
                 raise Exception("create table meta failed")
         except peewee.IntegrityError as e:
-            if e.args[0] == 1062:
-                # warning
-                pass
-            elif isinstance(e.args[0], str) and "UNIQUE constraint failed" in e.args[0]:
-                pass
-            else:
-                raise e
+            # if e.args[0] == 1062:
+            #     # warning
+            #     pass
+            # elif isinstance(e.args[0], str) and "UNIQUE constraint failed" in e.args[0]:
+            #     pass
+            # else:
+            #     raise e
+            pass
         except Exception as e:
             raise e
 
@@ -301,7 +284,7 @@ class StorageTableMeta(StorageTableMetaABC):
             return []
 
     @DB.connection_context()
-    def update_metas(self, schema=None, count=None, part_of_data=None, description=None, partitions=None,
+    def update_metas(self, data_meta=None, count=None, part_of_data=None, description=None, partitions=None,
                      in_serialized=None, **kwargs):
         meta_info = {}
         for k, v in locals().items():
@@ -377,11 +360,8 @@ class StorageTableMeta(StorageTableMetaABC):
     def get_partitions(self):
         return self.partitions
 
-    def get_in_serialized(self):
-        return self.in_serialized
-
     def get_id_delimiter(self):
-        return self.delimiter
+        return self.data_meta.get("delimiter", ",")
 
     def get_extend_sid(self):
         return self.extend_sid
@@ -392,14 +372,14 @@ class StorageTableMeta(StorageTableMetaABC):
     def get_have_head(self):
         return self.have_head
 
-    def get_origin(self):
-        return self.origin
+    def get_source(self):
+        return self.source
 
     def get_disable(self):
         return self.disable
 
-    def get_schema(self):
-        return self.schema
+    def get_data_meta(self):
+        return self.data_meta
 
     def get_count(self):
         return self.count

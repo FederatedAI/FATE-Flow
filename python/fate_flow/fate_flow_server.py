@@ -13,40 +13,105 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-# init env. must be the first import
-
 import os
 import signal
 import sys
 import traceback
 
 import grpc
-from grpc._cython import cygrpc
 from werkzeug.serving import run_simple
 from fate_flow.apps import app
 from fate_flow.controller.config_manager import ConfigManager
+from fate_flow.hook import HookManager
+from fate_flow.manager.service.app_manager import AppManager
+from fate_flow.manager.service.provider_manager import ProviderManager
+from fate_flow.manager.service.service_manager import service_db
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.db.base_models import init_database_tables as init_flow_db
 from fate_flow.detection.detector import Detector, FederatedDetector
 from fate_flow.entity.types import ProcessRole
 from fate_flow.scheduler import init_scheduler
 from fate_flow.scheduler.job_scheduler import DAGScheduler
-from fate_flow.settings import (
-    GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT, detect_logger, stat_logger,
+from fate_flow.runtime.system_settings import (
+    GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT , GRPC_OPTIONS, FATE_FLOW_LOG_DIR,
+    LOG_LEVEL,
 )
 from fate_flow.utils import process_utils
 from fate_flow.utils.grpc_utils import UnaryService, UnaryServiceOSX
-from fate_flow.utils.log_utils import schedule_logger, getLogger
+from fate_flow.utils.log import LoggerFactory, getLogger
+from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.utils.version import get_versions
 from fate_flow.utils.xthread import ThreadPoolExecutor
 from fate_flow.proto.rollsite import proxy_pb2_grpc
 from fate_flow.proto.osx import osx_pb2_grpc
 
-if __name__ == '__main__':
+detect_logger = getLogger("fate_flow_detect")
+stat_logger = getLogger("fate_flow_stat")
+
+
+def server_init():
+    # init logs
+    LoggerFactory.set_directory(FATE_FLOW_LOG_DIR)
+    LoggerFactory.LEVEL = LOG_LEVEL
+
+    # set signal
+    if "win" not in sys.platform.lower():
+        signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
+
     # init db
-    signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
     init_flow_db()
-    # init runtime config
+
+    # runtime config
+    RuntimeConfig.init_env()
+    RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
+    RuntimeConfig.set_process_role(ProcessRole.DRIVER)
+    RuntimeConfig.init_config()
+    RuntimeConfig.set_service_db(service_db())
+    RuntimeConfig.SERVICE_DB.register_flow()
+
+    # manager
+    ConfigManager.load()
+    HookManager.init()
+    AppManager.init()
+
+    # scheduler
+    init_scheduler()
+
+    # detector
+    Detector(interval=5 * 1000, logger=detect_logger).start()
+    FederatedDetector(interval=10 * 1000, logger=detect_logger).start()
+    DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
+
+    # provider register
+    ProviderManager.register_default_providers()
+
+
+def start_server(debug=False):
+    # grpc
+    thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)
+    stat_logger.info(f"start grpc server thread pool by {thread_pool_executor.max_workers} max workers")
+    server = grpc.server(thread_pool=thread_pool_executor,
+                         options=GRPC_OPTIONS)
+
+    osx_pb2_grpc.add_PrivateTransferProtocolServicer_to_server(UnaryServiceOSX(), server)
+    proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
+    server.add_insecure_port(f"{HOST}:{GRPC_PORT}")
+    server.start()
+    stat_logger.info("FATE Flow grpc server start successfully")
+
+    # http
+    stat_logger.info("FATE Flow http server start...")
+    run_simple(
+        hostname=HOST,
+        port=HTTP_PORT,
+        application=app,
+        threaded=True,
+        use_reloader=debug,
+        use_debugger=debug
+    )
+
+
+if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', default=False, help="fate flow version", action='store_true')
@@ -55,36 +120,12 @@ if __name__ == '__main__':
     if args.version:
         print(get_versions())
         sys.exit(0)
-    # todo: add a general init steps?
-    RuntimeConfig.DEBUG = args.debug
-    if RuntimeConfig.DEBUG:
-        stat_logger.info("run on debug mode")
-    RuntimeConfig.init_env()
-    RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
-    RuntimeConfig.set_process_role(ProcessRole.DRIVER)
-    ConfigManager.load()
-    init_scheduler()
-    Detector(interval=5 * 1000, logger=detect_logger).start()
-    FederatedDetector(interval=10 * 1000, logger=detect_logger).start()
-    DAGScheduler(interval=2 * 1000, logger=schedule_logger()).start()
-    thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)
-    stat_logger.info(f"start grpc server thread pool by {thread_pool_executor._max_workers} max workers")
-    server = grpc.server(thread_pool=thread_pool_executor,
-                         options=[(cygrpc.ChannelArgKey.max_send_message_length, -1),
-                                  (cygrpc.ChannelArgKey.max_receive_message_length, -1)])
-    osx_pb2_grpc.add_PrivateTransferProtocolServicer_to_server(UnaryServiceOSX(), server)
-    proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
-    server.add_insecure_port(f"{HOST}:{GRPC_PORT}")
-    server.start()
-    print("FATE Flow grpc server start successfully")
-    stat_logger.info("FATE Flow grpc server start successfully")
 
-    # start http server
+    server_init()
+
     try:
-        print("FATE Flow http server start...")
-        stat_logger.info("FATE Flow http server start...")
-        werkzeug_logger = getLogger("werkzeug")
-        run_simple(hostname=HOST, port=HTTP_PORT, application=app, threaded=True, use_reloader=RuntimeConfig.DEBUG, use_debugger=RuntimeConfig.DEBUG)
-    except Exception:
+        start_server(debug=args.debug)
+    except Exception as e:
         traceback.print_exc()
+        print(e)
         os.kill(os.getpid(), signal.SIGKILL)

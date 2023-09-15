@@ -18,7 +18,7 @@ from eggroll.core.session import session_init
 from eggroll.roll_pair.roll_pair import RollPairContext
 from fate_flow.engine.storage import EggRollStoreType, StorageEngine, StorageSessionBase
 from fate_flow.engine.storage.eggroll import StorageTable
-from fate_flow.entity.address_types import AddressABC, EggRollAddress
+from fate_flow.entity.types import AddressABC, EggRollAddress
 
 
 class StorageSession(StorageSessionBase):

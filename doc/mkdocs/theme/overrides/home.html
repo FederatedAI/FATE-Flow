@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+<!-- Render landing page under tabs -->
+{% block tabs %}
+{{ super() }}
+
+<!-- Additional styles for landing page -->
+<style>
+
+  /* Application header should be static for the landing page */
+  .md-header {
+    position: initial;
+  }
+
+  /* Remove spacing, as we cannot hide it completely */
+  .md-main__inner {
+    margin: 0;
+  }
+
+  /* Hide main content for now */
+  .md-content {
+    display: none;
+  }
+
+  /* Hide table of contents */
+  @media screen and (min-width: 60em) {
+    .md-sidebar--secondary {
+      display: none;
+    }
+  }
+
+  /* Hide navigation */
+  @media screen and (min-width: 76.25em) {
+    .md-sidebar--primary {
+      display: none;
+    }
+  }
+</style>
+
+<!-- landing page for landing page -->
+<section class="tx-container">
+  <div class="md-grid md-typeset">
+    <div class="tx-landing">
+      <!-- landing image -->
+      <div class="tx-landing__image">
+        <script src="./mkdocs/js/lottie-player.js"></script>
+        <lottie-player id="lottieAnimation" background="transparent"
+                       style="max-width: 100%; height: auto;"
+                       speed="1" loop autoplay>
+        </lottie-player>
+        <script>
+          let animation = document.getElementById("lottieAnimation");
+          animation.load("mkdocs/assets/animations/ml.json");
+        </script>
+      </div>
+
+      <!-- landing content -->
+      <div class="tx-landing__content">
+        <h1>{{page.title}}</h1>
+        <p>FATE Flow Base on:
+          <ul>
+            <li>Shared-State Scheduling Architecture</li>
+            <li>Secure Multi-Party Communication</li>
+          </ul>
+        </p>
+        <p>Providing production-level service capabilities:
+          <ul>
+            <li>Data Access</li>
+            <li>Component Registry</li>
+            <li>Federated Job&Task Scheduling</li>
+            <li>Multi-Party Resource Coordination</li>
+            <li>Data Flow Tracking</li>
+            <li>Real-Time Monitoring</li>
+            <li>Federated Model Registry</li>
+            <li>Multi-Party Cooperation Authority Management</li>
+            <li>CLI, REST API, Python API</li>
+          </ul>
+        </p>
+        <a href="/Docs" title="Docs" class="md-button"> Learn More</a>
+        <a href="https://github.com/FederatedAI/FATE-Flow" title="GitHub" class="md-button">GitHub</a>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<!-- Content -->
+{% block content %}{% endblock %}
+
+<!-- Application footer -->
+{% block footer %}{% endblock %}

@@ -20,11 +20,11 @@ import peewee
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.storage_models import SessionRecord
-from fate_flow.engine.abc import StorageSessionABC, StorageTableABC, StorageTableMetaABC
+from fate_flow.engine.storage._abc import StorageSessionABC, StorageTableABC, StorageTableMetaABC
 
 from fate_flow.engine.storage._table import StorageTableMeta
-from fate_flow.entity.engine_types import EngineType, StorageEngine
-from fate_flow.settings import ENGINES
+from fate_flow.entity.types import EngineType, StorageEngine
+from fate_flow.runtime.system_settings import ENGINES
 from fate_flow.utils import base_utils
 from fate_flow.utils.log import getLogger
 
@@ -166,13 +166,19 @@ class Session(object):
 
         if storage_engine == StorageEngine.EGGROLL:
             from fate_flow.engine.storage.eggroll import StorageSession
-            storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
 
         elif storage_engine == StorageEngine.STANDALONE:
             from fate_flow.engine.storage.standalone import StorageSession
-            storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
+
+        elif storage_engine == StorageEngine.FILE:
+            from fate_flow.engine.storage.file import StorageSession
+
+        elif storage_engine == StorageEngine.HDFS:
+            from fate_flow.engine.storage.hdfs import StorageSession
+
         else:
             raise NotImplementedError(f"can not be initialized with storage engine: {storage_engine}")
+        storage_session = StorageSession(session_id=storage_session_id, options=kwargs.get("options", {}))
 
         self._storage_session[storage_session_id] = storage_session
 

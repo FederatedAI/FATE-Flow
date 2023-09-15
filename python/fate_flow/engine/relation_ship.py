@@ -13,9 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.address_types import StandaloneAddress, EggRollAddress, HDFSAddress, MysqlAddress, HiveAddress, LocalFSAddress, PathAddress, \
-    ApiAddress
-from fate_flow.entity.engine_types import ComputingEngine, StorageEngine, FederationEngine, EngineType
+from fate_flow.entity.types import StandaloneAddress, EggRollAddress, HDFSAddress, MysqlAddress, HiveAddress, \
+    PathAddress, ApiAddress, ComputingEngine, StorageEngine, FederationEngine, EngineType, FileAddress
 
 
 class Relationship(object):
@@ -57,12 +56,13 @@ class Relationship(object):
                 "support": [
                     StorageEngine.HDFS,
                     StorageEngine.HIVE,
-                    StorageEngine.LOCALFS,
+                    StorageEngine.FILE,
+                    StorageEngine.STANDALONE
                 ],
             },
             EngineType.FEDERATION: {
                 "default": FederationEngine.RABBITMQ,
-                "support": [FederationEngine.PULSAR, FederationEngine.RABBITMQ, FederationEngine.OSX],
+                "support": [FederationEngine.PULSAR, FederationEngine.RABBITMQ, FederationEngine.OSX, FederationEngine.STANDALONE],
             },
         }
     }
@@ -73,7 +73,7 @@ class Relationship(object):
         StorageEngine.HDFS: HDFSAddress,
         StorageEngine.MYSQL: MysqlAddress,
         StorageEngine.HIVE: HiveAddress,
-        StorageEngine.LOCALFS: LocalFSAddress,
+        StorageEngine.FILE: FileAddress,
         StorageEngine.PATH: PathAddress,
         StorageEngine.API: ApiAddress
     }

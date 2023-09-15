@@ -13,42 +13,27 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.settings import FATE_FLOW_JOB_DEFAULT_CONFIG_PATH, stat_logger
+from fate_flow.runtime.system_settings import FATE_FLOW_JOB_DEFAULT_CONFIG_PATH
 from .reload_config_base import ReloadConfigBase
 from ..utils import file_utils
+from ..utils.log import getLogger
+
+stat_logger = getLogger()
 
 
 class JobDefaultConfig(ReloadConfigBase):
-    # component provider
-    default_component_provider_path = None
-
-    # Resource
-    total_cores_overweight_percent = None
-    total_memory_overweight_percent = None
-    task_parallelism = None
-    task_cores = None
-    task_memory = None
-    max_cores_percent_per_job = None
-
-    # scheduling
+    job_cores = None
+    computing_partitions = None
+    task_run = None
     remote_request_timeout = None
     federated_command_trys = None
     job_timeout = None
-    end_status_job_scheduling_time_limit = None
-    end_status_job_scheduling_updates = None
     auto_retries = None
-    auto_retry_delay = None
-    federated_status_collect_type = None
-    detect_connect_max_retry_count = None
-    detect_connect_long_retry_count = None
+    sync_type = None
 
-    # upload
-    upload_block_max_bytes = None  # bytes
-
-    # component output
-    output_data_summary_count_limit = None
-
-    task_default_conf = None
+    task_logger = None
+    task_device = None
+    launcher = None
 
     @classmethod
     def load(cls):

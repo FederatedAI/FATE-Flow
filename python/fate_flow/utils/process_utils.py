@@ -14,31 +14,40 @@
 #  limitations under the License.
 #
 import errno
+import json
 import os
 import subprocess
 import time
 
 import psutil
+
+from fate_flow.entity.code import KillProcessRetCode
+from fate_flow.utils.log import getLogger
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.db.db_models import Task
-from fate_flow.entity.types import KillProcessRetCode, ProcessRole
-from fate_flow.settings import SUBPROCESS_STD_LOG_NAME
-from fate_flow.settings import stat_logger
+from fate_flow.entity.types import ProcessRole
+
+stat_logger = getLogger()
 
 
-def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_dir=None, cwd_dir=None, process_name="", process_id=""):
+def run_subprocess(
+        job_id, config_dir, process_cmd, process_name, added_env: dict = None, std_dir=None, cwd_dir=None, stderr=None
+):
     logger = schedule_logger(job_id) if job_id else stat_logger
     process_cmd = [str(cmd) for cmd in process_cmd]
     logger.info("start process command: \n{}".format(" ".join(process_cmd)))
 
     os.makedirs(config_dir, exist_ok=True)
-    if not log_dir:
-        log_dir = config_dir
-    if log_dir:
-        os.makedirs(log_dir, exist_ok=True)
-    std_path = get_std_path(log_dir=log_dir, process_name=process_name, process_id=process_id)
+    os.makedirs(std_dir, exist_ok=True)
+    if not std_dir:
+        std_dir = config_dir
+    std_path = get_std_path(std_dir=std_dir, process_name=process_name)
+
     std = open(std_path, 'w')
-    pid_path = os.path.join(config_dir, f"{process_name}_pid")
+    if not stderr:
+        stderr = std
+    pid_path = os.path.join(config_dir, "pid", f"{process_name}")
+    os.makedirs(os.path.dirname(pid_path), exist_ok=True)
 
     if os.name == 'nt':
         startupinfo = subprocess.STARTUPINFO()
@@ -51,14 +60,15 @@ def run_subprocess(job_id, config_dir, process_cmd, added_env: dict = None, log_
     subprocess_env["PROCESS_ROLE"] = ProcessRole.WORKER.value
     if added_env:
         for name, value in added_env.items():
+            if not value:
+                continue
             if name.endswith("PATH") and subprocess_env.get(name) is not None:
                 value += ':' + subprocess_env[name]
             subprocess_env[name] = value
-    subprocess_env.pop("CLASSPATH", None)
-
+    logger.info(f"RUN ENV：{json.dumps(subprocess_env)}")
     p = subprocess.Popen(process_cmd,
                          stdout=std,
-                         stderr=std,
+                         stderr=stderr,
                          startupinfo=startupinfo,
                          cwd=cwd_dir,
                          env=subprocess_env
@@ -126,15 +136,8 @@ def check_process_by_cmdline(actual: list, expected: list):
         return True
 
 
-def get_std_path(log_dir, process_name="", process_id=""):
-    std_log_path = f"{process_name}_{process_id}_{SUBPROCESS_STD_LOG_NAME}" if process_name else SUBPROCESS_STD_LOG_NAME
-    return os.path.join(log_dir, std_log_path)
-
-
-def get_subprocess_std(log_dir, process_name="", process_id=""):
-    with open(get_std_path(log_dir, process_name, process_id), "r") as fr:
-        text = fr.read()
-    return text
+def get_std_path(std_dir, process_name):
+    return os.path.join(std_dir, process_name)
 
 
 def wait_child_process(signum, frame):
@@ -204,10 +207,10 @@ def kill_task_executor_process(task: Task, only_child=False):
             return KillProcessRetCode.ERROR_PID
         for child in p.children(recursive=True):
             if check_process(pid=child.pid, task=task):
-                kill(p)
+                child.kill()
         if not only_child:
             if check_process(pid, task=task):
-                kill(p)
+                p.kill()
         schedule_logger(task.f_job_id).info("successfully stop task {} {} {} process pid:{}".format(
             task.f_task_id, task.f_role, task.f_party_id, pid))
         return KillProcessRetCode.KILLED

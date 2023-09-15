@@ -29,25 +29,19 @@ from peewee import (
     IntegerField,
     Metadata,
     Model,
-    TextField,
-    Insert
+    TextField
 )
 from playhouse.pool import PooledMySQLDatabase
 
-from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.settings import DATABASE, IS_STANDALONE, stat_logger, FORCE_USE_SQLITE
+from fate_flow.hub.flow_hub import FlowHub
+
+from fate_flow.runtime.system_settings import DATABASE
 from fate_flow.utils.base_utils import json_dumps, json_loads, date_string_to_timestamp, \
     current_timestamp, timestamp_to_date
-from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.log_utils import getLogger, sql_logger
 from fate_flow.utils.object_utils import from_dict_hook
 
-if IS_STANDALONE or FORCE_USE_SQLITE:
-    from playhouse.apsw_ext import DateTimeField
-else:
-    from peewee import DateTimeField
-
-CONTINUOUS_FIELD_TYPE = {IntegerField, FloatField, DateTimeField}
+CONTINUOUS_FIELD_TYPE = {IntegerField, FloatField}
 AUTO_DATE_TIMESTAMP_FIELD_PREFIX = {
     "create",
     "start",
@@ -147,6 +141,7 @@ def is_continuous_field(cls: typing.Type) -> bool:
     else:
         return False
 
+
 class JsonSerializedField(SerializedField):
     def __init__(self, object_hook=from_dict_hook, object_pairs_hook=None, **kwargs):
         super(JsonSerializedField, self).__init__(serialized_type=SerializedType.JSON, object_hook=object_hook,
@@ -180,19 +175,10 @@ def remove_field_name_prefix(field_name):
 @singleton
 class BaseDataBase:
     def __init__(self):
-        database_config = DATABASE.copy()
-        db_name = database_config.pop("name")
-        if IS_STANDALONE or FORCE_USE_SQLITE:
-            # sqlite does not support other options
-            Insert.on_conflict = lambda self, *args, **kwargs: self.on_conflict_replace()
-
-            from playhouse.apsw_ext import APSWDatabase
-            self.database_connection = APSWDatabase(get_fate_flow_directory("fate_sqlite.db"))
-            RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
-            stat_logger.info('init sqlite database on standalone mode successfully')
-        else:
-            self.database_connection = PooledMySQLDatabase(db_name, **database_config)
-            stat_logger.info('init mysql database on cluster mode successfully')
+        engine_name = DATABASE.get("engine")
+        config = DATABASE.get(engine_name)
+        decrypt_key = DATABASE.get("decrypt_key")
+        self.database_connection = FlowHub.load_database(engine_name, config, decrypt_key)
 
 
 class DatabaseLock:
@@ -253,9 +239,7 @@ def close_connection():
 
 class BaseModel(Model):
     f_create_time = BigIntegerField(null=True)
-    f_create_date = DateTimeField(null=True)
     f_update_time = BigIntegerField(null=True)
-    f_update_date = DateTimeField(null=True)
 
     def to_json(self):
         # This function is obsolete
@@ -294,7 +278,7 @@ class BaseModel(Model):
         return operator.attrgetter(attr)(cls)
 
     @classmethod
-    def query(cls, reverse=None, order_by=None, **kwargs):
+    def query(cls, reverse=None, order_by=None, force=False, **kwargs):
         filters = []
         for f_n, f_v in kwargs.items():
             attr_name = "f_%s" % f_n
@@ -332,19 +316,34 @@ class BaseModel(Model):
         if filters:
             query_records = cls.select().where(*filters)
             if reverse is not None:
-                if not order_by or not hasattr(cls, f"f_{order_by}"):
-                    order_by = "create_time"
-                if reverse is True:
-                    query_records = query_records.order_by(
-                        cls.getter_by(f"f_{order_by}").desc()
-                    )
-                elif reverse is False:
-                    query_records = query_records.order_by(
-                        cls.getter_by(f"f_{order_by}").asc()
-                    )
+                if isinstance(order_by, str) or not order_by:
+                    if not order_by or not hasattr(cls, f"f_{order_by}"):
+                        order_by = "create_time"
+                    query_records = cls.desc(query_records=query_records, reverse=[reverse], order_by=[order_by])
+                elif isinstance(order_by, list):
+                    if not isinstance(reverse, list) or len(reverse) != len(order_by):
+                        raise ValueError(f"reverse need is list and length={len(order_by)}")
+                    query_records = cls.desc(query_records=query_records, reverse=reverse, order_by=order_by)
+                else:
+                    raise ValueError(f"order_by type {type(order_by)} not support")
+            return [query_record for query_record in query_records]
+
+        elif force:
+            # force query all
+            query_records = cls.select()
             return [query_record for query_record in query_records]
         else:
             return []
+
+    @classmethod
+    def desc(cls, query_records, order_by: list, reverse: list):
+        _filters = list()
+        for _k, _ob in enumerate(order_by):
+            if reverse[_k] is True:
+                _filters.append(cls.getter_by(f"f_{_ob}").desc())
+            else:
+                _filters.append(cls.getter_by(f"f_{_ob}").asc())
+        return query_records.order_by(*tuple(_filters))
 
     @classmethod
     def insert(cls, __data=None, **insert):
@@ -411,7 +410,7 @@ def fill_db_model_object(model_object, human_model_dict):
 class BaseModelOperate:
     @classmethod
     @DB.connection_context()
-    def _create_entity(cls, entity_model: object, entity_info: object) -> object:
+    def _create_entity(cls, entity_model, entity_info: dict) -> object:
         obj = entity_model()
         obj.f_create_time = current_timestamp()
         for k, v in entity_info.items():
@@ -424,15 +423,38 @@ class BaseModelOperate:
                 raise Exception("Create {} failed".format(entity_model))
             return obj
         except peewee.IntegrityError as e:
-            if e.args[0] == 1062 or (isinstance(e.args[0], str) and "UNIQUE constraint failed" in e.args[0]):
-                sql_logger(job_id=entity_info.get("job_id", "fate_flow")).warning(e)
-            else:
-                raise Exception("Create {} failed:\n{}".format(entity_model, e))
+            # if e.args[0] == 1062 or (isinstance(e.args[0], str) and "UNIQUE constraint failed" in e.args[0]):
+            #     sql_logger(job_id=entity_info.get("job_id", "fate_flow")).warning(e)
+            # else:
+            #     raise Exception("Create {} failed:\n{}".format(entity_model, e))
+            pass
         except Exception as e:
             raise Exception("Create {} failed:\n{}".format(entity_model, e))
 
     @classmethod
     @DB.connection_context()
-    def _query(cls, entity_model, **kwargs) -> object:
-        return entity_model.query(**kwargs)
+    def _query(cls, entity_model, force=False, **kwargs):
+        return entity_model.query(force=force, **kwargs)
+
+    @classmethod
+    @DB.connection_context()
+    def _delete(cls, entity_model, **kwargs):
+        _kwargs = {}
+        filters = []
+        for f_k, f_v in kwargs.items():
+            attr_name = "f_%s" % f_k
+            filters.append(operator.attrgetter(attr_name)(entity_model) == f_v)
+        return entity_model.delete().where(*filters).execute() > 0
+
+    @classmethod
+    def safe_save(cls, model, defaults, **kwargs):
+        entity_model, status = model.get_or_create(
+            **kwargs,
+            defaults=defaults)
+        if status is False:
+            for key in defaults:
+                setattr(entity_model, key, defaults[key])
+            entity_model.save(force_insert=False)
+            return "update"
+        return "create"
 

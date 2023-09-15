@@ -1,24 +1,44 @@
-force_use_sqlite: true
-party_id: "10000"
+party_id: "9999"
+use_registry: false
+encrypt:
+  key_0:
+    module: fate_flow.hub.encrypt.password_encrypt#pwdecrypt
+    # base on: fate_flow/conf/
+    private_path: private_key.pem
 fateflow:
-  # you must set real ip address, 127.0.0.1 and 0.0.0.0 is not supported
   host: 127.0.0.1
   http_port: 9380
   grpc_port: 9360
   proxy_name: rollsite
+  nginx:
+    host:
+    http_port:
+    grpc_port:
 database:
-  name: fate_flow
-  user: fate
-  passwd: fate
-  host: 127.0.0.1
-  port: 3306
-  max_connections: 100
-  stale_timeout: 30
-# engine services
+  engine: sqlite
+  # encrypt passwd key
+  decrypt_key:
+  mysql:
+    name: fate_flow
+    user: fate
+    passwd: fate
+    host: 127.0.0.1
+    port: 3306
+    max_connections: 100
+    stale_timeout: 30
+  sqlite:
+    # default fate_flow/runtime/system_settings: SQLITE_PATH
+    # /xxx/xxx.sqlite
+    path:
 default_engines:
   computing: standalone
   federation: standalone
   storage: standalone
+default_provider:
+  name: fate
+  # version default: fateflow.env
+  version:
+  device: local
 federation:
   pulsar:
     host: 192.168.0.5
@@ -57,27 +77,48 @@ federation:
     port: 9370
 computing:
   standalone:
-    cores_per_node: 20
-    nodes: 1
+    cores: 32
   eggroll:
-    cores_per_node: 16
-    nodes: 1
+    cores: 32
+    nodes: 2
   spark:
     # default use SPARK_HOME environment variable
     home:
-    cores_per_node: 20
-    nodes: 2
-worker:
-  type: native
-  docker:
-    config:
-      # https://docker-py.readthedocs.io/en/stable/client.html#docker.client.DockerClient
-      base_url: unix:///var/run/docker.sock
-    image: ccr.ccs.tencentyun.com/federatedai/fate_algorithm:2.0.0-alpha
-    # on container
-    fate_root_dir: /data/projects/fate
-    # on host
-    eggroll_conf_dir:
-  k8s:
-    image: ccr.ccs.tencentyun.com/federatedai/fate_algorithm:2.0.0-alpha
-    namespace: fate-10000
+    cores: 32
+storage:
+  hdfs:
+    name_node: hdfs://fate-cluster
+hook_module:
+  client_authentication: fate_flow.hook.flow.client_authentication
+  site_authentication: fate_flow.hook.flow.site_authentication
+  permission: fate_flow.hook.flow.permission
+authentication:
+  client: false
+  site: false
+  permission: false
+model_store:
+  engine: file
+  # encrypt passwd key
+  decrypt_key:
+  file:
+    # default fate_flow/runtime/system_settings: MODEL_STORE_PATH
+    path:
+  mysql:
+    name: fate_flow
+    user: fate
+    passwd: fate
+    host: 127.0.0.1
+    port: 3306
+    max_connections: 100
+    stale_timeout: 30
+  tencent_cos:
+    Region:
+    SecretId:
+    SecretKey:
+    Bucket:
+zookeeper:
+  hosts:
+    - 127.0.0.1:2181
+  use_acl: true
+  user: fate
+  password: fate

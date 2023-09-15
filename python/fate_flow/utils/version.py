@@ -18,14 +18,18 @@ import os
 import dotenv
 import typing
 
-from fate_flow.utils.file_utils import get_project_base_directory
+from fate_flow.runtime.system_settings import VERSION_FILE_PATH
 
 
 def get_versions() -> typing.Mapping[str, typing.Any]:
     return dotenv.dotenv_values(
-        dotenv_path=os.path.join(get_project_base_directory(), "fateflow.env")
+        dotenv_path=VERSION_FILE_PATH
     )
 
 
 def get_flow_version() -> typing.Optional[str]:
     return get_versions().get("FATEFlow")
+
+
+def get_default_fate_version() -> typing.Optional[str]:
+    return get_versions().get("FATE")

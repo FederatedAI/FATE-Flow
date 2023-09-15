@@ -22,7 +22,7 @@ import shutil
 import time
 import typing
 import uuid
-from collections import Iterable
+from collections.abc import Iterable
 from concurrent.futures import ProcessPoolExecutor as Executor
 from contextlib import ExitStack
 from functools import partial
@@ -34,7 +34,7 @@ import cloudpickle as f_pickle
 import lmdb
 import numpy as np
 
-from fate_flow.utils import file_utils
+from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
 from fate_flow.utils.log import getLogger
 
 LOGGER = getLogger("storage")
@@ -690,7 +690,7 @@ def _put_to_meta_table(key, value):
     _get_meta_table().put(key, value)
 
 
-_data_dir = Path(file_utils.get_project_base_directory()).joinpath("data").absolute()
+_data_dir = Path(STANDALONE_DATA_HOME).absolute()
 
 
 def _get_data_dir():
