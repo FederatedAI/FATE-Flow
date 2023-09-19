@@ -33,10 +33,10 @@ fate_flow status/start/stop/restart
 ```
 
 ### 1.2 Standalone Deployment
-Refer to [Standalone Deployment](https://github.com/FederatedAI/FATE/blob/dev-2.0.0-beta/deploy/standalone-deploy/README.zh.md).
+Refer to [Standalone Deployment](https://github.com/FederatedAI/FATE/tree/v2.0.0-beta/deploy/standalone-deploy/README.zh.md).
 
 ### 1.3 Cluster Deployment
-Refer to [All-in-one Deployment](https://github.com/FederatedAI/FATE/blob/dev-2.0.0-beta/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.zh.md).
+Refer to [Allinone Deployment](https://github.com/FederatedAI/FATE/tree/v2.0.0-beta/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.zh.md).
 
 ## 2. User Guide
 FATE provides client tools including SDK, CLI, and Pipeline. If you don't have FATE Client deployed in your environment, you can download it using `pip install fate_client`. The following operations are based on CLI.
@@ -49,7 +49,7 @@ In version 2.0-beta, data uploading is a two-step process:
 
 #### 2.1.1 upload
 ##### 2.1.1.1 Configuration and Data
-- Upload configuration can be found at [examples-upload](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/upload), and the data is located at [upload-data](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/data).
+- Upload configuration can be found at [examples-upload](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0-beta/examples/upload), and the data is located at [upload-data](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0-beta/examples/data).
 - You can also use your own data and modify the "meta" information in the upload configuration.
 
 ##### 2.1.1.2 Upload Guest Data
@@ -87,7 +87,7 @@ If the returned code is 0, the upload was successful.
 
 #### 2.1.2 Transformer
 ##### 2.1.2.1 Configuration
-- Transformer configuration can be found at [examples-transformer](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/transformer).
+- Transformer configuration can be found at [examples-transformer](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0-beta/examples/transformer).
 
 ##### 2.1.2.2 Transform Guest Data
 - Configuration path: examples/transformer/transformer_guest.json
@@ -131,8 +131,8 @@ If the returned code is 0, the upload was successful.
 #### 2.2.1 Submitting a Job
 Once your data is prepared, you can start submitting jobs to FATE Flow:
 
-- The configuration for training jobs can be found in [lr-train](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/lr/train_lr.yaml).
-- The configuration for prediction jobs can be found in [lr-predict](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/examples/lr/predict_lr.yaml). To use it, modify the "dag.conf.model_warehouse" to point to the output model of your training job.
+- The configuration for training jobs can be found in [lr-train](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0-beta/examples/lr/train_lr.yaml).
+- The configuration for prediction jobs can be found in [lr-predict](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0-beta/examples/lr/predict_lr.yaml). To use it, modify the "dag.conf.model_warehouse" to point to the output model of your training job.
 - In the training and prediction job configurations, the site IDs are set to "9998" and "9999." If your deployment environment is the cluster version, you need to replace them with the actual site IDs. For the standalone version, you can use the default configuration.
 - If you want to use your own data, you can change the "namespace" and "name" of "data_warehouse" for both the guest and host in the configuration.
 - To submit a job, use the following command:
@@ -325,7 +325,8 @@ The download result will be as follows:
 ```
 
 ## 3. More Documentation
-- [Restful-api](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0-beta/doc/swagger/swagger.yaml)
-- [CLI](https://github.com/FederatedAI/FATE-Client/blob/dev-2.0.0-beta/python/fate_client/flow_cli/build/doc)
-- [Pipeline](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-beta/doc/tutorial)
-- [FATE Algorithms](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-beta/doc/2.0/components)
+- [Restful-api](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0-beta/doc/swagger/swagger.yaml)
+- [CLI](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0-beta/python/fate_client/flow_cli/build/doc)
+- [Pipeline](https://github.com/FederatedAI/FATE/tree/v2.0.0-beta/doc/tutorial)
+- [FATE Quick Start](https://github.com/FederatedAI/FATE/tree/v2.0.0-beta/doc/2.0/quick_start.md)
+- [FATE Algorithms](https://github.com/FederatedAI/FATE/tree/v2.0.0-beta/doc/2.0/fate)
