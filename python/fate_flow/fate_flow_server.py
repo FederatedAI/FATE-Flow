@@ -57,7 +57,8 @@ def server_init():
     LoggerFactory.LEVEL = LOG_LEVEL
 
     # set signal
-    signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
+    if "win" not in sys.platform.lower():
+        signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
 
     init_adapter()
 
