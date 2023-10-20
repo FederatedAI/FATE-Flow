@@ -34,7 +34,6 @@ class TaskParserABC(metaclass=ABCMeta):
 
 
 class JobParserABC(metaclass=ABCMeta):
-    @property
     @abc.abstractmethod
     def topological_sort(self):
         ...
@@ -62,4 +61,12 @@ class JobParserABC(metaclass=ABCMeta):
 
     @abc.abstractmethod
     def role_parameters(self, role, party_id):
+        ...
+
+    @abc.abstractmethod
+    def check_job_params(self, **kwargs):
+        ...
+
+    @abc.abstractmethod
+    def update_job_default_params(self, **kwargs):
         ...

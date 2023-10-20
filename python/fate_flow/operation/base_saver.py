@@ -64,7 +64,7 @@ class BaseSaver(BaseModelOperate):
         update_status = cls._update_status(job_obj, job_info)
         if update_status:
             schedule_logger(job_info["job_id"]).info("update job status successfully")
-            if EndStatus.contains(job_info.get("status")):
+            if cls.end_status_contains(job_info.get("status")):
                 new_job_info = {}
                 # only update tag
                 for k in ["job_id", "role", "party_id", "tag"]:
@@ -137,19 +137,20 @@ class BaseSaver(BaseModelOperate):
                 if status_field in ["status", "party_status"]:
                     # update end time
                     if hasattr(obj, "f_start_time") and obj.f_start_time:
-                        update_info["end_time"] = current_timestamp()
-                        update_info['elapsed'] = update_info['end_time'] - obj.f_start_time
+                        if cls.end_status_contains(entity_info.get(status_field)):
+                            update_info["end_time"] = current_timestamp()
+                            update_info['elapsed'] = update_info['end_time'] - obj.f_start_time
                     update_info[status_field] = entity_info[status_field]
                     old_status = getattr(obj, f"f_{status_field}")
                     new_status = update_info[status_field]
                     if_pass = False
                     if isinstance(obj, Task) or isinstance(obj, ScheduleTask) or isinstance(obj, ScheduleTaskStatus):
-                        if TaskStatus.StateTransitionRule.if_pass(src_status=old_status, dest_status=new_status):
+                        if cls.check_task_status(old_status, new_status):
                             if_pass = True
                     elif isinstance(obj, Job) or isinstance(obj, ScheduleJob):
-                        if JobStatus.StateTransitionRule.if_pass(src_status=old_status, dest_status=new_status):
+                        if cls.check_job_status(old_status, new_status):
                             if_pass = True
-                        if EndStatus.contains(new_status) and new_status not in {JobStatus.SUCCESS, JobStatus.CANCELED}:
+                        if cls.end_status_contains(new_status) and new_status not in {JobStatus.SUCCESS, JobStatus.CANCELED}:
                             if isinstance(obj, ScheduleJob):
                                 update_filters.append(ScheduleJob.f_rerun_signal==False)
                     if if_pass:
@@ -159,6 +160,18 @@ class BaseSaver(BaseModelOperate):
                         update_info.pop(status_field)
 
         return cls.execute_update(old_obj=obj, model=entity_model, update_info=update_info, update_filters=update_filters)
+
+    @classmethod
+    def check_task_status(cls, old_status, dest_status):
+        return TaskStatus.StateTransitionRule.if_pass(src_status=old_status, dest_status=dest_status)
+
+    @classmethod
+    def check_job_status(cls, old_status, dest_status):
+        return JobStatus.StateTransitionRule.if_pass(src_status=old_status, dest_status=dest_status)
+
+    @classmethod
+    def end_status_contains(cls, status):
+        return EndStatus.contains(status)
 
     @classmethod
     @DB.connection_context()

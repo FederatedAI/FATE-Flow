@@ -18,12 +18,13 @@ import yaml
 from fate_flow.db.db_models import Task
 from fate_flow.engine.devices._base import EngineABC
 from fate_flow.entity.types import ProviderDevice
+from fate_flow.runtime.component_provider import ComponentProvider
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils.log_utils import schedule_logger
 
 
 class ContainerdEngine(EngineABC):
-    def __init__(self, provider):
+    def __init__(self, provider: ComponentProvider):
         if provider.device == ProviderDevice.DOCKER:
             from fate_flow.manager.container.docker_manager import DockerManager
             self.manager = DockerManager(provider)
@@ -37,35 +38,29 @@ class ContainerdEngine(EngineABC):
     def _get_name(task: Task):
         return f'{task.f_role}-{task.f_party_id}-{task.f_task_id}-{task.f_task_version}'
 
-    @staticmethod
-    def _get_command(task: Task):
-        return [
-            '-m',
-            'fate.components',
-            'component',
-            'execute',
-            '--process-tag',
-            task.f_execution_id,
-            '--env-name',
-            'FATE_TASK_CONFIG',
-        ]
+    @classmethod
+    def _flatten_dict(cls, data, parent_key='', sep='.'):
+        items = {}
+        for key, value in data.items():
+            new_key = f"{parent_key}{sep}{key}" if parent_key else key
+            if isinstance(value, dict):
+                items.update(cls._flatten_dict(value, new_key, sep=sep))
+            else:
+                items[new_key] = value
+        return items
 
-    @staticmethod
-    def _get_environment(task: Task, run_parameters):
-        return {
-            'FATE_JOB_ID': task.f_job_id,
-            'FATE_TASK_CONFIG': yaml.dump(run_parameters),
-        }
+    @classmethod
+    def _get_environment(cls, task: Task, run_parameters):
+        return cls._flatten_dict(run_parameters)
 
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
         name = self._get_name(task)
-        cmd = self._get_command(task)
+        cmd = None
         env = self._get_environment(task, run_parameters)
         schedule_logger(job_id=task.f_job_id).info(f"start run container {name}, cmd: {cmd}, env: {env}")
         self.manager.start(name, cmd, env)
         return {
-            'run_ip': RuntimeConfig.JOB_SERVER_HOST,
-            'cmd': cmd
+            'run_ip': RuntimeConfig.JOB_SERVER_HOST
         }
 
     def kill(self, task: Task):

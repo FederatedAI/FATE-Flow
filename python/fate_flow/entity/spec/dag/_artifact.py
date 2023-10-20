@@ -127,6 +127,7 @@ class URI:
 class RuntimeTaskOutputChannelSpec(pydantic.BaseModel):
     producer_task: str
     output_artifact_key: str
+    output_artifact_type_alias: Optional[str] # protocol = "bfia" using
     roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
 
     class Config:

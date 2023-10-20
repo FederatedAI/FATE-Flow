@@ -33,11 +33,11 @@ from fate_flow.db.base_models import init_database_tables as init_flow_db
 from fate_flow.detection.detector import Detector, FederatedDetector
 from fate_flow.entity.types import ProcessRole
 from fate_flow.scheduler import init_scheduler
-from fate_flow.scheduler.job_scheduler import DAGScheduler
 from fate_flow.runtime.system_settings import (
     GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT , GRPC_OPTIONS, FATE_FLOW_LOG_DIR,
     LOG_LEVEL,
 )
+from fate_flow.scheduler.job_scheduler import DAGScheduler
 from fate_flow.utils import process_utils
 from fate_flow.utils.grpc_utils import UnaryService, UnaryServiceOSX
 from fate_flow.utils.log import LoggerFactory, getLogger
