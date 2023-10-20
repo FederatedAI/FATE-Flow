@@ -1,0 +1,670 @@
+{
+  "name": "unionpay",
+  "device": "docker",
+  "version": "2.0.0",
+  "metadata": {
+    "base_url": "",
+    "image": "federatedai/standalone_fate:2.0.0.beta"
+  },
+  "protocol": "bfia",
+  "components_description":
+  {
+    "Intersection": {
+    "componentName": "Intersection",
+	"title": "对齐算法",
+    "provider": "unionpay",
+    "version": "2.0.0",
+    "description": "对齐算法",
+    "roleList": ["guest", "host"],
+    "desVersion": "1.3.0",
+    "storageEngine": ["s3","hdfs"],
+    "inputParam": [
+        {
+            "name": "id",
+            "title": "id列",
+            "description": "id字段名",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "x1",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "intersect_method",
+            "title": "对齐方式",
+            "description": "对齐方式",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "raw",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "sync_intersect_ids",
+            "title": "同步对齐id",
+            "description": "同步对齐id",
+            "type": "boolean",
+            "optional": "true",
+            "bindingData": [
+                {
+                    "label": "是",
+                    "value": "true"
+                },
+                {
+                    "label": "否",
+                    "value": "false"
+                }
+            ],
+            "defaultValue": "true",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "only_output_key",
+            "title": "仅输出id",
+            "description": "仅输出id",
+            "type": "boolean",
+            "optional": "true",
+            "bindingData": [
+                {
+                    "label": "是",
+                    "value": "true"
+                },
+                {
+                    "label": "否",
+                    "value": "false"
+                }
+            ],
+            "defaultValue": "true",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "use_hash",
+            "title": "是否使用哈希",
+            "description": "是否使用哈希",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "是",
+                    "value": "true"
+                },
+                {
+                    "label": "否",
+                    "value": "false"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "true",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "hash_method",
+            "title": "哈希方法",
+            "description": "哈希方法",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "sha256",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "salt",
+            "title": "salt",
+            "description": "salt",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "12345",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "base64",
+            "title": "选择base64",
+            "description": "是否选择base64方式",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "是",
+                    "value": "true"
+                },
+                {
+                    "label": "否",
+                    "value": "false"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "true",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "join_role",
+            "title": "参与角色",
+            "description": "参与角色",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "host",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        }
+    ],
+    "inputData": [{
+        "name": "train_data",
+        "description": "训练集数据",
+        "category": "dataset",
+        "dataFormat": ["csv","yaml"]
+    }],
+    "outputData": [
+        {
+            "name": "train_data",
+            "description": "训练集数据",
+            "category": "dataset",
+            "dataFormat": ["csv"]
+        },
+        {
+            "name": "train-intersection",
+            "description": "对齐数",
+            "category": "metric",
+            "dataFormat": ["csv"]
+        }
+    ],
+    "result": [
+        {
+            "resultCode": "00000000",
+            "resultMessage": "成功"
+        },
+        {
+            "resultCode": "99999999",
+            "resultMessage": "算法执行失败"
+        }
+    ]
+},
+    "HeteroLR": {
+    "componentName": "HeteroLR",
+	"title": "纵向逻辑回归算法",
+    "provider": "unionpay",
+    "version": "2.0.0",
+    "description": "纵向逻辑回归算法",
+    "roleList": ["guest", "host", "arbiter"],
+    "desVersion": "1.2.0",
+    "storageEngine": ["s3","hdfs"],
+    "inputParam": [
+        {
+            "name": "id",
+            "title": "id列",
+            "description": "id字段名",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "x1",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "label",
+            "title": "标签",
+            "description": "label字段名",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "y",
+            "validator": "regular-正则项",
+            "dependsOn": [],
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "penalty",
+            "title": "正则项",
+            "description": "正则项",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "L1正则",
+                    "value": "L1"
+                },
+                {
+                    "label": "L2正则",
+                    "value": "L2"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "L2",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "tol",
+            "title": "最小损失值",
+            "description": "最小损失值",
+            "type": "float",
+            "optional": "true",
+            "defaultValue": "0.0001",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "alpha",
+            "title": "惩罚因子",
+            "description": "惩罚因子",
+            "type": "float",
+            "optional": "true",
+            "defaultValue": "0.01",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "optimizer",
+            "title": "优化方法",
+            "description": "优化方法",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "rmsprop",
+                    "value": "rmsprop"
+                },
+                {
+                    "label": "sgd",
+                    "value": "sgd"
+                },
+                {
+                    "label": "adam",
+                    "value": "adam"
+                },
+                {
+                    "label": "sqn",
+                    "value": "sqn"
+                },
+                {
+                    "label": "adagrad",
+                    "value": "adagrad"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "rmsprop",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "batch_size",
+            "title": "批量梯度下降样本量",
+            "description": "每轮迭代抽取数据计算梯度的size",
+            "type": "integer",
+            "bindingData": [
+                {
+                    "label": "all",
+                    "value": "all"
+                },
+                {
+                    "label": "2048",
+                    "value": "2048"
+                },
+                {
+                    "label": "4096",
+                    "value": "4096"
+                },
+                {
+                    "label": "8192",
+                    "value": "8192"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "2048",
+            "validator": "(0,1000)",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "learning_rate",
+            "title": "学习率",
+            "description": "学习率",
+            "type": "float",
+            "optional": "true",
+            "defaultValue": "0.15",
+            "validator": "regular-正则项",
+            "dependsOn": ["optimizer.sgd", "optimizer.adam"],
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "init_param",
+            "title": "初始化方式",
+            "description": "初始化方式",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "zeros",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "max_iter",
+            "title": "迭代次数",
+            "description": "迭代次数",
+            "type": "integer",
+            "optional": "true",
+            "defaultValue": "30",
+            "validator": "(0,1000)",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "early_stop",
+            "title": "早停策略",
+            "description": "早停策略",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "weight_diff",
+                    "value": "weight_diff"
+                },
+                {
+                    "label": "diff",
+                    "value": "diff"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "weight_diff",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        }
+    ],
+    "inputData": [{
+        "name": "train_data",
+        "description": "训练集数据",
+        "category": "dataset",
+        "dataFormat": ["csv","yaml"]
+    }],
+    "outputData": [
+        {
+            "name": "train_data",
+            "description": "训练集数据",
+            "category": "dataset",
+            "dataFormat": ["csv","yaml"]
+        },
+        {
+            "name": "model",
+            "description": "模型文件",
+            "category": "model",
+            "dataFormat": ["pmml"]
+        },
+        {
+            "name": "train-loss",
+            "description": "loss值",
+            "category": "metric",
+            "dataFormat": ["csv","zip"]
+        }
+    ],
+    "result": [{
+        "resultCode": "4444",
+        "resultMessage": "算法执行失败"
+    }]
+},
+    "HeteroSecureBoost":{
+    "componentName": "HeteroSecureBoost",
+	"title": "XGBoost算法",
+    "provider": "unionpay",
+    "version": "2.0.0",
+    "description": "XGBoost算法",
+    "roleList": ["guest", "host"],
+    "desVersion": "1.3.0",
+    "storageEngine": ["s3","hdfs"],
+    "inputParam": [
+        {
+            "name": "objective_param",
+            "title": "目标参数",
+            "description": "目标参数",
+            "type": "string",
+            "optional": "true",
+            "bindingData": [
+                {
+                    "label": "cross_entropy",
+                    "value": "cross_entropy"
+                }
+            ],
+            "defaultValue": "cross_entropy",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "learning_rate",
+            "title": "学习率",
+            "description": "学习率",
+            "type": "float",
+            "optional": "true",
+            "defaultValue": "0.15",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "num_trees",
+            "title": "树个数",
+            "description": "树个数",
+            "type": "integer",
+            "optional": "true",
+            "defaultValue": "5",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "subsample_feature_rate",
+            "title": "子样本率",
+            "description": "子样本率",
+            "type": "integer",
+            "optional": "true",
+            "defaultValue": "1",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "n_iter_no_change",
+            "title": "n轮无变化",
+            "description": "n轮无变化",
+            "type": "boolean",
+            "optional": "true",
+            "bindingData": [
+                {
+                    "label": "是",
+                    "value": "true"
+                },
+                {
+                    "label": "否",
+                    "value": "false"
+                }
+            ],
+            "defaultValue": "true",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "tol",
+            "title": "停止容忍度",
+            "description": "停止容忍度",
+            "type": "float",
+            "optional": "true",
+            "defaultValue": "0.0001",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "bin_num",
+            "title": "分位数",
+            "description": "分位数",
+            "type": "integer",
+            "optional": "true",
+            "defaultValue": "32",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "predict_param",
+            "title": "预测参数",
+            "description": "预测参数",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "{\"threshold\": 0.5}",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "cv_param",
+            "title": "cv参数",
+            "description": "cv参数",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "{\"n_splits\": 5, \"shuffle\": false, \"random_seed\": 103, \"need_cv\": false}",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "metrics",
+            "title": "计算指标",
+            "description": "计算指标",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "[\"auc\", \"ks\"]",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "early_stop",
+            "title": "早停策略",
+            "description": "早停策略",
+            "type": "string",
+            "optional": "true",
+            "bindingData": [
+                {
+                    "label": "weight_diff",
+                    "value": "weight_diff"
+                },
+                {
+                    "label": "diff",
+                    "value": "diff"
+                }
+            ],
+            "defaultValue": "weight_diff",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "tree_param",
+            "title": "树参数",
+            "description": "树参数",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "{\"max_depth\": 3}",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        }
+    ],
+    "inputData": [{
+        "name": "train_data",
+        "description": "训练集数据",
+        "category": "dataset",
+        "dataFormat": ["csv"]
+    }],
+    "outputData": [
+        {
+            "name": "train_data",
+            "description": "训练集数据",
+            "category": "dataset",
+            "dataFormat": ["csv"]
+        },
+        {
+            "name": "model",
+            "description": "模型文件",
+            "category": "model",
+            "dataFormat": ["csv"]
+        },
+        {
+            "name": "train-loss",
+            "description": "loss值",
+            "category": "metric",
+            "dataFormat": ["csv"]
+        },
+        {
+            "name": "train-auc",
+            "description": "auc ks值",
+            "category": "metric",
+            "dataFormat": ["csv"]
+        },
+        {
+            "name": "train-ks",
+            "description": "ks曲线值",
+            "category": "metric",
+            "dataFormat": ["csv"]
+        }
+    ],
+    "result": [
+        {
+            "resultCode": "00000000",
+            "resultMessage": "成功"
+        },
+        {
+            "resultCode": "99999999",
+            "resultMessage": "算法执行失败"
+        }
+    ]
+}
+  }
+
+}
