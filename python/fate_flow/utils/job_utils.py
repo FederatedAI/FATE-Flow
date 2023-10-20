@@ -20,7 +20,10 @@ import yaml
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job, Task
-from fate_flow.entity.spec.dag import DAGSchema
+from fate_flow.entity.spec.dag import InheritConfSpec
+from fate_flow.entity.types import TaskStatus
+from fate_flow.errors.server_error import InheritanceFailed
+from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.system_settings import LOG_DIR, JOB_DIR, WORKERS_DIR
 from fate_flow.utils.base_utils import fate_uuid
 
@@ -141,3 +144,31 @@ def save_job_dag(job_id, dag):
     os.makedirs(os.path.dirname(job_conf_file), exist_ok=True)
     with open(job_conf_file, "w") as f:
         f.write(yaml.dump(dag))
+
+
+def inheritance_check(inheritance: InheritConfSpec = None):
+    if not inheritance:
+        return
+    if not inheritance.task_list:
+        raise InheritanceFailed(
+            task_list=inheritance.task_list,
+            position="dag_schema.dag.conf.inheritance.task_list"
+        )
+    inheritance_jobs = JobSaver.query_job(job_id=inheritance.job_id)
+    inheritance_tasks = JobSaver.query_task(job_id=inheritance.job_id)
+    if not inheritance_jobs:
+        raise InheritanceFailed(job_id=inheritance.job_id, detail=f"no found job {inheritance.job_id}")
+    task_status = {}
+    for task in inheritance_tasks:
+        task_status[task.f_task_name] = task.f_status
+
+    for task_name in inheritance.task_list:
+        if task_name not in task_status.keys():
+            raise InheritanceFailed(job_id=inheritance.job_id, task_name=task_name, detail="no found task name")
+        elif task_status[task_name] not in [TaskStatus.SUCCESS, TaskStatus.PASS]:
+            raise InheritanceFailed(
+                job_id=inheritance.job_id,
+                task_name=task_name,
+                task_status=task_status[task_name],
+                detail=f"task status need in [{TaskStatus.SUCCESS}, {TaskStatus.PASS}]"
+            )

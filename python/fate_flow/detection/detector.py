@@ -19,7 +19,7 @@ from fate_flow.engine.devices import build_engine
 from fate_flow.entity.types import TaskStatus, JobStatus
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.scheduler.federated_scheduler import FederatedScheduler
+from fate_flow.controller.federated import FederatedScheduler
 from fate_flow.utils.cron import Cron
 from fate_flow.utils.log_utils import detect_logger
 

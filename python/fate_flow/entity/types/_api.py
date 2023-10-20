@@ -16,3 +16,8 @@
 class AppType:
     SITE = "site"
     CLIENT = "client"
+
+
+class PROTOCOL:
+    FATE_FLOW = "fate"
+    BFIA = "bfia"

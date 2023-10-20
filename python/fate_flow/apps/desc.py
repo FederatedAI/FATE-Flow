@@ -71,6 +71,7 @@ PROVIDER_NAME = "Component provider name"
 DEVICE = "Component running mode"
 VERSION = "Component version"
 COMPONENT_METADATA = "Detailed information about component registration"
+COMPONENTS_DESCRIPTION = "Components description"
 PROVIDER_ALL_NAME = "Registered algorithm full name, provider + ':' + version + '@' + running mode, e.g., fate:2.0.0@local"
 
 # permission

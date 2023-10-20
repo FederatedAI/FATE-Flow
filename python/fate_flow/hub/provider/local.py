@@ -31,3 +31,7 @@ class LocalFateEntrypoint(EntrypointABC):
         _list = components.get('buildin', [])
         _list.extend(components.get("thirdparty", []))
         return _list
+
+    @property
+    def component_description(self):
+        return {}

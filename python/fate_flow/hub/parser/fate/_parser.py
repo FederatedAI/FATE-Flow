@@ -23,13 +23,15 @@ from fate_flow.entity.spec.dag import DataWarehouseChannelSpec, ModelWarehouseCh
     RuntimeTaskOutputChannelSpec, ComponentSpec, EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec, \
     StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \
     PulsarFederationSpec, RabbitMQFederationSpec, FlowLogger, MLMDSpec, TaskRuntimeConfSpec, \
-    DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts
+    DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts, JobConfSpec, OutputArtifactType
 from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputArtifactType, ArtifactSourceType, \
     ComputingEngine
+from fate_flow.errors.server_error import JobParamsError
+from fate_flow.manager.model.model_meta import ModelMeta
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import ENGINES, PROXY, FATE_FLOW_CONF_PATH, HOST, HTTP_PORT, PROTOCOL, \
-    API_VERSION
+    API_VERSION, PARTY_ID, LOCAL_PARTY_ID
 from fate_flow.utils import job_utils, file_utils
 from .. import TaskParserABC, JobParserABC
 
@@ -42,6 +44,7 @@ class TaskNodeInfo(object):
         self._component_ref = None
         self._component_spec = None
         self._upstream_inputs = dict()
+        self._outputs = dict()
         self._stage = None
         self._conf = None
 
@@ -86,6 +89,14 @@ class TaskNodeInfo(object):
         self._upstream_inputs = upstream_inputs
 
     @property
+    def outputs(self):
+        return self._outputs
+
+    @outputs.setter
+    def outputs(self, outputs):
+        self._outputs = outputs
+
+    @property
     def component_spec(self):
         return self._component_spec
 
@@ -115,8 +126,8 @@ class TaskNodeInfo(object):
 
 
 class TaskParser(TaskParserABC):
-    def __init__(self, task_node, job_id, task_name, role, party_id, task_id="", execution_id="", model_id="",
-                 model_version="", task_version=None, parties=None, provider=None):
+    def __init__(self, task_node, job_id, task_name, role=None, party_id=None, task_id="", execution_id="", model_id="",
+                 model_version="", task_version=None, parties=None, provider=None, **kwargs):
         self.task_node = task_node
         self.model_id = model_id
         self.model_version = model_version
@@ -326,15 +337,14 @@ class TaskParser(TaskParserABC):
         )
 
 
-class JobParser(JobParserABC):
-    def __init__(self, dag_conf):
+class DagParser(object):
+    def __init__(self):
         self._dag = nx.DiGraph()
         self._links = dict()
         self._task_parameters = dict()
         self._task_parties = dict()
         self._tasks = dict()
         self._conf = dict()
-        self.parse_dag(dag_schema=dag_conf)
 
     def parse_dag(self, dag_schema: DAGSchema, component_specs: Dict[str, ComponentSpec] = None):
         dag_spec = dag_schema.dag
@@ -360,9 +370,11 @@ class JobParser(JobParserABC):
             self._tasks[name].component_ref = component_ref
             if component_specs:
                 self._tasks[name].component_spec = component_specs[name]
+
             self._init_task_runtime_parameters_and_conf(name, dag_schema, task_conf)
 
             self._init_upstream_inputs(name, dag_schema.dag)
+            self._init_outputs(name, dag_schema.dag)
 
     def _init_upstream_inputs(self, name, dag: DAGSpec):
         task_spec = dag.tasks[name]
@@ -416,8 +428,7 @@ class JobParser(JobParserABC):
                         if isinstance(channel_spec_list, list):
                             inputs = []
                             for channel in channel_spec_list:
-                                model_warehouse_channel = ModelWarehouseChannelSpec(
-                                    **channel.dict(exclude_defaults=True))
+                                model_warehouse_channel = ModelWarehouseChannelSpec(**channel.dict(exclude_defaults=True))
                                 if model_warehouse_channel.model_id is None:
                                     model_warehouse_channel.model_id = \
                                         self._conf.get("model_warehouse", {}).get("model_id", None)
@@ -453,25 +464,42 @@ class JobParser(JobParserABC):
                             dependent_task = channel_spec.producer_task
                             self._add_edge(dependent_task, name)
 
-        upstream_inputs = self.check_and_add_runtime_roles(upstream_inputs, runtime_roles)
+        upstream_inputs = self.check_and_add_runtime_roles(upstream_inputs, runtime_roles, artifact_type="input")
         return upstream_inputs
 
-    @staticmethod
-    def check_and_add_runtime_roles(upstream_inputs, runtime_roles):
-        correct_inputs = copy.deepcopy(upstream_inputs)
-        for input_type in InputArtifactType.types():
-            if input_type not in upstream_inputs:
-                continue
-            for input_key, channel_list in upstream_inputs[input_type].items():
-                if isinstance(channel_list, list):
-                    for idx, channel in enumerate(channel_list):
-                        if channel.roles is None:
-                            correct_inputs[input_type][input_key][idx].roles = runtime_roles
-                else:
-                    if channel_list.roles is None:
-                        correct_inputs[input_type][input_key].roles = runtime_roles
+    def _init_outputs(self, name, dag: DAGSpec):
+        task_spec = dag.tasks[name]
 
-        return correct_inputs
+        if not task_spec.outputs:
+            return
+
+        runtime_roles = self._tasks[name].runtime_roles
+        outputs = dict()
+
+        """
+        role.party_id.output_type.output_artifact
+        role.party_id.output_type.output_artifact.roles = runtime_roles
+        """
+        for output_type, outputs_dict in iter(task_spec.outputs):
+            if not outputs_dict:
+                continue
+
+            if output_type not in outputs:
+                outputs[output_type] = dict()
+
+            for output_key, output_artifact in outputs_dict.items():
+                outputs[output_type][output_key] = output_artifact
+
+        outputs = self.check_and_add_runtime_roles(outputs, runtime_roles, artifact_type="output")
+        party_outputs = dict()
+        for party_spec in dag.parties:
+            if party_spec.role not in party_outputs:
+                party_outputs[party_spec.role] = dict()
+
+            for party_id in party_spec.party_id:
+                party_outputs[party_spec.role][party_id] = copy.deepcopy(outputs)
+
+        self._tasks[name].outputs = party_outputs
 
     def _add_edge(self, src, dst, attrs=None):
         if not attrs:
@@ -519,6 +547,7 @@ class JobParser(JobParserABC):
 
                 party_parties = party_tasks_spec.parties
                 party_task_spec = party_tasks_spec.tasks[task_name]
+
                 if party_task_spec.conf:
                     for party in party_parties:
                         if party.role in task_parameters:
@@ -537,15 +566,99 @@ class JobParser(JobParserABC):
         self._tasks[task_name].runtime_parties = task_runtime_parties
         self._tasks[task_name].conf = task_conf
 
+    def get_runtime_roles_on_party(self, task_name, party_id):
+        task: TaskNodeInfo = self._tasks[task_name]
+        task_runtime_parties = task.runtime_parties
+
+        runtime_roles = set()
+        for party_spec in task_runtime_parties:
+            if party_spec.party_id == party_id:
+                runtime_roles.add(party_spec.role)
+
+        return list(runtime_roles)
+
     def get_task_node(self, task_name):
         return self._tasks[task_name]
+
+    def get_need_revisit_tasks(self, visited_tasks, failed_tasks):
+        """
+        visited_tasks: already visited tasks
+        failed_tasks: failed tasks
+
+        this function finds tasks need to rerun, a task need to rerun if is upstreams is failed
+        """
+        invalid_tasks = set(self.topological_sort()) - set(visited_tasks)
+        invalid_tasks |= set(failed_tasks)
+
+        revisit_tasks = []
+        for task_to_check in visited_tasks:
+            if task_to_check in invalid_tasks:
+                revisit_tasks.append(task_to_check)
+                continue
+
+            task_valid = True
+            task_stack = {task_to_check}
+            stack = [task_to_check]
+
+            while len(stack) > 0 and task_valid:
+                task = stack.pop()
+                pre_tasks = self.predecessors(task)
+
+                for pre_task in pre_tasks:
+                    if pre_task in task_stack:
+                        continue
+                    if pre_task in invalid_tasks:
+                        task_valid = False
+                        break
+
+                    task_stack.add(pre_task)
+                    stack.append(pre_task)
+
+            if not task_valid:
+                revisit_tasks.append(task_to_check)
+
+        return revisit_tasks
 
     def topological_sort(self):
         return nx.topological_sort(self._dag)
 
+    def predecessors(self, task):
+        return set(self._dag.predecessors(task))
+
+    def successors(self, task):
+        return self._dag.successors(task)
+
+    def get_edge_attr(self, src, dst):
+        return self._dag.edges[src, dst]
+
+    @staticmethod
+    def check_and_add_runtime_roles(artifacts, runtime_roles, artifact_type):
+        correct_artifacts = copy.deepcopy(artifacts)
+        if artifact_type == "input":
+            types = InputArtifactType.types()
+        else:
+            types = OutputArtifactType.types()
+
+        for t in types:
+            if t not in artifacts:
+                continue
+            for _key, channel_list in artifacts[t].items():
+                if isinstance(channel_list, list):
+                    for idx, channel in enumerate(channel_list):
+                        if channel.roles is None:
+                            correct_artifacts[t][_key][idx].roles = runtime_roles
+                else:
+                    if channel_list.roles is None:
+                        correct_artifacts[t][_key].roles = runtime_roles
+
+        return correct_artifacts
+
+    @property
+    def conf(self):
+        return self._conf
+
     @classmethod
     def infer_dependent_tasks(cls, input_artifacts):
-        print(input_artifacts)
         if not input_artifacts:
             return []
 
@@ -565,6 +678,26 @@ class JobParser(JobParserABC):
                         dependent_task_list.append(channel.producer_task)
 
         return dependent_task_list
+
+    @classmethod
+    def translate_dag(cls, src, dst, adapter_map, *args, **kwargs):
+        translate_func = adapter_map[src][dst]
+        return translate_func(*args, **kwargs)
+
+
+class JobParser(JobParserABC):
+    def __init__(self, dag_conf):
+        self.dag_parser = DagParser()
+        self.dag_parser.parse_dag(dag_conf)
+
+    def get_task_node(self, task_name):
+        return self.dag_parser.get_task_node(task_name)
+
+    def topological_sort(self):
+        return self.dag_parser.topological_sort()
+
+    def infer_dependent_tasks(self, input_artifacts):
+        return self.dag_parser.infer_dependent_tasks(input_artifacts)
 
     @property
     def task_parser(self):
@@ -609,6 +742,38 @@ class JobParser(JobParserABC):
             task_node = self.get_task_node(task_name)
             _dict[task_node.component_ref] = task_node.runtime_parameters.get(role, {}).get(party_id, {})
         return _dict
+
+    @classmethod
+    def update_job_default_params(cls, dag_schema: DAGSchema, is_local: bool = False):
+        if not dag_schema.dag.conf:
+            dag_schema.dag.conf = JobConfSpec()
+        dag_schema.dag.conf.initiator_party_id = PARTY_ID
+        if not dag_schema.dag.conf.scheduler_party_id:
+            if not is_local:
+                dag_schema.dag.conf.scheduler_party_id = PARTY_ID
+            else:
+                dag_schema.dag.conf.scheduler_party_id = LOCAL_PARTY_ID
+        if not dag_schema.dag.conf.computing_partitions:
+            dag_schema.dag.conf.computing_partitions = JobDefaultConfig.computing_partitions
+        return dag_schema
+
+    @classmethod
+    def check_job_params(cls, dag_schema: DAGSchema):
+        # check inheritance
+        job_utils.inheritance_check(dag_schema.dag.conf.inheritance)
+
+        # check model warehouse
+        model_warehouse = dag_schema.dag.conf.model_warehouse
+        if model_warehouse:
+            if not ModelMeta.query(model_id=model_warehouse.model_id, model_version=model_warehouse.model_version):
+                raise JobParamsError(
+                    model_id=model_warehouse.model_id,
+                    model_version=model_warehouse.model_version,
+                    position="dag_schema.dag.conf.model_warehouse"
+                )
+
+    def get_runtime_roles_on_party(self, task_name, party_id):
+        return self.dag_parser.get_runtime_roles_on_party(task_name, party_id)
 
 
 class Party(BaseModel):

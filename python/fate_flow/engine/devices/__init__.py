@@ -12,6 +12,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+from fate_flow.engine.devices._base import EngineABC
 from fate_flow.entity.types import ProviderDevice
 from fate_flow.manager.service.provider_manager import ProviderManager
 
@@ -31,4 +32,3 @@ def build_engine(provider_name: str):
         raise ValueError(f'engine device "{provider.device}" is not supported')
 
     return engine_session
-

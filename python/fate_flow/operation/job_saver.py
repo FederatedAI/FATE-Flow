@@ -17,7 +17,7 @@ import time
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job, Task
-from fate_flow.entity.code import ReturnCode
+from fate_flow.entity.types import PROTOCOL
 from fate_flow.errors.server_error import NoFoundTask
 from fate_flow.operation.base_saver import BaseSaver
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTask, ScheduleTaskStatus
@@ -64,8 +64,10 @@ class JobSaver(BaseSaver):
         return cls._list(Task, limit, offset, query, order_by)
 
     @classmethod
-    def query_task(cls, only_latest=True, reverse=None, order_by=None, **kwargs):
-        return cls._query_task(Task, only_latest=only_latest, reverse=reverse, order_by=order_by, **kwargs)
+    def query_task(cls, only_latest=True, reverse=None, order_by=None, protocol=PROTOCOL.FATE_FLOW, **kwargs):
+        return cls._query_task(
+            Task, only_latest=only_latest, reverse=reverse, order_by=order_by, protocol=protocol, **kwargs
+        )
 
     @classmethod
     def query_task_by_execution_id(cls, execution_id):
@@ -109,8 +111,8 @@ class ScheduleJobSaver(BaseSaver):
         return cls._update_job(ScheduleJob, job_info)
 
     @classmethod
-    def query_job(cls, reverse=None, order_by=None, **kwargs):
-        return cls._query_job(ScheduleJob, reverse, order_by, **kwargs)
+    def query_job(cls, reverse=None, order_by=None, protocol=PROTOCOL.FATE_FLOW, **kwargs):
+        return cls._query_job(ScheduleJob, reverse, order_by, protocol=protocol, **kwargs)
 
     @classmethod
     def query_task(cls, only_latest=True, reverse=None, order_by=None, scheduler_status=False, **kwargs):

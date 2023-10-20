@@ -20,19 +20,19 @@ import yaml
 
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
-from fate_flow.engine.devices import build_engine
+from fate_flow.engine.devices import build_engine, EngineABC
 from fate_flow.entity.spec.dag import DAGSchema, LauncherSpec
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.scheduler.federated_scheduler import FederatedScheduler
+from fate_flow.controller.federated import FederatedScheduler
 from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType, LauncherType
 from fate_flow.entity.code import FederatedSchedulingStatusCode
 from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils import job_utils
-from fate_flow.utils.base_utils import current_timestamp, json_dumps
+from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import schedule_logger
 
 
@@ -101,7 +101,9 @@ class TaskController(object):
             cls.update_local(task)
             cls.update_launcher_config(task, task_parser.task_runtime_launcher, task_parameters)
             task.f_component_parameters = task_parameters.dict()
-            JobSaver.create_task(task.to_human_model_dict())
+            status = JobSaver.create_task(task.to_human_model_dict())
+            schedule_logger(job_id).info(task.to_human_model_dict())
+            schedule_logger(job_id).info(status)
 
     @staticmethod
     def update_local(task):
@@ -153,7 +155,12 @@ class TaskController(object):
         schedule_logger(job_id).info("create schedule task status success")
 
     @classmethod
-    def start_task(cls, job_id, role, party_id, task_id, task_version):
+    def start_task(cls, task: Task):
+        job_id = task.f_job_id
+        role = task.f_role
+        party_id = task.f_party_id
+        task_id = task.f_task_id
+        task_version = task.f_task_version
         schedule_logger(job_id).info(
             f"try to start task {task_id} {task_version} on {role} {party_id} executor subprocess")
         task_executor_process_start_status = False
@@ -166,7 +173,6 @@ class TaskController(object):
         }
         is_failed = False
         try:
-            task = JobSaver.query_task(task_id=task_id, task_version=task_version, role=role, party_id=party_id)[0]
             run_parameters = task.f_component_parameters
             schedule_logger(job_id).info(f"task run parameters: {run_parameters}")
             task_executor_process_start_status = False
@@ -178,7 +184,7 @@ class TaskController(object):
             run_parameters_path = os.path.join(config_dir, 'preprocess_parameters.yaml')
             with open(run_parameters_path, 'w') as fw:
                 yaml.dump(run_parameters, fw)
-            backend_engine = build_engine(task.f_provider_name)
+            backend_engine = cls.build_task_engine(task.f_provider_name)
             run_info = backend_engine.run(task=task,
                                           run_parameters=run_parameters,
                                           run_parameters_path=run_parameters_path,
@@ -331,7 +337,7 @@ class TaskController(object):
     def kill_task(cls, task: Task):
         kill_status = False
         try:
-            backend_engine = build_engine(task.f_provider_name)
+            backend_engine = cls.build_task_engine(task.f_provider_name)
             if backend_engine:
                 backend_engine.kill(task)
                 backend_engine.cleanup(task)
@@ -353,10 +359,14 @@ class TaskController(object):
     @classmethod
     def clean_task(cls, task):
         try:
-            backend_engine = build_engine(task.f_provider_name)
+            backend_engine = cls.build_task_engine(task.f_provider_name)
             if backend_engine:
                 schedule_logger(task.f_job_id).info(f"start clean task:[{task.f_task_id} {task.f_task_version}]")
                 backend_engine.cleanup(task)
             WorkerManager.kill_task_all_workers(task)
         except Exception as e:
             schedule_logger(task.f_job_id).exception(e)
+
+    @classmethod
+    def build_task_engine(cls, provider_name) -> EngineABC:
+        return build_engine(provider_name)
