@@ -427,7 +427,7 @@ class BaseModelOperate:
             #     sql_logger(job_id=entity_info.get("job_id", "fate_flow")).warning(e)
             # else:
             #     raise Exception("Create {} failed:\n{}".format(entity_model, e))
-            pass
+            raise Exception(e)
         except Exception as e:
             raise Exception("Create {} failed:\n{}".format(entity_model, e))
 

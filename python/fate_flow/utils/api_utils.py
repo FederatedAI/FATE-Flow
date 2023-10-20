@@ -130,7 +130,7 @@ def get_federated_proxy_address():
     if PROXY_NAME == CoordinationProxyService.OSX:
         host = PROXY.get(PROXY_NAME).get("host")
         port = PROXY.get(PROXY_NAME).get("port")
-        protocol = CoordinationCommunicationProtocol.GRPC
+        protocol = CoordinationCommunicationProtocol.HTTP
 
     elif PROXY_NAME == CoordinationProxyService.ROLLSITE:
         host = PROXY.get(PROXY_NAME).get("host")

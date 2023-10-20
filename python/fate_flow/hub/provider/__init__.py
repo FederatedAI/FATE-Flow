@@ -13,10 +13,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import abc
-from typing import Dict
+from typing import List, Dict
 
 
 class EntrypointABC:
+    @property
     @abc.abstractmethod
-    def component_list(self) -> Dict:
+    def component_list(self) -> List:
+        ...
+
+    @property
+    @abc.abstractmethod
+    def component_description(self) -> Dict:
         ...

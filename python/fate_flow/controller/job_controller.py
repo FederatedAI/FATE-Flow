@@ -19,18 +19,18 @@ import shutil
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.db import Job
 from fate_flow.engine.storage import Session
-from fate_flow.entity.spec.dag import DAGSchema, JobConfSpec, InheritConfSpec
+from fate_flow.entity.spec.dag import DAGSchema, InheritConfSpec
 from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.server_error import NoFoundJob, InheritanceFailed
+from fate_flow.errors.server_error import NoFoundJob
 from fate_flow.manager.metric.metric_manager import OutputMetric
 from fate_flow.manager.model.model_manager import PipelinedModel
 from fate_flow.manager.model.model_meta import ModelMeta
 from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
-from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.scheduler.federated_scheduler import FederatedScheduler
+from fate_flow.controller.federated import FederatedScheduler
+from fate_flow.scheduler.job_scheduler import DAGScheduler
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.job_utils import get_job_log_directory, save_job_dag
 from fate_flow.utils.log_utils import schedule_logger
@@ -39,18 +39,19 @@ from fate_flow.utils.log_utils import schedule_logger
 class JobController(object):
     @classmethod
     def request_create_job(cls, dag_schema: dict, user_name: str = None, is_local=False):
-        dag_schema = DAGSchema(**dag_schema)
-        RuntimeConfig.SCHEDULER.check_job_parameters(dag_schema, is_local)
+        schema = DAGSchema(**dag_schema)
+        parser = DAGScheduler.dag_parser(schema)
+        parser.check_job_params(schema)
+        parser.update_job_default_params(schema, is_local=is_local)
         response = FederatedScheduler.request_create_job(
-            party_id=dag_schema.dag.conf.scheduler_party_id,
-            initiator_party_id=dag_schema.dag.conf.initiator_party_id,
-            command_body={
-                "dag_schema": dag_schema.dict(exclude_defaults=True)
-            })
+            party_id=schema.dag.conf.scheduler_party_id,
+            initiator_party_id=schema.dag.conf.initiator_party_id,
+            command_body=schema.dict()
+        )
         if user_name and response.get("code") == ReturnCode.Base.SUCCESS:
             JobSaver.update_job_user(job_id=response.get("job_id"), user_name=user_name)
         if response and isinstance(response, dict) and response.get("code") == ReturnCode.Base.SUCCESS:
-            save_job_dag(job_id=response.get("job_id"), dag=dag_schema.dict(exclude_defaults=True))
+            save_job_dag(job_id=response.get("job_id"), dag=dag_schema)
         return response
 
     @classmethod
@@ -78,9 +79,10 @@ class JobController(object):
         return response
 
     @classmethod
-    def create_job(cls, dag_schema: dict, job_id: str, role: str, party_id: str):
+    def create_job(cls, dag, schema_version, job_id: str, role: str, party_id: str):
+        # create job and task
         schedule_logger(job_id).info(f"start create job {job_id} {role} {party_id}")
-        dag_schema = DAGSchema(**dag_schema)
+        dag_schema = DAGSchema(dag=dag, schema_version=schema_version)
         job_info = {
             "job_id": job_id,
             "role": role,
@@ -94,11 +96,12 @@ class JobController(object):
             "model_id": dag_schema.dag.conf.model_id,
             "model_version": dag_schema.dag.conf.model_version
         }
-        party_parameters, task_run, task_cores = RuntimeConfig.SCHEDULER.adapt_party_parameters(dag_schema, role)
+        party_parameters, task_run, task_cores = DAGScheduler.adapt_party_parameters(dag_schema, role)
         schedule_logger(job_id).info(f"party_job_parameters: {party_parameters}")
         schedule_logger(job_id).info(f"role {role} party_id {party_id} task run: {task_run}, task cores {task_cores}")
         job_info.update(party_parameters)
         JobSaver.create_job(job_info=job_info)
+        # create task
         TaskController.create_tasks(job_id, role, party_id, dag_schema, task_run=task_run, task_cores=task_cores)
 
     @classmethod
@@ -326,35 +329,6 @@ class JobController(object):
 
 
 class JobInheritance:
-    @classmethod
-    def check(cls, inheritance: InheritConfSpec = None):
-        if not inheritance:
-            return
-        if not inheritance.task_list:
-            raise InheritanceFailed(
-                task_list=inheritance.task_list,
-                position="dag_schema.dag.conf.inheritance.task_list"
-            )
-        inheritance_jobs = JobSaver.query_job(job_id=inheritance.job_id)
-        inheritance_tasks = JobSaver.query_task(job_id=inheritance.job_id)
-        if not inheritance_jobs:
-            raise InheritanceFailed(job_id=inheritance.job_id, detail=f"no found job {inheritance.job_id}")
-        task_status = {}
-        for task in inheritance_tasks:
-            task_status[task.f_task_name] = task.f_status
-
-        for task_name in inheritance.task_list:
-            if task_name not in task_status.keys():
-                raise InheritanceFailed(job_id=inheritance.job_id, task_name=task_name, detail="no found task name")
-            elif task_status[task_name] not in [TaskStatus.SUCCESS, TaskStatus.PASS]:
-                raise InheritanceFailed(
-                    job_id=inheritance.job_id,
-                    task_name=task_name,
-                    task_status=task_status[task_name],
-                    detail=f"task status need in [{TaskStatus.SUCCESS}, {TaskStatus.PASS}]"
-                )
-        # todo: parsing and judging whether job can be inherited
-
     @classmethod
     def load(cls, job: Job):
         # load inheritance: data、model、metric、logs
