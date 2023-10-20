@@ -15,7 +15,8 @@
 #
 from webargs import fields
 
-from fate_flow.apps.desc import PROVIDER_NAME, DEVICE, VERSION, COMPONENT_METADATA, PROVIDER_ALL_NAME
+from fate_flow.apps.desc import PROVIDER_NAME, DEVICE, VERSION, COMPONENT_METADATA, PROVIDER_ALL_NAME, \
+    COMPONENTS_DESCRIPTION, PROTOCOL
 from fate_flow.errors.server_error import DeviceNotSupported
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.utils.api_utils import API
@@ -26,10 +27,12 @@ from fate_flow.utils.api_utils import API
 @API.Input.json(device=fields.String(required=True), desc=DEVICE)
 @API.Input.json(version=fields.String(required=True), desc=VERSION)
 @API.Input.json(metadata=fields.Dict(required=True), desc=COMPONENT_METADATA)
-def register(name, device, version, metadata):
+@API.Input.json(protocol=fields.String(required=False), desc=PROTOCOL)
+@API.Input.json(components_description=fields.Dict(required=False), desc=COMPONENTS_DESCRIPTION)
+def register(name, device, version, metadata, components_description=None, protocol=None):
     provider = ProviderManager.get_provider(name=name, device=device, version=version, metadata=metadata, check=True)
     if provider:
-        operator_type = ProviderManager.register_provider(provider)
+        operator_type = ProviderManager.register_provider(provider, components_description, protocol)
         return API.Output.json(message=f"{operator_type} success")
     else:
         return API.Output.fate_flow_exception(DeviceNotSupported(device=device))
