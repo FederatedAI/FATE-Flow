@@ -24,6 +24,7 @@ from fate_flow.runtime.system_settings import ENGINES, STORAGE
 from fate_flow.engine import storage
 from fate_flow.errors.server_error import ExistsTable
 
+
 class ComponentManager(Base):
     @classmethod
     def upload(cls, file, head, partitions, meta, namespace, name, extend_sid):

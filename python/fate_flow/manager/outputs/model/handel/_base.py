@@ -12,7 +12,6 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import collections
 import json
 import os.path
 import tarfile
@@ -23,7 +22,7 @@ from werkzeug.datastructures import FileStorage
 
 from fate_flow.entity.spec.flow import Metadata
 from fate_flow.errors.server_error import NoFoundModelOutput
-from fate_flow.manager.model.model_meta import ModelMeta
+from fate_flow.manager.outputs.model.model_meta import ModelMeta
 from fate_flow.operation.job_saver import JobSaver
 
 

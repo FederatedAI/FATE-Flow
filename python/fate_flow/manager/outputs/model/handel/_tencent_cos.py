@@ -13,25 +13,24 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import io
-import os
 import tarfile
 
 from flask import send_file
 from werkzeug.datastructures import FileStorage
 
-from fate_flow.entity.spec.flow import MysqlStorageSpec
+from fate_flow.entity.spec.flow import TencentCosStorageSpec
 from fate_flow.entity.types import ModelStorageEngine
-from fate_flow.manager.model.engine import MysqlModelStorage
-from fate_flow.manager.model.handel import IOHandle
+from fate_flow.manager.outputs.model.engine import TencentCosStorage
+from fate_flow.manager.outputs.model.handel import IOHandle
 
 
-class MysqlHandel(IOHandle):
-    def __init__(self, engine_address: MysqlStorageSpec, decrypt_key=None):
-        self.engine = MysqlModelStorage(engine_address.dict(), decrypt_key=decrypt_key)
+class TencentCosHandel(IOHandle):
+    def __init__(self, engine_address: TencentCosStorageSpec, decrypt_key: str = None):
+        self.engine = TencentCosStorage(engine_address.dict(), decrypt_key)
 
     @property
     def _name(self):
-        return ModelStorageEngine.MYSQL
+        return ModelStorageEngine.TENCENT_COS
 
     def _upload(self, model_file: FileStorage, storage_key):
         memory = io.BytesIO()
@@ -43,7 +42,7 @@ class MysqlHandel(IOHandle):
     def _download(self, storage_key):
         memory = self.engine.read(storage_key)
         memory.seek(0)
-        return send_file(memory, download_name=storage_key, as_attachment=True, mimetype='application/x-tar')
+        return send_file(memory, as_attachment=True, download_name=storage_key, mimetype='application/x-tar')
 
     def _read(self, storage_key, metas):
         memory = self.engine.read(storage_key)
@@ -51,11 +50,10 @@ class MysqlHandel(IOHandle):
         return self.read_model(_tar_io, metas)
 
     def _delete(self, storage_key):
-        self.engine.delete(storage_key=storage_key)
+        return self.engine.delete(storage_key=storage_key)
 
     def _load(self, file, storage_key):
         with open(file, "rb") as memory:
-            memory.seek(0)
             model_meta = self.read_meta(self._tar_io(memory))
             self.engine.store(memory, storage_key)
             return model_meta
