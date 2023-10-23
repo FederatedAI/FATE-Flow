@@ -57,7 +57,7 @@ class LocalEngine(EngineABC):
 
     @staticmethod
     def generate_cmd():
-        from fate_flow.entrypoint.runner import Submit
+        from fate_flow.components.entrypoint.runner import Submit
         module_file_path = sys.modules[Submit.__module__].__file__
         common_cmd = [
             module_file_path,
@@ -70,7 +70,7 @@ class LocalEngine(EngineABC):
 
     @staticmethod
     def generate_cleanup_cmd():
-        from fate_flow.entrypoint.runner import Submit
+        from fate_flow.components.entrypoint.runner import Submit
         module_file_path = sys.modules[Submit.__module__].__file__
         common_cmd = [
             module_file_path,

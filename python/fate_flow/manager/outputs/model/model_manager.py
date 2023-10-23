@@ -20,8 +20,8 @@ from werkzeug.datastructures import FileStorage
 
 from fate_flow.entity.spec.flow import FileStorageSpec, MysqlStorageSpec, TencentCosStorageSpec
 from fate_flow.entity.types import ModelStorageEngine
-from fate_flow.manager.model.handel import FileHandle, MysqlHandel, TencentCosHandel
-from fate_flow.manager.model.model_meta import ModelMeta
+from fate_flow.manager.outputs.model.handel import FileHandle, MysqlHandel, TencentCosHandel
+from fate_flow.manager.outputs.model.model_meta import ModelMeta
 from fate_flow.runtime.system_settings import MODEL_STORE
 from fate_flow.errors.server_error import NoFoundModelOutput
 

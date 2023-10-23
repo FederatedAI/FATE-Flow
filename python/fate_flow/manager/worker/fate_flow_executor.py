@@ -12,10 +12,24 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from fate_flow.manager.model.handel._base import IOHandle
-from fate_flow.manager.model.handel._file import FileHandle
-from fate_flow.manager.model.handel._mysql import MysqlHandel
-from fate_flow.manager.model.handel._tencent_cos import TencentCosHandel
+#
+import argparse
+import sys
+
+from fate_flow.entity import BaseEntity
+from fate_flow.utils.log import getLogger
 
 
-__all__ = ["IOHandle", "FileHandle", "MysqlHandel", "TencentCosHandel"]
+class FateFlowSubmit:
+    @staticmethod
+    def run():
+        import click
+        from fate_flow.components.entrypoint.cli import component
+
+        cli = click.Group()
+        cli.add_command(component)
+        cli(prog_name="python -m fate_flow.components")
+
+
+if __name__ == "__main__":
+    FateFlowSubmit.run()

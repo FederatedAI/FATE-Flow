@@ -12,7 +12,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from fate_flow.manager.model.engine._tencent_cos import TencentCosStorage
-from fate_flow.manager.model.engine._mysql import MysqlModelStorage
+from fate_flow.manager.outputs.model.engine._mysql import MysqlModelStorage
+from fate_flow.manager.outputs.model.engine._tencent_cos import TencentCosStorage
 
 __all__ = ["MysqlModelStorage", "TencentCosStorage"]

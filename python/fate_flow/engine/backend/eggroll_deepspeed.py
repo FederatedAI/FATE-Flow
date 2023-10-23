@@ -23,7 +23,7 @@ import traceback
 from fate_flow.engine.backend._base import LocalEngine
 from fate_flow.entity.types import BaseStatus, TaskStatus
 from fate_flow.utils import job_utils
-from fate_flow.worker.fate_executor import FateSubmit
+from fate_flow.manager.worker.fate_executor import FateSubmit
 
 logger = logging.getLogger(__name__)
 

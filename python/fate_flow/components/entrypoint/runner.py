@@ -12,25 +12,18 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import logging
+#
 
-from fate_flow.entity.spec.dag import TaskConfigSpec
+class Submit:
+    @staticmethod
+    def run():
+        import click
+        from fate_flow.components.entrypoint.cli import component
 
-logger = logging.getLogger(__name__)
-
-
-def execute_component(config: TaskConfigSpec):
-    component = load_component(config.component)
-    cpn_config = config.parameters
-    cpn_config["job_id"] = config.job_id
-    logger.info(f"cpn_config： {cpn_config}")
-
-    component.execute(cpn_config)
+        cli = click.Group()
+        cli.add_command(component)
+        cli(prog_name="python -m fate_flow.components.entrypoint")
 
 
-def load_component(cpn_name: str):
-    from fate_flow.components.components import BUILDIN_COMPONENTS
-
-    for cpn in BUILDIN_COMPONENTS:
-        if cpn.name == cpn_name:
-            return cpn
+if __name__ == "__main__":
+    Submit.run()

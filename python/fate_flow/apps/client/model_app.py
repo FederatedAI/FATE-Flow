@@ -21,7 +21,7 @@ from webargs import fields
 
 from fate_flow.apps.desc import MODEL_ID, MODEL_VERSION, PARTY_ID, ROLE, SERVER_DIR_PATH, TASK_NAME, OUTPUT_KEY
 from fate_flow.errors.server_error import NoFoundFile
-from fate_flow.manager.model.model_manager import PipelinedModel
+from fate_flow.manager.outputs.model import PipelinedModel
 from fate_flow.utils.api_utils import API
 
 
