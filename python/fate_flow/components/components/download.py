@@ -17,7 +17,7 @@ import logging
 from fate_flow.components import cpn
 from fate_flow.engine import storage
 from fate_flow.errors.server_error import NoFoundTable
-from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.manager.outputs.data import DataManager
 
 
 @cpn.component()

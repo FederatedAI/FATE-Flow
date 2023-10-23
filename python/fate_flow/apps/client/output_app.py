@@ -18,9 +18,9 @@ from webargs import fields
 from fate_flow.apps.desc import JOB_ID, ROLE, PARTY_ID, TASK_NAME, FILTERS, OUTPUT_KEY
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundTask
-from fate_flow.manager.data.data_manager import DataManager
-from fate_flow.manager.model.model_manager import PipelinedModel
-from fate_flow.manager.metric.metric_manager import OutputMetric
+from fate_flow.manager.outputs.data import DataManager
+from fate_flow.manager.outputs.model import PipelinedModel
+from fate_flow.manager.outputs.metric import OutputMetric
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API
 

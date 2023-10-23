@@ -81,10 +81,6 @@ class BfiaScheduler(SchedulerABC):
             self.finish(job=job)
         schedule_logger(job.f_job_id).info("finish scheduling running job")
 
-    @staticmethod
-    def get_name():
-        return PROTOCOL.BFIA
-
     @classmethod
     def create_all_job(cls, dag, job_id=None):
         dag_schema = DagSchemaSpec(**dag)

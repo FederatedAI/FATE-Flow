@@ -20,7 +20,7 @@ from pyarrow import fs
 
 from fate_flow.engine.storage import StorageTableBase
 from fate_flow.engine.storage._types import StorageEngine
-from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.manager.outputs.data import DataManager
 from fate_flow.utils.log import getLogger
 
 

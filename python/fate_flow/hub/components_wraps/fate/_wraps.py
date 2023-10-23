@@ -33,7 +33,7 @@ from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, Tas
     JsonModelArtifactType
 
 from fate_flow.hub.components_wraps import WrapsABC
-from fate_flow.manager.data.data_manager import DataManager, DatasetManager
+from fate_flow.manager.outputs.data import DataManager, DatasetManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, DEFAULT_OUTPUT_DATA_PARTITIONS
 from fate_flow.utils import job_utils
 

@@ -19,9 +19,10 @@ import traceback
 
 import click
 
-from fate_flow.components.entrypoint.component import execute_component
-from fate_flow.entity.spec.dag import PreTaskConfigSpec, TaskConfigSpec, TaskCleanupConfigSpec
+from fate_flow.entity.spec.dag import PreTaskConfigSpec, TaskConfigSpec
 from fate_flow.hub.flow_hub import FlowHub
+
+logger = logging.getLogger(__name__)
 
 
 @click.group()
@@ -110,3 +111,20 @@ def load_config_from_env(configs, env_name):
     if env_name is not None and os.environ.get(env_name):
         configs.update(yaml.safe_load(os.environ[env_name]))
     return configs
+
+
+def execute_component(config: TaskConfigSpec):
+    component = load_component(config.component)
+    cpn_config = config.parameters
+    cpn_config["job_id"] = config.job_id
+    logger.info(f"cpn_config： {cpn_config}")
+
+    component.execute(cpn_config)
+
+
+def load_component(cpn_name: str):
+    from fate_flow.components.components import BUILDIN_COMPONENTS
+
+    for cpn in BUILDIN_COMPONENTS:
+        if cpn.name == cpn_name:
+            return cpn
