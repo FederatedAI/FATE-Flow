@@ -18,8 +18,7 @@ from importlib import import_module
 from fate_flow.entity.types import ProviderName, ProviderDevice
 from fate_flow.hub.parser import JobParserABC
 from fate_flow.runtime.component_provider import ComponentProvider
-from fate_flow.runtime.system_settings import DEFAULT_JOB_PARSER_MODULE, DEFAULT_JOB_SCHEDULER_MODULE, \
-    DEFAULT_COMPONENTS_WRAPS_MODULE
+from fate_flow.runtime.system_settings import DEFAULT_JOB_PARSER_MODULE, DEFAULT_COMPONENTS_WRAPS_MODULE
 
 
 class FlowHub:

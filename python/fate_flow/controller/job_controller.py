@@ -15,22 +15,24 @@
 #
 import os
 import shutil
+from copy import deepcopy
 
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.db import Job
 from fate_flow.engine.storage import Session
 from fate_flow.entity.spec.dag import DAGSchema, InheritConfSpec
-from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus
+from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus, EngineType, ComputingEngine
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundJob
-from fate_flow.manager.metric.metric_manager import OutputMetric
-from fate_flow.manager.model.model_manager import PipelinedModel
-from fate_flow.manager.model.model_meta import ModelMeta
-from fate_flow.manager.service.output_manager import OutputDataTracking
+from fate_flow.manager.outputs.metric import OutputMetric
+from fate_flow.manager.outputs.model import PipelinedModel, ModelMeta
+from fate_flow.manager.outputs.data import OutputDataTracking
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.operation.job_saver import JobSaver
 from fate_flow.controller.federated import FederatedScheduler
-from fate_flow.scheduler.job_scheduler import DAGScheduler
+from fate_flow.runtime.job_default_config import JobDefaultConfig
+from fate_flow.runtime.system_settings import ENGINES, IGNORE_RESOURCE_ROLES, COMPUTING_CONF
+from fate_flow.scheduler.scheduler import DAGScheduler
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.job_utils import get_job_log_directory, save_job_dag
 from fate_flow.utils.log_utils import schedule_logger
@@ -96,7 +98,7 @@ class JobController(object):
             "model_id": dag_schema.dag.conf.model_id,
             "model_version": dag_schema.dag.conf.model_version
         }
-        party_parameters, task_run, task_cores = DAGScheduler.adapt_party_parameters(dag_schema, role)
+        party_parameters, task_run, task_cores = cls.adapt_party_parameters(dag_schema, role)
         schedule_logger(job_id).info(f"party_job_parameters: {party_parameters}")
         schedule_logger(job_id).info(f"role {role} party_id {party_id} task run: {task_run}, task cores {task_cores}")
         job_info.update(party_parameters)
@@ -326,6 +328,57 @@ class JobController(object):
             "description": notes
         }
         return JobSaver.update_job(job_info)
+
+    @classmethod
+    def adapt_party_parameters(cls, dag_schema: DAGSchema, role):
+        cores, task_run, task_cores = cls.calculate_resource(dag_schema, role)
+        job_info = {"cores": cores, "remaining_cores": cores}
+        if dag_schema.dag.conf.inheritance:
+            job_info.update({"inheritance": dag_schema.dag.conf.inheritance.dict()})
+        return job_info, task_run, task_cores
+
+    @classmethod
+    def calculate_resource(cls, dag_schema: DAGSchema, role):
+        cores = dag_schema.dag.conf.cores if dag_schema.dag.conf.cores else JobDefaultConfig.job_cores
+        if dag_schema.dag.conf.task and dag_schema.dag.conf.task.run:
+            task_run = dag_schema.dag.conf.task.run
+        else:
+            task_run = {}
+        task_cores = cores
+        default_task_run = deepcopy(JobDefaultConfig.task_run.get(ENGINES.get(EngineType.COMPUTING), {}))
+        if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.SPARK:
+            if "num-executors" not in task_run:
+                task_run["num-executors"] = default_task_run.get("num-executors")
+            if "executor-cores" not in task_run:
+                task_run["executor-cores"] = default_task_run.get("executor-cores")
+            if role in IGNORE_RESOURCE_ROLES:
+                task_run["num-executors"] = 1
+                task_run["executor-cores"] = 1
+            task_cores = int(task_run.get("num-executors")) * (task_run.get("executor-cores"))
+            if task_cores > cores:
+                cores = task_cores
+        if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.EGGROLL:
+            if "eggroll.session.processors.per.node" not in task_run:
+                task_run["eggroll.session.processors.per.node"] = \
+                    default_task_run.get("eggroll.session.processors.per.node")
+            task_cores = int(task_run.get("eggroll.session.processors.per.node")) * COMPUTING_CONF.get(
+                ComputingEngine.EGGROLL).get("nodes")
+            if task_cores > cores:
+                cores = task_cores
+            if role in IGNORE_RESOURCE_ROLES:
+                task_run["eggroll.session.processors.per.node"] = 1
+        if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.STANDALONE:
+            if "cores" not in task_run:
+                task_run["cores"] = default_task_run.get("cores")
+            task_cores = int(task_run.get("cores"))
+            if task_cores > cores:
+                cores = task_cores
+            if role in IGNORE_RESOURCE_ROLES:
+                task_run["cores"] = 1
+        if role in IGNORE_RESOURCE_ROLES:
+            cores = 0
+            task_cores = 0
+        return cores, task_run, task_cores
 
 
 class JobInheritance:

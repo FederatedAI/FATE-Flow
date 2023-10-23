@@ -41,25 +41,4 @@ class DockerEntrypoint(EntrypointABC, ABC):
 
     @property
     def component_description(self):
-        desc_dict = {}
-        labels = self.manager.get_labels()
-        for _key, cpn_name in self.component_dict.items():
-            # _key = "component.n"
-            desc_dict[cpn_name] = {}
-            for key, value in labels.items():
-                # key = "component.n.xxx"
-                if key.endswith(_key):
-
-                    desc_dict[cpn_name][key.lstrip(f"{_key}.")] = value
-
         return {}
-
-    @staticmethod
-    def _get_params(key):
-        if key.endswith("parameter"):
-            pass
-
-    @staticmethod
-    def _get_items(key, type):
-        if key.endswith(type):
-            pass

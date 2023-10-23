@@ -47,10 +47,6 @@ class SchedulerABC(Cron):
         """
 
     @classmethod
-    def create_all_job(cls, dag, **kwargs):
-        ...
-
-    @classmethod
     def stop_job(cls, job_id: str, stop_status: str):
         """
         description：
@@ -71,75 +67,11 @@ class SchedulerABC(Cron):
 
         """
 
-    @classmethod
-    def adapt_party_parameters(cls, dag_schema, role):
-        """
-        """
-
-    @staticmethod
-    def get_name():
-        return "base"
-
 
 class DAGScheduler(SchedulerABC):
-    @staticmethod
-    def get_name():
-        return PROTOCOL.FATE_FLOW
-
     @classmethod
     def dag_parser(cls, dag):
         return JobParser(dag)
-
-    @classmethod
-    def adapt_party_parameters(cls, dag_schema: DAGSchema, role):
-        cores, task_run, task_cores = cls.calculate_resource(dag_schema, role)
-        job_info = {"cores": cores, "remaining_cores": cores}
-        if dag_schema.dag.conf.inheritance:
-            job_info.update({"inheritance": dag_schema.dag.conf.inheritance.dict()})
-        return job_info, task_run, task_cores
-
-    @classmethod
-    def calculate_resource(cls, dag_schema: DAGSchema, role):
-        cores = dag_schema.dag.conf.cores if dag_schema.dag.conf.cores else JobDefaultConfig.job_cores
-        if dag_schema.dag.conf.task and dag_schema.dag.conf.task.run:
-            task_run = dag_schema.dag.conf.task.run
-        else:
-            task_run = {}
-        task_cores = cores
-        default_task_run = deepcopy(JobDefaultConfig.task_run.get(ENGINES.get(EngineType.COMPUTING), {}))
-        if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.SPARK:
-            if "num-executors" not in task_run:
-                task_run["num-executors"] = default_task_run.get("num-executors")
-            if "executor-cores" not in task_run:
-                task_run["executor-cores"] = default_task_run.get("executor-cores")
-            if role in IGNORE_RESOURCE_ROLES:
-                task_run["num-executors"] = 1
-                task_run["executor-cores"] = 1
-            task_cores = int(task_run.get("num-executors")) * (task_run.get("executor-cores"))
-            if task_cores > cores:
-                cores = task_cores
-        if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.EGGROLL:
-            if "eggroll.session.processors.per.node" not in task_run:
-                task_run["eggroll.session.processors.per.node"] = \
-                    default_task_run.get("eggroll.session.processors.per.node")
-            task_cores = int(task_run.get("eggroll.session.processors.per.node")) * COMPUTING_CONF.get(
-                ComputingEngine.EGGROLL).get("nodes")
-            if task_cores > cores:
-                cores = task_cores
-            if role in IGNORE_RESOURCE_ROLES:
-                task_run["eggroll.session.processors.per.node"] = 1
-        if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.STANDALONE:
-            if "cores" not in task_run:
-                task_run["cores"] = default_task_run.get("cores")
-            task_cores = int(task_run.get("cores"))
-            if task_cores > cores:
-                cores = task_cores
-            if role in IGNORE_RESOURCE_ROLES:
-                task_run["cores"] = 1
-        if role in IGNORE_RESOURCE_ROLES:
-            cores = 0
-            task_cores = 0
-        return cores, task_run, task_cores
 
     def run_do(self):
         # waiting

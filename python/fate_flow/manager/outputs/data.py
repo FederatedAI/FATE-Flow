@@ -18,19 +18,34 @@ import pickle
 import tarfile
 import uuid
 from tempfile import TemporaryDirectory
+from typing import List
 
 from flask import send_file
 
+from fate_flow.db import TrackingOutputInfo
+from fate_flow.db.base_models import BaseModelOperate
 from fate_flow.engine import storage
 from fate_flow.engine.storage import Session, StorageEngine, DataType
 from fate_flow.entity.types import EggRollAddress, StandaloneAddress, HDFSAddress, PathAddress, ApiAddress
 from fate_flow.errors.server_error import NoFoundTable
-from fate_flow.manager.service.output_manager import OutputDataTracking
 from fate_flow.runtime.system_settings import LOCALFS_DATA_HOME, STANDALONE_DATA_HOME, STORAGE
 from fate_flow.utils import job_utils
 from fate_flow.utils.io_utils import URI
+from fate_flow.utils.wraps_utils import filter_parameters
 
 DELIMITER = '\t'
+
+
+class OutputDataTracking(BaseModelOperate):
+    @classmethod
+    def create(cls, entity_info):
+        cls._create_entity(TrackingOutputInfo, entity_info)
+
+    @classmethod
+    @filter_parameters()
+    def query(cls, reverse=False, **kwargs) -> List[TrackingOutputInfo]:
+        return cls._query(TrackingOutputInfo, reverse=reverse, order_by="index", **kwargs)
+
 
 
 class DataManager:

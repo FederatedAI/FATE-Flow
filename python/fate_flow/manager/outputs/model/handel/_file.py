@@ -22,7 +22,7 @@ from werkzeug.datastructures import FileStorage
 
 from fate_flow.entity.spec.flow import FileStorageSpec
 from fate_flow.entity.types import ModelStorageEngine
-from fate_flow.manager.model.handel import IOHandle
+from fate_flow.manager.outputs.model.handel import IOHandle
 from fate_flow.runtime.system_settings import MODEL_STORE_PATH
 
 
