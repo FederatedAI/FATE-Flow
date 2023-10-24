@@ -235,9 +235,10 @@ class TaskParser(object):
 
     def generate_computing_conf(self):
         if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.STANDALONE:
+            from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
             return StandaloneComputingSpec(
                 type=ENGINES.get(EngineType.COMPUTING).lower(),
-                metadata={"computing_id": self.computing_id}
+                metadata={"computing_id": self.computing_id, "options": {"data_dir": STANDALONE_DATA_HOME}}
             )
 
         if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.EGGROLL:
