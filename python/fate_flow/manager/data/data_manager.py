@@ -102,7 +102,7 @@ class DataManager:
                     elif isinstance(v, list):
                         fw.write('{}\n'.format(delimiter.join([str(_v) for _v in v])))
                     else:
-                        raise ValueError(type(v))
+                        raise ValueError(f"type={type(v)}, v={v}")
 
     @staticmethod
     def collect_data(table):
@@ -185,7 +185,10 @@ class DataManager:
         storage_meta = storage.StorageTableBase(
             namespace=namespace, name=name, address=address,
             partitions=partitions, engine=engine,
-            options=None
+            options=None,
+            key_serdes_type=0,
+            value_serdes_type=0,
+            partitioner_type=0,
         )
         storage_meta.create_meta(
             data_meta=data_meta, part_of_data=part_of_data, count=count, source=source, data_type=data_type
