@@ -15,7 +15,11 @@
 #
 from typing import Iterable
 
-from fate_flow.engine.storage import StandaloneStoreType, StorageEngine, StorageTableBase
+from fate_flow.engine.storage import (
+    StandaloneStoreType,
+    StorageEngine,
+    StorageTableBase,
+)
 from fate_flow.engine.storage.standalone._standalone import Session
 
 
@@ -23,6 +27,10 @@ class StorageTable(StorageTableBase):
     def __init__(
         self,
         session: Session,
+        table,
+        key_serdes_type,
+        value_serdes_type,
+        partitioner_type,
         address=None,
         name: str = None,
         namespace: str = None,
@@ -37,19 +45,16 @@ class StorageTable(StorageTableBase):
             partitions=partitions,
             options=options,
             engine=StorageEngine.STANDALONE,
+            key_serdes_type=key_serdes_type,
+            value_serdes_type=value_serdes_type,
+            partitioner_type=partitioner_type,
         )
         self._store_type = store_type
         self._session = session
-        self._table = self._session.create_table(
-            namespace=self.address.namespace,
-            name=self.address.name,
-            partitions=partitions,
-            need_cleanup=self._store_type == StandaloneStoreType.ROLLPAIR_IN_MEMORY,
-            error_if_exist=False,
-        )
+        self._table = table
 
-    def _put_all(self, kv_list: Iterable, **kwargs):
-        return self._table.put_all(kv_list)
+    def _put_all(self, kv_list: Iterable, partitioner, **kwargs):
+        return self._table.put_all(kv_list, partitioner)
 
     def _collect(self, **kwargs):
         return self._table.collect(**kwargs)
@@ -59,16 +64,3 @@ class StorageTable(StorageTableBase):
 
     def _destroy(self):
         self._table.destroy()
-
-    def _save_as(self, address, name, namespace, partitions=None, **kwargs):
-        self._table.save_as(name=address.name, namespace=address.namespace)
-
-        table = StorageTable(
-            session=self._session,
-            address=address,
-            partitions=partitions,
-            name=name,
-            namespace=namespace,
-            **kwargs,
-        )
-        return table

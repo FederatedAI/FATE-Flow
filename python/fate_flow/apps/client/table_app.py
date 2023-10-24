@@ -58,7 +58,10 @@ def bind_path(namespace, name, path):
     address = storage.StorageTableMeta.create_address(storage_engine=StorageEngine.PATH, address_dict={"path": path})
     storage_meta = storage.StorageTableBase(
         namespace=namespace, name=name, address=address,
-        engine=StorageEngine.PATH, options=None, partitions=None
+        engine=StorageEngine.PATH, options=None, partitions=None,
+        key_serdes_type=0,
+        value_serdes_type=0,
+        partitioner_type=0,
     )
     storage_meta.create_meta()
     return API.Output.json()
