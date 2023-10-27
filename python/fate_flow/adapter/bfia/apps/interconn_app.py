@@ -70,9 +70,9 @@ def audit_confirm(job_id, status):
 @API.Input.json(task_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
 @API.Input.json(status=fields.String(required=True))
-@API.Input.headers(node_id=fields.String(required=True))
-def callback_task(task_id, role, status, node_id):
-    status = BfiaScheduler.callback_task(task_id, role, status, node_id)
+@API.Input.headers(x_node_id=fields.String(required=True))
+def callback_task(task_id, role, status, x_node_id):
+    status = BfiaScheduler.callback_task(task_id, role, status, x_node_id)
     if status:
         return API.Output.json()
     return API.Output.json(code=ReturnCode.FAILED)
