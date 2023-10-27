@@ -21,11 +21,11 @@ def build_engine(provider_name: str):
     provider = ProviderManager.get_provider_by_provider_name(provider_name)
 
     if provider.device in {ProviderDevice.DOCKER, ProviderDevice.K8S}:
-        from fate_flow.engine.devices._container import ContainerdEngine
+        from fate_flow.engine.devices.container import ContainerdEngine
         engine_session = ContainerdEngine(provider)
 
     elif provider.device in {ProviderDevice.LOCAL}:
-        from fate_flow.engine.devices._local import LocalEngine
+        from fate_flow.engine.devices.local import LocalEngine
         engine_session = LocalEngine(provider)
 
     else:

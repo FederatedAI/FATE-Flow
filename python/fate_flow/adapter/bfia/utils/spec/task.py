@@ -32,6 +32,7 @@ class Config(BaseModel):
 class SystemConf(BaseModel):
     storage: str
     transport: str
+    callback: str
 
 
 class TaskRuntimeEnv(BaseModel):

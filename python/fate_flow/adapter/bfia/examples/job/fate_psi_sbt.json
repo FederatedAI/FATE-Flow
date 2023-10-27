@@ -11,7 +11,7 @@
                 "output": [
                     {
                         "type": "dataset",
-                        "key": "data0"
+                        "key": "train_data"
                     },
                     {
                         "type": "report",
@@ -27,7 +27,7 @@
                 "input": [
                     {
                         "type": "dataset",
-                        "key": "intersect_rsa_1.data0"
+                        "key": "intersect_rsa_1.train_data"
                     }
                 ],
                 "output": [
@@ -66,12 +66,7 @@
                 "JG0100001100000000"
             ],
             "host": [
-                "JG0100001100000000",
-                "JG0100001100000000",
-                "JG0100001100000000"
-            ],
-            "arbiter": [
-                "JG0100001100000000"
+                "JG0110017800000000"
             ]
         },
         "job_params": {

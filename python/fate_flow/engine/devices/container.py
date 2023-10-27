@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import json
+
 import yaml
 
 from fate_flow.db.db_models import Task
@@ -25,12 +27,15 @@ from fate_flow.utils.log_utils import schedule_logger
 
 class ContainerdEngine(EngineABC):
     def __init__(self, provider: ComponentProvider):
-        if provider.device == ProviderDevice.DOCKER:
-            from fate_flow.manager.container.docker_manager import DockerManager
-            self.manager = DockerManager(provider)
-        elif provider.device == ProviderDevice.K8S:
+
+        if provider.device == ProviderDevice.K8S:
             from fate_flow.manager.container.k8s_manager import K8sManager
             self.manager = K8sManager(provider)
+
+        elif provider.device == ProviderDevice.DOCKER:
+            from fate_flow.manager.container.docker_manager import DockerManager
+            self.manager = DockerManager(provider)
+
         else:
             raise ValueError(f'worker "{provider.device}" is not supported')
 
@@ -53,12 +58,16 @@ class ContainerdEngine(EngineABC):
     def _get_environment(cls, task: Task, run_parameters):
         return cls._flatten_dict(run_parameters)
 
+    @classmethod
+    def _get_volume(cls, task):
+        return None
+
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
         name = self._get_name(task)
         cmd = None
         env = self._get_environment(task, run_parameters)
-        schedule_logger(job_id=task.f_job_id).info(f"start run container {name}, cmd: {cmd}, env: {env}")
-        self.manager.start(name, cmd, env)
+        schedule_logger(job_id=task.f_job_id).info(f"start run container {name}, cmd: {cmd}, env: {json.dumps(env)}")
+        self.manager.start(name, cmd, env, volumes=self._get_volume(task))
         return {
             'run_ip': RuntimeConfig.JOB_SERVER_HOST
         }
