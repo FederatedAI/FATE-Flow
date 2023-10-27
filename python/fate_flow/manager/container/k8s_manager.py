@@ -61,7 +61,7 @@ class K8sManager:
         job_conf['data']['service_conf.yaml'] = service_conf
         return job_conf
 
-    def start(self, name, command, environment):
+    def start(self, name, command, environment, **kwargs):
         # LOGGER.debug(f"command: {type(command)}, {command}")
         job = self.populate_yaml_template(self.convertname(name), command, environment)
         service_conf=yaml.safe_dump(get_base_config(key=None), default_flow_style=False)
@@ -83,6 +83,9 @@ class K8sManager:
         if not res:
             return False
         return not (res.status.succeeded or res.status.failed)
+
+    def exit_with_exception(self, name):
+        return False
     
     # convertname: Ensure that name composes the RFC 1123 specification
     def convertname(self, name):

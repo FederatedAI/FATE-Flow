@@ -184,7 +184,7 @@
         {
             "name": "train-intersection",
             "description": "对齐数",
-            "category": "metric",
+            "category": "report",
             "dataFormat": ["csv"]
         }
     ],
@@ -408,26 +408,26 @@
         "name": "train_data",
         "description": "训练集数据",
         "category": "dataset",
-        "dataFormat": ["csv","yaml"]
+        "dataFormat": ["csv"]
     }],
     "outputData": [
         {
             "name": "train_data",
             "description": "训练集数据",
             "category": "dataset",
-            "dataFormat": ["csv","yaml"]
+            "dataFormat": ["csv"]
         },
         {
             "name": "model",
             "description": "模型文件",
             "category": "model",
-            "dataFormat": ["pmml"]
+            "dataFormat": ["csv"]
         },
         {
             "name": "train-loss",
             "description": "loss值",
             "category": "metric",
-            "dataFormat": ["csv","zip"]
+            "dataFormat": ["json"]
         }
     ],
     "result": [{
@@ -638,20 +638,20 @@
         {
             "name": "train-loss",
             "description": "loss值",
-            "category": "metric",
-            "dataFormat": ["csv"]
+            "category": "report",
+            "dataFormat": ["json"]
         },
         {
             "name": "train-auc",
             "description": "auc ks值",
-            "category": "metric",
-            "dataFormat": ["csv"]
+            "category": "report",
+            "dataFormat": ["json"]
         },
         {
             "name": "train-ks",
             "description": "ks曲线值",
-            "category": "metric",
-            "dataFormat": ["csv"]
+            "category": "report",
+            "dataFormat": ["json"]
         }
     ],
     "result": [

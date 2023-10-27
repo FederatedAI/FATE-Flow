@@ -205,7 +205,7 @@ class BfiaScheduler(SchedulerABC):
         task = BfiaScheduleJobSaver.query_task(task_id=task_id, party_id=node_id)[0]
         status = BfiaScheduleJobSaver.update_task_status(task_info={
             "job_id": task.f_job_id,
-            # "role": role,
+            "role": "",
             "party_id": node_id,
             "task_id": task_id,
             "task_version": 0,

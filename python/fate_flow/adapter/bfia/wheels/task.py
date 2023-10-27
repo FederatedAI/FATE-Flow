@@ -1,13 +1,18 @@
+import json
+import os.path
 from copy import deepcopy
 
-from fate_flow.adapter.bfia.utils.entity.status import TaskStatus, EndStatus
+from fate_flow.adapter.bfia.settings import LOCAL_LOG_PATH, CONTAINER_LOG_PATH
+from fate_flow.adapter.bfia.utils.entity.status import TaskStatus
 from fate_flow.adapter.bfia.utils.spec.job import DagSchemaSpec
 from fate_flow.adapter.bfia.wheels.federated import BfiaFederatedScheduler
 from fate_flow.adapter.bfia.wheels.parser import get_dag_parser
 from fate_flow.adapter.bfia.wheels.saver import BfiaJobSaver as JobSaver
 from fate_flow.controller.task_controller import TaskController
 from fate_flow.db import Task
+from fate_flow.engine.devices.container import ContainerdEngine
 from fate_flow.entity.types import PROTOCOL
+from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.system_settings import PARTY_ID
 from fate_flow.utils import job_utils
 from fate_flow.utils.log_utils import schedule_logger
@@ -172,3 +177,49 @@ class BfiaTaskController(TaskController):
                 return TaskStatus.PENDING
             if TaskStatus.SUCCESS in tmp_status_set:
                 return TaskStatus.SUCCESS
+
+    @classmethod
+    def build_task_engine(cls, provider_name):
+        provider = ProviderManager.get_provider_by_provider_name(provider_name)
+        return BfiaContainerd(provider)
+
+
+class BfiaContainerd(ContainerdEngine):
+    @classmethod
+    def _get_environment(cls, task: Task, run_parameters):
+        return cls._flatten_dict(run_parameters)
+
+    @classmethod
+    def _get_volume(cls, task):
+        return {
+            os.path.join(LOCAL_LOG_PATH, task.f_job_id, task.f_role, task.f_task_name):
+                {
+                    'bind': CONTAINER_LOG_PATH,
+                    'mode': 'rw'
+                }
+        }
+
+    @classmethod
+    def _flatten_dict(cls, data, parent_key='', sep='.', loop=True):
+        special_fields = ["input", "output", "parameter"]
+        items = {}
+        for key, value in data.items():
+            new_key = f"{parent_key}{sep}{key}" if parent_key else key
+            # Determine the location of special fields
+            for field in special_fields:
+                if new_key.endswith(f"{sep}{field}"):
+                    # continue
+                    items.update(cls._flatten_dict(value, new_key, sep=sep, loop=False))
+                    break
+            else:
+                if isinstance(value, dict) and loop:
+                    items.update(cls._flatten_dict(value, new_key, sep=sep))
+                else:
+                    if not loop:
+                        if isinstance(value, dict) or isinstance(value, list):
+                            value = json.dumps(value)
+                    items[new_key] = value
+        return items
+
+    def exit_with_exception(self, task: Task):
+        return self.manager.exit_with_exception(self._get_name(task))

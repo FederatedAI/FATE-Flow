@@ -46,6 +46,13 @@ class DockerManager:
             return False
         return container.status == 'running'
 
+    def exit_with_exception(self, name):
+        try:
+            container = self.client.containers.get(name)
+        except docker.errors.NotFound:
+            return False
+        return int(container.attrs['State']['ExitCode']) != 0
+
     def get_labels(self):
         image = self.client.images.get(self.provider.metadata.image)
         return image.labels

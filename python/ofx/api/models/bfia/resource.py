@@ -13,10 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import threading
+import time
+import uuid
+
 import requests
 
-from ...entity import BFIAHeadersSpec
-
+from ...entity import BFIAHttpHeadersSpec
 
 FEDERATED_ERROR = 104
 
@@ -101,11 +103,12 @@ class APIClient(requests.Session):
         if not headers:
             headers = {}
         headers.update(
-            BFIAHeadersSpec(
-                x_ptp_target_node_id=dest_node_id,
-                x_ptp_from_node_id=self.node_id,
-                x_ptp_provider_code=self.provider,
-                x_ptp_uri=endpoint
+            BFIAHttpHeadersSpec(
+                x_auth_sign="",
+                x_node_id=self.node_id,
+                x_nonce=str(uuid.uuid4()),
+                x_trace_id="",
+                x_timestamp=str(int(time.time() * 1000))
             ).dict()
         )
         kwargs = {
