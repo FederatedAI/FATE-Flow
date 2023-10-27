@@ -31,6 +31,14 @@ class RoleSpec(BaseModel):
     local: Optional[List[str]]
 
 
+class BFIAHttpHeadersSpec(pydantic.BaseModel):
+    x_auth_sign: Optional[str]
+    x_node_id: Optional[str]
+    x_nonce: Optional[str]
+    x_trace_id: Optional[str]
+    x_timestamp: Optional[str]
+
+
 class BFIAHeadersSpec(pydantic.BaseModel):
     x_ptp_version: Optional[str]
     x_ptp_provider_code: Optional[str]
