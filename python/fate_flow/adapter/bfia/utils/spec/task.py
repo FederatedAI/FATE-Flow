@@ -21,6 +21,8 @@ class LogPath(BaseModel):
 
 
 class Config(BaseModel):
+    task_id: str
+    trace_id: Optional[str]
     session_id: str = ""
     token: str = ""
     inst_id: Dict
