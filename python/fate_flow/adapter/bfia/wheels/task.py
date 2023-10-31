@@ -96,6 +96,17 @@ class BfiaTaskController(TaskController):
             schedule_logger(job_id=job_id).info(f"[stop]Kill {task.f_task_name} task completed: {status}")
 
     @classmethod
+    def callback_task(cls, task_id, status, role):
+        BfiaTaskController.update_task_info(
+            task_info={
+                "task_id": task_id,
+                "party_status": status,
+                "role": role
+            },
+            callback=BfiaTaskController.update_task_status
+        )
+
+    @classmethod
     def update_task_info(cls, task_info, callback):
         info = deepcopy(task_info)
         if "task_version" not in info:
@@ -182,6 +193,11 @@ class BfiaTaskController(TaskController):
     def build_task_engine(cls, provider_name):
         provider = ProviderManager.get_provider_by_provider_name(provider_name)
         return BfiaContainerd(provider)
+
+    @staticmethod
+    def generate_task_id():
+        import uuid
+        return str(uuid.uuid4())
 
 
 class BfiaContainerd(ContainerdEngine):
