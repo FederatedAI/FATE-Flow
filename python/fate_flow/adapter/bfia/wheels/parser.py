@@ -31,12 +31,21 @@ class BfiaTaskParser(TaskParser):
                 inst_id=self.node_id,
                 node_id=self.node_id,
                 log=LogPath(**CONTAINER_LOG),
-                self_role=f"{self.role}.0",
+                self_role=f"{self.role}.{self.role_index}",
+                task_id=self.task_id,
                 session_id=SESSION_ID.format(self.job_id),
                 token=TOKEN.format(self.job_id)
             ),
             system=SystemConf(storage=STORAGE_ADDRESS, transport=TRANSPORT, callback=CALLBACK)
         )
+
+    @property
+    def role_index(self):
+        _nodes = {}
+        for party in self.runtime_parties:
+            if party.role not in _nodes:
+                _nodes[party.role] = [party.party_id]
+        return _nodes[self.role].index(self.party_id)
 
     @property
     def node_id(self):

@@ -18,7 +18,7 @@ register_components()
 
 def submit_job():
     uri = "/v1/platform/schedule/job/create_all"
-    config_path = "../job/fate_psi_lr.json"
+    config_path = "../job/fate_psi_sbt.json"
     body = json.load(open(config_path, "r"))
     resp = requests.post(base_url+uri, json=body)
     print(resp.text)
@@ -36,11 +36,11 @@ def stop_job(job_id):
     print(resp.text)
 
 
-# submit_job()
+submit_job()
 def callback(task_id, role):
     uri = "/v1/platform/schedule/task/callback"
     resp = requests.post(base_url+uri, json={"task_id": task_id, "status": "SUCCESS", "role": role})
     print(resp.text)
 
 
-callback("202310270230555288240_intersect_rsa_1", "guest")
+# callback("202310270230555288240_intersect_rsa_1", "guest")
