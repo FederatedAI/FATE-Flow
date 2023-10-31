@@ -12,7 +12,6 @@ class RoleSpec(BaseModel):
     guest: Optional[List[str]]
     host: Optional[List[str]]
     arbiter: Optional[List[str]]
-    local: Optional[List[str]]
 
 
 class JobCommonSpec(BaseModel):

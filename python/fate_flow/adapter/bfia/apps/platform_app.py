@@ -36,7 +36,7 @@ def stop_task(job_id, task_name):
 
 
 # 某个参与方向己方调度层发起查询作业列表时调用的接口
-@manager.route('/schedule/job/query_job_list', methods=['POST'])
+@manager.route('/schedule/job/query_job_list', methods=['GET'])
 @API.Input.json(flow_id=fields.String(required=True))
 def query_job_list(flow_id):
     job_list = BfiaJobController.query_job_status(flow_id=flow_id)
@@ -75,12 +75,5 @@ def get_log(task_id, log_level, start, length=None):
 @API.Input.json(status=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
 def task_callback(task_id, status, role):
-    BfiaTaskController.update_task_info(
-        task_info={
-            "task_id": task_id,
-            "party_status": status,
-            "role": role
-        },
-        callback=BfiaTaskController.update_task_status
-    )
+    BfiaTaskController.callback_task(task_id, status, role)
     return API.Output.json()

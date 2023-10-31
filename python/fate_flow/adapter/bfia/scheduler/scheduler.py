@@ -99,7 +99,7 @@ class BfiaScheduler(SchedulerABC):
             job.f_protocol = dag_schema.kind
             job.f_status = StatusSet.READY
             BfiaScheduleJobSaver.create_job(job.to_human_model_dict())
-            body = dag_schema.dag.dict()
+            body = dag_schema.dag.dict(exclude_unset=True)
             body.update({
                 "job_id": job_id
             })
@@ -226,20 +226,23 @@ class BfiaScheduler(SchedulerABC):
                     task_parties[name].append(party)
 
         # create schedule task
+        task_ids = {}
         for name, parties in task_parties.items():
+            task_id = BfiaTaskController.generate_task_id()
+            task_ids[name] = task_id
             for node_id in parties:
                 cls.create_task(
                     job.f_job_id,
+                    task_id,
                     node_id,
                     name,
                     job_parser,
                     parties=parties
                 )
-        cls.create_scheduler_tasks_status(job.f_job_id, task_list, dag_schema)
+        cls.create_scheduler_tasks_status(job.f_job_id, task_list, dag_schema, task_ids)
 
     @classmethod
-    def create_task(cls, job_id, node_id, task_name, job_parser, parties, task_version=0):
-        task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
+    def create_task(cls, job_id, task_id, node_id, task_name, job_parser, parties, task_version=0):
         task_node = job_parser.get_task_node(task_name=task_name)
         task_parser = job_parser.task_parser(
             task_node=task_node, job_id=job_id, task_name=task_name, party_id=node_id,
@@ -258,7 +261,7 @@ class BfiaScheduler(SchedulerABC):
         BfiaScheduleJobSaver.create_task(task.to_human_model_dict())
 
     @classmethod
-    def create_scheduler_tasks_status(cls, job_id, task_list, dag_schema: DagSchemaSpec,
+    def create_scheduler_tasks_status(cls, job_id, task_list, dag_schema: DagSchemaSpec, task_ids,
                                       task_version=0, auto_retries=0, task_name=None):
         schedule_logger(job_id).info("start create schedule task status info")
         if task_name:
@@ -267,7 +270,7 @@ class BfiaScheduler(SchedulerABC):
             task = ScheduleTaskStatus()
             task.f_job_id = job_id
             task.f_task_name = _task_name
-            task.f_task_id = job_utils.generate_task_id(job_id=job_id, component_name=_task_name)
+            task.f_task_id = task_ids.get(_task_name)
             task.f_task_version = task_version
             task.f_status = TaskStatus.READY
             task.f_auto_retries = auto_retries
@@ -342,7 +345,9 @@ class BfiaTaskScheduler(object):
             else:
                 pass
             new_task_status = cls.get_federated_task_status(
-                job_id=task.f_job_id, task_id=task.f_task_id,
+                task_name=task.f_task_name,
+                job_id=task.f_job_id,
+                task_id=task.f_task_id,
                 task_version=task.f_task_version
             )
             task_interrupt = False
@@ -459,11 +464,16 @@ class BfiaTaskScheduler(object):
                 BfiaScheduleJobSaver.update_task_status(task_info=task_info)
 
     @classmethod
-    def get_federated_task_status(cls, job_id, task_id, task_version):
+    def get_federated_task_status(cls, task_name, job_id, task_id, task_version):
         tasks_on_all_party = BfiaScheduleJobSaver.query_task(task_id=task_id, task_version=task_version)
         tasks_party_status = [task.f_status for task in tasks_on_all_party]
         status = BfiaTaskController.calculate_multi_party_task_status(tasks_party_status)
         schedule_logger(job_id=job_id).info(
-            "task {} {} status is {}, calculate by task party status list: {}".format(task_id, task_version, status,
-                                                                                      tasks_party_status))
+            "task {} {} {} status is {}, calculate by task party status list: {}".format(
+                task_name,
+                task_id,
+                task_version,
+                status,
+                tasks_party_status
+            ))
         return status
