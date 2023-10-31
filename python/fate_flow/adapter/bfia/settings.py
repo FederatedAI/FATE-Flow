@@ -1,0 +1,10 @@
+STORAGE_NAME = "s3"
+STORAGE_ADDRESS = "s3://ip:port?username=xxx&password=xxx"
+TRANSPORT = "127.0.0.1:9370"
+SESSION_ID = "session_{}"
+TOKEN = "session_{}"
+LOCAL_LOG_PATH = "/data/projects/fate/fate_flow/logs/container"
+CONTAINER_LOG_PATH = "/opt/src/log"
+CALLBACK_ADDRESS = "http://127.0.0.1:9380"
+CONTAINER_LOG = {"path": CONTAINER_LOG_PATH}
+CALLBACK = f"{CALLBACK_ADDRESS}/v1/platform/schedule/task/callback"
