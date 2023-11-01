@@ -1,7 +1,7 @@
 from fate_flow.adapter.bfia.utils.entity.status import TaskStatus, JobStatus, EndStatus
 from fate_flow.db import ScheduleJob, Task
 from fate_flow.entity.types import PROTOCOL
-from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
+from fate_flow.manager.operation.job_saver import JobSaver, ScheduleJobSaver
 
 
 class BfiaJobSaver(JobSaver):

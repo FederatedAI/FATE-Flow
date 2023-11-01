@@ -16,13 +16,13 @@
 from flask import request
 from webargs import fields
 
-from fate_flow.controller.task_controller import TaskController
+from fate_flow.controller.task import TaskController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundTask
 from fate_flow.manager.outputs.data import DataManager, OutputDataTracking
 from fate_flow.manager.outputs.model import PipelinedModel
 from fate_flow.manager.outputs.metric import OutputMetric
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API
 
 page_name = 'worker'

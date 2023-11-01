@@ -23,7 +23,7 @@ from fate_flow.db.db_models import Job, Task
 from fate_flow.entity.spec.dag import InheritConfSpec
 from fate_flow.entity.types import TaskStatus
 from fate_flow.errors.server_error import InheritanceFailed
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.runtime.system_settings import LOG_DIR, JOB_DIR, WORKERS_DIR
 from fate_flow.utils.base_utils import fate_uuid
 

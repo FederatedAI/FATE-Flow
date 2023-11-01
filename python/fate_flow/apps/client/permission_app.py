@@ -16,8 +16,7 @@
 from webargs import fields
 
 from fate_flow.apps.desc import PERMISSION_APP_ID, PERMISSION_ROLE, PARTY_ID, COMPONENT, DATASET
-from fate_flow.controller.app_controller import PermissionController
-from fate_flow.controller.permission_controller import ResourcePermissionController
+from fate_flow.controller.permission import ResourcePermissionController, PermissionController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.types import PermissionParameters
 from fate_flow.runtime.runtime_config import RuntimeConfig

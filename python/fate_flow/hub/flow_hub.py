@@ -16,18 +16,11 @@
 from importlib import import_module
 
 from fate_flow.entity.types import ProviderName, ProviderDevice
-from fate_flow.hub.parser import JobParserABC
 from fate_flow.runtime.component_provider import ComponentProvider
-from fate_flow.runtime.system_settings import DEFAULT_JOB_PARSER_MODULE, DEFAULT_COMPONENTS_WRAPS_MODULE
+from fate_flow.runtime.system_settings import DEFAULT_COMPONENTS_WRAPS_MODULE
 
 
 class FlowHub:
-    @staticmethod
-    def load_job_parser(dag, module_name=DEFAULT_JOB_PARSER_MODULE) -> JobParserABC:
-        class_name = module_name.split(".")[-1]
-        module = ".".join(module_name.split(".")[:-1])
-        return getattr(import_module(module), class_name)(dag)
-
     @staticmethod
     def load_components_wraps(config, module_name=None):
         if not module_name:

@@ -18,11 +18,11 @@ import os
 
 import yaml
 
+from fate_flow.controller.parser import JobParser
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
 from fate_flow.engine.devices import build_engine, EngineABC
 from fate_flow.entity.spec.dag import DAGSchema, LauncherSpec
-from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.runtime.job_default_config import JobDefaultConfig
@@ -30,7 +30,7 @@ from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.controller.federated import FederatedScheduler
 from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType, LauncherType
 from fate_flow.entity.code import FederatedSchedulingStatusCode
-from fate_flow.operation.job_saver import JobSaver, ScheduleJobSaver
+from fate_flow.manager.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils import job_utils
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import schedule_logger
@@ -43,7 +43,7 @@ class TaskController(object):
     def create_tasks(cls, job_id: str, role: str, party_id: str, dag_schema: DAGSchema, task_run=None, task_cores=None,
                      is_scheduler=False):
         schedule_logger(job_id).info(f"start create {'scheduler' if is_scheduler else 'partner'} tasks ...")
-        job_parser = FlowHub.load_job_parser(dag_schema)
+        job_parser = JobParser(dag_schema)
         task_list = job_parser.topological_sort()
         for task_name in task_list:
             cls.create_task(job_id, role, party_id, task_name, dag_schema, job_parser, task_run=task_run,
@@ -136,7 +136,7 @@ class TaskController(object):
     @classmethod
     def create_scheduler_tasks_status(cls, job_id, dag_schema, task_version=0, auto_retries=None, task_name=None):
         schedule_logger(job_id).info("start create schedule task status info")
-        job_parser = FlowHub.load_job_parser(dag_schema)
+        job_parser = JobParser(dag_schema)
         if task_name:
             task_list = [task_name]
         else:
@@ -219,7 +219,7 @@ class TaskController(object):
         if not jobs:
             return False
         dag_schema = DAGSchema(**jobs[0].f_dag)
-        job_parser = FlowHub.load_job_parser(dag_schema)
+        job_parser = JobParser(dag_schema)
         cls.create_task(
             task.f_job_id, task.f_role, task.f_party_id, task.f_task_name, dag_schema, job_parser,
             task_run=task.f_task_run, task_cores=task.f_task_cores, is_scheduler=False, task_version=new_version
@@ -237,7 +237,7 @@ class TaskController(object):
         dag_schema = DAGSchema(**job.f_dag)
         if status_code != FederatedSchedulingStatusCode.SUCCESS:
             raise Exception(f"create {task.f_task_id} new version failed")
-        job_parser = FlowHub.load_job_parser(dag_schema)
+        job_parser = JobParser(dag_schema)
         for party in job.f_parties:
             _role = party.get("role")
             for _party_id in party.get("party_id"):
