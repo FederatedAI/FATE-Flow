@@ -8,7 +8,7 @@ from fate_flow.adapter.bfia.utils.spec.job import DagSchemaSpec
 from fate_flow.adapter.bfia.wheels.federated import BfiaFederatedScheduler
 from fate_flow.adapter.bfia.wheels.parser import get_dag_parser
 from fate_flow.adapter.bfia.wheels.saver import BfiaJobSaver as JobSaver
-from fate_flow.controller.task_controller import TaskController
+from fate_flow.controller.task import TaskController
 from fate_flow.db import Task
 from fate_flow.engine.devices.container import ContainerdEngine
 from fate_flow.entity.types import PROTOCOL

@@ -23,7 +23,7 @@ from werkzeug.datastructures import FileStorage
 from fate_flow.entity.spec.flow import Metadata
 from fate_flow.errors.server_error import NoFoundModelOutput
 from fate_flow.manager.outputs.model.model_meta import ModelMeta
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.manager.operation.job_saver import JobSaver
 
 
 class IOHandle(object):

@@ -17,22 +17,22 @@ import os
 import shutil
 from copy import deepcopy
 
-from fate_flow.controller.task_controller import TaskController
+from fate_flow.controller.task import TaskController
 from fate_flow.db import Job
 from fate_flow.engine.storage import Session
-from fate_flow.entity.spec.dag import DAGSchema, InheritConfSpec
+from fate_flow.entity.spec.dag import DAGSchema, InheritConfSpec, JobConfSpec
 from fate_flow.entity.types import EndStatus, JobStatus, TaskStatus, EngineType, ComputingEngine
 from fate_flow.entity.code import ReturnCode
-from fate_flow.errors.server_error import NoFoundJob
+from fate_flow.errors.server_error import NoFoundJob, JobParamsError
 from fate_flow.manager.outputs.metric import OutputMetric
 from fate_flow.manager.outputs.model import PipelinedModel, ModelMeta
 from fate_flow.manager.outputs.data import OutputDataTracking
 from fate_flow.manager.service.resource_manager import ResourceManager
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.controller.federated import FederatedScheduler
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.runtime.system_settings import ENGINES, IGNORE_RESOURCE_ROLES, COMPUTING_CONF
-from fate_flow.scheduler.scheduler import DAGScheduler
+from fate_flow.runtime.system_settings import ENGINES, IGNORE_RESOURCE_ROLES, COMPUTING_CONF, PARTY_ID, LOCAL_PARTY_ID
+from fate_flow.utils import job_utils
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.job_utils import get_job_log_directory, save_job_dag
 from fate_flow.utils.log_utils import schedule_logger
@@ -42,9 +42,8 @@ class JobController(object):
     @classmethod
     def request_create_job(cls, dag_schema: dict, user_name: str = None, is_local=False):
         schema = DAGSchema(**dag_schema)
-        parser = DAGScheduler.dag_parser(schema)
-        parser.check_job_params(schema)
-        parser.update_job_default_params(schema, is_local=is_local)
+        cls.update_job_default_params(schema, is_local=is_local)
+        cls.check_job_params(schema)
         response = FederatedScheduler.request_create_job(
             party_id=schema.dag.conf.scheduler_party_id,
             initiator_party_id=schema.dag.conf.initiator_party_id,
@@ -379,6 +378,35 @@ class JobController(object):
             cores = 0
             task_cores = 0
         return cores, task_run, task_cores
+
+    @classmethod
+    def check_job_params(cls, dag_schema: DAGSchema):
+        # check inheritance
+        job_utils.inheritance_check(dag_schema.dag.conf.inheritance)
+
+        # check model warehouse
+        model_warehouse = dag_schema.dag.conf.model_warehouse
+        if model_warehouse:
+            if not ModelMeta.query(model_id=model_warehouse.model_id, model_version=model_warehouse.model_version):
+                raise JobParamsError(
+                    model_id=model_warehouse.model_id,
+                    model_version=model_warehouse.model_version,
+                    position="dag_schema.dag.conf.model_warehouse"
+                )
+
+    @classmethod
+    def update_job_default_params(cls, dag_schema: DAGSchema, is_local: bool = False):
+        if not dag_schema.dag.conf:
+            dag_schema.dag.conf = JobConfSpec()
+        dag_schema.dag.conf.initiator_party_id = PARTY_ID
+        if not dag_schema.dag.conf.scheduler_party_id:
+            if not is_local:
+                dag_schema.dag.conf.scheduler_party_id = PARTY_ID
+            else:
+                dag_schema.dag.conf.scheduler_party_id = LOCAL_PARTY_ID
+        if not dag_schema.dag.conf.computing_partitions:
+            dag_schema.dag.conf.computing_partitions = JobDefaultConfig.computing_partitions
+        return dag_schema
 
 
 class JobInheritance:
