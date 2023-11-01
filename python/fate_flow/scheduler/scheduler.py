@@ -13,24 +13,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import abc
-from copy import deepcopy
 
 from pydantic import typing
 
-from fate_flow.controller.task_controller import TaskController
+from fate_flow.controller.task import TaskController
 from fate_flow.entity.code import SchedulingStatusCode, FederatedSchedulingStatusCode
 from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTaskStatus
 from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, InterruptStatus, ResourceOperation, \
-    FederatedCommunicationType, AutoRerunStatus, ComputingEngine, EngineType, PROTOCOL
+    FederatedCommunicationType, AutoRerunStatus
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundJob
-from fate_flow.hub.flow_hub import FlowHub
-from fate_flow.hub.parser import JobParserABC
-from fate_flow.hub.parser.fate import JobParser
-from fate_flow.operation.job_saver import ScheduleJobSaver
+from fate_flow.controller.parser import JobParser
+from fate_flow.manager.operation.job_saver import ScheduleJobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.runtime.system_settings import ENGINES, COMPUTING_CONF, IGNORE_RESOURCE_ROLES, PARTY_ID, LOCAL_PARTY_ID
 from fate_flow.controller.federated import FederatedScheduler
 from fate_flow.utils import schedule_utils, wraps_utils, job_utils
 from fate_flow.utils.base_utils import json_dumps
@@ -426,7 +422,7 @@ class TaskScheduler(object):
     def schedule(cls, job):
         schedule_logger(job.f_job_id).info("scheduling job tasks")
         dag_schema = DAGSchema(**job.f_dag)
-        job_parser = FlowHub.load_job_parser(DAGSchema(**job.f_dag))
+        job_parser = JobParser(DAGSchema(**job.f_dag))
         tasks_group = ScheduleJobSaver.get_status_tasks_asc(job_id=job.f_job_id)
         waiting_tasks = {}
         auto_rerun_tasks = []
@@ -600,3 +596,5 @@ class TaskScheduler(object):
             if TaskStatus.SUCCESS in tmp_status_set:
                 return TaskStatus.RUNNING
             raise Exception("Calculate task status failed: {}".format(tasks_party_status))
+
+

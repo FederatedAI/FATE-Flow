@@ -23,17 +23,14 @@ from fate_flow.entity.spec.dag import DataWarehouseChannelSpec, ModelWarehouseCh
     RuntimeTaskOutputChannelSpec, ComponentSpec, EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec, \
     StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \
     PulsarFederationSpec, RabbitMQFederationSpec, FlowLogger, MLMDSpec, TaskRuntimeConfSpec, \
-    DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts, JobConfSpec, OutputArtifactType
+    DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts, OutputArtifactType
 from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputArtifactType, ArtifactSourceType, \
     ComputingEngine
-from fate_flow.errors.server_error import JobParamsError
-from fate_flow.manager.outputs.model import ModelMeta
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import ENGINES, PROXY, FATE_FLOW_CONF_PATH, HOST, HTTP_PORT, PROTOCOL, \
-    API_VERSION, PARTY_ID, LOCAL_PARTY_ID
+    API_VERSION
 from fate_flow.utils import job_utils, file_utils
-from .. import TaskParserABC, JobParserABC
 
 
 class TaskNodeInfo(object):
@@ -125,7 +122,7 @@ class TaskNodeInfo(object):
         self._conf = conf
 
 
-class TaskParser(TaskParserABC):
+class TaskParser(object):
     def __init__(self, task_node, job_id, task_name, role=None, party_id=None, task_id="", execution_id="", model_id="",
                  model_version="", task_version=None, parties=None, provider=None, **kwargs):
         self.task_node = task_node
@@ -685,7 +682,7 @@ class DagParser(object):
         return translate_func(*args, **kwargs)
 
 
-class JobParser(JobParserABC):
+class JobParser(object):
     def __init__(self, dag_conf):
         self.dag_parser = DagParser()
         self.dag_parser.parse_dag(dag_conf)
@@ -742,35 +739,6 @@ class JobParser(JobParserABC):
             task_node = self.get_task_node(task_name)
             _dict[task_node.component_ref] = task_node.runtime_parameters.get(role, {}).get(party_id, {})
         return _dict
-
-    @classmethod
-    def update_job_default_params(cls, dag_schema: DAGSchema, is_local: bool = False):
-        if not dag_schema.dag.conf:
-            dag_schema.dag.conf = JobConfSpec()
-        dag_schema.dag.conf.initiator_party_id = PARTY_ID
-        if not dag_schema.dag.conf.scheduler_party_id:
-            if not is_local:
-                dag_schema.dag.conf.scheduler_party_id = PARTY_ID
-            else:
-                dag_schema.dag.conf.scheduler_party_id = LOCAL_PARTY_ID
-        if not dag_schema.dag.conf.computing_partitions:
-            dag_schema.dag.conf.computing_partitions = JobDefaultConfig.computing_partitions
-        return dag_schema
-
-    @classmethod
-    def check_job_params(cls, dag_schema: DAGSchema):
-        # check inheritance
-        job_utils.inheritance_check(dag_schema.dag.conf.inheritance)
-
-        # check model warehouse
-        model_warehouse = dag_schema.dag.conf.model_warehouse
-        if model_warehouse:
-            if not ModelMeta.query(model_id=model_warehouse.model_id, model_version=model_warehouse.model_version):
-                raise JobParamsError(
-                    model_id=model_warehouse.model_id,
-                    model_version=model_warehouse.model_version,
-                    position="dag_schema.dag.conf.model_warehouse"
-                )
 
     def get_runtime_roles_on_party(self, task_name, party_id):
         return self.dag_parser.get_runtime_roles_on_party(task_name, party_id)

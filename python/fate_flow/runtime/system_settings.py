@@ -147,5 +147,4 @@ LOCALFS_DATA_HOME = os.path.join(file_utils.get_fate_flow_directory(), "localfs"
 
 # hub module settings
 # define： xxx.class_name
-DEFAULT_JOB_PARSER_MODULE = "fate_flow.hub.parser.fate.JobParser"
 DEFAULT_COMPONENTS_WRAPS_MODULE = "fate_flow.hub.components_wraps.fate.FlowWraps"

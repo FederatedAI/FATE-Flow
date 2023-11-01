@@ -25,7 +25,7 @@ from flask import Blueprint, Flask, request
 from werkzeug.wrappers.request import Request
 
 from fate_flow.adapter import load_adapter_apps
-from fate_flow.controller.app_controller import PermissionController
+from fate_flow.controller.permission import PermissionController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import AuthenticationParameters

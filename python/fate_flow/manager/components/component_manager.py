@@ -15,7 +15,7 @@
 #
 import uuid
 
-from fate_flow.controller.job_controller import JobController
+from fate_flow.controller.job import JobController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.types import EngineType
 from fate_flow.manager.components.base import Base
