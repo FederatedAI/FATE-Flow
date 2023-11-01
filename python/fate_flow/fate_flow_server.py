@@ -23,7 +23,7 @@ from werkzeug.serving import run_simple
 
 from fate_flow.adapter import init_adapter
 from fate_flow.apps import app
-from fate_flow.controller.config_manager import ConfigManager
+from fate_flow.manager.service.config_manager import ConfigManager
 from fate_flow.hook import HookManager
 from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.manager.service.provider_manager import ProviderManager

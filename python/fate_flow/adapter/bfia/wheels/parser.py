@@ -8,8 +8,7 @@ from fate_flow.adapter.bfia.utils.spec.task import TaskRuntimeEnv, RuntimeCompon
     LogPath
 from fate_flow.adapter.bfia.wheels.output import OutputMeta
 from fate_flow.entity.spec.dag import DataWarehouseChannelSpec, RuntimeTaskOutputChannelSpec, OutputArtifactSpec
-from fate_flow.hub.parser import JobParserABC
-from fate_flow.hub.parser.fate import TaskParser, JobParser
+from fate_flow.controller.parser import TaskParser, JobParser
 from fate_flow.manager.service.provider_manager import ProviderManager
 
 
@@ -115,10 +114,7 @@ class BfiaTaskParser(TaskParser):
         return self._provider
 
 
-class BfiaDagParser(JobParser, JobParserABC):
-    def check_job_params(self, **kwargs):
-        pass
-
+class BfiaDagParser(JobParser):
     @property
     def task_parser(self):
         return BfiaTaskParser

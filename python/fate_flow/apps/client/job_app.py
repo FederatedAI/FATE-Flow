@@ -21,7 +21,7 @@ from webargs import fields
 
 from fate_flow.apps.desc import DAG_SCHEMA, USER_NAME, JOB_ID, ROLE, PARTY_ID, STATUS, LIMIT, PAGE, PARTNER, ORDER_BY, \
     ORDER, DESCRIPTION, TASK_NAME, TASK_ID, TASK_VERSION, NODES
-from fate_flow.controller.job_controller import JobController
+from fate_flow.controller.job import JobController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundJob, NoFoundTask, FileNoFound
 from fate_flow.utils import job_utils

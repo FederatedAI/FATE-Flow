@@ -13,13 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import time
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job, Task
 from fate_flow.entity.types import PROTOCOL
 from fate_flow.errors.server_error import NoFoundTask
-from fate_flow.operation.base_saver import BaseSaver
+from fate_flow.manager.operation.base_saver import BaseSaver
 from fate_flow.db.schedule_models import ScheduleJob, ScheduleTask, ScheduleTaskStatus
 
 

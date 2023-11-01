@@ -15,16 +15,17 @@
 #
 from webargs import fields
 
-from fate_flow.controller.job_controller import JobController
-from fate_flow.controller.task_controller import TaskController
+from fate_flow.controller.job import JobController
+from fate_flow.controller.task import TaskController
 from fate_flow.entity.types import TaskStatus
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import CreateJobFailed, UpdateJobFailed, KillFailed, JobResourceException,\
     NoFoundTask, StartTaskFailed, UpdateTaskFailed, KillTaskFailed, TaskResourceException
 from fate_flow.manager.service.resource_manager import ResourceManager
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API, stat_logger
-from fate_flow.utils.wraps_utils import task_request_proxy, create_job_request_check
+from fate_flow.utils.permission_utils import create_job_request_check
+from fate_flow.utils.wraps_utils import task_request_proxy
 
 page_name = 'partner'
 
