@@ -34,5 +34,6 @@ class EggrollEngine(LocalEngine):
             worker_name=WorkerName.TASK_EXECUTE,
             task_info=task_info,
             common_cmd=self.generate_component_run_cmd(provider_name, conf_path, output_path, ),
-            sync=sync
+            sync=sync,
+            **kwargs
         )

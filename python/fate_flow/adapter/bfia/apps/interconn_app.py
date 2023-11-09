@@ -86,7 +86,7 @@ def callback_task(task_id, role, status, x_node_id):
 @API.Input.json(dag=fields.Dict(required=True))
 @API.Input.json(config=fields.Dict(required=True))
 @API.Input.json(old_job_id=fields.String(required=False))
-def create_job(job_id, dag, config, flow_id=None, old_job_id=None):
+def create_job(job_id, dag, config, flow_id="", old_job_id=""):
     dag_schema = {
         "dag": {
             "dag": dag,
