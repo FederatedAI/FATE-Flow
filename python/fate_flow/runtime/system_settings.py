@@ -122,7 +122,6 @@ GRPC_SERVER_MAX_WORKERS = GRPC_SERVER_MAX_WORKERS or (os.cpu_count() or 1) * 5
 
 VERSION_FILE_PATH = os.path.join(get_fate_flow_directory(), "fateflow.env")
 FATE_FLOW_PROVIDER_PATH = get_fate_flow_directory("python")
-FATE_FLOW_CONF_PATH = get_fate_flow_directory()
 
 # Registry
 FATE_FLOW_MODEL_TRANSFER_ENDPOINT = "/v1/model/transfer"

@@ -23,7 +23,7 @@ from fate_flow.entity.spec.dag._artifact import RuntimeTaskOutputChannelSpec, Da
     ModelWarehouseChannelSpec, SourceInputArtifactSpec, RuntimeInputArtifacts, FlowRuntimeInputArtifacts,\
     ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
     ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ArtifactSource, SourceInputArtifacts
-from fate_flow.entity.spec.dag._component import ComponentSpec, ComponentIOArtifactsTypeSpec
+from fate_flow.entity.spec.dag._component import ComponentSpec, ComponentIOArtifactsTypeSpec, ComponentSpecV1
 from fate_flow.entity.spec.dag._computing import EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec
 from fate_flow.entity.spec.dag._federation import StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \
     PulsarFederationSpec, RabbitMQFederationSpec
