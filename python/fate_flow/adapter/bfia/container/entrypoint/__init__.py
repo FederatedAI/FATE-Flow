@@ -12,15 +12,3 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-from .resource import BaseAPI
-
-
-class Worker(BaseAPI):
-    def report_task_status(self, status, task_id, role):
-        return self.client.post(
-            endpoint="/v1/platform/schedule/task/callback",
-            json={
-                "status": status,
-                "task_id": task_id,
-                "role": role
-            })
