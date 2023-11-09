@@ -1,0 +1,138 @@
+{
+    "flow_id": "flow_0cc3b89e9ab14c938feb6242a001a21b",
+    "dag": {
+        "components": [
+            {
+                "name": "intersect_rsa_1",
+                "componentName": "Intersection",
+                "provider": "unionpay",
+                "version": "2.0.0",
+                "input": [],
+                "output": [
+                    {
+                        "type": "dataset",
+                        "key": "train_data"
+                    },
+                    {
+                        "type": "report",
+                        "key": "report0"
+                    }
+                ]
+            },
+            {
+                "name": "hetero_logistic_regression_1",
+                "componentName": "HeteroLR",
+                "provider": "unionpay",
+                "version": "2.0.0",
+                "input": [
+                    {
+                        "type": "dataset",
+                        "key": "intersect_rsa_1.train_data"
+                    }
+                ],
+                "output": [
+                    {
+                        "type": "dataset",
+                        "key": "data0"
+                    },
+                    {
+                        "type": "model",
+                        "key": "model0"
+                    },
+                    {
+                        "type": "report",
+                        "key": "report0"
+                    }
+                ]
+            }
+        ],
+        "version": "2.0"
+    },
+    "config": {
+        "initiator": {
+            "role": "guest",
+            "node_id": "JG0100001100000010"
+        },
+        "role": {
+            "guest": [
+                "JG0100001100000010"
+            ],
+            "host": [
+                "JG0100001100000010"
+            ],
+            "arbiter": [
+                "JG0100001100000010"
+            ]
+        },
+        "job_params": {
+            "common": {
+                "sync_type": "poll"
+            },
+            "guest": {
+                "0": {
+                    "resources": {
+                        "cpu": -1,
+                        "memory": -1,
+                        "disk": -1
+                    }
+                }
+            },
+            "host": {
+                "0": {
+                    "resources": {
+                        "cpu": -1,
+                        "memory": -1,
+                        "disk": -1
+                    }
+                }
+            }
+        },
+        "task_params": {
+            "common": {
+                "hetero_logistic_regression_1":{
+                    "id":"id",
+                    "label":"y",
+                    "penalty":"L2",
+                    "tol":0.0001,
+                    "alpha":0.01,
+                    "optimizer":"nesterov_momentum_sgd",
+                    "batch_size":-1,
+                    "learning_rate":0.15,
+                    "init_param":{
+                        "init_method":"zeros"
+                    },
+                    "max_iter":2,
+                    "early_stop":"diff"
+                },
+                "intersect_rsa_1": {
+                    "id": "id",
+                    "intersect_method": "rsa",
+                    "sync_intersect_ids": true,
+                    "only_output_key": false,
+                    "rsa_params": {
+                        "hash_method": "sha256",
+                        "final_hash_method": "sha256",
+                        "key_length": 2048
+                    }
+                }
+            },
+            "guest": {
+                "0": {
+                    "intersect_rsa_1": {
+                        "name": "test_guest",
+                        "namespace": "testspace"
+                    }
+                }
+            },
+            "host": {
+                "0": {
+                    "intersect_rsa_1": {
+                        "name": "test_host",
+                        "namespace": "testspace"
+                    }
+                }
+            }
+        },
+        "version": "2.0.0"
+    }
+}

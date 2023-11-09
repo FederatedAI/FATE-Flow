@@ -33,17 +33,19 @@ from fate_flow.utils.log_utils import failed_log, schedule_logger, start_log, su
 class WorkerManager:
     @classmethod
     def start_task_worker(cls, worker_name, task_info, task_parameters=None, executable=None, common_cmd=None,
-                          extra_env: dict = None, record=False, stderr=None, sync=False, **kwargs):
+                          extra_env: dict = None, record=False, stderr=None, sync=False, config_dir=None, std_dir=None,
+                          **kwargs):
         if not extra_env:
             extra_env = {}
         worker_id = uuid1().hex
-        config_dir, std_dir = cls.get_process_dirs(
-            job_id=task_info.get("job_id"),
-            role=task_info.get("role"),
-            party_id=task_info.get("party_id"),
-            task_name=task_info.get("task_name"),
-            task_version=task_info.get("task_version")
-        )
+        if not config_dir or not std_dir:
+            config_dir, std_dir = cls.get_process_dirs(
+                job_id=task_info.get("job_id"),
+                role=task_info.get("role"),
+                party_id=task_info.get("party_id"),
+                task_name=task_info.get("task_name"),
+                task_version=task_info.get("task_version")
+            )
         params_env = {}
         if task_parameters:
             params_env = cls.get_env(task_info.get("job_id"), task_parameters)
