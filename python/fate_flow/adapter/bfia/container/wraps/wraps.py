@@ -17,13 +17,10 @@ import logging
 import os.path
 import subprocess
 import sys
-import tarfile
 import traceback
-import uuid
 from urllib.parse import urlparse
 
 import yaml
-from tempfile import TemporaryDirectory
 
 from fate_flow.adapter.bfia.settings import CONTAINER_HOME
 from fate_flow.adapter.bfia.utils.entity.status import TaskStatus
@@ -50,6 +47,7 @@ class BfiaWraps(WrapsABC):
         self.stages = ""
         self.backend = build_backend(backend_name=COMPUTING_ENGINE)
         self.io = DataIo(self.config.system.storage)
+        self._partitions = DEFAULT_OUTPUT_DATA_PARTITIONS
         self._component_desc = None
         self._output_map = {}
 
@@ -294,16 +292,21 @@ class BfiaWraps(WrapsABC):
 
         # only data
         data = self.component_desc.component.input_artifacts.data
-
+        stage = ""
         if self.config.runtime.component.input:
             for name, address in self.config.runtime.component.input.items():
                 if name in data:
-                    self.stages = data[name].stages[0]
+                    # set stage
+                    stage = data[name].stages[0]
                     path = os.path.join(self.data_home, address.namespace, address.name)
                     os.makedirs(os.path.dirname(path), exist_ok=True)
                     metadata = self.io.s3_to_local(address, path=path)
                     input_artifacts[name] = metadata
+        self._set_stage(stage)
         return input_artifacts
+
+    def _set_stage(self, stage):
+        self.stages = self.config.runtime.component.parameter.pop("stage", None) or stage or "train"
 
     def _generate_logger_conf(self):
         level = "DEBUG"
@@ -346,21 +349,22 @@ class BfiaWraps(WrapsABC):
         return code == 0
 
     def _push_data(self, output_key, output_data: ArtifactOutputSpec):
+        if output_data.consumed is False:
+            return
         logger.info("save data")
         meta = ArtifactInputApplySpec(
             metadata=Metadata(
-                metadata=dict(options=dict(partitions=DEFAULT_OUTPUT_DATA_PARTITIONS))
+                metadata=dict(options=dict(partitions=self._partitions))
             ),
             uri=""
         )
         meta.metadata.metadata["schema"] = output_data.metadata.metadata.get("schema", {})
         meta.metadata.source = output_data.metadata.source
         address = self.config.runtime.component.output.get(output_key)
-        # table = self.io.storage_session.create_table(name=address.name, namespace=address.namespace)
         path = output_data.uri.split("://")[1]
         logger.info(f"start upload {path} to s3")
         logger.info(f"namespace {address.namespace} name {address.name}")
-        self.io.upload_to_s3(path, address.name, address.namespace, metadata=meta.dict())
+        self.io.upload_to_s3(path, address.name, address.namespace, metadata=meta.metadata.dict())
 
     def _push_model(self, output_key, output_model: ArtifactOutputSpec):
         address = self.config.runtime.component.output.get(output_key)
@@ -447,15 +451,13 @@ class DataIo(object):
 
     def s3_to_local(self, address, path):
         table = self.storage_session.get_table(name=address.name, namespace=address.namespace)
-        with TemporaryDirectory() as output_tmp_dir:
-            temp_path = os.path.join(output_tmp_dir, str(uuid.uuid1()))
-            table.download(local_path=temp_path)
-            self._x_tar(temp_path, path)
+        table.download_data_to_local(local_path=path)
         schema = json.loads(table.meta_output()).get("metadata")
         if not schema:
             schema = {}
+        logger.debug(json.dumps(schema))
         metadata = Metadata(**schema)
-        partitions = metadata.metadata.get("options", {}).get("partitions", DEFAULT_OUTPUT_DATA_PARTITIONS)
+        self._partitions = metadata.metadata.get("options", {}).get("partitions", DEFAULT_OUTPUT_DATA_PARTITIONS)
         meta = ArtifactInputApplySpec(
             metadata=Metadata(
                 **schema
@@ -463,30 +465,9 @@ class DataIo(object):
             uri=f"{COMPUTING_ENGINE}:///{address.namespace}/{address.name}"
         )
         from fate.arch._standalone import _TableMetaManager
-        _TableMetaManager.add_table_meta(namespace=address.namespace, name=address.name, num_partitions=partitions)
+        _TableMetaManager.add_table_meta(namespace=address.namespace, name=address.name, num_partitions=self._partitions)
         return meta
 
     def upload_to_s3(self, path, name, namespace, metadata):
-        with TemporaryDirectory() as output_tmp_dir:
-            if os.path.isdir(path):
-                temp_path = os.path.join(output_tmp_dir, str(uuid.uuid1()))
-                self._tar(path, temp_path)
-                path = temp_path
-            table = self.storage_session.create_table(name, namespace, column_info=[], metadata=metadata)
-            table.upload(path)
-
-    @staticmethod
-    def _tar(source_directory,  target_archive):
-        with tarfile.open(fileobj=open(target_archive, "wb"), mode='w:gz') as tar:
-            for root, _, files in os.walk(source_directory):
-                for file in files:
-                    full_path = os.path.join(root, file)
-                    rel_path = os.path.relpath(full_path, source_directory)
-                    tar.add(full_path, rel_path)
-
-    @staticmethod
-    def _x_tar(path, download_path):
-        tar = tarfile.open(path, "r:gz")
-        file_names = tar.getnames()
-        for file_name in file_names:
-            tar.extract(file_name, download_path)
+        table = self.storage_session.create_table(name, namespace, column_info=[], metadata=metadata)
+        table.upload_local_data(path)

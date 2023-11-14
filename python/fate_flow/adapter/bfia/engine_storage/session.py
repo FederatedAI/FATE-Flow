@@ -1,7 +1,7 @@
 
 from .client import S3Client
 from .consts import S3_BUCKET_NAME, S3_META_KEY, S3_OBJECT_KEY, S3_SAVE_PATH
-from .table import S3Table
+from .table import S3Table, FateTable
 
 
 class Session(object):
@@ -50,7 +50,7 @@ class S3Session(Session):
         """创建table"""
         if partition != 1:
             raise Exception('暂不支持partition分区')
-        table = S3Table(url=self.url, username=self.username, password=self.password, name=name, namespace=namespace,
+        table = FateTable(url=self.url, username=self.username, password=self.password, name=name, namespace=namespace,
                         column_info=column_info, partition=partition, description=description, metadata=metadata)
         client = S3Client(url=self.url, username=self.username, password=self.password)
         client.put_object(bucket=S3_BUCKET_NAME, key=S3_META_KEY.format(namespace=namespace, name=name),
@@ -67,7 +67,7 @@ class S3Session(Session):
 
         # 创建空table，并读入meta数据
         meta_response = client.get_object(bucket=S3_BUCKET_NAME, key=S3_META_KEY.format(namespace=namespace, name=name))
-        table = S3Table(name=name, namespace=namespace, url=self.url, username=self.username, password=self.password)
+        table = FateTable(name=name, namespace=namespace, url=self.url, username=self.username, password=self.password)
         try:
             meta_data = meta_response.get('Body').read()
         except Exception as e:
