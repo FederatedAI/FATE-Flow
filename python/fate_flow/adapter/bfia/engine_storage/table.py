@@ -1,4 +1,7 @@
 import os
+import tarfile
+import uuid
+from tempfile import TemporaryDirectory
 
 from .client import S3Client
 from .consts import S3_BUCKET_NAME, S3_OBJECT_KEY, S3_SAVE_PATH, S3_META_KEY
@@ -161,3 +164,35 @@ class S3Table(Table):
     def get_partitions(self) -> list:
         # TODO: 分区暂固定为0
         return ['data_0']
+
+
+class FateTable(S3Table):
+    def upload_local_data(self, path, overwrite: bool = True, callback_func=None, file_type: str = 'csv'):
+        with TemporaryDirectory() as output_tmp_dir:
+            if os.path.isdir(path):
+                temp_path = os.path.join(output_tmp_dir, str(uuid.uuid1()))
+                self._tar(path, temp_path)
+                path = temp_path
+            self.upload(path, overwrite, callback_func, file_type)
+
+    def download_data_to_local(self, local_path):
+        with TemporaryDirectory() as output_tmp_dir:
+            temp_path = os.path.join(output_tmp_dir, str(uuid.uuid1()))
+            self.download(local_path=temp_path)
+            self._x_tar(temp_path, local_path)
+
+    @staticmethod
+    def _tar(source_directory,  target_archive):
+        with tarfile.open(fileobj=open(target_archive, "wb"), mode='w:gz') as tar:
+            for root, _, files in os.walk(source_directory):
+                for file in files:
+                    full_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(full_path, source_directory)
+                    tar.add(full_path, rel_path)
+
+    @staticmethod
+    def _x_tar(path, download_path):
+        tar = tarfile.open(path, "r:gz")
+        file_names = tar.getnames()
+        for file_name in file_names:
+            tar.extract(file_name, download_path)
