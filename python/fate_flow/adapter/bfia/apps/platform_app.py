@@ -75,5 +75,6 @@ def get_log(task_id, log_level, start, length=None):
 @API.Input.json(status=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
 def task_callback(task_id, status, role):
+    role = role.split(".")[0]
     BfiaTaskController.callback_task(task_id, status, role)
     return API.Output.json()

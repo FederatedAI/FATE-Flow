@@ -1,5 +1,5 @@
-from fate_flow.adapter.bfia.settings import TRANSPORT, SESSION_ID, TOKEN, STORAGE_ADDRESS, STORAGE_NAME, CONTAINER_LOG, \
-    CALLBACK
+from fate_flow.adapter.bfia.settings import TRANSPORT, SESSION_ID, TOKEN, STORAGE_ADDRESS, STORAGE_NAME, \
+    CALLBACK, CONTAINER_LOG_PATH
 from fate_flow.adapter.bfia.translator.component_spec import BFIAComponentSpec
 from fate_flow.adapter.bfia.translator.dsl_translator import Translator
 from fate_flow.adapter.bfia.utils.spec.artifact import ArtifactAddress, Engine, S3Address
@@ -29,7 +29,7 @@ class BfiaTaskParser(TaskParser):
             config=Config(
                 inst_id=self.node_id,
                 node_id=self.node_id,
-                log=LogPath(**CONTAINER_LOG),
+                log=LogPath(path=CONTAINER_LOG_PATH),
                 self_role=f"{self.role}.{self.role_index}",
                 task_id=self.task_id,
                 session_id=SESSION_ID.format(self.job_id),
