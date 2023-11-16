@@ -8,7 +8,7 @@ password = "12345678"
 
 session = engine_storage.session.S3Session(url=url, username=username, password=password)
 
-namespace = "test1"
+namespace = "test_data"
 name = "guest"
 fp = open("../data/guest/metadata")
 metadata = yaml.safe_load(fp)
