@@ -2,7 +2,7 @@ import json
 import os.path
 from copy import deepcopy
 
-from fate_flow.adapter.bfia.settings import LOCAL_LOG_PATH, CONTAINER_LOG_PATH
+from fate_flow.adapter.bfia.settings import VOLUME
 from fate_flow.adapter.bfia.utils.entity.status import TaskStatus
 from fate_flow.adapter.bfia.utils.spec.job import DagSchemaSpec
 from fate_flow.adapter.bfia.wheels.federated import BfiaFederatedScheduler
@@ -207,13 +207,15 @@ class BfiaContainerd(ContainerdEngine):
 
     @classmethod
     def _get_volume(cls, task):
-        return {
-            os.path.join(LOCAL_LOG_PATH, task.f_job_id, task.f_role, task.f_task_name):
-                {
-                    'bind': CONTAINER_LOG_PATH,
-                    'mode': 'rw'
-                }
-        }
+        # return {
+        #     os.path.join(LOCAL_LOG_PATH, task.f_job_id, task.f_role, task.f_task_name):
+        #         {
+        #             'bind': CONTAINER_LOG_PATH,
+        #             'mode': 'rw'
+        #         }
+        # }
+
+        return VOLUME
 
     @classmethod
     def _flatten_dict(cls, data, parent_key='', sep='.', loop=True):

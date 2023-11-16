@@ -22,7 +22,7 @@ from urllib.parse import urlparse
 
 import yaml
 
-from fate_flow.adapter.bfia.settings import CONTAINER_HOME
+from fate_flow.adapter.bfia.settings import FATE_CONTAINER_HOME
 from fate_flow.adapter.bfia.utils.entity.status import TaskStatus
 from fate_flow.adapter.bfia.utils.spec.task import TaskRuntimeEnv
 from fate_flow.engine.backend import build_backend
@@ -73,14 +73,20 @@ class BfiaWraps(WrapsABC):
     @property
     def task_input_dir(self):
         task_id = self.config.config.task_id
-        path = os.path.join(CONTAINER_HOME, "jobs", task_id, self.self_role, "input")
+        base_dir = FATE_CONTAINER_HOME
+        if self.config.config.log and self.config.config.log.path:
+            base_dir = self.config.config.log.path
+        path = os.path.join(base_dir, "jobs", task_id, self.self_role, "input")
         os.makedirs(path, exist_ok=True)
         return path
 
     @property
     def task_output_dir(self):
         task_id = self.config.config.task_id
-        path = os.path.join(CONTAINER_HOME, "jobs", task_id, self.self_role, "output")
+        base_dir = FATE_CONTAINER_HOME
+        if self.config.config.log and self.config.config.log.path:
+            base_dir = self.config.config.log.path
+        path = os.path.join(base_dir, "jobs", task_id, self.self_role, "output")
         os.makedirs(path, exist_ok=True)
         return path
 
@@ -101,7 +107,7 @@ class BfiaWraps(WrapsABC):
 
     @property
     def data_home(self):
-        path = os.path.join(CONTAINER_HOME, "data")
+        path = os.path.join(FATE_CONTAINER_HOME, "data")
         os.makedirs(path, exist_ok=True)
         return path
 
@@ -129,7 +135,10 @@ class BfiaWraps(WrapsABC):
 
     def task_logs_dir(self, *args):
         task_id = self.config.config.task_id
-        path = os.path.join(CONTAINER_HOME, "logs", task_id, *args)
+        base_dir = FATE_CONTAINER_HOME
+        if self.config.config.log and self.config.config.log.path:
+            base_dir = self.config.config.log.path
+        path = os.path.join(base_dir, "logs",task_id, *args)
         os.makedirs(path, exist_ok=True)
         return path
 
@@ -142,6 +151,7 @@ class BfiaWraps(WrapsABC):
             config = self.preprocess()
             output_meta = self.run_component(config)
             self.push_output(output_meta)
+            print(output_meta)
             code = output_meta.status.code
             if output_meta.status.code != ReturnCode.Base.SUCCESS:
                 code = ReturnCode.Task.COMPONENT_RUN_FAILED
@@ -150,12 +160,15 @@ class BfiaWraps(WrapsABC):
         except Exception as e:
             traceback.format_exc()
             code = ReturnCode.Task.TASK_RUN_FAILED
+            print(e)
             logger.error(e)
         finally:
+            print(f"finish task with code {code}")
             self.report_status(code)
 
     def preprocess(self):
         # set log
+        print("start preprocess")
         self._generate_logger_conf().install()
         logger = logging.getLogger(__name__)
 
@@ -185,9 +198,11 @@ class BfiaWraps(WrapsABC):
             task_name=self.config.runtime.component.name
         )
         logger.debug(config)
+        print(config)
         return config
 
     def run_component(self, config):
+        print("start run task")
         task_parameters = config.dict()
         logger.info("start run task")
         os.makedirs(self.task_input_dir, exist_ok=True)
@@ -207,6 +222,7 @@ class BfiaWraps(WrapsABC):
             config_dir=self.task_output_dir, std_dir=self.task_output_dir
         )
         logger.info("finish task")
+        print("finish task")
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
                 try:
