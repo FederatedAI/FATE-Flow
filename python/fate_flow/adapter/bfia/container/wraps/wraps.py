@@ -314,6 +314,9 @@ class BfiaWraps(WrapsABC):
                 if name in data:
                     # set stage
                     stage = data[name].stages[0]
+                    if self.self_role not in data[name].roles:
+                        logger.info(f"role {self.self_role} does not rely on data {name} input")
+                        continue
                     path = os.path.join(self.data_home, address.namespace, address.name)
                     os.makedirs(os.path.dirname(path), exist_ok=True)
                     metadata = self.io.s3_to_local(address, path=path)
