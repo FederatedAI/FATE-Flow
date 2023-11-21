@@ -23,12 +23,8 @@ from fate_flow.utils.log import getLogger
 class FateFlowSubmit:
     @staticmethod
     def run():
-        import click
-        from fate_flow.components.entrypoint.cli import component
-
-        cli = click.Group()
-        cli.add_command(component)
-        cli(prog_name="python -m fate_flow.components")
+        import runpy
+        runpy.run_module(mod_name='fate_flow.components', run_name='__main__')
 
 
 if __name__ == "__main__":

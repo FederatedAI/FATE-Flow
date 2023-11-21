@@ -187,6 +187,10 @@ class TaskParser(object):
         return self._provider
 
     @property
+    def timeout(self):
+        return self.task_runtime_conf.get("timeout", None)
+
+    @property
     def provider_name(self):
         return ProviderManager.parser_provider_name(self.provider)[0]
 

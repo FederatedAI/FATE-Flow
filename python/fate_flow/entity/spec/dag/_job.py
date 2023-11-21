@@ -53,6 +53,7 @@ class EngineRunSpec(BaseModel):
 class TaskConfSpec(BaseModel):
     run: Optional[Dict]
     provider: Optional[str]
+    timeout: Optional[int]
 
 
 class InheritConfSpec(BaseModel):
@@ -86,13 +87,10 @@ class DAGSpec(BaseModel):
     stage: Optional[Union[Literal["train", "predict", "default", "cross_validation"]]]
     tasks: Dict[str, TaskSpec]
     party_tasks: Optional[Dict[str, PartyTaskSpec]]
-    """
-    BFIA PROTOCOL EXTRA
-    """
+
     flow_id: Optional[str]
     old_job_id: Optional[str]
     initiator: Optional[Tuple[Union[Literal["guest", "host", "arbiter", "local"]], str]]
-
 
 
 class DAGSchema(BaseModel):

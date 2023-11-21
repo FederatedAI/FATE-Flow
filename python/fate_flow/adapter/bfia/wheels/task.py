@@ -11,7 +11,7 @@ from fate_flow.adapter.bfia.wheels.saver import BfiaJobSaver as JobSaver
 from fate_flow.controller.task import TaskController
 from fate_flow.db import Task
 from fate_flow.engine.devices.container import ContainerdEngine
-from fate_flow.entity.types import PROTOCOL
+from fate_flow.entity.types import PROTOCOL, LauncherType
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.system_settings import PARTY_ID
 from fate_flow.utils import job_utils
@@ -190,7 +190,7 @@ class BfiaTaskController(TaskController):
                 return TaskStatus.SUCCESS
 
     @classmethod
-    def build_task_engine(cls, provider_name):
+    def build_task_engine(cls, provider_name, launcher_name=LauncherType.DEFAULT):
         provider = ProviderManager.get_provider_by_provider_name(provider_name)
         return BfiaContainerd(provider)
 
