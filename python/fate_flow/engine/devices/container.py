@@ -81,3 +81,5 @@ class ContainerdEngine(EngineABC):
     def cleanup(self, task: Task):
         pass
 
+    def download_output(self, task: Task):
+        pass

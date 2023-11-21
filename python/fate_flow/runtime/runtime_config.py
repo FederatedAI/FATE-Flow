@@ -26,6 +26,7 @@ class RuntimeConfig(ReloadConfigBase):
     SCHEDULE_CLIENT = None
     CLIENT_ROLE = list()
     SERVICE_DB = None
+    SESSION_LIST = []
     ENV = dict()
 
     @classmethod

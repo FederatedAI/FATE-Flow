@@ -13,22 +13,30 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from fate_flow.engine.devices._base import EngineABC
-from fate_flow.entity.types import ProviderDevice
+from fate_flow.entity.types import ProviderDevice, LauncherType
 from fate_flow.manager.service.provider_manager import ProviderManager
 
 
-def build_engine(provider_name: str):
+def build_engine(provider_name: str, launcher_name: str = LauncherType.DEFAULT):
     provider = ProviderManager.get_provider_by_provider_name(provider_name)
 
-    if provider.device in {ProviderDevice.DOCKER, ProviderDevice.K8S}:
-        from fate_flow.engine.devices.container import ContainerdEngine
-        engine_session = ContainerdEngine(provider)
-
-    elif provider.device in {ProviderDevice.LOCAL}:
-        from fate_flow.engine.devices.local import LocalEngine
-        engine_session = LocalEngine(provider)
+    if launcher_name == LauncherType.DEEPSPEED:
+        if provider.device in {ProviderDevice.LOCAL}:
+            from fate_flow.engine.devices.deepspeed import EggrollDeepspeedEngine
+            engine_session = EggrollDeepspeedEngine(provider)
+        else:
+            raise ValueError(f'engine launcher {LauncherType.DEEPSPEED} device "{provider.device}" is not supported')
 
     else:
-        raise ValueError(f'engine device "{provider.device}" is not supported')
+        if provider.device in {ProviderDevice.DOCKER, ProviderDevice.K8S}:
+            from fate_flow.engine.devices.container import ContainerdEngine
+            engine_session = ContainerdEngine(provider)
+
+        elif provider.device in {ProviderDevice.LOCAL}:
+            from fate_flow.engine.devices.local import LocalEngine
+            engine_session = LocalEngine(provider)
+
+        else:
+            raise ValueError(f'engine device "{provider.device}" is not supported')
 
     return engine_session

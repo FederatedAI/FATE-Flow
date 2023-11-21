@@ -8,9 +8,8 @@ from fate_flow.adapter.bfia.wheels.saver import BfiaScheduleJobSaver
 from fate_flow.adapter.bfia.wheels.task import BfiaTaskController
 from fate_flow.db import ScheduleJob, ScheduleTask, ScheduleTaskStatus
 from fate_flow.entity.code import SchedulingStatusCode
-from fate_flow.entity.types import PROTOCOL, FederatedCommunicationType
+from fate_flow.entity.types import FederatedCommunicationType
 from fate_flow.scheduler import SchedulerABC
-from fate_flow.utils import job_utils
 from fate_flow.utils.log_utils import schedule_logger, exception_to_trace_string
 
 
