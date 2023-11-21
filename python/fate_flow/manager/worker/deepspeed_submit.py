@@ -14,16 +14,12 @@
 #  limitations under the License.
 #
 
-class Submit:
+class DeepspeedSubmit:
     @staticmethod
     def run():
-        import click
-        from fate_flow.components.entrypoint.cli import component
-
-        cli = click.Group()
-        cli.add_command(component)
-        cli(prog_name="python -m fate_flow.components.entrypoint")
+        from fate_flow.components.entrypoint.cli import entrypoint
+        entrypoint()
 
 
 if __name__ == "__main__":
-    Submit.run()
+    DeepspeedSubmit.run()

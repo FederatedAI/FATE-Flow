@@ -17,11 +17,11 @@ import sys
 
 from fate_flow.db.db_models import Task
 from fate_flow.engine.devices._base import EngineABC
-from fate_flow.entity.types import TaskStatus, WorkerName, ProviderName
-from fate_flow.entity.code import KillProcessRetCode
+from fate_flow.entity.types import WorkerName
 from fate_flow.manager.service.worker_manager import WorkerManager
+from fate_flow.manager.worker.fate_flow_executor import FateFlowSubmit
 from fate_flow.runtime.component_provider import ComponentProvider
-from fate_flow.utils import job_utils, process_utils
+from fate_flow.utils import process_utils
 
 
 class LocalEngine(EngineABC):
@@ -55,10 +55,12 @@ class LocalEngine(EngineABC):
             task_parameters=task.f_component_parameters
         )
 
+    def download_output(self, task):
+        pass
+
     @staticmethod
     def generate_cmd():
-        from fate_flow.components.entrypoint.runner import Submit
-        module_file_path = sys.modules[Submit.__module__].__file__
+        module_file_path = sys.modules[FateFlowSubmit.__module__].__file__
         common_cmd = [
             module_file_path,
             "component",
@@ -70,8 +72,7 @@ class LocalEngine(EngineABC):
 
     @staticmethod
     def generate_cleanup_cmd():
-        from fate_flow.components.entrypoint.runner import Submit
-        module_file_path = sys.modules[Submit.__module__].__file__
+        module_file_path = sys.modules[FateFlowSubmit.__module__].__file__
         common_cmd = [
             module_file_path,
             "component",

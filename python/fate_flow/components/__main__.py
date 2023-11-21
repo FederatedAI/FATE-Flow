@@ -14,30 +14,14 @@
 #  limitations under the License.
 #
 
+"""
+execute with python -m fate.components --config xxx
+"""
 
-import abc
-import typing
+if __name__ == "__main__":
+    import click
+    from fate_flow.components.entrypoint.cli import component
 
-from fate_flow.db.db_models import Task
-
-
-class EngineABC(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs) -> typing.Dict:
-        ...
-
-    @abc.abstractmethod
-    def kill(self, task: Task):
-        ...
-
-    @abc.abstractmethod
-    def is_alive(self, task: Task):
-        ...
-
-    @abc.abstractmethod
-    def cleanup(self, task: Task):
-        ...
-
-    @abc.abstractmethod
-    def download_output(self, task: Task):
-        ...
+    cli = click.Group()
+    cli.add_command(component)
+    cli(prog_name="python -m fate_flow.components")
