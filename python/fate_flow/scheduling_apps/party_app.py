@@ -237,3 +237,36 @@ def clean_task(job_id, component_name, task_id, task_version, role, party_id, co
     return get_json_result(retcode=0, retmsg='success')
 
 
+
+@manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/resource/apply', methods=['POST'])
+def apply_task_resource(job_id,component_name, task_id, task_version, role, party_id):
+    task_info = {}
+    task_info.update({
+        "job_id": job_id,
+        "task_id": task_id,
+        "task_version": task_version,
+        "role": role,
+        "party_id": party_id
+    })
+    status = ResourceManager.apply_for_task_resource(task_info)
+    if status:
+        return get_json_result(retcode=0, retmsg='success')
+    else:
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"apply for task {task_id} resource failed")
+
+
+@manager.route('/<job_id>/<component_name>/<task_id>/<task_version>/<role>/<party_id>/resource/return', methods=['POST'])
+def return_task_resource(job_id,component_name, task_id, task_version, role, party_id):
+    task_info = {}
+    task_info.update({
+        "job_id": job_id,
+        "task_id": task_id,
+        "task_version": task_version,
+        "role": role,
+        "party_id": party_id,
+    })
+    status = ResourceManager.return_task_resource(task_info)
+    if status:
+        return get_json_result(retcode=0, retmsg='success')
+    else:
+        return get_json_result(retcode=RetCode.OPERATING_ERROR, retmsg=f"return task {task_id} resource failed")
