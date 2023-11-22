@@ -165,6 +165,8 @@ class BfiaWraps(WrapsABC):
         finally:
             print(f"finish task with code {code}")
             self.report_status(code)
+            if code:
+                sys.exit(code)
 
     def preprocess(self):
         # set log
@@ -211,7 +213,7 @@ class BfiaWraps(WrapsABC):
         task_result = os.path.join(self.task_output_dir, "task_result.yaml")
         with open(conf_path, "w") as f:
             yaml.dump(task_parameters, f)
-        self.backend.run(
+        p = self.backend.run(
             provider_name=ProviderName.FATE,
             task_info=self.task_info,
             engine_run={"cores": 4},
@@ -221,20 +223,23 @@ class BfiaWraps(WrapsABC):
             sync=True,
             config_dir=self.task_output_dir, std_dir=self.task_output_dir
         )
-        logger.info("finish task")
-        print("finish task")
+        logger.info(f"finish task with code {p.returncode}")
+        print(f"finish task with code {p.returncode}")
+
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
                 try:
                     result = json.load(f)
                     output_meta = ComponentOutputMeta.parse_obj(result)
+                    if p.returncode != 0:
+                        output_meta.status.code = p.returncode
                     logger.debug(output_meta)
                 except:
-                    logger.error(f"Task run failed, you can see the task result file for details: {task_result}")
+                    raise RuntimeError(f"Task run failed, you can see the task result file for details: {task_result}")
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
-                exceptions=f"No found task output. Process exit code. "
+                exceptions=f"No found task output."
             ))
         return output_meta
 
