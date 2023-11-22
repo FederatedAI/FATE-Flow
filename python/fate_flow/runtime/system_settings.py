@@ -54,6 +54,9 @@ PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol", "http")
 
 PROXY_NAME = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("proxy_name")
 PROXY_PROTOCOL = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("protocol", "http")
+
+THIRD_PARTY = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("third_party", None)
+
 PROXY = get_base_config("federation")
 STORAGE = get_base_config("storage")
 ENGINES = engine_utils.get_engines()

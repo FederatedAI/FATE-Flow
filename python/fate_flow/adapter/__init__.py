@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fate_flow.scheduler import SchedulerABC
 from fate_flow.utils.cron import Cron
+from .runtime_config import CommonRuntimeConfig
 
 
 def load_adapter_name():
@@ -74,3 +75,4 @@ def load_adapter_apps(register_page, search_pages_path):
 def init_adapter():
     load_db()
     load_scheduler()
+    CommonRuntimeConfig.init()

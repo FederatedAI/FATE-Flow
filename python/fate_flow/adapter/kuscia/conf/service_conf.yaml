@@ -1,0 +1,9 @@
+module_name: kuscia
+version: v1
+conf:
+  host: 127.0.0.1
+  port: 18082
+  client_cert:
+  client_key:
+  client_ca:
+  client_token:

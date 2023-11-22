@@ -57,6 +57,9 @@ class Job(DataBaseModel):
     f_end_time = BigIntegerField(null=True)
     f_elapsed = BigIntegerField(null=True)
 
+    f_module_name = CharField(max_length=50, null=False)
+    f_protocol = CharField(max_length=50, null=True)
+
     class Meta:
         db_table = "t_job"
         primary_key = CompositeKey('f_job_id', 'f_role', 'f_party_id')
