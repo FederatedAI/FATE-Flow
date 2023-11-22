@@ -22,6 +22,7 @@ from fate_flow.entity import RunParameters
 from fate_flow.utils import job_utils
 from fate_flow.scheduler.federated_scheduler import FederatedScheduler
 from fate_flow.operation.job_saver import JobSaver
+from fate_flow.entity.types import ResourceOperation
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.manager.resource_manager import ResourceManager
 from fate_flow.controller.job_controller import JobController
@@ -103,9 +104,39 @@ class TaskScheduler(object):
     @classmethod
     def start_task(cls, job, task):
         schedule_logger(task.f_job_id).info("try to start task {} {} on {} {}".format(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id))
-        apply_status = ResourceManager.apply_for_task_resource(task_info=task.to_human_model_dict(only_primary_with=["status"]))
-        if not apply_status:
+
+        apply_status_code, federated_response = FederatedScheduler.resource_for_task(job=job,task=task, operation_type=ResourceOperation.APPLY)
+        if apply_status_code != FederatedSchedulingStatusCode.SUCCESS:
+            # rollback resource
+            job_id = job.f_job_id
+            rollback_party = {}
+            failed_party = {}
+            for dest_role in federated_response.keys():
+                for dest_party_id in federated_response[dest_role].keys():
+                    retcode = federated_response[dest_role][dest_party_id]["retcode"]
+                    if retcode == 0:
+                        rollback_party[dest_role] = rollback_party.get(dest_role, [])
+                        rollback_party[dest_role].append(dest_party_id)
+                    else:
+                        failed_party[dest_role] = failed_party.get(dest_role, [])
+                        failed_party[dest_role].append(dest_party_id)
+            schedule_logger(job_id).info("task {} {} apply resource failed on {}, rollback {}".format(
+                task.f_task_id,
+                task.f_task_version,
+                ",".join([",".join([f"{_r}:{_p}" for _p in _ps]) for _r, _ps in failed_party.items()]),
+                ",".join([",".join([f"{_r}:{_p}" for _p in _ps]) for _r, _ps in rollback_party.items()]),
+            ))
+            if rollback_party:
+                return_status_code, federated_response = FederatedScheduler.resource_for_task(job=job,task=task, operation_type=ResourceOperation.RETURN, specific_dest=rollback_party)
+                if return_status_code != FederatedSchedulingStatusCode.SUCCESS:
+                    schedule_logger(job_id).info(f"task {task.f_task_id} {task.f_task_version} return resource failed:\n{federated_response}")
+            else:
+                schedule_logger(job_id).info(f"task {task.f_task_id} {task.f_task_version} no party should be rollback resource")
+            if apply_status_code == FederatedSchedulingStatusCode.ERROR:
+                FederatedScheduler.stop_task(job_id=job_id,task=task, stop_status=TaskStatus.FAILED)
+                schedule_logger(job_id).info(f"task {task.f_task_id} {task.f_task_version} apply resource error, stop job")
             return SchedulingStatusCode.NO_RESOURCE
+        
         task.f_status = TaskStatus.RUNNING
         update_status = JobSaver.update_task_status(task_info=task.to_human_model_dict(only_primary_with=["status"]))
         if not update_status:
@@ -113,7 +144,10 @@ class TaskScheduler(object):
             schedule_logger(task.f_job_id).info("task {} {} start on another scheduler".format(task.f_task_id, task.f_task_version))
             # Rollback
             task.f_status = TaskStatus.WAITING
-            ResourceManager.return_task_resource(task_info=task.to_human_model_dict(only_primary_with=["status"]))
+            return_status_code, federated_response = FederatedScheduler.resource_for_task(job=job,task=task, operation_type=ResourceOperation.RETURN)
+            if return_status_code != FederatedSchedulingStatusCode.SUCCESS:
+                schedule_logger(job_id).info(f"task {task.f_task_id} {task.f_task_version} return resource failed:\n{federated_response}")
+                return FederatedSchedulingStatusCode.ERROR
             return SchedulingStatusCode.PASS
         schedule_logger(task.f_job_id).info("start task {} {} on {} {}".format(task.f_task_id, task.f_task_version, task.f_role, task.f_party_id))
         FederatedScheduler.sync_task_status(job=job, task=task)
@@ -122,6 +156,7 @@ class TaskScheduler(object):
             return SchedulingStatusCode.SUCCESS
         else:
             return SchedulingStatusCode.FAILED
+        
 
     @classmethod
     def prepare_rerun_task(cls, job: Job, task: Task, dsl_parser, auto=False, force=False):

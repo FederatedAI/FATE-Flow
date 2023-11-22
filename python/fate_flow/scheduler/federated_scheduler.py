@@ -56,7 +56,17 @@ class FederatedScheduler(SchedulerBase):
         else:
             schedule_logger(job.f_job_id).info(f"{operation_type} job resource failed")
         return status_code, response
-
+    
+    @classmethod
+    def resource_for_task(cls, job, task, operation_type: ResourceOperation, specific_dest=None):
+        schedule_logger(task.f_job_id).info("task {} {} {} resource".format(task.f_task_id,task.f_task_version,operation_type ))
+        status_code, response = cls.task_command(job=job,task=task, command=f"resource/{operation_type.value}",specific_dest=None)
+        if status_code == FederatedSchedulingStatusCode.SUCCESS:
+            schedule_logger(task.f_job_id).info(f"task {task.f_task_id} {task.f_task_version} {operation_type} resource successfully")
+        else:
+            schedule_logger(task.f_job_id).info(f"task {task.f_task_id} {task.f_task_version} {operation_type} resource failed")
+        return status_code, response
+    
     @classmethod
     def check_component(cls, job, check_type, specific_dest=None):
         schedule_logger(job.f_job_id).info(f"try to check component inheritance dependence")
@@ -234,13 +244,26 @@ class FederatedScheduler(SchedulerBase):
         return status_code, response
 
     @classmethod
-    def task_command(cls, job: Job, task: Task, command, command_body=None, parallel=False, need_user=False):
+    def task_command(cls, job: Job, task: Task, command, command_body=None, parallel=False, need_user=False,specific_dest=None):
         msg = f"execute federated task {task.f_component_name} command({command})"
         federated_response = {}
+        if specific_dest:
+            dest = specific_dest.items()
+        else:
+            dest = job.f_roles.items()
+
         job_parameters = job.f_runtime_conf_on_party["job_parameters"]
         tasks = JobSaver.query_task(task_id=task.f_task_id, only_latest=True)
         threads = []
+        
+        targets = {}
+        for dest_role, dest_party_ids in dest:
+            for dest_party_id in dest_party_ids:
+                targets[str(dest_party_id)] = dest_role
+                
         for task in tasks:
+            if task.f_party_id not in targets:
+                continue
             dest_role, dest_party_id = task.f_role, task.f_party_id
             federated_response[dest_role] = federated_response.get(dest_role, {})
             endpoint = f"/party/{task.f_job_id}/{task.f_component_name}/{task.f_task_id}/{task.f_task_version}/{dest_role}/{dest_party_id}/{command}"
