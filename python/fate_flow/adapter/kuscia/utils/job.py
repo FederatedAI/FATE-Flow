@@ -1,5 +1,4 @@
 
-
 from fate_flow.adapter.bfia.utils.entity.code import ReturnCode
 from fate_flow.adapter.bfia.utils.entity.status import JobStatus
 
@@ -79,10 +78,6 @@ class JobController(object):
         response = CommonFederated.stop_job(command_body={"job_id": job_id})
         schedule_logger(job_id).info(f"stop job response: {response}")
         return response
-
-    # @classmethod
-    # def create_task(cls, job_id, dag_schema):
-    #     pass
 
     @classmethod
     def update_job(cls, job_info):

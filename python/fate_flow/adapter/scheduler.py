@@ -1,7 +1,5 @@
 
 from fate_flow.adapter.bfia.utils.entity.status import JobStatus
-
-
 from fate_flow.scheduler import SchedulerABC
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.runtime.system_settings import THIRD_PARTY as module_name

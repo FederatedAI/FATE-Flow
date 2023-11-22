@@ -28,7 +28,7 @@ from fate_flow.utils import job_utils
 from fate_flow.utils.api_utils import API
 from fate_flow.manager.pipeline import pipeline as pipeline_manager
 from fate_flow.runtime.system_settings import THIRD_PARTY
-from fate_flow.adapter.kuscia.utils.job import JobController
+from fate_flow.adapter.kuscia.utils.job import JobController as ComJobController
 
 
 @manager.route('/submit', methods=['POST'])
@@ -36,7 +36,7 @@ from fate_flow.adapter.kuscia.utils.job import JobController
 @API.Input.headers(user_name=fields.String(required=False), desc=USER_NAME)
 def submit_job(dag_schema, user_name=None):
     if THIRD_PARTY:
-        submit_result = JobController.create_job(dag_schema)
+        submit_result = ComJobController.create_job(dag_schema)
     else:
         submit_result = JobController.request_create_job(dag_schema, user_name)
     return API.Output.json(**submit_result)

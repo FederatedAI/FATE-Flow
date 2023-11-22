@@ -9,13 +9,6 @@ class CommonRuntimeConfig(object):
     SERVICE_CONF: dict = {}
     SCHEDULE_CLIENT: CommonSchedulerApi = None
     DAG_SCHEMA = None
-    # URL_CONF: dict = {}
-
-    # @classmethod
-    # def load_url_conf(cls):
-    #     package = f"fate_flow.adapter.{THIRD_PARTY}.settings"
-    #     URLS = getattr(importlib.import_module(package), "URLS")
-    #     cls.URL_CONF = URLS
 
     @classmethod
     def load_schema_conf(cls):
