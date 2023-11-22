@@ -16,6 +16,7 @@ import io
 import json
 import logging
 import os.path
+import sys
 import tarfile
 import traceback
 from typing import List
@@ -87,6 +88,8 @@ class FlowWraps(WrapsABC):
             logger.error(e)
         finally:
             self.report_status(code, exceptions)
+            if code:
+                sys.exit(code)
 
     def cleanup(self):
         config = TaskCleanupConfigSpec(
@@ -140,7 +143,7 @@ class FlowWraps(WrapsABC):
         task_result = os.path.join(self.task_output_dir, "task_result.yaml")
         with open(conf_path, "w") as f:
             yaml.dump(task_parameters, f)
-        self.backend.run(
+        p = self.backend.run(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
             engine_run=self.config.engine_run,
@@ -151,19 +154,21 @@ class FlowWraps(WrapsABC):
             session_id=self.config.party_task_id,
             sync=True
         )
-        logger.info("finish task")
+        logger.info(f"finish task, return code {p.returncode}")
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
                 try:
                     result = json.load(f)
                     output_meta = ComponentOutputMeta.parse_obj(result)
+                    if p.returncode != 0:
+                        output_meta.status.code = p.returncode
                     logger.debug(output_meta)
                 except:
-                    logger.error(f"Task run failed, you can see the task result file for details: {task_result}")
+                    raise RuntimeError(f"Task run failed, you can see the task result file for details: {task_result}")
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
-                exceptions=f"No found task output. Process exit code. "
+                exceptions=f"No found task output."
             ))
         return output_meta
 
