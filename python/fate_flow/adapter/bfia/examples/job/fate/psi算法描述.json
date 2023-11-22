@@ -1,0 +1,81 @@
+{
+      "componentName": "psi",
+      "title": "对齐算法",
+      "provider": "fate",
+      "version": "2.0.0",
+      "description": "对齐算法",
+      "roleList": [
+        "guest",
+        "host"
+      ],
+      "desVersion": "2.0.0",
+      "storageEngine": [
+        "s3",
+        "hdfs",
+        "eggroll"
+      ],
+      "inputParam": [
+        {
+          "name": "protocol",
+          "title": "protocol",
+          "description": "protocol",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": "ecdh_psi",
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "curve_type",
+          "title": "curve_type",
+          "description": "curve_type",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": "curve25519",
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        }
+      ],
+      "inputData": [
+        {
+          "name": "input_data",
+          "description": "训练集数据",
+          "category": "dataset",
+          "dataFormat": [
+            "dataset"
+          ]
+        }
+      ],
+      "outputData": [
+        {
+          "name": "output_data",
+          "description": "训练集数据",
+          "category": "dataset",
+          "dataFormat": [
+            "dataset"
+          ]
+        },
+        {
+          "name": "metric",
+          "description": "对齐数",
+          "category": "report",
+          "dataFormat": [
+            "json"
+          ]
+        }
+      ],
+      "result": [
+        {
+          "resultCode": "00000000",
+          "resultMessage": "成功"
+        },
+        {
+          "resultCode": "99999999",
+          "resultMessage": "算法执行失败"
+        }
+      ]
+    }

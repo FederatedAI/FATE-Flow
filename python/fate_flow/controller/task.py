@@ -95,6 +95,7 @@ class TaskController(object):
             task.f_party_status = TaskStatus.WAITING
             task.f_execution_id = execution_id
             task.f_provider_name = task_parser.provider
+            task.f_timeout = task_parser.timeout
             task.f_sync_type = dag_schema.dag.conf.sync_type
             task.f_task_run = task_run
             task.f_task_cores = task_cores
@@ -115,6 +116,8 @@ class TaskController(object):
     @staticmethod
     def update_launcher_config(task, task_runtime_launcher, task_parameters):
         # support deepspeed and other launcher
+        if task.f_role == "arbiter":
+            return
         schedule_logger(task.f_job_id).info(f"task runtime launcher: {task_runtime_launcher}")
         launcher = LauncherSpec.parse_obj(task_runtime_launcher)
         if launcher.name and launcher.name != LauncherType.DEFAULT:
@@ -184,14 +187,15 @@ class TaskController(object):
             run_parameters_path = os.path.join(config_dir, 'preprocess_parameters.yaml')
             with open(run_parameters_path, 'w') as fw:
                 yaml.dump(run_parameters, fw)
-            backend_engine = cls.build_task_engine(task.f_provider_name)
-            run_info = backend_engine.run(task=task,
-                                          run_parameters=run_parameters,
-                                          run_parameters_path=run_parameters_path,
-                                          config_dir=config_dir,
-                                          log_dir=job_utils.get_job_log_directory(job_id, role, party_id,
-                                                                                  task.f_task_name),
-                                          cwd_dir=job_utils.get_job_directory(job_id, role, party_id, task.f_task_name))
+            backend_engine = cls.build_task_engine(task.f_provider_name, task.f_launcher_name)
+            run_info = backend_engine.run(
+                task=task,
+                run_parameters=run_parameters,
+                run_parameters_path=run_parameters_path,
+                config_dir=config_dir,
+                log_dir=job_utils.get_job_log_directory(job_id, role, party_id, task.f_task_name),
+                cwd_dir=job_utils.get_job_directory(job_id, role, party_id, task.f_task_name)
+            )
             task_info.update(run_info)
             task_info["start_time"] = current_timestamp()
             task_executor_process_start_status = True
@@ -209,8 +213,9 @@ class TaskController(object):
             except Exception as e:
                 schedule_logger(job_id).exception(e)
             schedule_logger(job_id).info(
-                "task {} {} on {} {} executor subprocess start {}".format(task_id, task_version, role, party_id,
-                                                                          "success" if task_executor_process_start_status else "failed"))
+                "task {} {} on {} {} executor subprocess start {}".format(
+                    task_id, task_version, role, party_id, "success" if task_executor_process_start_status else "failed"
+                ))
         return not is_failed
 
     @classmethod
@@ -245,8 +250,13 @@ class TaskController(object):
                     job.f_job_id, _role, _party_id, task.f_task_name, dag_schema, job_parser,
                     is_scheduler=True, task_version=task.f_task_version
                 )
-        TaskController.create_scheduler_tasks_status(job.f_job_id, dag_schema, task_version=task.f_task_version,
-                                                     auto_retries=task.f_auto_retries, task_name=task.f_task_name)
+        TaskController.create_scheduler_tasks_status(
+            job.f_job_id,
+            dag_schema,
+            task_version=task.f_task_version,
+            auto_retries=task.f_auto_retries,
+            task_name=task.f_task_name
+        )
         schedule_logger(job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
 
     @classmethod
@@ -282,12 +292,11 @@ class TaskController(object):
 
     @classmethod
     def update_task_status(cls, task_info, scheduler_party_id=None, sync_type=None):
-        if not scheduler_party_id or not sync_type:
-            task = JobSaver.query_task(
-                task_id=task_info.get("task_id"),
-                task_version=task_info.get("task_version")
-            )[0]
-            scheduler_party_id, sync_type = task.f_scheduler_party_id, task.f_sync_type
+        task = JobSaver.query_task(
+            task_id=task_info.get("task_id"),
+            task_version=task_info.get("task_version")
+        )[0]
+        scheduler_party_id, sync_type = task.f_scheduler_party_id, task.f_sync_type
         update_status = JobSaver.update_task_status(task_info=task_info)
         if update_status and EndStatus.contains(task_info.get("party_status")):
             ResourceManager.return_task_resource(**task_info)
@@ -302,6 +311,8 @@ class TaskController(object):
             }
             if sync_type == FederatedCommunicationType.CALLBACK:
                 cls.report_task_to_scheduler(task_info=report_task_info, scheduler_party_id=scheduler_party_id)
+        if update_status and EndStatus.contains(task_info.get("party_status")):
+            cls.callback_task_output(task)
         return update_status
 
     @classmethod
@@ -337,7 +348,7 @@ class TaskController(object):
     def kill_task(cls, task: Task):
         kill_status = False
         try:
-            backend_engine = cls.build_task_engine(task.f_provider_name)
+            backend_engine = cls.build_task_engine(task.f_provider_name, task.f_launcher_name)
             if backend_engine:
                 backend_engine.kill(task)
                 backend_engine.cleanup(task)
@@ -348,18 +359,20 @@ class TaskController(object):
             kill_status = True
         finally:
             schedule_logger(task.f_job_id).info(
-                'task {} {} on {} {} process {} kill {}'.format(task.f_task_id,
-                                                                task.f_task_version,
-                                                                task.f_role,
-                                                                task.f_party_id,
-                                                                task.f_run_pid,
-                                                                'success' if kill_status else 'failed'))
+                'task {} {} on {} {} process {} kill {}'.format(
+                    task.f_task_id,
+                    task.f_task_version,
+                    task.f_role,
+                    task.f_party_id,
+                    task.f_run_pid,
+                    'success' if kill_status else 'failed'
+                ))
             return kill_status
 
     @classmethod
     def clean_task(cls, task):
         try:
-            backend_engine = cls.build_task_engine(task.f_provider_name)
+            backend_engine = cls.build_task_engine(task.f_provider_name, task.f_launcher_name)
             if backend_engine:
                 schedule_logger(task.f_job_id).info(f"start clean task:[{task.f_task_id} {task.f_task_version}]")
                 backend_engine.cleanup(task)
@@ -368,5 +381,11 @@ class TaskController(object):
             schedule_logger(task.f_job_id).exception(e)
 
     @classmethod
-    def build_task_engine(cls, provider_name) -> EngineABC:
-        return build_engine(provider_name)
+    def build_task_engine(cls, provider_name, launcher_name=LauncherType.DEFAULT) -> EngineABC:
+        return build_engine(provider_name, launcher_name)
+
+    @classmethod
+    def callback_task_output(cls, task: Task):
+        if task.f_launcher_name == LauncherType.DEEPSPEED:
+            engine = cls.build_task_engine(provider_name=task.f_provider_name, launcher_name=task.f_launcher_name)
+            engine.download_output(task)

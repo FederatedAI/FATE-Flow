@@ -17,15 +17,12 @@ import logging
 import os.path
 import subprocess
 import sys
-import tarfile
 import traceback
-import uuid
 from urllib.parse import urlparse
 
 import yaml
-from tempfile import TemporaryDirectory
 
-from fate_flow.adapter.bfia.settings import CONTAINER_HOME
+from fate_flow.adapter.bfia.settings import FATE_CONTAINER_HOME
 from fate_flow.adapter.bfia.utils.entity.status import TaskStatus
 from fate_flow.adapter.bfia.utils.spec.task import TaskRuntimeEnv
 from fate_flow.engine.backend import build_backend
@@ -50,6 +47,7 @@ class BfiaWraps(WrapsABC):
         self.stages = ""
         self.backend = build_backend(backend_name=COMPUTING_ENGINE)
         self.io = DataIo(self.config.system.storage)
+        self._partitions = DEFAULT_OUTPUT_DATA_PARTITIONS
         self._component_desc = None
         self._output_map = {}
 
@@ -75,14 +73,20 @@ class BfiaWraps(WrapsABC):
     @property
     def task_input_dir(self):
         task_id = self.config.config.task_id
-        path = os.path.join(CONTAINER_HOME, "jobs", task_id, self.self_role, "input")
+        base_dir = FATE_CONTAINER_HOME
+        if self.config.config.log and self.config.config.log.path:
+            base_dir = self.config.config.log.path
+        path = os.path.join(base_dir, "jobs", task_id, self.self_role, "input")
         os.makedirs(path, exist_ok=True)
         return path
 
     @property
     def task_output_dir(self):
         task_id = self.config.config.task_id
-        path = os.path.join(CONTAINER_HOME, "jobs", task_id, self.self_role, "output")
+        base_dir = FATE_CONTAINER_HOME
+        if self.config.config.log and self.config.config.log.path:
+            base_dir = self.config.config.log.path
+        path = os.path.join(base_dir, "jobs", task_id, self.self_role, "output")
         os.makedirs(path, exist_ok=True)
         return path
 
@@ -103,7 +107,7 @@ class BfiaWraps(WrapsABC):
 
     @property
     def data_home(self):
-        path = os.path.join(CONTAINER_HOME, "data")
+        path = os.path.join(FATE_CONTAINER_HOME, "data")
         os.makedirs(path, exist_ok=True)
         return path
 
@@ -131,7 +135,10 @@ class BfiaWraps(WrapsABC):
 
     def task_logs_dir(self, *args):
         task_id = self.config.config.task_id
-        path = os.path.join(CONTAINER_HOME, "logs", task_id, *args)
+        base_dir = FATE_CONTAINER_HOME
+        if self.config.config.log and self.config.config.log.path:
+            base_dir = self.config.config.log.path
+        path = os.path.join(base_dir, "logs",task_id, *args)
         os.makedirs(path, exist_ok=True)
         return path
 
@@ -144,6 +151,7 @@ class BfiaWraps(WrapsABC):
             config = self.preprocess()
             output_meta = self.run_component(config)
             self.push_output(output_meta)
+            print(output_meta)
             code = output_meta.status.code
             if output_meta.status.code != ReturnCode.Base.SUCCESS:
                 code = ReturnCode.Task.COMPONENT_RUN_FAILED
@@ -152,12 +160,17 @@ class BfiaWraps(WrapsABC):
         except Exception as e:
             traceback.format_exc()
             code = ReturnCode.Task.TASK_RUN_FAILED
+            print(e)
             logger.error(e)
         finally:
+            print(f"finish task with code {code}")
             self.report_status(code)
+            if code:
+                sys.exit(code)
 
     def preprocess(self):
         # set log
+        print("start preprocess")
         self._generate_logger_conf().install()
         logger = logging.getLogger(__name__)
 
@@ -187,9 +200,11 @@ class BfiaWraps(WrapsABC):
             task_name=self.config.runtime.component.name
         )
         logger.debug(config)
+        print(config)
         return config
 
     def run_component(self, config):
+        print("start run task")
         task_parameters = config.dict()
         logger.info("start run task")
         os.makedirs(self.task_input_dir, exist_ok=True)
@@ -198,7 +213,7 @@ class BfiaWraps(WrapsABC):
         task_result = os.path.join(self.task_output_dir, "task_result.yaml")
         with open(conf_path, "w") as f:
             yaml.dump(task_parameters, f)
-        self.backend.run(
+        p = self.backend.run(
             provider_name=ProviderName.FATE,
             task_info=self.task_info,
             engine_run={"cores": 4},
@@ -208,19 +223,23 @@ class BfiaWraps(WrapsABC):
             sync=True,
             config_dir=self.task_output_dir, std_dir=self.task_output_dir
         )
-        logger.info("finish task")
+        logger.info(f"finish task with code {p.returncode}")
+        print(f"finish task with code {p.returncode}")
+
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
                 try:
                     result = json.load(f)
                     output_meta = ComponentOutputMeta.parse_obj(result)
+                    if p.returncode != 0:
+                        output_meta.status.code = p.returncode
                     logger.debug(output_meta)
                 except:
-                    logger.error(f"Task run failed, you can see the task result file for details: {task_result}")
+                    raise RuntimeError(f"Task run failed, you can see the task result file for details: {task_result}")
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
-                exceptions=f"No found task output. Process exit code. "
+                exceptions=f"No found task output."
             ))
         return output_meta
 
@@ -294,16 +313,24 @@ class BfiaWraps(WrapsABC):
 
         # only data
         data = self.component_desc.component.input_artifacts.data
-
+        stage = ""
         if self.config.runtime.component.input:
             for name, address in self.config.runtime.component.input.items():
                 if name in data:
-                    self.stages = data[name].stages[0]
+                    # set stage
+                    stage = data[name].stages[0]
+                    if self.self_role not in data[name].roles:
+                        logger.info(f"role {self.self_role} does not rely on data {name} input")
+                        continue
                     path = os.path.join(self.data_home, address.namespace, address.name)
                     os.makedirs(os.path.dirname(path), exist_ok=True)
                     metadata = self.io.s3_to_local(address, path=path)
                     input_artifacts[name] = metadata
+        self._set_stage(stage)
         return input_artifacts
+
+    def _set_stage(self, stage):
+        self.stages = self.config.runtime.component.parameter.pop("stage", None) or stage or "train"
 
     def _generate_logger_conf(self):
         level = "DEBUG"
@@ -346,21 +373,22 @@ class BfiaWraps(WrapsABC):
         return code == 0
 
     def _push_data(self, output_key, output_data: ArtifactOutputSpec):
+        if output_data.consumed is False:
+            return
         logger.info("save data")
         meta = ArtifactInputApplySpec(
             metadata=Metadata(
-                metadata=dict(options=dict(partitions=DEFAULT_OUTPUT_DATA_PARTITIONS))
+                metadata=dict(options=dict(partitions=self._partitions))
             ),
             uri=""
         )
         meta.metadata.metadata["schema"] = output_data.metadata.metadata.get("schema", {})
         meta.metadata.source = output_data.metadata.source
         address = self.config.runtime.component.output.get(output_key)
-        # table = self.io.storage_session.create_table(name=address.name, namespace=address.namespace)
         path = output_data.uri.split("://")[1]
         logger.info(f"start upload {path} to s3")
         logger.info(f"namespace {address.namespace} name {address.name}")
-        self.io.upload_to_s3(path, address.name, address.namespace, metadata=meta.dict())
+        self.io.upload_to_s3(path, address.name, address.namespace, metadata=meta.metadata.dict())
 
     def _push_model(self, output_key, output_model: ArtifactOutputSpec):
         address = self.config.runtime.component.output.get(output_key)
@@ -447,15 +475,13 @@ class DataIo(object):
 
     def s3_to_local(self, address, path):
         table = self.storage_session.get_table(name=address.name, namespace=address.namespace)
-        with TemporaryDirectory() as output_tmp_dir:
-            temp_path = os.path.join(output_tmp_dir, str(uuid.uuid1()))
-            table.download(local_path=temp_path)
-            self._x_tar(temp_path, path)
+        table.download_data_to_local(local_path=path)
         schema = json.loads(table.meta_output()).get("metadata")
         if not schema:
             schema = {}
+        logger.debug(json.dumps(schema))
         metadata = Metadata(**schema)
-        partitions = metadata.metadata.get("options", {}).get("partitions", DEFAULT_OUTPUT_DATA_PARTITIONS)
+        self._partitions = metadata.metadata.get("options", {}).get("partitions", DEFAULT_OUTPUT_DATA_PARTITIONS)
         meta = ArtifactInputApplySpec(
             metadata=Metadata(
                 **schema
@@ -463,30 +489,9 @@ class DataIo(object):
             uri=f"{COMPUTING_ENGINE}:///{address.namespace}/{address.name}"
         )
         from fate.arch._standalone import _TableMetaManager
-        _TableMetaManager.add_table_meta(namespace=address.namespace, name=address.name, num_partitions=partitions)
+        _TableMetaManager.add_table_meta(namespace=address.namespace, name=address.name, num_partitions=self._partitions)
         return meta
 
     def upload_to_s3(self, path, name, namespace, metadata):
-        with TemporaryDirectory() as output_tmp_dir:
-            if os.path.isdir(path):
-                temp_path = os.path.join(output_tmp_dir, str(uuid.uuid1()))
-                self._tar(path, temp_path)
-                path = temp_path
-            table = self.storage_session.create_table(name, namespace, column_info=[], metadata=metadata)
-            table.upload(path)
-
-    @staticmethod
-    def _tar(source_directory,  target_archive):
-        with tarfile.open(fileobj=open(target_archive, "wb"), mode='w:gz') as tar:
-            for root, _, files in os.walk(source_directory):
-                for file in files:
-                    full_path = os.path.join(root, file)
-                    rel_path = os.path.relpath(full_path, source_directory)
-                    tar.add(full_path, rel_path)
-
-    @staticmethod
-    def _x_tar(path, download_path):
-        tar = tarfile.open(path, "r:gz")
-        file_names = tar.getnames()
-        for file_name in file_names:
-            tar.extract(file_name, download_path)
+        table = self.storage_session.create_table(name, namespace, column_info=[], metadata=metadata)
+        table.upload_local_data(path)

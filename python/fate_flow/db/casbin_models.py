@@ -19,6 +19,8 @@ import casbin
 import peewee as pw
 
 from fate_flow.db.base_models import singleton, DB
+from fate_flow.entity.types import ProcessRole
+from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import CASBIN_MODEL_CONF, CASBIN_TABLE_NAME, PERMISSION_TABLE_NAME, \
     PERMISSION_CASBIN_MODEL_CONF
 
@@ -239,5 +241,9 @@ class PermissionCasbin(object):
             raise Exception(f"{party_id}, {type}, {value} {e}")
 
 
-FATE_CASBIN = FateCasbin()
-PERMISSION_CASBIN = PermissionCasbin()
+if RuntimeConfig.PROCESS_ROLE == ProcessRole.DRIVER:
+    FATE_CASBIN = FateCasbin()
+    PERMISSION_CASBIN = PermissionCasbin()
+else:
+    FATE_CASBIN = None
+    PERMISSION_CASBIN = None

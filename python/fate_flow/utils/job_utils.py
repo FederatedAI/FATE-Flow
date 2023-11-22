@@ -25,7 +25,8 @@ from fate_flow.entity.types import TaskStatus
 from fate_flow.errors.server_error import InheritanceFailed
 from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.runtime.system_settings import LOG_DIR, JOB_DIR, WORKERS_DIR
-from fate_flow.utils.base_utils import fate_uuid
+from fate_flow.utils.base_utils import fate_uuid, current_timestamp
+from fate_flow.utils.log_utils import schedule_logger
 
 
 class JobIdGenerator(object):
@@ -172,3 +173,13 @@ def inheritance_check(inheritance: InheritConfSpec = None):
                 task_status=task_status[task_name],
                 detail=f"task status need in [{TaskStatus.SUCCESS}, {TaskStatus.PASS}]"
             )
+
+
+def check_task_is_timeout(task: Task):
+    now_time = current_timestamp()
+    running_time = (now_time - task.f_create_time)/1000
+    if task.f_timeout and running_time > task.f_timeout:
+        schedule_logger(task.f_job_id).info(f'task {task.f_task_name} run time {running_time}s timeout')
+        return True
+    else:
+        return False

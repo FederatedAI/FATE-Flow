@@ -1,0 +1,111 @@
+{
+    "flow_id": "",
+    "dag": {
+        "components": [
+            {
+                "name": "psi_0",
+                "componentName": "psi",
+                "provider": "fate",
+                "version": "2.0.0",
+                "input": [],
+                "output": [
+                    {
+                        "type": "dataset",
+                        "key": "output_data"
+                    },
+                    {
+                        "type": "report",
+                        "key": "metric"
+                    }
+                ]
+            },
+            {
+                "name": "sbt_0",
+                "componentName": "hetero_sbt",
+                "provider": "fate",
+                "version": "2.0.0",
+                "input": [{
+                        "type": "dataset",
+                        "key": "psi_0.output_data"
+                    }],
+                "output": [
+                    {
+                        "type": "dataset",
+                        "key": "train_data_output"
+                    },
+                    {
+                        "type": "model",
+                        "key": "train_model_output"
+                    },
+                    {
+                        "type": "report",
+                        "key": "metric"
+                    }
+                ]
+            }
+        ],
+        "version": "2.0"
+    },
+    "config": {
+        "initiator": {
+            "role": "guest",
+            "node_id": "JG0100001100000010"
+        },
+        "role": {
+            "guest": [
+                "JG0100001100000010"
+            ],
+            "host": [
+                "JG0100001100000010"
+            ]
+        },
+        "job_params": {
+            "common": {
+                "sync_type": "poll"
+            },
+            "guest": {
+                "0": {
+                    "resources": {
+                        "cpu": -1,
+                        "memory": -1,
+                        "disk": -1
+                    }
+                }
+            },
+            "host": {
+                "0": {
+                    "resources": {
+                        "cpu": -1,
+                        "memory": -1,
+                        "disk": -1
+                    }
+                }
+            }
+        },
+        "task_params": {
+            "common": {
+                "psi_0":{
+                },
+                "sbt_0": {
+                }
+            },
+            "guest": {
+                "0": {
+                    "psi_0": {
+                        "name": "guest",
+                        "namespace": "test_data"
+                    }
+                }
+            },
+            "host": {
+                "0": {
+                    "psi_0": {
+                        "name": "host",
+                        "namespace": "test_data"
+                    }
+                }
+            }
+        },
+        "version": "2.0.0"
+    }
+}

@@ -3,7 +3,7 @@
     "dag": {
         "components": [
             {
-                "name": "intersect_rsa_1",
+                "name": "psi_0",
                 "componentName": "psi",
                 "provider": "fate",
                 "version": "2.0.0",
@@ -12,6 +12,30 @@
                     {
                         "type": "dataset",
                         "key": "output_data"
+                    },
+                    {
+                        "type": "report",
+                        "key": "metric"
+                    }
+                ]
+            },
+            {
+                "name": "lr_0",
+                "componentName": "coordinated_lr",
+                "provider": "fate",
+                "version": "2.0.0",
+                "input": [{
+                        "type": "dataset",
+                        "key": "psi_0.output_data"
+                    }],
+                "output": [
+                    {
+                        "type": "dataset",
+                        "key": "train_output_data"
+                    },
+                    {
+                        "type": "model",
+                        "key": "output_model"
                     },
                     {
                         "type": "report",
@@ -63,20 +87,24 @@
         },
         "task_params": {
             "common": {
+                "psi_0":{
+                },
+                "lr_0": {
+                }
             },
             "guest": {
                 "0": {
-                    "intersect_rsa_1": {
+                    "psi_0": {
                         "name": "guest",
-                        "namespace": "guest"
+                        "namespace": "test_data"
                     }
                 }
             },
             "host": {
                 "0": {
-                    "intersect_rsa_1": {
+                    "psi_0": {
                         "name": "host",
-                        "namespace": "host"
+                        "namespace": "test_data"
                     }
                 }
             }
