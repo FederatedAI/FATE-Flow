@@ -99,6 +99,7 @@ class UploadParam(Param):
             head=1,
             partitions=10,
             extend_sid=False,
+            is_temp_file=False,
             address: dict = {},
             meta: dict = {}
     ):
@@ -111,6 +112,7 @@ class UploadParam(Param):
         self.extend_sid = extend_sid
         self.meta = MetaParam(**meta)
         self.storage_address = address
+        self.is_temp_file = is_temp_file
 
 
 class Upload:

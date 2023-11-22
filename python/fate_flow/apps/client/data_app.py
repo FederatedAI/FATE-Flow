@@ -13,15 +13,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import json
 from webargs import fields
-
+from flask import request
 from fate_flow.apps.desc import SERVER_FILE_PATH, HEAD, PARTITIONS, META, EXTEND_SID, NAMESPACE, NAME, DATA_WAREHOUSE, \
     DROP, SITE_NAME
 from fate_flow.engine import storage
 from fate_flow.manager.components.component_manager import ComponentManager
 from fate_flow.manager.outputs.data import DataManager
 from fate_flow.utils.api_utils import API
-from fate_flow.errors.server_error import NoFoundTable
+from fate_flow.errors.server_error import NoFoundTable, NoFoundFile
 
 page_name = "data"
 
@@ -38,6 +39,24 @@ def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_
     result = ComponentManager.upload(
         file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
     )
+    return API.Output.json(**result)
+
+
+@manager.route('/component/upload/file', methods=['POST'])
+@API.Input.form(head=fields.Bool(required=True), desc=HEAD)
+@API.Input.form(partitions=fields.Integer(required=True), desc=PARTITIONS)
+@API.Input.form(meta=fields.String(required=True), desc=META)
+@API.Input.form(extend_sid=fields.Bool(required=False), desc=EXTEND_SID)
+@API.Input.form(namespace=fields.String(required=False), desc=NAMESPACE)
+@API.Input.form(name=fields.String(required=False), desc=NAME)
+def upload_file(head, partitions, meta, namespace=None, name=None, extend_sid=False):
+
+    file = request.files.get('file')
+    if not file:
+        raise NoFoundFile()
+    result = ComponentManager.upload_file(file=file, head=head, partitions=partitions, meta=json.loads(meta), namespace=namespace, name=name,
+                                 extend_sid=extend_sid)
+
     return API.Output.json(**result)
 
 
