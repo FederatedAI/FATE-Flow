@@ -18,12 +18,11 @@ import requests
 import importlib
 
 from ofx.api.models.fate_flow.resource import APIClient
-from fate_flow.runtime.system_settings import THIRD_PARTY
 
 FEDERATED_ERROR = 104
 
 
-class CommonApiClient(APIClient):
+class KusciaApiClient(APIClient):
 
     def __init__(self, client_cert=None, client_key=None, veritfy=None, token=None, restful=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -46,7 +45,7 @@ class CommonApiClient(APIClient):
         if not self.remote_host and not self.remote_port:
             raise Exception(
                 f'{self.remote_protocol} coordination communication protocol need remote host and remote port.')
-        package = f"fate_flow.adapt.{THIRD_PARTY}.settings"
+        package = f"fate_flow.adapt.kuscia.settings"
         _url = getattr(importlib.import_module(package), "URLS")
         endpoint = _url[endpoint]
         url = self.base_url + endpoint
@@ -70,34 +69,6 @@ class CommonApiClient(APIClient):
                     raise Exception(response.text)
 
 
-class BaseAPI:
-    def __init__(self, client: CommonApiClient, callback=None):
-        self.client = client
-        self.callback = callback
 
-    def federated_command(self, endpoint, body, federated_response, method='POST',
-                          token=None):
-        try:
-            headers = {}
-            if token:
-                headers["token"] = token
-            response = self.client.remote_on_http(
-                                          method=method,
-                                          endpoint=endpoint,
-                                          json_body=body if body else {})
-        except Exception as e:
-            response = {
-                "code": 104,
-                "message": "Federated schedule error, {}".format(e)
-            }
-        return response
-
-    def job_command(self, endpoint, method, body=None):
-        federated_response = {}
-        if not body:
-            body = {}
-        args = (endpoint, body, federated_response, method)
-        federated_response = self.federated_command(*args)
-        return federated_response
 
 
