@@ -138,9 +138,9 @@ class Translator(object):
 
             if bfia_task.input:
                 input_keys = dict()
-                for input_dict in component_spec.inputData:
-                    input_type = cls.get_source_type(input_dict["category"])
-                    input_name = input_dict["name"]
+                for input_spec in component_spec.inputData:
+                    input_type = cls.get_source_type(input_spec.category)
+                    input_name = input_spec.name
                     if input_type not in input_keys:
                         input_keys[input_type] = []
 
@@ -167,9 +167,9 @@ class Translator(object):
 
             if bfia_task.output:
                 output_keys = dict()
-                for output_dict in component_spec.outputData:
-                    output_name = output_dict["name"]
-                    output_type = cls.get_source_type(output_dict["category"])
+                for output_spec in component_spec.outputData:
+                    output_name = output_spec.name
+                    output_type = cls.get_source_type(output_spec.category)
 
                     if output_type not in output_keys:
                         output_keys[output_type] = []
@@ -258,23 +258,34 @@ class Translator(object):
         for task_name, params in party_task_params.items():
             task_spec = PartyTaskRefSpec()
             params = copy.deepcopy(params)
-            if "name" in params and "namespace" in params:
+            if ("name" in params and "namespace" in params) or "dataset_id" in params:
                 """
                 bfia support only single input yet
                 """
-                name = params.pop("name")
-                namespace = params.pop("namespace")
                 component_ref = tasks[task_name].component_ref
-                input_name = component_specs[component_ref].inputData[0]["name"]
+                input_name = component_specs[component_ref].inputData[0].name
 
-                task_spec.inputs = SourceInputArtifacts(
-                    data={
-                        input_name:
-                            {
-                                "data_warehouse": DataWarehouseChannelSpec(namespace=namespace, name=name)
-                            }
-                    }
-                )
+                if "name" in params:
+                    name = params.pop("name")
+                    namespace = params.pop("namespace")
+                    task_spec.inputs = SourceInputArtifacts(
+                        data={
+                            input_name:
+                                {
+                                    "data_warehouse": DataWarehouseChannelSpec(namespace=namespace, name=name)
+                                }
+                        }
+                    )
+                else:
+                    dataset_id = params.pop("dataset_id")
+                    task_spec.inputs = SourceInputArtifacts(
+                        data={
+                            input_name:
+                                {
+                                    "data_warehouse": DataWarehouseChannelSpec(dataset_id=dataset_id)
+                                }
+                        }
+                    )
 
                 party_task_specs[task_name] = task_spec
 
@@ -349,8 +360,10 @@ class Translator(object):
 
                     if party_task_spec.inputs and party_task_spec.inputs.data:
                         data_warehouse = list(party_task_spec.inputs.data.values())[0]["data_warehouse"]
-                        party_conf[task_name]["name"] = data_warehouse.name
-                        party_conf[task_name]["namespace"] = data_warehouse.namespace
+                        if data_warehouse.name and data_warehouse.namespace:
+                            party_conf[task_name]["dataset_id"] = "#".join(
+                                [data_warehouse.namespace, data_warehouse.name]
+                            )
 
                 if role not in party_task_params:
                     party_task_params[role] = dict()
@@ -381,8 +394,8 @@ class Translator(object):
                 inputs = []
                 if task_spec.inputs:
                     for input_desc in component_spec.inputData:
-                        input_type = cls.get_source_type(input_desc["category"])
-                        input_key = input_desc["name"]
+                        input_type = cls.get_source_type(input_desc.category)
+                        input_key = input_desc.name
 
                         input_artifact_specs = getattr(task_spec.inputs, input_type, {})
                         if not input_artifact_specs or input_key not in input_artifact_specs:
@@ -401,8 +414,8 @@ class Translator(object):
                 outputs = []
                 if task_spec.outputs:
                     for output_desc in component_spec.outputData:
-                        output_type = cls.get_source_type(output_desc["category"])
-                        output_key = output_desc["name"]
+                        output_type = cls.get_source_type(output_desc.category)
+                        output_key = output_desc.name
 
                         output_artifacts = getattr(task_spec.outputs, output_type, {})
                         if not output_artifacts or output_key not in output_artifacts:

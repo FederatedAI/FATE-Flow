@@ -66,7 +66,11 @@ class BfiaTaskParser(TaskParser):
         for type, upstream_input in self.task_node.upstream_inputs.get(self.role, {}).get(self.party_id, {}).items():
             for key, channel in upstream_input.items():
                 if isinstance(channel, DataWarehouseChannelSpec):
-                    inputs[key] = ArtifactAddress(name=channel.name, namespace=channel.namespace)
+                    if channel.dataset_id:
+                        namespace, name = channel.dataset_id.split("#")
+                    else:
+                        namespace, name = channel.namespace, channel.name
+                    inputs[key] = ArtifactAddress(name=name, namespace=namespace)
                 elif isinstance(channel, RuntimeTaskOutputChannelSpec):
                     metas = OutputMeta.query(
                         job_id=self.job_id, role=self.role, party_id=self.party_id,
