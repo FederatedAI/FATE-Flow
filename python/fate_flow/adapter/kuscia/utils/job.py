@@ -1,22 +1,19 @@
 
 from fate_flow.adapter.bfia.utils.entity.code import ReturnCode
-from fate_flow.adapter.bfia.utils.entity.status import JobStatus
-
-from fate_flow.adapter.federated import CommonFederated
+from fate_flow.entity.types import JobStatus
+from fate_flow.adapter.kuscia.federated import Federated
 from fate_flow.db import Job, Task
 from fate_flow.manager.operation.job_saver import JobSaver
-
 from fate_flow.utils.job_utils import generate_job_id
 from fate_flow.utils.log_utils import schedule_logger
-from fate_flow.runtime.system_settings import THIRD_PARTY
 
-from ..spec.job import DagSchemaSpec
+from fate_flow.adapter.kuscia.spec.job import DagSchemaSpec
 
 
 class JobController(object):
 
     @classmethod
-    def create_job(cls, dag_schema):
+    def request_create_job(cls, dag_schema):
         job_id = generate_job_id()
         dag_schema = DagSchemaSpec(**dag_schema)
         schedule_logger(job_id).info(f"create job {job_id}")
@@ -29,10 +26,10 @@ class JobController(object):
         job.f_parties = cls.get_job_parties(dag_schema)
         job.f_initiator_party_id = ""
         job.f_scheduler_party_id = ""
-        job.f_status = JobStatus.PENDING
+        job.f_status = JobStatus.WAITING
         job.f_model_id = job_id
         job.f_model_version = "0"
-        job.f_module_name = THIRD_PARTY
+        job.f_module_name = dag_schema.kind
         JobSaver.create_job(job_info=job.to_human_model_dict())
 
         schedule_logger(job_id).info("start request create job")
@@ -43,10 +40,10 @@ class JobController(object):
             "max_parallelism": dag_schema.spec.maxParallelism,
             "tasks": tasks
         }
-        resp = CommonFederated.create_job(command_body=job_info)
+        resp = Federated.create_job(command_body=job_info)
         schedule_logger(job_id).info(f"response: {resp}")
         if resp and isinstance(resp, dict) and resp.get("code") == ReturnCode.SUCCESS:
-            job.f_status = JobStatus.FINISHED
+            job.f_status = JobStatus.SUCCESS
             JobSaver.create_job(job_info=job.to_human_model_dict())
             return job_id
         else:
@@ -56,32 +53,26 @@ class JobController(object):
     def query_job_status(cls, job_id):
 
         jobs = JobSaver.query_job(job_id=job_id)
-        if jobs[0].f_status != JobStatus.FINISHED:
-            resp = CommonFederated.query_job(command_body={"job_id": job_id})
+        if jobs[0].f_status != JobStatus.SUCCESS:
+            resp = Federated.query_job(command_body={"job_id": job_id})
 
         return {"status": jobs[0].f_status}
 
     @classmethod
     def query_job_batch(cls, job_ids: list):
-        resp = CommonFederated.query_job_batch(command_body={"job_ids": job_ids})
+        resp = Federated.query_job_batch(command_body={"job_ids": job_ids})
         return resp
 
     @classmethod
-    def stop_job(cls, job_id):
-        resp = CommonFederated.stop_job(command_body={"job_id": job_id})
-
+    def request_stop_job(cls, job_id):
         jobs = JobSaver.query_job(job_id=job_id)
         if not jobs:
             raise RuntimeError("No found jobs")
 
         schedule_logger(job_id).info(f"request stop job")
-        response = CommonFederated.stop_job(command_body={"job_id": job_id})
+        response = Federated.stop_job(command_body={"job_id": job_id})
         schedule_logger(job_id).info(f"stop job response: {response}")
         return response
-
-    @classmethod
-    def update_job(cls, job_info):
-        return JobSaver.update_job(job_info=job_info)
 
     @staticmethod
     def get_job_parties(dag_schema: DagSchemaSpec):
@@ -93,7 +84,7 @@ class JobController(object):
 
     @staticmethod
     def get_job_tasks(tasks):
-        task_lst = []
+        task_list = []
         for task in tasks:
             dct = {
                 "app_image": task.appImage,
@@ -105,5 +96,9 @@ class JobController(object):
             }
             if task.dependencies:
                 dct["dependencies"] = task.dependencies
-            task_lst.append(dct)
-        return task_lst
+            task_list.append(dct)
+        return task_list
+
+    # @classmethod
+    # def update_job(cls, job_info):
+    #     return JobSaver.update_job(job_info=job_info)

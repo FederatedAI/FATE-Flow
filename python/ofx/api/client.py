@@ -117,34 +117,6 @@ class BfiaSchedulerApi(BaseApi):
         return PROTOCOL.BFIA
 
 
-class CommonSchedulerApi(BaseApi):
-    """
-    A client for communicating with a kuscia server.
-    """
-    def __init__(self, host="127.0.0.1", port=9380, protocol="http", api_version=None, timeout=60,
-                 remote_protocol="http", remote_host=None, remote_port=None, grpc_channel="default",
-                 client_cert=None, client_key=None,client_ca=None, veritfy=None, token=None, restful=False,
-                 callback=None):
-        from .models.common_module.resource import CommonApiClient
-        self.client = CommonApiClient(
-            remote_host=remote_host,
-            remote_port=remote_port,
-            client_cert=client_cert,
-            client_key=client_key,
-            client_ca=client_ca,
-            veritfy=veritfy,
-            token=token,
-            restful=restful,
-
-        )
-        self.callback = callback
-
-    @property
-    def federated(self):
-        from .models.common_module.federated import Federated
-        return Federated(client=self.client, callback=self.callback)
-
-
 def load_schedule_clients(**kwargs):
     clients = {}
     for obj in [FlowSchedulerApi]:

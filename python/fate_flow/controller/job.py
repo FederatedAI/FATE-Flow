@@ -15,6 +15,8 @@
 #
 import os
 import shutil
+import functools
+import importlib
 from copy import deepcopy
 
 from fate_flow.controller.task import TaskController
@@ -38,8 +40,25 @@ from fate_flow.utils.job_utils import get_job_log_directory, save_job_dag
 from fate_flow.utils.log_utils import schedule_logger
 
 
+class Adapter(object):
+    @staticmethod
+    def fun(func):
+        @functools.wraps(func)
+        def _wrapper(*args, **kwargs):
+            dag_schema = args[0]
+            schema = DAGSchema(**dag_schema)
+            module_name = schema.kind
+            package = f'fate_flow.adapter.{module_name}.utils.job'
+            if hasattr(importlib.import_module(package), func.__name__):
+                return getattr(importlib.import_module(package), func.__name__)
+            else:
+                return func(*args, **kwargs)
+        return _wrapper
+
+
 class JobController(object):
     @classmethod
+    @Adapter.fun
     def request_create_job(cls, dag_schema: dict, user_name: str = None, is_local=False):
         schema = DAGSchema(**dag_schema)
         cls.update_job_default_params(schema, is_local=is_local)
@@ -56,6 +75,7 @@ class JobController(object):
         return response
 
     @classmethod
+    @Adapter.fun
     def request_stop_job(cls, job_id):
         schedule_logger(job_id).info(f"stop job on this party")
         jobs = JobSaver.query_job(job_id=job_id)
