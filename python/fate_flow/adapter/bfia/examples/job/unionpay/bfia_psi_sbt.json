@@ -138,16 +138,14 @@
             "guest": {
                 "0": {
                     "intersect_rsa_1": {
-                        "name": "test_guest",
-                        "namespace": "testspace"
+                        "dataset_id": "testspace#test_guest"
                     }
                 }
             },
             "host": {
                 "0": {
                     "intersect_rsa_1": {
-                        "name": "test_host",
-                        "namespace": "testspace"
+                        "dataset_id": "testspace#test_host"
                     }
                 }
             }

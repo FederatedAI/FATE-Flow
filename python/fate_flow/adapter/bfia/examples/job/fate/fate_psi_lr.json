@@ -95,16 +95,14 @@
             "guest": {
                 "0": {
                     "psi_0": {
-                        "name": "guest",
-                        "namespace": "test_data"
+                        "dataset_id": "test_data#guest"
                     }
                 }
             },
             "host": {
                 "0": {
                     "psi_0": {
-                        "name": "host",
-                        "namespace": "test_data"
+                        "dataset_id": "test_data#host"
                     }
                 }
             }
