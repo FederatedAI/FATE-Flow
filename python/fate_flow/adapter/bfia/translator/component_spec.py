@@ -16,6 +16,13 @@ from pydantic import BaseModel
 from typing import Optional, Dict, List, Literal
 
 
+class DataSpec(BaseModel):
+    name: str
+    description: str
+    category: str
+    dataFormat: List[str]
+
+
 class BFIAComponentSpec(BaseModel):
     componentName: str
     title: str
@@ -26,5 +33,5 @@ class BFIAComponentSpec(BaseModel):
     desVersion: str
     storageEngine: List[str]
     inputParam: Optional[List[Dict]]
-    inputData: Optional[List[Dict]]
-    outputData: Optional[List[Dict]]
+    inputData: Optional[List[DataSpec]]
+    outputData: Optional[List[DataSpec]]
