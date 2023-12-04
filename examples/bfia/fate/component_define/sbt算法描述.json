@@ -1,0 +1,245 @@
+{
+      "componentName": "hetero_sbt",
+      "title": "sbt",
+      "provider": "fate",
+      "version": "2.0.0",
+      "description": "XGBoost算法",
+      "roleList": [
+        "guest",
+        "host"
+      ],
+      "desVersion": "2.0.0",
+      "storageEngine": [
+        "s3",
+        "hdfs",
+        "eggroll"
+      ],
+      "inputParam": [
+        {
+          "name": "num_trees",
+          "title": "",
+          "description": "",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": 3,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "learning_rate",
+          "title": "",
+          "description": "",
+          "type": "float",
+          "optional": "true",
+          "defaultValue": 0.3,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "max_depth",
+          "title": "",
+          "description": "max depth of a tree",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": 3,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "max_bin",
+          "title": "",
+          "description": "max bin number of feature binning",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": 32,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "objective",
+          "title": "",
+          "description": "",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": "binary:bce",
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "num_class",
+          "title": "",
+          "description": "",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": 2,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "l2",
+          "title": "",
+          "description": "L2 regularization",
+          "type": "float",
+          "optional": "true",
+          "defaultValue": 0.1,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "min_impurity_split",
+          "title": "",
+          "description": "min impurity when splitting a tree node",
+          "type": "float",
+          "optional": "true",
+          "defaultValue": 1e-2,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "min_sample_split",
+          "title": "",
+          "description": "min sample to split a tree node",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": 2,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "min_leaf_node",
+          "title": "",
+          "description": "mininum sample contained in a leaf node",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": 1,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "min_child_weight",
+          "title": "",
+          "description": "minumum hessian contained in a leaf node",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": 1,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "gh_pack",
+          "title": "",
+          "description": "whether to pack gradient and hessian together",
+          "type": "bool",
+          "optional": "true",
+          "defaultValue": true,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "split_info_pack",
+          "title": "",
+          "description": "for host side, whether to pack split info together",
+          "type": "bool",
+          "optional": "true",
+          "defaultValue": true,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "hist_sub",
+          "title": "",
+          "description": "whether to use histogram subtraction",
+          "type": "bool",
+          "optional": "true",
+          "defaultValue": true,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "he_param",
+          "title": "",
+          "description": "whether to use histogram subtraction",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": "{'kind': 'paillier', 'key_length': 1024}",
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        }
+      ],
+      "inputData": [
+        {
+          "name": "train_data",
+          "description": "训练集数据",
+          "category": "dataset",
+          "dataFormat": [
+            "dataset"
+          ]
+        }
+      ],
+      "outputData": [
+        {
+          "name": "train_data_output",
+          "description": "训练集数据",
+          "category": "dataset",
+          "dataFormat": [
+            "dataset"
+          ]
+        },
+        {
+          "name": "train_model_output",
+          "description": "输出模型",
+          "category": "model",
+          "dataFormat": [
+            "json"
+          ]
+        },
+        {
+          "name": "metric",
+          "description": "对齐数",
+          "category": "report",
+          "dataFormat": [
+            "json"
+          ]
+        }
+      ],
+      "result": [
+        {
+          "resultCode": "00000000",
+          "resultMessage": "成功"
+        },
+        {
+          "resultCode": "99999999",
+          "resultMessage": "算法执行失败"
+        }
+      ]
+    }

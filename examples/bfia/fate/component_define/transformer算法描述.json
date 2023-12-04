@@ -1,0 +1,93 @@
+{
+      "componentName": "dataframe_transformer",
+      "title": "dataframe transformer",
+      "provider": "fate",
+      "version": "2.0.0",
+      "description": "数据转换",
+      "roleList": [
+        "guest",
+        "host"
+      ],
+      "desVersion": "2.0.0",
+      "storageEngine": [
+        "s3",
+        "hdfs",
+        "eggroll"
+      ],
+      "inputParam": [
+        {
+          "name": "namespace",
+          "title": "",
+          "description": "namespace",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": null,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "name",
+          "title": "",
+          "description": "name",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": null,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "site_name",
+          "title": "",
+          "description": "site name",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": null,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        }
+      ],
+      "inputData": [
+        {
+          "name": "table",
+          "description": "upload数据集",
+          "category": "dataset",
+          "dataFormat": [
+            "dataset"
+          ]
+        }
+      ],
+      "outputData": [
+        {
+          "name": "dataframe_output",
+          "description": "dataframe数据集",
+          "category": "dataset",
+          "dataFormat": [
+            "dataset"
+          ]
+        },
+        {
+          "name": "metric",
+          "description": "metric",
+          "category": "report",
+          "dataFormat": [
+            "json"
+          ]
+        }
+      ],
+      "result": [
+        {
+          "resultCode": "00000000",
+          "resultMessage": "成功"
+        },
+        {
+          "resultCode": "99999999",
+          "resultMessage": "算法执行失败"
+        }
+      ]
+    }

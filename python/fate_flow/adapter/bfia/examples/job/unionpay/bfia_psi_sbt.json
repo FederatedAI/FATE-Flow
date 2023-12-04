@@ -1,5 +1,5 @@
 {
-    "flow_id": "flow_0cc3b89e9ab14c938feb6242a001a21b",
+    "flow_id": "",
     "dag": {
         "components": [
             {
@@ -59,14 +59,14 @@
     "config": {
         "initiator": {
             "role": "guest",
-            "node_id": "JG0100001100000000"
+            "node_id": "JG0100001100000010"
         },
         "role": {
             "guest": [
-                "JG0100001100000000"
+                "JG0100001100000010"
             ],
             "host": [
-                "JG0100001100000000"
+                "JG0100001100000010"
             ]
         },
         "job_params": {
