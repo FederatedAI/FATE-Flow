@@ -1,3 +1,6 @@
+from fate_flow.runtime.system_settings import PARTY_ID
+
+LOCAL_SITE_ID = PARTY_ID
 STORAGE_NAME = "s3"
 STORAGE_ADDRESS = "s3://127.0.0.1:9000?username=admin&password=12345678"
 TRANSPORT = "127.0.0.1:9377"
