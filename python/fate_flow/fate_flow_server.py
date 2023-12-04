@@ -21,7 +21,6 @@ import traceback
 import grpc
 from werkzeug.serving import run_simple
 
-from fate_flow.adapter import init_adapter
 from fate_flow.apps import app
 from fate_flow.manager.service.config_manager import ConfigManager
 from fate_flow.hook import HookManager
@@ -60,7 +59,12 @@ def server_init():
     if "win" not in sys.platform.lower():
         signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
 
-    init_adapter()
+    # init adapter
+    try:
+        from fate_flow.adapter import init_adapter
+        init_adapter()
+    except Exception as ex:
+        stat_logger.exception(ex)
 
     # init db
     init_flow_db()

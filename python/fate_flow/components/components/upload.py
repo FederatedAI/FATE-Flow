@@ -154,7 +154,8 @@ class Upload:
                     "namespace": namespace
                 }
                 if storage_engine == StorageEngine.STANDALONE:
-                    upload_address.update({"home": STANDALONE_DATA_HOME})
+                    home = os.getenv("STANDALONE_DATA_HOME") or STANDALONE_DATA_HOME
+                    upload_address.update({"home": home})
             elif storage_engine in {StorageEngine.HDFS, StorageEngine.FILE}:
                 upload_address = {
                     "path": DatasetManager.upload_data_path(
@@ -187,7 +188,7 @@ class Upload:
             logging.info("file: {}".format(self.parameters.file))
             logging.info("total data_count: {}".format(data_table_count))
             logging.info("table name: {}, table namespace: {}".format(name, namespace))
-            return {"name": name, "namespace": namespace, "count": data_table_count}
+            return {"name": name, "namespace": namespace, "count": data_table_count, "data_meta": self.data_meta}
 
     def save_data_table(self, job_id):
         input_file = self.parameters.file

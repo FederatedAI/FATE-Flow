@@ -60,46 +60,18 @@ class EggrollDeepspeedEngine(LocalEngine):
 
     def run(self,  task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):
         schedule_logger(task.f_job_id).info("start to submit deepspeed task")
-        session_id = self.generate_session_id()
-        worker_id = uuid1().hex
-        world_size = task.f_launcher_conf.get("cores")
-        timeout = task.f_launcher_conf.get("timeout", 21600)
-        task_info = {
-            "job_id": task.f_job_id,
-            "role": task.f_role,
-            "party_id": task.f_party_id,
-            "task_id": task.f_task_id,
-            "task_version": task.f_task_version
-        }
-        process_cmd, pid = self.submit(task_info, world_size, timeout, run_parameters_path, session_id, log_dir=log_dir)
-        WorkerManager.save_worker_info(task=task, worker_name=WorkerName.TASK_SUBMIT, worker_id=worker_id,
-                                       run_ip=RuntimeConfig.JOB_SERVER_HOST, run_pid=pid, cmd=process_cmd)
-        schedule_logger(task.f_job_id).info("done!")
-        return {"worker_id": session_id, "run_pid": pid, "cmd": process_cmd}
-
-    @staticmethod
-    def submit(task_info, world_size, timeout, task_conf_path, session_id, log_dir):
-        from fate_flow.manager.worker.deepspeed_executor import Submit
-
-        conf_dir = job_utils.get_job_directory(job_id=task_info.get("job_id"))
-        os.makedirs(conf_dir, exist_ok=True)
-        process_cmd = [
-            sys.executable or 'python3',
-            sys.modules[Submit.__module__].__file__,
-            '--task_info', json.dumps(task_info),
-            '--session_id', session_id,
-            '--task_config', task_conf_path,
-            "--world_size", world_size,
-            "--timeout", timeout
-        ]
-        p = process_utils.run_subprocess(
-            job_id=task_info.get("job_id"),
-            config_dir=conf_dir,
-            process_cmd=process_cmd,
-            process_name=WorkerName.TASK_SUBMIT,
-            std_dir=log_dir
+        session_id = run_parameters.get("party_task_id")
+        run_info = WorkerManager.start_task_worker(
+            worker_name=WorkerName.TASK_ENTRYPOINT,
+            task_info=task.to_human_model_dict(),
+            extra_env={"PYTHONPATH": self.provider.python_path},
+            executable=[self.provider.python_env],
+            common_cmd=self.generate_cmd(),
+            task_parameters=run_parameters,
+            record=True
         )
-        return process_cmd, p.pid
+        run_info["worker_id"] = session_id
+        return run_info
 
     def cleanup(self, task: Task):
         self.kill(task.f_worker_id)

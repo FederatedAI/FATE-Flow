@@ -188,7 +188,7 @@ class TaskParser(object):
 
     @property
     def timeout(self):
-        return self.task_runtime_conf.get("timeout", None)
+        return self.task_runtime_conf.get("timeout", JobDefaultConfig.task_timeout)
 
     @property
     def provider_name(self):
