@@ -43,7 +43,7 @@ def get_project_base_directory(*args):
 
 def get_fate_python_path():
     global FATE_PYTHON_PATH
-    if FATE_PYTHON_PATH is None:
+    if not FATE_PYTHON_PATH:
         FATE_PYTHON_PATH = get_project_base_directory("fate", "python")
         if not os.path.exists(FATE_PYTHON_PATH):
             FATE_PYTHON_PATH = get_project_base_directory("python")
