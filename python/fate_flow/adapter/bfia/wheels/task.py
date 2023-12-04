@@ -13,7 +13,7 @@ from fate_flow.db import Task
 from fate_flow.engine.devices.container import ContainerdEngine
 from fate_flow.entity.types import PROTOCOL, LauncherType
 from fate_flow.manager.service.provider_manager import ProviderManager
-from fate_flow.runtime.system_settings import PARTY_ID
+from fate_flow.adapter.bfia.settings import LOCAL_SITE_ID as PARTY_ID
 from fate_flow.utils import job_utils
 from fate_flow.utils.log_utils import schedule_logger
 

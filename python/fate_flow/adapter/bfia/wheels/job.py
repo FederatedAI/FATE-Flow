@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+from fate_flow.adapter.bfia.settings import LOCAL_SITE_ID as PARTY_ID
 from fate_flow.adapter.bfia.utils.entity.code import ReturnCode
 from fate_flow.adapter.bfia.utils.entity.status import TaskStatus, JobStatus, EndStatus
 from fate_flow.adapter.bfia.utils.spec.job import DagSchemaSpec
@@ -7,7 +8,6 @@ from fate_flow.adapter.bfia.wheels.federated import BfiaFederatedScheduler
 from fate_flow.adapter.bfia.wheels.task import BfiaTaskController
 from fate_flow.db import Job
 from fate_flow.adapter.bfia.wheels.saver import BfiaJobSaver as JobSaver
-from fate_flow.runtime.system_settings import PARTY_ID
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.job_utils import save_job_dag, generate_job_id
 from fate_flow.utils.log_utils import schedule_logger

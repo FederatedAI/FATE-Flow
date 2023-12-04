@@ -1,6 +1,7 @@
 import os.path
 
-from fate_flow.runtime.system_settings import HOST, HTTP_PORT, PARTY_ID
+from fate_flow.runtime.system_settings import HOST, HTTP_PORT
+from fate_flow.adapter.bfia.settings import LOCAL_SITE_ID as PARTY_ID
 from fate_flow.settings import HTTP_REQUEST_TIMEOUT
 from fate_flow.utils.file_utils import load_yaml_conf
 from ofx.api.client import BfiaSchedulerApi
