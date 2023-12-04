@@ -88,13 +88,18 @@ def get_job_log_directory(job_id, *args):
     return os.path.join(LOG_DIR, job_id, *args)
 
 
-def get_task_directory(job_id, role, party_id, task_name, task_version, input=False, output=False, **kwargs):
-    if input:
-        return get_job_directory(job_id, role, party_id, task_name, str(task_version), "input")
-    if output:
-        return get_job_directory(job_id, role, party_id, task_name, str(task_version), "output")
+def get_task_directory(job_id, role, party_id, task_name, task_version, input=False, output=False, abspath=True, **kwargs):
+    if abspath:
+        base_path = get_job_directory(job_id)
     else:
-        return get_job_directory(job_id, role, party_id, task_name, str(task_version))
+        base_path = f"./{job_id}"
+
+    if input:
+        return os.path.join(base_path, role, party_id, task_name, str(task_version), "input")
+    if output:
+        return os.path.join(base_path, role, party_id, task_name, str(task_version), "output")
+    else:
+        return os.path.join(base_path, role, party_id, task_name, str(task_version))
 
 
 def get_general_worker_directory(worker_name, worker_id, *args):

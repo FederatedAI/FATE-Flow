@@ -24,7 +24,6 @@ from pathlib import Path
 from flask import Blueprint, Flask, request
 from werkzeug.wrappers.request import Request
 
-from fate_flow.adapter import load_adapter_apps
 from fate_flow.controller.permission import PermissionController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.hook import HookManager
@@ -121,7 +120,11 @@ def init_apps():
     for key in app_list:
         urls_dict[key] = [register_page(path, before_request_func.get(key)) for path in search_pages_path(Path(__file__).parent / key)]
     # adapter extend apps
-    urls_dict.update(load_adapter_apps(register_page, search_pages_path))
+    try:
+        from fate_flow.adapter import load_adapter_apps
+        urls_dict.update(load_adapter_apps(register_page, search_pages_path))
+    except:
+        pass
     if CLIENT_AUTHENTICATION or SITE_AUTHENTICATION:
         _init_permission_group(urls=urls_dict)
 

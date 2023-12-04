@@ -53,4 +53,4 @@ class SparkEngine(LocalEngine):
             extra_env=extra_env,
             executable=process_cmd,
             sync=True
-        )
+        ).returncode

@@ -118,7 +118,7 @@ WORKERS_DIR = os.path.join(LOG_DIR, "workers")
 SQLITE_FILE_DIR = SQLITE_FILE_DIR or get_fate_flow_directory()
 SQLITE_PATH = os.path.join(SQLITE_FILE_DIR, SQLITE_FILE_NAME)
 
-GRPC_SERVER_MAX_WORKERS = GRPC_SERVER_MAX_WORKERS or (os.cpu_count() or 1) * 5
+GRPC_SERVER_MAX_WORKERS = GRPC_SERVER_MAX_WORKERS or (os.cpu_count() or 1) * 20
 
 VERSION_FILE_PATH = os.path.join(get_fate_flow_directory(), "fateflow.env")
 FATE_FLOW_PROVIDER_PATH = get_fate_flow_directory("python")

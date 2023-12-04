@@ -32,6 +32,7 @@ class StatusSet(BaseStatus):
     FAILED = "failed"
     PASS = "pass"
     SUCCESS = "success"
+    FINISHED = "finished"
 
     @classmethod
     def get_level(cls, status):
@@ -55,6 +56,7 @@ class JobStatus(BaseStatus):
     READY = StatusSet.READY
     WAITING = StatusSet.WAITING
     RUNNING = StatusSet.RUNNING
+    FINISHED = StatusSet.FINISHED
     CANCELED = StatusSet.CANCELED
     TIMEOUT = StatusSet.TIMEOUT
     FAILED = StatusSet.FAILED

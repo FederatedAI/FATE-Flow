@@ -51,7 +51,7 @@ class ComponentManager(Base):
             component_ref="upload",
             parameters=parameters
         )
-        result = JobController.request_create_job(dag_schema.dict(), is_local=True)
+        result = JobController.request_create_job(dag_schema, is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
         return result
@@ -76,7 +76,7 @@ class ComponentManager(Base):
             inputs={"data": {"table": {"data_warehouse": data_warehouse}}},
             provider=provider
         )
-        result = JobController.request_create_job(dag_schema.dict(), is_local=True)
+        result = JobController.request_create_job(dag_schema, is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
         return result
@@ -88,7 +88,7 @@ class ComponentManager(Base):
             component_ref="download",
             parameters=dict(namespace=namespace, name=name, path=path)
         )
-        result = JobController.request_create_job(dag_schema.dict(), is_local=True)
+        result = JobController.request_create_job(dag_schema, is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace, "path": path}
         return result

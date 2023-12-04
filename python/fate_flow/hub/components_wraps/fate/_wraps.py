@@ -31,7 +31,7 @@ from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpe
     ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta, TaskCleanupConfigSpec
 
 from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, TaskStatus, ComputingEngine, \
-    JsonModelArtifactType
+    JsonModelArtifactType, LauncherType
 
 from fate_flow.hub.components_wraps import WrapsABC
 from fate_flow.manager.outputs.data import DataManager, DatasetManager
@@ -143,7 +143,7 @@ class FlowWraps(WrapsABC):
         task_result = os.path.join(self.task_output_dir, "task_result.yaml")
         with open(conf_path, "w") as f:
             yaml.dump(task_parameters, f)
-        p = self.backend.run(
+        code = self.backend.run(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
             engine_run=self.config.engine_run,
@@ -154,14 +154,14 @@ class FlowWraps(WrapsABC):
             session_id=self.config.party_task_id,
             sync=True
         )
-        logger.info(f"finish task, return code {p.returncode}")
+        logger.info(f"finish task, return code {code}")
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
                 try:
                     result = json.load(f)
                     output_meta = ComponentOutputMeta.parse_obj(result)
-                    if p.returncode != 0:
-                        output_meta.status.code = p.returncode
+                    if code != 0:
+                        output_meta.status.code = code
                     logger.debug(output_meta)
                 except:
                     raise RuntimeError(f"Task run failed, you can see the task result file for details: {task_result}")
@@ -377,7 +377,12 @@ class FlowWraps(WrapsABC):
                 uri = self.mlmd.get_metric_save_url(execution_id=self.config.party_task_id)
             else:
                 # local file path
-                uri = DatasetManager.output_local_uri(task_info=self.task_info, name=name, type_name=type_name, is_multi=is_multi)
+                abspath = True
+                if self.config.launcher_name == LauncherType.DEEPSPEED:
+                    abspath = False
+                uri = DatasetManager.output_local_uri(
+                    task_info=self.task_info, name=name, type_name=type_name, is_multi=is_multi, abspath=abspath
+                )
         output_artifacts.uri = uri
         return output_artifacts
 
