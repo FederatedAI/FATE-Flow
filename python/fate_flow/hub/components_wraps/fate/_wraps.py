@@ -24,7 +24,7 @@ from typing import List
 import yaml
 
 from fate_flow.engine.backend import build_backend
-from fate_flow.engine.storage import StorageEngine
+from fate_flow.engine.storage import StorageEngine, DataType, Session
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpec, ComponentIOArtifactsTypeSpec, \
     TaskConfigSpec, ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
@@ -47,6 +47,7 @@ class FlowWraps(WrapsABC):
         self.mlmd = self.load_mlmd(config.mlmd)
         self.backend = build_backend(backend_name=self.config.conf.computing.type, launcher_name=self.config.launcher_name)
         self._component_define = None
+        self._destroy_temp_data = []
 
     @property
     def task_info(self):
@@ -88,6 +89,7 @@ class FlowWraps(WrapsABC):
             logger.error(e)
         finally:
             self.report_status(code, exceptions)
+            self.destroy(code)
             if code:
                 sys.exit(code)
 
@@ -456,7 +458,10 @@ class FlowWraps(WrapsABC):
             data = resp_data[0]
             schema = data.get("meta", {})
             meta.metadata.metadata.update({"schema": schema})
-
+            meta.type_name = data.get("data_type")
+            if meta.type_name == DataType.TABLE:
+                # destroy table data
+                self._destroy_temp_data.append((data.get("namespace"), data.get("name")))
             meta.uri = data.get("path")
             source = data.get("source", {})
             if source:
@@ -581,6 +586,21 @@ class FlowWraps(WrapsABC):
     @staticmethod
     def task_end_with_success(code):
         return code == 0
+
+    def destroy(self, code):
+        if self.task_end_with_success(code):
+            for namespace, name in self._destroy_temp_data:
+                try:
+                    logger.info(f"destroy table {namespace}, {name}")
+                    with Session() as sess:
+                        table = sess.get_table(
+                            name=name,
+                            namespace=namespace
+                        )
+                        table.destroy()
+                        logger.info(f"destroy table success")
+                except Exception as e:
+                    logger.error(e)
 
     @staticmethod
     def load_mlmd(mlmd):
