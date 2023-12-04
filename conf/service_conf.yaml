@@ -80,7 +80,7 @@ computing:
     cores: 32
   eggroll:
     cores: 32
-    nodes: 2
+    nodes: 1
   spark:
     # default use SPARK_HOME environment variable
     home:
