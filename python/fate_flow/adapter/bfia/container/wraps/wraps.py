@@ -213,7 +213,7 @@ class BfiaWraps(WrapsABC):
         task_result = os.path.join(self.task_output_dir, "task_result.yaml")
         with open(conf_path, "w") as f:
             yaml.dump(task_parameters, f)
-        p = self.backend.run(
+        code = self.backend.run(
             provider_name=ProviderName.FATE,
             task_info=self.task_info,
             engine_run={"cores": 4},
@@ -223,16 +223,16 @@ class BfiaWraps(WrapsABC):
             sync=True,
             config_dir=self.task_output_dir, std_dir=self.task_output_dir
         )
-        logger.info(f"finish task with code {p.returncode}")
-        print(f"finish task with code {p.returncode}")
+        logger.info(f"finish task with code {code}")
+        print(f"finish task with code {code}")
 
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
                 try:
                     result = json.load(f)
                     output_meta = ComponentOutputMeta.parse_obj(result)
-                    if p.returncode != 0:
-                        output_meta.status.code = p.returncode
+                    if code != 0:
+                        output_meta.status.code = code
                     logger.debug(output_meta)
                 except:
                     raise RuntimeError(f"Task run failed, you can see the task result file for details: {task_result}")
@@ -297,6 +297,12 @@ class BfiaWraps(WrapsABC):
                         if artifacts_type == "data":
                             address = self.config.runtime.component.output.get(key)
                             uri = f"standalone://{self.data_home}/{address.namespace}/{address.name}"
+
+                            if self.config.runtime.component.name == "dataframe_transformer":
+                                uri = f"standalone://{self.data_home}/" \
+                                      f"{self.config.runtime.component.parameter.get('namespace')}/" \
+                                      f"{self.config.runtime.component.parameter.get('name')}"
+
                         output_artifact = ArtifactOutputApplySpec(
                             uri=uri,
                             type_name=artifact[key]["types"][0]
