@@ -74,7 +74,7 @@ def schedule_lock(func):
             finally:
                 ready_signal(job_id=job.f_job_id, set_or_reset=False)
                 schedule_logger(job.f_job_id).info(f"release job {job.f_job_id} schedule lock")
-                return _result
+            return _result
         else:
             return func(*args, **kwargs)
     return _wrapper
