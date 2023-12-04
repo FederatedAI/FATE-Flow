@@ -23,7 +23,11 @@ from fate_flow.apps.desc import DAG_SCHEMA, USER_NAME, JOB_ID, ROLE, PARTY_ID, S
     ORDER, DESCRIPTION, TASK_NAME, TASK_ID, TASK_VERSION, NODES
 from fate_flow.controller.job import JobController
 from fate_flow.entity.code import ReturnCode
+from fate_flow.entity.spec.dag import DAGSchema
+from fate_flow.entity.spec.flow import SubmitJobInput, QueryJobInput, StopJobInput, QueryTaskInput
+from fate_flow.entity.types import PROTOCOL
 from fate_flow.errors.server_error import NoFoundJob, NoFoundTask, FileNoFound
+from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.utils import job_utils
 from fate_flow.utils.api_utils import API
 from fate_flow.manager.pipeline import pipeline as pipeline_manager
@@ -33,7 +37,12 @@ from fate_flow.manager.pipeline import pipeline as pipeline_manager
 @API.Input.json(dag_schema=fields.Dict(required=True), desc=DAG_SCHEMA)
 @API.Input.headers(user_name=fields.String(required=False), desc=USER_NAME)
 def submit_job(dag_schema, user_name=None):
-    submit_result = JobController.request_create_job(dag_schema, user_name)
+    dag_schema = DAGSchema(**dag_schema)
+    if dag_schema.kind == PROTOCOL.FATE_FLOW:
+        submit_result = JobController.request_create_job(dag_schema, user_name)
+    else:
+        from fate_flow.adapter import AdapterJobController
+        submit_result = AdapterJobController(dag_schema.kind).create_job(SubmitJobInput(dag_schema=dag_schema)).dict()
     return API.Output.json(**submit_result)
 
 
@@ -47,13 +56,29 @@ def query_job(job_id=None, role=None, party_id=None, status=None, user_name=None
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id, status=status, user_name=user_name)
     if not jobs:
         return API.Output.fate_flow_exception(NoFoundJob(job_id=job_id, role=role, party_id=party_id, status=status))
+    kind = jobs[0].f_protocol
+
+    if kind != PROTOCOL.FATE_FLOW:
+        from fate_flow.adapter import AdapterJobController
+        jobs = AdapterJobController(kind).query_job(QueryJobInput(jobs=jobs)).jobs
+
     return API.Output.json(data=[job.to_human_model_dict() for job in jobs])
 
 
 @manager.route('/stop', methods=['POST'])
 @API.Input.json(job_id=fields.String(required=True), desc=JOB_ID)
 def request_stop_job(job_id=None):
-    stop_result = JobController.request_stop_job(job_id=job_id)
+    jobs = JobSaver.query_job(job_id=job_id)
+    if not jobs:
+        raise NoFoundJob(job_id=job_id)
+    kind = jobs[0].f_protocol
+
+    if kind != PROTOCOL.FATE_FLOW:
+        from fate_flow.adapter import AdapterJobController
+        stop_result = AdapterJobController(kind).stop_job(StopJobInput(job_id=job_id)).dict()
+
+    else:
+        stop_result = JobController.request_stop_job(job_id, jobs=jobs)
     return API.Output.json(**stop_result)
 
 
@@ -98,11 +123,16 @@ def query_job_list(limit=0, page=0, job_id=None, description=None, partner=None,
 @API.Input.params(task_version=fields.Integer(required=False), desc=TASK_VERSION)
 def query_task(job_id=None, role=None, party_id=None, status=None, task_name=None, task_id=None, task_version=None):
     tasks = JobController.query_tasks(job_id=job_id, role=role, party_id=party_id, status=status, task_name=task_name,
-                                      task_id=task_id, task_version=task_version)
+                                      task_id=task_id, task_version=task_version, ignore_protocol=True)
     if not tasks:
         return API.Output.fate_flow_exception(NoFoundTask())
-    return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success",
-                           data=[task.to_human_model_dict() for task in tasks])
+
+    kind = tasks[0].f_protocol
+    if kind != PROTOCOL.FATE_FLOW:
+        from fate_flow.adapter import AdapterJobController
+        tasks = AdapterJobController(kind).query_task(QueryTaskInput(tasks=tasks)).tasks
+
+    return API.Output.json(data=[task.to_human_model_dict() for task in tasks])
 
 
 @manager.route('/task/list/query', methods=['GET'])

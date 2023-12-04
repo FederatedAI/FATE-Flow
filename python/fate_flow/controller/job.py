@@ -31,7 +31,7 @@ from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.controller.federated import FederatedScheduler
 from fate_flow.runtime.job_default_config import JobDefaultConfig
-from fate_flow.runtime.system_settings import ENGINES, IGNORE_RESOURCE_ROLES, COMPUTING_CONF, PARTY_ID, LOCAL_PARTY_ID
+from fate_flow.runtime.system_settings import ENGINES, IGNORE_RESOURCE_ROLES, PARTY_ID, LOCAL_PARTY_ID, COMPUTING_CONF
 from fate_flow.utils import job_utils
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.job_utils import get_job_log_directory, save_job_dag
@@ -40,8 +40,7 @@ from fate_flow.utils.log_utils import schedule_logger
 
 class JobController(object):
     @classmethod
-    def request_create_job(cls, dag_schema: dict, user_name: str = None, is_local=False):
-        schema = DAGSchema(**dag_schema)
+    def request_create_job(cls, schema: DAGSchema, user_name: str = None, is_local=False):
         cls.update_job_default_params(schema, is_local=is_local)
         cls.check_job_params(schema)
         response = FederatedScheduler.request_create_job(
@@ -52,15 +51,12 @@ class JobController(object):
         if user_name and response.get("code") == ReturnCode.Base.SUCCESS:
             JobSaver.update_job_user(job_id=response.get("job_id"), user_name=user_name)
         if response and isinstance(response, dict) and response.get("code") == ReturnCode.Base.SUCCESS:
-            save_job_dag(job_id=response.get("job_id"), dag=dag_schema)
+            save_job_dag(job_id=response.get("job_id"), dag=schema.dict(exclude_unset=True))
         return response
 
     @classmethod
-    def request_stop_job(cls, job_id):
+    def request_stop_job(cls, job_id, jobs):
         schedule_logger(job_id).info(f"stop job on this party")
-        jobs = JobSaver.query_job(job_id=job_id)
-        if not jobs:
-            raise NoFoundJob(job_id=job_id)
         status = JobStatus.CANCELED
         kill_status, kill_details = JobController.stop_jobs(job_id=job_id, stop_status=status)
         schedule_logger(job_id).info(f"stop job on this party status {kill_status}")
@@ -343,8 +339,11 @@ class JobController(object):
             task_run = dag_schema.dag.conf.task.run
         else:
             task_run = {}
+
         task_cores = cores
+
         default_task_run = deepcopy(JobDefaultConfig.task_run.get(ENGINES.get(EngineType.COMPUTING), {}))
+
         if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.SPARK:
             if "num-executors" not in task_run:
                 task_run["num-executors"] = default_task_run.get("num-executors")
@@ -354,29 +353,27 @@ class JobController(object):
                 task_run["num-executors"] = 1
                 task_run["executor-cores"] = 1
             task_cores = int(task_run.get("num-executors")) * (task_run.get("executor-cores"))
-            if task_cores > cores:
-                cores = task_cores
+
         if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.EGGROLL:
-            if "eggroll.session.processors.per.node" not in task_run:
-                task_run["eggroll.session.processors.per.node"] = \
-                    default_task_run.get("eggroll.session.processors.per.node")
-            task_cores = int(task_run.get("eggroll.session.processors.per.node")) * COMPUTING_CONF.get(
-                ComputingEngine.EGGROLL).get("nodes")
-            if task_cores > cores:
-                cores = task_cores
+            total_cores = task_run.pop("cores", None) or default_task_run.get("cores")
+
+            task_run["nodes"] = COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("nodes")
+            task_run["task_cores_per_node"] = max(total_cores // task_run["nodes"], 1)
+            task_cores = task_run["task_cores_per_node"] * task_run["task_cores_per_node"]
+
             if role in IGNORE_RESOURCE_ROLES:
-                task_run["eggroll.session.processors.per.node"] = 1
+                task_run["task_cores_per_node"] = 1
+
         if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.STANDALONE:
-            if "cores" not in task_run:
-                task_run["cores"] = default_task_run.get("cores")
-            task_cores = int(task_run.get("cores"))
-            if task_cores > cores:
-                cores = task_cores
+            task_cores = task_run["cores"] = task_run.pop("cores", None) or default_task_run.get("cores")
             if role in IGNORE_RESOURCE_ROLES:
                 task_run["cores"] = 1
         if role in IGNORE_RESOURCE_ROLES:
             cores = 0
             task_cores = 0
+
+        if task_cores > cores:
+            cores = task_cores
         return cores, task_run, task_cores
 
     @classmethod

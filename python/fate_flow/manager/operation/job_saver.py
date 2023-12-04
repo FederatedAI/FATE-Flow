@@ -63,9 +63,14 @@ class JobSaver(BaseSaver):
         return cls._list(Task, limit, offset, query, order_by)
 
     @classmethod
-    def query_task(cls, only_latest=True, reverse=None, order_by=None, protocol=PROTOCOL.FATE_FLOW, **kwargs):
+    def query_task(
+            cls, only_latest=True, reverse=None, order_by=None, ignore_protocol=False, protocol=PROTOCOL.FATE_FLOW,
+            **kwargs
+    ):
+        if not ignore_protocol:
+            kwargs["protocol"] = protocol
         return cls._query_task(
-            Task, only_latest=only_latest, reverse=reverse, order_by=order_by, protocol=protocol, **kwargs
+            Task, only_latest=only_latest, reverse=reverse, order_by=order_by, **kwargs
         )
 
     @classmethod

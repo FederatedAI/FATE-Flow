@@ -70,7 +70,6 @@ class JobConfSpec(BaseModel):
     initiator_party_id: Optional[str]
     inheritance: Optional[InheritConfSpec]
     cores: Optional[int]
-    task_cores: Optional[int]
     computing_partitions: Optional[int]
     sync_type: Optional[Union[Literal["poll", "callback"]]]
     auto_retries: Optional[int]
@@ -79,6 +78,7 @@ class JobConfSpec(BaseModel):
     model_warehouse: Optional[PipelineModel]
     task: Optional[TaskConfSpec]
     engine: Optional[EngineRunSpec]
+    extra: Optional[Dict[Any, Any]]
 
 
 class DAGSpec(BaseModel):
@@ -87,10 +87,6 @@ class DAGSpec(BaseModel):
     stage: Optional[Union[Literal["train", "predict", "default", "cross_validation"]]]
     tasks: Dict[str, TaskSpec]
     party_tasks: Optional[Dict[str, PartyTaskSpec]]
-
-    flow_id: Optional[str]
-    old_job_id: Optional[str]
-    initiator: Optional[Tuple[Union[Literal["guest", "host", "arbiter", "local"]], str]]
 
 
 class DAGSchema(BaseModel):
