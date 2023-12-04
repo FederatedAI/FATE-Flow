@@ -1,0 +1,135 @@
+dag:
+  conf:
+    extra:
+      initiator:
+        role: guest
+        party_id: JG0100001100000010
+  parties:
+  - party_id:
+    - JG0100001100000010
+    role: guest
+  - party_id:
+    - JG0100001100000010
+    role: host
+  - party_id:
+    - JG0100001100000010
+    role: arbiter
+  party_tasks:
+    guest_JG0100001100000010:
+      conf:
+        resources:
+          cpu: -1
+          disk: -1
+          memory: -1
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: guest
+      tasks:
+        intersect_rsa_1:
+          inputs:
+            data:
+              train_data:
+                data_warehouse:
+                  dataset_id: testspace#test_guest
+    host_JG0100001100000010:
+      conf:
+        resources:
+          cpu: -1
+          disk: -1
+          memory: -1
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: host
+      tasks:
+        intersect_rsa_1:
+          inputs:
+            data:
+              train_data:
+                data_warehouse:
+                  dataset_id: testspace#test_host
+  tasks:
+    hetero_logistic_regression_1:
+      component_ref: HeteroLR
+      conf:
+        provider: unionpay
+        version: 2.0.0
+      dependent_tasks:
+      - intersect_rsa_1
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: train_data
+              output_artifact_type_alias: dataset
+              producer_task: intersect_rsa_1
+      outputs:
+        data:
+          train_data:
+            output_artifact_key_alias: data0
+            output_artifact_type_alias: dataset
+        metric:
+          train-loss:
+            output_artifact_key_alias: report0
+            output_artifact_type_alias: report
+        model:
+          model:
+            output_artifact_key_alias: model0
+            output_artifact_type_alias: model
+      parameters:
+        alpha: 0.01
+        batch_size: -1
+        early_stop: diff
+        id: id
+        init_param:
+          init_method: zeros
+        label: y
+        learning_rate: 0.15
+        max_iter: 2
+        optimizer: nesterov_momentum_sgd
+        penalty: L2
+        tol: 0.0001
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: guest
+      - party_id:
+        - JG0100001100000010
+        role: host
+      - party_id:
+        - JG0100001100000010
+        role: arbiter
+    intersect_rsa_1:
+      component_ref: Intersection
+      conf:
+        provider: unionpay
+        version: 2.0.0
+      dependent_tasks: []
+      outputs:
+        data:
+          train_data:
+            output_artifact_key_alias: train_data
+            output_artifact_type_alias: dataset
+        metric:
+          train-intersection:
+            output_artifact_key_alias: report0
+            output_artifact_type_alias: report
+      parameters:
+        id: id
+        intersect_method: rsa
+        only_output_key: false
+        rsa_params:
+          final_hash_method: sha256
+          hash_method: sha256
+          key_length: 2048
+        sync_intersect_ids: true
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: guest
+      - party_id:
+        - JG0100001100000010
+        role: host
+kind: bfia
+schema_version: v1

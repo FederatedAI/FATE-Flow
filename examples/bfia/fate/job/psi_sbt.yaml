@@ -1,0 +1,109 @@
+dag:
+  conf:
+    extra:
+      initiator:
+        role: guest
+        party_id: JG0100001100000010
+  parties:
+  - party_id:
+    - JG0100001100000010
+    role: guest
+  - party_id:
+    - JG0100001100000010
+    role: host
+  party_tasks:
+    guest_JG0100001100000010:
+      conf:
+        resources:
+          cpu: -1
+          disk: -1
+          memory: -1
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: guest
+      tasks:
+        psi_0:
+          inputs:
+            data:
+              input_data:
+                data_warehouse:
+                  dataset_id: test_data#guest
+    host_JG0100001100000010:
+      conf:
+        resources:
+          cpu: -1
+          disk: -1
+          memory: -1
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: host
+      tasks:
+        psi_0:
+          inputs:
+            data:
+              input_data:
+                data_warehouse:
+                  dataset_id: test_data#host
+  tasks:
+    psi_0:
+      component_ref: psi
+      conf:
+        provider: fate
+        version: 2.0.0
+      dependent_tasks: []
+      outputs:
+        data:
+          output_data:
+            output_artifact_key_alias: output_data
+            output_artifact_type_alias: dataset
+        metric:
+          metric:
+            output_artifact_key_alias: metric
+            output_artifact_type_alias: report
+      parameters: {}
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: guest
+      - party_id:
+        - JG0100001100000010
+        role: host
+    sbt_0:
+      component_ref: hetero_sbt
+      conf:
+        provider: fate
+        version: 2.0.0
+      dependent_tasks:
+      - psi_0
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: output_data
+              output_artifact_type_alias: dataset
+              producer_task: psi_0
+      outputs:
+        data:
+          train_data_output:
+            output_artifact_key_alias: train_data_output
+            output_artifact_type_alias: dataset
+        metric:
+          metric:
+            output_artifact_key_alias: metric
+            output_artifact_type_alias: report
+        model:
+          train_model_output:
+            output_artifact_key_alias: train_model_output
+            output_artifact_type_alias: model
+      parameters: {}
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: guest
+      - party_id:
+        - JG0100001100000010
+        role: host
+kind: bfia
+schema_version: v1
