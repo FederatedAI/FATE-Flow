@@ -1,0 +1,52 @@
+dag:
+  initiator:
+    - "guest"
+    - "JG0100001100000010"
+  conf:
+    extra:
+      initiator:
+        role: guest
+        party_id: JG0100001100000010
+  parties:
+  - party_id:
+    - JG0100001100000010
+    role: guest
+  party_tasks:
+    guest_0:
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: guest
+      tasks:
+        transformer_0:
+          parameters:
+            name: 111
+            namespace: 111
+            site_name: null
+          inputs:
+            data:
+              table:
+                data_warehouse:
+                  dataset_id: 222#222
+  stage: default
+  tasks:
+    transformer_0:
+      conf:
+        provider: "fate"
+        version: "2.0.0"
+      outputs:
+        data:
+          dataframe_output:
+            output_artifact_key_alias: dataframe_output
+            output_artifact_type_alias: dataset
+        metric:
+          metric:
+            output_artifact_key_alias: metric
+            output_artifact_type_alias: report
+      component_ref: dataframe_transformer
+      parties:
+      - party_id:
+        - JG0100001100000010
+        role: guest
+schema_version: 2.0.0.rc1
+kind: bfia
