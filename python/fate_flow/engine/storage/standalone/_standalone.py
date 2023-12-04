@@ -17,6 +17,7 @@
 import asyncio
 import hashlib
 import itertools
+import os
 import pickle as c_pickle
 import shutil
 import time
@@ -690,7 +691,8 @@ def _put_to_meta_table(key, value):
     _get_meta_table().put(key, value)
 
 
-_data_dir = Path(STANDALONE_DATA_HOME).absolute()
+home = os.getenv("STANDALONE_DATA_HOME") or STANDALONE_DATA_HOME
+_data_dir = Path(home).absolute()
 
 
 def _get_data_dir():

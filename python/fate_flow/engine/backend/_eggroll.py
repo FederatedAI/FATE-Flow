@@ -26,6 +26,9 @@ class EggrollEngine(LocalEngine):
         parameters = TaskConfigSpec.parse_obj(run_parameters)
         if parameters.conf.computing.type == ComputingEngine.EGGROLL:
             # update eggroll options
+            cores = engine_run.pop("task_cores_per_node", None)
+            if cores:
+                engine_run["eggroll.session.processors.per.node"] = cores
             parameters.conf.computing.metadata.options.update(engine_run)
             with open(conf_path, "w") as f:
                 # update parameters
@@ -36,4 +39,4 @@ class EggrollEngine(LocalEngine):
             common_cmd=self.generate_component_run_cmd(provider_name, conf_path, output_path, ),
             sync=sync,
             **kwargs
-        )
+        ).returncode

@@ -17,6 +17,7 @@ from webargs import fields
 
 from fate_flow.apps.desc import JOB_ID, ROLE, PARTY_ID, TASK_NAME, FILTERS, OUTPUT_KEY
 from fate_flow.entity.code import ReturnCode
+from fate_flow.entity.types import PROTOCOL
 from fate_flow.errors.server_error import NoFoundTask
 from fate_flow.manager.outputs.data import DataManager
 from fate_flow.manager.outputs.model import PipelinedModel
@@ -47,12 +48,25 @@ def query_metric_key(job_id, role, party_id, task_name):
 @API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
 @API.Input.params(filters=fields.Dict(required=False), desc=FILTERS)
 def query_metric(job_id, role, party_id, task_name, filters=None):
-    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name, ignore_protocol=True)
     if not tasks:
-        return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
-                                                            task_name=task_name))
-    metrics = OutputMetric(job_id=job_id, role=role, party_id=party_id, task_name=task_name, task_id=tasks[0].f_task_id,
-                           task_version=tasks[0].f_task_version).read_metrics(filters)
+        return API.Output.fate_flow_exception(
+            e=NoFoundTask(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+        )
+
+    kind = tasks[0].f_protocol
+    if kind != PROTOCOL.FATE_FLOW:
+        from fate_flow.adapter import AdapterJobController
+        metrics = AdapterJobController(kind).query_output_metric()
+    else:
+        metrics = OutputMetric(
+            job_id=job_id,
+            role=role,
+            party_id=party_id,
+            task_name=task_name,
+            task_id=tasks[0].f_task_id,
+            task_version=tasks[0].f_task_version
+        ).read_metrics(filters)
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success', data=metrics)
 
 
@@ -79,12 +93,18 @@ def delete_metric(job_id, role, party_id, task_name):
 @API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
 @API.Input.params(task_name=fields.String(required=True), desc=TASK_NAME)
 def query_model(job_id, role, party_id, task_name):
-    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name)
+    tasks = JobSaver.query_task(job_id=job_id, role=role, party_id=party_id, task_name=task_name, ignore_protocol=True)
     if not tasks:
         return API.Output.fate_flow_exception(e=NoFoundTask(job_id=job_id, role=role, party_id=party_id,
                                                             task_name=task_name))
     task = tasks[0]
-    model_data = PipelinedModel.read_model(task.f_job_id, task.f_role, task.f_party_id, task.f_task_name)
+
+    kind = task.f_protocol
+    if kind != PROTOCOL.FATE_FLOW:
+        from fate_flow.adapter import AdapterJobController
+        model_data = AdapterJobController(kind).query_output_model()
+    else:
+        model_data = PipelinedModel.read_model(task.f_job_id, task.f_role, task.f_party_id, task.f_task_name)
     return API.Output.json(data=model_data)
 
 

@@ -299,8 +299,8 @@ class DatasetManager:
         return uri
 
     @classmethod
-    def output_local_uri(cls, name, type_name, task_info, is_multi=False):
-        path = job_utils.get_task_directory(**task_info, output=True)
+    def output_local_uri(cls, name, type_name, task_info, is_multi=False, abspath=True):
+        path = job_utils.get_task_directory(**task_info, output=True, abspath=abspath)
         uri = os.path.join(f"file://{path}", name, type_name)
         if is_multi:
             # replace "{index}"
