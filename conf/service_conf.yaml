@@ -32,7 +32,7 @@ database:
     path:
 default_engines:
   computing: standalone
-  federation: osx
+  federation: standalone
   storage: standalone
 default_provider:
   name: fate
