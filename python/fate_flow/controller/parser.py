@@ -25,7 +25,7 @@ from fate_flow.entity.spec.dag import DataWarehouseChannelSpec, ModelWarehouseCh
     PulsarFederationSpec, RabbitMQFederationSpec, FlowLogger, MLMDSpec, TaskRuntimeConfSpec, \
     DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts, OutputArtifactType
 from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputArtifactType, ArtifactSourceType, \
-    ComputingEngine
+    ComputingEngine, OSXMode
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import ENGINES, PROXY, FATE_FLOW_CONF_PATH, HOST, HTTP_PORT, PROTOCOL, \
@@ -262,7 +262,7 @@ class TaskParser(object):
             "parties": parties_info
         }
         engine_name = ENGINES.get(EngineType.FEDERATION).lower()
-        proxy_conf = PROXY.get(engine_name, {})
+        proxy_conf = copy.deepcopy(PROXY.get(engine_name, {}))
         if engine_name == FederationEngine.STANDALONE:
             spec = StandaloneFederationSpec(type=engine_name, metadata=StandaloneFederationSpec.MetadataSpec(
                 federation_id=self.federation_id, parties=parties))
@@ -273,11 +273,23 @@ class TaskParser(object):
                 rollsite_config=RollSiteFederationSpec.MetadataSpec.RollSiteConfig(**proxy_conf)
             ))
         elif engine_name == FederationEngine.OSX:
-            spec = OSXFederationSpec(type=engine_name, metadata=OSXFederationSpec.MetadataSpec(
-                federation_id=self.federation_id,
-                parties=parties,
-                osx_config=OSXFederationSpec.MetadataSpec.OSXConfig(**proxy_conf)
-            ))
+            mode = proxy_conf.pop("mode", OSXMode.QUEUE)
+            if mode == OSXMode.QUEUE:
+                spec = OSXFederationSpec(type=engine_name, metadata=OSXFederationSpec.MetadataSpec(
+                    federation_id=self.federation_id,
+                    parties=parties,
+                    osx_config=OSXFederationSpec.MetadataSpec.OSXConfig(**proxy_conf)
+                ))
+            elif mode == OSXMode.STREAM:
+                spec = RollSiteFederationSpec(
+                    type=FederationEngine.ROLLSITE,
+                    metadata=RollSiteFederationSpec.MetadataSpec(
+                        federation_id=self.federation_id,
+                        parties=parties,
+                        rollsite_config=RollSiteFederationSpec.MetadataSpec.RollSiteConfig(**proxy_conf)
+                ))
+            else:
+                raise RuntimeError(f"federation engine {engine_name} mode {mode}is not supported")
         elif engine_name == FederationEngine.PULSAR:
             route_table_path = os.path.join(FATE_FLOW_CONF_PATH, "pulsar_route_table.yaml")
             route_table = file_utils.load_yaml_conf(conf_path=route_table_path)
