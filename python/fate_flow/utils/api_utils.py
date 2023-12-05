@@ -125,25 +125,27 @@ class API:
 
 def get_federated_proxy_address():
     # protocol = CoordinationCommunicationProtocol.HTTP
+    proxy_name = PROXY_NAME
     if ENGINES.get("federated_mode") == FederatedMode.SINGLE:
         return HOST, HTTP_PORT, CoordinationCommunicationProtocol.HTTP, PROXY_NAME
-    if PROXY_NAME == CoordinationProxyService.OSX:
-        host = PROXY.get(PROXY_NAME).get("host")
-        port = PROXY.get(PROXY_NAME).get("port")
-        protocol = CoordinationCommunicationProtocol.HTTP
-
-    elif PROXY_NAME == CoordinationProxyService.ROLLSITE:
-        host = PROXY.get(PROXY_NAME).get("host")
-        port = PROXY.get(PROXY_NAME).get("port")
+    if proxy_name == CoordinationProxyService.OSX:
+        host = PROXY.get(proxy_name).get("host")
+        port = PROXY.get(proxy_name).get("port")
+        proxy_name = CoordinationProxyService.ROLLSITE
         protocol = CoordinationCommunicationProtocol.GRPC
 
-    elif PROXY_NAME == CoordinationProxyService.NGINX:
-        protocol = PROXY.get(PROXY_NAME).get("protocol", "http")
-        host = PROXY.get(PROXY_NAME).get(f"host")
-        port = PROXY.get(PROXY_NAME).get(f"{protocol}_port")
+    elif proxy_name == CoordinationProxyService.ROLLSITE:
+        host = PROXY.get(proxy_name).get("host")
+        port = PROXY.get(proxy_name).get("port")
+        protocol = CoordinationCommunicationProtocol.GRPC
+
+    elif proxy_name == CoordinationProxyService.NGINX:
+        protocol = PROXY.get(proxy_name).get("protocol", "http")
+        host = PROXY.get(proxy_name).get(f"host")
+        port = PROXY.get(proxy_name).get(f"{protocol}_port")
     else:
-        raise RuntimeError(f"can not support coordinate proxy {PROXY_NAME}， all proxy {PROXY.keys()}")
-    return host, port, protocol, PROXY_NAME
+        raise RuntimeError(f"Can not support coordinate proxy {proxy_name}， all proxy {PROXY.keys()}")
+    return host, port, protocol, proxy_name
 
 
 def generate_headers(party_id, body, initiator_party_id=""):
