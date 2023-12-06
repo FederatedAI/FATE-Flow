@@ -14,8 +14,8 @@
 #  limitations under the License.
 #
 
-from eggroll.core.session import session_init
-from eggroll.roll_pair.roll_pair import RollPairContext
+from eggroll.session import session_init
+from eggroll.computing import RollPairContext
 from fate_flow.engine.storage import EggRollStoreType, StorageEngine, StorageSessionBase
 from fate_flow.engine.storage.eggroll._table import StorageTable
 from fate_flow.entity.types import EggRollAddress
@@ -27,7 +27,6 @@ class StorageSession(StorageSessionBase):
             session_id=session_id, engine=StorageEngine.EGGROLL
         )
         self._options = options if options else {}
-        self._options["eggroll.session.deploy.mode"] = "cluster"
         self._rp_session = session_init(
             session_id=self._session_id, options=self._options
         )
