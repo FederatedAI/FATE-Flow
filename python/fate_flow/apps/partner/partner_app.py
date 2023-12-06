@@ -15,29 +15,31 @@
 #
 from webargs import fields
 
-from fate_flow.controller.job_controller import JobController
-from fate_flow.controller.task_controller import TaskController
+from fate_flow.controller.job import JobController
+from fate_flow.controller.task import TaskController
 from fate_flow.entity.types import TaskStatus
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import CreateJobFailed, UpdateJobFailed, KillFailed, JobResourceException,\
     NoFoundTask, StartTaskFailed, UpdateTaskFailed, KillTaskFailed, TaskResourceException
 from fate_flow.manager.service.resource_manager import ResourceManager
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API, stat_logger
-from fate_flow.utils.wraps_utils import task_request_proxy, create_job_request_check
+from fate_flow.utils.permission_utils import create_job_request_check
+from fate_flow.utils.wraps_utils import task_request_proxy
 
 page_name = 'partner'
 
 
 @manager.route('/job/create', methods=['POST'])
-@API.Input.json(dag_schema=fields.Dict(required=True))
+@API.Input.json(dag=fields.Dict(required=True))
+@API.Input.json(schema_version=fields.String(required=True))
 @API.Input.json(job_id=fields.String(required=True))
 @API.Input.json(role=fields.String(required=True))
 @API.Input.json(party_id=fields.String(required=True))
 @create_job_request_check
-def partner_create_job(dag_schema, job_id, role, party_id):
+def partner_create_job(dag, schema_version, job_id, role, party_id):
     try:
-        JobController.create_job(dag_schema, job_id, role, party_id)
+        JobController.create_job(dag, schema_version, job_id, role, party_id)
         return API.Output.json()
     except Exception as e:
         stat_logger.exception(e)
@@ -178,7 +180,12 @@ def return_task_resource(job_id, role, party_id, task_id, task_version):
 @API.Input.json(task_version=fields.Integer(required=True))
 @task_request_proxy(filter_local=True)
 def start_task(job_id, role, party_id, task_id, task_version):
-    if TaskController.start_task(job_id, role, party_id, task_id, task_version):
+    task = JobSaver.query_task(task_id=task_id, task_version=task_version, role=role, party_id=party_id)[0]
+    if not task:
+        return API.Output.fate_flow_exception(
+            NoFoundTask(job_id=job_id, role=role, party_id=party_id, task_id=task_id, task_version=task_version)
+        )
+    if TaskController.start_task(task):
         return API.Output.json(code=ReturnCode.Base.SUCCESS, message='success')
     else:
         return API.Output.fate_flow_exception(StartTaskFailed(

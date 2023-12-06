@@ -20,9 +20,13 @@ import yaml
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import Job, Task
-from fate_flow.entity.spec.dag import DAGSchema
+from fate_flow.entity.spec.dag import InheritConfSpec
+from fate_flow.entity.types import TaskStatus
+from fate_flow.errors.server_error import InheritanceFailed
+from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.runtime.system_settings import LOG_DIR, JOB_DIR, WORKERS_DIR
-from fate_flow.utils.base_utils import fate_uuid
+from fate_flow.utils.base_utils import fate_uuid, current_timestamp
+from fate_flow.utils.log_utils import schedule_logger
 
 
 class JobIdGenerator(object):
@@ -84,13 +88,18 @@ def get_job_log_directory(job_id, *args):
     return os.path.join(LOG_DIR, job_id, *args)
 
 
-def get_task_directory(job_id, role, party_id, task_name, task_version, input=False, output=False, **kwargs):
-    if input:
-        return get_job_directory(job_id, role, party_id, task_name, str(task_version), "input")
-    if output:
-        return get_job_directory(job_id, role, party_id, task_name, str(task_version), "output")
+def get_task_directory(job_id, role, party_id, task_name, task_version, input=False, output=False, abspath=True, **kwargs):
+    if abspath:
+        base_path = get_job_directory(job_id)
     else:
-        return get_job_directory(job_id, role, party_id, task_name, str(task_version))
+        base_path = f"./{job_id}"
+
+    if input:
+        return os.path.join(base_path, role, party_id, task_name, str(task_version), "input")
+    if output:
+        return os.path.join(base_path, role, party_id, task_name, str(task_version), "output")
+    else:
+        return os.path.join(base_path, role, party_id, task_name, str(task_version))
 
 
 def get_general_worker_directory(worker_name, worker_id, *args):
@@ -141,3 +150,41 @@ def save_job_dag(job_id, dag):
     os.makedirs(os.path.dirname(job_conf_file), exist_ok=True)
     with open(job_conf_file, "w") as f:
         f.write(yaml.dump(dag))
+
+
+def inheritance_check(inheritance: InheritConfSpec = None):
+    if not inheritance:
+        return
+    if not inheritance.task_list:
+        raise InheritanceFailed(
+            task_list=inheritance.task_list,
+            position="dag_schema.dag.conf.inheritance.task_list"
+        )
+    inheritance_jobs = JobSaver.query_job(job_id=inheritance.job_id)
+    inheritance_tasks = JobSaver.query_task(job_id=inheritance.job_id)
+    if not inheritance_jobs:
+        raise InheritanceFailed(job_id=inheritance.job_id, detail=f"no found job {inheritance.job_id}")
+    task_status = {}
+    for task in inheritance_tasks:
+        task_status[task.f_task_name] = task.f_status
+
+    for task_name in inheritance.task_list:
+        if task_name not in task_status.keys():
+            raise InheritanceFailed(job_id=inheritance.job_id, task_name=task_name, detail="no found task name")
+        elif task_status[task_name] not in [TaskStatus.SUCCESS, TaskStatus.PASS]:
+            raise InheritanceFailed(
+                job_id=inheritance.job_id,
+                task_name=task_name,
+                task_status=task_status[task_name],
+                detail=f"task status need in [{TaskStatus.SUCCESS}, {TaskStatus.PASS}]"
+            )
+
+
+def check_task_is_timeout(task: Task):
+    now_time = current_timestamp()
+    running_time = (now_time - task.f_create_time)/1000
+    if task.f_timeout and running_time > task.f_timeout:
+        schedule_logger(task.f_job_id).info(f'task {task.f_task_name} run time {running_time}s timeout')
+        return True
+    else:
+        return False

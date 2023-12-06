@@ -16,6 +16,7 @@ import io
 import json
 import logging
 import os.path
+import sys
 import tarfile
 import traceback
 from typing import List
@@ -23,17 +24,17 @@ from typing import List
 import yaml
 
 from fate_flow.engine.backend import build_backend
-from fate_flow.engine.storage import StorageEngine
+from fate_flow.engine.storage import StorageEngine, DataType, Session
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpec, ComponentIOArtifactsTypeSpec, \
     TaskConfigSpec, ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
     ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta, TaskCleanupConfigSpec
 
 from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, TaskStatus, ComputingEngine, \
-    JsonModelArtifactType
+    JsonModelArtifactType, LauncherType
 
 from fate_flow.hub.components_wraps import WrapsABC
-from fate_flow.manager.data.data_manager import DataManager, DatasetManager
+from fate_flow.manager.outputs.data import DataManager, DatasetManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, DEFAULT_OUTPUT_DATA_PARTITIONS
 from fate_flow.utils import job_utils
 
@@ -46,6 +47,7 @@ class FlowWraps(WrapsABC):
         self.mlmd = self.load_mlmd(config.mlmd)
         self.backend = build_backend(backend_name=self.config.conf.computing.type, launcher_name=self.config.launcher_name)
         self._component_define = None
+        self._destroy_temp_data = []
 
     @property
     def task_info(self):
@@ -87,6 +89,9 @@ class FlowWraps(WrapsABC):
             logger.error(e)
         finally:
             self.report_status(code, exceptions)
+            self.destroy(code)
+            if code:
+                sys.exit(code)
 
     def cleanup(self):
         config = TaskCleanupConfigSpec(
@@ -140,7 +145,7 @@ class FlowWraps(WrapsABC):
         task_result = os.path.join(self.task_output_dir, "task_result.yaml")
         with open(conf_path, "w") as f:
             yaml.dump(task_parameters, f)
-        self.backend.run(
+        code = self.backend.run(
             provider_name=self.config.provider_name,
             task_info=self.task_info,
             engine_run=self.config.engine_run,
@@ -151,19 +156,21 @@ class FlowWraps(WrapsABC):
             session_id=self.config.party_task_id,
             sync=True
         )
-        logger.info("finish task")
+        logger.info(f"finish task, return code {code}")
         if os.path.exists(task_result):
             with open(task_result, "r") as f:
                 try:
                     result = json.load(f)
                     output_meta = ComponentOutputMeta.parse_obj(result)
+                    if code != 0:
+                        output_meta.status.code = code
                     logger.debug(output_meta)
                 except:
-                    logger.error(f"Task run failed, you can see the task result file for details: {task_result}")
+                    raise RuntimeError(f"Task run failed, you can see the task result file for details: {task_result}")
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,
-                exceptions=f"No found task output. Process exit code. "
+                exceptions=f"No found task output."
             ))
         return output_meta
 
@@ -372,7 +379,12 @@ class FlowWraps(WrapsABC):
                 uri = self.mlmd.get_metric_save_url(execution_id=self.config.party_task_id)
             else:
                 # local file path
-                uri = DatasetManager.output_local_uri(task_info=self.task_info, name=name, type_name=type_name, is_multi=is_multi)
+                abspath = True
+                if self.config.launcher_name == LauncherType.DEEPSPEED:
+                    abspath = False
+                uri = DatasetManager.output_local_uri(
+                    task_info=self.task_info, name=name, type_name=type_name, is_multi=is_multi, abspath=abspath
+                )
         output_artifacts.uri = uri
         return output_artifacts
 
@@ -446,7 +458,10 @@ class FlowWraps(WrapsABC):
             data = resp_data[0]
             schema = data.get("meta", {})
             meta.metadata.metadata.update({"schema": schema})
-
+            meta.type_name = data.get("data_type")
+            if meta.type_name == DataType.TABLE:
+                # destroy table data
+                self._destroy_temp_data.append((data.get("namespace"), data.get("name")))
             meta.uri = data.get("path")
             source = data.get("source", {})
             if source:
@@ -571,6 +586,21 @@ class FlowWraps(WrapsABC):
     @staticmethod
     def task_end_with_success(code):
         return code == 0
+
+    def destroy(self, code):
+        if self.task_end_with_success(code):
+            for namespace, name in self._destroy_temp_data:
+                try:
+                    logger.info(f"destroy table {namespace}, {name}")
+                    with Session() as sess:
+                        table = sess.get_table(
+                            name=name,
+                            namespace=namespace
+                        )
+                        table.destroy()
+                        logger.info(f"destroy table success")
+                except Exception as e:
+                    logger.error(e)
 
     @staticmethod
     def load_mlmd(mlmd):

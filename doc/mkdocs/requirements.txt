@@ -1,0 +1,7 @@
+mike
+mkdocs-material
+python-markdown-math
+mkdocs-awesome-pages-plugin
+mkdocs-render-swagger-plugin
+mkdocs-static-i18n
+git+https://github.com/jarviszeng-zjc/markdown-include-snippet.git@develop-0.1.0#egg=markdown-include-snippet

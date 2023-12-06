@@ -22,6 +22,7 @@ class ProcessRole(CustomEnum):
 
 
 class WorkerName(CustomEnum):
+    TASK_SUBMIT = "submit"
     TASK_ENTRYPOINT = "task_entrypoint"
     TASK_EXECUTE = "task_execute"
     COMPONENT_DEFINE = "component_define"

@@ -127,6 +127,7 @@ class URI:
 class RuntimeTaskOutputChannelSpec(pydantic.BaseModel):
     producer_task: str
     output_artifact_key: str
+    output_artifact_type_alias: Optional[str] # protocol = "bfia" using
     roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
 
     class Config:
@@ -140,6 +141,7 @@ class DataWarehouseChannelSpec(pydantic.BaseModel):
     roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
     namespace: Optional[str]
     name: Optional[str]
+    dataset_id: Optional[str]
 
     class Config:
         extra = "forbid"

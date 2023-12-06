@@ -24,13 +24,13 @@ from pathlib import Path
 from flask import Blueprint, Flask, request
 from werkzeug.wrappers.request import Request
 
-from fate_flow.controller.app_controller import PermissionController
+from fate_flow.controller.permission import PermissionController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import AuthenticationParameters
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import API_VERSION, CLIENT_AUTHENTICATION, SITE_AUTHENTICATION, \
-    ADMIN_PAGE, PARTY_ID, INTERCONN_API_VERSION
+    ADMIN_PAGE, PARTY_ID
 from fate_flow.utils.api_utils import API
 from fate_flow.utils.base_utils import CustomJSONEncoder
 
@@ -38,7 +38,6 @@ from fate_flow.utils.base_utils import CustomJSONEncoder
 __all__ = ['app']
 
 app_list = ["client", "partner", "scheduler", "worker"]
-interop_app_list = ["interop"]
 
 Request.json = property(lambda self: self.get_json(force=True, silent=True))
 
@@ -53,10 +52,15 @@ def search_pages_path(pages_dir):
     return [path for path in pages_dir.glob('*_app.py') if not path.name.startswith('.')]
 
 
+def get_app_module(page_path):
+    page_name = page_path.stem.rstrip('app').rstrip("_")
+    module_name = '.'.join(page_path.parts[page_path.parts.index('fate_flow')+2:-1] + (page_name, ))
+    return module_name
+
+
 def register_page(page_path, func=None, prefix=API_VERSION):
     page_name = page_path.stem.rstrip('app').rstrip("_")
-    module_name = '.'.join(page_path.parts[page_path.parts.index('apps')-1:-1] + (page_name, ))
-
+    module_name = '.'.join(page_path.parts[page_path.parts.index('fate_flow')+2:-1] + (page_name, ))
     spec = spec_from_file_location(module_name, page_path)
     page = module_from_spec(spec)
     page.app = app
@@ -115,8 +119,12 @@ def init_apps():
     }
     for key in app_list:
         urls_dict[key] = [register_page(path, before_request_func.get(key)) for path in search_pages_path(Path(__file__).parent / key)]
-    for key in interop_app_list:
-        urls_dict[key] = [register_page(path, prefix=INTERCONN_API_VERSION) for path in search_pages_path(Path(__file__).parent / key)]
+    # adapter extend apps
+    try:
+        from fate_flow.adapter import load_adapter_apps
+        urls_dict.update(load_adapter_apps(register_page, search_pages_path))
+    except:
+        pass
     if CLIENT_AUTHENTICATION or SITE_AUTHENTICATION:
         _init_permission_group(urls=urls_dict)
 

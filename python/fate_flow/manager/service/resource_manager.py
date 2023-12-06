@@ -180,7 +180,7 @@ class ResourceManager(object):
                     record_status = operate.execute() > 0
                     if not record_status:
                         raise RuntimeError(f"record task {task_info['task_id']} {task_info['task_version']} resource"
-                                           f"{operation_type} failed on {{task_info['role']}} {{task_info['party_id']}}")
+                                           f"{operation_type} failed on {task_info['role']} {task_info['party_id']}")
                     filters, updates = cls.update_resource_sql(resource_model=Job,
                                                                cores=cores_per_task,
                                                                memory=memory_per_task,
@@ -189,13 +189,14 @@ class ResourceManager(object):
                     filters.append(Job.f_job_id == task_info["job_id"])
                     filters.append(Job.f_role == task_info["role"])
                     filters.append(Job.f_party_id == task_info["party_id"])
-                    filters.append(Job.f_resource_in_use == True)
+                    # filters.append(Job.f_resource_in_use == True)
                     operate = Job.update(updates).where(*filters)
                     operate_status = operate.execute() > 0
                     if not operate_status:
                         raise RuntimeError(f"record task {task_info['task_id']} {task_info['task_version']} job resource "
-                                           f"{operation_type} failed on {{task_info['role']}} {{task_info['party_id']}}")
-            except:
+                                           f"{operation_type} failed on {task_info['role']} {task_info['party_id']}")
+            except Exception as e:
+                schedule_logger(task_info["job_id"]).warning(e)
                 operate_status = False
         else:
             operate_status = True

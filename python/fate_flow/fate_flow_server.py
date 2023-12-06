@@ -20,22 +20,23 @@ import traceback
 
 import grpc
 from werkzeug.serving import run_simple
+
 from fate_flow.apps import app
-from fate_flow.controller.config_manager import ConfigManager
+from fate_flow.manager.service.config_manager import ConfigManager
 from fate_flow.hook import HookManager
 from fate_flow.manager.service.app_manager import AppManager
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.manager.service.service_manager import service_db
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.db.base_models import init_database_tables as init_flow_db
-from fate_flow.detection.detector import Detector, FederatedDetector
+from fate_flow.scheduler.detector import Detector, FederatedDetector
 from fate_flow.entity.types import ProcessRole
 from fate_flow.scheduler import init_scheduler
-from fate_flow.scheduler.job_scheduler import DAGScheduler
 from fate_flow.runtime.system_settings import (
     GRPC_PORT, GRPC_SERVER_MAX_WORKERS, HOST, HTTP_PORT , GRPC_OPTIONS, FATE_FLOW_LOG_DIR,
     LOG_LEVEL,
 )
+from fate_flow.scheduler.scheduler import DAGScheduler
 from fate_flow.utils import process_utils
 from fate_flow.utils.grpc_utils import UnaryService, UnaryServiceOSX
 from fate_flow.utils.log import LoggerFactory, getLogger
@@ -55,7 +56,15 @@ def server_init():
     LoggerFactory.LEVEL = LOG_LEVEL
 
     # set signal
-    signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
+    if "win" not in sys.platform.lower():
+        signal.signal(signal.SIGCHLD, process_utils.wait_child_process)
+
+    # init adapter
+    try:
+        from fate_flow.adapter import init_adapter
+        init_adapter()
+    except Exception as ex:
+        stat_logger.exception(ex)
 
     # init db
     init_flow_db()
