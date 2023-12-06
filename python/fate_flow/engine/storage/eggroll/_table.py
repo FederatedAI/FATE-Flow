@@ -16,47 +16,56 @@
 
 from typing import Iterable
 from fate_flow.engine.storage import StorageTableBase, EggRollStoreType, StorageEngine
+from eggroll.roll_pair.roll_pair import RollPairContext, RollPair
 
 
 class StorageTable(StorageTableBase):
     def __init__(
         self,
-        context,
+        context: RollPairContext,
+        table: RollPair,
+        key_serdes_type,
+        value_serdes_type,
+        partitioner_type,
         name,
         namespace,
         address,
         partitions: int = 1,
-        store_type: EggRollStoreType = EggRollStoreType.ROLLPAIR_LMDB,
+        store_type: str = EggRollStoreType.ROLLPAIR_LMDB,
         options=None,
     ):
+        self._context = context
+        self._store_type = store_type
+        self._table = table
         super(StorageTable, self).__init__(
             name=name,
             namespace=namespace,
             address=address,
             partitions=partitions,
             options=options,
-            engine=StorageEngine.EGGROLL
+            engine=StorageEngine.EGGROLL,
+            key_serdes_type=key_serdes_type,
+            value_serdes_type=value_serdes_type,
+            partitioner_type=partitioner_type,
         )
-        self._store_type = store_type
-        self._context = context
         self._options["store_type"] = self._store_type
         self._options["total_partitions"] = partitions
         self._options["create_if_missing"] = True
-        self._table = self._context.load(namespace=self.address.namespace, name=self.address.name, options=self._options)
 
-    def _save_as(self, address, name, namespace, partitions=None, **kwargs):
-        self._table.save_as(name=address.name, namespace=address.namespace)
-        table = StorageTable(
-            context=self._context,
-            address=address,
-            partitions=partitions,
-            name=name,
-            namespace=namespace
-        )
-        return table
+    #
+    # def _save_as(self, address, name, namespace, partitions=None, **kwargs):
+    #     self._table.save_as(name=address.name, namespace=address.namespace)
+    #     table = StorageTable(
+    #         context=self._context,
+    #         address=address,
+    #         partitions=partitions,
+    #         name=name,
+    #         namespace=namespace,
+    #     )
+    #     return table
 
-    def _put_all(self, kv_list: Iterable, **kwargs):
-        return self._table.put_all(kv_list)
+    def _put_all(self, kv_list: Iterable, partitioner, **kwargs):
+        return self._table.put_all(kv_list, partitioner)
 
     def _collect(self, **kwargs) -> list:
         return self._table.get_all(**kwargs)
