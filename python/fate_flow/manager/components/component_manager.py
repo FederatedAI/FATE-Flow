@@ -15,7 +15,7 @@
 #
 import uuid
 
-from fate_flow.controller.job_controller import JobController
+from fate_flow.controller.job import JobController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.types import EngineType
 from fate_flow.manager.components.base import Base
@@ -23,6 +23,7 @@ from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.system_settings import ENGINES, STORAGE
 from fate_flow.engine import storage
 from fate_flow.errors.server_error import ExistsTable
+
 
 class ComponentManager(Base):
     @classmethod
@@ -50,13 +51,13 @@ class ComponentManager(Base):
             component_ref="upload",
             parameters=parameters
         )
-        result = JobController.request_create_job(dag_schema.dict(), is_local=True)
+        result = JobController.request_create_job(dag_schema, is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
         return result
 
     @classmethod
-    def dataframe_transformer(cls, data_warehouse, namespace, name, drop):
+    def dataframe_transformer(cls, data_warehouse, namespace, name, drop, site_name):
         data_table_meta = storage.StorageTableMeta(name=name, namespace=namespace)
         if data_table_meta:
             if not drop:
@@ -71,11 +72,11 @@ class ComponentManager(Base):
         dag_schema = cls.local_dag_schema(
             task_name="transformer_0",
             component_ref="dataframe_transformer",
-            parameters={"namespace": namespace, "name": name},
+            parameters={"namespace": namespace, "name": name, "site_name": site_name},
             inputs={"data": {"table": {"data_warehouse": data_warehouse}}},
             provider=provider
         )
-        result = JobController.request_create_job(dag_schema.dict(), is_local=True)
+        result = JobController.request_create_job(dag_schema, is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
         return result
@@ -87,7 +88,7 @@ class ComponentManager(Base):
             component_ref="download",
             parameters=dict(namespace=namespace, name=name, path=path)
         )
-        result = JobController.request_create_job(dag_schema.dict(), is_local=True)
+        result = JobController.request_create_job(dag_schema, is_local=True)
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace, "path": path}
         return result

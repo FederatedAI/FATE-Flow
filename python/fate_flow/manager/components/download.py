@@ -13,11 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import logging as logger
 import os
 
 from fate_flow.engine import storage
-from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.manager.outputs.data import DataManager
 
 
 class Param(object):

@@ -16,9 +16,11 @@
 from peewee import CharField, TextField, IntegerField, BooleanField, BigIntegerField, CompositeKey
 
 from fate_flow.db.base_models import DataBaseModel, JSONField
+from fate_flow.entity.types import PROTOCOL
 
 
 class ScheduleJob(DataBaseModel):
+    f_protocol = CharField(max_length=50, default=PROTOCOL.FATE_FLOW)
     f_job_id = CharField(max_length=25, index=True)
     f_priority = IntegerField(default=0)
     f_tag = CharField(max_length=50, null=True, default='')

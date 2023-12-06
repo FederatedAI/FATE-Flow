@@ -42,10 +42,10 @@ META = "Metadata of the data"
 EXTEND_SID = "Whether to automatically fill a column as data row ID"
 NAMESPACE = "Namespace of the data table"
 NAME = "Name of the data table"
+SITE_NAME = "Site name"
 DATA_WAREHOUSE = "Data output, content like: {name: xxx, namespace: xxx}"
 DROP = "Whether to destroy data if it already exists"
 DOWNLOAD_HEADER = "Whether to download the data's head as the first row"
-DOWN_TYPE = "Down Type:sync,async"
 
 # output
 FILTERS = "Filter conditions"
@@ -71,6 +71,7 @@ PROVIDER_NAME = "Component provider name"
 DEVICE = "Component running mode"
 VERSION = "Component version"
 COMPONENT_METADATA = "Detailed information about component registration"
+COMPONENTS_DESCRIPTION = "Components description"
 PROVIDER_ALL_NAME = "Registered algorithm full name, provider + ':' + version + '@' + running mode, e.g., fate:2.0.0@local"
 
 # permission

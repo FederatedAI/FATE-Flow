@@ -18,9 +18,9 @@ import secrets
 from typing import Union
 
 from fate_flow.components import cpn
-from fate_flow.engine.storage import Session, StorageEngine, DataType, StorageTableMeta, StorageOrigin
+from fate_flow.engine.storage import Session, StorageEngine, DataType, StorageTableMeta
 from fate_flow.entity.spec.dag import ArtifactSource
-from fate_flow.manager.data.data_manager import DatasetManager
+from fate_flow.manager.outputs.data import DatasetManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
 from fate_flow.utils.file_utils import get_fate_flow_directory
 
@@ -67,8 +67,6 @@ class MetaParam(Param):
             header: str = None,
             delimiter: str = ",",
             dtype: Union[str, dict] = "float32",
-            anonymous_role: str = None,
-            anonymous_party_id: str = None,
             na_values: Union[str, list, dict] = None,
             input_format: str = "dense",
             tag_with_value: bool = False,
@@ -85,8 +83,6 @@ class MetaParam(Param):
         self.header = header
         self.delimiter = delimiter
         self.dtype = dtype
-        self.anonymous_role = anonymous_role
-        self.anonymous_party_id = anonymous_party_id
         self.na_values = na_values
         self.input_format = input_format
         self.tag_with_value = tag_with_value
@@ -158,7 +154,8 @@ class Upload:
                     "namespace": namespace
                 }
                 if storage_engine == StorageEngine.STANDALONE:
-                    upload_address.update({"home": STANDALONE_DATA_HOME})
+                    home = os.getenv("STANDALONE_DATA_HOME") or STANDALONE_DATA_HOME
+                    upload_address.update({"home": home})
             elif storage_engine in {StorageEngine.HDFS, StorageEngine.FILE}:
                 upload_address = {
                     "path": DatasetManager.upload_data_path(
@@ -191,7 +188,7 @@ class Upload:
             logging.info("file: {}".format(self.parameters.file))
             logging.info("total data_count: {}".format(data_table_count))
             logging.info("table name: {}, table namespace: {}".format(name, namespace))
-            return {"name": name, "namespace": namespace, "count": data_table_count}
+            return {"name": name, "namespace": namespace, "count": data_table_count, "data_meta": self.data_meta}
 
     def save_data_table(self, job_id):
         input_file = self.parameters.file

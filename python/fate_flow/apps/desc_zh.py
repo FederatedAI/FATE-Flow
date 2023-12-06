@@ -45,7 +45,6 @@ NAME = "数据表名"
 DATA_WAREHOUSE = "数据输出，内容如:{name: xxx, namespace: xxx}"
 DROP = "当数据存在时是否需要先销毁"
 DOWNLOAD_HEADER = "是否需要下载数据的Head作为第一行"
-DOWN_TYPE = "下载方式：同步,异步"
 
 # output
 FILTERS = "过滤条件"
@@ -71,6 +70,7 @@ PROVIDER_NAME = "组件提供方名称"
 DEVICE = "组件运行模式"
 VERSION = "组件版本"
 COMPONENT_METADATA = "组件注册详细信息"
+COMPONENTS_DESCRIPTION = "组件描述"
 PROVIDER_ALL_NAME = "注册的算法全名，提供方+':'+版本+'@'+运行模式，如: fate:2.0.0@local"
 
 # permission

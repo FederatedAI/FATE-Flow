@@ -89,24 +89,24 @@ class LocalEngine(object):
         self._cleanup2(provider_name, task_info, config, **kwargs)
 
     @staticmethod
-    def generate_component_run_cmd(provider_name, output_path=""):
+    def generate_component_run_cmd(provider_name, conf_path, output_path=""):
         if provider_name == ProviderName.FATE:
-            from fate_flow.worker.fate_executor import FateSubmit
+            from fate_flow.manager.worker.fate_executor import FateSubmit
             module_file_path = sys.modules[FateSubmit.__module__].__file__
 
         elif provider_name == ProviderName.FATE_FLOW:
-            from fate_flow.worker.fate_flow_executor import FateFlowSubmit
+            from fate_flow.manager.worker.fate_flow_executor import FateFlowSubmit
             module_file_path = sys.modules[FateFlowSubmit.__module__].__file__
 
         else:
             raise ValueError(f"load provider {provider_name} failed")
-
+        os.environ.pop("FATE_TASK_CONFIG", None)
         common_cmd = [
             module_file_path,
             "component",
             "execute",
-            "--env-name",
-            "FATE_TASK_CONFIG",
+            "--config",
+            conf_path,
             "--execution-final-meta-path",
             output_path
         ]
@@ -117,7 +117,7 @@ class LocalEngine(object):
     def generate_component_define_cmd(provider_name, component_ref, role, stage, define_file):
         cmd = []
         if provider_name == ProviderName.FATE:
-            from fate_flow.worker.fate_executor import FateSubmit
+            from fate_flow.manager.worker.fate_executor import FateSubmit
             module_file_path = sys.modules[FateSubmit.__module__].__file__
             cmd = [
                 module_file_path,
@@ -138,7 +138,7 @@ class LocalEngine(object):
     def generate_cleanup_cmd(provider_name):
         cmd = []
         if provider_name == ProviderName.FATE:
-            from fate_flow.worker.fate_executor import FateSubmit
+            from fate_flow.manager.worker.fate_executor import FateSubmit
             module_file_path = sys.modules[FateSubmit.__module__].__file__
             cmd = [
                 module_file_path,

@@ -18,14 +18,14 @@ from pydantic import BaseModel
 
 class ParameterSpec(BaseModel):
     type: str
-    default: Any
+    default: Optional[Any]
     optional: bool
     description: str = ""
     type_meta: dict = {}
 
 
 class ArtifactSpec(BaseModel):
-    type: str
+    types: List[str]
     optional: bool
     stages: Optional[List[str]]
     roles: Optional[List[str]]
@@ -93,3 +93,8 @@ class ComponentIOOutputsArtifactsTypeSpec(BaseModel):
 class ComponentIOArtifactsTypeSpec(BaseModel):
     inputs: ComponentIOInputsArtifactsTypeSpec
     outputs: ComponentIOOutputsArtifactsTypeSpec
+
+
+class ComponentSpecV1(BaseModel):
+    component: ComponentSpec
+    schema_version: str = "v1"

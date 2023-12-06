@@ -12,19 +12,17 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import json
 
 from flask import request
 from webargs import fields
 
-from fate_flow.controller.task_controller import TaskController
+from fate_flow.controller.task import TaskController
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundTask
-from fate_flow.manager.data.data_manager import DataManager
-from fate_flow.manager.model.model_manager import PipelinedModel
-from fate_flow.manager.metric.metric_manager import OutputMetric
-from fate_flow.manager.service.output_manager import OutputDataTracking
-from fate_flow.operation.job_saver import JobSaver
+from fate_flow.manager.outputs.data import DataManager, OutputDataTracking
+from fate_flow.manager.outputs.model import PipelinedModel
+from fate_flow.manager.outputs.metric import OutputMetric
+from fate_flow.manager.operation.job_saver import JobSaver
 from fate_flow.utils.api_utils import API
 
 page_name = 'worker'

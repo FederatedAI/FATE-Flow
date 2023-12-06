@@ -21,7 +21,8 @@ from ruamel import yaml
 
 from fate_flow.runtime.env import is_in_virtualenv
 
-PROJECT_BASE = os.getenv("FATE_PROJECT_BASE") or os.getenv("FATE_DEPLOY_BASE")
+PROJECT_BASE = os.getenv("FATE_PROJECT_BASE")
+FATE_PYTHON_PATH = os.getenv("FATE_PYTHONPATH")
 
 
 def get_project_base_directory(*args):
@@ -32,11 +33,23 @@ def get_project_base_directory(*args):
                 os.path.dirname(os.path.realpath(__file__)),
                 os.pardir,
                 os.pardir,
+                os.pardir,
             )
         )
     if args:
         return os.path.join(PROJECT_BASE, *args)
     return PROJECT_BASE
+
+
+def get_fate_python_path():
+    global FATE_PYTHON_PATH
+    if not FATE_PYTHON_PATH:
+        FATE_PYTHON_PATH = get_project_base_directory("fate", "python")
+        if not os.path.exists(FATE_PYTHON_PATH):
+            FATE_PYTHON_PATH = get_project_base_directory("python")
+            if not os.path.exists(FATE_PYTHON_PATH):
+                return
+    return FATE_PYTHON_PATH
 
 
 def get_fate_flow_directory(*args):
