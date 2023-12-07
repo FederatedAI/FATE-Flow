@@ -335,8 +335,8 @@ class JobController(object):
     @classmethod
     def calculate_resource(cls, dag_schema: DAGSchema, role):
         cores = dag_schema.dag.conf.cores if dag_schema.dag.conf.cores else JobDefaultConfig.job_cores
-        if dag_schema.dag.conf.task and dag_schema.dag.conf.task.run:
-            task_run = dag_schema.dag.conf.task.run
+        if dag_schema.dag.conf.task and dag_schema.dag.conf.task.engine_run:
+            task_run = dag_schema.dag.conf.task.engine_run
         else:
             task_run = {}
 

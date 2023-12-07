@@ -22,10 +22,9 @@ from fate_flow.controller.parser import JobParser
 from fate_flow.db.db_models import Task
 from fate_flow.db.schedule_models import ScheduleTask, ScheduleJob, ScheduleTaskStatus
 from fate_flow.engine.devices import build_engine, EngineABC
-from fate_flow.entity.spec.dag import DAGSchema, LauncherSpec
+from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.manager.service.resource_manager import ResourceManager
 from fate_flow.manager.service.worker_manager import WorkerManager
-from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.controller.federated import FederatedScheduler
 from fate_flow.entity.types import EndStatus, TaskStatus, FederatedCommunicationType, LauncherType
@@ -78,6 +77,8 @@ class TaskController(object):
                 ScheduleJobSaver.create_task(task.to_human_model_dict())
         else:
             task_parameters = task_parser.task_parameters
+            if task_parser.engine_run:
+                task_run.update(task_parser.engine_run)
             task_parameters.engine_run = task_run
             task_parameters.computing_partitions = dag_schema.dag.conf.computing_partitions
             schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} task_parameters"
@@ -114,18 +115,13 @@ class TaskController(object):
             task.f_run_port = RuntimeConfig.HTTP_PORT
 
     @staticmethod
-    def update_launcher_config(task, task_runtime_launcher, task_parameters):
+    def update_launcher_config(task, launcher_name, task_parameters):
         # support deepspeed and other launcher
         if task.f_role == "arbiter":
             return
-        schedule_logger(task.f_job_id).info(f"task runtime launcher: {task_runtime_launcher}")
-        launcher = LauncherSpec.parse_obj(task_runtime_launcher)
-        if launcher.name and launcher.name != LauncherType.DEFAULT:
-            task_parameters.launcher_name = task.f_launcher_name = launcher.name
-            launcher_conf = copy.deepcopy(JobDefaultConfig.launcher.get(task_parameters.launcher_name))
-            if launcher.conf:
-                launcher_conf.update(launcher.conf)
-            task_parameters.launcher_conf = task.f_launcher_conf = launcher_conf
+        schedule_logger(task.f_job_id).info(f"task runtime launcher name: {launcher_name}")
+        if launcher_name and launcher_name != LauncherType.DEFAULT:
+            task_parameters.launcher_name = task.f_launcher_name = launcher_name
 
     @staticmethod
     def create_schedule_tasks(job: ScheduleJob, dag_schema):

@@ -56,6 +56,8 @@ class Deepspeed(LocalEngine):
             logger.info(f"start to kill deepspeed {session_id} task")
             self.kill(session_id=session_id)
             return -1
+        # download result to output_path
+        pass
         return 0
 
     @classmethod

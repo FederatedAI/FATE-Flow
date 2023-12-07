@@ -1,8 +1,8 @@
 {
     "namespace": "experiment",
-    "name": "breast_hetero_guest",
+    "name": "breast_homo_guest",
     "data_warehouse": {
-        "name": "75096508-400c-11ee-8646-16b977118319",
+        "name": "7e1441e4-9413-11ee-9bb0-16b977118319",
         "namespace": "upload"
     }
 }

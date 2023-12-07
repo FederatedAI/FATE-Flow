@@ -24,7 +24,7 @@ class MetricData(pydantic.BaseModel):
         index: Optional[int]
     name: str
     type: Optional[str]
-    groups: List[Group]
+    groups: List[Group] = []
     step_axis: Optional[str]
     data: Union[List, Dict]
 

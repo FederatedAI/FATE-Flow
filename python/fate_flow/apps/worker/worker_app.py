@@ -163,11 +163,12 @@ def save_data_tracking(execution_id, meta_data, uri, output_key, namespace, name
         "index": index
     }
     OutputDataTracking.create(data_info)
-    DataManager.create_data_table(
-        namespace=namespace, name=name, uri=uri, partitions=partitions,
-        data_meta=meta_data, source=source, data_type=data_type,
-        count=overview.get("count", None), part_of_data=overview.get("samples", [])
-    )
+    if uri:
+        DataManager.create_data_table(
+            namespace=namespace, name=name, uri=uri, partitions=partitions,
+            data_meta=meta_data, source=source, data_type=data_type,
+            count=overview.get("count", None), part_of_data=overview.get("samples", [])
+        )
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success")
 
 
