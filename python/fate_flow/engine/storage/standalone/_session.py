@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import os
+
 from fate_flow.engine.storage import (
     StorageSessionBase,
     StorageEngine,
@@ -31,7 +33,7 @@ class StorageSession(StorageSessionBase):
         )
         self._options = options if options else {}
         self._session = Session(
-            session_id=self._session_id, data_dir=STANDALONE_DATA_HOME
+            session_id=self._session_id, data_dir=os.getenv("STANDALONE_DATA_HOME") or STANDALONE_DATA_HOME
         )
 
     def load(

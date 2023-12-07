@@ -33,7 +33,11 @@ class Base:
                 conf=JobConfSpec(task=TaskConfSpec(provider=provider.provider_name)),
                 parties=[party],
                 stage="default",
-                tasks={task_name: TaskSpec(component_ref=component_ref, parties=[party])},
+                tasks={task_name: TaskSpec(
+                    component_ref=component_ref,
+                    parties=[party],
+                    conf=dict(provider=provider.provider_name)
+                )},
                 party_tasks={
                     f"{role}_{party_id}": PartyTaskSpec(
                         parties=[party],
