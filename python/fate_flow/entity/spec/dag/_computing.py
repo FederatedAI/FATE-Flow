@@ -15,6 +15,7 @@
 from typing import Literal, TypeVar
 
 import pydantic
+from pydantic import typing
 
 
 class StandaloneComputingSpec(pydantic.BaseModel):
@@ -29,6 +30,10 @@ class StandaloneComputingSpec(pydantic.BaseModel):
 class EggrollComputingSpec(pydantic.BaseModel):
     class MetadataSpec(pydantic.BaseModel):
         computing_id: str
+        host: typing.Optional[str] = None
+        port: typing.Optional[int] = None
+        config_options: typing.Optional[dict] = None
+        config_properties_file: typing.Optional[str] = None
         options: dict = {}
 
     type: Literal["eggroll"]

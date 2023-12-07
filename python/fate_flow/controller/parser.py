@@ -29,7 +29,7 @@ from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputA
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import ENGINES, PROXY, FATE_FLOW_CONF_PATH, HOST, HTTP_PORT, PROTOCOL, \
-    API_VERSION
+    API_VERSION, COMPUTING_CONF
 from fate_flow.utils import job_utils, file_utils
 
 
@@ -244,7 +244,11 @@ class TaskParser(object):
         if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.EGGROLL:
             return EggrollComputingSpec(
                 type=ENGINES.get(EngineType.COMPUTING).lower(),
-                metadata={"computing_id": self.computing_id}
+                metadata={
+                    "computing_id": self.computing_id,
+                    "host": COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("host"),
+                    "port": COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("port")
+                }
             )
 
         if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.SPARK:
