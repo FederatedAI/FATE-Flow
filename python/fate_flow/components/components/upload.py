@@ -124,7 +124,7 @@ class Upload:
         self.table = None
         self.data_meta = {}
 
-    def run(self, parameters: UploadParam, outputs: IOMeta.OutputMeta, job_id=""):
+    def run(self, parameters: UploadParam, outputs: IOMeta.OutputMeta = None, job_id=""):
         self.parameters = parameters
         logging.info(self.parameters.to_dict())
         storage_address = self.parameters.storage_address
@@ -197,7 +197,8 @@ class Upload:
             logging.info("file: {}".format(self.parameters.file))
             logging.info("total data_count: {}".format(data_table_count))
             logging.info("table name: {}, table namespace: {}".format(name, namespace))
-            self.save_outputs(job_id, outputs, data_table_count)
+            if outputs:
+                self.save_outputs(job_id, outputs, data_table_count)
             return {"name": name, "namespace": namespace, "count": data_table_count, "data_meta": self.data_meta}
 
     def save_data_table(self, job_id):
@@ -344,7 +345,7 @@ class Upload:
             type_name=DataType.TABLE,
         )
         uri = DatasetManager.output_local_uri(
-            task_info=dict(job_id=job_id, role="local", party_id="0", task_name="upload", task_version="0"),
+            task_info=dict(job_id=job_id, role="local", party_id="0", task_name="upload_0", task_version="0"),
             name="metric",
             type_name=JsonMetricArtifactType.type_name
         )
