@@ -16,14 +16,15 @@ import json
 import logging
 import os
 import secrets
+import uuid
 from typing import Union
 
 from fate_flow.components import cpn
 from fate_flow.engine.storage import Session, StorageEngine, DataType, StorageTableMeta
 from fate_flow.entity.spec.dag import IOMeta, ArtifactOutputSpec, Metadata, ArtifactSource, MetricData
-from fate_flow.entity.types import JsonMetricArtifactType
+from fate_flow.entity.types import JsonMetricArtifactType, EngineType
 from fate_flow.manager.outputs.data import DatasetManager
-from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
+from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, ENGINES
 from fate_flow.utils.file_utils import get_fate_flow_directory
 from fate_flow.utils.io_utils import URI
 
@@ -132,6 +133,10 @@ class Upload:
                 get_fate_flow_directory(), parameters.file
             )
         name, namespace = parameters.name, parameters.namespace
+        if not name or not namespace:
+            namespace, name = self.parameters.namespace, self.parameters.name = self.generate_table_name()
+        if not parameters.storage_engine:
+            parameters.storage_engine = ENGINES.get(EngineType.STORAGE)
         with Session() as sess:
             # clean table
             table = sess.get_table(namespace=namespace, name=name)
@@ -339,14 +344,14 @@ class Upload:
             type_name=DataType.TABLE,
         )
         uri = DatasetManager.output_local_uri(
-            task_info=dict(job_id=job_id, role="guest", party_id="0", task_name="upload", task_version="0"),
+            task_info=dict(job_id=job_id, role="local", party_id="0", task_name="upload", task_version="0"),
             name="metric",
             type_name=JsonMetricArtifactType.type_name
         )
 
         path = URI.from_string(uri).to_schema().path
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        metrics = [MetricData(name="upload", data={"name": self.parameters.name, "namespace":self.parameters.namespace,
+        metrics = [MetricData(name="upload", data={"name": self.parameters.name, "namespace": self.parameters.namespace,
                                                    "count": data_count}).dict()]
         with open(path, "w") as f:
             json.dump(metrics, f)
@@ -355,5 +360,9 @@ class Upload:
             metadata=Metadata(metadata={}),
             type_name=JsonMetricArtifactType.type_name
         )
-        outputs.data = {"data": data.dict()}
+        outputs.data = {"table": data.dict()}
         outputs.metric = {"metric": metric.dict()}
+
+    @staticmethod
+    def generate_table_name():
+        return "upload", uuid.uuid1().hex
