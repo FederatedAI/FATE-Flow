@@ -22,13 +22,18 @@ from fate_flow.entity.types import EggRollAddress
 
 
 class StorageSession(StorageSessionBase):
-    def __init__(self, session_id, options=None):
+    def __init__(self, session_id, host: str = None, port: int = None, options=None, config_options=None, config_properties_file=None):
         super(StorageSession, self).__init__(
             session_id=session_id, engine=StorageEngine.EGGROLL
         )
         self._options = options if options else {}
         self._rp_session = session_init(
-            session_id=self._session_id, options=self._options
+            session_id=self._session_id,
+            host=host,
+            port=port,
+            options=self._options,
+            config_options=config_options,
+            config_properties_file=config_properties_file
         )
         self._rpc = RollPairContext(session=self._rp_session)
         self._session_id = self._rp_session.get_session_id()
