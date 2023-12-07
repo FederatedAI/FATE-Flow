@@ -359,7 +359,7 @@ class JobController(object):
 
             task_run["nodes"] = COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("nodes")
             task_run["task_cores_per_node"] = max(total_cores // task_run["nodes"], 1)
-            task_cores = task_run["task_cores_per_node"] * task_run["task_cores_per_node"]
+            task_cores = task_run["task_cores_per_node"] * task_run["nodes"]
 
             if role in IGNORE_RESOURCE_ROLES:
                 task_run["task_cores_per_node"] = 1
