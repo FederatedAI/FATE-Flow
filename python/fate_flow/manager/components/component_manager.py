@@ -102,11 +102,10 @@ class ComponentManager(Base):
     @classmethod
     def upload_file(cls, file, head, partitions, meta, namespace, name, extend_sid):
         path = os.path.join(get_fate_flow_directory(), "temp_file")
+        if not os.path.exists(path):
+            os.makedirs(path)
         with NamedTemporaryFile(dir=path, prefix='temp_file_', suffix='.csv', delete=False) as temp_file:
             temp_path = temp_file.name
-            with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-                future = executor.submit(save_file, file, temp_path)
-                # future.result()
-
+            save_file(file, temp_path)
         return cls.upload(temp_path, head, partitions, meta, namespace, name, extend_sid, temp_path=temp_path)
 
