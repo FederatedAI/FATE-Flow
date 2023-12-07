@@ -33,7 +33,6 @@ class JobDefaultConfig(ReloadConfigBase):
 
     task_logger = None
     task_device = None
-    launcher = None
     task_timeout = None
 
     @classmethod

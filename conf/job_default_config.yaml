@@ -21,7 +21,3 @@ task_logger:
     debug_mode: true
 task_device:
   type: CPU
-launcher:
-  deepspeed:
-    timeout: 21600 # s
-    world_size: 2

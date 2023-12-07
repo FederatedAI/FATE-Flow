@@ -36,8 +36,8 @@ class _Component:
         self.name = name
         self.callback = callback
 
-    def execute(self, config):
-        return self.callback(config)
+    def execute(self, config, outputs):
+        return self.callback(config, outputs)
 
 
 def component(*args, **kwargs):
