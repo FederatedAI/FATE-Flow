@@ -149,7 +149,6 @@ class FlowWraps(WrapsABC):
             provider_name=self.config.provider_name,
             task_info=self.task_info,
             engine_run=self.config.engine_run,
-            launcher_conf=self.config.launcher_conf,
             run_parameters=task_parameters,
             output_path=task_result,
             conf_path=conf_path,
@@ -165,8 +164,8 @@ class FlowWraps(WrapsABC):
                     if code != 0:
                         output_meta.status.code = code
                     logger.debug(output_meta)
-                except:
-                    raise RuntimeError(f"Task run failed, you can see the task result file for details: {task_result}")
+                except Exception as e:
+                    raise RuntimeError(f"Task run failed {e}, you can see the task result file for details: {task_result}.")
         else:
             output_meta = ComponentOutputMeta(status=ComponentOutputMeta.Status(
                 code=ReturnCode.Task.NO_FOUND_RUN_RESULT,

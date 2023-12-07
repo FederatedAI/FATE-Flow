@@ -13,7 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from fate_flow.entity.spec.dag._output import ComponentOutputMeta, MetricData, OutputArtifactType, OutputArtifactSpec, OutputArtifacts
+from fate_flow.entity.spec.dag._output import ComponentOutputMeta, MetricData, OutputArtifactType, OutputArtifactSpec, \
+    OutputArtifacts, IOMeta
 from fate_flow.entity.spec.dag._party import PartySpec
 from fate_flow.entity.spec.dag._job import DAGSchema, DAGSpec, JobConfSpec, TaskConfSpec, TaskSpec, PartyTaskSpec, \
     InheritConfSpec, PartyTaskRefSpec
@@ -29,4 +30,3 @@ from fate_flow.entity.spec.dag._federation import StandaloneFederationSpec, Roll
     PulsarFederationSpec, RabbitMQFederationSpec
 from fate_flow.entity.spec.dag._logger import FlowLogger
 from fate_flow.entity.spec.dag._mlmd import MLMDSpec
-from fate_flow.entity.spec.dag._device import LauncherSpec

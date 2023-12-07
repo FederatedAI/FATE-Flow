@@ -12,6 +12,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import json
 import logging
 import os
 import secrets
@@ -19,27 +20,30 @@ from typing import Union
 
 from fate_flow.components import cpn
 from fate_flow.engine.storage import Session, StorageEngine, DataType, StorageTableMeta
-from fate_flow.entity.spec.dag import ArtifactSource
+from fate_flow.entity.spec.dag import IOMeta, ArtifactOutputSpec, Metadata, ArtifactSource, MetricData
+from fate_flow.entity.types import JsonMetricArtifactType
 from fate_flow.manager.outputs.data import DatasetManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME
 from fate_flow.utils.file_utils import get_fate_flow_directory
+from fate_flow.utils.io_utils import URI
 
 
 @cpn.component()
 def upload(
-    config
+    config, outputs: IOMeta.OutputMeta
 ):
-    upload_data(config)
+    upload_data(config, outputs)
 
 
-def upload_data(config):
+def upload_data(config, outputs):
     job_id = config.pop("job_id")
     upload_object = Upload()
     data = upload_object.run(
         parameters=UploadParam(
             **config
         ),
-        job_id=job_id
+        job_id=job_id,
+        outputs=outputs
     )
 
 
@@ -119,7 +123,7 @@ class Upload:
         self.table = None
         self.data_meta = {}
 
-    def run(self, parameters: UploadParam, job_id=""):
+    def run(self, parameters: UploadParam, outputs: IOMeta.OutputMeta, job_id=""):
         self.parameters = parameters
         logging.info(self.parameters.to_dict())
         storage_address = self.parameters.storage_address
@@ -188,6 +192,7 @@ class Upload:
             logging.info("file: {}".format(self.parameters.file))
             logging.info("total data_count: {}".format(data_table_count))
             logging.info("table name: {}, table namespace: {}".format(name, namespace))
+            self.save_outputs(job_id, outputs, data_table_count)
             return {"name": name, "namespace": namespace, "count": data_table_count, "data_meta": self.data_meta}
 
     def save_data_table(self, job_id):
@@ -326,3 +331,29 @@ class Upload:
             delimiter.join(values[:id_index]),
             delimiter.join(values[id_index + 1:])
         ]).strip(delimiter)
+
+    def save_outputs(self, job_id, outputs: IOMeta.OutputMeta, data_count):
+        data = ArtifactOutputSpec(
+            uri="",
+            metadata=Metadata(namespace=self.parameters.namespace, name=self.parameters.name),
+            type_name=DataType.TABLE,
+        )
+        uri = DatasetManager.output_local_uri(
+            task_info=dict(job_id=job_id, role="guest", party_id="0", task_name="upload", task_version="0"),
+            name="metric",
+            type_name=JsonMetricArtifactType.type_name
+        )
+
+        path = URI.from_string(uri).to_schema().path
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        metrics = [MetricData(name="upload", data={"name": self.parameters.name, "namespace":self.parameters.namespace,
+                                                   "count": data_count}).dict()]
+        with open(path, "w") as f:
+            json.dump(metrics, f)
+        metric = ArtifactOutputSpec(
+            uri=uri,
+            metadata=Metadata(metadata={}),
+            type_name=JsonMetricArtifactType.type_name
+        )
+        outputs.data = {"data": data.dict()}
+        outputs.metric = {"metric": metric.dict()}

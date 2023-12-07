@@ -19,7 +19,7 @@ import traceback
 
 import click
 
-from fate_flow.entity.spec.dag import PreTaskConfigSpec, TaskConfigSpec
+from fate_flow.entity.spec.dag import PreTaskConfigSpec, TaskConfigSpec, IOMeta
 from fate_flow.hub.flow_hub import FlowHub
 
 logger = logging.getLogger(__name__)
@@ -87,9 +87,9 @@ def execute(config, env_name, execution_final_meta_path):
     logger.debug(f"task config: {task_config}")
     os.makedirs(os.path.dirname(execution_final_meta_path), exist_ok=True)
     try:
-        execute_component(task_config)
+        io_meta = execute_component(task_config)
         with open(execution_final_meta_path, "w") as fw:
-            json.dump(dict(status=dict(code=0)), fw, indent=4)
+            json.dump(dict(status=dict(code=0), io_meta=io_meta.dict()), fw, indent=4)
     except Exception as e:
         with open(execution_final_meta_path, "w") as fw:
             json.dump(dict(status=dict(code=-1, exceptions=traceback.format_exc())), fw)
@@ -118,8 +118,10 @@ def execute_component(config: TaskConfigSpec):
     cpn_config = config.parameters
     cpn_config["job_id"] = config.job_id
     logger.info(f"cpn_config： {cpn_config}")
-
-    component.execute(cpn_config)
+    inputs = IOMeta.InputMeta(data={}, model={})
+    outputs = IOMeta.OutputMeta(data={}, model={}, metric={})
+    component.execute(cpn_config, outputs)
+    return IOMeta(inputs=inputs, outputs=outputs)
 
 
 def load_component(cpn_name: str):
