@@ -16,7 +16,7 @@
 
 from typing import Iterable
 from fate_flow.engine.storage import StorageTableBase, EggRollStoreType, StorageEngine
-from eggroll.roll_pair.roll_pair import RollPairContext, RollPair
+from eggroll.computing import RollPairContext, RollPair
 
 
 class StorageTable(StorageTableBase):
