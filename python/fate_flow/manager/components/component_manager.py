@@ -17,6 +17,8 @@ import uuid
 
 from fate_flow.controller.job import JobController
 from fate_flow.entity.code import ReturnCode
+from fate_flow.entity.spec.dag import PartyTaskRefSpec, TaskSpec, PartySpec, RuntimeInputArtifacts, \
+    RuntimeTaskOutputChannelSpec
 from fate_flow.entity.types import EngineType
 from fate_flow.manager.components.base import Base
 from fate_flow.manager.service.provider_manager import ProviderManager
@@ -93,3 +95,50 @@ class ComponentManager(Base):
             result["data"] = {"name": name, "namespace": namespace, "path": path}
         return result
 
+    @classmethod
+    def upload_dataframe(cls, file, head, partitions, meta, namespace, name, extend_sid):
+        parameters = {
+            "file": file,
+            "head": head,
+            "partitions": partitions,
+            "meta": meta,
+            "extend_sid": extend_sid
+        }
+        address = STORAGE.get(ENGINES.get(EngineType.STORAGE))
+        if address:
+            parameters.update({"address": address})
+        role = "local"
+        party_id = "0"
+        upload_name = "upload_0"
+        upload_ref = "upload"
+        transformer_name = "transformer_0"
+        transformer_ref = "dataframe_transformer"
+
+        dag_schema = cls.local_dag_schema(
+            task_name=upload_name,
+            component_ref=upload_ref,
+            parameters=parameters,
+            role=role,
+            party_id=party_id
+        )
+        dag_schema.dag.party_tasks[f"{role}_{party_id}"].tasks[transformer_name] = PartyTaskRefSpec(
+            parameters={"namespace": namespace, "name": name}
+        )
+
+        fate_provider = ProviderManager.get_default_fate_provider()
+
+        dag_schema.dag.tasks[transformer_name] = TaskSpec(
+            component_ref=transformer_ref,
+            parties=[PartySpec(role=role, party_id=[party_id])],
+            conf=dict({"provider": fate_provider.provider_name}),
+            inputs=RuntimeInputArtifacts(
+                data={
+                    "table": {
+                        "task_output_artifact":
+                            RuntimeTaskOutputChannelSpec(producer_task=upload_name, output_artifact_key="table")}
+                })
+        )
+        result = JobController.request_create_job(dag_schema, is_local=True)
+        if result.get("code") == ReturnCode.Base.SUCCESS:
+            result["data"] = {"name": name, "namespace": namespace}
+        return result
