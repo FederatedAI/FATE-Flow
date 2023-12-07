@@ -35,7 +35,7 @@ page_name = "data"
 @API.Input.json(namespace=fields.String(required=False), desc=NAMESPACE)
 @API.Input.json(name=fields.String(required=False), desc=NAME)
 def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_sid=False):
-    result = ComponentManager.upload(
+    result = ComponentManager.upload_dataframe(
         file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
     )
     return API.Output.json(**result)
