@@ -47,7 +47,6 @@ class OutputDataTracking(BaseModelOperate):
         return cls._query(TrackingOutputInfo, reverse=reverse, order_by="index", **kwargs)
 
 
-
 class DataManager:
     @classmethod
     def send_table(

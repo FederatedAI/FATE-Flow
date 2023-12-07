@@ -17,7 +17,7 @@ from pydantic import typing
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.db_models import EngineRegistry, Job, Task
-from fate_flow.entity.types import EngineType, ResourceOperation
+from fate_flow.entity.types import EngineType, ResourceOperation, LauncherType
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import IGNORE_RESOURCE_ROLES, ENGINES
 from fate_flow.utils import engine_utils, base_utils, job_utils
@@ -226,9 +226,12 @@ class ResourceManager(object):
         memory_per_task = 0
         if task_info["role"] in IGNORE_RESOURCE_ROLES:
             return cores_per_task, memory_per_task
-        task_cores, memory = job_utils.get_task_resource_info(
+        task_cores, memory, launcher_name = job_utils.get_task_resource_info(
             task_info["job_id"], task_info["role"], task_info["party_id"], task_info["task_id"], task_info["task_version"]
         )
+        if launcher_name == LauncherType.DEEPSPEED:
+            # todo: apply gpus
+            return 0, 0
         return task_cores, memory
 
     @classmethod

@@ -131,7 +131,7 @@ def get_job_resource_info(job_id, role, party_id):
 
 @DB.connection_context()
 def get_task_resource_info(job_id, role, party_id, task_id, task_version):
-    tasks = Task.select(Task.f_task_cores, Task.f_memory).where(
+    tasks = Task.select(Task.f_task_cores, Task.f_memory, Task.f_launcher_name).where(
         Task.f_job_id == job_id,
         Task.f_role == role,
         Task.f_party_id == party_id,
@@ -140,7 +140,7 @@ def get_task_resource_info(job_id, role, party_id, task_id, task_version):
     )
     if tasks:
         task = tasks[0]
-        return task.f_task_cores, task.f_memory
+        return task.f_task_cores, task.f_memory, task.f_launcher_name
     else:
         return None, None
 

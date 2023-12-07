@@ -96,7 +96,6 @@ class Task(DataBaseModel):
     f_timeout = IntegerField(null=True)
 
     f_launcher_name = CharField(max_length=20, null=True)
-    f_launcher_conf = JSONField(null=True)
 
     f_start_time = BigIntegerField(null=True)
     f_end_time = BigIntegerField(null=True)

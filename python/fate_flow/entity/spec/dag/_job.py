@@ -51,9 +51,10 @@ class EngineRunSpec(BaseModel):
 
 
 class TaskConfSpec(BaseModel):
-    run: Optional[Dict]
+    engine_run: Optional[Dict]
     provider: Optional[str]
     timeout: Optional[int]
+    launcher_name: Optional[str] = "default"
 
 
 class InheritConfSpec(BaseModel):
@@ -77,7 +78,6 @@ class JobConfSpec(BaseModel):
     model_version: Optional[Union[str, int]]
     model_warehouse: Optional[PipelineModel]
     task: Optional[TaskConfSpec]
-    engine: Optional[EngineRunSpec]
     extra: Optional[Dict[Any, Any]]
 
 

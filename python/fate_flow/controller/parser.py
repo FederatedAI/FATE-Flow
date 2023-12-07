@@ -177,7 +177,11 @@ class TaskParser(object):
 
     @property
     def task_runtime_launcher(self):
-        return self.task_runtime_conf.get("launcher", {})
+        return self.task_runtime_conf.get("launcher_name", "default")
+
+    @property
+    def engine_run(self):
+        return self.task_runtime_conf.get("engine_run", {})
 
     @property
     def provider(self):
