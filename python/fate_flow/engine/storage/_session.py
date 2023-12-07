@@ -27,8 +27,8 @@ from fate_flow.engine.storage._abc import (
 )
 
 from fate_flow.engine.storage._table import StorageTableMeta
-from fate_flow.entity.types import EngineType, StorageEngine
-from fate_flow.runtime.system_settings import ENGINES
+from fate_flow.entity.types import EngineType, StorageEngine, ComputingEngine
+from fate_flow.runtime.system_settings import ENGINES, COMPUTING_CONF
 from fate_flow.utils import base_utils
 from fate_flow.utils.log import getLogger
 
@@ -224,9 +224,11 @@ class Session(object):
                 engine_name=storage_engine,
                 engine_session_id=storage_session_id,
             )
-
+        kwargs = {}
         if storage_engine == StorageEngine.EGGROLL:
             from fate_flow.engine.storage.eggroll import StorageSession
+            kwargs["host"] = COMPUTING_CONF.get(StorageEngine.EGGROLL).get("host")
+            kwargs["port"] = COMPUTING_CONF.get(StorageEngine.EGGROLL).get("port")
 
         elif storage_engine == StorageEngine.STANDALONE:
             from fate_flow.engine.storage.standalone import StorageSession
@@ -242,7 +244,7 @@ class Session(object):
                 f"can not be initialized with storage engine: {storage_engine}"
             )
         storage_session = StorageSession(
-            session_id=storage_session_id, options=kwargs.get("options", {})
+            session_id=storage_session_id, options=kwargs.get("options", {}), **kwargs
         )
 
         self._storage_session[storage_session_id] = storage_session

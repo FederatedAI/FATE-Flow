@@ -80,6 +80,9 @@ computing:
   eggroll:
     cores: 32
     nodes: 1
+    # cluster manager host and port
+    host: 127.0.0.1
+    port: 9340
   spark:
     # default use SPARK_HOME environment variable
     home:
