@@ -97,9 +97,9 @@ def get_job_logger(job_id, log_type):
     return logger
 
 
-def schedule_logger(job_id=None, delete=False):
+def schedule_logger(job_id=None, delete=False, name="fate_flow_schedule"):
     if not job_id:
-        return getLogger("fate_flow_schedule")
+        return getLogger(name)
     else:
         if delete:
             with LoggerFactory.lock:

@@ -16,7 +16,7 @@
 from webargs import fields
 
 from fate_flow.apps.desc import LOG_TYPE, JOB_ID, ROLE, PARTY_ID, TASK_NAME, INSTANCE_ID, BEGIN, END
-from fate_flow.manager.log.log_manager import LogManager
+from fate_flow.manager.outputs.log import LogManager
 from fate_flow.utils.api_utils import API
 from fate_flow.utils.wraps_utils import cluster_route
 

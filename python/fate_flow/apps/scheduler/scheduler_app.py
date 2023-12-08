@@ -14,18 +14,21 @@
 #  limitations under the License.
 from webargs import fields
 
+from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.errors.server_error import UpdateTaskFailed
-from fate_flow.operation.job_saver import ScheduleJobSaver
-from fate_flow.scheduler.job_scheduler import DAGScheduler
+from fate_flow.manager.operation.job_saver import ScheduleJobSaver
+from fate_flow.scheduler.scheduler import DAGScheduler
 from fate_flow.utils.api_utils import API
 
 page_name = 'scheduler'
 
 
 @manager.route('/job/create', methods=['POST'])
-@API.Input.json(dag_schema=fields.Dict(required=True))
-def create_job(dag_schema):
-    submit_result = DAGScheduler.submit(dag_schema)
+@API.Input.json(dag=fields.Dict(required=True))
+@API.Input.json(schema_version=fields.String(required=True))
+def create_job(dag, schema_version):
+    dag = DAGSchema(dag=dag, schema_version=schema_version)
+    submit_result = DAGScheduler.create_all_job(dag.dict())
     return API.Output.json(**submit_result)
 
 
@@ -57,8 +60,7 @@ def report_task(job_id, role, party_id, task_id, task_version, status=None):
 @API.Input.json(job_id=fields.String(required=True))
 @API.Input.json(stop_status=fields.String(required=False))
 def stop_job(job_id, stop_status=None):
-    retcode, retmsg = DAGScheduler.stop_job(job_id=job_id,
-                                            stop_status=stop_status)
+    retcode, retmsg = DAGScheduler.stop_job(job_id, stop_status)
     return API.Output.json(code=retcode, message=retmsg)
 
 

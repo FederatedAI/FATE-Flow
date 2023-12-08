@@ -24,7 +24,7 @@ class MetricData(pydantic.BaseModel):
         index: Optional[int]
     name: str
     type: Optional[str]
-    groups: List[Group]
+    groups: List[Group] = []
     step_axis: Optional[str]
     data: Union[List, Dict]
 
@@ -100,3 +100,27 @@ class ComponentOutputMeta(pydantic.BaseModel):
         exceptions: typing.Optional[str]
     status: Status
     io_meta: typing.Optional[IOMeta]
+
+
+class OutputArtifactSpec(pydantic.BaseModel):
+    output_artifact_key_alias: str
+    output_artifact_type_alias: str
+    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
+
+
+class OutputArtifacts(pydantic.BaseModel):
+    data: Optional[Dict[str, Union[OutputArtifactSpec, List[OutputArtifactSpec]]]]
+    model: Optional[Dict[str, Union[OutputArtifactSpec, List[OutputArtifactSpec]]]]
+    metric: Optional[Dict[str, Union[OutputArtifactSpec, List[OutputArtifactSpec]]]]
+
+
+class OutputArtifactType(object):
+    DATA = "data"
+    MODEL = "model"
+    METRIC = "metric"
+
+    @classmethod
+    def types(cls):
+        for _type in [cls.DATA, cls.MODEL, cls.METRIC]:
+            yield _type
+

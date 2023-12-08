@@ -16,11 +16,9 @@
 
 
 import abc
-import sys
 import typing
 
 from fate_flow.db.db_models import Task
-from fate_flow.entity.types import ProviderName
 
 
 class EngineABC(metaclass=abc.ABCMeta):
@@ -38,4 +36,8 @@ class EngineABC(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def cleanup(self, task: Task):
+        ...
+
+    @abc.abstractmethod
+    def download_output(self, task: Task):
         ...

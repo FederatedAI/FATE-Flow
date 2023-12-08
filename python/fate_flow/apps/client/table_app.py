@@ -17,10 +17,9 @@ from webargs import fields
 
 from fate_flow.apps.desc import NAMESPACE, NAME, DISPLAY, SERVER_FILE_PATH
 from fate_flow.engine import storage
-from fate_flow.engine.storage import Session, StorageEngine
-from fate_flow.entity.code import ReturnCode
+from fate_flow.engine.storage import StorageEngine, DataType
 from fate_flow.errors.server_error import NoFoundTable
-from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.manager.outputs.data import DataManager
 from fate_flow.utils.api_utils import API
 
 page_name = "table"
@@ -58,7 +57,10 @@ def bind_path(namespace, name, path):
     address = storage.StorageTableMeta.create_address(storage_engine=StorageEngine.PATH, address_dict={"path": path})
     storage_meta = storage.StorageTableBase(
         namespace=namespace, name=name, address=address,
-        engine=StorageEngine.PATH, options=None, partitions=None
+        engine=StorageEngine.PATH, options=None, partitions=None,
+        key_serdes_type=0,
+        value_serdes_type=0,
+        partitioner_type=0,
     )
-    storage_meta.create_meta()
+    storage_meta.create_meta(data_type=DataType.FILE)
     return API.Output.json()

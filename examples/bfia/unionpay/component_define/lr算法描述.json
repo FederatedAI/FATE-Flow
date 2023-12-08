@@ -1,0 +1,236 @@
+{
+    "componentName": "HeteroLR",
+	"title": "纵向逻辑回归算法",
+    "provider": "unionpay",
+    "version": "2.0.0",
+    "description": "纵向逻辑回归算法",
+    "roleList": ["guest", "host", "arbiter"],
+    "desVersion": "1.2.0",
+    "storageEngine": ["s3","hdfs"],
+    "inputParam": [
+        {
+            "name": "id",
+            "title": "id列",
+            "description": "id字段名",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "x1",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "label",
+            "title": "标签",
+            "description": "label字段名",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "y",
+            "validator": "regular-正则项",
+            "dependsOn": [],
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "penalty",
+            "title": "正则项",
+            "description": "正则项",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "L1正则",
+                    "value": "L1"
+                },
+                {
+                    "label": "L2正则",
+                    "value": "L2"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "L2",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "tol",
+            "title": "最小损失值",
+            "description": "最小损失值",
+            "type": "float",
+            "optional": "true",
+            "defaultValue": "0.0001",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "alpha",
+            "title": "惩罚因子",
+            "description": "惩罚因子",
+            "type": "float",
+            "optional": "true",
+            "defaultValue": "0.01",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "optimizer",
+            "title": "优化方法",
+            "description": "优化方法",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "rmsprop",
+                    "value": "rmsprop"
+                },
+                {
+                    "label": "sgd",
+                    "value": "sgd"
+                },
+                {
+                    "label": "adam",
+                    "value": "adam"
+                },
+                {
+                    "label": "sqn",
+                    "value": "sqn"
+                },
+                {
+                    "label": "adagrad",
+                    "value": "adagrad"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "rmsprop",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "batch_size",
+            "title": "批量梯度下降样本量",
+            "description": "每轮迭代抽取数据计算梯度的size",
+            "type": "integer",
+            "bindingData": [
+                {
+                    "label": "all",
+                    "value": "all"
+                },
+                {
+                    "label": "2048",
+                    "value": "2048"
+                },
+                {
+                    "label": "4096",
+                    "value": "4096"
+                },
+                {
+                    "label": "8192",
+                    "value": "8192"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "2048",
+            "validator": "(0,1000)",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "learning_rate",
+            "title": "学习率",
+            "description": "学习率",
+            "type": "float",
+            "optional": "true",
+            "defaultValue": "0.15",
+            "validator": "regular-正则项",
+            "dependsOn": ["optimizer.sgd", "optimizer.adam"],
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "init_param",
+            "title": "初始化方式",
+            "description": "初始化方式",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "zeros",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "max_iter",
+            "title": "迭代次数",
+            "description": "迭代次数",
+            "type": "integer",
+            "optional": "true",
+            "defaultValue": "30",
+            "validator": "(0,1000)",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "early_stop",
+            "title": "早停策略",
+            "description": "早停策略",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "weight_diff",
+                    "value": "weight_diff"
+                },
+                {
+                    "label": "diff",
+                    "value": "diff"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "weight_diff",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        }
+    ],
+    "inputData": [{
+        "name": "train_data",
+        "description": "训练集数据",
+        "category": "dataset",
+        "dataFormat": ["csv"]
+    }],
+    "outputData": [
+        {
+            "name": "train_data",
+            "description": "训练集数据",
+            "category": "dataset",
+            "dataFormat": ["csv"]
+        },
+        {
+            "name": "model",
+            "description": "模型文件",
+            "category": "model",
+            "dataFormat": ["csv"]
+        },
+        {
+            "name": "train-loss",
+            "description": "loss值",
+            "category": "metric",
+            "dataFormat": ["json"]
+        }
+    ],
+    "result": [{
+        "resultCode": "4444",
+        "resultMessage": "算法执行失败"
+    }]
+}

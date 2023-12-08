@@ -26,8 +26,3 @@ class CPUSpec(pydantic.BaseModel):
 class GPUSpec(pydantic.BaseModel):
     type: Literal["GPU"]
     metadata: dict = {}
-
-
-class LauncherSpec(pydantic.BaseModel):
-    name: str = "default"
-    conf: dict = {}

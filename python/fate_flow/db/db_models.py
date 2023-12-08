@@ -17,9 +17,12 @@ import datetime
 
 from peewee import CharField, TextField, BigIntegerField, IntegerField, BooleanField, CompositeKey, BigAutoField
 from fate_flow.db.base_models import DataBaseModel, JSONField
+from fate_flow.entity.types import PROTOCOL
 
 
 class Job(DataBaseModel):
+    f_protocol = CharField(max_length=50, default=PROTOCOL.FATE_FLOW)
+    f_flow_id = CharField(max_length=25, default='')
     f_job_id = CharField(max_length=25, index=True)
     f_user_name = CharField(max_length=500, null=True, default='')
     f_description = TextField(null=True, default='')
@@ -60,6 +63,7 @@ class Job(DataBaseModel):
 
 
 class Task(DataBaseModel):
+    f_protocol = CharField(max_length=50, default=PROTOCOL.FATE_FLOW)
     f_job_id = CharField(max_length=25, index=True)
     f_role = CharField(max_length=50, index=True)
     f_party_id = CharField(max_length=50, index=True)
@@ -89,9 +93,9 @@ class Task(DataBaseModel):
     f_kill_status = BooleanField(default=False)
     f_error_report = TextField(default="")
     f_sync_type = CharField(max_length=20)
+    f_timeout = IntegerField(null=True)
 
     f_launcher_name = CharField(max_length=20, null=True)
-    f_launcher_conf = JSONField(null=True)
 
     f_start_time = BigIntegerField(null=True)
     f_end_time = BigIntegerField(null=True)
@@ -204,16 +208,17 @@ class ProviderInfo(DataBaseModel):
 
 class ComponentInfo(DataBaseModel):
     f_provider_name = CharField(max_length=100)
+    f_protocol = CharField(max_length=20, default=PROTOCOL.FATE_FLOW)
     f_name = CharField(max_length=20, index=True)
     f_version = CharField(max_length=20)
     f_device = CharField(max_length=20)
     f_component_name = CharField(max_length=50)
     f_component_entrypoint = JSONField(null=True)
-    f_component_params = JSONField(null=True)
+    f_component_description = JSONField(null=True)
 
     class Meta:
         db_table = "t_component_info"
-        primary_key = CompositeKey("f_provider_name", "f_component_name")
+        primary_key = CompositeKey("f_provider_name", "f_component_name", "f_protocol")
 
 
 class PipelineModelMeta(DataBaseModel):

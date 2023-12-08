@@ -27,7 +27,6 @@ from fate_flow.settings import *
 
 # Server
 API_VERSION = "v2"
-INTERCONN_API_VERSION = "v1"
 FATE_FLOW_SERVICE_NAME = "fateflow"
 SERVER_MODULE = "fate_flow_server.py"
 CASBIN_TABLE_NAME = "fate_casbin"
@@ -119,11 +118,10 @@ WORKERS_DIR = os.path.join(LOG_DIR, "workers")
 SQLITE_FILE_DIR = SQLITE_FILE_DIR or get_fate_flow_directory()
 SQLITE_PATH = os.path.join(SQLITE_FILE_DIR, SQLITE_FILE_NAME)
 
-GRPC_SERVER_MAX_WORKERS = GRPC_SERVER_MAX_WORKERS or (os.cpu_count() or 1) * 5
+GRPC_SERVER_MAX_WORKERS = GRPC_SERVER_MAX_WORKERS or (os.cpu_count() or 1) * 20
 
 VERSION_FILE_PATH = os.path.join(get_fate_flow_directory(), "fateflow.env")
 FATE_FLOW_PROVIDER_PATH = get_fate_flow_directory("python")
-FATE_FLOW_CONF_PATH = get_fate_flow_directory()
 
 # Registry
 FATE_FLOW_MODEL_TRANSFER_ENDPOINT = "/v1/model/transfer"
@@ -140,6 +138,7 @@ USE_REGISTRY = get_base_config("use_registry")
 REQUEST_TRY_TIMES = 3
 REQUEST_WAIT_SEC = 2
 REQUEST_MAX_WAIT_SEC = 300
+SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
 
 DEFAULT_OUTPUT_DATA_PARTITIONS = 16
 
@@ -148,6 +147,4 @@ LOCALFS_DATA_HOME = os.path.join(file_utils.get_fate_flow_directory(), "localfs"
 
 # hub module settings
 # define： xxx.class_name
-DEFAULT_JOB_PARSER_MODULE = "fate_flow.hub.parser.fate.JobParser"
-DEFAULT_JOB_SCHEDULER_MODULE = "fate_flow.hub.scheduler.fate.DAGScheduler"
 DEFAULT_COMPONENTS_WRAPS_MODULE = "fate_flow.hub.components_wraps.fate.FlowWraps"

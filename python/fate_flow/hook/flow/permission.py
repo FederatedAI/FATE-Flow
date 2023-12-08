@@ -1,4 +1,4 @@
-from fate_flow.controller.permission_controller import PermissionCheck
+from fate_flow.controller.permission import PermissionCheck
 from fate_flow.entity.code import ReturnCode
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import PermissionCheckParameters, PermissionReturn

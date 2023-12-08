@@ -22,23 +22,9 @@ class DockerManager:
         self.provider = provider
         self.client = docker.DockerClient(base_url=provider.metadata.base_url)
 
-    def start(self, name, command, environment, auto_remove=False, detach=True, network_mode="host"):
-        # todo: delete volumes
-        # volumes = {
-        #     LOG_DIRECTORY: {
-        #         'bind': LOG_DIRECTORY,
-        #         'mode': 'rw',
-        #     },
-        #     eggroll_conf_dir: {
-        #         'bind': self.provider.metadata.eggroll_conf_dir,
-        #         'mode': 'ro',
-        #     },
-        #     LOCAL_DATA_STORE_PATH: {
-        #         'bind': LOCAL_DATA_STORE_PATH,
-        #         'mode': 'rw',
-        #     }
-        # }
-        volumes = {}
+    def start(self, name, command, environment, auto_remove=False, detach=True, network_mode="host", volumes=None):
+        if not volumes:
+            volumes = {}
         self.client.containers.run(
             self.provider.metadata.image, command,
             auto_remove=auto_remove, detach=detach,
@@ -51,7 +37,7 @@ class DockerManager:
             container = self.client.containers.get(name)
         except docker.errors.NotFound:
             return
-        container.remove(force=True)
+        return container.remove(force=True)
 
     def is_running(self, name):
         try:
@@ -59,3 +45,18 @@ class DockerManager:
         except docker.errors.NotFound:
             return False
         return container.status == 'running'
+
+    def exit_with_exception(self, name):
+        try:
+            container = self.client.containers.get(name)
+        except docker.errors.NotFound:
+            return False
+        return int(container.attrs['State']['ExitCode']) != 0
+
+    def get_labels(self):
+        image = self.client.images.get(self.provider.metadata.image)
+        return image.labels
+
+    def get_env(self):
+        image = self.client.images.get(self.provider.metadata.image)
+        return image.attrs.get("Config").get("Env")

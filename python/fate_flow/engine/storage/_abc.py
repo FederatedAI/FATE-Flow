@@ -198,7 +198,8 @@ class StorageTableABC(metaclass=abc.ABCMeta):
 
 class StorageSessionABC(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def create_table(self, address, name, namespace, partitions, storage_type=None, options=None,
+    def create_table(self, address, name, namespace, partitions, key_serdes_type, value_serdes_type, partitioner_type,
+                     storage_type=None, options=None,
                      **kwargs) -> StorageTableABC:
         ...
 

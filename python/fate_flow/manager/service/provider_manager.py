@@ -20,7 +20,7 @@ from typing import Union
 from fate_flow.db import ProviderInfo, ComponentInfo
 from fate_flow.db.base_models import DB, BaseModelOperate
 from fate_flow.entity.spec.flow import ProviderSpec, LocalProviderSpec, DockerProviderSpec, K8sProviderSpec
-from fate_flow.entity.types import ProviderDevice
+from fate_flow.entity.types import ProviderDevice, PROTOCOL
 from fate_flow.hub.flow_hub import FlowHub
 from fate_flow.hub.provider import EntrypointABC
 from fate_flow.runtime.system_settings import DEFAULT_FATE_PROVIDER_PATH, DEFAULT_PROVIDER, FATE_FLOW_PROVIDER_PATH
@@ -30,6 +30,7 @@ from fate_flow.utils.version import get_versions, get_default_fate_version, get_
 from fate_flow.utils.wraps_utils import filter_parameters
 
 stat_logger = getLogger("fate_flow_stat")
+
 
 class ProviderManager(BaseModelOperate):
     @classmethod
@@ -56,7 +57,9 @@ class ProviderManager(BaseModelOperate):
 
     @classmethod
     @DB.connection_context()
-    def register_provider(cls, provider: ComponentProvider):
+    def register_provider(cls, provider: ComponentProvider, components_description=None, protocol=PROTOCOL.FATE_FLOW):
+        if not components_description:
+            components_description = {}
         provider_info = ProviderInfo()
         provider_info.f_provider_name = provider.provider_name
         provider_info.f_name = provider.name
@@ -65,18 +68,25 @@ class ProviderManager(BaseModelOperate):
         provider_info.f_metadata = provider.metadata.dict()
         operator_type = cls.safe_save(ProviderInfo, defaults=provider_info.to_dict(),
                                       f_provider_name=provider.provider_name)
-        # todo: load entrypoint、components、params...
-        # load components
-        cls.register_component(provider)
+        cls.register_component(provider, components_description, protocol)
         return operator_type
 
     @classmethod
-    def register_component(cls, provider: ComponentProvider):
-        entrypoint = cls.load_entrypoint(provider)
-        component_list = []
-        if entrypoint:
-            component_list = entrypoint.component_list
+    def register_component(cls, provider: ComponentProvider, components_description, protocol):
+        if not protocol:
+            protocol = PROTOCOL.FATE_FLOW
 
+        if not components_description:
+            components_description = {}
+
+        component_list = []
+
+        if components_description:
+            component_list = components_description.keys()
+        else:
+            entrypoint = cls.load_entrypoint(provider)
+            if entrypoint:
+                component_list = entrypoint.component_list
         for component_name in component_list:
             component = ComponentInfo()
             component.f_provider_name = provider.provider_name
@@ -84,6 +94,8 @@ class ProviderManager(BaseModelOperate):
             component.f_device = provider.device
             component.f_version = provider.version
             component.f_component_name = component_name
+            component.f_protocol = protocol
+            component.f_component_description = components_description.get(component_name)
             cls.safe_save(ComponentInfo, defaults=component.to_dict(), **component.to_dict())
 
     @classmethod
@@ -118,6 +130,14 @@ class ProviderManager(BaseModelOperate):
     def get_all_components(cls):
         component_list = cls._query(ComponentInfo, force=True)
         return list(set([component.f_component_name for component in component_list]))
+
+    @classmethod
+    @filter_parameters()
+    def query_component_description(cls, **kwargs):
+        descriptions = {}
+        for info in cls._query(ComponentInfo, **kwargs):
+            descriptions[info.f_component_name] = info.f_component_description
+        return descriptions
 
     @classmethod
     def get_fate_flow_provider(cls):

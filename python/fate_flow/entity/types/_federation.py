@@ -18,6 +18,11 @@ class CoordinationCommunicationProtocol(object):
     GRPC = "grpc"
 
 
+class OSXMode(object):
+    STREAM = "stream"
+    QUEUE = "queue"
+
+
 class FederatedMode(object):
     SINGLE = "SINGLE"
     MULTIPLE = "MULTIPLE"

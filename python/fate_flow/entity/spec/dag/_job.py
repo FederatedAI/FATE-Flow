@@ -13,10 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from typing import Optional, Union, Literal, Dict, List, Any
+from typing import Optional, Union, Literal, Dict, List, Any, Tuple
 
 from pydantic import BaseModel
 
+from fate_flow.entity.spec.dag._output import OutputArtifacts
 from fate_flow.entity.spec.dag._party import PartySpec
 from fate_flow.entity.spec.dag._artifact import RuntimeInputArtifacts, SourceInputArtifacts
 
@@ -26,6 +27,7 @@ class TaskSpec(BaseModel):
     dependent_tasks: Optional[List[str]]
     parameters: Optional[Dict[Any, Any]]
     inputs: Optional[RuntimeInputArtifacts]
+    outputs: Optional[OutputArtifacts]
     parties: Optional[List[PartySpec]]
     conf: Optional[Dict[Any, Any]]
     stage: Optional[Union[Literal["train", "predict", "default", "cross_validation"]]]
@@ -49,8 +51,10 @@ class EngineRunSpec(BaseModel):
 
 
 class TaskConfSpec(BaseModel):
-    run: Optional[Dict]
+    engine_run: Optional[Dict]
     provider: Optional[str]
+    timeout: Optional[int]
+    launcher_name: Optional[str] = "default"
 
 
 class InheritConfSpec(BaseModel):
@@ -67,7 +71,6 @@ class JobConfSpec(BaseModel):
     initiator_party_id: Optional[str]
     inheritance: Optional[InheritConfSpec]
     cores: Optional[int]
-    task_cores: Optional[int]
     computing_partitions: Optional[int]
     sync_type: Optional[Union[Literal["poll", "callback"]]]
     auto_retries: Optional[int]
@@ -75,7 +78,7 @@ class JobConfSpec(BaseModel):
     model_version: Optional[Union[str, int]]
     model_warehouse: Optional[PipelineModel]
     task: Optional[TaskConfSpec]
-    engine: Optional[EngineRunSpec]
+    extra: Optional[Dict[Any, Any]]
 
 
 class DAGSpec(BaseModel):
@@ -87,5 +90,6 @@ class DAGSpec(BaseModel):
 
 
 class DAGSchema(BaseModel):
-    dag: DAGSpec
+    dag: Union[DAGSpec, Any]
     schema_version: str
+    kind: str = "fate"

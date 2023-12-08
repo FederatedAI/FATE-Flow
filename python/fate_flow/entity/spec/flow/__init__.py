@@ -16,6 +16,10 @@ from ._model import MLModelSpec, Metadata
 from ._storage import FileStorageSpec, MysqlStorageSpec, TencentCosStorageSpec
 from ._provider import ProviderSpec, DockerProviderSpec, K8sProviderSpec, LocalProviderSpec
 from ._scheduler import SchedulerInfoSpec
+from ._protocol import SubmitJobInput, SubmitJobOutput, QueryJobInput, QueryJobOutput, StopJobInput, StopJobOutput, \
+    QueryTaskOutput, QueryTaskInput
 
 __all__ = ["MLModelSpec", "FileStorageSpec", "MysqlStorageSpec", "TencentCosStorageSpec", "ProviderSpec",
-           "DockerProviderSpec", "K8sProviderSpec", "LocalProviderSpec", "SchedulerInfoSpec", "Metadata"]
+           "DockerProviderSpec", "K8sProviderSpec", "LocalProviderSpec", "SchedulerInfoSpec", "Metadata",
+           "SubmitJobInput", "SubmitJobOutput", "QueryJobInput", "QueryJobOutput", "StopJobInput", "StopJobOutput",
+           "QueryTaskInput", "QueryTaskOutput"]
