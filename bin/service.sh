@@ -37,43 +37,41 @@
 # -----------------------------------------------------------------------------
 
 # --------------- Color Definitions ---------------
-esc_c="\e[0m"
-error_c="\e[31m"
-ok_c="\e[32m"
-highlight_c="\e[43m"
+esc_c=$(tput sgr0)
+error_c=$(tput setaf 1)
+ok_c=$(tput setaf 2)
+highlight_c=$(tput setaf 3)
 
 # --------------- Logging Functions ---------------
 print_info() {
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     local overwrite=$2
 
-    # Check if we need to overwrite the current line
-    if [ "$overwrite" == "overwrite" ]; then
+    if [ "$overwrite" = "overwrite" ]; then
         echo -ne "\r${ok_c}[${timestamp}][MS]${esc_c} $1"
     else
-        echo -e "${ok_c}[${timestamp}][MS]${esc_c} $1"
+        echo  "${ok_c}[${timestamp}][MS]${esc_c} $1"
     fi
 }
 print_ok() {
     local overwrite=$2
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    if [ "$overwrite" == "overwrite" ]; then
+    if [ "$overwrite" = "overwrite" ]; then
         echo -ne "\r${ok_c}[${timestamp}][OK]${esc_c} $1"
     else
-        echo -e "${ok_c}[${timestamp}][OK]${esc_c} $1"
+        echo "${ok_c}[${timestamp}][OK]${esc_c} $1"
     fi
 }
 
 print_error() {
     local overwrite=$3
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    if [ "$overwrite" == "overwrite" ]; then
+    if [ "$overwrite" = "overwrite" ]; then
         echo -ne "\r${error_c}[${timestamp}][ER]${esc_c} $1: $2"
     else
-        echo -e "${error_c}[${timestamp}][ER]${esc_c} $1: $2"
+        echo  "${error_c}[${timestamp}][ER]${esc_c} $1: $2"
     fi
 }
-
 # --------------- Util Functions ---------------
 # Check if the dependencies are installed on the system
 check_dependencies() {
@@ -196,37 +194,32 @@ check_service_up() {
     local http_port=$4
     local grpc_port=$5
     local elapsed_ms=0
-    local spin_state=0
+    local spin_chars="/-\\|"
 
     while ((elapsed_ms < timeout_ms)); do
         if ! kill -0 "${pid}" 2>/dev/null; then
-            print_error "Process with PID ${pid} is not running." "" "overwrite"
+            echo "Process with PID ${pid} is not running."
             echo
             return 1
         fi
 
         if lsof -i :${http_port} | grep -q LISTEN && lsof -i :${grpc_port} | grep -q LISTEN; then
-            print_ok "Service started successfully!" "overwrite"
+            echo "Service started successfully!"
             echo
             return 0
         fi
 
-        # Update spinning wheel
-        case $spin_state in
-            0) spinner_char="/" ;;
-            1) spinner_char="-" ;;
-            2) spinner_char="\\" ;;
-            3) spinner_char="|" ;;
-        esac
-        print_info "$spinner_char" "overwrite"
-        spin_state=$(((spin_state + 1) % 4))
+        local char_index=$((elapsed_ms / interval_ms % ${#spin_chars}))
+        local char="${spin_chars:char_index:1}"
+        printf "[%s][MS] %s\r" "$(date '+%Y-%m-%d %H:%M:%S')" "$char"
         sleep $((interval_ms / 1000)).$((interval_ms % 1000))
         elapsed_ms=$((elapsed_ms + interval_ms))
     done
-    print_error "Service did not start up within the expected time." "" "overwrite"
+    echo "Service did not start up within the expected time."
     echo
     return 1
 }
+
 # Draw a progress bar for visual feedback
 draw_progress_bar() {
     local completed=$1
@@ -284,7 +277,7 @@ start() {
         exec FATE_PROJECT_BASE="${PROJECT_BASE}" python "${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py" >>"${LOG_STDOUT}" 2>>"${LOG_STDERR}"
     else
         export FATE_PROJECT_BASE="${PROJECT_BASE}"
-        nohup python "${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py" >>"${LOG_STDOUT}" 2> >(tee -a "${LOG_STDERR}" >>"${startup_error_tmp}") &
+        nohup python "${FATE_FLOW_BASE}/python/fate_flow/fate_flow_server.py" >>"${LOG_STDOUT}" 2>>"${LOG_STDERR}" &
         unset FATE_PROJECT_BASE
         pid=$!
         print_info "Process ID (PID): ${highlight_c}${pid}${esc_c}"
