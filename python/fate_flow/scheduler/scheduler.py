@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import abc
+import os
 
 from pydantic import typing
 
@@ -25,7 +26,7 @@ from fate_flow.entity.types import StatusSet, JobStatus, TaskStatus, EndStatus, 
 from fate_flow.entity.code import ReturnCode
 from fate_flow.errors.server_error import NoFoundJob
 from fate_flow.controller.parser import JobParser
-from fate_flow.manager.operation.job_saver import ScheduleJobSaver
+from fate_flow.manager.operation.job_saver import ScheduleJobSaver, JobSaver
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.controller.federated import FederatedScheduler
 from fate_flow.utils import schedule_utils, wraps_utils, job_utils
@@ -343,6 +344,7 @@ class DAGScheduler(SchedulerABC):
         schedule_logger(job.f_job_id).info(f"job finished with {end_status}, do something...")
         cls.stop_job(job_id=job.f_job_id, stop_status=end_status)
         # todo: clean job
+        cls.delete_temp_file(job)
         schedule_logger(job.f_job_id).info(f"job finished with {end_status}, done")
 
     @classmethod
@@ -415,6 +417,17 @@ class DAGScheduler(SchedulerABC):
             dag_schema.dag.conf.model_id, dag_schema.dag.conf.model_version = job_utils.generate_model_info(job_id)
         if not dag_schema.dag.conf.auto_retries:
             dag_schema.dag.conf.auto_retries = JobDefaultConfig.auto_retries
+
+    @classmethod
+    def delete_temp_file(cls, job):
+        task = JobSaver.query_task(job_id=job.f_job_id)
+        if task:
+            parameters = task[0].f_component_parameters.get("parameters", {})
+            is_temp_file = parameters.get("is_temp_file", None)
+            if is_temp_file:
+                file_path = parameters.get('file', None)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
 
 
 class TaskScheduler(object):

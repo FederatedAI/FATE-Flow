@@ -8,12 +8,12 @@ JOB = ["schedule_info", "schedule_error"]
 TASK = ["task_error", "task_info", "task_warning", "task_debug"]
 
 
-def parameters_check(log_type, job_id, role, party_id, task_name):
+def parameters_check(log_type, job_id, role, party_id):
     if log_type in JOB:
         if not job_id:
             return False
     if log_type in TASK:
-        if not job_id or not role or not party_id or not task_name:
+        if not job_id or not role or not party_id:
             return False
     return True
 
@@ -28,14 +28,16 @@ class LogManager:
 
     @property
     def task_base_path(self):
-        if self.role and self.party_id and self.task_name:
-            return os.path.join(self.job_id, self.role, self.party_id, self.task_name, "root")
-        else:
-            return ""
+        if self.role and self.party_id:
+            path = os.path.join(self.job_id, self.role, self.party_id)
+            if self.task_name:
+                path = os.path.join(path, self.task_name, 'root')
+            return path
+        return ""
 
     @property
     def file_path(self):
-        status = parameters_check(self.log_type, self.job_id, self.role, self.party_id, self.task_name)
+        status = parameters_check(self.log_type, self.job_id, self.role, self.party_id)
         if not status:
             raise Exception(f"job type {self.log_type} Missing parameters")
         type_dict = {
