@@ -70,6 +70,7 @@ PROVIDER_NAME = "组件提供方名称"
 DEVICE = "组件运行模式"
 VERSION = "组件版本"
 COMPONENT_METADATA = "组件注册详细信息"
+COMPONENTS_DESCRIPTION = "组件描述"
 PROVIDER_ALL_NAME = "注册的算法全名，提供方+':'+版本+'@'+运行模式，如: fate:2.0.0@local"
 
 # permission

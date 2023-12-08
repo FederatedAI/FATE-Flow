@@ -28,7 +28,7 @@ def get_versions() -> typing.Mapping[str, typing.Any]:
 
 
 def get_flow_version() -> typing.Optional[str]:
-    return get_versions().get("FATEFlow")
+    return get_versions().get("FATE_FLOW")
 
 
 def get_default_fate_version() -> typing.Optional[str]:

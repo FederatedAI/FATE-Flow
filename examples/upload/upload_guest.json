@@ -7,5 +7,7 @@
     "delimiter": ",",
     "label_name": "y",
     "match_id_name": "id"
-  }
+  },
+  "namespace": "experiment",
+  "name": "breast_hetero_guest"
 }

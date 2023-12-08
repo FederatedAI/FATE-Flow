@@ -6,10 +6,10 @@ task_run:
     num-executors: 2
     executor-cores: 2
   eggroll:
-    eggroll.session.processors.per.node: 4
+    cores: 4
   standalone:
     cores: 4
-job_timeout: 259200 # s
+task_timeout: 259200 # s
 remote_request_timeout: 30000  # ms
 federated_command_trys: 3
 auto_retries: 0
@@ -21,7 +21,3 @@ task_logger:
     debug_mode: true
 task_device:
   type: CPU
-launcher:
-  deepspeed:
-    timeout: 21600 # s
-    world_size: 2

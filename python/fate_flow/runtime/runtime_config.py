@@ -13,22 +13,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from ofx.api.client import FlowSchedulerApi
 from fate_flow.entity.types import ProcessRole
 
 from fate_flow.runtime.reload_config_base import ReloadConfigBase
 from fate_flow.utils.version import get_versions
-from fate_flow.hub.scheduler import JobSchedulerABC
 
 
 class RuntimeConfig(ReloadConfigBase):
     HTTP_PORT = None
     JOB_SERVER_HOST = None
     PROCESS_ROLE = None
-    SCHEDULE_CLIENT: FlowSchedulerApi = None
-    SCHEDULER: JobSchedulerABC = None
+    SCHEDULE_CLIENT = None
     CLIENT_ROLE = list()
     SERVICE_DB = None
+    SESSION_LIST = []
     ENV = dict()
 
     @classmethod
@@ -64,10 +62,6 @@ class RuntimeConfig(ReloadConfigBase):
     @classmethod
     def set_schedule_client(cls, schedule_client):
         cls.SCHEDULE_CLIENT = schedule_client
-
-    @classmethod
-    def set_scheduler(cls, scheduler):
-        cls.SCHEDULER = scheduler
 
     @classmethod
     def set_client_roles(cls, *roles):

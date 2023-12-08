@@ -19,7 +19,7 @@ from fate_flow.apps.desc import SERVER_FILE_PATH, HEAD, PARTITIONS, META, EXTEND
     DROP, SITE_NAME
 from fate_flow.engine import storage
 from fate_flow.manager.components.component_manager import ComponentManager
-from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.manager.outputs.data import DataManager
 from fate_flow.utils.api_utils import API
 from fate_flow.errors.server_error import NoFoundTable
 
@@ -35,9 +35,14 @@ page_name = "data"
 @API.Input.json(namespace=fields.String(required=False), desc=NAMESPACE)
 @API.Input.json(name=fields.String(required=False), desc=NAME)
 def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_sid=False):
-    result = ComponentManager.upload(
-        file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
-    )
+    if namespace and name:
+        result = ComponentManager.upload_dataframe(
+            file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
+        )
+    else:
+        result = ComponentManager.upload(
+            file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
+        )
     return API.Output.json(**result)
 
 

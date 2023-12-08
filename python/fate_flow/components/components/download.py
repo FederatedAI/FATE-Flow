@@ -16,24 +16,27 @@ import logging
 
 from fate_flow.components import cpn
 from fate_flow.engine import storage
+from fate_flow.entity.spec.dag import IOMeta, ArtifactOutputSpec, Metadata
 from fate_flow.errors.server_error import NoFoundTable
-from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.manager.outputs.data import DataManager
 
 
 @cpn.component()
 def download(
-    config
+    config,
+    outputs: IOMeta.OutputMeta
 ):
-    download_data(config)
+    download_data(config, outputs)
 
 
-def download_data(config):
+def download_data(config, outputs: IOMeta.OutputMeta):
     job_id = config.pop("job_id")
     download_object = Download()
     download_object.run(
         parameters=DownloadParam(
             **config
-        )
+        ),
+        outputs=outputs
     )
 
 
@@ -55,7 +58,7 @@ class Download:
         self.table = None
         self.data_meta = {}
 
-    def run(self, parameters: DownloadParam):
+    def run(self, parameters: DownloadParam, outputs: IOMeta.OutputMeta):
         data_table_meta = storage.StorageTableMeta(name=parameters.name, namespace=parameters.namespace)
         if not data_table_meta:
             raise NoFoundTable(name=parameters.name, namespace=parameters.namespace)
@@ -65,4 +68,9 @@ class Download:
             output_tables_meta={"data": data_table_meta},
             download_dir=download_dir
         )
+        outputs.data = ArtifactOutputSpec(
+            uri="",
+            metadata=Metadata(namespace=parameters.namespace, name=parameters.name),
+            type_name=data_table_meta.data_type,
+        ).dict()
         logging.info(f"download data success, download path: {parameters.path}")

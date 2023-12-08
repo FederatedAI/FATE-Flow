@@ -17,23 +17,10 @@ from importlib import import_module
 
 from fate_flow.entity.types import ProviderName, ProviderDevice
 from fate_flow.runtime.component_provider import ComponentProvider
-from fate_flow.runtime.system_settings import DEFAULT_JOB_PARSER_MODULE, DEFAULT_JOB_SCHEDULER_MODULE, \
-    DEFAULT_COMPONENTS_WRAPS_MODULE
+from fate_flow.runtime.system_settings import DEFAULT_COMPONENTS_WRAPS_MODULE
 
 
 class FlowHub:
-    @staticmethod
-    def load_job_parser(dag, module_name=DEFAULT_JOB_PARSER_MODULE):
-        class_name = module_name.split(".")[-1]
-        module = ".".join(module_name.split(".")[:-1])
-        return getattr(import_module(module), class_name)(dag)
-
-    @staticmethod
-    def load_job_scheduler(module_name=DEFAULT_JOB_SCHEDULER_MODULE):
-        class_name = module_name.split(".")[-1]
-        module = ".".join(module_name.split(".")[:-1])
-        return getattr(import_module(module), class_name)()
-
     @staticmethod
     def load_components_wraps(config, module_name=None):
         if not module_name:
@@ -46,8 +33,11 @@ class FlowHub:
     def load_provider_entrypoint(provider: ComponentProvider):
         entrypoint = None
         if provider.name == ProviderName.FATE and provider.device == ProviderDevice.LOCAL:
-            from fate_flow.hub.provider.fate import LocalFateEntrypoint
+            from fate_flow.hub.provider.local import LocalFateEntrypoint
             entrypoint = LocalFateEntrypoint(provider)
+        elif provider.device == ProviderDevice.DOCKER:
+            from fate_flow.hub.provider.docker import DockerEntrypoint
+            entrypoint = DockerEntrypoint(provider)
         return entrypoint
 
     @staticmethod

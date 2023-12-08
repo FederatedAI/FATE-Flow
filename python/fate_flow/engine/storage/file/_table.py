@@ -21,7 +21,7 @@ from typing import Iterable
 from pyarrow import fs
 
 from fate_flow.engine.storage import StorageTableBase, StorageEngine
-from fate_flow.manager.data.data_manager import DataManager
+from fate_flow.manager.outputs.data import DataManager
 from fate_flow.utils.log import getLogger
 
 LOGGER = getLogger()
