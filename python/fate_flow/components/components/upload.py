@@ -214,6 +214,8 @@ class Upload:
             "data_type": DataType.TABLE
         }
         self.table.meta.update_metas(**metas_info)
+        # cleanup temp file
+        self.cleanup()
         return table_count
 
     def update_schema(self, fp):
@@ -369,3 +371,8 @@ class Upload:
     @staticmethod
     def generate_table_name():
         return "upload", uuid.uuid1().hex
+
+    def cleanup(self):
+        if self.parameters.is_temp_file:
+            if os.path.exists(self.parameters.file):
+                os.remove(self.parameters.file)
