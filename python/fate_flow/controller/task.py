@@ -43,10 +43,14 @@ class TaskController(object):
                      is_scheduler=False):
         schedule_logger(job_id).info(f"start create {'scheduler' if is_scheduler else 'partner'} tasks ...")
         job_parser = JobParser(dag_schema)
-        task_list = job_parser.topological_sort()
+        task_list = job_parser.global_topological_sort()
         for task_name in task_list:
-            cls.create_task(job_id, role, party_id, task_name, dag_schema, job_parser, task_run=task_run,
-                            is_scheduler=is_scheduler, task_cores=task_cores)
+            parties = job_parser.get_task_runtime_parties(task_name=task_name)
+            need_run = job_utils.check_party_in(role, party_id, parties)
+            schedule_logger(job_id).info(f"task {task_name} role {role} party id {party_id} need run status {need_run}")
+            if need_run:
+                cls.create_task(job_id, role, party_id, task_name, dag_schema, job_parser, task_run=task_run,
+                                is_scheduler=is_scheduler, task_cores=task_cores)
         schedule_logger(job_id).info("create tasks success")
 
     @classmethod
@@ -54,27 +58,24 @@ class TaskController(object):
                     task_cores=None, task_version=0):
         task_id = job_utils.generate_task_id(job_id=job_id, component_name=task_name)
         execution_id = job_utils.generate_session_id(task_id, task_version, role, party_id)
-        task_node = job_parser.get_task_node(task_name=task_name)
+        task_node = job_parser.get_task_node(role=role, party_id=party_id, task_name=task_name)
         task_parser = job_parser.task_parser(
             task_node=task_node, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
             task_id=task_id, execution_id=execution_id, task_version=task_version, parties=dag_schema.dag.parties,
             model_id=dag_schema.dag.conf.model_id, model_version=dag_schema.dag.conf.model_version
         )
-        need_run = task_parser.need_run
-        schedule_logger(job_id).info(f"task {task_name} role {role} part id {party_id} need run status {need_run}")
         if is_scheduler:
-            if need_run:
-                task = ScheduleTask()
-                task.f_job_id = job_id
-                task.f_role = role
-                task.f_party_id = party_id
-                task.f_task_name = task_name
-                task.f_component = task_parser.component_ref
-                task.f_task_id = task_id
-                task.f_task_version = task_version
-                task.f_status = TaskStatus.WAITING
-                task.f_parties = [party.dict() for party in dag_schema.dag.parties]
-                ScheduleJobSaver.create_task(task.to_human_model_dict())
+            task = ScheduleTask()
+            task.f_job_id = job_id
+            task.f_role = role
+            task.f_party_id = party_id
+            task.f_task_name = task_name
+            task.f_component = task_parser.component_ref
+            task.f_task_id = task_id
+            task.f_task_version = task_version
+            task.f_status = TaskStatus.WAITING
+            task.f_parties = [party.dict() for party in dag_schema.dag.parties]
+            ScheduleJobSaver.create_task(task.to_human_model_dict())
         else:
             task_parameters = task_parser.task_parameters
             if task_parser.engine_run:
@@ -92,7 +93,7 @@ class TaskController(object):
             task.f_task_id = task_id
             task.f_task_version = task_version
             task.f_scheduler_party_id = dag_schema.dag.conf.scheduler_party_id
-            task.f_status = TaskStatus.WAITING if need_run else TaskStatus.PASS
+            task.f_status = TaskStatus.WAITING
             task.f_party_status = TaskStatus.WAITING
             task.f_execution_id = execution_id
             task.f_provider_name = task_parser.provider
@@ -139,7 +140,7 @@ class TaskController(object):
         if task_name:
             task_list = [task_name]
         else:
-            task_list = job_parser.topological_sort()
+            task_list = job_parser.global_topological_sort()
         for _task_name in task_list:
             task_info = {
                 "job_id": job_id,

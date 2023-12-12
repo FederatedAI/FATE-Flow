@@ -69,7 +69,7 @@ class RuntimeInputDefinition(BaseModel):
 class ArtifactTypeSpec(BaseModel):
     type_name: str
     uri_types: List[str]
-    path_type: Literal["file", "directory", "distributed"]
+    path_type: Literal["file", "directory", "distributed", "unresolved"]
 
 
 class ComponentIOArtifactTypeSpec(BaseModel):

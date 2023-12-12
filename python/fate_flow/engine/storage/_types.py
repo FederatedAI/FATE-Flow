@@ -20,6 +20,8 @@ class DataType:
     TABLE = "table"
     DATAFRAME = "dataframe"
     FILE = "file"
+    DATA_DIRECTORY = "data_directory"
+    DATA_UNRESOLVED = "data_unresolved"
 
 
 class StorageOrigin(object):

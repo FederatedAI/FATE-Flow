@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 from fate_flow.entity.spec.dag._output import OutputArtifacts
 from fate_flow.entity.spec.dag._party import PartySpec
-from fate_flow.entity.spec.dag._artifact import RuntimeInputArtifacts, SourceInputArtifacts
+from fate_flow.entity.spec.dag._artifact import RuntimeInputArtifacts
 
 
 class TaskSpec(BaseModel):
@@ -35,7 +35,6 @@ class TaskSpec(BaseModel):
 
 class PartyTaskRefSpec(BaseModel):
     parameters: Optional[Dict[Any, Any]]
-    inputs: Optional[SourceInputArtifacts]
     conf: Optional[Dict]
 
 
