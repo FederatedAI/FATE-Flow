@@ -70,6 +70,11 @@ class LoggerConfigBuilder:
             loglevel=level,
         )
 
+        os.makedirs(aggregate_log_base_dir, exist_ok=True)
+        self._add_party_id_loggers(
+            aggregate_log_base_dir=aggregate_log_base_dir, formatter_name="root", delay=delay
+        )
+
         if aggregate_log_base_dir is not None:
             self._add_aggregate_error_logger(
                 aggregate_log_base_dir, formatter_name="root", delay=delay
@@ -91,6 +96,14 @@ class LoggerConfigBuilder:
             handler_name = f"root_{level.lower()}"
             self.handlers[handler_name] = self._create_file_handler(
                 level, formatter_name, delay, os.path.join(log_base_dir, level)
+            )
+            self.root["handlers"].append(handler_name)
+
+    def _add_party_id_loggers(self, aggregate_log_base_dir, formatter_name, delay):
+        for level in _LOGGER_LEVELS:
+            handler_name = f"root_{level.lower()}"
+            self.handlers[handler_name] = self._create_file_handler(
+                level, formatter_name, delay, os.path.join(aggregate_log_base_dir, level)
             )
             self.root["handlers"].append(handler_name)
 

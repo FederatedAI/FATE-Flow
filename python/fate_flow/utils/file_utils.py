@@ -90,3 +90,9 @@ def rewrite_json_file(filepath, json_data):
     with open(filepath, "w") as f:
         json.dump(json_data, f, indent=4, separators=(",", ": "))
     f.close()
+
+
+def save_file(file, path):
+    with open(path, 'wb') as f:
+        content = file.stream.read()
+        f.write(content)
