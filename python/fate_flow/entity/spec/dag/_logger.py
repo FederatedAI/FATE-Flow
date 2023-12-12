@@ -101,7 +101,7 @@ class LoggerConfigBuilder:
 
     def _add_party_id_loggers(self, aggregate_log_base_dir, formatter_name, delay):
         for level in _LOGGER_LEVELS:
-            handler_name = f"root_{level.lower()}"
+            handler_name = f"root_party_{level.lower()}"
             self.handlers[handler_name] = self._create_file_handler(
                 level, formatter_name, delay, os.path.join(aggregate_log_base_dir, level)
             )
