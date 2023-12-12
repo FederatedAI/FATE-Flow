@@ -23,7 +23,7 @@ from fate_flow.entity.spec.dag import DataWarehouseChannelSpec, ModelWarehouseCh
     RuntimeTaskOutputChannelSpec, ComponentSpec, EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec, \
     StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \
     PulsarFederationSpec, RabbitMQFederationSpec, FlowLogger, MLMDSpec, TaskRuntimeConfSpec, \
-    DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts, OutputArtifactType
+    DAGSchema, DAGSpec, PreTaskConfigSpec, FlowRuntimeInputArtifacts, OutputArtifactType, PartySpec
 from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputArtifactType, ArtifactSourceType, \
     ComputingEngine, OSXMode
 from fate_flow.manager.service.provider_manager import ProviderManager
@@ -139,10 +139,6 @@ class TaskParser(object):
         self._provider = None
 
     @property
-    def need_run(self):
-        return (self.role, self.party_id) in [(party.role, party.party_id) for party in self.runtime_parties]
-
-    @property
     def federation_id(self):
         return job_utils.generate_task_version_id(task_id=self.task_id, task_version=self.task_version)
 
@@ -172,7 +168,7 @@ class TaskParser(object):
 
     @property
     def task_runtime_conf(self):
-        _rc = self.task_node.conf.get(self.role, {}).get(self.party_id, {})
+        _rc = self.task_node.conf
         return _rc if _rc else {}
 
     @property
@@ -200,7 +196,7 @@ class TaskParser(object):
 
     @property
     def input_parameters(self):
-        return self.task_node.runtime_parameters.get(self.role, {}).get(self.party_id, {})
+        return self.task_node.runtime_parameters
 
     @staticmethod
     def generate_mlmd():
@@ -353,7 +349,7 @@ class TaskParser(object):
             stage=self.stage,
             party_id=self.party_id,
             parameters=self.input_parameters,
-            input_artifacts=self.task_node.upstream_inputs.get(self.role).get(self.party_id),
+            input_artifacts=self.task_node.upstream_inputs,
             conf=self.task_conf,
             mlmd=self.generate_mlmd()
         )
@@ -361,11 +357,13 @@ class TaskParser(object):
 
 class DagParser(object):
     def __init__(self):
-        self._dag = nx.DiGraph()
+        self._dag = dict()
+        self._global_dag = nx.DiGraph()
         self._links = dict()
         self._task_parameters = dict()
         self._task_parties = dict()
         self._tasks = dict()
+        self._task_runtime_parties = dict()
         self._conf = dict()
 
     def parse_dag(self, dag_schema: DAGSchema, component_specs: Dict[str, ComponentSpec] = None):
@@ -375,23 +373,45 @@ class DagParser(object):
         if dag_spec.conf:
             self._conf = dag_spec.conf.dict(exclude_defaults=True)
         job_conf = self._conf.get("task", {})
+
+        for party in dag_spec.parties:
+            if party.role not in self._dag:
+                self._dag[party.role] = dict()
+            for party_id in party.party_id:
+                self._dag[party.role][party_id] = nx.DiGraph()
+
         for name, task_spec in tasks.items():
-            self._dag.add_node(name)
+            parties = task_spec.parties if task_spec.parties else dag_spec.parties
             task_stage = dag_stage
             component_ref = task_spec.component_ref
+            if task_spec.stage:
+                task_stage = task_spec.stage
+
+            self._global_dag.add_node(name)
+
+            self._task_runtime_parties[name] = parties
+
+            for party_spec in parties:
+                if party_spec.role not in self._tasks:
+                    self._tasks[party_spec.role] = dict()
+                for party_id in party_spec.party_id:
+                    self._dag[party_spec.role][party_id].add_node(name)
+                    if party_id not in self._tasks[party_spec.role]:
+                        self._tasks[party_spec.role][party_id] = dict()
+                    self._tasks[party_spec.role][party_id].update({
+                        name: TaskNodeInfo()
+                    })
+                    self._tasks[party_spec.role][party_id][name].stage = task_stage
+                    self._tasks[party_spec.role][party_id][name].component_ref = component_ref
+                    if component_specs:
+                        self._tasks[party_spec.role][party_id][name].component_spec = component_specs[name]
+
+        for name, task_spec in tasks.items():
             if not task_spec.conf:
                 task_conf = copy.deepcopy(job_conf)
             else:
                 task_conf = copy.deepcopy(job_conf)
                 task_conf.update(task_spec.conf)
-            if task_spec.stage:
-                task_stage = task_spec.stage
-
-            self._tasks[name] = TaskNodeInfo()
-            self._tasks[name].stage = task_stage
-            self._tasks[name].component_ref = component_ref
-            if component_specs:
-                self._tasks[name].component_spec = component_specs[name]
 
             self._init_task_runtime_parameters_and_conf(name, dag_schema, task_conf)
 
@@ -400,51 +420,37 @@ class DagParser(object):
 
     def _init_upstream_inputs(self, name, dag: DAGSpec):
         task_spec = dag.tasks[name]
-        common_upstream_inputs = dict()
-        if task_spec.inputs:
-            common_upstream_inputs = self._get_upstream_inputs(name, task_spec)
-
         upstream_inputs = dict()
-        role_keys = set([party.role for party in dag.parties])
-        for party in dag.parties:
-            if party.role not in role_keys:
-                continue
-            upstream_inputs[party.role] = dict()
+
+        parties = task_spec.parties if task_spec.parties else dag.parties
+        for party in parties:
+            if party.role not in upstream_inputs:
+                upstream_inputs[party.role] = dict()
             for party_id in party.party_id:
-                upstream_inputs[party.role][party_id] = copy.deepcopy(common_upstream_inputs)
+                self._tasks[party.role][party_id][name].upstream_inputs = self._get_upstream_inputs(
+                    name, task_spec, party.role, party_id
+                )
 
-        party_tasks = dag.party_tasks
-        if not party_tasks:
-            self._tasks[name].upstream_inputs = upstream_inputs
-            return
-
-        for site_name, party_tasks_spec in party_tasks.items():
-            if not party_tasks_spec.tasks or name not in party_tasks_spec.tasks:
-                continue
-            party_task_spec = party_tasks_spec.tasks[name]
-            if not party_task_spec.inputs:
-                continue
-            party_upstream_inputs = self._get_upstream_inputs(name, party_task_spec)
-            for party in party_tasks_spec.parties:
-                for party_id in party.party_id:
-                    upstream_inputs[party.role][party_id].update(party_upstream_inputs)
-
-        self._tasks[name].upstream_inputs = upstream_inputs
-
-    def _get_upstream_inputs(self, name, task_spec):
+    def _get_upstream_inputs(self, name, task_spec, role, party_id):
         upstream_inputs = dict()
-        runtime_roles = self._tasks[name].runtime_roles
+        runtime_parties = task_spec.parties
+
+        if runtime_parties:
+            runtime_parties_dict = dict((party.role, party.party_id) for party in runtime_parties)
+            if role not in runtime_parties_dict or party_id not in runtime_parties_dict[role]:
+                return upstream_inputs
+
         input_artifacts = task_spec.inputs
+
+        if not input_artifacts:
+            return upstream_inputs
 
         for input_type in InputArtifactType.types():
             artifacts = getattr(input_artifacts, input_type)
             if not artifacts:
                 continue
 
-            upstream_inputs[input_type] = dict()
-
             for input_key, output_specs_dict in artifacts.items():
-                upstream_inputs[input_type][input_key] = dict()
                 for artifact_source, channel_spec_list in output_specs_dict.items():
                     if artifact_source == ArtifactSourceType.MODEL_WAREHOUSE:
                         if isinstance(channel_spec_list, list):
@@ -463,30 +469,54 @@ class DagParser(object):
                                 inputs.model_id = self._conf.get("model_warehouse", {}).get("model_id", None)
                                 inputs.model_version = self._conf.get("model_warehouse", {}).get("model_version", None)
 
+                        if input_type not in upstream_inputs:
+                            upstream_inputs[input_type] = dict()
                         upstream_inputs[input_type][input_key] = inputs
-                        continue
-                    else:
-                        if artifact_source == ArtifactSourceType.DATA_WAREHOUSE:
-                            channel_spec = DataWarehouseChannelSpec
-                        else:
-                            channel_spec = RuntimeTaskOutputChannelSpec
+                    elif artifact_source == ArtifactSourceType.MODEL_WAREHOUSE:
                         if isinstance(channel_spec_list, list):
-                            inputs = [channel_spec(**channel.dict(exclude_defaults=True))
+                            inputs = [DataWarehouseChannelSpec(**channel.dict(exclude_defaults=True))
                                       for channel in channel_spec_list]
                         else:
-                            inputs = channel_spec(**channel_spec_list.dict(exclude_defaults=True))
+                            inputs = DataWarehouseChannelSpec(**channel_spec_list.dict(exclude_defaults=True))
 
+                        if input_type not in upstream_inputs:
+                            upstream_inputs[input_type] = dict()
+                        upstream_inputs[input_type][input_key] = inputs
+                    else:
+                        if not isinstance(channel_spec_list, list):
+                            channel_spec_list = [channel_spec_list]
+
+                        filter_channel_spec_list = []
+                        for channel_spec in channel_spec_list:
+                            if channel_spec.parties:
+                                parties_dict = dict((party.role, party.party_id) for party in channel_spec.parties)
+                                if role not in parties_dict or party_id not in parties_dict[role]:
+                                    continue
+                            else:
+                                if channel_spec.producer_task not in self._dag[role][party_id].nodes:
+                                    continue
+
+                            filter_channel_spec_list.append(channel_spec)
+
+                        if not filter_channel_spec_list:
+                            continue
+
+                        if len(filter_channel_spec_list) > 1:
+                            inputs = [RuntimeTaskOutputChannelSpec(**channel.dict(exclude_defaults=True))
+                                      for channel in filter_channel_spec_list]
+                        else:
+                            inputs = RuntimeTaskOutputChannelSpec(**filter_channel_spec_list[0].dict(exclude_defaults=True))
+
+                        if input_type not in upstream_inputs:
+                            upstream_inputs[input_type] = dict()
                         upstream_inputs[input_type][input_key] = inputs
 
-                    if not isinstance(channel_spec_list, list):
-                        channel_spec_list = [channel_spec_list]
-
-                    for channel_spec in channel_spec_list:
-                        if isinstance(channel_spec, RuntimeTaskOutputChannelSpec):
+                        for channel_spec in filter_channel_spec_list:
                             dependent_task = channel_spec.producer_task
-                            self._add_edge(dependent_task, name)
+                            self._add_edge(dependent_task, name, role, party_id)
 
-        upstream_inputs = self.check_and_add_runtime_roles(upstream_inputs, runtime_roles, artifact_type="input")
+        upstream_inputs = self.check_and_add_runtime_party(upstream_inputs, role, party_id, artifact_type="input")
+
         return upstream_inputs
 
     def _init_outputs(self, name, dag: DAGSpec):
@@ -523,46 +553,35 @@ class DagParser(object):
 
         self._tasks[name].outputs = party_outputs
 
-    def _add_edge(self, src, dst, attrs=None):
+    def _add_edge(self, src, dst, role, party_id, attrs=None):
         if not attrs:
             attrs = {}
 
-        self._dag.add_edge(src, dst, **attrs)
+        self._dag[role][party_id].add_edge(src, dst, **attrs)
+        self._global_dag.add_edge(src, dst, **attrs)
 
     def _init_task_runtime_parameters_and_conf(self, task_name: str, dag_schema: DAGSchema, global_task_conf):
         dag = dag_schema.dag
-        role_keys = set([party.role for party in dag.parties])
         task_spec = dag.tasks[task_name]
-        if task_spec.parties:
-            task_role_keys = set([party.role for party in task_spec.parties])
-            role_keys = role_keys & task_role_keys
 
         common_parameters = dict()
         if task_spec.parameters:
             common_parameters = task_spec.parameters
 
-        task_parameters = dict()
-        task_conf = dict()
-        task_runtime_parties = []
+        parties = dag.parties if not task_spec.parties else task_spec.parties
 
-        for party in dag.parties:
-            if party.role not in role_keys:
-                continue
-            task_parameters[party.role] = dict()
-            task_conf[party.role] = dict()
+        for party in parties:
             for party_id in party.party_id:
-                task_parameters[party.role][party_id] = copy.deepcopy(common_parameters)
-                task_conf[party.role][party_id] = copy.deepcopy(global_task_conf)
-                task_runtime_parties.append(Party(role=party.role, party_id=party_id))
+                self._tasks[party.role][party_id][task_name].runtime_parameters = copy.deepcopy(common_parameters)
+                self._tasks[party.role][party_id][task_name].conf = copy.deepcopy(global_task_conf)
 
         if dag.party_tasks:
             party_tasks = dag.party_tasks
             for site_name, party_tasks_spec in party_tasks.items():
                 if party_tasks_spec.conf:
                     for party in party_tasks_spec.parties:
-                        if party.role in task_parameters:
-                            for party_id in party.party_id:
-                                task_conf[party.role][party_id].update(party_tasks_spec.conf)
+                        for party_id in party.party_id:
+                            self._tasks[party.role][party_id][task_name].conf.update(party_tasks_spec.conf)
 
                 if not party_tasks_spec.tasks or task_name not in party_tasks_spec.tasks:
                     continue
@@ -572,21 +591,15 @@ class DagParser(object):
 
                 if party_task_spec.conf:
                     for party in party_parties:
-                        if party.role in task_parameters:
-                            for party_id in party.party_id:
-                                task_conf[party.role][party_id].update(party_task_spec.conf)
+                        for party_id in party.party_id:
+                            self._tasks[party.role][party_id][task_name].conf.update(party_tasks_spec.conf)
 
                 parameters = party_task_spec.parameters
 
                 if parameters:
                     for party in party_parties:
-                        if party.role in task_parameters:
-                            for party_id in party.party_id:
-                                task_parameters[party.role][party_id].update(parameters)
-
-        self._tasks[task_name].runtime_parameters = task_parameters
-        self._tasks[task_name].runtime_parties = task_runtime_parties
-        self._tasks[task_name].conf = task_conf
+                        for party_id in party.party_id:
+                            self._tasks[party.role][party_id][task_name].runtime_parameters.update(parameters)
 
     def get_runtime_roles_on_party(self, task_name, party_id):
         task: TaskNodeInfo = self._tasks[task_name]
@@ -599,17 +612,17 @@ class DagParser(object):
 
         return list(runtime_roles)
 
-    def get_task_node(self, task_name):
-        return self._tasks[task_name]
+    def get_task_node(self, role, party_id, task_name):
+        return self._tasks[role][party_id][task_name]
 
-    def get_need_revisit_tasks(self, visited_tasks, failed_tasks):
+    def get_need_revisit_tasks(self, visited_tasks, failed_tasks, role, party_id):
         """
         visited_tasks: already visited tasks
         failed_tasks: failed tasks
 
         this function finds tasks need to rerun, a task need to rerun if is upstreams is failed
         """
-        invalid_tasks = set(self.topological_sort()) - set(visited_tasks)
+        invalid_tasks = set(self.party_topological_sort(role, party_id)) - set(visited_tasks)
         invalid_tasks |= set(failed_tasks)
 
         revisit_tasks = []
@@ -624,7 +637,7 @@ class DagParser(object):
 
             while len(stack) > 0 and task_valid:
                 task = stack.pop()
-                pre_tasks = self.predecessors(task)
+                pre_tasks = self.party_predecessors(role, party_id, task)
 
                 for pre_task in pre_tasks:
                     if pre_task in task_stack:
@@ -641,20 +654,26 @@ class DagParser(object):
 
         return revisit_tasks
 
-    def topological_sort(self):
-        return nx.topological_sort(self._dag)
+    def topological_sort(self, role, party_id):
+        return nx.topological_sort(self._dag[role][party_id])
 
-    def predecessors(self, task):
-        return set(self._dag.predecessors(task))
+    def global_topological_sort(self):
+        return nx.topological_sort(self._global_dag)
 
-    def successors(self, task):
-        return self._dag.successors(task)
+    def party_topological_sort(self, role, party_id):
+        return nx.topological_sort(self._dag[role][party_id])
 
-    def get_edge_attr(self, src, dst):
-        return self._dag.edges[src, dst]
+    def party_predecessors(self, role, party_id, task):
+        return set(self._dag[role][party_id].predecessors(task))
+
+    def party_successors(self, role, party_id, task):
+        return self._dag[role][party_id].successors(task)
+
+    def get_edge_attr(self, role, party_id, src, dst):
+        return self._dag[role][party_id].edges[src, dst]
 
     @staticmethod
-    def check_and_add_runtime_roles(artifacts, runtime_roles, artifact_type):
+    def check_and_add_runtime_party(artifacts, role, party_id, artifact_type):
         correct_artifacts = copy.deepcopy(artifacts)
         if artifact_type == "input":
             types = InputArtifactType.types()
@@ -667,17 +686,22 @@ class DagParser(object):
             for _key, channel_list in artifacts[t].items():
                 if isinstance(channel_list, list):
                     for idx, channel in enumerate(channel_list):
-                        if channel.roles is None:
-                            correct_artifacts[t][_key][idx].roles = runtime_roles
+                        correct_artifacts[t][_key][idx].parties = [PartySpec(role=role, party_id=[party_id])]
                 else:
-                    if channel_list.roles is None:
-                        correct_artifacts[t][_key].roles = runtime_roles
+                    correct_artifacts[t][_key].parties = [PartySpec(role=role, party_id=[party_id])]
 
         return correct_artifacts
 
     @property
     def conf(self):
         return self._conf
+
+    @property
+    def task_runtime_parties(self):
+        return self._task_runtime_parties
+
+    def get_task_runtime_parties(self, task_name):
+        return self._task_runtime_parties[task_name]
 
     @classmethod
     def infer_dependent_tasks(cls, input_artifacts):
@@ -712,11 +736,17 @@ class JobParser(object):
         self.dag_parser = DagParser()
         self.dag_parser.parse_dag(dag_conf)
 
-    def get_task_node(self, task_name):
-        return self.dag_parser.get_task_node(task_name)
+    def get_task_node(self, role, party_id, task_name):
+        return self.dag_parser.get_task_node(role, party_id, task_name)
 
     def topological_sort(self):
-        return self.dag_parser.topological_sort()
+        return self.dag_parser.global_topological_sort()
+
+    def global_topological_sort(self):
+        return self.dag_parser.global_topological_sort()
+
+    def party_topological_sort(self, role, party_id):
+        return self.dag_parser.party_topological_sort(role, party_id)
 
     def infer_dependent_tasks(self, input_artifacts):
         return self.dag_parser.infer_dependent_tasks(input_artifacts)
@@ -727,14 +757,10 @@ class JobParser(object):
 
     def component_ref_list(self, role, party_id):
         _list = []
-        for name in self.topological_sort():
-            node = self.get_task_node(name)
+        for name in self.party_topological_sort(role=role, party_id=party_id):
+            node = self.get_task_node(role=role, party_id=party_id, task_name=name)
             if node:
-                if self.task_parser(
-                        task_node=self.get_task_node(task_name=name),
-                        job_id="", task_name=name, role=role, party_id=party_id
-                ).need_run:
-                    _list.append(node.component_ref)
+                _list.append(node.component_ref)
         return _list
 
     def dataset_list(self, role, party_id) -> List[DataSet]:
@@ -746,8 +772,8 @@ class JobParser(object):
                         "namespace": channel.namespace
                     }))
         _list = []
-        for task_name in self.topological_sort():
-            task_node = self.get_task_node(task_name)
+        for task_name in self.party_topological_sort(role=role, party_id=party_id):
+            task_node = self.get_task_node(role=role, party_id=party_id, task_name=task_name)
             input_artifacts = FlowRuntimeInputArtifacts(**task_node.upstream_inputs.get(role, {}).get(party_id, {}))
             if input_artifacts.data:
                 for _k, _channels in input_artifacts.data.items():
@@ -760,13 +786,16 @@ class JobParser(object):
 
     def role_parameters(self, role, party_id):
         _dict = {}
-        for task_name in self.topological_sort():
-            task_node = self.get_task_node(task_name)
-            _dict[task_node.component_ref] = task_node.runtime_parameters.get(role, {}).get(party_id, {})
+        for task_name in self.party_topological_sort(role=role, party_id=party_id):
+            task_node = self.get_task_node(task_name=task_name, role=role, party_id=party_id)
+            _dict[task_node.component_ref] = task_node.runtime_parameters
         return _dict
 
     def get_runtime_roles_on_party(self, task_name, party_id):
         return self.dag_parser.get_runtime_roles_on_party(task_name, party_id)
+
+    def get_task_runtime_parties(self, task_name):
+        return self.dag_parser.get_task_runtime_parties(task_name)
 
 
 class Party(BaseModel):

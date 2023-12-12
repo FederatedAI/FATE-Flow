@@ -188,3 +188,11 @@ def check_task_is_timeout(task: Task):
         return True
     else:
         return False
+
+
+def check_party_in(role, party_id, parties):
+    for party in parties:
+        if party.role == role:
+            if party_id in party.party_id:
+                return True
+    return False

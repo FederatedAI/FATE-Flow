@@ -28,7 +28,8 @@ from fate_flow.engine.storage import StorageEngine, DataType, Session
 from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec.dag import PreTaskConfigSpec, DataWarehouseChannelSpec, ComponentIOArtifactsTypeSpec, \
     TaskConfigSpec, ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
-    ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta, TaskCleanupConfigSpec
+    ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ComponentOutputMeta, TaskCleanupConfigSpec, \
+    PartySpec
 
 from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, TaskStatus, ComputingEngine, \
     JsonModelArtifactType, LauncherType
@@ -216,11 +217,14 @@ class FlowWraps(WrapsABC):
             logger.info(f"save data tracking to {namespace}, {name}")
             overview = output_data.metadata.data_overview
             source = output_data.metadata.source
+            uri = output_data.uri
+            if output_data.type_name == DataType.DATA_UNRESOLVED:
+                uri = ""
             resp = self.mlmd.save_data_tracking(
                 execution_id=self.config.party_task_id,
                 output_key=output_key,
                 meta_data=output_data.metadata.metadata.get("schema", {}),
-                uri=output_data.uri,
+                uri=uri,
                 namespace=namespace,
                 name=name,
                 overview=overview.dict() if overview else {},
@@ -325,6 +329,8 @@ class FlowWraps(WrapsABC):
                         _artifacts = self._intput_data_artifacts(_k, _channel)
                         if _artifacts:
                             input_artifacts[_k].append(_artifacts)
+                elif self._check_is_multi_input_data(_k):
+                    input_artifacts[_k] = [self._intput_data_artifacts(_k, _channels)]
                 else:
                     input_artifacts[_k] = self._intput_data_artifacts(_k, _channels)
                 if not input_artifacts[_k]:
@@ -336,11 +342,25 @@ class FlowWraps(WrapsABC):
                     input_artifacts[_k] = []
                     for _channel in _channels:
                         input_artifacts[_k].append(self._intput_model_artifacts(_k, _channel))
+                elif self._check_is_multi_input_model(_k):
+                    input_artifacts[_k] = [self._intput_model_artifacts(_k, _channels)]
                 else:
                     input_artifacts[_k] = self._intput_model_artifacts(_k, _channels)
                 if not input_artifacts[_k]:
                     input_artifacts.pop(_k)
         return input_artifacts
+
+    def _check_is_multi_input_model(self, key):
+        for define in self.component_define.inputs.model:
+            if define.name == key and define.is_multi:
+                return True
+        return False
+
+    def _check_is_multi_input_data(self, key):
+        for define in self.component_define.inputs.data:
+            if define.name == key and define.is_multi:
+                return True
+        return False
 
     def _preprocess_output_artifacts(self):
         # get component define
@@ -403,7 +423,7 @@ class FlowWraps(WrapsABC):
             self._component_define = ComponentIOArtifactsTypeSpec(**define)
 
     def _intput_data_artifacts(self, key, channel):
-        if self.config.role not in channel.roles:
+        if not job_utils.check_party_in(self.config.role, self.config.party_id, channel.parties):
             logger.info(f"role {self.config.role} does not require intput data artifacts")
             return
         # data reference conversion
@@ -482,7 +502,7 @@ class FlowWraps(WrapsABC):
             raise RuntimeError(resp_data)
 
     def _intput_model_artifacts(self, key, channel):
-        if self.config.role not in channel.roles:
+        if not job_utils.check_party_in(self.config.role, self.config.party_id, channel.parties):
             logger.info(f"role {self.config.role} does not require intput model artifacts")
             return
         # model reference conversion
