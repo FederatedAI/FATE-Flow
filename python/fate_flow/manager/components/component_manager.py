@@ -14,6 +14,9 @@
 #  limitations under the License.
 #
 import uuid
+import os
+from tempfile import NamedTemporaryFile
+
 
 from fate_flow.controller.job import JobController
 from fate_flow.entity.code import ReturnCode
@@ -25,17 +28,20 @@ from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.system_settings import ENGINES, STORAGE
 from fate_flow.engine import storage
 from fate_flow.errors.server_error import ExistsTable
+from fate_flow.utils.file_utils import save_file
+from fate_flow.utils.file_utils import get_fate_flow_directory
 
 
 class ComponentManager(Base):
     @classmethod
-    def upload(cls, file, head, partitions, meta, namespace, name, extend_sid):
+    def upload(cls, file, head, partitions, meta, namespace, name, extend_sid, temp_path=None):
         parameters = {
             "file": file,
             "head": head,
             "partitions": partitions,
             "meta": meta,
-            "extend_sid": extend_sid
+            "extend_sid": extend_sid,
+            "is_temp_file": True if temp_path else False
         }
         if not name or not namespace:
             name = str(uuid.uuid1())
@@ -142,3 +148,13 @@ class ComponentManager(Base):
         if result.get("code") == ReturnCode.Base.SUCCESS:
             result["data"] = {"name": name, "namespace": namespace}
         return result
+
+    @classmethod
+    def upload_file(cls, file, head, partitions, meta, namespace, name, extend_sid):
+        path = os.path.join(get_fate_flow_directory(), "temp_file")
+        if not os.path.exists(path):
+            os.makedirs(path)
+        with NamedTemporaryFile(dir=path, prefix='temp_file_', suffix='.csv', delete=False) as temp_file:
+            temp_path = temp_file.name
+            save_file(file, temp_path)
+        return cls.upload(temp_path, head, partitions, meta, namespace, name, extend_sid, temp_path=temp_path)
