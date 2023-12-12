@@ -17,6 +17,8 @@ from typing import Literal, Union, List, Dict, Optional
 import pydantic
 from pydantic import typing
 
+from ._party import PartySpec
+
 
 class MetricData(pydantic.BaseModel):
     class Group(pydantic.BaseModel):
@@ -105,7 +107,7 @@ class ComponentOutputMeta(pydantic.BaseModel):
 class OutputArtifactSpec(pydantic.BaseModel):
     output_artifact_key_alias: str
     output_artifact_type_alias: str
-    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
+    parties: Optional[List[PartySpec]]
 
 
 class OutputArtifacts(pydantic.BaseModel):

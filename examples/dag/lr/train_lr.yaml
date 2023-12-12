@@ -16,32 +16,32 @@ dag:
         - '9999'
         role: guest
       tasks:
-        psi_0:
-          inputs:
-            data:
-              input_data:
-                data_warehouse:
-                  name: breast_hetero_guest
-                  namespace: experiment
-                  roles:
-                  - guest
+        reader_0:
+          parameters:
+            name: breast_hetero_guest
+            namespace: experiment
     host_9998:
       parties:
       - party_id:
         - '9998'
         role: host
       tasks:
-        psi_0:
-          inputs:
-            data:
-              input_data:
-                data_warehouse:
-                  name: breast_hetero_host
-                  namespace: experiment
-                  roles:
-                  - host
+        reader_0:
+          parameters:
+            name: breast_hetero_host
+            namespace: experiment
   stage: train
   tasks:
+    reader_0:
+      component_ref: reader
+      parties:
+        - party_id:
+            - '9999'
+          role: guest
+        - party_id:
+            - '9998'
+          role: host
+      stage: default
     binning_0:
       component_ref: hetero_feature_binning
       dependent_tasks:
@@ -82,10 +82,12 @@ dag:
         data:
           input_data:
             task_output_artifact:
-            - output_artifact_key: train_output_data
-              producer_task: lr_0
-              roles:
-              - guest
+              - output_artifact_key: train_output_data
+                producer_task: lr_0
+                parties:
+                - party_id:
+                  - '9999'
+                  role: guest
       parameters:
         default_eval_setting: binary
         label_column_name: null
@@ -106,9 +108,13 @@ dag:
             task_output_artifact:
               output_artifact_key: train_output_data
               producer_task: selection_0
-              roles:
-              - guest
-              - host
+              parties:
+                - party_id:
+                    - '9999'
+                  role: guest
+                - party_id:
+                    - '9998'
+                  role: host
         model: {}
       parameters:
         batch_size: null
@@ -121,7 +127,11 @@ dag:
     psi_0:
       component_ref: psi
       inputs:
-        data: {}
+        data:
+          input_data:
+            task_output_artifact:
+              output_artifact_key: data_output
+              producer_task: reader_0
       parameters: {}
       parties:
       - party_id:

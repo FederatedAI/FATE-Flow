@@ -62,5 +62,5 @@ def bind_path(namespace, name, path):
         value_serdes_type=0,
         partitioner_type=0,
     )
-    storage_meta.create_meta(data_type=DataType.FILE)
+    storage_meta.create_meta(data_type=DataType.DATA_DIRECTORY)
     return API.Output.json()

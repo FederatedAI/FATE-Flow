@@ -24,6 +24,8 @@ import pydantic
 # path      = $5
 # query     = $7
 # fragment  = $9
+from ._party import PartySpec
+
 _uri_regex = re.compile(r"^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?")
 
 
@@ -127,8 +129,8 @@ class URI:
 class RuntimeTaskOutputChannelSpec(pydantic.BaseModel):
     producer_task: str
     output_artifact_key: str
-    output_artifact_type_alias: Optional[str] # protocol = "bfia" using
-    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
+    output_artifact_type_alias: Optional[str]
+    parties: Optional[List[PartySpec]]
 
     class Config:
         extra = "forbid"
@@ -138,10 +140,10 @@ class DataWarehouseChannelSpec(pydantic.BaseModel):
     job_id: Optional[str]
     producer_task: Optional[str]
     output_artifact_key: Optional[str]
-    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
     namespace: Optional[str]
     name: Optional[str]
     dataset_id: Optional[str]
+    parties: Optional[List[PartySpec]]
 
     class Config:
         extra = "forbid"
@@ -152,7 +154,7 @@ class ModelWarehouseChannelSpec(pydantic.BaseModel):
     model_version: Optional[str]
     producer_task: str
     output_artifact_key: str
-    roles: Optional[List[Literal["guest", "host", "arbiter", "local"]]]
+    parties: Optional[List[PartySpec]]
 
     class Config:
         extra = "forbid"
@@ -164,19 +166,9 @@ InputArtifactSpec = TypeVar("InputArtifactSpec",
                             DataWarehouseChannelSpec)
 
 
-SourceInputArtifactSpec = TypeVar("SourceInputArtifactSpec",
-                                  ModelWarehouseChannelSpec,
-                                  DataWarehouseChannelSpec)
-
-
 class RuntimeInputArtifacts(pydantic.BaseModel):
     data: Optional[Dict[str, Dict[str, Union[List[InputArtifactSpec], InputArtifactSpec]]]]
     model: Optional[Dict[str, Dict[str, Union[List[InputArtifactSpec], InputArtifactSpec]]]]
-
-
-class SourceInputArtifacts(pydantic.BaseModel):
-    data: Optional[Dict[str, Dict[str, Union[SourceInputArtifactSpec, List[SourceInputArtifactSpec]]]]]
-    model: Optional[Dict[str, Dict[str, Union[SourceInputArtifactSpec, List[SourceInputArtifactSpec]]]]]
 
 
 class FlowRuntimeInputArtifacts(pydantic.BaseModel):
