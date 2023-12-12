@@ -42,7 +42,8 @@ def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_
         )
     else:
         result = ComponentManager.upload(
-            file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid
+            file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name,
+            extend_sid=extend_sid
         )
     return API.Output.json(**result)
 
@@ -59,8 +60,10 @@ def upload_file(head, partitions, meta, namespace=None, name=None, extend_sid=Fa
     file = request.files.get('file')
     if not file:
         raise NoFoundFile()
-    result = ComponentManager.upload_file(file=file, head=head, partitions=partitions, meta=json.loads(meta), namespace=namespace, name=name,
-                                 extend_sid=extend_sid)
+    result = ComponentManager.upload_file(
+        file=file, head=head, partitions=partitions, meta=json.loads(meta), namespace=namespace, name=name,
+        extend_sid=extend_sid
+    )
 
     return API.Output.json(**result)
 

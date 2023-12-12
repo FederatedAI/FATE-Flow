@@ -25,11 +25,10 @@ from fate_flow.entity.spec.dag import PartyTaskRefSpec, TaskSpec, PartySpec, Run
 from fate_flow.entity.types import EngineType
 from fate_flow.manager.components.base import Base
 from fate_flow.manager.service.provider_manager import ProviderManager
-from fate_flow.runtime.system_settings import ENGINES, STORAGE
+from fate_flow.runtime.system_settings import ENGINES, STORAGE, TEMP_DIR
 from fate_flow.engine import storage
 from fate_flow.errors.server_error import ExistsTable
 from fate_flow.utils.file_utils import save_file
-from fate_flow.utils.file_utils import get_fate_flow_directory
 
 
 class ComponentManager(Base):
@@ -102,13 +101,14 @@ class ComponentManager(Base):
         return result
 
     @classmethod
-    def upload_dataframe(cls, file, head, partitions, meta, namespace, name, extend_sid):
+    def upload_dataframe(cls, file, head, partitions, meta, namespace, name, extend_sid, is_temp_file=False):
         parameters = {
             "file": file,
             "head": head,
             "partitions": partitions,
             "meta": meta,
-            "extend_sid": extend_sid
+            "extend_sid": extend_sid,
+            "is_temp_file": is_temp_file
         }
         address = STORAGE.get(ENGINES.get(EngineType.STORAGE))
         if address:
@@ -151,10 +151,8 @@ class ComponentManager(Base):
 
     @classmethod
     def upload_file(cls, file, head, partitions, meta, namespace, name, extend_sid):
-        path = os.path.join(get_fate_flow_directory(), "temp_file")
-        if not os.path.exists(path):
-            os.makedirs(path)
-        with NamedTemporaryFile(dir=path, prefix='temp_file_', suffix='.csv', delete=False) as temp_file:
+        os.makedirs(TEMP_DIR, exist_ok=True)
+        with NamedTemporaryFile(dir=TEMP_DIR, delete=False) as temp_file:
             temp_path = temp_file.name
             save_file(file, temp_path)
-        return cls.upload(temp_path, head, partitions, meta, namespace, name, extend_sid, temp_path=temp_path)
+        return cls.upload_dataframe(temp_path, head, partitions, meta, namespace, name, extend_sid, is_temp_file=True)
