@@ -21,9 +21,9 @@ from fate_flow.entity.spec.dag._job import DAGSchema, DAGSpec, JobConfSpec, Task
 from fate_flow.entity.spec.dag._task import TaskConfigSpec, PreTaskConfigSpec, TaskRuntimeConfSpec, \
     TaskCleanupConfigSpec
 from fate_flow.entity.spec.dag._artifact import RuntimeTaskOutputChannelSpec, DataWarehouseChannelSpec, \
-    ModelWarehouseChannelSpec, SourceInputArtifactSpec, RuntimeInputArtifacts, FlowRuntimeInputArtifacts,\
+    ModelWarehouseChannelSpec, RuntimeInputArtifacts, FlowRuntimeInputArtifacts,\
     ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
-    ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ArtifactSource, SourceInputArtifacts
+    ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ArtifactSource
 from fate_flow.entity.spec.dag._component import ComponentSpec, ComponentIOArtifactsTypeSpec, ComponentSpecV1
 from fate_flow.entity.spec.dag._computing import EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec
 from fate_flow.entity.spec.dag._federation import StandaloneFederationSpec, RollSiteFederationSpec, OSXFederationSpec, \

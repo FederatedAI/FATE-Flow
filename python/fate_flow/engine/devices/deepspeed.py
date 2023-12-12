@@ -23,11 +23,11 @@ from uuid import uuid1
 
 from fate_flow.db import Task
 from fate_flow.engine.devices.local import LocalEngine
-from fate_flow.entity.types import BaseStatus, TaskStatus, WorkerName
+from fate_flow.entity.types import BaseStatus, TaskStatus, WorkerName, StorageEngine
 from fate_flow.manager.service.worker_manager import WorkerManager
 from fate_flow.manager.worker.deepspeed_download_model import DownloadModel
 from fate_flow.runtime.runtime_config import RuntimeConfig
-from fate_flow.runtime.system_settings import MODEL_STORE_PATH
+from fate_flow.runtime.system_settings import MODEL_STORE_PATH, COMPUTING_CONF
 from fate_flow.utils import job_utils, process_utils
 from fate_flow.utils.job_utils import get_job_log_directory
 from fate_flow.utils.log_utils import schedule_logger
@@ -79,7 +79,11 @@ class EggrollDeepspeedEngine(LocalEngine):
     def kill(self, task):
         schedule_logger(task.f_job_id).info(f"start kill deepspeed task {task.f_worker_id}")
         from eggroll.deepspeed.submit import client
-        client = client.DeepspeedJob(task.f_worker_id)
+
+        host = COMPUTING_CONF.get(StorageEngine.EGGROLL).get("host")
+        port = COMPUTING_CONF.get(StorageEngine.EGGROLL).get("port")
+
+        client = client.DeepspeedJob(task.f_worker_id, host=host, port=port)
         try:
             client.kill()
         except Exception as e:
@@ -101,7 +105,9 @@ class EggrollDeepspeedEngine(LocalEngine):
     def _query_status(session_id):
         if session_id:
             from eggroll.deepspeed.submit import client
-            client = client.DeepspeedJob(session_id)
+            host = COMPUTING_CONF.get(StorageEngine.EGGROLL).get("host")
+            port = COMPUTING_CONF.get(StorageEngine.EGGROLL).get("port")
+            client = client.DeepspeedJob(session_id, host=host, port=port)
             _s = client.query_status().status
             return _s if _s else StatusSet.NEW
         return StatusSet.NEW
@@ -120,7 +126,9 @@ class EggrollDeepspeedEngine(LocalEngine):
         if not content_type:
             content_type = client.ContentType.ALL
         if session_id:
-            client = client.DeepspeedJob(session_id)
+            host = COMPUTING_CONF.get(StorageEngine.EGGROLL).get("host")
+            port = COMPUTING_CONF.get(StorageEngine.EGGROLL).get("port")
+            client = client.DeepspeedJob(session_id, host=host, port=port)
             os.makedirs(base_dir, exist_ok=True)
             path = lambda rank: f"{base_dir}/{rank}.zip"
             client.download_job_to(rank_to_path=path, content_type=content_type, ranks=ranks)

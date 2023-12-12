@@ -41,7 +41,6 @@ FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_CONF_PATH, "job_defau
 
 SUBPROCESS_STD_LOG_NAME = "std.log"
 
-
 HOST = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
 HTTP_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("http_port")
 GRPC_PORT = get_base_config(FATE_FLOW_SERVICE_NAME, {}).get("grpc_port")
@@ -65,7 +64,6 @@ PERMISSION_CASBIN_MODEL_CONF = os.path.join(FATE_FLOW_CONF_PATH, "permission_cas
 SERVICE_CONF_NAME = "service_conf.yaml"
 
 DATABASE = get_base_config("database", {})
-
 
 IGNORE_RESOURCE_ROLES = {"arbiter"}
 
@@ -110,6 +108,7 @@ LOG_DIR = LOG_DIR or get_fate_flow_directory("logs")
 JOB_DIR = JOB_DIR or get_fate_flow_directory("jobs")
 MODEL_STORE_PATH = MODEL_DIR or os.path.join(get_fate_flow_directory(), "model")
 LOCAL_DATA_STORE_PATH = DATA_DIR or os.path.join(get_fate_flow_directory(), "data")
+TEMP_DIR = get_fate_flow_directory("temps")
 LOG_LEVEL = LOG_LEVEL or 10
 LOG_SHARE = False
 FATE_FLOW_LOG_DIR = os.path.join(LOG_DIR, "fate_flow")

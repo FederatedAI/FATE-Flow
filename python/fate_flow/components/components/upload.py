@@ -104,6 +104,7 @@ class UploadParam(Param):
             head=1,
             partitions=10,
             extend_sid=False,
+            is_temp_file=False,
             address: dict = {},
             meta: dict = {}
     ):
@@ -116,6 +117,7 @@ class UploadParam(Param):
         self.extend_sid = extend_sid
         self.meta = MetaParam(**meta)
         self.storage_address = address
+        self.is_temp_file = is_temp_file
 
 
 class Upload:
@@ -212,6 +214,8 @@ class Upload:
             "data_type": DataType.TABLE
         }
         self.table.meta.update_metas(**metas_info)
+        # cleanup temp file
+        self.cleanup()
         return table_count
 
     def update_schema(self, fp):
@@ -367,3 +371,8 @@ class Upload:
     @staticmethod
     def generate_table_name():
         return "upload", uuid.uuid1().hex
+
+    def cleanup(self):
+        if self.parameters.is_temp_file:
+            if os.path.exists(self.parameters.file):
+                os.remove(self.parameters.file)
