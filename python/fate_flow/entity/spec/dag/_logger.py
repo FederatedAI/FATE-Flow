@@ -56,13 +56,13 @@ class LoggerConfigBuilder:
 
         # add loggers
         root_logger_dir = os.path.join(log_base_dir, "root")
-        os.makedirs(root_logger_dir, exist_ok=True)
+        # os.makedirs(root_logger_dir, exist_ok=True)
         self._add_root_loggers(
             log_base_dir=root_logger_dir, formatter_name="root", delay=delay
         )
 
         component_logger_dir = os.path.join(log_base_dir, "component")
-        os.makedirs(component_logger_dir, exist_ok=True)
+        # os.makedirs(component_logger_dir, exist_ok=True)
         self._add_component_loggers(
             log_base_dir=component_logger_dir,
             formatter_name="component",
@@ -70,7 +70,7 @@ class LoggerConfigBuilder:
             loglevel=level,
         )
 
-        os.makedirs(aggregate_log_base_dir, exist_ok=True)
+        # os.makedirs(aggregate_log_base_dir, exist_ok=True)
         self._add_party_id_loggers(
             aggregate_log_base_dir=aggregate_log_base_dir, formatter_name="root", delay=delay
         )
