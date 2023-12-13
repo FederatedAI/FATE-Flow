@@ -17,6 +17,7 @@ import os
 import shutil
 from copy import deepcopy
 
+from fate_flow.controller.parser import JobParser
 from fate_flow.controller.task import TaskController
 from fate_flow.db import Job
 from fate_flow.engine.storage import Session
@@ -323,6 +324,34 @@ class JobController(object):
             "description": notes
         }
         return JobSaver.update_job(job_info)
+
+    @classmethod
+    def data_view(cls, job_id, role, party_id):
+        jobs = JobSaver.query_job(job_id=job_id, role=role, party_id=party_id)
+        if not jobs:
+            raise NoFoundJob(job_id=job_id, role=role, party_id=party_id)
+        job = jobs[0]
+        dag = DAGSchema(**job.f_dag)
+        job_parser = JobParser(dag)
+        data_view = {}
+        for party in dag.dag.parties:
+            data_view[party.role] = {}
+            for party_id in party.party_id:
+                data_view[party.role][party_id] = cls.party_data_view(job_parser, party.role, party_id)
+        return dict(role=role, party_id=party_id, data_view=data_view)
+
+    @classmethod
+    def party_data_view(cls, job_parser, role, party_id):
+        task_list = job_parser.party_topological_sort(role=role, party_id=party_id)
+        dataset = []
+        for task_name in task_list:
+            task_node = job_parser.get_task_node(role=role, party_id=party_id, task_name=task_name)
+            parties = job_parser.get_task_runtime_parties(task_name=task_name)
+            if task_node.component_ref.lower() == "reader" and job_utils.check_party_in(role, party_id, parties):
+                name = task_node.runtime_parameters.get("name")
+                namespace = task_node.runtime_parameters.get("namespace")
+                dataset.append(dict(namespace=namespace, name=name))
+        return dataset
 
     @classmethod
     def adapt_party_parameters(cls, dag_schema: DAGSchema, role):
