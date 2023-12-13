@@ -186,6 +186,15 @@ def clean_job(job_id):
     return API.Output.json()
 
 
+@manager.route('/data/view', methods=['GET'])
+@API.Input.params(job_id=fields.String(required=True), desc=JOB_ID)
+@API.Input.params(role=fields.String(required=True), desc=ROLE)
+@API.Input.params(party_id=fields.String(required=True), desc=PARTY_ID)
+def data_view(job_id, role, party_id):
+    data = JobController.data_view(job_id, role, party_id)
+    return API.Output.json(data=data)
+
+
 @manager.route('/notes/add', methods=['POST'])
 @API.Input.json(job_id=fields.String(required=True), desc=JOB_ID)
 @API.Input.json(role=fields.String(required=True), desc=ROLE)
@@ -203,6 +212,6 @@ def add_notes(job_id, role, party_id, notes):
 def dag_dependency(job_id, role, party_id):
     jobs = JobController.query_job(job_id=job_id, role=role, party_id=party_id)
     if not jobs:
-        return API.Output.fate_flow_exception(NoFoundJob(job_id=job_id))
+        return API.Output.fate_flow_exception(NoFoundJob(job_id=job_id, role=role, party_id=party_id))
     data = pipeline_manager.pipeline_dag_dependency(jobs[0])
     return API.Output.json(data=data)
