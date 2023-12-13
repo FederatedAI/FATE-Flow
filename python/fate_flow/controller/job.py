@@ -279,13 +279,14 @@ class JobController(object):
         for task in tasks:
             # metric
             try:
-                OutputMetric(job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id,
-                             task_name=task.f_task_name,
-                             task_id=task.f_task_id, task_version=task.f_task_version).delete_metrics()
+                OutputMetric(
+                    job_id=task.f_job_id, role=task.f_role, party_id=task.f_party_id, task_name=task.f_task_name,
+                    task_id=task.f_task_id, task_version=task.f_task_version
+                ).delete_metrics()
                 schedule_logger(task.f_job_id).info(f'delete {task.f_job_id} {task.f_role} {task.f_party_id}'
                                                     f' {task.f_task_name} metric data success')
             except Exception as e:
-                pass
+                schedule_logger(job_id).exception(e)
 
             # data
             try:
@@ -303,7 +304,7 @@ class JobController(object):
                         if table:
                             table.destroy()
             except Exception as e:
-                pass
+                schedule_logger(job_id).exception(e)
 
             # model
             try:
@@ -312,8 +313,17 @@ class JobController(object):
                 schedule_logger(task.f_job_id).info(f'delete {task.f_job_id} {task.f_role} {task.f_party_id}'
                                                     f' {task.f_task_name} model success')
             except Exception as e:
-                pass
-        # JobSaver.delete_job(job_id=job_id)
+                schedule_logger(job_id).exception(e)
+
+        try:
+            JobSaver.delete_job(job_id=job_id)
+        except Exception as e:
+            schedule_logger(job_id).exception(e)
+
+        try:
+            JobSaver.delete_task(job_id=job_id)
+        except Exception as e:
+            schedule_logger(job_id).exception(e)
 
     @staticmethod
     def add_notes(job_id, role, party_id, notes):

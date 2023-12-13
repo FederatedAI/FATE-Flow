@@ -36,6 +36,10 @@ class JobSaver(BaseSaver):
         return cls._delete_job(Job, job_id)
 
     @classmethod
+    def delete_task(cls, job_id):
+        return cls._delete_job(Task, job_id)
+
+    @classmethod
     def update_job_status(cls, job_info):
         return cls._update_job_status(Job, job_info)
 
