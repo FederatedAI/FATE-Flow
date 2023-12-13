@@ -34,9 +34,7 @@ def pipeline_dag_dependency(job):
                             "type": data_type,
                             "model_type": model_type,
                             "component_name": value.producer_task if up_output_info else None,
-                            "up_output_info": up_output_info,
-                            "name": value.name if not up_output_info else None,
-                            "name_space": value.name if not up_output_info else None,
+                            "up_output_info": up_output_info
                         })
                 else:
                     up_output_info = [data_value.output_artifact_key]

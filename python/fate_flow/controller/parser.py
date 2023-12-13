@@ -795,7 +795,10 @@ class JobParser(object):
         return self.dag_parser.get_runtime_roles_on_party(task_name, party_id)
 
     def get_task_runtime_parties(self, task_name):
-        return self.dag_parser.get_task_runtime_parties(task_name)
+        try:
+            return self.dag_parser.get_task_runtime_parties(task_name)
+        except:
+            return []
 
 
 class Party(BaseModel):
