@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import io
 import logging
 import os
 import subprocess
@@ -55,6 +56,8 @@ class WorkerManager:
         else:
             process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
         process_cmd.extend(common_cmd)
+        if sync:
+            stderr = subprocess.PIPE
         p = process_utils.run_subprocess(job_id=task_info.get("job_id"), config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=extra_env, std_dir=std_dir, cwd_dir=config_dir,
                                          process_name=worker_name.value, stderr=stderr)
@@ -71,9 +74,17 @@ class WorkerManager:
             }
         else:
             if sync:
+                error_io = io.BytesIO()
+                while True:
+                    output = p.stderr.readline()
+                    if output == b'' and p.poll() is not None:
+                        break
+                    if output:
+                        error_io.write(output)
+                error_io.seek(0)
                 _code = p.wait()
-                _e = p.stderr.read() if p.stderr else None
-                if _e and _code:
+                _e = error_io.read()
+                if _e:
                     logging.error(f"process {worker_name.value} run error[code:{_code}]\n: {_e.decode()}")
             return p
 
