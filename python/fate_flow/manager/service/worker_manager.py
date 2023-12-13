@@ -84,7 +84,7 @@ class WorkerManager:
                 error_io.seek(0)
                 _code = p.wait()
                 _e = error_io.read()
-                if _e:
+                if _e and _code:
                     logging.error(f"process {worker_name.value} run error[code:{_code}]\n: {_e.decode()}")
             return p
 
