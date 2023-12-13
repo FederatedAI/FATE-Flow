@@ -41,7 +41,7 @@ class PartyTaskRefSpec(BaseModel):
 class PartyTaskSpec(BaseModel):
     parties: Optional[List[PartySpec]]
     tasks: Optional[Dict[str, PartyTaskRefSpec]] = {}
-    conf: Optional[dict]
+    conf: Optional[dict] = {}
 
 
 class EngineRunSpec(BaseModel):
