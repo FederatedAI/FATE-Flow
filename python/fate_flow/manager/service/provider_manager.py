@@ -96,7 +96,17 @@ class ProviderManager(BaseModelOperate):
             component.f_component_name = component_name
             component.f_protocol = protocol
             component.f_component_description = components_description.get(component_name)
-            cls.safe_save(ComponentInfo, defaults=component.to_dict(), **component.to_dict())
+            cls.safe_save(
+                ComponentInfo, defaults=component.to_dict(),
+                **dict(
+                    f_provider_name=provider.provider_name,
+                    f_name=provider.name,
+                    f_device=provider.device,
+                    f_version=provider.version,
+                    f_component_name=component_name,
+                    f_protocol=protocol
+                )
+            )
 
     @classmethod
     @filter_parameters()
