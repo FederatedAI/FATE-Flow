@@ -167,7 +167,6 @@ def is_task_executor_process(task: Task, process: psutil.Process):
         cmdline = process.cmdline()
     except Exception as e:
         # Not sure whether the process is a task executor process, operations processing is required
-        schedule_logger(task.f_job_id).warning(e)
         return False
     else:
         schedule_logger(task.f_job_id).info(cmdline)
