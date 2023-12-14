@@ -33,6 +33,7 @@ from fate_flow.manager.operation.job_saver import JobSaver, ScheduleJobSaver
 from fate_flow.utils import job_utils
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log_utils import schedule_logger
+from fate_flow.utils.wraps_utils import asynchronous_function
 
 
 class TaskController(object):
@@ -326,6 +327,7 @@ class TaskController(object):
             return None
 
     @classmethod
+    @asynchronous_function
     def stop_task(cls, task: Task, stop_status):
         kill_status = cls.kill_task(task=task)
         task_info = {
