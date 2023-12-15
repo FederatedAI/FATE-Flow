@@ -144,7 +144,7 @@ def schedule_lock(func):
             finally:
                 schedule_signal(job_id=job.f_job_id, set_or_reset=False)
                 schedule_logger(job.f_job_id).debug(f"release job {job.f_job_id} schedule lock")
-                return _result
+            return _result
         else:
             return func(*args, **kwargs)
     return _wrapper
@@ -154,6 +154,20 @@ def threading_lock(func):
     @wraps(func)
     def _wrapper(*args, **kwargs):
         with threading.Lock():
+            return func(*args, **kwargs)
+    return _wrapper
+
+
+def asynchronous_function(func):
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        is_asynchronous = kwargs.pop("is_asynchronous", False)
+        if is_asynchronous:
+            thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+            thread.start()
+            is_asynchronous = True
+            return is_asynchronous
+        else:
             return func(*args, **kwargs)
     return _wrapper
 

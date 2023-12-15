@@ -220,6 +220,10 @@ class FlowWraps(WrapsABC):
             uri = output_data.uri
             if output_data.type_name == DataType.DATA_UNRESOLVED:
                 uri = ""
+                # check namespace and name（reader）
+                resp = self.mlmd.query_data_meta(name=name, namespace=namespace)
+                if resp.json().get("code") != 0:
+                    raise ValueError(f"Check failed[{resp.text}]")
             resp = self.mlmd.save_data_tracking(
                 execution_id=self.config.party_task_id,
                 output_key=output_key,

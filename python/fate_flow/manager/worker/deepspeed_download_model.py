@@ -25,16 +25,16 @@ class DownloadModel(object):
     def run(self, args):
         deepspeed_engine = build_engine(args.provider_name, LauncherType.DEEPSPEED)
         tasks = JobSaver.query_task(
-            task_id=self.args.task_id,
-            task_version=self.args.task_version,
-            job_id=self.args.job_id,
-            role=self.args.role,
-            party_id=self.args.party_id
+            task_id=args.task_id,
+            task_version=args.task_version,
+            job_id=args.job_id,
+            role=args.role,
+            party_id=args.party_id
         )
         task = tasks[0]
-        schedule_logger(self.args.job_id).info("start download model")
+        schedule_logger(args.job_id).info("start download model")
         deepspeed_engine.download_model_do(task)
-        schedule_logger(self.args.job_id).info("download model success")
+        schedule_logger(args.job_id).info("download model success")
 
 
 if __name__ == '__main__':
