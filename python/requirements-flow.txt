@@ -1,8 +1,8 @@
 pip>=21
 apsw<=3.10
 Flask==2.2.5
-grpcio==1.46.3
-grpcio-tools==1.46.3
+grpcio==1.59.3
+grpcio-tools==1.59.3
 requests<2.26.0
 urllib3==1.26.5
 ruamel-yaml==0.16
@@ -22,3 +22,4 @@ kazoo
 shortuuid
 cos-python-sdk-v5==1.9.10
 typing-extensions==4.5.0
+boto3
