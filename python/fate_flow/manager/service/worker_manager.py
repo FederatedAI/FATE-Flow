@@ -56,7 +56,7 @@ class WorkerManager:
         else:
             process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
         process_cmd.extend(common_cmd)
-        if sync:
+        if sync and worker_name == WorkerName.TASK_EXECUTE:
             stderr = subprocess.PIPE
         p = process_utils.run_subprocess(job_id=task_info.get("job_id"), config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=extra_env, std_dir=std_dir, cwd_dir=config_dir,
@@ -75,12 +75,13 @@ class WorkerManager:
         else:
             if sync:
                 error_io = io.BytesIO()
-                while True:
-                    output = p.stderr.readline()
-                    if output == b'' and p.poll() is not None:
-                        break
-                    if output:
-                        error_io.write(output)
+                if worker_name == WorkerName.TASK_EXECUTE:
+                    while True:
+                        output = p.stderr.readline()
+                        if output == b'' and p.poll() is not None:
+                            break
+                        if output:
+                            error_io.write(output)
                 error_io.seek(0)
                 _code = p.wait()
                 _e = error_io.read()
