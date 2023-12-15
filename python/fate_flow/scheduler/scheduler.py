@@ -103,19 +103,6 @@ class DAGScheduler(SchedulerABC):
                 schedule_logger(job.f_job_id).error("schedule job failed")
         schedule_logger().info("schedule running jobs finished")
 
-        # ready
-        schedule_logger().info("start schedule ready jobs")
-        jobs = ScheduleJobSaver.query_job(ready_signal=True, order_by="create_time", reverse=False)
-        schedule_logger().info(f"have {len(jobs)} ready jobs")
-        for job in jobs:
-            schedule_logger().info(f"schedule ready job {job.f_job_id}")
-            try:
-                pass
-            except Exception as e:
-                schedule_logger(job.f_job_id).exception(e)
-                schedule_logger(job.f_job_id).error(f"schedule ready job failed:\n{e}")
-        schedule_logger().info("schedule ready jobs finished")
-
         # rerun
         schedule_logger().info("start schedule rerun jobs")
         jobs = ScheduleJobSaver.query_job(rerun_signal=True, order_by="create_time", reverse=False)
@@ -123,7 +110,7 @@ class DAGScheduler(SchedulerABC):
         for job in jobs:
             schedule_logger(job.f_job_id).info(f"schedule rerun job {job.f_job_id}")
             try:
-                self.schedule_rerun_job(job=job)
+                self.schedule_rerun_job(job=job, lock=True)
             except Exception as e:
                 schedule_logger(job.f_job_id).exception(e)
                 schedule_logger(job.f_job_id).error("schedule job failed")

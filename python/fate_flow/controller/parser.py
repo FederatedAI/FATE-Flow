@@ -592,7 +592,7 @@ class DagParser(object):
                 if party_task_spec.conf:
                     for party in party_parties:
                         for party_id in party.party_id:
-                            self._tasks[party.role][party_id][task_name].conf.update(party_tasks_spec.conf)
+                            self._tasks[party.role][party_id][task_name].conf.update(party_task_spec.conf)
 
                 parameters = party_task_spec.parameters
 
