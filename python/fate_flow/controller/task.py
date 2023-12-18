@@ -233,29 +233,38 @@ class TaskController(object):
         # stop old version task
         FederatedScheduler.stop_task(task_id=task.f_task_id, command_body={"status": task.f_status})
         # create new version task
-        task.f_task_version = task.f_task_version + 1
         if auto:
             task.f_auto_retries = task.f_auto_retries - 1
-        status_code, response = FederatedScheduler.rerun_task(task_id=task.f_task_id, task_version=task.f_task_version)
+        retry_time = 3
+        new_version = task.f_task_version
+        while True:
+            if retry_time == 0:
+                raise Exception(f"create {task.f_task_id} new version {new_version} failed")
+            new_version = new_version + 1
+            status_code, response = FederatedScheduler.rerun_task(task_id=task.f_task_id, task_version=new_version)
+            if status_code == FederatedSchedulingStatusCode.SUCCESS:
+                schedule_logger(job_id=job.f_job_id).info(
+                    f"create {task.f_task_id} new version {new_version} success"
+                )
+                break
+            retry_time -= 1
         dag_schema = DAGSchema(**job.f_dag)
-        if status_code != FederatedSchedulingStatusCode.SUCCESS:
-            raise Exception(f"create {task.f_task_id} new version failed")
         job_parser = JobParser(dag_schema)
-        for party in job.f_parties:
-            _role = party.get("role")
-            for _party_id in party.get("party_id"):
+        parties = job_parser.get_task_runtime_parties(task_name=task.f_task_name)
+        for party in parties:
+            for party_id in party.party_id:
                 cls.create_task(
-                    job.f_job_id, _role, _party_id, task.f_task_name, dag_schema, job_parser,
-                    is_scheduler=True, task_version=task.f_task_version
+                    job.f_job_id, party.role, party_id, task.f_task_name, dag_schema, job_parser,
+                    is_scheduler=True, task_version=new_version
                 )
         TaskController.create_scheduler_tasks_status(
             job.f_job_id,
             dag_schema,
-            task_version=task.f_task_version,
+            task_version=new_version,
             auto_retries=task.f_auto_retries,
             task_name=task.f_task_name
         )
-        schedule_logger(job.f_job_id).info(f"create task {task.f_task_id} new version {task.f_task_version} successfully")
+        schedule_logger(job.f_job_id).info(f"create task {task.f_task_id} new version {new_version} successfully")
 
     @classmethod
     def prepare_rerun_task(cls, job: ScheduleJob, task: ScheduleTaskStatus, auto=False, force=False):
