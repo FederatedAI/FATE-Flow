@@ -4,7 +4,7 @@ Flask==2.2.5
 grpcio==1.59.3
 grpcio-tools==1.59.3
 requests<2.26.0
-urllib3==1.26.5
+urllib3==1.26.18
 ruamel-yaml==0.16
 cachetools==3.0.0
 filelock==3.3.1
@@ -23,3 +23,4 @@ shortuuid
 cos-python-sdk-v5==1.9.10
 typing-extensions==4.5.0
 boto3
+pyarrow==14.0.1
