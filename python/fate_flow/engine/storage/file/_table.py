@@ -16,15 +16,34 @@
 
 import io
 import os
-from typing import Iterable
+from typing import Iterable, Tuple
 
 from pyarrow import fs
 
 from fate_flow.engine.storage import StorageTableBase, StorageEngine
 from fate_flow.manager.outputs.data import DataManager
 from fate_flow.utils.log import getLogger
+import struct
 
 LOGGER = getLogger()
+
+class FileCoder:
+    @staticmethod
+    def encode(key: str, value: str):
+        key = key.encode("utf-8")
+        value = value.encode("utf-8")
+        size = struct.pack(">Q", len(key))
+        return (size + key + value).hex()
+
+    @staticmethod
+    def decode(data: str) -> Tuple[str, str]:
+        data = bytes.fromhex(data)
+        size = struct.unpack(">Q", data[:8])[0]
+        key = data[8 : 8 + size]
+        value = data[8 + size :]
+        key = key.decode("utf-8")
+        value = value.decode("utf-8")
+        return key, value
 
 
 class StorageTable(StorageTableBase):
@@ -69,14 +88,14 @@ class StorageTable(StorageTableBase):
         counter = self._meta.get_count() if self._meta.get_count() else 0
         with io.TextIOWrapper(stream) as writer:
             for k, v in kv_list:
-                writer.write(DataManager.serialize_data(k, v))
+                writer.write(FileCoder.encode(k, v))
                 writer.write("\n")
                 counter = counter + 1
         self._meta.update_metas(count=counter)
 
     def _collect(self, **kwargs) -> list:
         for line in self._as_generator():
-            yield DataManager.deserialize_data(line.rstrip())
+            yield FileCoder.decode(line.rstrip())
 
     def _read(self) -> list:
         for line in self._as_generator():

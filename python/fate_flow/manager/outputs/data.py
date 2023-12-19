@@ -14,7 +14,6 @@
 #  limitations under the License.
 import json
 import os
-import pickle
 import tarfile
 import uuid
 from tempfile import TemporaryDirectory
@@ -32,8 +31,6 @@ from fate_flow.runtime.system_settings import LOCALFS_DATA_HOME, STANDALONE_DATA
 from fate_flow.utils import job_utils
 from fate_flow.utils.io_utils import URI
 from fate_flow.utils.wraps_utils import filter_parameters
-
-DELIMITER = '\t'
 
 
 class OutputDataTracking(BaseModelOperate):
@@ -255,15 +252,6 @@ class DataManager:
             for field in data_meta.get("schema_meta", {}).get("fields", []):
                 header.append(field.get("name"))
         return header
-
-    @staticmethod
-    def deserialize_data(m):
-        fields = m.partition(DELIMITER)
-        return fields[0], pickle.loads(bytes.fromhex(fields[2]))
-
-    @staticmethod
-    def serialize_data(k, v):
-        return f"{k}{DELIMITER}{pickle.dumps(v).hex()}"
 
 
 class DatasetManager:
