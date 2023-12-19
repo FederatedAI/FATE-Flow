@@ -38,7 +38,6 @@ class Detector(Cron):
         self.detect_end_task()
         self.detect_resource_record()
         self.detect_expired_session()
-        self.detect_deepspeed_task()
 
     @classmethod
     def detect_running_task(cls):
@@ -58,8 +57,13 @@ class Detector(Cron):
                     continue
                 count += 1
                 try:
-                    process_exist = build_engine(task.f_provider_name, task.f_launcher_name).is_alive(task)
+                    process_exist = build_engine(task.f_provider_name).is_alive(task)
                     if not process_exist:
+                        # ds task
+                        if task.f_launcher_name == LauncherType.DEEPSPEED:
+                            deepspeed_engine = build_engine(task.f_provider_name, task.f_launcher_name)
+                            if deepspeed_engine.is_alive(task):
+                                continue
                         msg = f"task {task.f_task_id} {task.f_task_version} on {task.f_role} {task.f_party_id}"
                         detect_logger(job_id=task.f_job_id).info(
                             f"{msg} with {task.f_party_status} process {task.f_run_pid} does not exist")
@@ -201,14 +205,6 @@ class Detector(Cron):
                 stop_job_ids.add(task.f_job_id)
         except Exception as e:
             detect_logger(job_id=task.f_job_id).exception(e)
-
-    @classmethod
-    def detect_deepspeed_task(cls):
-        detect_logger().info('start to detect deepspeed running task..')
-        running_tasks = JobSaver.query_task(party_status=TaskStatus.RUNNING, launcher_name=LauncherType.DEEPSPEED)
-        for task in running_tasks:
-            cls.detect_deepspeed_task_status(task)
-        detect_logger().info(f'finish detect deepspeed running task {running_tasks}')
 
     @staticmethod
     def detect_deepspeed_task_status(task: Task):
