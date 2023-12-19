@@ -494,8 +494,8 @@ class DataIo(object):
             ),
             uri=f"{COMPUTING_ENGINE}:///{address.namespace}/{address.name}"
         )
-        from fate.arch._standalone import _TableMetaManager
-        _TableMetaManager.add_table_meta(namespace=address.namespace, name=address.name, num_partitions=self._partitions)
+        from fate.arch.computing.backends.standalone import standalone_raw
+        standalone_raw._TableMetaManager.add_table_meta(namespace=address.namespace, name=address.name, num_partitions=self._partitions)
         return meta
 
     def upload_to_s3(self, path, name, namespace, metadata):
