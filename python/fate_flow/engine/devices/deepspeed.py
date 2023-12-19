@@ -16,7 +16,6 @@
 import datetime
 import logging
 import os
-import shutil
 import sys
 import traceback
 
@@ -90,7 +89,7 @@ class EggrollDeepspeedEngine(LocalEngine):
     def download_output(self, task: Task):
         try:
             schedule_logger(task.f_job_id).info(f"start download logs")
-            self.download_log(task.f_worker_id)
+            self.download_log(task)
         except Exception as e:
             traceback.format_exc()
             schedule_logger(task.f_job_id).error(e)
@@ -168,7 +167,7 @@ class EggrollDeepspeedEngine(LocalEngine):
         if not path:
             path = self.log_path(task)
         schedule_logger(task.f_job_id).info(f"download logs to {path}")
-        self.download(worker_id=task.f_worker_id, base_dir=path, content_type=ContentType.LOGS, ranks=[0])
+        self.download(worker_id=task.f_worker_id, base_dir=path, content_type=ContentType.LOGS)
 
     def download_result(self, path, worker_id):
         from eggroll.deepspeed.submit.client import ContentType
@@ -180,8 +179,6 @@ class EggrollDeepspeedEngine(LocalEngine):
     @staticmethod
     def download_model(task_info, path=""):
         # run subprocess to download model
-        conf_dir = job_utils.get_job_directory(job_id=task_info.get("job_id"))
-        os.makedirs(conf_dir, exist_ok=True)
         process_cmd = [
             sys.executable or 'python3',
             sys.modules[DownloadModel.__module__].__file__,
@@ -193,7 +190,7 @@ class EggrollDeepspeedEngine(LocalEngine):
             "--path", path
         ]
         process_name = "model_download"
-        log_dir = job_utils.get_job_log_directory(job_id=task_info.get("job_id"))
+        log_dir = conf_dir = job_utils.get_job_log_directory(task_info.get("job_id"), task_info.get("role"), task_info.get("party_id"), task_info.get("task_name"))
         p = process_utils.run_subprocess(
             job_id=task_info.get("job_id"),
             config_dir=conf_dir,
@@ -203,11 +200,11 @@ class EggrollDeepspeedEngine(LocalEngine):
         )
         schedule_logger(task_info.get("job_id")).info(f"download model process id: {p.pid}")
 
-    def download_model_do(self, task, path=None):
+    def download_model_do(self, task=None, worker_id=None, path=None):
         from eggroll.deepspeed.submit.client import ContentType
         if not path:
             path = self.model_path(task)
-        self.download(worker_id=task.f_worker_id, base_dir=path, content_type=ContentType.MODELS, ranks=[0], only_rank_0=True)
+        self.download(worker_id=worker_id, base_dir=path, content_type=ContentType.MODELS, ranks=[0], only_rank_0=True)
 
     @staticmethod
     def unzip(zip_path, extra_dir):

@@ -301,7 +301,9 @@ class TaskController(object):
     def update_task_status(cls, task_info, scheduler_party_id=None, sync_type=None):
         task = JobSaver.query_task(
             task_id=task_info.get("task_id"),
-            task_version=task_info.get("task_version")
+            task_version=task_info.get("task_version"),
+            role=task_info.get("role"),
+            party_id=task_info.get("party_id")
         )[0]
         scheduler_party_id, sync_type = task.f_scheduler_party_id, task.f_sync_type
         update_status = JobSaver.update_task_status(task_info=task_info)

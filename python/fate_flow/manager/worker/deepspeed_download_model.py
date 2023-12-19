@@ -33,7 +33,7 @@ class DownloadModel(object):
         task = tasks[0]
         deepspeed_engine = build_engine(task.f_provider_name, LauncherType.DEEPSPEED)
         schedule_logger(args.job_id).info("start download model")
-        deepspeed_engine.download_model_do(task, args.path)
+        deepspeed_engine.download_model_do(task=task, path=args.path, worker_id=task.f_worker_id)
         schedule_logger(args.job_id).info("download model success")
 
 

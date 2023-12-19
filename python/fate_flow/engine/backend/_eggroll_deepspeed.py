@@ -84,7 +84,7 @@ class Deepspeed(LocalEngine):
                 _, address = DataManager.uri_to_address(model.uri)
                 path = os.path.join(MODEL_STORE_PATH, address.path.split("models/")[-1])
                 logger.info(f"download model to {path}")
-                engine.download_model(task_info, path)
+                engine.download_model_do(worker_id=session_id, path=path)
         logger.info("download model success")
         return 0
 
