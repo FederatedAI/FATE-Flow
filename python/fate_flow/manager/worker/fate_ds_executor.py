@@ -17,9 +17,6 @@ import json
 import os
 import sys
 
-from fate_flow.runtime.system_settings import DEEPSPEED_LOGS_DIR_PLACEHOLDER, DEEPSPEED_MODEL_DIR_PLACEHOLDER, \
-    DEEPSPEED_RESULT_PLACEHOLDER
-
 
 class FateSubmit:
     @staticmethod
@@ -40,13 +37,13 @@ if __name__ == "__main__":
     env_name_index = sys.argv.index("--env-name") + 1
     env_key = sys.argv[env_name_index]
     sys.argv[result_index] = sys.argv[result_index].replace(
-        DEEPSPEED_RESULT_PLACEHOLDER,
+        os.environ.get("DEEPSPEED_RESULT_PLACEHOLDER"),
         os.environ.get("EGGROLL_DEEPSPEED_CONTAINER_RESULT_DIR")
     )
 
     env_str = os.environ.get(sys.argv[env_name_index], "")
-    env_str = env_str.replace(DEEPSPEED_LOGS_DIR_PLACEHOLDER, os.environ.get("EGGROLL_DEEPSPEED_CONTAINER_LOGS_DIR"))
-    env_str = env_str.replace(DEEPSPEED_MODEL_DIR_PLACEHOLDER, os.environ.get("EGGROLL_DEEPSPEED_CONTAINER_MODELS_DIR"))
+    env_str = env_str.replace(os.environ.get("DEEPSPEED_LOGS_DIR_PLACEHOLDER"), os.environ.get("EGGROLL_DEEPSPEED_CONTAINER_LOGS_DIR"))
+    env_str = env_str.replace(os.environ.get("DEEPSPEED_MODEL_DIR_PLACEHOLDER"), os.environ.get("EGGROLL_DEEPSPEED_CONTAINER_MODELS_DIR"))
     print(json.loads(env_str))
     os.environ[env_key] = env_str
     FateSubmit.run()
