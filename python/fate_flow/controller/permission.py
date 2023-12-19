@@ -30,7 +30,6 @@ from fate_flow.runtime.system_settings import CLIENT_AUTHENTICATION, SITE_AUTHEN
 from fate_flow.utils.base_utils import generate_random_id
 from fate_flow.utils.wraps_utils import switch_function,  check_permission
 
-
 logger = getLogger("permission")
 
 
