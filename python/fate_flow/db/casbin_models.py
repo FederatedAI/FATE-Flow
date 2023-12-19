@@ -19,8 +19,6 @@ import casbin
 import peewee as pw
 
 from fate_flow.db.base_models import singleton, DB
-from fate_flow.entity.types import ProcessRole
-from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import CASBIN_MODEL_CONF, CASBIN_TABLE_NAME, PERMISSION_TABLE_NAME, \
     PERMISSION_CASBIN_MODEL_CONF
 
