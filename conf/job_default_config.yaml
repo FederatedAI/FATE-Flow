@@ -14,10 +14,5 @@ remote_request_timeout: 30000  # ms
 federated_command_trys: 3
 auto_retries: 0
 sync_type: callback # poll or callback
-task_logger:
-  type: flow
-  metadata:
-    level: DEBUG
-    debug_mode: true
 task_device:
   type: CPU

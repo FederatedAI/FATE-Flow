@@ -264,10 +264,9 @@ def stop_task(job_id, role, party_id, task_id, task_version, status=None):
 @API.Input.json(party_id=fields.String(required=True))
 @API.Input.json(task_id=fields.String(required=True))
 @API.Input.json(task_version=fields.Integer(required=True))
-@API.Input.json(new_version=fields.Integer())
+@API.Input.json(new_version=fields.Integer(required=True))
 def rerun_task(job_id, role, party_id, task_id, task_version, new_version):
     tasks = JobSaver.query_task(job_id=job_id, task_id=task_id, role=role, party_id=party_id)
-    if not tasks:
-        return API.Output.fate_flow_exception(NoFoundTask(job_id=job_id, role=role, party_id=party_id, task_id=task_id))
-    TaskController.create_new_version_task(task=tasks[0], new_version=new_version)
+    if tasks:
+        TaskController.create_new_version_task(task=tasks[0], new_version=new_version)
     return API.Output.json()
