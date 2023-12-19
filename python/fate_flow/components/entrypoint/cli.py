@@ -115,12 +115,10 @@ def load_config_from_env(configs, env_name):
 
 def execute_component(config: TaskConfigSpec):
     component = load_component(config.component)
-    cpn_config = config.parameters
-    cpn_config["job_id"] = config.job_id
-    logger.info(f"cpn_config： {cpn_config}")
+    logger.info(f"parameters： {config.parameters}")
     inputs = IOMeta.InputMeta(data={}, model={})
     outputs = IOMeta.OutputMeta(data={}, model={}, metric={})
-    component.execute(cpn_config, outputs)
+    component.execute(config, outputs)
     return IOMeta(inputs=inputs, outputs=outputs)
 
 
