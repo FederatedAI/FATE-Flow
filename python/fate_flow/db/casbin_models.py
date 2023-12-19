@@ -19,8 +19,6 @@ import casbin
 import peewee as pw
 
 from fate_flow.db.base_models import singleton, DB
-from fate_flow.entity.types import ProcessRole
-from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.runtime.system_settings import CASBIN_MODEL_CONF, CASBIN_TABLE_NAME, PERMISSION_TABLE_NAME, \
     PERMISSION_CASBIN_MODEL_CONF
 
@@ -62,7 +60,7 @@ class FlowCasbinAdapter(casbin.persist.Adapter):
     def remove_policy(self, sec, ptype, rule):
         """removes a policy rule from the storage."""
         if sec in ["p", "g"]:
-            condition = [self.rule.ptype==ptype]
+            condition = [self.rule.ptype == ptype]
             data = dict(zip(['v0', 'v1', 'v2', 'v3', 'v4', 'v5'], rule))
             condition.extend([getattr(self.rule, k) == data[k] for k in data])
             check = self.rule.select().filter(*condition)
@@ -84,6 +82,7 @@ class FlowCasbinAdapter(casbin.persist.Adapter):
 class FlowCasbinRule(pw.Model):
     class Meta:
         table_name = CASBIN_TABLE_NAME
+
     ptype = pw.CharField(max_length=255, null=True)
     v0 = pw.CharField(max_length=255, null=True)
     v1 = pw.CharField(max_length=255, null=True)
@@ -105,6 +104,7 @@ class FlowCasbinRule(pw.Model):
 class PermissionCasbinRule(pw.Model):
     class Meta:
         table_name = PERMISSION_TABLE_NAME
+
     ptype = pw.CharField(max_length=255, null=True)
     v0 = pw.CharField(max_length=255, null=True)
     v1 = pw.CharField(max_length=255, null=True)
@@ -241,9 +241,12 @@ class PermissionCasbin(object):
             raise Exception(f"{party_id}, {type}, {value} {e}")
 
 
-if RuntimeConfig.PROCESS_ROLE == ProcessRole.DRIVER:
+FATE_CASBIN = None
+PERMISSION_CASBIN = None
+
+
+def init_casbin():
+    global FATE_CASBIN
+    global PERMISSION_CASBIN
     FATE_CASBIN = FateCasbin()
     PERMISSION_CASBIN = PermissionCasbin()
-else:
-    FATE_CASBIN = None
-    PERMISSION_CASBIN = None
