@@ -63,6 +63,10 @@ def generate_job_id():
     return job_id_generator.next_id()
 
 
+def generate_deepspeed_id(task_id):
+    return f"deepspeed_{task_id}"
+
+
 def generate_task_id(job_id, component_name):
     return '{}_{}'.format(job_id, component_name)
 
@@ -88,11 +92,11 @@ def get_job_log_directory(job_id, *args):
     return os.path.join(LOG_DIR, job_id, *args)
 
 
-def get_task_directory(job_id, role, party_id, task_name, task_version, input=False, output=False, abspath=True, **kwargs):
-    if abspath:
+def get_task_directory(job_id, role, party_id, task_name, task_version, input=False, output=False, base_dir="", **kwargs):
+    if not base_dir:
         base_path = get_job_directory(job_id)
     else:
-        base_path = f"./{job_id}"
+        base_path = f"{base_dir}/{job_id}"
 
     if input:
         return os.path.join(base_path, role, party_id, task_name, str(task_version), "input")
@@ -182,9 +186,12 @@ def inheritance_check(inheritance: InheritConfSpec = None):
 
 def check_task_is_timeout(task: Task):
     now_time = current_timestamp()
-    running_time = (now_time - task.f_create_time)/1000
+    if not task.f_start_time:
+        return False
+    running_time = (now_time - task.f_start_time)/1000
     if task.f_timeout and running_time > task.f_timeout:
         schedule_logger(task.f_job_id).info(f'task {task.f_task_name} run time {running_time}s timeout')
+        schedule_logger(task.f_job_id).error(f'task {task.f_task_name} timeout[{task.f_timeout}s]')
         return True
     else:
         return False

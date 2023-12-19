@@ -15,14 +15,19 @@
 #
 import json
 import logging
+import os.path
 import sys
 import time
 import traceback
 
 from fate_flow.engine.backend._base import LocalEngine
-from fate_flow.entity.spec.dag import TaskConfigSpec
-from fate_flow.entity.types import BaseStatus, TaskStatus
-from fate_flow.manager.worker.fate_executor import FateSubmit
+from fate_flow.engine.devices.deepspeed import EggrollDeepspeedEngine
+from fate_flow.entity.spec.dag import TaskConfigSpec, ComponentOutputMeta, ArtifactOutputSpec
+from fate_flow.entity.types import BaseStatus, TaskStatus, ComputingEngine
+from fate_flow.manager.outputs.data import DataManager
+from fate_flow.manager.worker.fate_ds_executor import FateSubmit
+from fate_flow.runtime.system_settings import COMPUTING_CONF, DEEPSPEED_RESULT_PLACEHOLDER, MODEL_STORE_PATH
+from fate_flow.utils.job_utils import generate_deepspeed_id
 
 logger = logging.getLogger(__name__)
 
@@ -46,24 +51,49 @@ class EndStatus(BaseStatus):
 
 
 class Deepspeed(LocalEngine):
-    def run(self,  output_path, engine_run, run_parameters, session_id, **kwargs):
+    def run(self,  output_path, engine_run, run_parameters, session_id, task_info, **kwargs):
         parameters = TaskConfigSpec.parse_obj(run_parameters)
         env_name = "FATE_TASK_CONFIG"
         self.start_submit(session_id, parameters, engine_run, env_name)
         status = self.wait_deepspeed_job(session_id=session_id, timeout=engine_run.get("timeout", 36000))
         logger.info(f"deepspeed task end with status {status}")
+        engine = EggrollDeepspeedEngine()
         if status not in EndStatus.status_list():
             logger.info(f"start to kill deepspeed {session_id} task")
             self.kill(session_id=session_id)
             return -1
-        # download result to output_path
-        pass
+        logger.info(f"start download task result to dir {os.path.dirname(output_path)}")
+        engine.download_result(
+            worker_id=generate_deepspeed_id(parameters.party_task_id),
+            path=os.path.dirname(output_path)
+        )
+        logger.info(f"start download task model")
+        output_meta = None
+        logger.info(f"{output_path}: {os.path.exists(output_path)}")
+        if os.path.exists(output_path):
+            with open(output_path, "r") as f:
+                try:
+                    result = json.load(f)
+                    output_meta = ComponentOutputMeta.parse_obj(result)
+                except:
+                    logger.info(f"load output path {output_path} failed")
+        logger.info(output_meta)
+        if output_meta:
+            for _key, _model in output_meta.io_meta.outputs.model.items():
+                model = ArtifactOutputSpec(**_model)
+                _, address = DataManager.uri_to_address(model.uri)
+                path = os.path.join(MODEL_STORE_PATH, address.path.split("models/")[-1])
+                logger.info(f"download model to {path}")
+                engine.download_model(task_info, path)
+        logger.info("download model success")
         return 0
 
     @classmethod
     def start_submit(cls, session_id, parameters: TaskConfigSpec, engine_run, env_name):
         from eggroll.deepspeed.submit import client
-        client = client.DeepspeedJob(session_id=session_id)
+        host = COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("host")
+        port = COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("port")
+        client = client.DeepspeedJob(session_id=session_id, host=host, port=port)
         world_size = engine_run.get("cores", 1)
         timeout_seconds = engine_run.get("timeout_seconds", 21600)
         resource_exhausted_strategy = engine_run.get("resource_exhausted_strategy", "waiting")
@@ -95,9 +125,9 @@ class Deepspeed(LocalEngine):
             return
 
         while True:
-            status = self.query_status(session_id=session_id)
-            if timeout % 100 == 0:
-                logger.info(f"deepspeed task status {status}")
+            status = self._query_status(session_id=session_id)
+            if timeout % 5 == 0:
+                logger.info(f"task status: {status}")
             timeout -= 1
             if timeout == 0:
                 logger.error(f"task timeout, total {timeout}s")
@@ -107,7 +137,7 @@ class Deepspeed(LocalEngine):
             time.sleep(1)
 
     @staticmethod
-    def generate_command_arguments(env_name, output_path=""):
+    def generate_command_arguments(env_name, output_path=f"{DEEPSPEED_RESULT_PLACEHOLDER}/task_result.yaml"):
         command_arguments = [
             "component",
             "execute",
@@ -126,7 +156,9 @@ class Deepspeed(LocalEngine):
         if session_id:
             logger.info(f"start kill deepspeed task {session_id}")
             from eggroll.deepspeed.submit import client
-            client = client.DeepspeedJob(session_id)
+            host = COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("host")
+            port = COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("port")
+            client = client.DeepspeedJob(session_id, host=host, port=port)
             try:
                 client.kill()
             except Exception as e:
@@ -137,7 +169,9 @@ class Deepspeed(LocalEngine):
     def _query_status(session_id):
         if session_id:
             from eggroll.deepspeed.submit import client
-            client = client.DeepspeedJob(session_id)
+            host = COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("host")
+            port = COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("port")
+            client = client.DeepspeedJob(session_id, host=host, port=port)
             _s = client.query_status().status
             return _s if _s else StatusSet.NEW
         return StatusSet.NEW
@@ -149,3 +183,4 @@ class Deepspeed(LocalEngine):
                 return TaskStatus.SUCCESS
             else:
                 return TaskStatus.FAILED
+        return TaskStatus.RUNNING
