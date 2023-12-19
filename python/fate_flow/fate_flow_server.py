@@ -21,6 +21,10 @@ import traceback
 import grpc
 from werkzeug.serving import run_simple
 
+if __name__ == '__main__':
+    from fate_flow.db.casbin_models import init_casbin
+    init_casbin()
+
 from fate_flow.apps import app
 from fate_flow.manager.service.config_manager import ConfigManager
 from fate_flow.hook import HookManager
@@ -72,7 +76,6 @@ def server_init():
     # runtime config
     RuntimeConfig.init_env()
     RuntimeConfig.init_config(JOB_SERVER_HOST=HOST, HTTP_PORT=HTTP_PORT)
-    RuntimeConfig.set_process_role(ProcessRole.DRIVER)
     RuntimeConfig.init_config()
     RuntimeConfig.set_service_db(service_db())
     RuntimeConfig.SERVICE_DB.register_flow()
