@@ -30,8 +30,6 @@ class AppManager(BaseModelOperate):
         if CLIENT_AUTHENTICATION or SITE_AUTHENTICATION:
             if cls.query_app(app_name="admin", init=True):
                 cls._delete(AppInfo, app_name="admin")
-                cls._delete(AppInfo, app_id=PARTY_ID)
-                cls._delete(PartnerAppInfo, party_id=PARTY_ID)
             cls.create_app(app_name="admin", app_id="admin", app_token=ADMIN_KEY, app_type="admin", init=True)
             app_info = cls.create_app(app_name=PARTY_ID, app_id=PARTY_ID, app_type=AppType.SITE, init=True)
             if app_info:
