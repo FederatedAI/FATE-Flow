@@ -26,7 +26,8 @@ from fate_flow.entity.spec.dag import TaskConfigSpec, ComponentOutputMeta, Artif
 from fate_flow.entity.types import BaseStatus, TaskStatus, ComputingEngine
 from fate_flow.manager.outputs.data import DataManager
 from fate_flow.manager.worker.fate_ds_executor import FateSubmit
-from fate_flow.runtime.system_settings import COMPUTING_CONF, DEEPSPEED_RESULT_PLACEHOLDER, MODEL_STORE_PATH
+from fate_flow.runtime.system_settings import COMPUTING_CONF, DEEPSPEED_RESULT_PLACEHOLDER, MODEL_STORE_PATH, \
+    DEEPSPEED_LOGS_DIR_PLACEHOLDER, DEEPSPEED_MODEL_DIR_PLACEHOLDER
 from fate_flow.utils.job_utils import generate_deepspeed_id
 
 logger = logging.getLogger(__name__)
@@ -103,7 +104,12 @@ class Deepspeed(LocalEngine):
         resource_options = {"timeout_seconds": timeout_seconds, "resource_exhausted_strategy": resource_exhausted_strategy}
         resource_options.update(engine_run)
         command_arguments = cls.generate_command_arguments(env_name)
-        environment_variables = {env_name: json.dumps(parameters.dict())}
+        environment_variables = {
+            env_name: json.dumps(parameters.dict()),
+            "DEEPSPEED_LOGS_DIR_PLACEHOLDER": DEEPSPEED_LOGS_DIR_PLACEHOLDER,
+            "DEEPSPEED_MODEL_DIR_PLACEHOLDER": DEEPSPEED_MODEL_DIR_PLACEHOLDER,
+            "DEEPSPEED_RESULT_PLACEHOLDER": DEEPSPEED_RESULT_PLACEHOLDER
+        }
         logger.info(f"world size {world_size}")
         logger.info(f"command_arguments: {command_arguments}")
         logger.info(f"environment_variables: {environment_variables}")
