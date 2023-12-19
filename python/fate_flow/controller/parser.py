@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import copy
+import logging
 import os
 from typing import Dict, Union, List
 
@@ -29,7 +30,7 @@ from fate_flow.entity.types import EngineType, FederationEngine, DataSet, InputA
 from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.job_default_config import JobDefaultConfig
 from fate_flow.runtime.system_settings import ENGINES, PROXY, FATE_FLOW_CONF_PATH, HOST, HTTP_PORT, PROTOCOL, \
-    API_VERSION, COMPUTING_CONF
+    API_VERSION, COMPUTING_CONF, LOG_LEVEL
 from fate_flow.utils import job_utils, file_utils
 
 
@@ -211,17 +212,13 @@ class TaskParser(object):
             })
 
     def generate_logger_conf(self):
-        logger_conf = JobDefaultConfig.task_logger
         task_log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id, self.task_name)
         job_party_log_dir = job_utils.get_job_log_directory(self.job_id, self.role, self.party_id)
-
-        # TODO: fix?
-        level = logger_conf.get("metadata", {}).get("level", "DEBUG")
         delay = True
         formatters = None
         return FlowLogger.create(task_log_dir=task_log_dir,
                                  job_party_log_dir=job_party_log_dir,
-                                 level=level,
+                                 level=logging.getLevelName(LOG_LEVEL),
                                  delay=delay,
                                  formatters=formatters)
 

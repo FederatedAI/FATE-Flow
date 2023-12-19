@@ -36,8 +36,10 @@ from fate_flow.entity.types import DataframeArtifactType, TableArtifactType, Tas
 
 from fate_flow.hub.components_wraps import WrapsABC
 from fate_flow.manager.outputs.data import DataManager, DatasetManager
-from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, DEFAULT_OUTPUT_DATA_PARTITIONS
+from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, DEFAULT_OUTPUT_DATA_PARTITIONS, \
+    DEEPSPEED_MODEL_DIR_PLACEHOLDER, DEEPSPEED_LOGS_DIR_PLACEHOLDER
 from fate_flow.utils import job_utils
+from fate_flow.utils.job_utils import generate_deepspeed_id
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +121,13 @@ class FlowWraps(WrapsABC):
         logger.info("start generating output artifacts")
         output_artifacts = self._preprocess_output_artifacts()
         logger.info(f"output_artifacts: {output_artifacts}")
+        logger_config = json.dumps(self.config.conf.logger.config)
+        if self.config.launcher_name == LauncherType.DEEPSPEED:
+            logger_config = logger_config.replace(
+                job_utils.get_job_log_directory(self.config.job_id),
+                os.path.join(DEEPSPEED_LOGS_DIR_PLACEHOLDER, self.config.job_id)
+            )
+            self.config.conf.logger.config = json.loads(logger_config)
         config = TaskConfigSpec(
             job_id=self.config.job_id,
             task_id=self.config.task_id,
@@ -153,7 +162,7 @@ class FlowWraps(WrapsABC):
             run_parameters=task_parameters,
             output_path=task_result,
             conf_path=conf_path,
-            session_id=self.config.party_task_id,
+            session_id=generate_deepspeed_id(self.config.party_task_id),
             sync=True
         )
         logger.info(f"finish task, return code {code}")
@@ -243,6 +252,9 @@ class FlowWraps(WrapsABC):
         logger.info("save model")
         logger.info(f"key[{output_key}] output_models[{output_models}]")
         tar_io = io.BytesIO()
+        if self.config.launcher_name == LauncherType.DEEPSPEED:
+            logger.info("pass")
+            return
         for output_model in output_models:
             engine, address = DataManager.uri_to_address(output_model.uri)
             if engine == StorageEngine.FILE:
@@ -401,12 +413,12 @@ class FlowWraps(WrapsABC):
                 # api path
                 uri = self.mlmd.get_metric_save_url(execution_id=self.config.party_task_id)
             else:
-                # local file path
-                abspath = True
+                base_dir = ""
                 if self.config.launcher_name == LauncherType.DEEPSPEED:
-                    abspath = False
+                    base_dir = DEEPSPEED_MODEL_DIR_PLACEHOLDER
                 uri = DatasetManager.output_local_uri(
-                    task_info=self.task_info, name=name, type_name=type_name, is_multi=is_multi, abspath=abspath
+                    task_info=self.task_info, name=name, type_name=type_name, is_multi=is_multi,
+                    base_dir=base_dir
                 )
         output_artifacts.uri = uri
         return output_artifacts

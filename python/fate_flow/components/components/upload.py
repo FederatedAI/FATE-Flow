@@ -21,7 +21,7 @@ from typing import Union
 
 from fate_flow.components import cpn
 from fate_flow.engine.storage import Session, StorageEngine, DataType, StorageTableMeta
-from fate_flow.entity.spec.dag import IOMeta, ArtifactOutputSpec, Metadata, ArtifactSource, MetricData
+from fate_flow.entity.spec.dag import IOMeta, ArtifactOutputSpec, Metadata, ArtifactSource, MetricData, TaskConfigSpec
 from fate_flow.entity.types import JsonMetricArtifactType, EngineType
 from fate_flow.manager.outputs.data import DatasetManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, ENGINES
@@ -36,15 +36,20 @@ def upload(
     upload_data(config, outputs)
 
 
-def upload_data(config, outputs):
-    job_id = config.pop("job_id")
+def upload_data(config: TaskConfigSpec, outputs):
+    parameters = config.parameters
+    job_id = config.job_id
     upload_object = Upload()
+    engine_options = {}
+    if config.conf.computing.metadata and config.conf.computing.metadata.options:
+        engine_options = config.conf.computing.metadata.options
     data = upload_object.run(
         parameters=UploadParam(
-            **config
+            **parameters
         ),
         job_id=job_id,
-        outputs=outputs
+        outputs=outputs,
+        engine_options=config.conf.computing.metadata.options
     )
 
 
@@ -126,7 +131,7 @@ class Upload:
         self.table = None
         self.data_meta = {}
 
-    def run(self, parameters: UploadParam, outputs: IOMeta.OutputMeta = None, job_id=""):
+    def run(self, parameters: UploadParam, outputs: IOMeta.OutputMeta = None, job_id="", engine_options={}):
         self.parameters = parameters
         logging.info(self.parameters.to_dict())
         storage_address = self.parameters.storage_address
@@ -179,6 +184,7 @@ class Upload:
                 raise RuntimeError(f"can not support this storage engine: {storage_engine}")
             address_dict.update(upload_address)
             logging.info(f"upload to {storage_engine} storage, address: {address_dict}")
+            logging.info(f"engine options: {engine_options}")
             address = StorageTableMeta.create_address(
                 storage_engine=storage_engine, address_dict=address_dict
             )
@@ -191,7 +197,8 @@ class Upload:
                     component="upload",
                     output_artifact_key="data"
                 ).dict(),
-                **self.parameters.to_dict()
+                **self.parameters.to_dict(),
+                options=engine_options
             )
             data_table_count = self.save_data_table(job_id)
             logging.info("------------load data finish!-----------------")

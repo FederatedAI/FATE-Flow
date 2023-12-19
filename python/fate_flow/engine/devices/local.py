@@ -25,7 +25,7 @@ from fate_flow.utils import process_utils
 
 
 class LocalEngine(EngineABC):
-    def __init__(self, provider: ComponentProvider):
+    def __init__(self, provider: ComponentProvider = None):
         self.provider = provider
 
     def run(self, task: Task, run_parameters, run_parameters_path, config_dir, log_dir, cwd_dir, **kwargs):

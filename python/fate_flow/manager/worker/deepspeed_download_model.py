@@ -23,7 +23,6 @@ from fate_flow.utils.log_utils import schedule_logger
 
 class DownloadModel(object):
     def run(self, args):
-        deepspeed_engine = build_engine(args.provider_name, LauncherType.DEEPSPEED)
         tasks = JobSaver.query_task(
             task_id=args.task_id,
             task_version=args.task_version,
@@ -32,20 +31,20 @@ class DownloadModel(object):
             party_id=args.party_id
         )
         task = tasks[0]
+        deepspeed_engine = build_engine(task.f_provider_name, LauncherType.DEEPSPEED)
         schedule_logger(args.job_id).info("start download model")
-        deepspeed_engine.download_model_do(task)
+        deepspeed_engine.download_model_do(task=task, path=args.path, worker_id=task.f_worker_id)
         schedule_logger(args.job_id).info("download model success")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--provider_name', required=True, type=str, help="provider name")
+    parser.add_argument('--path', required=True, type=str, help="path")
     parser.add_argument('--job_id', required=True, type=str, help="job id")
     parser.add_argument('--role', required=True, type=str, help="role")
     parser.add_argument('--party_id', required=True, type=str, help="party id")
     parser.add_argument('--task_id', required=True, type=str, help="task id")
     parser.add_argument('--task_version', required=True, type=int, help="task version")
-
 
     args = parser.parse_args()
     DownloadModel().run(args)

@@ -559,6 +559,9 @@ class TaskScheduler(object):
     @classmethod
     def get_federated_task_status(cls, job_id, task_id, task_version):
         tasks_on_all_party = ScheduleJobSaver.query_task(task_id=task_id, task_version=task_version)
+        if not tasks_on_all_party:
+            schedule_logger(job_id).error(f"task {task_id} {task_version} no found")
+            return TaskStatus.FAILED
         tasks_party_status = [task.f_status for task in tasks_on_all_party]
         status = cls.calculate_multi_party_task_status(tasks_party_status)
         schedule_logger(job_id=job_id).info(

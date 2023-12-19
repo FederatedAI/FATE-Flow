@@ -16,7 +16,7 @@ import logging
 
 from fate_flow.components import cpn
 from fate_flow.engine import storage
-from fate_flow.entity.spec.dag import IOMeta, ArtifactOutputSpec, Metadata
+from fate_flow.entity.spec.dag import IOMeta, ArtifactOutputSpec, Metadata, TaskConfigSpec
 from fate_flow.errors.server_error import NoFoundTable
 from fate_flow.manager.outputs.data import DataManager
 
@@ -29,12 +29,12 @@ def download(
     download_data(config, outputs)
 
 
-def download_data(config, outputs: IOMeta.OutputMeta):
-    job_id = config.pop("job_id")
+def download_data(config: TaskConfigSpec, outputs: IOMeta.OutputMeta):
+    parameters = config.parameters
     download_object = Download()
     download_object.run(
         parameters=DownloadParam(
-            **config
+            **parameters
         ),
         outputs=outputs
     )
