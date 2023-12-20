@@ -91,8 +91,8 @@ class FlowWraps(WrapsABC):
             exceptions = str(e)
             logger.error(e)
         finally:
-            self.report_status(code, exceptions)
             self.destroy(code)
+            self.report_status(code, exceptions)
             if code:
                 sys.exit(code)
 

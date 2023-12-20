@@ -224,7 +224,6 @@ class Session(object):
                 engine_name=storage_engine,
                 engine_session_id=storage_session_id,
             )
-        kwargs = {}
         if storage_engine == StorageEngine.EGGROLL:
             from fate_flow.engine.storage.eggroll import StorageSession
             kwargs["host"] = COMPUTING_CONF.get(StorageEngine.EGGROLL).get("host")
@@ -244,7 +243,7 @@ class Session(object):
                 f"can not be initialized with storage engine: {storage_engine}"
             )
         storage_session = StorageSession(
-            session_id=storage_session_id, options=kwargs.get("options", {}), **kwargs
+            session_id=storage_session_id, **kwargs
         )
 
         self._storage_session[storage_session_id] = storage_session
