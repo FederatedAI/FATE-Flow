@@ -26,7 +26,7 @@ from fate_flow.utils.api_utils import API
 
 
 def get_permission_parameters(role, party_id, initiator_party_id, job_info) -> PermissionCheckParameters:
-    dag_schema = DAGSchema(**job_info['dag_schema'])
+    dag_schema = DAGSchema(**job_info)
     job_parser = JobParser(dag_schema)
     component_list = job_parser.component_ref_list(role, party_id)
     dataset_list = job_parser.dataset_list(role, party_id)
