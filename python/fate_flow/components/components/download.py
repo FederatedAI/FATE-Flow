@@ -68,9 +68,9 @@ class Download:
             output_tables_meta={"data": data_table_meta},
             download_dir=download_dir
         )
-        outputs.data = ArtifactOutputSpec(
+        outputs.data = {"output_data": ArtifactOutputSpec(
             uri="",
             metadata=Metadata(namespace=parameters.namespace, name=parameters.name),
             type_name=data_table_meta.data_type,
-        ).dict()
+        ).dict()}
         logging.info(f"download data success, download path: {parameters.path}")
