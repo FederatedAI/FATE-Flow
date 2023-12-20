@@ -35,6 +35,9 @@ class FlowHub:
         if provider.name == ProviderName.FATE and provider.device == ProviderDevice.LOCAL:
             from fate_flow.hub.provider.local import LocalFateEntrypoint
             entrypoint = LocalFateEntrypoint(provider)
+        elif provider.name == ProviderName.FATE_FLOW:
+            from fate_flow.hub.provider.local import FATEFLowEntrypoint
+            entrypoint = FATEFLowEntrypoint(provider)
         elif provider.device == ProviderDevice.DOCKER:
             from fate_flow.hub.provider.docker import DockerEntrypoint
             entrypoint = DockerEntrypoint(provider)
