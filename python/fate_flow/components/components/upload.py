@@ -162,7 +162,7 @@ class Upload:
             address_dict = storage_address.copy()
             storage_engine = self.parameters.storage_engine
             storage_session = sess.storage(
-                storage_engine=storage_engine
+                storage_engine=storage_engine, options=engine_options
             )
             if storage_engine in {StorageEngine.EGGROLL, StorageEngine.STANDALONE}:
                 upload_address = {
