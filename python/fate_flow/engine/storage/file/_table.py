@@ -29,20 +29,16 @@ LOGGER = getLogger()
 
 class FileCoder:
     @staticmethod
-    def encode(key: str, value: str):
-        key = key.encode("utf-8")
-        value = value.encode("utf-8")
+    def encode(key, value):
         size = struct.pack(">Q", len(key))
         return (size + key + value).hex()
 
     @staticmethod
-    def decode(data: str) -> Tuple[str, str]:
+    def decode(data: str):
         data = bytes.fromhex(data)
         size = struct.unpack(">Q", data[:8])[0]
         key = data[8 : 8 + size]
         value = data[8 + size :]
-        key = key.decode("utf-8")
-        value = value.decode("utf-8")
         return key, value
 
 
@@ -61,7 +57,10 @@ class StorageTable(StorageTableBase):
             address=address,
             partitions=partitions,
             options=options,
-            engine=StorageEngine.FILE
+            engine=StorageEngine.FILE,
+            key_serdes_type=0,
+            value_serdes_type=0,
+            partitioner_type=0
         )
         self._local_fs_client = fs.LocalFileSystem()
 
