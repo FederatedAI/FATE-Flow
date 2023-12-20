@@ -242,17 +242,12 @@ class BfiaScheduler(SchedulerABC):
 
     @classmethod
     def create_task(cls, job_id, task_id, node_id, task_name, job_parser, parties, task_version=0):
-        task_node = job_parser.get_task_node(task_name=task_name)
-        task_parser = job_parser.task_parser(
-            task_node=task_node, job_id=job_id, task_name=task_name, party_id=node_id,
-            task_id=task_id, task_version=task_version, parties=parties,
-        )
         task = ScheduleTask()
         task.f_job_id = job_id
         task.f_role = ""
         task.f_party_id = node_id
         task.f_task_name = task_name
-        task.f_component = task_parser.component_ref
+        task.f_component = job_parser.get_component_ref(task_name=task_name)
         task.f_task_id = task_id
         task.f_task_version = task_version
         task.f_status = TaskStatus.READY
