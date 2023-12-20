@@ -80,6 +80,8 @@ class Deepspeed(LocalEngine):
                     logger.info(f"load output path {output_path} failed")
         logger.info(output_meta)
         if output_meta:
+            if output_meta.status.code != 0:
+                raise RuntimeError(output_meta.dict())
             for _key, _model in output_meta.io_meta.outputs.model.items():
                 model = ArtifactOutputSpec(**_model)
                 _, address = DataManager.uri_to_address(model.uri)

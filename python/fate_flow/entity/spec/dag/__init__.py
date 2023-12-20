@@ -22,7 +22,7 @@ from fate_flow.entity.spec.dag._task import TaskConfigSpec, PreTaskConfigSpec, T
     TaskCleanupConfigSpec
 from fate_flow.entity.spec.dag._artifact import RuntimeTaskOutputChannelSpec, DataWarehouseChannelSpec, \
     ModelWarehouseChannelSpec, RuntimeInputArtifacts, FlowRuntimeInputArtifacts,\
-    ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, \
+    ArtifactInputApplySpec, Metadata, RuntimeTaskOutputChannelSpec, InputArtifactSpec, \
     ArtifactOutputApplySpec, ModelWarehouseChannelSpec, ArtifactOutputSpec, ArtifactSource
 from fate_flow.entity.spec.dag._component import ComponentSpec, ComponentIOArtifactsTypeSpec, ComponentSpecV1
 from fate_flow.entity.spec.dag._computing import EggrollComputingSpec, SparkComputingSpec, StandaloneComputingSpec
