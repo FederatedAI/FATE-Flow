@@ -142,6 +142,11 @@ class ProviderManager(BaseModelOperate):
         return list(set([component.f_component_name for component in component_list]))
 
     @classmethod
+    def get_flow_components(cls):
+        component_list = cls._query(ComponentInfo, name="fate_flow", force=True)
+        return list(set([component.f_component_name for component in component_list]))
+
+    @classmethod
     @filter_parameters()
     def query_component_description(cls, **kwargs):
         descriptions = {}
