@@ -58,7 +58,7 @@ class LoggerConfigBuilder:
         root_logger_dir = os.path.join(log_base_dir, "root")
         # os.makedirs(root_logger_dir, exist_ok=True)
         self._add_root_loggers(
-            log_base_dir=root_logger_dir, formatter_name="root", delay=delay
+            log_base_dir=root_logger_dir, formatter_name="root", delay=delay, loglevel=level
         )
 
         component_logger_dir = os.path.join(log_base_dir, "component")
@@ -72,12 +72,12 @@ class LoggerConfigBuilder:
 
         # os.makedirs(aggregate_log_base_dir, exist_ok=True)
         self._add_party_id_loggers(
-            aggregate_log_base_dir=aggregate_log_base_dir, formatter_name="root", delay=delay
+            aggregate_log_base_dir=aggregate_log_base_dir, formatter_name="root", delay=delay, loglevel=level
         )
 
         if aggregate_log_base_dir is not None:
             self._add_aggregate_error_logger(
-                aggregate_log_base_dir, formatter_name="root", delay=delay
+                aggregate_log_base_dir, formatter_name="root", delay=delay,
             )
 
     def build(self):
@@ -91,16 +91,20 @@ class LoggerConfigBuilder:
             disable_existing_loggers=self.disable_existing_loggers,
         )
 
-    def _add_root_loggers(self, log_base_dir, formatter_name, delay):
+    def _add_root_loggers(self, log_base_dir, formatter_name, delay, loglevel):
         for level in _LOGGER_LEVELS:
+            if logging.getLevelName(level) < logging.getLevelName(loglevel):
+                continue
             handler_name = f"root_{level.lower()}"
             self.handlers[handler_name] = self._create_file_handler(
                 level, formatter_name, delay, os.path.join(log_base_dir, level)
             )
             self.root["handlers"].append(handler_name)
 
-    def _add_party_id_loggers(self, aggregate_log_base_dir, formatter_name, delay):
+    def _add_party_id_loggers(self, aggregate_log_base_dir, formatter_name, delay, loglevel):
         for level in _LOGGER_LEVELS:
+            if logging.getLevelName(level) < logging.getLevelName(loglevel):
+                continue
             handler_name = f"root_party_{level.lower()}"
             self.handlers[handler_name] = self._create_file_handler(
                 level, formatter_name, delay, os.path.join(aggregate_log_base_dir, level)
@@ -127,6 +131,8 @@ class LoggerConfigBuilder:
         #       ERROR
         component_handlers_names = []
         for level in _LOGGER_LEVELS:
+            if logging.getLevelName(level) < logging.getLevelName(loglevel):
+                continue
             handler_name = f"component_{level.lower()}"
             self.handlers[handler_name] = self._create_file_handler(
                 level, formatter_name, delay, os.path.join(log_base_dir, level)
