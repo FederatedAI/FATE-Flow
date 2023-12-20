@@ -37,10 +37,10 @@ class BfiaTaskController(TaskController):
             cls, job_id, role, node_id, task_id, task_name, dag_schema, job_parser, task_version=0
     ):
         execution_id = job_utils.generate_session_id(task_id, task_version, role, node_id)
-        task_node = job_parser.get_task_node(task_name=task_name)
+        task_node = job_parser.get_task_node(task_name=task_name, role=role, party_id=node_id)
         task_parser = job_parser.task_parser(
             task_node=task_node, job_id=job_id, task_name=task_name, role=role, party_id=node_id,
-            task_id=task_id, task_version=task_version
+            task_id=task_id, task_version=task_version, parties=job_parser.get_task_runtime_parties(task_name)
         )
         task_parameters = task_parser.task_parameters
         schedule_logger(job_id).info(f"task {task_name} role {role} part id {node_id} task_parameters"
@@ -80,7 +80,8 @@ class BfiaTaskController(TaskController):
         for task in tasks:
             schedule_logger(job_id).info(f"start {task.f_role} {task.f_party_id} task")
             status_list.append(cls.start_task(task))
-        if TaskStatus.FAILED in status_list:
+        schedule_logger(job_id).info(f"start task status: {status_list}")
+        if False in status_list:
             return False
         return True
 

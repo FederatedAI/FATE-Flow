@@ -62,8 +62,8 @@ class DagSpec(BaseModel):
 class BFIADagSpec(BaseModel):
     config: ConfSpec
     dag: DagSpec
-    flow_id: str = ""
-    old_job_id: str = ""
+    flow_id: Optional[str]
+    old_job_id: Optional[str]
 
 
 class DagSchemaSpec(BaseModel):

@@ -14,10 +14,6 @@ from fate_flow.manager.service.provider_manager import ProviderManager
 
 class BfiaTaskParser(TaskParser):
     @property
-    def need_run(self):
-        return self.party_id in self.parties
-
-    @property
     def task_parameters(self):
         return TaskRuntimeEnv(
             runtime=RuntimeComponent(component=RuntimeConf(
@@ -41,20 +37,18 @@ class BfiaTaskParser(TaskParser):
     @property
     def role_index(self):
         _nodes = {}
-        for party in self.runtime_parties:
+        for party in self.parties:
             if party.role not in _nodes:
-                _nodes[party.role] = [party.party_id]
+                _nodes[party.role] = party.party_id
         return _nodes[self.role].index(self.party_id)
 
     @property
     def node_id(self):
         _nodes = {}
         nodes = {}
-        for party in self.runtime_parties:
+        for party in self.parties:
             if party.role not in _nodes:
-                _nodes[party.role] = [party.party_id]
-            else:
-                _nodes[party.role].append(party.party_id)
+                _nodes[party.role] = party.party_id
         for _k, _v_list in _nodes.items():
             for _n, _v in enumerate(_v_list):
                 nodes[f"{_k}.{_n}"] = _v
@@ -63,7 +57,7 @@ class BfiaTaskParser(TaskParser):
     @property
     def runtime_inputs(self):
         inputs = {}
-        for type, upstream_input in self.task_node.upstream_inputs.get(self.role, {}).get(self.party_id, {}).items():
+        for type, upstream_input in self.task_node.upstream_inputs.items():
             for key, channel in upstream_input.items():
                 if isinstance(channel, DataWarehouseChannelSpec):
                     if channel.dataset_id:
@@ -85,10 +79,10 @@ class BfiaTaskParser(TaskParser):
     @property
     def runtime_outputs(self):
         outputs = {}
-        for type, output in self.task_node.outputs.get(self.role, {}).get(self.party_id, {}).items():
+        for type, output in self.task_node.outputs.items():
             for key, channel in output.items():
                 if isinstance(channel, OutputArtifactSpec):
-                    if self.role in channel.roles:
+                    if self.role in [party.role for party in channel.parties]:
                         outputs[key] = self.create_output_address(channel)
         return outputs
 

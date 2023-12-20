@@ -13,7 +13,7 @@ def register_components():
     print(resp.text)
 
 
-# register_components()
+register_components()
 
 
 def submit_job():
