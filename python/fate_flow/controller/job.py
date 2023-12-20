@@ -394,7 +394,7 @@ class JobController(object):
             task_cores = int(task_run.get("num-executors")) * (task_run.get("executor-cores"))
 
         if ENGINES.get(EngineType.COMPUTING) == ComputingEngine.EGGROLL:
-            total_cores = task_run.pop("cores", None) or default_task_run.get("cores")
+            total_cores = task_run.get("cores", None) or default_task_run.get("cores")
 
             task_run["nodes"] = COMPUTING_CONF.get(ComputingEngine.EGGROLL).get("nodes")
             task_run["task_cores_per_node"] = max(total_cores // task_run["nodes"], 1)
