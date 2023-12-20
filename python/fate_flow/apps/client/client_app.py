@@ -43,7 +43,7 @@ def delete_client_app(app_id):
 @API.Input.params(app_id=fields.String(required=False), desc=APP_ID)
 @API.Input.params(app_name=fields.String(required=False), desc=APP_NAME)
 def query_client_app(app_id=None, app_name=None):
-    apps = AppManager.query_app(app_id=app_id, app_name=app_name, app_type=AppType.CLIENT)
+    apps = AppManager.query_app(app_id=app_id, app_name=app_name)
     return API.Output.json(code=ReturnCode.Base.SUCCESS, message="success", data=[app.to_human_model_dict() for app in apps])
 
 
