@@ -49,7 +49,7 @@ def upload_data(config: TaskConfigSpec, outputs):
         ),
         job_id=job_id,
         outputs=outputs,
-        engine_options=config.conf.computing.metadata.options
+        engine_options=engine_options
     )
 
 
