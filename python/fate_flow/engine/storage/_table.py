@@ -22,14 +22,13 @@ import peewee
 
 from fate_flow.db.base_models import DB
 from fate_flow.db.storage_models import StorageTableMetaModel
-from fate_flow.engine.storage._abc import StorageTableMetaABC, StorageTableABC
-
 from fate_flow.engine.relation_ship import Relationship
+from fate_flow.engine.storage._abc import StorageTableMetaABC, StorageTableABC
 from fate_flow.entity.types import AddressABC
 from fate_flow.utils.base_utils import current_timestamp
 from fate_flow.utils.log import getLogger
-from fate_flow.utils.partitioner import get_partitioner_by_type
-from fate_flow.utils.serdes import get_serdes_by_type
+from ._partitioner import get_partitioner_by_type
+from .serdes import get_serdes_by_type
 
 LOGGER = getLogger("storage")
 
