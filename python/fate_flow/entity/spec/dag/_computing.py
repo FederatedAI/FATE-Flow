@@ -43,6 +43,7 @@ class EggrollComputingSpec(pydantic.BaseModel):
 class SparkComputingSpec(pydantic.BaseModel):
     class MetadataSpec(pydantic.BaseModel):
         computing_id: str
+        options: dict = {}
 
     type: Literal["spark"]
     metadata: MetadataSpec
