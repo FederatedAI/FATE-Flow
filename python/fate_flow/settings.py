@@ -20,7 +20,6 @@ GRPC_SERVER_MAX_WORKERS = None  # default: (os.cpu_count() or 1) * 5
 HTTP_REQUEST_TIMEOUT = 10  # s
 REMOTE_REQUEST_TIMEOUT = 30000  # ms
 
-LOG_LEVEL = 20
 LOG_DIR = ""
 DATA_DIR = ""
 MODEL_DIR = ""

@@ -29,7 +29,6 @@ from fate_flow.entity.spec.dag import (
     TaskSpec,
     RuntimeInputArtifacts,
     JobConfSpec,
-    SourceInputArtifacts,
     OutputArtifactSpec,
     OutputArtifacts
 )
@@ -49,6 +48,9 @@ from ..utils.spec.job import (
 )
 
 
+DATASET_ID = "dataset_id"
+
+
 class Translator(object):
     @classmethod
     def translate_dag_to_bfia_dag(cls, dag_schema: DAGSchema, component_specs: Dict[str, BFIAComponentSpec]):
@@ -64,6 +66,7 @@ class Translator(object):
             config=cls.translate_dag_to_bfia_config(dag_schema.dag, dag_schema.schema_version),
             dag=cls.translate_dag_to_bfia_tasks(dag_schema.dag, component_specs, dag_schema.schema_version)
         )
+
         return DagSchemaSpec(
             kind=dag_schema.kind,
             schema_version=dag_schema.schema_version,
@@ -153,7 +156,7 @@ class Translator(object):
             if bfia_task.input:
                 input_keys = dict()
                 for input_spec in component_spec.inputData:
-                    input_type = cls.get_source_type(input_spec.category)
+                    input_type = get_source_type(input_spec.category)
                     input_name = input_spec.name
                     if input_type not in input_keys:
                         input_keys[input_type] = []
@@ -162,7 +165,7 @@ class Translator(object):
 
                 inputs = dict()
                 for input_desc in bfia_task.input:
-                    input_type = cls.get_source_type(input_desc.type)
+                    input_type = get_source_type(input_desc.type)
 
                     if input_type not in inputs:
                         inputs[input_type] = dict()
@@ -183,7 +186,7 @@ class Translator(object):
                 output_keys = dict()
                 for output_spec in component_spec.outputData:
                     output_name = output_spec.name
-                    output_type = cls.get_source_type(output_spec.category)
+                    output_type = get_source_type(output_spec.category)
 
                     if output_type not in output_keys:
                         output_keys[output_type] = []
@@ -195,7 +198,7 @@ class Translator(object):
                     output_alias = output_dict.key
                     output_type_alias = output_dict.type
 
-                    output_type = cls.get_source_type(output_type_alias)
+                    output_type = get_source_type(output_type_alias)
                     if output_type not in outputs:
                         outputs[output_type] = dict()
 
@@ -203,13 +206,67 @@ class Translator(object):
 
                     outputs[output_type][output_name] = OutputArtifactSpec(
                         output_artifact_key_alias=output_alias,
-                        output_artifact_type_alias=output_type_alias
+                        output_artifact_type_alias=output_type_alias,
                     )
 
                 task_spec.outputs = OutputArtifacts(**outputs)
 
             task_spec.conf = conf
             tasks[task_name] = task_spec
+
+        return cls.add_dataset_from_party_task(tasks, bfia_dag, component_specs)
+
+    @classmethod
+    def add_dataset_from_party_task(
+            cls,
+            tasks: Dict[str, TaskSpec],
+            bfia_dag: BFIADagSpec,
+            component_specs: Dict[str, BFIAComponentSpec]
+    ):
+        if bfia_dag.config and bfia_dag.config.task_params:
+            for role, role_params in iter(bfia_dag.config.task_params):
+                if role == "common" or not role_params:
+                    continue
+
+                for party_str, party_task_params in role_params.items():
+                    party_id_indexes = list(map(int, party_str.split("|", -1)))
+                    party_id_list = [getattr(bfia_dag.config.role, role)[party_id] for party_id in party_id_indexes]
+
+                    for task_name, params in party_task_params.items():
+                        if DATASET_ID not in params:
+                            continue
+
+                        component_ref = None
+                        if task_name not in tasks:
+                            for component in bfia_dag.dag.components:
+                                if component.name == "task_name":
+                                    component_ref = component.componentName
+
+                            if not component_ref:
+                                raise ValueError(f"Can not find task={task_name}")
+
+                            tasks[task_name] = TaskSpec(component_ref=component_ref)
+                        else:
+                            component_ref = tasks[task_name].component_ref
+
+                        input_name = component_specs[component_ref].inputData[0].name
+                        data_warehouse_spec = DataWarehouseChannelSpec(
+                            dataset_id=params[DATASET_ID],
+                            parties=[PartySpec(role=role, party_id=party_id_list)]
+                        )
+                        if not tasks[task_name].inputs:
+                            tasks[task_name].inputs = RuntimeInputArtifacts(data=dict())
+                        if input_name not in tasks[task_name].inputs.data:
+                            tasks[task_name].inputs.data[input_name] = dict(data_warehouse=data_warehouse_spec)
+                        elif "data_warehouse" not in tasks[task_name].inputs.data[input_name]:
+                            tasks[task_name].inputs.data[input_name]["data_warehouse"] = data_warehouse_spec
+                        elif not isinstance(tasks[task_name].inputs.data[input_name]["data_warehouse"], list):
+                            pre_spec = tasks[task_name].inputs.data[input_name]["data_warehouse"]
+                            tasks[task_name].inputs.data[input_name]["data_warehouse"] = [
+                                pre_spec, data_warehouse_spec
+                            ]
+                        else:
+                            tasks[task_name].inputs.data[input_name]["data_warehouse"].append(data_warehouse_spec)
 
         return tasks
 
@@ -236,7 +293,7 @@ class Translator(object):
 
                     if role_task_params and party_str in role_task_params:
                         party_task_params = role_task_params[party_str]
-                        party_task.tasks = cls.get_party_task_params(party_task_params, component_specs, tasks)
+                        party_task.tasks = cls.get_party_task_params(party_task_params)
 
                     site_name = "_".join(map(str, [role] + party_id_list))
                     party_tasks[site_name] = party_task
@@ -256,40 +313,21 @@ class Translator(object):
 
                     party_task = PartyTaskSpec()
                     party_task.parties = [PartySpec(role=role, party_id=party_id_list)]
-                    party_task.tasks = cls.get_party_task_params(party_task_params, component_specs, tasks)
+                    party_task.tasks = cls.get_party_task_params(party_task_params)
 
                     party_tasks[site_name] = party_task
 
         return party_tasks
 
     @classmethod
-    def get_party_task_params(cls,
-                              party_task_params,
-                              component_specs: Dict[str, BFIAComponentSpec],
-                              tasks: Dict[str, TaskSpec]):
+    def get_party_task_params(cls, party_task_params):
         party_task_specs = dict()
 
         for task_name, params in party_task_params.items():
             task_spec = PartyTaskRefSpec()
             params = copy.deepcopy(params)
-            if "dataset_id" in params:
-                """
-                bfia support only single input yet
-                """
-                component_ref = tasks[task_name].component_ref
-                input_name = component_specs[component_ref].inputData[0].name
-
-                dataset_id = params.pop("dataset_id")
-                task_spec.inputs = SourceInputArtifacts(
-                    data={
-                        input_name:
-                            {
-                                "data_warehouse": DataWarehouseChannelSpec(dataset_id=dataset_id)
-                            }
-                    }
-                )
-
-                party_task_specs[task_name] = task_spec
+            if DATASET_ID in params:
+                params.pop(DATASET_ID)
 
             if params:
                 task_spec.parameters = params
@@ -321,18 +359,44 @@ class Translator(object):
             parties_conf = dict()
             for site_name, party_task in dag.party_tasks.items():
                 if party_task.conf:
-                    role = party_task.parties[0].role
-                    party_id_list = party_task.parties[0].party_id
-                    party_id_indexes = [getattr(role_spec, role).index(party_id) for party_id in party_id_list]
-                    party_str = "|".join(map(str, party_id_indexes))
+                    for party_spec in party_task.parties:
+                        party_str = "|".join(map(str,
+                            [getattr(role_spec, party_spec.role).index(party_id) for party_id in party_spec.party_id]
+                        ))
 
-                    if role not in parties_conf:
-                        parties_conf[role] = dict()
+                        if party_spec.role not in parties_conf:
+                            parties_conf[party_spec.role] = dict()
 
-                    parties_conf[role][party_str] = party_task.conf
+                        parties_conf[party_spec.role][party_str] = party_task.conf
 
             for role, conf in parties_conf.items():
                 setattr(job_params, role, conf)
+
+        if dag.tasks:
+            for task_name, task_spec in dag.tasks.items():
+                if not task_spec.inputs or not task_spec.inputs.data:
+                    continue
+
+                parties = task_spec.parties if task_spec.parties else dag.parties
+                for _, input_artifact_specs in task_spec.inputs.data.items():
+                    for input_artifact_key, input_spec_list in input_artifact_specs.items():
+                        if not isinstance(input_spec_list, list):
+                            input_spec_list = [input_spec_list]
+                        for input_spec in input_spec_list:
+                            if not isinstance(input_spec, DataWarehouseChannelSpec):
+                                continue
+                            input_parties = input_spec.parties if input_spec.parties else parties
+                            for party_spec in input_parties:
+                                party_str = "|".join(map(str,
+                                                         [getattr(role_spec, party_spec.role).index(party_id) for
+                                                          party_id in party_spec.party_id]
+                                                         ))
+
+                                input_dict = {party_str: dict(dataset_id=input_spec.dataset_id)}
+                                if not getattr(job_params, party_spec.role):
+                                    setattr(job_params, party_spec.role, input_dict)
+                                else:
+                                    getattr(job_params, party_spec.role).update(input_dict)
 
         bfia_conf_buf["job_params"] = job_params
 
@@ -401,7 +465,7 @@ class Translator(object):
                 inputs = []
                 if task_spec.inputs:
                     for input_desc in component_spec.inputData:
-                        input_type = cls.get_source_type(input_desc.category)
+                        input_type = get_source_type(input_desc.category)
                         input_key = input_desc.name
 
                         input_artifact_specs = getattr(task_spec.inputs, input_type, {})
@@ -410,9 +474,14 @@ class Translator(object):
 
                         input_spec = input_artifact_specs[input_key]
 
+                        if "task_output_artifact" not in input_spec:
+                            continue
                         producer_task = input_spec["task_output_artifact"].producer_task
                         output_artifact_key = input_spec["task_output_artifact"].output_artifact_key
                         type_alias = input_spec["task_output_artifact"].output_artifact_type_alias
+
+                        if type_alias is None:
+                            type_alias= getattr(dag.tasks[producer_task].outputs, input_type)[output_artifact_key].output_artifact_type_alias
 
                         inputs.append(DataSpec(type=type_alias, key=".".join([producer_task, output_artifact_key])))
 
@@ -421,7 +490,7 @@ class Translator(object):
                 outputs = []
                 if task_spec.outputs:
                     for output_desc in component_spec.outputData:
-                        output_type = cls.get_source_type(output_desc.category)
+                        output_type = get_source_type(output_desc.category)
                         output_key = output_desc.name
 
                         output_artifacts = getattr(task_spec.outputs, output_type, {})
@@ -445,16 +514,16 @@ class Translator(object):
 
         return DagSpec(**bfia_dag_buf)
 
-    @classmethod
-    def get_source_type(cls, type_keyword):
-        data_keywords = ["dataset", "training_set", "test_set", "validate_set"]
-        model_keywords = ["model"]
-        for data_keyword in data_keywords:
-            if data_keyword in type_keyword:
-                return "data"
 
-        for model_keyword in model_keywords:
-            if model_keyword in type_keyword:
-                return "model"
+def get_source_type(type_keyword):
+    data_keywords = ["data", "dataset", "training_set", "test_set", "validate_set"]
+    model_keywords = ["model"]
+    for data_keyword in data_keywords:
+        if data_keyword in type_keyword:
+            return "data"
 
-        return "metric"
+    for model_keyword in model_keywords:
+        if model_keyword in type_keyword:
+            return "model"
+
+    return "metric"

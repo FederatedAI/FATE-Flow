@@ -130,7 +130,7 @@ dag:
         data:
           input_data:
             task_output_artifact:
-              output_artifact_key: data_output
+              output_artifact_key: output_data
               producer_task: reader_0
       parameters: {}
       parties:
