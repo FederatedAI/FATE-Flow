@@ -1,5 +1,7 @@
 party_id: "9999"
 use_registry: false
+# DEBUG 10/INFO 20
+log_level: 20
 encrypt:
   key_0:
     module: fate_flow.hub.encrypt.password_encrypt#pwdecrypt
