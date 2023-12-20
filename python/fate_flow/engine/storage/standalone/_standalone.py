@@ -19,7 +19,6 @@ import itertools
 import logging
 import logging.config
 import os
-from typing import Callable, Any, Iterable, Optional
 import shutil
 import signal
 import threading
@@ -31,12 +30,15 @@ from functools import partial
 from heapq import heapify, heappop, heapreplace
 from operator import is_not
 from pathlib import Path
+from typing import Callable, Any, Iterable, Optional
 from typing import List, Tuple, Literal
 
 import cloudpickle as f_pickle
 import lmdb
 
 PartyMeta = Tuple[Literal["guest", "host", "arbiter", "local"], str]
+
+logger = logging.getLogger(__name__)
 
 
 def _watch_thread_react_to_parent_die(ppid, logger_config):
@@ -67,58 +69,73 @@ def _watch_thread_react_to_parent_die(ppid, logger_config):
     # initialize loggers
     if logger_config is not None:
         logging.config.dictConfig(logger_config)
-    # else:
-    #     level = os.getenv("DEBUG_MODE_LOG_LEVEL", "DEBUG")
-    #     try:
-    #         import rich.logging
-    #
-    #         logging_class = "rich.logging.RichHandler"
-    #         logging_formatters = {}
-    #         handlers = {
-    #             "console": {
-    #                 "class": logging_class,
-    #                 "level": level,
-    #                 "filters": [],
-    #             }
-    #         }
-    #     except ImportError:
-    #         logging_class = "logging.StreamHandler"
-    #         logging_formatters = {
-    #             "console": {
-    #                 "format": "[%(levelname)s][%(asctime)-8s][%(process)s][%(module)s.%(funcName)s][line:%(lineno)d]: %(message)s"
-    #             }
-    #         }
-    #         handlers = {
-    #             "console": {
-    #                 "class": logging_class,
-    #                 "level": level,
-    #                 "formatter": "console",
-    #             }
-    #         }
-    #     logging.config.dictConfig(dict(
-    #         version=1,
-    #         formatters=logging_formatters,
-    #         handlers=handlers,
-    #         filters={},
-    #         loggers={},
-    #         root=dict(handlers=["console"], level="DEBUG"),
-    #         disable_existing_loggers=False,
-    #     ))
+
+
+class BasicProcessPool:
+    def __init__(self, pool, log_level):
+        self._pool = pool
+        self._exception_tb = {}
+        self.log_level = log_level
+
+    def submit(self, func, process_infos):
+        features = []
+        outputs = {}
+        num_partitions = len(process_infos)
+
+        for p, process_info in enumerate(process_infos):
+            features.append(
+                self._pool.submit(
+                    BasicProcessPool._process_wrapper,
+                    func,
+                    process_info,
+                    self.log_level,
+                )
+            )
+
+        from concurrent.futures import wait, FIRST_COMPLETED
+
+        not_done = features
+        while not_done:
+            done, not_done = wait(not_done, return_when=FIRST_COMPLETED)
+            for f in done:
+                partition_id, output, e = f.result()
+                if e is not None:
+                    logger.error(f"partition {partition_id} exec failed: {e}")
+                    raise RuntimeError(f"Partition {partition_id} exec failed: {e}")
+                else:
+                    outputs[partition_id] = output
+
+        outputs = [outputs[p] for p in range(num_partitions)]
+        return outputs
+
+    @classmethod
+    def _process_wrapper(cls, do_func, process_info, log_level):
+        try:
+            if log_level is not None:
+                pass
+            output = do_func(process_info)
+            return process_info.partition_id, output, None
+        except Exception as e:
+            logger.error(f"exception in rank {process_info.partition_id}: {e}")
+            return process_info.partition_id, None, e
+
+    def shutdown(self):
+        self._pool.shutdown()
 
 
 # noinspection PyPep8Naming
 class Table(object):
     def __init__(
-        self,
-        session: "Session",
-        data_dir: str,
-        namespace: str,
-        name: str,
-        partitions,
-        key_serdes_type: int,
-        value_serdes_type: int,
-        partitioner_type: int,
-        need_cleanup=True,
+            self,
+            session: "Session",
+            data_dir: str,
+            namespace: str,
+            name: str,
+            partitions,
+            key_serdes_type: int,
+            value_serdes_type: int,
+            partitioner_type: int,
+            need_cleanup=True,
     ):
         self._need_cleanup = need_cleanup
         self._data_dir = data_dir
@@ -226,16 +243,16 @@ class Table(object):
         )
 
     def binary_sorted_map_partitions_with_index(
-        self,
-        other: "Table",
-        binary_map_partitions_with_index_op: Callable[[int, Iterable, Iterable], Iterable],
-        key_serdes_type,
-        partitioner_type,
-        output_value_serdes_type,
-        need_cleanup=True,
-        output_name=None,
-        output_namespace=None,
-        output_data_dir=None,
+            self,
+            other: "Table",
+            binary_map_partitions_with_index_op: Callable[[int, Iterable, Iterable], Iterable],
+            key_serdes_type,
+            partitioner_type,
+            output_value_serdes_type,
+            need_cleanup=True,
+            output_name=None,
+            output_namespace=None,
+            output_data_dir=None,
     ):
         if output_data_dir is None:
             output_data_dir = self._data_dir
@@ -271,19 +288,19 @@ class Table(object):
         )
 
     def map_reduce_partitions_with_index(
-        self,
-        map_partition_op: Callable[[int, Iterable], Iterable],
-        reduce_partition_op: Optional[Callable[[Any, Any], Any]],
-        output_partitioner: Optional[Callable[[bytes, int], int]],
-        shuffle,
-        output_key_serdes_type,
-        output_value_serdes_type,
-        output_partitioner_type,
-        output_num_partitions,
-        need_cleanup=True,
-        output_name=None,
-        output_namespace=None,
-        output_data_dir=None,
+            self,
+            map_partition_op: Callable[[int, Iterable], Iterable],
+            reduce_partition_op: Optional[Callable[[Any, Any], Any]],
+            output_partitioner: Optional[Callable[[bytes, int], int]],
+            shuffle,
+            output_key_serdes_type,
+            output_value_serdes_type,
+            output_partitioner_type,
+            output_num_partitions,
+            need_cleanup=True,
+            output_name=None,
+            output_namespace=None,
+            output_data_dir=None,
     ):
         if output_data_dir is None:
             output_data_dir = self._data_dir
@@ -397,7 +414,7 @@ class Table(object):
         # drop cache table
         for p in range(self._partitions):
             with _get_env_with_data_dir(
-                intermediate_data_dir, intermediate_namespace, intermediate_name, str(p), write=True
+                    intermediate_data_dir, intermediate_namespace, intermediate_name, str(p), write=True
             ) as env:
                 db = env.open_db()
                 with env.begin(write=True) as txn:
@@ -468,35 +485,62 @@ class Table(object):
 
 # noinspection PyMethodMayBeStatic
 class Session(object):
-    def __init__(self, session_id, data_dir: str, max_workers=None, logger_config=None):
+    def __init__(
+            self,
+            session_id,
+            data_dir: str,
+            max_workers=None,
+            logger_config=None,
+            executor_pool_cls=BasicProcessPool,
+    ):
         self.session_id = session_id
         self._data_dir = data_dir
-        self._pool = Executor(
-            max_workers=max_workers,
-            initializer=_watch_thread_react_to_parent_die,
-            initargs=(
-                os.getpid(),
-                logger_config,
+        self._max_workers = max_workers
+        if self._max_workers is None:
+            self._max_workers = os.cpu_count()
+
+        self._enable_process_logger = True
+        if self._enable_process_logger:
+            log_level = logging.getLevelName(logger.getEffectiveLevel())
+        else:
+            log_level = None
+        self._pool = executor_pool_cls(
+            pool=Executor(
+                max_workers=max_workers,
+                initializer=_watch_thread_react_to_parent_die,
+                initargs=(
+                    os.getpid(),
+                    logger_config,
+                ),
             ),
+            log_level=log_level,
         )
+
+    @property
+    def data_dir(self):
+        return self._data_dir
+
+    @property
+    def max_workers(self):
+        return self._max_workers
 
     def __getstate__(self):
         # session won't be pickled
         pass
 
-    def load(self, name, namespace) -> Table:
+    def load(self, name, namespace):
         return _load_table(session=self, data_dir=self._data_dir, name=name, namespace=namespace)
 
     def create_table(
-        self,
-        name,
-        namespace,
-        partitions,
-        need_cleanup,
-        error_if_exist,
-        key_serdes_type,
-        value_serdes_type,
-        partitioner_type,
+            self,
+            name,
+            namespace,
+            partitions,
+            need_cleanup,
+            error_if_exist,
+            key_serdes_type,
+            value_serdes_type,
+            partitioner_type,
     ):
         return _create_table(
             session=self,
@@ -513,13 +557,13 @@ class Session(object):
 
     # noinspection PyUnusedLocal
     def parallelize(
-        self,
-        data: Iterable,
-        partition: int,
-        partitioner: Callable[[bytes], int],
-        key_serdes_type,
-        value_serdes_type,
-        partitioner_type,
+            self,
+            data: Iterable,
+            partition: int,
+            partitioner: Callable[[bytes, int], int],
+            key_serdes_type,
+            value_serdes_type,
+            partitioner_type,
     ):
         table = _create_table(
             session=self,
@@ -557,17 +601,13 @@ class Session(object):
         self._pool.shutdown()
 
     def submit_reduce(self, func, data_dir: str, num_partitions: int, name: str, namespace: str):
-        futures = []
-        for p in range(num_partitions):
-            futures.append(
-                self._pool.submit(
-                    _do_reduce,
-                    _ReduceProcess(
-                        p, _TaskInputInfo(data_dir, namespace, name, num_partitions), _ReduceFunctorInfo(func)
-                    ),
-                )
-            )
-        rs = [r.result() for r in futures]
+        rs = self._pool.submit(
+            _do_reduce,
+            [
+                _ReduceProcess(p, _TaskInputInfo(data_dir, namespace, name, num_partitions), _ReduceFunctorInfo(func))
+                for p in range(num_partitions)
+            ],
+        )
         rs = [r for r in filter(partial(is_not, None), rs)]
         if len(rs) <= 0:
             return None
@@ -577,19 +617,19 @@ class Session(object):
         return rtn
 
     def _submit_map_reduce_partitions_with_index(
-        self,
-        _do_func,
-        mapper,
-        reducer,
-        input_data_dir: str,
-        input_num_partitions,
-        input_name,
-        input_namespace,
-        output_data_dir: str,
-        output_num_partitions,
-        output_name,
-        output_namespace,
-        output_partitioner=None,
+            self,
+            _do_func,
+            mapper,
+            reducer,
+            input_data_dir: str,
+            input_num_partitions,
+            input_name,
+            input_namespace,
+            output_data_dir: str,
+            output_num_partitions,
+            output_name,
+            output_namespace,
+            output_partitioner=None,
     ):
         input_info = _TaskInputInfo(input_data_dir, input_namespace, input_name, input_num_partitions)
         output_info = _TaskOutputInfo(
@@ -597,7 +637,7 @@ class Session(object):
         )
         return self._submit_process(
             _do_func,
-            (
+            [
                 _MapReduceProcess(
                     partition_id=p,
                     input_info=input_info,
@@ -605,23 +645,23 @@ class Session(object):
                     operator_info=_MapReduceFunctorInfo(mapper=mapper, reducer=reducer),
                 )
                 for p in range(max(input_num_partitions, output_num_partitions))
-            ),
+            ],
         )
 
     def _submit_sorted_binary_map_partitions_with_index(
-        self,
-        func,
-        do_func,
-        num_partitions: int,
-        first_input_data_dir: str,
-        first_input_name: str,
-        first_input_namespace: str,
-        second_input_data_dir: str,
-        second_input_name: str,
-        second_input_namespace: str,
-        output_data_dir: str,
-        output_name: str,
-        output_namespace: str,
+            self,
+            func,
+            do_func,
+            num_partitions: int,
+            first_input_data_dir: str,
+            first_input_name: str,
+            first_input_namespace: str,
+            second_input_data_dir: str,
+            second_input_name: str,
+            second_input_namespace: str,
+            output_data_dir: str,
+            output_name: str,
+            output_namespace: str,
     ):
         first_input_info = _TaskInputInfo(
             first_input_data_dir, first_input_namespace, first_input_name, num_partitions
@@ -632,7 +672,7 @@ class Session(object):
         output_info = _TaskOutputInfo(output_data_dir, output_namespace, output_name, num_partitions, partitioner=None)
         return self._submit_process(
             do_func,
-            (
+            [
                 _BinarySortedMapProcess(
                     partition_id=p,
                     first_input_info=first_input_info,
@@ -641,20 +681,11 @@ class Session(object):
                     operator_info=_BinarySortedMapFunctorInfo(func),
                 )
                 for p in range(num_partitions)
-            ),
+            ],
         )
 
     def _submit_process(self, do_func, process_infos):
-        futures = []
-        for process_info in process_infos:
-            futures.append(
-                self._pool.submit(
-                    do_func,
-                    process_info,
-                )
-            )
-        results = [r.result() for r in futures]
-        return results
+        return self._pool.submit(do_func, process_infos)
 
 
 class Federation(object):
@@ -671,11 +702,11 @@ class Federation(object):
         self._federation_status_table_cache = None
         self._federation_object_table_cache = None
 
-        self._meta = _FederationMetaManager(session_id, data_dir, party)
+        self._meta = _FederationMetaManager(session_id=session_id, data_dir=data_dir, party=party)
 
     @classmethod
     def create(cls, session: Session, session_id: str, party: Tuple[str, str]):
-        federation = cls(session, session._data_dir, session_id, party)
+        federation = cls(session, session.data_dir, session_id, party)
         return federation
 
     def destroy(self):
@@ -698,6 +729,7 @@ class Federation(object):
         results: List[bytes] = []
         for party in parties:
             _tagged_key = self._federation_object_key(name, tag, party, self._party)
+
             results.append(self._meta.wait_status_set(_tagged_key))
 
         rtn = []
@@ -728,16 +760,16 @@ class Federation(object):
 
 
 def _create_table(
-    session: "Session",
-    data_dir: str,
-    name: str,
-    namespace: str,
-    partitions: int,
-    key_serdes_type: int,
-    value_serdes_type: int,
-    partitioner_type: int,
-    need_cleanup=True,
-    error_if_exist=False,
+        session: "Session",
+        data_dir: str,
+        name: str,
+        namespace: str,
+        partitions: int,
+        key_serdes_type: int,
+        value_serdes_type: int,
+        partitioner_type: int,
+        need_cleanup=True,
+        error_if_exist=False,
 ):
     assert isinstance(name, str)
     assert isinstance(namespace, str)
@@ -859,10 +891,10 @@ class _ReduceFunctorInfo:
 
 class _ReduceProcess:
     def __init__(
-        self,
-        partition_id: int,
-        input_info: _TaskInputInfo,
-        operator_info: _ReduceFunctorInfo,
+            self,
+            partition_id: int,
+            input_info: _TaskInputInfo,
+            operator_info: _ReduceFunctorInfo,
     ):
         self.partition_id = partition_id
         self.input_info = input_info
@@ -880,11 +912,11 @@ class _ReduceProcess:
 
 class _MapReduceProcess:
     def __init__(
-        self,
-        partition_id: int,
-        input_info: _TaskInputInfo,
-        output_info: _TaskOutputInfo,
-        operator_info: _MapReduceFunctorInfo,
+            self,
+            partition_id: int,
+            input_info: _TaskInputInfo,
+            output_info: _TaskOutputInfo,
+            operator_info: _MapReduceFunctorInfo,
     ):
         self.partition_id = partition_id
         self.input_info = input_info
@@ -930,12 +962,12 @@ class _MapReduceProcess:
 
 class _BinarySortedMapProcess:
     def __init__(
-        self,
-        partition_id,
-        first_input_info: _TaskInputInfo,
-        second_input_info: _TaskInputInfo,
-        output_info: _TaskOutputInfo,
-        operator_info: _BinarySortedMapFunctorInfo,
+            self,
+            partition_id,
+            first_input_info: _TaskInputInfo,
+            second_input_info: _TaskInputInfo,
+            output_info: _TaskOutputInfo,
+            operator_info: _BinarySortedMapFunctorInfo,
     ):
         self.partition_id = partition_id
         self.first_input = first_input_info
@@ -1009,7 +1041,7 @@ def _open_env(path, write=False):
             return env
         except lmdb.Error as e:
             if "No such file or directory" in e.args[0]:
-                time.sleep(0.01)
+                time.sleep(0.001)
                 t += 1
             else:
                 raise e
@@ -1104,7 +1136,7 @@ def _do_mrwi_shuffle_read_and_reduce(p: _MapReduceProcess):
         dst_txn = p.get_output_transaction(p.partition_id, s)
         for input_partition_id in range(p.get_input_partition_num()):
             for k_bytes, v_bytes in p.get_input_cursor(
-                s, pid=_get_shuffle_partition_id(input_partition_id, p.partition_id)
+                    s, pid=_get_shuffle_partition_id(input_partition_id, p.partition_id)
             ):
                 _, key = _deserialize_shuffle_write_key(k_bytes)
                 if (old := dst_txn.get(key)) is None:
@@ -1139,7 +1171,7 @@ class _FederationMetaManager:
     def wait_status_set(self, key: bytes) -> bytes:
         value = self.get_status(key)
         while value is None:
-            time.sleep(0.1)
+            time.sleep(0.001)
             value = self.get_status(key)
         return key
 
@@ -1214,14 +1246,14 @@ class _TableMetaManager:
 
     @classmethod
     def add_table_meta(
-        cls,
-        data_dir: str,
-        namespace: str,
-        name: str,
-        num_partitions: int,
-        key_serdes_type: int,
-        value_serdes_type: int,
-        partitioner_type: int,
+            cls,
+            data_dir: str,
+            namespace: str,
+            name: str,
+            num_partitions: int,
+            key_serdes_type: int,
+            value_serdes_type: int,
+            partitioner_type: int,
     ):
         k_bytes, env = cls._get_meta_env(data_dir, namespace, name)
         meta = _TableMeta(num_partitions, key_serdes_type, value_serdes_type, partitioner_type)
