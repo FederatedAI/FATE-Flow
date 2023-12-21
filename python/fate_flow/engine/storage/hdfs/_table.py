@@ -20,7 +20,6 @@ from pyarrow import fs
 
 from fate_flow.engine.storage import StorageTableBase
 from fate_flow.engine.storage._types import StorageEngine
-from fate_flow.manager.outputs.data import DataManager
 from fate_flow.utils.log import getLogger
 import struct
 
@@ -30,20 +29,16 @@ LOGGER = getLogger()
 
 class HDFSCoder:
     @staticmethod
-    def encode(key: str, value: str):
-        key = key.encode("utf-8")
-        value = value.encode("utf-8")
+    def encode(key: bytes, value: bytes):
         size = struct.pack(">Q", len(key))
         return (size + key + value).hex()
 
     @staticmethod
-    def decode(data: str) -> Tuple[str, str]:
+    def decode(data: str) -> Tuple[bytes, bytes]:
         data = bytes.fromhex(data)
         size = struct.unpack(">Q", data[:8])[0]
         key = data[8 : 8 + size]
         value = data[8 + size :]
-        key = key.decode("utf-8")
-        value = value.decode("utf-8")
         return key, value
 
 
@@ -62,14 +57,23 @@ class StorageTable(StorageTableBase):
             address=address,
             partitions=partitions,
             options=options,
-            engine=StorageEngine.HDFS
+            engine=StorageEngine.HDFS,
+            key_serdes_type=0,
+            value_serdes_type=0,
+            partitioner_type=0,
         )
         try:
+            # noinspection PyUnresolvedReferences
             from pyarrow import HadoopFileSystem
             HadoopFileSystem(self.path)
         except Exception as e:
             LOGGER.warning(f"load libhdfs failed: {e}")
 
+        # pyarrow.fs.HadoopFileSystem.from_uri(uri, **kwargs) supports the following formats:
+        #   * ``HadoopFileSystem.from_uri('hdfs://localhost:8020/?user=test&replication=1')``
+        #   * ``HadoopFileSystem('localhost', port=8020, user='test', replication=1)``
+        # your IDE may complain about the following line, but it works.
+        # noinspection PyArgumentList
         self._hdfs_client = fs.HadoopFileSystem.from_uri(self.path)
 
     def check_address(self):
