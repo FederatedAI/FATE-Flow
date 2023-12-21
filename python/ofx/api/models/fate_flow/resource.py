@@ -234,7 +234,7 @@ class BaseAPI:
                     headers = result.signature if result.signature else {}
                 else:
                     raise Exception(result.code, result.message)
-            headers.update({"initiator_party_id": initiator_party_id})
+            headers.update({"initiator-party-id": initiator_party_id})
             response = self.client.remote(job_id=job_id,
                                           method=method,
                                           endpoint=endpoint,
