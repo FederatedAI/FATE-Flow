@@ -21,6 +21,7 @@ from fate_flow.entity.code import ReturnCode
 from fate_flow.entity.spec.dag import DAGSchema
 from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import PermissionCheckParameters
+from fate_flow.manager.service.provider_manager import ProviderManager
 from fate_flow.runtime.system_settings import PERMISSION_SWITCH
 from fate_flow.utils.api_utils import API
 
@@ -29,12 +30,13 @@ def get_permission_parameters(role, party_id, initiator_party_id, job_info) -> P
     dag_schema = DAGSchema(**job_info)
     job_parser = JobParser(dag_schema)
     component_list = job_parser.component_ref_list(role, party_id)
+    fate_component_list = set(component_list) - set(ProviderManager.get_flow_components())
     dataset_list = job_parser.dataset_list(role, party_id)
     component_parameters = job_parser.role_parameters(role, party_id)
     return PermissionCheckParameters(
         initiator_party_id=initiator_party_id,
         roles=dag_schema.dag.parties,
-        component_list=component_list,
+        component_list=fate_component_list,
         dataset_list=dataset_list,
         dag_schema=dag_schema.dict(),
         component_parameters=component_parameters

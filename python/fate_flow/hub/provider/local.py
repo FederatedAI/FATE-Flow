@@ -35,3 +35,17 @@ class LocalFateEntrypoint(EntrypointABC):
     @property
     def component_description(self):
         return {}
+
+
+class FATEFLowEntrypoint(EntrypointABC):
+    def __init__(self, provider):
+        self.provider = provider
+
+    @property
+    def component_list(self):
+        from fate_flow.components.components import BUILDIN_COMPONENTS
+        return [component.name for component in BUILDIN_COMPONENTS]
+
+    @property
+    def component_description(self):
+        return {}
