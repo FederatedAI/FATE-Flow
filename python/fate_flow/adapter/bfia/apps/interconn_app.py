@@ -19,15 +19,15 @@ page_name = 'interconn'
 @API.Input.json(config=fields.Dict(required=True))
 @API.Input.json(old_job_id=fields.String(required=False))
 def create_job_all(job_id, dag, config, flow_id=None, old_job_id=None):
-    dag_schema = {
-        "dag": {
-            "dag": dag,
-            "config": config,
-            "flow_id": flow_id,
-            "old_job_id": old_job_id
-        },
-        "schema_version": apps.__version__
-    }
+    dag_schema = dict(
+        dag=dict(
+            dag=dag,
+            config=config,
+            flow_id=flow_id,
+            old_job_id=old_job_id
+        ),
+        schema_version=apps.__version__
+    )
     submit_result = BfiaScheduler.create_all_job(job_id=job_id, dag=dag_schema)
     return API.Output.json(**submit_result)
 
@@ -87,15 +87,15 @@ def callback_task(task_id, role, status, x_node_id):
 @API.Input.json(config=fields.Dict(required=True))
 @API.Input.json(old_job_id=fields.String(required=False))
 def create_job(job_id, dag, config, flow_id="", old_job_id=""):
-    dag_schema = {
-        "dag": {
-            "dag": dag,
-            "config": config,
-            "flow_id": flow_id,
-            "old_job_id": old_job_id
-        },
-        "schema_version": apps.__version__
-    }
+    dag_schema = dict(
+        dag=dict(
+            dag=dag,
+            config=config,
+            flow_id=flow_id,
+            old_job_id=old_job_id
+        ),
+        schema_version=apps.__version__
+    )
     BfiaJobController.create_local_jobs(job_id=job_id, dag=dag_schema)
     return API.Output.json()
 
