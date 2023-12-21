@@ -63,7 +63,7 @@ class JobStatus(BaseStatus):
     class StateTransitionRule(BaseStateTransitionRule):
         RULES = {
             StatusSet.READY: [StatusSet.WAITING, StatusSet.CANCELED, StatusSet.TIMEOUT, StatusSet.FAILED],
-            StatusSet.WAITING: [StatusSet.RUNNING, StatusSet.CANCELED, StatusSet.TIMEOUT, StatusSet.FAILED, StatusSet.SUCCESS, StatusSet.PASS],
+            StatusSet.WAITING: [StatusSet.RUNNING, StatusSet.CANCELED, StatusSet.TIMEOUT, StatusSet.FAILED, StatusSet.SUCCESS],
             StatusSet.RUNNING: [StatusSet.CANCELED, StatusSet.TIMEOUT, StatusSet.FAILED, StatusSet.SUCCESS],
             StatusSet.CANCELED: [StatusSet.WAITING],
             StatusSet.TIMEOUT: [StatusSet.FAILED, StatusSet.SUCCESS, StatusSet.WAITING],
@@ -83,7 +83,7 @@ class TaskStatus(BaseStatus):
 
     class StateTransitionRule(BaseStateTransitionRule):
         RULES = {
-            StatusSet.WAITING: [StatusSet.RUNNING, StatusSet.SUCCESS, StatusSet.PASS],
+            StatusSet.WAITING: [StatusSet.RUNNING, StatusSet.SUCCESS],
             StatusSet.RUNNING: [StatusSet.CANCELED, StatusSet.TIMEOUT, StatusSet.FAILED, StatusSet.PASS, StatusSet.SUCCESS],
             StatusSet.CANCELED: [StatusSet.WAITING],
             StatusSet.TIMEOUT: [StatusSet.FAILED, StatusSet.SUCCESS],
