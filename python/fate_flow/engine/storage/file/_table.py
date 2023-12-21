@@ -16,25 +16,24 @@
 
 import io
 import os
+import struct
 from typing import Iterable, Tuple
 
 from pyarrow import fs
 
 from fate_flow.engine.storage import StorageTableBase, StorageEngine
-from fate_flow.manager.outputs.data import DataManager
 from fate_flow.utils.log import getLogger
-import struct
 
 LOGGER = getLogger()
 
 class FileCoder:
     @staticmethod
-    def encode(key, value):
+    def encode(key: bytes, value: bytes):
         size = struct.pack(">Q", len(key))
         return (size + key + value).hex()
 
     @staticmethod
-    def decode(data: str):
+    def decode(data: str) -> Tuple[bytes, bytes]:
         data = bytes.fromhex(data)
         size = struct.unpack(">Q", data[:8])[0]
         key = data[8 : 8 + size]
