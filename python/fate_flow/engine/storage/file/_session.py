@@ -28,6 +28,21 @@ class StorageSession(StorageSessionBase):
                                 partitions=partitions)
         raise NotImplementedError(f"address type {type(address)} not supported with hdfs storage")
 
+    def load(
+        self,
+        name,
+        namespace,
+        address,
+        store_type,
+        partitions,
+        options=None,
+        **kwargs,
+    ):
+        if isinstance(address, FileAddress):
+            return StorageTable(address=address, name=name, namespace=namespace,
+                                partitions=partitions, options=options)
+        raise NotImplementedError(f"address type {type(address)} not supported with hdfs storage")
+
     def cleanup(self, name, namespace):
         pass
 
