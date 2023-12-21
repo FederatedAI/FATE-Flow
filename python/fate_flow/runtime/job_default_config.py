@@ -35,10 +35,6 @@ class JobDefaultConfig(ReloadConfigBase):
     task_device = None
     launcher = None
 
-    task_world_size = None
-    resource_waiting_timeout = None
-    task_process_classpath = None
-
     @classmethod
     def load(cls):
         conf = file_utils.load_yaml_conf(FATE_FLOW_JOB_DEFAULT_CONFIG_PATH)
