@@ -27,7 +27,7 @@ from fate_flow.engine.storage._abc import (
 )
 
 from fate_flow.engine.storage._table import StorageTableMeta
-from fate_flow.entity.types import EngineType, StorageEngine, ComputingEngine
+from fate_flow.entity.types import EngineType, StorageEngine
 from fate_flow.runtime.system_settings import ENGINES, COMPUTING_CONF
 from fate_flow.utils import base_utils
 from fate_flow.utils.log import getLogger
@@ -129,6 +129,7 @@ class StorageSessionBase(StorageSessionABC):
         address,
         store_type,
         partitions,
+        options=None,
         **kwargs,
     ):
         raise NotImplementedError()
@@ -167,7 +168,7 @@ class Session(object):
         if options is None:
             options = {}
         self._storage_engine = ENGINES.get(EngineType.STORAGE, None)
-        self._storage_session: typing.Dict[StorageSessionABC] = {}
+        self._storage_session: typing.Dict[str, StorageSessionABC] = {}
         self._session_id = str(uuid.uuid1()) if not session_id else session_id
         self._logger = (
             LOGGER
