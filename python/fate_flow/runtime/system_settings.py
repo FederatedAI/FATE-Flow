@@ -107,7 +107,8 @@ GRPC_OPTIONS = [
 LOG_DIR = LOG_DIR or get_fate_flow_directory("logs")
 JOB_DIR = JOB_DIR or get_fate_flow_directory("jobs")
 MODEL_STORE_PATH = MODEL_DIR or os.path.join(get_fate_flow_directory(), "model")
-LOCAL_DATA_STORE_PATH = DATA_DIR or os.path.join(get_fate_flow_directory(), "data")
+STANDALONE_DATA_HOME = DATA_DIR or os.path.join(file_utils.get_fate_flow_directory(), "data")
+LOCALFS_DATA_HOME = DATA_DIR or os.path.join(file_utils.get_fate_flow_directory(), "localfs")
 TEMP_DIR = get_fate_flow_directory("temps")
 LOG_LEVEL = int(os.environ.get("LOG_LEVEL") or get_base_config("log_level", 10))
 LOG_SHARE = False
@@ -144,9 +145,6 @@ REQUEST_MAX_WAIT_SEC = 300
 SESSION_VALID_PERIOD = 7 * 24 * 60 * 60 * 1000
 
 DEFAULT_OUTPUT_DATA_PARTITIONS = 16
-
-STANDALONE_DATA_HOME = os.path.join(file_utils.get_fate_flow_directory(), "data")
-LOCALFS_DATA_HOME = os.path.join(file_utils.get_fate_flow_directory(), "localfs")
 
 # hub module settings
 # define： xxx.class_name

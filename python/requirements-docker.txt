@@ -1,0 +1,8 @@
+# fate flow
+-r requirements-flow.txt
+
+# fate
+-r requirements-fate.txt
+
+# container
+-r requirements-container.txt

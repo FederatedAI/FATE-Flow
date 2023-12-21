@@ -29,6 +29,7 @@ install_requires = [
     "cos-python-sdk-v5",
     "typing-extensions",
     "ruamel-yaml==0.16",
+    "boto3"
 ]
 extras_require = {
     "rabbitmq": ["pika==1.2.1"],
