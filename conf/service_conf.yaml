@@ -12,10 +12,10 @@ fateflow:
   http_port: 9380
   grpc_port: 9360
   proxy_name: osx
-  nginx:
-    host:
-    http_port:
-    grpc_port:
+#  nginx:
+#    host:
+#    http_port:
+#    grpc_port:
 database:
   engine: sqlite
   # encrypt passwd key
@@ -41,41 +41,6 @@ default_provider:
   # version default: fateflow.env
   version:
   device: local
-federation:
-  pulsar:
-    host: 192.168.0.5
-    port: 6650
-    mng_port: 8080
-    cluster: standalone
-    tenant: fl-tenant
-    topic_ttl: 30
-    # default conf/pulsar_route_table.yaml
-    route_table:
-    # mode: replication / client, default: replication
-    mode: replication
-    max_message_size: 1048576
-  nginx:
-    host: 127.0.0.1
-    http_port: 9300
-    grpc_port: 9310
-    # http or grpc
-    protocol: http
-  rabbitmq:
-    host: 192.168.0.4
-    mng_port: 12345
-    port: 5672
-    user: fate
-    password: fate
-    # default conf/rabbitmq_route_table.yaml
-    route_table:
-    # mode: replication / client, default: replication
-    mode: replication
-    max_message_size: 1048576
-  osx:
-    host: 127.0.0.1
-    port: 9370
-    # stream or queue
-    mode: queue
 computing:
   standalone:
     cores: 32
@@ -89,6 +54,33 @@ computing:
     # default use SPARK_HOME environment variable
     home:
     cores: 32
+federation:
+  osx:
+    host: 127.0.0.1
+    port: 9370
+    # stream or queue
+    mode: stream
+#  pulsar:
+#    host: 192.168.0.5
+#    port: 6650
+#    mng_port: 8080
+#    cluster: standalone
+#    tenant: fl-tenant
+#    topic_ttl: 30
+#    # default conf/pulsar_route_table.yaml
+#    route_table:
+#    # mode: replication / client, default: replication
+#    mode: replication
+#  rabbitmq:
+#    host: 192.168.0.4
+#    mng_port: 12345
+#    port: 5672
+#    user: fate
+#    password: fate
+#    # default conf/rabbitmq_route_table.yaml
+#    route_table:
+#    # mode: replication / client, default: replication
+#    mode: replication
 storage:
   hdfs:
     name_node: hdfs://fate-cluster
