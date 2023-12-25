@@ -14,7 +14,6 @@
 #  limitations under the License.
 #
 from fate_flow.errors.server_error import ResponseException
-from fate_flow.proto.osx import osx_pb2, osx_pb2_grpc
 from fate_flow.proto.rollsite import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
 
 from fate_flow.runtime.runtime_config import RuntimeConfig
@@ -80,40 +79,6 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
         audit_logger(job_id).info(f"resp: {resp.text}")
         resp_json = response_json(resp)
         return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)
-
-
-class UnaryServiceOSX(osx_pb2_grpc.PrivateTransferProtocolServicer):
-    def invoke(self, _request, context):
-        packet = _request
-        metadata = packet.metadata
-        payload = packet.payload
-        request_info = json_loads(bytes.decode(payload))
-        job_id = metadata.get("JobId")
-        audit_logger(job_id).info(f"rpc receive metadata: {metadata}")
-        audit_logger(job_id).info(f"rpc receive request_info: {request_info}")
-        source_node_id = metadata.get("TargetNodeID")
-        target_node_id = metadata.get("SourceNodeID")
-        _routing_metadata = gen_routing_metadata(src_party_id=source_node_id, dest_party_id=target_node_id)
-        audit_logger(job_id).info(f'start request：{request_info.get("method")}, {get_url(request_info.get("uri"))},'
-                                  f'{request_info.get("json_body")}, {request_info.get("headers")}')
-        resp = request(method=request_info.get("method"), url=get_url(request_info.get("uri")),
-                       json=request_info.get("json_body"), headers=request_info.get("headers", {}))
-        audit_logger(job_id).info(f"resp: {resp.text}")
-        resp_json = response_json(resp)
-        _meta = {
-            "TechProviderCode": metadata.get("TechProviderCode", ""),
-            "SourceInstID": metadata.get("TargetInstID", ""),
-            "TargetInstID": metadata.get("SourceInstID", ""),
-            "SourceNodeID": source_node_id,
-            "TargetNodeID": target_node_id,
-            "TargetComponentName": FATE_FLOW_SERVICE_NAME,
-            "TargetMethod": metadata.get("TargetMethod", ""),
-            "JobId": job_id
-        }
-        _data = bytes(json_dumps(resp_json), 'utf-8')
-        res = osx_pb2.Outbound(metadata=_meta, payload=_data)
-        audit_logger(job_id).info(f"response: {res}")
-        return res
 
 
 def response_json(response):
