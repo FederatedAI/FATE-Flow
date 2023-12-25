@@ -42,13 +42,12 @@ from fate_flow.runtime.system_settings import (
 )
 from fate_flow.scheduler.scheduler import DAGScheduler
 from fate_flow.utils import process_utils
-from fate_flow.utils.grpc_utils import UnaryService, UnaryServiceOSX
+from fate_flow.utils.grpc_utils import UnaryService
 from fate_flow.utils.log import LoggerFactory, getLogger
 from fate_flow.utils.log_utils import schedule_logger
 from fate_flow.utils.version import get_versions
 from fate_flow.utils.xthread import ThreadPoolExecutor
 from fate_flow.proto.rollsite import proxy_pb2_grpc
-from fate_flow.proto.osx import osx_pb2_grpc
 
 detect_logger = getLogger("fate_flow_detect")
 stat_logger = getLogger("fate_flow_stat")
@@ -104,7 +103,6 @@ def start_server(debug=False):
     server = grpc.server(thread_pool=thread_pool_executor,
                          options=GRPC_OPTIONS)
 
-    osx_pb2_grpc.add_PrivateTransferProtocolServicer_to_server(UnaryServiceOSX(), server)
     proxy_pb2_grpc.add_DataTransferServiceServicer_to_server(UnaryService(), server)
     server.add_insecure_port(f"{HOST}:{GRPC_PORT}")
     server.start()
