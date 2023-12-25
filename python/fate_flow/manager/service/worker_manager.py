@@ -20,11 +20,12 @@ import subprocess
 import sys
 from uuid import uuid1
 
+from fate_flow.runtime.system_settings import ENGINES
 from ruamel import yaml
 
 from fate_flow.db.base_models import DB, auto_date_timestamp_db_field
 from fate_flow.db.db_models import Task, WorkerInfo
-from fate_flow.entity.types import WorkerName
+from fate_flow.entity.types import WorkerName, EngineType, ComputingEngine
 from fate_flow.runtime.runtime_config import RuntimeConfig
 from fate_flow.utils import job_utils, process_utils
 from fate_flow.utils.base_utils import current_timestamp, json_dumps
@@ -56,7 +57,7 @@ class WorkerManager:
         else:
             process_cmd = [os.getenv("EXECUTOR_ENV") or sys.executable or "python3"]
         process_cmd.extend(common_cmd)
-        if sync and worker_name == WorkerName.TASK_EXECUTE:
+        if sync and cls.worker_outerr_with_pipe(worker_name):
             stderr = subprocess.PIPE
         p = process_utils.run_subprocess(job_id=task_info.get("job_id"), config_dir=config_dir, process_cmd=process_cmd,
                                          added_env=extra_env, std_dir=std_dir, cwd_dir=config_dir,
@@ -75,7 +76,7 @@ class WorkerManager:
         else:
             if sync:
                 error_io = io.BytesIO()
-                if worker_name == WorkerName.TASK_EXECUTE:
+                if cls.worker_outerr_with_pipe(worker_name):
                     while True:
                         output = p.stderr.readline()
                         if output == b'' and p.poll() is not None:
@@ -88,6 +89,11 @@ class WorkerManager:
                 if _e and _code:
                     logging.error(f"process {worker_name.value} run error[code:{_code}]\n: {_e.decode()}")
             return p
+
+    @classmethod
+    def worker_outerr_with_pipe(cls, worker_name):
+        return worker_name == WorkerName.TASK_EXECUTE and \
+               ENGINES.get(EngineType.COMPUTING) not in [ComputingEngine.SPARK]
 
     @classmethod
     def get_process_dirs(cls, job_id, role, party_id, task_name, task_version):
