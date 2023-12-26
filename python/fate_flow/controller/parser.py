@@ -797,25 +797,15 @@ class JobParser(object):
         return _list
 
     def dataset_list(self, role, party_id) -> List[DataSet]:
-        def append_dataset(datasets, channel):
-            if isinstance(channel, DataWarehouseChannelSpec):
-                if channel.name and channel.namespace:
-                    datasets.append(DataSet(**{
-                        "name": channel.name,
-                        "namespace": channel.namespace
-                    }))
-        _list = []
+        data_set = []
         for task_name in self.party_topological_sort(role=role, party_id=party_id):
             task_node = self.get_task_node(role=role, party_id=party_id, task_name=task_name)
-            input_artifacts = FlowRuntimeInputArtifacts(**task_node.upstream_inputs.get(role, {}).get(party_id, {}))
-            if input_artifacts.data:
-                for _k, _channels in input_artifacts.data.items():
-                    if isinstance(_channels, list):
-                        for _channel in _channels:
-                            append_dataset(_list, _channel)
-                    else:
-                        append_dataset(_list, _channels)
-        return _list
+            parties = self.get_task_runtime_parties(task_name=task_name)
+            if task_node.component_ref.lower() == "reader" and job_utils.check_party_in(role, party_id, parties):
+                name = task_node.runtime_parameters.get("name")
+                namespace = task_node.runtime_parameters.get("namespace")
+                data_set.append(DataSet(**{"name": name, "namespace": namespace}))
+        return data_set
 
     def role_parameters(self, role, party_id):
         _dict = {}
