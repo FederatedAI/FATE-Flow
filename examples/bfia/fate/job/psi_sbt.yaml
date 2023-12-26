@@ -1,9 +1,11 @@
 dag:
   conf:
     extra:
+      flow_id: ''
       initiator:
-        role: guest
         party_id: JG0100001100000010
+        role: guest
+      old_job_id: ''
   parties:
   - party_id:
     - JG0100001100000010
@@ -22,13 +24,6 @@ dag:
       - party_id:
         - JG0100001100000010
         role: guest
-      tasks:
-        psi_0:
-          inputs:
-            data:
-              input_data:
-                data_warehouse:
-                  dataset_id: test_data#guest
     host_JG0100001100000010:
       conf:
         resources:
@@ -39,13 +34,6 @@ dag:
       - party_id:
         - JG0100001100000010
         role: host
-      tasks:
-        psi_0:
-          inputs:
-            data:
-              input_data:
-                data_warehouse:
-                  dataset_id: test_data#host
   tasks:
     psi_0:
       component_ref: psi
@@ -53,6 +41,20 @@ dag:
         provider: fate
         version: 2.0.0
       dependent_tasks: []
+      inputs:
+        data:
+          input_data:
+            data_warehouse:
+            - dataset_id: test#guest
+              parties:
+              - party_id:
+                - JG0100001100000010
+                role: guest
+            - dataset_id: test#host
+              parties:
+              - party_id:
+                - JG0100001100000010
+                role: host
       outputs:
         data:
           output_data:
