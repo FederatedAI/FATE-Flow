@@ -11,29 +11,21 @@ dag:
   - party_id:
     - JG0100001100000010
     role: guest
-  party_tasks:
-    guest_0:
-      parties:
-      - party_id:
-        - JG0100001100000010
-        role: guest
-      tasks:
-        transformer_0:
-          parameters:
-            name: 111
-            namespace: 111
-            site_name: null
-          inputs:
-            data:
-              table:
-                data_warehouse:
-                  dataset_id: 222#222
   stage: default
   tasks:
     transformer_0:
+      parameters:
+        name: guest
+        namespace: test
+        site_name: null
       conf:
         provider: "fate"
         version: "2.0.0"
+      inputs:
+        data:
+          table:
+            data_warehouse:
+              dataset_id: upload#guest
       outputs:
         data:
           dataframe_output:
@@ -48,5 +40,5 @@ dag:
       - party_id:
         - JG0100001100000010
         role: guest
-schema_version: 2.0.0.rc1
+schema_version: 2.0.0
 kind: bfia
