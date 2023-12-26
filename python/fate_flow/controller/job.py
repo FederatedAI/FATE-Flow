@@ -347,21 +347,9 @@ class JobController(object):
         for party in dag.dag.parties:
             data_view[party.role] = {}
             for party_id in party.party_id:
-                data_view[party.role][party_id] = cls.party_data_view(job_parser, party.role, party_id)
+                dataset = job_parser.dataset_list(party.role, party_id)
+                data_view[party.role][party_id] = [data.to_dict() for data in dataset]
         return dict(role=role, party_id=party_id, data_view=data_view)
-
-    @classmethod
-    def party_data_view(cls, job_parser, role, party_id):
-        task_list = job_parser.party_topological_sort(role=role, party_id=party_id)
-        dataset = []
-        for task_name in task_list:
-            task_node = job_parser.get_task_node(role=role, party_id=party_id, task_name=task_name)
-            parties = job_parser.get_task_runtime_parties(task_name=task_name)
-            if task_node.component_ref.lower() == "reader" and job_utils.check_party_in(role, party_id, parties):
-                name = task_node.runtime_parameters.get("name")
-                namespace = task_node.runtime_parameters.get("namespace")
-                dataset.append(dict(namespace=namespace, name=name))
-        return dataset
 
     @classmethod
     def adapt_party_parameters(cls, dag_schema: DAGSchema, role):
