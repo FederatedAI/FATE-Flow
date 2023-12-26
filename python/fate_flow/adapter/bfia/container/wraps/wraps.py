@@ -273,10 +273,12 @@ class BfiaWraps(WrapsABC):
             "--save",
             desc_file
         ]
-
+        std = open(os.path.join(self.task_output_dir, "std.txt"), "w")
         p = subprocess.Popen(
             process_cmd,
-            env=os.environ
+            env=os.environ,
+            stdout=std,
+            stderr=std
         )
         p.wait()
         if os.path.exists(desc_file):
@@ -330,7 +332,7 @@ class BfiaWraps(WrapsABC):
                         continue
                     path = os.path.join(self.data_home, address.namespace, address.name)
                     os.makedirs(os.path.dirname(path), exist_ok=True)
-                    metadata = self.io.s3_to_local(address, path=path)
+                    metadata = self.io.s3_to_local(address, self.data_home, path=path)
                     input_artifacts[name] = metadata
         self._set_stage(stage)
         return input_artifacts
@@ -359,7 +361,10 @@ class BfiaWraps(WrapsABC):
     def _generate_computing_conf(self):
         return StandaloneComputingSpec(
             type=COMPUTING_ENGINE,
-            metadata={"computing_id": f"{self.config.config.session_id}{self.self_role}"}
+            metadata=dict(
+                computing_id=f"{self.config.config.session_id}_{self.self_role}",
+                options=dict(data_dir=self.data_home)
+            )
         )
 
     def _generate_federation_conf(self):
@@ -391,10 +396,14 @@ class BfiaWraps(WrapsABC):
         meta.metadata.metadata["schema"] = output_data.metadata.metadata.get("schema", {})
         meta.metadata.source = output_data.metadata.source
         address = self.config.runtime.component.output.get(output_key)
+        if output_data.metadata.name and output_data.metadata.namespace:
+            name, namespace = output_data.metadata.name, output_data.metadata.namespace
+        else:
+            name, namespace = address.name, address.namespace
         path = output_data.uri.split("://")[1]
         logger.info(f"start upload {path} to s3")
-        logger.info(f"namespace {address.namespace} name {address.name}")
-        self.io.upload_to_s3(path, address.name, address.namespace, metadata=meta.metadata.dict())
+        logger.info(f"namespace {namespace} name {name}")
+        self.io.upload_to_s3(path, name, namespace, metadata=meta.metadata.dict())
 
     def _push_model(self, output_key, output_model: ArtifactOutputSpec):
         address = self.config.runtime.component.output.get(output_key)
@@ -479,7 +488,7 @@ class DataIo(object):
             parameters[key] = ps.get(key, [''])[0]
         return protocol, host, port, parameters
 
-    def s3_to_local(self, address, path):
+    def s3_to_local(self, address, data_home, path):
         table = self.storage_session.get_table(name=address.name, namespace=address.namespace)
         table.download_data_to_local(local_path=path)
         schema = json.loads(table.meta_output()).get("metadata")
@@ -495,7 +504,10 @@ class DataIo(object):
             uri=f"{COMPUTING_ENGINE}:///{address.namespace}/{address.name}"
         )
         from fate.arch.computing.backends.standalone import standalone_raw
-        standalone_raw._TableMetaManager.add_table_meta(namespace=address.namespace, name=address.name, num_partitions=self._partitions)
+        standalone_raw._TableMetaManager.add_table_meta(
+            data_dir=data_home, namespace=address.namespace, name=address.name, num_partitions=self._partitions,
+            key_serdes_type=0, value_serdes_type=0, partitioner_type=0
+        )
         return meta
 
     def upload_to_s3(self, path, name, namespace, metadata):

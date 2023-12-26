@@ -409,6 +409,7 @@ class Translator(object):
             for role, conf in party_task_params.items():
                 setattr(task_params, role, conf)
 
+        if dag.tasks:
             for task_name, task_spec in dag.tasks.items():
                 if not task_spec.inputs or not task_spec.inputs.data:
                     continue
