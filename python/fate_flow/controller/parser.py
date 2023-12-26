@@ -796,7 +796,7 @@ class JobParser(object):
                 _list.append(node.component_ref)
         return _list
 
-    def dataset_list(self, role, party_id) -> List[DataSet]:
+    def dataset_list(self, role, party_id):
         data_set = []
         for task_name in self.party_topological_sort(role=role, party_id=party_id):
             task_node = self.get_task_node(role=role, party_id=party_id, task_name=task_name)
