@@ -372,32 +372,6 @@ class Translator(object):
             for role, conf in parties_conf.items():
                 setattr(job_params, role, conf)
 
-        if dag.tasks:
-            for task_name, task_spec in dag.tasks.items():
-                if not task_spec.inputs or not task_spec.inputs.data:
-                    continue
-
-                parties = task_spec.parties if task_spec.parties else dag.parties
-                for _, input_artifact_specs in task_spec.inputs.data.items():
-                    for input_artifact_key, input_spec_list in input_artifact_specs.items():
-                        if not isinstance(input_spec_list, list):
-                            input_spec_list = [input_spec_list]
-                        for input_spec in input_spec_list:
-                            if not isinstance(input_spec, DataWarehouseChannelSpec):
-                                continue
-                            input_parties = input_spec.parties if input_spec.parties else parties
-                            for party_spec in input_parties:
-                                party_str = "|".join(map(str,
-                                                         [getattr(role_spec, party_spec.role).index(party_id) for
-                                                          party_id in party_spec.party_id]
-                                                         ))
-
-                                input_dict = {party_str: dict(dataset_id=input_spec.dataset_id)}
-                                if not getattr(job_params, party_spec.role):
-                                    setattr(job_params, party_spec.role, input_dict)
-                                else:
-                                    getattr(job_params, party_spec.role).update(input_dict)
-
         bfia_conf_buf["job_params"] = job_params
 
         task_params = TaskParamsSpec()
@@ -427,21 +401,38 @@ class Translator(object):
                     if party_task_spec.parameters:
                         party_conf[task_name].update(party_task_spec.parameters)
 
-                    if party_task_spec.inputs and party_task_spec.inputs.data:
-                        data_warehouse = list(party_task_spec.inputs.data.values())[0]["data_warehouse"]
-                        if data_warehouse.name and data_warehouse.namespace:
-                            party_conf[task_name]["dataset_id"] = "#".join(
-                                [data_warehouse.namespace, data_warehouse.name]
-                            )
-                        elif data_warehouse.dataset_id:
-                            party_conf[task_name]["dataset_id"] = data_warehouse.dataset_id
-
                 if role not in party_task_params:
                     party_task_params[role] = dict()
                 party_task_params[role][party_str] = party_conf
 
+
             for role, conf in party_task_params.items():
                 setattr(task_params, role, conf)
+
+            for task_name, task_spec in dag.tasks.items():
+                if not task_spec.inputs or not task_spec.inputs.data:
+                    continue
+
+                parties = task_spec.parties if task_spec.parties else dag.parties
+                for _, input_artifact_specs in task_spec.inputs.data.items():
+                    for input_artifact_key, input_spec_list in input_artifact_specs.items():
+                        if not isinstance(input_spec_list, list):
+                            input_spec_list = [input_spec_list]
+                        for input_spec in input_spec_list:
+                            if not isinstance(input_spec, DataWarehouseChannelSpec):
+                                continue
+                            input_parties = input_spec.parties if input_spec.parties else parties
+                            for party_spec in input_parties:
+                                party_str = "|".join(map(str,
+                                                         [getattr(role_spec, party_spec.role).index(party_id) for
+                                                          party_id in party_spec.party_id]
+                                                         ))
+                                input_dict = {
+                                    party_str: {task_name:  dict(dataset_id=input_spec.dataset_id)}}
+                                if not getattr(task_params, party_spec.role):
+                                    setattr(task_params, party_spec.role, input_dict)
+                                else:
+                                    getattr(task_params, party_spec.role).update(input_dict)
 
         bfia_conf_buf["task_params"] = task_params
 

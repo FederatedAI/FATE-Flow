@@ -17,8 +17,8 @@ class JobController(object):
             components_desc[name] = BFIAComponentSpec.parse_obj(desc)
         bfia_dag = Translator.translate_dag_to_bfia_dag(dag_schema, components_desc)
         job_id = BfiaJobController.request_create_job(
-            bfia_dag.dag.dag.dict(),
-            bfia_dag.dag.config.dict(),
+            bfia_dag.dag.dag.dict(exclude_defaults=True),
+            bfia_dag.dag.config.dict(exclude_defaults=True),
             bfia_dag.dag.flow_id,
             bfia_dag.dag.old_job_id
         )
@@ -51,7 +51,7 @@ class JobController(object):
             BfiaJobStatus.PENDING: JobStatus.WAITING,
             BfiaJobStatus.READY: JobStatus.WAITING,
             BfiaJobStatus.RUNNING: JobStatus.RUNNING,
-            BfiaJobStatus.FINISHED: JobStatus.FINISHED,
+            BfiaJobStatus.FINISHED: JobStatus.SUCCESS,
             BfiaJobStatus.REJECTED: JobStatus.FAILED,
             BfiaJobStatus.SUCCESS: JobStatus.SUCCESS,
             BfiaJobStatus.FAILED: JobStatus.FAILED,
