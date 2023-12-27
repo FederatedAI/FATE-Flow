@@ -16,24 +16,7 @@ import json
 
 import grpc
 
-from ..proto.osx import osx_pb2, osx_pb2_grpc
 from ..proto.rollsite import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
-
-
-def wrap_osx_grpc_packet(job_id, json_body, http_method, url, src_party_id, dst_party_id, headers=None, provider="FATE",
-                         role="fateflow", target_method="UNARY_CALL", **kwargs):
-    _meta = {
-        "TechProviderCode": provider,
-        "SourceNodeID": src_party_id,
-        "TargetNodeID": dst_party_id,
-        "TargetComponentName": role,
-        "TargetMethod": target_method,
-        "JobId": job_id
-    }
-    if not headers:
-        headers = {}
-    _data = bytes(json.dumps(dict(uri=url, json_body=json_body, headers=headers, method=http_method)), 'utf-8')
-    return osx_pb2.Inbound(metadata=_meta, payload=_data)
 
 
 def wrap_proxy_grpc_packet(json_body, http_method, url, src_party_id, dst_party_id, job_id=None, headers=None,
@@ -51,12 +34,6 @@ def wrap_proxy_grpc_packet(json_body, http_method, url, src_party_id, dst_party_
     _meta = proxy_pb2.Metadata(src=_src, dst=_dst, task=_task, command=_command, operator=http_method, conf=_conf)
     _data = proxy_pb2.Data(key=url, value=bytes(json.dumps(json_body), 'utf-8'))
     return proxy_pb2.Packet(header=_meta, body=_data)
-
-
-def get_osx_channel(host, port):
-    channel = grpc.insecure_channel(f"{host}:{port}")
-    stub = osx_pb2_grpc.PrivateTransferProtocolStub(channel)
-    return channel, stub
 
 
 def get_proxy_channel(host, port):

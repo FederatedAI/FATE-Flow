@@ -70,6 +70,7 @@ class EggrollDeepspeedEngine(LocalEngine):
         return run_info
 
     def cleanup(self, task: Task):
+        self._cleanup(task, sync=True)
         self.kill(task)
 
     def kill(self, task):
