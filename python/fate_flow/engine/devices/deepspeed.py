@@ -70,8 +70,8 @@ class EggrollDeepspeedEngine(LocalEngine):
         return run_info
 
     def cleanup(self, task: Task):
+        self._cleanup(task, sync=True)
         self.kill(task)
-        self._cleanup(task)
 
     def kill(self, task):
         schedule_logger(task.f_job_id).info(f"start kill deepspeed task {task.f_worker_id}")
