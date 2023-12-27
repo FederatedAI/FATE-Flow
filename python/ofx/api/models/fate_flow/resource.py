@@ -17,8 +17,8 @@ import threading
 import json
 import requests
 
-from ...utils.grpc_utils import wrap_osx_grpc_packet, wrap_proxy_grpc_packet
-from ...utils.grpc_utils import gen_routing_metadata, get_osx_channel, get_proxy_channel
+from ...utils.grpc_utils import wrap_proxy_grpc_packet
+from ...utils.grpc_utils import gen_routing_metadata, get_proxy_channel
 
 FEDERATED_ERROR = 104
 
@@ -182,36 +182,6 @@ class APIClient(requests.Session):
             else:
                 try:
                     return json.loads(bytes.decode(_return.body.value))
-                except Exception:
-                    raise RuntimeError(f"{_return}, {_call}")
-            finally:
-                channel.close()
-
-    @staticmethod
-    def remote_on_grpc_osx(job_id, method, host, port, endpoint, src_party_id, dest_party_id, json_body,
-                           try_times=3, timeout=10, headers=None, source_host=None, source_port=None, **kwargs):
-        _packet = wrap_osx_grpc_packet(
-            json_body=json_body, http_method=method, url=endpoint,
-            src_party_id=src_party_id, dst_party_id=dest_party_id,
-            job_id=job_id, headers=headers, overall_timeout=timeout,
-            source_host=source_host, source_port=source_port, **kwargs
-        )
-        _routing_metadata = gen_routing_metadata(
-            src_party_id=src_party_id, dest_party_id=dest_party_id,
-        )
-        for t in range(try_times):
-            channel, stub = get_osx_channel(host, port)
-            try:
-                _return, _call = stub.invoke.with_call(
-                    _packet, metadata=_routing_metadata,
-                    timeout=timeout or None,
-                )
-            except Exception as e:
-                if t >= try_times - 1:
-                    raise Exception(str(e))
-            else:
-                try:
-                    return json.loads(bytes.decode(_return.payload))
                 except Exception:
                     raise RuntimeError(f"{_return}, {_call}")
             finally:

@@ -62,7 +62,8 @@ class TaskController(object):
         task_node = job_parser.get_task_node(role=role, party_id=party_id, task_name=task_name)
         task_parser = job_parser.task_parser(
             task_node=task_node, job_id=job_id, task_name=task_name, role=role, party_id=party_id,
-            task_id=task_id, execution_id=execution_id, task_version=task_version, parties=dag_schema.dag.parties,
+            task_id=task_id, execution_id=execution_id, task_version=task_version,
+            parties=job_parser.get_task_runtime_parties(task_name),
             model_id=dag_schema.dag.conf.model_id, model_version=dag_schema.dag.conf.model_version
         )
         if is_scheduler:
