@@ -46,6 +46,9 @@ class LocalEngine(EngineABC):
         return process_utils.check_process(pid=int(task.f_run_pid), task=task)
 
     def cleanup(self, task: Task):
+        return self._cleanup(task)
+
+    def _cleanup(self, task: Task):
         return WorkerManager.start_task_worker(
             worker_name=WorkerName.TASK_CLEAN,
             task_info=task.to_human_model_dict(),
