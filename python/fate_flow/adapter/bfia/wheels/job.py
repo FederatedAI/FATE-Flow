@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+from fate_flow.adapter.bfia.wheels.parser import get_dag_parser
+
 from fate_flow.adapter.bfia.settings import LOCAL_SITE_ID as PARTY_ID
 from fate_flow.adapter.bfia.utils.entity.code import ReturnCode
 from fate_flow.adapter.bfia.utils.entity.status import TaskStatus, JobStatus, EndStatus
@@ -162,9 +164,11 @@ class BfiaJobController(object):
                 job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id,
                 only_latest=True, reverse=True
             )
-
+        update_job = False
         # stop tasks
         for task in tasks:
+            if task.f_party_status == TaskStatus.FAILED:
+                update_job = True
             # if task.f_status in [TaskStatus.SUCCESS, TaskStatus.PENDING, TaskStatus.READY]:
             #     continue
             schedule_logger(job_id=job.f_job_id).info(f"[stop]start to kill task {task.f_task_name} "
@@ -173,12 +177,32 @@ class BfiaJobController(object):
             schedule_logger(job_id=job.f_job_id).info(f"[stop]Kill {task.f_task_name} task completed: {status}")
 
         # update job status
-        BfiaJobController.update_job_status({
-            "job_id": job.f_job_id,
-            "role": job.f_role,
-            "party_id": job.f_party_id,
-            "status": JobStatus.FINISHED
-        })
+        if update_job or cls.calculate_job_is_finished(job):
+            BfiaJobController.update_job_status({
+                "job_id": job.f_job_id,
+                "role": job.f_role,
+                "party_id": job.f_party_id,
+                "status": JobStatus.FINISHED
+            })
+
+    @classmethod
+    def calculate_job_is_finished(cls, job):
+        schedule_logger(job.f_job_id).info("start to calculate job status")
+        dag_schema = DagSchemaSpec.parse_obj(job.f_dag)
+        job_parser = get_dag_parser(dag_schema)
+        task_list = job_parser.party_topological_sort(role=job.f_role, party_id=job.f_party_id)
+        waiting_list = []
+        for name in task_list:
+            tasks = JobSaver.query_task(
+                job_id=job.f_job_id, role=job.f_role, party_id=job.f_party_id,
+                only_latest=True, reverse=True, task_name=name
+            )
+            if not tasks:
+                waiting_list.append(name)
+        if waiting_list:
+            schedule_logger(job.f_job_id).info(f"task {waiting_list} is waiting to run")
+            return False
+        return True
 
     @classmethod
     def calculate_multi_party_job_status(cls, party_status):

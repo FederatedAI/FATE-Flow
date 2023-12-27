@@ -275,8 +275,8 @@
         }
       ]
     },
-    "hetero_sbt": {
-      "componentName": "hetero_sbt",
+    "hetero_secureboost": {
+      "componentName": "hetero_secureboost",
       "title": "sbt",
       "provider": "fate",
       "version": "2.0.0",

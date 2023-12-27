@@ -353,7 +353,8 @@ class Translator(object):
         bfia_conf_buf["role"] = role_spec
 
         job_params = JobParamsSpec()
-        job_params.common = JobCommonSpec(**dag.conf.dict(exclude_defaults=True))
+        if dag.conf:
+            job_params.common = JobCommonSpec(**dag.conf.dict(exclude_defaults=True))
 
         if dag.party_tasks:
             parties_conf = dict()
