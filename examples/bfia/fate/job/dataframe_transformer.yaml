@@ -15,8 +15,8 @@ dag:
   tasks:
     transformer_0:
       parameters:
-        name: guest
-        namespace: test
+        name: breast_hetero_guest
+        namespace: experiment
         site_name: null
       conf:
         provider: "fate"

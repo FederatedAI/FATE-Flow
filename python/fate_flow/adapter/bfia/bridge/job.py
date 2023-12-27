@@ -22,7 +22,7 @@ class JobController(object):
             bfia_dag.dag.flow_id,
             bfia_dag.dag.old_job_id
         )
-        return SubmitJobOutput(job_id=job_id)
+        return SubmitJobOutput(job_id=job_id, data=dict(model_id="", model_version=""))
 
     @classmethod
     def query_job(cls, query_job_input: QueryJobInput):
