@@ -157,7 +157,8 @@ class Deepspeed(LocalEngine):
         return command_arguments
 
     def _cleanup1(self, session_id, task_info, **kwargs):
-        self.kill(session_id)
+        # self.kill(session_id)
+        pass
 
     @staticmethod
     def kill(session_id):
