@@ -48,14 +48,15 @@ class LocalEngine(EngineABC):
     def cleanup(self, task: Task):
         return self._cleanup(task)
 
-    def _cleanup(self, task: Task):
+    def _cleanup(self, task: Task, sync=False):
         return WorkerManager.start_task_worker(
             worker_name=WorkerName.TASK_CLEAN,
             task_info=task.to_human_model_dict(),
             extra_env={"PYTHONPATH": self.provider.python_path},
             executable=[self.provider.python_env],
             common_cmd=self.generate_cleanup_cmd(),
-            task_parameters=task.f_component_parameters
+            task_parameters=task.f_component_parameters,
+            sync=sync
         )
 
     def download_output(self, task):
