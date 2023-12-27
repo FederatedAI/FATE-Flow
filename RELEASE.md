@@ -5,7 +5,7 @@
 * Optimized process scheduling, with scheduling separated and customizable, and added priority scheduling
 * Optimized algorithm component scheduling，support container-level algorithm loading， enhancing support for cross-platform heterogeneous scenarios
 * Optimized multi-version algorithm component registration, supporting registration for mode of components
-* * Federated DSL IR extension enhancement: supports multi-party asymmetric scheduling.
+* Federated DSL IR extension enhancement: supports multi-party asymmetric scheduling.
 * Optimized client authentication logic, supporting permission management for multiple clients
 * Optimized RESTful interface, making parameter fields and types, return fields, and status codes clearer
 * Introduce OFX(Open Flow Exchange) module: encapsulated scheduling client to allow cross-platform scheduling
