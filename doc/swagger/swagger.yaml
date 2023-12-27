@@ -1974,7 +1974,7 @@ definitions:
         description: Detailed information about component registration
       protocol:
         type: string
-        description: 'Protocol: http/https'
+        description: 'Protocol: fate/bfia,etc.'
       components_description:
         type: string
         description: Components description
@@ -2011,7 +2011,7 @@ definitions:
         description: Service port
       protocol:
         type: string
-        description: 'Protocol: http/https'
+        description: 'Protocol: fate/bfia,etc.'
     type: object
   ResponseServerRegister:
     allOf:
