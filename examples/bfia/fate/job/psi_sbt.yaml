@@ -73,7 +73,7 @@ dag:
         - JG0100001100000010
         role: host
     sbt_0:
-      component_ref: hetero_sbt
+      component_ref: hetero_secureboost
       conf:
         provider: fate
         version: 2.0.0

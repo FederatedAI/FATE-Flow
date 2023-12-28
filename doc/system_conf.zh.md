@@ -1,22 +1,23 @@
 # 系统配置描述文档
 FATE Flow使用yaml定义系统配置，配置路径位于: conf/service_conf.yaml, 具体配置内容及其含义如下：
 
-| 配置项              | 说明 | 值                            |
-|----------------------|------|------------------------------|
-| party_id             | 本方站点id | 如: "9999", "10000            |
-| use_registry         | 是否使用注册中心，当前仅支持zookeeper模式，需要保证zookeeper的配置正确；<br/>注：若使用高可用模式，需保证该配置设置为true | true/false                   |
-| encrypt              | 加密模块 | 见[加密模块](#加密模块)               |
-| fateflow             | FATE Flow服务的配置，主要包括端口、命令通道服务、代理等 | 见[FateFlow配置](#fateflow配置)   |
-| database             | 数据库服务的配置信息 | 见[数据库配置](#数据库配置)             |
-| default_engines      | 系统的引擎服务，主要包括计算、存储和通信引擎 | 见[引擎配置](#引擎配置)               |
-| default_provider     | 组件的来源信息，主要包括提供方名称、组件版本和运行模式 | 见[默认注册算法配置](#默认注册算法配置)               |
-| federation           | 通信服务池 | 见[通信引擎池](#通信引擎池)             |
-| computing            | 计算服务池 | 见[计算引擎池](#计算引擎池)             |
-| storage              | 存储服务池 | 见[存储引擎池](#存储配置)              |
-| hook_module          | 钩子配置，当前支持客户端认证、站点端认证以及鉴权钩子 | 见[钩子模块配置](#钩子模块配置)           |
-| authentication       | 认证&&鉴权开关 | 见[认证开关](#认证开关)               |
-| model_store          | 模型存储配置 | 见[模型存储](#模型存储)               |
-| zookeeper            | zookeeper服务的配置 | 见[zookeeper配置](#zookeeper配置) |
+| 配置项              | 说明                                                                         | 值                                      |
+|------------------|----------------------------------------------------------------------------|----------------------------------------|
+| party_id         | 本方站点id                                                                     | 如: "9999", "10000                      |
+| use_registry     | 是否使用注册中心，当前仅支持zookeeper模式，需要保证zookeeper的配置正确；<br/>注：若使用高可用模式，需保证该配置设置为true | true/false                             |
+| log_level        | 日志级别                                                                       | DEBUG:10, INFO:20, DEBUG:30, ERROR: 40 |
+| encrypt          | 加密模块                                                                       | 见[加密模块](#加密模块)                         |
+| fateflow         | FATE Flow服务的配置，主要包括端口、命令通道服务、代理等                                           | 见[FateFlow配置](#fateflow配置)             |
+| database         | 数据库服务的配置信息                                                                 | 见[数据库配置](#数据库配置)                       |
+| default_engines  | 系统的引擎服务，主要包括计算、存储和通信引擎                                                     | 见[引擎配置](#引擎配置)                         |
+| default_provider | 组件的来源信息，主要包括提供方名称、组件版本和运行模式                                                | 见[默认注册算法配置](#默认注册算法配置)                 |
+| federation       | 通信服务池                                                                      | 见[通信引擎池](#通信引擎池)                       |
+| computing        | 计算服务池                                                                      | 见[计算引擎池](#计算引擎池)                       |
+| storage          | 存储服务池                                                                      | 见[存储引擎池](#存储配置)                        |
+| hook_module      | 钩子配置，当前支持客户端认证、站点端认证以及鉴权钩子                                                 | 见[钩子模块配置](#钩子模块配置)                     |
+| authentication   | 认证&&鉴权开关                                                                   | 见[认证开关](#认证开关)                         |
+| model_store      | 模型存储配置                                                                     | 见[模型存储](#模型存储)                         |
+| zookeeper        | zookeeper服务的配置                                                             | 见[zookeeper配置](#zookeeper配置)           |
 
 ## 加密模块
 ```yaml
@@ -34,7 +35,7 @@ key_0:
 host: 127.0.0.1
 http_port: 9380
 grpc_port: 9360
-proxy_name: rollsite
+proxy_name: osx
 nginx:
   host:
   http_port:
@@ -43,7 +44,7 @@ nginx:
 - host: 主机地址;
 - http_port：http端口号;
 - grpc_port: grpc端口号;
-- proxy_name: 命令通道服务名，支持osx/rollsite/nginx。详细配置需要在[通信引擎池](#通信引擎池) 里面配置;
+- proxy_name: 命令通道服务名，支持osx/nginx。详细配置需要在[通信引擎池](#通信引擎池) 里面配置;
 - nginx: 代理服务配置，用于负载均衡。
 
 ## 数据库配置
@@ -75,7 +76,7 @@ default_engines:
 ```
 
 - computing: 计算引擎，支持"standalone"、"eggroll"、"spark"
-- federation: 通信引擎，支持"standalone"、"rollsite"、"osx"、"rabbitmq"、"pulsar"
+- federation: 通信引擎，支持"standalone"、"osx"、"rabbitmq"、"pulsar"
 - storage: 存储引擎，支持"standalone"、"eggroll"、"hdfs"
 
 ## 默认注册算法配置
@@ -119,17 +120,11 @@ nginx:
   protocol: http
 ```
 
-### rollsite
-```yaml
-rollsite:
-  host: 127.0.0.1
-  port: 9370
-```
-
 ### osx
 ```yaml
   host: 127.0.0.1
   port: 9370
+  mode: stream
 ```
 
 ## 计算引擎池
@@ -143,10 +138,14 @@ rollsite:
 ```yaml
 eggroll:
   cores: 32
-  nodes: 2
+  nodes: 1
+  host: 127.0.0.1
+  port: 4670
 ```
 - cores: 集群资源总数
 - nodes: 集群node-manager数量
+- host: eggroll cluster manager host ip
+- port: eggroll cluster manager port
 
 ### spark
 ```yaml
