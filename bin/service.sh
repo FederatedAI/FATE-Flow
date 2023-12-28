@@ -153,17 +153,6 @@ load_config() {
         exit 1
     fi
 
-    # Initialize environment
-    print_info "Initializing environment..."
-    INI_ENV_SCRIPT="${FATE_FLOW_BASE}/bin/init_env.sh"
-    if [ -f "${INI_ENV_SCRIPT}" ]; then
-        source "${INI_ENV_SCRIPT}"
-        print_ok "Environment initialized successfully." ${INI_ENV_SCRIPT}
-    else
-        print_error "Environment file not found" ${INI_ENV_SCRIPT}
-        exit 1
-    fi
-
     # load ports
     print_info "Retrieving http port..."
     local section="fateflow"
