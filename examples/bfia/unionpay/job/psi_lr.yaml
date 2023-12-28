@@ -1,0 +1,95 @@
+dag:
+  conf:
+    extra:
+      initiator: {party_id: JG0100001100000010, role: guest}
+  parties:
+  - party_id: [JG0100001100000010]
+    role: guest
+  - party_id: [JG0100001100000010]
+    role: host
+  - party_id: [JG0100001100000010]
+    role: arbiter
+  party_tasks:
+    guest_JG0100001100000010:
+      conf:
+        resources: {cpu: -1, disk: -1, memory: -1}
+      parties:
+      - party_id: [JG0100001100000010]
+        role: guest
+    host_JG0100001100000010:
+      conf:
+        resources: {cpu: -1, disk: -1, memory: -1}
+      parties:
+      - party_id: [JG0100001100000010]
+        role: host
+  stage: train
+  tasks:
+    hetero_logistic_regression_1:
+      component_ref: HeteroLR
+      conf: {provider: unionpay, version: 2.0.0}
+      dependent_tasks: [intersect_rsa_1]
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: train_data
+              parties:
+              - party_id: [JG0100001100000010]
+                role: guest
+              - party_id: [JG0100001100000010]
+                role: host
+              - party_id: [JG0100001100000010]
+                role: arbiter
+              producer_task: intersect_rsa_1
+      outputs:
+        data:
+          train_data: {output_artifact_key_alias: train_data, output_artifact_type_alias: data}
+        metric:
+          train-loss: {output_artifact_key_alias: train-loss, output_artifact_type_alias: metric}
+        model:
+          model: {output_artifact_key_alias: model, output_artifact_type_alias: model}
+      parameters:
+        alpha: 0.01
+        batch_size: -1
+        early_stop: diff
+        id: id
+        init_param: {init_method: zeros}
+        label: y
+        learning_rate: 0.15
+        max_iter: 2
+        optimizer: nesterov_momentum_sgd
+        penalty: L2
+        tol: 0.0001
+    intersect_rsa_1:
+      component_ref: Intersection
+      conf: {provider: unionpay, version: 2.0.0}
+      inputs:
+        data:
+          train_data:
+            data_warehouse:
+            - dataset_id: testspace#test_guest
+              parties:
+              - party_id: [JG0100001100000010]
+                role: guest
+            - dataset_id: testspace#test_host
+              parties:
+              - party_id: [JG0100001100000010]
+                role: host
+      outputs:
+        data:
+          train_data: {output_artifact_key_alias: train_data, output_artifact_type_alias: data}
+        metric:
+          train-intersection: {output_artifact_key_alias: train-intersection, output_artifact_type_alias: metric}
+      parameters:
+        id: id
+        intersect_method: rsa
+        only_output_key: false
+        rsa_params: {final_hash_method: sha256, hash_method: sha256, key_length: 2048}
+        sync_intersect_ids: true
+      parties:
+      - party_id: [JG0100001100000010]
+        role: guest
+      - party_id: [JG0100001100000010]
+        role: host
+kind: bfia
+schema_version: 2.0.0.beta

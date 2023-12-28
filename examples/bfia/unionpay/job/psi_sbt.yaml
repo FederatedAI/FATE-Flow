@@ -1,0 +1,91 @@
+dag:
+  conf:
+    extra:
+      initiator: {party_id: JG0100001100000010, role: guest}
+  parties:
+  - party_id: [JG0100001100000010]
+    role: guest
+  - party_id: [JG0100001100000010]
+    role: host
+  party_tasks:
+    guest_JG0100001100000010:
+      conf:
+        resources: {cpu: -1, disk: -1, memory: -1}
+      parties:
+      - party_id: [JG0100001100000010]
+        role: guest
+    host_JG0100001100000010:
+      conf:
+        resources: {cpu: -1, disk: -1, memory: -1}
+      parties:
+      - party_id: [JG0100001100000010]
+        role: host
+  stage: train
+  tasks:
+    hetero_secureboost_1:
+      component_ref: HeteroSecureBoost
+      conf: {provider: unionpay, version: 2.0.0}
+      dependent_tasks: [intersect_rsa_1]
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: train_data
+              parties:
+              - party_id: [JG0100001100000010]
+                role: guest
+              - party_id: [JG0100001100000010]
+                role: host
+              producer_task: intersect_rsa_1
+      outputs:
+        data:
+          train_data: {output_artifact_key_alias: train_data, output_artifact_type_alias: data}
+        metric:
+          train-auc: {output_artifact_key_alias: train-auc, output_artifact_type_alias: metric}
+          train-ks: {output_artifact_key_alias: train-ks, output_artifact_type_alias: metric}
+          train-loss: {output_artifact_key_alias: train-loss, output_artifact_type_alias: metric}
+        model:
+          model: {output_artifact_key_alias: model, output_artifact_type_alias: model}
+      parameters:
+        bin_num: 32
+        cv_param: {n_splits: 5, need_cv: false, random_seed: 103, shuffle: false}
+        id: id
+        label: y
+        learning_rate: 0.5
+        metrics: [auc, ks]
+        n_iter_no_change: true
+        num_trees: 2
+        objective_param: {objective: cross_entropy}
+        predict_param: {threshold: 0.5}
+        subsample_feature_rate: 1
+        tol: 0.0001
+        tree_param: {max_depth: 5}
+    intersect_rsa_1:
+      component_ref: Intersection
+      conf: {provider: unionpay, version: 2.0.0}
+      inputs:
+        data:
+          train_data:
+            data_warehouse:
+            - dataset_id: testspace#test_guest
+              parties:
+              - party_id: [JG0100001100000010]
+                role: guest
+            - dataset_id: testspace#test_host
+              parties:
+              - party_id: [JG0100001100000010]
+                role: host
+      outputs:
+        data:
+          train_data: {output_artifact_key_alias: train_data, output_artifact_type_alias: data}
+        metric:
+          train-intersection: {output_artifact_key_alias: train-intersection, output_artifact_type_alias: metric}
+      parameters:
+        id: id
+        intersect_method: rsa
+        only_output_key: false
+        rsa_params: {final_hash_method: sha256, hash_method: sha256, key_length: 2048}
+        sync_intersect_ids: true
+kind: bfia
+schema_version: 2.0.0.beta
+

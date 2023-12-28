@@ -1,10 +1,7 @@
 {
-  "party_id": 10000,
-  "component": "reader,dataio",
-  "dataset": [
-    {
-      "namespace": "experiment",
-      "name": "breast_hetero_guest"
-    }
-  ]
+  "party_id": "9999",
+  "component": "reader",
+  "dataset": [{
+    "name": "xxx", "namespace": "xxx"
+  }]
 }

@@ -12,26 +12,29 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
-from fate_flow.entity import RetCode
-from fate_flow.entity.run_status import FederatedSchedulingStatusCode
+from fate_flow.scheduler.scheduler import SchedulerABC
+from fate_flow.runtime.runtime_config import RuntimeConfig
+from fate_flow.runtime.system_settings import HOST, HTTP_PORT, PROXY_PROTOCOL, API_VERSION, HTTP_REQUEST_TIMEOUT
+from fate_flow.utils.api_utils import get_federated_proxy_address, generate_headers
+from ofx.api.client import FlowSchedulerApi
 
 
-class SchedulerBase():
-    @classmethod
-    def return_federated_response(cls, federated_response):
-        retcode_set = set()
-        for dest_role in federated_response.keys():
-            for party_id in federated_response[dest_role].keys():
-                retcode_set.add(federated_response[dest_role][party_id]["retcode"])
-        if len(retcode_set) == 1 and RetCode.SUCCESS in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.SUCCESS
-        elif RetCode.EXCEPTION_ERROR in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.ERROR
-        elif RetCode.NOT_EFFECTIVE in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.NOT_EFFECTIVE
-        elif RetCode.SUCCESS in retcode_set:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.PARTIAL
-        else:
-            federated_scheduling_status_code = FederatedSchedulingStatusCode.FAILED
-        return federated_scheduling_status_code, federated_response
+def init_scheduler():
+    remote_host, remote_port, remote_protocol, grpc_channel = get_federated_proxy_address()
+
+    protocol = remote_protocol if remote_protocol else PROXY_PROTOCOL
+
+    # schedule client
+    RuntimeConfig.set_schedule_client(
+        FlowSchedulerApi(
+            host=HOST,
+            port=HTTP_PORT,
+            api_version=API_VERSION,
+            timeout=HTTP_REQUEST_TIMEOUT,
+            remote_protocol=protocol,
+            remote_host=remote_host,
+            remote_port=remote_port,
+            grpc_channel=grpc_channel,
+            callback=generate_headers)
+    )
+

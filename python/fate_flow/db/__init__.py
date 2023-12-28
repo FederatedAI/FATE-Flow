@@ -13,3 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.db.storage_models import *
+from fate_flow.db.schedule_models import *
+from fate_flow.db.db_models import *

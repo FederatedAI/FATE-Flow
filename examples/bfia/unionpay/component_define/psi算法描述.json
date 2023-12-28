@@ -1,0 +1,190 @@
+{
+    "componentName": "Intersection",
+	"title": "对齐算法",
+    "provider": "unionpay",
+    "version": "2.0.0",
+    "description": "对齐算法",
+    "roleList": ["guest", "host"],
+    "desVersion": "1.3.0",
+    "storageEngine": ["s3","hdfs"],
+    "inputParam": [
+        {
+            "name": "id",
+            "title": "id列",
+            "description": "id字段名",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "x1",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "intersect_method",
+            "title": "对齐方式",
+            "description": "对齐方式",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "raw",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "sync_intersect_ids",
+            "title": "同步对齐id",
+            "description": "同步对齐id",
+            "type": "boolean",
+            "optional": "true",
+            "bindingData": [
+                {
+                    "label": "是",
+                    "value": "true"
+                },
+                {
+                    "label": "否",
+                    "value": "false"
+                }
+            ],
+            "defaultValue": "true",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "only_output_key",
+            "title": "仅输出id",
+            "description": "仅输出id",
+            "type": "boolean",
+            "optional": "true",
+            "bindingData": [
+                {
+                    "label": "是",
+                    "value": "true"
+                },
+                {
+                    "label": "否",
+                    "value": "false"
+                }
+            ],
+            "defaultValue": "true",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "select"
+        },
+        {
+            "name": "use_hash",
+            "title": "是否使用哈希",
+            "description": "是否使用哈希",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "是",
+                    "value": "true"
+                },
+                {
+                    "label": "否",
+                    "value": "false"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "true",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "hash_method",
+            "title": "哈希方法",
+            "description": "哈希方法",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "sha256",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "salt",
+            "title": "salt",
+            "description": "salt",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "12345",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "base64",
+            "title": "选择base64",
+            "description": "是否选择base64方式",
+            "type": "string",
+            "bindingData": [
+                {
+                    "label": "是",
+                    "value": "true"
+                },
+                {
+                    "label": "否",
+                    "value": "false"
+                }
+            ],
+            "optional": "true",
+            "defaultValue": "true",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        },
+        {
+            "name": "join_role",
+            "title": "参与角色",
+            "description": "参与角色",
+            "type": "string",
+            "optional": "true",
+            "defaultValue": "host",
+            "validator": "regular-正则项",
+            "UIPattern": "editeable",
+            "groupTag": "默认分组-显示",
+            "UIType": "input"
+        }
+    ],
+    "inputData": [{
+        "name": "train_data",
+        "description": "训练集数据",
+        "category": "dataset",
+        "dataFormat": ["csv","yaml"]
+    }],
+    "outputData": [
+        {
+            "name": "train_data",
+            "description": "训练集数据",
+            "category": "dataset",
+            "dataFormat": ["csv"]
+        },
+        {
+            "name": "train-intersection",
+            "description": "对齐数",
+            "category": "report",
+            "dataFormat": ["csv"]
+        }
+    ],
+    "result": [
+        {
+            "resultCode": "00000000",
+            "resultMessage": "成功"
+        },
+        {
+            "resultCode": "99999999",
+            "resultMessage": "算法执行失败"
+        }
+    ]
+}

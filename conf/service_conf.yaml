@@ -1,0 +1,120 @@
+party_id: "9999"
+use_registry: false
+# DEBUG 10/INFO 20
+log_level: 20
+encrypt:
+  key_0:
+    module: fate_flow.hub.encrypt.password_encrypt#pwdecrypt
+    # base on: fate_flow/conf/
+    private_path: private_key.pem
+fateflow:
+  host: 127.0.0.1
+  http_port: 9380
+  grpc_port: 9360
+  proxy_name: osx
+#  nginx:
+#    host:
+#    http_port:
+#    grpc_port:
+database:
+  engine: sqlite
+  # encrypt passwd key
+  decrypt_key:
+  mysql:
+    name: fate_flow
+    user: fate
+    passwd: fate
+    host: 127.0.0.1
+    port: 3306
+    max_connections: 100
+    stale_timeout: 30
+  sqlite:
+    # default fate_flow/runtime/system_settings: SQLITE_PATH
+    # /xxx/xxx.sqlite
+    path:
+default_engines:
+  computing: standalone
+  federation: standalone
+  storage: standalone
+default_provider:
+  name: fate
+  # version default: fateflow.env
+  version:
+  device: local
+computing:
+  standalone:
+    cores: 32
+  eggroll:
+    cores: 32
+    nodes: 1
+    # cluster manager host and port
+    host: 127.0.0.1
+    port: 4670
+  spark:
+    # default use SPARK_HOME environment variable
+    home:
+    cores: 32
+federation:
+  osx:
+    host: 127.0.0.1
+    port: 9370
+    # stream or queue
+    mode: stream
+#  pulsar:
+#    host: 192.168.0.5
+#    port: 6650
+#    mng_port: 8080
+#    cluster: standalone
+#    tenant: fl-tenant
+#    topic_ttl: 30
+#    # default conf/pulsar_route_table.yaml
+#    route_table:
+#    # mode: replication / client, default: replication
+#    mode: replication
+#  rabbitmq:
+#    host: 192.168.0.4
+#    mng_port: 12345
+#    port: 5672
+#    user: fate
+#    password: fate
+#    # default conf/rabbitmq_route_table.yaml
+#    route_table:
+#    # mode: replication / client, default: replication
+#    mode: replication
+storage:
+  hdfs:
+    name_node: hdfs://fate-cluster
+hook_module:
+  client_authentication: fate_flow.hook.flow.client_authentication
+  site_authentication: fate_flow.hook.flow.site_authentication
+  permission: fate_flow.hook.flow.permission
+authentication:
+  client: false
+  site: false
+  permission: false
+model_store:
+  engine: file
+  # encrypt passwd key
+  decrypt_key:
+  file:
+    # default fate_flow/runtime/system_settings: MODEL_STORE_PATH
+    path:
+  mysql:
+    name: fate_flow
+    user: fate
+    passwd: fate
+    host: 127.0.0.1
+    port: 3306
+    max_connections: 100
+    stale_timeout: 30
+  tencent_cos:
+    Region:
+    SecretId:
+    SecretKey:
+    Bucket:
+zookeeper:
+  hosts:
+    - 127.0.0.1:2181
+  use_acl: true
+  user: fate
+  password: fate

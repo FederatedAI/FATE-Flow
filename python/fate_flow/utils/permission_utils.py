@@ -1,39 +1,63 @@
-from fate_flow.db.component_registry import ComponentRegistry
-from fate_flow.entity.permission_parameters import DataSet
+#
+#  Copyright 2019 The FATE Authors. All Rights Reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+from functools import wraps
+from flask import request as flask_request
+
+from fate_flow.controller.parser import JobParser
+from fate_flow.entity.code import ReturnCode
+from fate_flow.entity.spec.dag import DAGSchema
+from fate_flow.hook import HookManager
 from fate_flow.hook.common.parameters import PermissionCheckParameters
-from fate_flow.utils import schedule_utils, job_utils
+from fate_flow.manager.service.provider_manager import ProviderManager
+from fate_flow.runtime.system_settings import PERMISSION_SWITCH
+from fate_flow.utils.api_utils import API
 
 
-def get_permission_parameters(role, party_id, src_role, src_party_id, job_info) -> PermissionCheckParameters:
-    dsl = job_info['dsl']
-    runtime_conf = job_info['runtime_conf']
-    train_runtime_conf = job_info['train_runtime_conf']
-
-    dsl_parser = schedule_utils.get_job_dsl_parser(
-        dsl=dsl,
-        runtime_conf=runtime_conf,
-        train_runtime_conf=train_runtime_conf
-    )
-    provider_detail = ComponentRegistry.REGISTRY
-    job_providers = dsl_parser.get_job_providers(provider_detail=provider_detail)
-    component_parameters = job_utils.get_component_parameters(job_providers, dsl_parser, provider_detail, role, int(party_id))
-    dataset_dict = job_utils.get_job_dataset(False, role, int(party_id), runtime_conf.get("role"), dsl_parser.get_args_input())
-
-    dataset_list = []
-    if dataset_dict.get(role, {}).get(int(party_id)):
-        for _, v in dataset_dict[role][int(party_id)].items():
-            dataset_list.append(DataSet(namespace=v.split('.')[0], name=v.split('.')[1]))
-    component_list = job_utils.get_job_all_components(dsl)
+def get_permission_parameters(role, party_id, initiator_party_id, job_info) -> PermissionCheckParameters:
+    dag_schema = DAGSchema(**job_info)
+    job_parser = JobParser(dag_schema)
+    component_list = job_parser.component_ref_list(role, party_id)
+    fate_component_list = set(component_list) - set(ProviderManager.get_flow_components())
+    dataset_list = job_parser.dataset_list(role, party_id)
+    component_parameters = job_parser.role_parameters(role, party_id)
     return PermissionCheckParameters(
-        src_role=src_role,
-        src_party_id=src_party_id,
-        role=role,
-        party_id=party_id,
-        initiator=runtime_conf['initiator'],
-        roles=runtime_conf['role'],
-        component_list=component_list,
+        initiator_party_id=initiator_party_id,
+        roles=dag_schema.dag.parties,
+        component_list=fate_component_list,
         dataset_list=dataset_list,
-        runtime_conf=runtime_conf,
-        dsl=dsl,
+        dag_schema=dag_schema.dict(),
         component_parameters=component_parameters
     )
+
+
+def create_job_request_check(func):
+    @wraps(func)
+    def _wrapper(*_args, **_kwargs):
+        party_id = _kwargs.get("party_id")
+        role = _kwargs.get("role")
+        body = flask_request.json
+        headers = flask_request.headers
+        initiator_party_id = headers.get("initiator_party_id")
+
+        # permission check
+        if PERMISSION_SWITCH:
+            permission_return = HookManager.permission_check(get_permission_parameters(
+                role, party_id, initiator_party_id, body
+            ))
+            if permission_return.code != ReturnCode.Base.SUCCESS:
+                return API.Output.fate_flow_exception(permission_return)
+        return func(*_args, **_kwargs)
+    return _wrapper

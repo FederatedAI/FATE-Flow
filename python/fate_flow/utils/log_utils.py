@@ -19,8 +19,8 @@ import typing
 import traceback
 import logging
 
-from fate_arch.common.log import LoggerFactory, getLogger
-from fate_flow.utils.base_utils import get_fate_flow_directory
+from fate_flow.runtime.system_settings import FATE_FLOW_LOG_DIR, LOG_DIR
+from fate_flow.utils.log import LoggerFactory, getLogger
 
 
 def ready_log(msg, job=None, task=None, role=None, party_id=None, detail=None):
@@ -67,14 +67,9 @@ def exception_to_trace_string(ex):
     return "".join(traceback.TracebackException.from_exception(ex).format())
 
 
-def get_logger_base_dir():
-    job_log_dir = get_fate_flow_directory('logs')
-    return job_log_dir
-
-
 def get_job_logger(job_id, log_type):
-    fate_flow_log_dir = get_fate_flow_directory('logs', 'fate_flow')
-    job_log_dir = get_fate_flow_directory('logs', job_id)
+    fate_flow_log_dir = FATE_FLOW_LOG_DIR
+    job_log_dir = os.path.join(LOG_DIR, job_id)
     if not job_id:
         log_dirs = [fate_flow_log_dir]
     else:
@@ -102,9 +97,9 @@ def get_job_logger(job_id, log_type):
     return logger
 
 
-def schedule_logger(job_id=None, delete=False):
+def schedule_logger(job_id=None, delete=False, name="fate_flow_schedule"):
     if not job_id:
-        return getLogger("fate_flow_schedule")
+        return getLogger(name)
     else:
         if delete:
             with LoggerFactory.lock:

@@ -13,22 +13,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import grpc
+from fate_flow.errors.server_error import ResponseException
+from fate_flow.proto.rollsite import proxy_pb2_grpc, basic_meta_pb2, proxy_pb2
 
-from fate_arch.protobuf.python import basic_meta_pb2, proxy_pb2, proxy_pb2_grpc
-from fate_arch.common.base_utils import json_dumps, json_loads
-
-from fate_flow.db.job_default_config import JobDefaultConfig
-from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.settings import FATE_FLOW_SERVICE_NAME, GRPC_OPTIONS, GRPC_PORT, HOST
+from fate_flow.runtime.runtime_config import RuntimeConfig
+from fate_flow.runtime.system_settings import FATE_FLOW_SERVICE_NAME, GRPC_PORT, HOST, REMOTE_REQUEST_TIMEOUT
+from fate_flow.utils.base_utils import json_loads, json_dumps
 from fate_flow.utils.log_utils import audit_logger
 from fate_flow.utils.requests_utils import request
-
-
-def get_command_federation_channel(host, port):
-    channel = grpc.insecure_channel(f"{host}:{port}", GRPC_OPTIONS)
-    stub = proxy_pb2_grpc.DataTransferServiceStub(channel)
-    return channel, stub
 
 
 def gen_routing_metadata(src_party_id, dest_party_id):
@@ -42,8 +34,8 @@ def gen_routing_metadata(src_party_id, dest_party_id):
     return routing_head
 
 
-def wrap_grpc_packet(json_body, http_method, url, src_party_id, dst_party_id, job_id=None, headers=None, overall_timeout=None):
-    overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
+def wrap_grpc_packet(json_body, http_method, url, src_party_id, dst_party_id, job_id=None, headers=None,
+                     overall_timeout=REMOTE_REQUEST_TIMEOUT):
     _src_end_point = basic_meta_pb2.Endpoint(ip=HOST, port=GRPC_PORT)
     _src = proxy_pb2.Topic(name=job_id, partyId="{}".format(src_party_id), role=FATE_FLOW_SERVICE_NAME, callback=_src_end_point)
     _dst = proxy_pb2.Topic(name=job_id, partyId="{}".format(dst_party_id), role=FATE_FLOW_SERVICE_NAME, callback=None)
@@ -61,8 +53,7 @@ def get_url(_suffix):
 
 
 class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
-    @staticmethod
-    def unaryCall(_request, context):
+    def unaryCall(self, _request, context):
         packet = _request
         header = packet.header
         _suffix = packet.body.key
@@ -85,20 +76,16 @@ class UnaryService(proxy_pb2_grpc.DataTransferServiceServicer):
         audit_logger(job_id).info('rpc receive: {}'.format(packet))
         audit_logger(job_id).info("rpc receive: {} {}".format(get_url(_suffix), param))
         resp = request(method=method, url=get_url(_suffix), json=param_dict, headers=headers)
-        resp_json = resp.json()
-
+        audit_logger(job_id).info(f"resp: {resp.text}")
+        resp_json = response_json(resp)
         return wrap_grpc_packet(resp_json, method, _suffix, dst.partyId, src.partyId, job_id)
 
 
-def forward_grpc_packet(_json_body, _method, _url, _src_party_id, _dst_party_id, role, job_id=None,
-                        overall_timeout=None):
-    overall_timeout = JobDefaultConfig.remote_request_timeout if overall_timeout is None else overall_timeout
-    _src_end_point = basic_meta_pb2.Endpoint(ip=HOST, port=GRPC_PORT)
-    _src = proxy_pb2.Topic(name=job_id, partyId="{}".format(_src_party_id), role=FATE_FLOW_SERVICE_NAME, callback=_src_end_point)
-    _dst = proxy_pb2.Topic(name=job_id, partyId="{}".format(_dst_party_id), role=role, callback=None)
-    _task = proxy_pb2.Task(taskId=job_id)
-    _command = proxy_pb2.Command(name=_url)
-    _conf = proxy_pb2.Conf(overallTimeout=overall_timeout)
-    _meta = proxy_pb2.Metadata(src=_src, dst=_dst, task=_task, command=_command, operator=_method, conf=_conf)
-    _data = proxy_pb2.Data(key=_url, value=bytes(json_dumps(_json_body), 'utf-8'))
-    return proxy_pb2.Packet(header=_meta, body=_data)
+def response_json(response):
+    try:
+        return response.json()
+    except:
+        audit_logger().exception(response.text)
+        e = ResponseException(response=response.text)
+        return {"code": e.code, "message": e.message}
+

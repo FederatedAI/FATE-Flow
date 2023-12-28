@@ -1,0 +1,186 @@
+{
+      "componentName": "coordinated_lr",
+      "title": "lr",
+      "provider": "fate",
+      "version": "2.0.0",
+      "description": "逻辑回归算法",
+      "roleList": [
+        "guest",
+        "host",
+        "arbiter"
+      ],
+      "desVersion": "2.0.0",
+      "storageEngine": [
+        "s3",
+        "hdfs",
+        "eggroll"
+      ],
+      "inputParam": [
+        {
+          "name": "learning_rate_scheduler",
+          "title": "",
+          "description": "learning rate scheduler",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": "{'method': 'linear', 'scheduler_params': {'start_factor': 1.0}}",
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "epochs",
+          "title": "",
+          "description": "max iteration num",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": 20,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "batch_size",
+          "title": "",
+          "description": "batch size, None means full batch, otherwise should be no less than 10, default None",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": null,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "optimizer",
+          "title": "",
+          "description": "",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": "{'method': 'sgd', 'penalty': 'l2', 'plpah': 1.0, 'optimizer_params': {'lr': 1e-2, 'weight_decay': 0}}",
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "floating_point_precision",
+          "title": "",
+          "description": "floating point precision",
+          "type": "integer",
+          "optional": "true",
+          "defaultValue": 23,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "tol",
+          "title": "",
+          "description": "",
+          "type": "float",
+          "optional": "true",
+          "defaultValue": 1e-4,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "early_stop",
+          "title": "",
+          "description": "early stopping criterion, choose from {weight_diff, diff, abs, val_metrics}",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": "diff",
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "he_param",
+          "title": "",
+          "description": "homomorphic encryption param",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": "{'kind': 'paillier', 'key_length': 1024}",
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "init_param",
+          "title": "",
+          "description": "Model param init setting.",
+          "type": "string",
+          "optional": "true",
+          "defaultValue": "{'method': 'random_uniform', 'fit_intercept': true, 'random_state': null}",
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        },
+        {
+          "name": "threshold",
+          "title": "",
+          "description": "predict threshold for binary data",
+          "type": "float",
+          "optional": "true",
+          "defaultValue": 0.5,
+          "validator": "regular-正则项",
+          "UIPattern": "editeable",
+          "groupTag": "默认分组-显示",
+          "UIType": "input"
+        }
+      ],
+      "inputData": [
+        {
+          "name": "train_data",
+          "description": "训练集数据",
+          "category": "dataset",
+          "dataFormat": [
+            "dataset"
+          ]
+        }
+      ],
+      "outputData": [
+        {
+          "name": "train_output_data",
+          "description": "训练集数据",
+          "category": "dataset",
+          "dataFormat": [
+            "dataset"
+          ]
+        },
+        {
+          "name": "output_model",
+          "description": "模型",
+          "category": "model",
+          "dataFormat": [
+            "json"
+          ]
+        },
+        {
+          "name": "metric",
+          "description": "report",
+          "category": "report",
+          "dataFormat": [
+            "json"
+          ]
+        }
+      ],
+      "result": [
+        {
+          "resultCode": "00000000",
+          "resultMessage": "成功"
+        },
+        {
+          "resultCode": "99999999",
+          "resultMessage": "算法执行失败"
+        }
+      ]
+    }
