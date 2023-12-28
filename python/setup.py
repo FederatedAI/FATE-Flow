@@ -36,15 +36,12 @@ extras_require = {
     "pulsar": ["pulsar-client==2.10.2"],
     "spark": ["pyspark"],
     "eggroll": [
+        "cloudpickle",
+        "lmdb",
+        "protobuf",
         "grpcio",
         "grpcio-tools",
-        "numba",
         "protobuf",
-        "pyarrow",
-        "mmh3",
-        "cachetools",
-        "cloudpickle",
-        "psutil",
     ],
     "all": ["fate_flow[rabbitmq,pulsar,spark,eggroll]"],
 }
