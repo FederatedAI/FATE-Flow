@@ -200,8 +200,8 @@ class JobController(object):
             query["description"] = ('contains', description)
         if party_id:
             query["party_id"] = ('contains', party_id)
-        if partner:
-            query["partner"] = ('contains', partner)
+        # if partner:
+        #     query["parties"] = ('contains', partner)
         if role:
             query["role"] = ('in_', set(role))
         if status:
@@ -217,13 +217,17 @@ class JobController(object):
             query["user_name"] = ("==", user_name)
         jobs, count = JobSaver.list_job(limit, offset, query, by)
         jobs = [job.to_human_model_dict() for job in jobs]
+        lst_job = []
         for job in jobs:
             job['partners'] = set()
             for _r in job['parties']:
                 job['partners'].update(_r.get("party_id"))
             job['partners'].discard(job['party_id'])
             job['partners'] = sorted(job['partners'])
-        return count, jobs
+            if partner and str(partner) not in job['partners']:
+                continue
+            lst_job.append(job)
+        return count, lst_job
 
     @classmethod
     def query_task_list(cls, limit, page, job_id, role, party_id, task_name, order_by, order):
