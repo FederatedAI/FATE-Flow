@@ -173,7 +173,7 @@ class FlowWraps(WrapsABC):
                     output_meta = ComponentOutputMeta.parse_obj(result)
                     if code != 0:
                         output_meta.status.code = code
-                    logger.debug(output_meta)
+                    # logger.debug(output_meta)
                 except Exception as e:
                     raise RuntimeError(f"Task run failed {e}, you can see the task result file for details: {task_result}.")
         else:
