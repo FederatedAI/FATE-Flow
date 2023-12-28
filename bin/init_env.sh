@@ -22,8 +22,5 @@ export PYTHONPATH=
 export SPARK_HOME=
 venv=
 
-export FATE_LOG_LEVEL=DEBUG
-
-
 source ${venv}/bin/activate
 
