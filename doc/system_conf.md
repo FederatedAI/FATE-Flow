@@ -1,22 +1,23 @@
 # System Configuration
 FATE Flow uses YAML to define system configurations, and the configuration file is located at: `conf/service_conf.yaml`. The specific configuration contents and their meanings are as follows:
 
-| Configuration Item | Description | Values |
-|----------------------|------|------------------------------|
-| party_id | Local site ID | For example, "9999", "10000" |
-| use_registry | Whether to use a registry center; currently, only ZooKeeper mode is supported, and it requires correct ZooKeeper configuration. Note: If using high availability mode, ensure this configuration is set to true. | true/false |
-| encrypt | Encryption module | See [Encryption Module](#encryption-module) |
-| fateflow | Configuration for the FATE Flow service, including ports, command channel service, and proxy | See [FateFlow Configuration](#fateflow-configuration) |
-| database | Configuration information for the database service | See [Database Configuration](#database-configuration) |
-| default_engines | System's engine services, including computing, storage, and communication engines | See [Engine Configuration](#engine-configuration) |
-| default_provider | Component source information, including provider name, component version, and execution mode | See [Default Registered Algorithm Configuration](#default-registered-algorithm-configuration) |
-| federation | Communication service pool | See [Communication Engine Pool](#communication-engine-pool) |
-| computing | Computing service pool | See [Computing Engine Pool](#computing-engine-pool) |
-| storage | Storage service pool | See [Storage Engine Pool](#storage-configuration) |
-| hook_module | Hook configuration, currently supports client authentication, site authentication, and authorization hooks | See [Hook Module Configuration](#hook-module-configuration) |
-| authentication | Authentication and authorization switches | See [Authentication Switch](#authentication-switch) |
-| model_store | Model storage configuration | See [Model Storage](#model-storage) |
-| zookeeper | ZooKeeper service configuration | See [ZooKeeper Configuration](#zookeeper-configuration) |
+| Configuration Item | Description                                                                                                                                                                                                      | Values                                                                                        |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| party_id           | Local site ID                                                                                                                                                                                                    | For example, "9999", "10000"                                                                  |
+| log_level          | Log level                                                                                                                                                                                                        | DEBUG:10, INFO:20, DEBUG:30, ERROR: 40                                                        |
+| use_registry       | Whether to use a registry center; currently, only ZooKeeper mode is supported, and it requires correct ZooKeeper configuration. Note: If using high availability mode, ensure this configuration is set to true. | true/false                                                                                    |
+| encrypt            | Encryption module                                                                                                                                                                                                | See [Encryption Module](#encryption-module)                                                   |
+| fateflow           | Configuration for the FATE Flow service, including ports, command channel service, and proxy                                                                                                                     | See [FateFlow Configuration](#fateflow-configuration)                                         |
+| database           | Configuration information for the database service                                                                                                                                                               | See [Database Configuration](#database-configuration)                                         |
+| default_engines    | System's engine services, including computing, storage, and communication engines                                                                                                                                | See [Engine Configuration](#engine-configuration)                                             |
+| default_provider   | Component source information, including provider name, component version, and execution mode                                                                                                                     | See [Default Registered Algorithm Configuration](#default-registered-algorithm-configuration) |
+| federation         | Communication service pool                                                                                                                                                                                       | See [Communication Engine Pool](#communication-engine-pool)                                   |
+| computing          | Computing service pool                                                                                                                                                                                           | See [Computing Engine Pool](#computing-engine-pool)                                           |
+| storage            | Storage service pool                                                                                                                                                                                             | See [Storage Engine Pool](#storage-configuration)                                             |
+| hook_module        | Hook configuration, currently supports client authentication, site authentication, and authorization hooks                                                                                                       | See [Hook Module Configuration](#hook-module-configuration)                                   |
+| authentication     | Authentication and authorization switches                                                                                                                                                                        | See [Authentication Switch](#authentication-switch)                                           |
+| model_store        | Model storage configuration                                                                                                                                                                                      | See [Model Storage](#model-storage)                                                           |
+| zookeeper          | ZooKeeper service configuration                                                                                                                                                                                  | See [ZooKeeper Configuration](#zookeeper-configuration)                                       |
 
 ## Encryption Module
 ```yaml
@@ -34,7 +35,7 @@ This encryption module is primarily used for encrypting passwords (e.g., MySQL p
 host: 127.0.0.1
 http_port: 9380
 grpc_port: 9360
-proxy_name: rollsite
+proxy_name: osx
 nginx:
   host:
   http_port:
@@ -43,7 +44,7 @@ nginx:
 - host: Host address.
 - http_port: HTTP port number.
 - grpc_port: gRPC port number.
-- proxy_name: Command channel service name, supporting osx/rollsite/nginx. Detailed configurations need to be set within [Communication Engine Pool](#communication-engine-pool).
+- proxy_name: Command channel service name, supporting osx/nginx. Detailed configurations need to be set within [Communication Engine Pool](#communication-engine-pool).
 - nginx: Proxy service configuration for load balancing.
 
 ## Database Configuration
@@ -74,8 +75,8 @@ default_engines:
   storage: standalone
 ```
 
-- computing: Computing engine, supports "standalone," "eggroll," "spark."
-- federation: Communication engine, supports "standalone," "rollsite," "osx," "rabbitmq," "pulsar."
+- computing: Computing engine, supports "standalone", "eggroll", "spark".
+- federation: Communication engine, supports "standalone", "osx", "rabbitmq", "pulsar".
 - storage: Storage engine, supports "standalone," "eggroll," "hdfs."
 
 ## Default Registered Algorithm Configuration
@@ -115,17 +116,11 @@ nginx:
   protocol: http
 ```
 
-### Rollsite
-```yaml
-rollsite:
-  host: 127.0.0.1
-  port: 9370
-```
-
 ### OSx
 ```yaml
   host: 127.0.0.1
   port: 9370
+  mode: stream
 ```
 
 ## Computing Engine Pool
@@ -139,10 +134,14 @@ rollsite:
 ```yaml
 eggroll:
   cores: 32
-  nodes: 2
+  nodes: 1
+  host: 127.0.0.1
+  port: 4670
 ```
 - cores: Total cluster resources.
 - nodes: Number of node managers in the cluster.
+- host: eggroll cluster manager host ip
+- port: eggroll cluster manager port
 
 ### Spark
 ```yaml
