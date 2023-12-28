@@ -1,8 +1,13 @@
 {
   "file": "examples/data/breast_hetero_guest.csv",
-  "id_delimiter": ",",
-  "head": 1,
-  "partition": 4,
+  "head": true,
+  "partitions": 16,
+  "extend_sid": true,
+  "meta": {
+    "delimiter": ",",
+    "label_name": "y",
+    "match_id_name": "id"
+  },
   "namespace": "experiment",
-  "table_name": "breast_hetero_guest"
+  "name": "breast_hetero_guest"
 }

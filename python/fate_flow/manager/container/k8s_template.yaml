@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ''
+  namespace: fate-9999
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ''
+          image: ''
+          imagePullPolicy: IfNotPresent
+          command: []
+          args: []
+          env: []
+          volumeMounts:
+          - mountPath: /data/projects/fate/eggroll/conf/
+            name: service-conf
+          - mountPath: /data/projects/fate/fate_flow/logs/
+            name: local-path
+            subPath: logs
+          - mountPath: /data/projects/fate/fate_flow/data/
+            name: local-path
+            subPath: data
+      volumes:
+      - name: service-conf
+        configMap:
+          name: service-conf
+      - name: local-path
+        hostPath:
+          path: /data/projects/fate/fate_flow

@@ -1,0 +1,8 @@
+{
+    "namespace": "experiment",
+    "name": "breast_homo_host",
+    "data_warehouse": {
+        "name": "9fa4905c-9413-11ee-9bb0-16b977118319",
+        "namespace": "upload"
+    }
+}

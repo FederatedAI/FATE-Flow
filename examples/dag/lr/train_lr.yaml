@@ -1,0 +1,204 @@
+dag:
+  parties:
+  - party_id:
+    - '9999'
+    role: guest
+  - party_id:
+    - '9998'
+    role: host
+  - party_id:
+    - '9998'
+    role: arbiter
+  party_tasks:
+    guest_9999:
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      tasks:
+        reader_0:
+          parameters:
+            name: breast_hetero_guest
+            namespace: experiment
+    host_9998:
+      parties:
+      - party_id:
+        - '9998'
+        role: host
+      tasks:
+        reader_0:
+          parameters:
+            name: breast_hetero_host
+            namespace: experiment
+  stage: train
+  tasks:
+    reader_0:
+      component_ref: reader
+      parties:
+        - party_id:
+            - '9999'
+          role: guest
+        - party_id:
+            - '9998'
+          role: host
+      stage: default
+    binning_0:
+      component_ref: hetero_feature_binning
+      dependent_tasks:
+      - scale_0
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: train_output_data
+              producer_task: scale_0
+        model: {}
+      parameters:
+        adjustment_factor: 0.5
+        bin_col: null
+        bin_idx: null
+        category_col: null
+        category_idx: null
+        local_only: false
+        method: quantile
+        n_bins: 10
+        relative_error: 1.0e-06
+        skip_metrics: false
+        split_pt_dict: null
+        transform_method: null
+        use_anonymous: false
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      - party_id:
+        - '9998'
+        role: host
+    evaluation_0:
+      component_ref: evaluation
+      dependent_tasks:
+      - lr_0
+      inputs:
+        data:
+          input_data:
+            task_output_artifact:
+              - output_artifact_key: train_output_data
+                producer_task: lr_0
+                parties:
+                - party_id:
+                  - '9999'
+                  role: guest
+      parameters:
+        default_eval_setting: binary
+        label_column_name: null
+        metrics: null
+        predict_column_name: null
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      stage: default
+    lr_0:
+      component_ref: coordinated_lr
+      dependent_tasks:
+      - selection_0
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: train_output_data
+              producer_task: selection_0
+              parties:
+                - party_id:
+                    - '9999'
+                  role: guest
+                - party_id:
+                    - '9998'
+                  role: host
+        model: {}
+      parameters:
+        batch_size: null
+        early_stop: diff
+        epochs: 10
+        floating_point_precision: 23
+        output_cv_data: true
+        threshold: 0.5
+        tol: 0.0001
+    psi_0:
+      component_ref: psi
+      inputs:
+        data:
+          input_data:
+            task_output_artifact:
+              output_artifact_key: output_data
+              producer_task: reader_0
+      parameters: {}
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      - party_id:
+        - '9998'
+        role: host
+      stage: default
+    scale_0:
+      component_ref: feature_scale
+      dependent_tasks:
+      - psi_0
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: output_data
+              producer_task: psi_0
+        model: {}
+      parameters:
+        feature_range: null
+        method: standard
+        scale_col: null
+        scale_idx: null
+        strict_range: true
+        use_anonymous: false
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      - party_id:
+        - '9998'
+        role: host
+    selection_0:
+      component_ref: hetero_feature_selection
+      dependent_tasks:
+      - binning_0
+      - scale_0
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: train_output_data
+              producer_task: scale_0
+        model:
+          input_models:
+            task_output_artifact:
+            - output_artifact_key: output_model
+              producer_task: binning_0
+      parameters:
+        iv_param:
+          filter_type: threshold
+          metrics: iv
+          threshold: 0.1
+        keep_one: true
+        manual_param: null
+        method:
+        - iv
+        select_col: null
+        statistic_param: null
+        use_anonymous: false
+      parties:
+      - party_id:
+        - '9999'
+        role: guest
+      - party_id:
+        - '9998'
+        role: host
+schema_version: 2.0.0.beta

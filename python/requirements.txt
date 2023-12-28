@@ -1,0 +1,17 @@
+# fate flow
+-r requirements-flow.txt
+
+# container
+-r requirements-container.txt
+
+# eggroll
+-r requirements-eggroll.txt
+
+# rabbitmq
+-r requirements-rabbitmq.txt
+
+# pulsar
+-r requirements-pulsar.txt
+
+# spark
+-r requirements-spark.txt

@@ -13,15 +13,15 @@ venv
 
 # excluded paths
 /data/
+/model/
 /logs/
 /jobs/
 /audit/
+/localfs/
 .vscode/*
 /temp/
 /tmp
 /worker/
-/provider_registrar/
-/model_local_cache/
 *.db
 *.db-journal
 *.whl
@@ -31,3 +31,14 @@ venv
 
 # doc
 /site/
+
+/python/fate_flow/data
+/python/fate_flow/model
+/python/fate_flow/logs
+/python/fate_flow/jobs
+/python/fate_flow/localfs
+/python/fate_flow/*.env
+/python/fate_flow/conf
+/python/build
+/python/dist
+/python/*.egg-info

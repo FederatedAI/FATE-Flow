@@ -5,6 +5,7 @@ on:
     branches:
       - 'main'
       - 'develop-[0-9]+.[0-9]+.[0-9]+'
+      - 'build-doc-[0-9]+.[0-9]+.[0-9]+-[a-zA-Z]+'
 
   schedule:
     - cron: '0 8 * * *'
@@ -41,6 +42,7 @@ jobs:
           VERSION='${{ github.ref_name }}'
           [ "$VERSION" == main ] && { VERSION=latest; ALIAS='main master'; }
           VERSION="${VERSION#develop-}"
+          VERSION="${VERSION#build-doc-}"
 
           mike deploy --push --update-aliases "$VERSION" $ALIAS
           mike set-default --push latest

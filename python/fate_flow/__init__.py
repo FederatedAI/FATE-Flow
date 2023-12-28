@@ -12,24 +12,4 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
-import os
-
-from fate_flow.entity.types import ProcessRole
-
-
-def set_env():
-    """
-    project_base = os.path.abspath(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            os.pardir,
-            os.pardir,
-        )
-    )
-    os.environ.setdefault("FATE_DEPLOY_BASE", project_base)
-    """
-    os.environ.setdefault("PROCESS_ROLE", ProcessRole.DRIVER.value)
-
-
-set_env()
+from ._info import __provider__, __version__
