@@ -60,7 +60,8 @@ def get_app_module(page_path):
 
 def register_page(page_path, func=None, prefix=API_VERSION):
     page_name = page_path.stem.rstrip('app').rstrip("_")
-    module_name = '.'.join(page_path.parts[page_path.parts.index('fate_flow')+2:-1] + (page_name, ))
+    fate_flow_index = len(page_path.parts) - 1 - page_path.parts[::-1].index("fate_flow")
+    module_name = '.'.join(page_path.parts[fate_flow_index:-1] + (page_name, ))
     spec = spec_from_file_location(module_name, page_path)
     page = module_from_spec(spec)
     page.app = app
