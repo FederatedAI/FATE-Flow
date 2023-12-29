@@ -175,7 +175,7 @@ def init_server(ip, port, home):
 
     if ip or port:
         with open(SERVER_CONF_PATH, "w") as file:
-            yaml.dump(config, file)
+            yaml.dump(config, file, default_flow_style=False)
 
     print("Init server completed!")
 
