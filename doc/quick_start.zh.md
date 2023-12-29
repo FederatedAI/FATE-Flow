@@ -453,7 +453,7 @@ flow output download-data -j $job_id -r $role -p $party_id -tn $task_name -o $do
 
 ## 3.更多文档
 - [Restful-api](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/doc/swagger/swagger.yaml)
-- [CLI](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0/python/fate_client/flow_cli/build/doc)
-- [Pipeline](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/tutorial)
+- [CLI](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0/doc/cli_index.md)
+- [Pipeline](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0/doc/pipeline.md)
 - [FATE快速开始](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/2.0/fate/quick_start.md)
 - [FATE算法](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/2.0/fate)
