@@ -9,10 +9,6 @@
       
       
       
-        <link rel="prev" href="../">
-      
-      
-        <link rel="next" href="../quick_start/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -20,7 +16,7 @@
     
     
       
-        <title>整体设计 - FATE Flow</title>
+        <title>FATE数据接入指南 - FATE Flow</title>
       
     
     
@@ -80,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#fate" class="md-skip">
           跳转至
         </a>
       
@@ -120,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              整体设计
+              FATE数据接入指南
             
           </span>
         </div>
@@ -167,7 +163,7 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../fate_flow/" hreflang="en" class="md-select__link">
+            <a href="../../data_access/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
@@ -262,13 +258,11 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../fate_flow/" class="md-tabs__link">
           
   
     
@@ -373,10 +367,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -393,12 +385,14 @@
       
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -412,7 +406,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Docs
@@ -423,30 +417,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    整体设计
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../fate_flow/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -455,179 +429,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. 设计架构图
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. 整体架构
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. 整体架构">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#21-fate" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.1 FATE整体架构
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-fate-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.2 FATE Flow功能架构
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-fate-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.3 FATE Flow集群架构
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. 调度架构
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 调度架构">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.1 基于共享状态的调度架构
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2 状态驱动调度
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3.2 状态驱动调度">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#321-callback" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.1 callback回调模式
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#322-poll" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.2 poll轮询模式
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#34" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.4 算法组件调度
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. 多方资源协调
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. 作业实时监测
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. 任务组件中心
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. 数据接入
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -731,7 +532,7 @@
         <li class="md-nav__item">
   <a href="#1" class="md-nav__link">
     <span class="md-ellipsis">
-      1. 设计架构图
+      1. 上传流程
     </span>
   </a>
   
@@ -740,37 +541,94 @@
         <li class="md-nav__item">
   <a href="#2" class="md-nav__link">
     <span class="md-ellipsis">
-      2. 整体架构
+      2. 数据上传方式
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 整体架构">
+    <nav class="md-nav" aria-label="2. 数据上传方式">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21-fate" class="md-nav__link">
+  <a href="#21" class="md-nav__link">
     <span class="md-ellipsis">
-      2.1 FATE整体架构
+      2.1 上传场景说明
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#22-fate-flow" class="md-nav__link">
+  <a href="#22" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2 FATE Flow功能架构
+      2.2 数据上传
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 数据上传">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.1 配置及数据准备
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#23-fate-flow" class="md-nav__link">
+  <a href="#222" class="md-nav__link">
     <span class="md-ellipsis">
-      2.3 FATE Flow集群架构
+      2.2.2 上传数据命令
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="2.2.2 上传数据命令">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      客户端-服务器不分离
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      客户端-服务器分离
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.3 上传结果
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.4 数据查询
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -782,73 +640,16 @@
         <li class="md-nav__item">
   <a href="#3" class="md-nav__link">
     <span class="md-ellipsis">
-      3. 调度架构
+      3. 数据绑定
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="3. 调度架构">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.1 基于共享状态的调度架构
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2 状态驱动调度
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3.2 状态驱动调度">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#321-callback" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.1 callback回调模式
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#322-poll" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.2 poll轮询模式
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#34" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.4 算法组件调度
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#4" class="md-nav__link">
     <span class="md-ellipsis">
-      4. 多方资源协调
+      4. 数据查询
     </span>
   </a>
   
@@ -857,25 +658,7 @@
         <li class="md-nav__item">
   <a href="#5" class="md-nav__link">
     <span class="md-ellipsis">
-      5. 作业实时监测
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. 任务组件中心
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. 数据接入
+      5. 数据清理
     </span>
   </a>
   
@@ -899,69 +682,108 @@
   
 
 
-<h1 id="_1">整体设计<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<h2 id="1">1. 设计架构图<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../../images/open_flow.png" />
-- 应用层接口：供如fate-board、fate-client等上层使用
-- 互联互通层接口：分为调度器接口和参与方接口，调度器接口用于接收如创建、停止等调度命令并下发给参与方，参与方接口用于各参与方接收如创建、运行、停止等命令并执行
-- 底座接口： 用于接收算法容器上报的状态等
-- 调度器：联邦调度逻辑，解析DSL依赖及运行相关的作业及任务
-- 算法容器：是算法运行的环境，FATE Flow支持算法运行在本地进程、算法容器中，其运行方式类似。
-- 平台资源池： 抽象计算、通信、存储API</p>
-<h2 id="2">2. 整体架构<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<h3 id="21-fate">2.1 FATE整体架构<a class="headerlink" href="#21-fate" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../../images/fate_arch.png" /></p>
-<h3 id="22-fate-flow">2.2 FATE Flow功能架构<a class="headerlink" href="#22-fate-flow" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../../images/fate_flow_arch.png" /></p>
-<h3 id="23-fate-flow">2.3 FATE Flow集群架构<a class="headerlink" href="#23-fate-flow" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../../images/flow_cluster.png" /></p>
-<h2 id="3">3. 调度架构<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<h3 id="31">3.1 基于共享状态的调度架构<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<h1 id="fate">FATE数据接入指南<a class="headerlink" href="#fate" title="Permanent link">&para;</a></h1>
+<h2 id="1">1. 上传流程<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>数据上传的流程图如下：</p>
+<p><img alt="数据上传" src="../../images/upload_data.png" />
+- 客户端将数据上传到服务端；
+- 服务端将上传参数封装成DAG作业配置, 配置中包含两个组件, 即upload和dataframe-transformer，并调用submit接口提交作业；
+- upload组件将数据存储到fate存储服务中；
+- transformer组件将upload组件的数据输出转化成dataframe并存储到fate存储服务中；
+- 数据的meta信息存储到DB中.</p>
+<h2 id="2">2. 数据上传方式<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p>注： fate提供的客户端包括SDK、CLI、Pipeline，若你的环境中没有部署FATE Client,可以使用<code>pip install fate_client</code>下载，以下的使用操作均基于cli编写。</p>
+<h3 id="21">2.1 上传场景说明<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
 <ul>
-<li>剥离状态(资源、作业)与管理器(调度器、资源管理器)</li>
-<li>资源状态与作业状态持久化存于MySQL，全局共享，提供可靠事务性操作</li>
-<li>提高管理服务的高可用与扩展性</li>
-<li>作业可介入，支持实现如重启、重跑、并行控制、资源隔离等</li>
+<li>客户端、服务器分离：安装的客户端和服务器不在一台机器</li>
+<li>客户端、服务器不分离：安装的客户端和服务器在同一台机器
+两者区别：客户端不分离的场景，可以去掉上述流程中"客户端将数据上传到服务端"，以此提高大数据量场景下数据上传的效率。两种场景接口、参数有区别，可以选择对应的场景进行数据上传。</li>
 </ul>
-<p><img alt="" src="../../images/fate_flow_scheduling_arch.png" /></p>
-<h3 id="32">3.2 状态驱动调度<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<h3 id="22">2.2 数据上传<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<h4 id="221">2.2.1 配置及数据准备<a class="headerlink" href="#221" title="Permanent link">&para;</a></h4>
 <ul>
-<li>南北向状态上报/查询</li>
-<li>东西向多方任务状态计算联邦任务状态</li>
-<li>上下游任务状态计算作业作态</li>
+<li>上传配置位于<a href="https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/upload">examples-upload</a>
+    <div class="highlight"><pre><span></span><code><span class="p p-Indicator">{</span>
+<span class="w">  </span><span class="s">&quot;file&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;examples/data/breast_hetero_guest.csv&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;head&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;partitions&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="nv">16</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;extend_sid&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;meta&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="w">    </span><span class="s">&quot;delimiter&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;,&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">    </span><span class="s">&quot;label_name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;y&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">    </span><span class="s">&quot;match_id_name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;id&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">},</span>
+<span class="w">  </span><span class="s">&quot;namespace&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;experiment&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;breast_hetero_guest&quot;</span>
+<span class="p p-Indicator">}</span>
+</code></pre></div></li>
+<li>file: 文件路径</li>
+<li>head: 数据是否携带header: true/false</li>
+<li>partitions: 数据存储分区数量</li>
+<li>extend_sid：是否需要生成sid列</li>
+<li>meta：数据的元信息</li>
+<li>namespace &amp;&amp; name: 数据在fate的存储表引用</li>
+<li>上传数据位于<a href="https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/data">upload-data</a></li>
+<li>你也可以使用自己的数据，并修改upload配置中的"meta"信息</li>
 </ul>
-<h4 id="321-callback">3.2.1 callback回调模式<a class="headerlink" href="#321-callback" title="Permanent link">&para;</a></h4>
-<p>调度器创建作业和任务，由各参与方主动回调作业或任务的状态</p>
-<p><img alt="" src="../../images/schedule_for_callback.png" /></p>
-<h4 id="322-poll">3.2.2 poll轮询模式<a class="headerlink" href="#322-poll" title="Permanent link">&para;</a></h4>
-<p>调度器不仅需创建作业和任务，在调度过程中会轮询参与方的作业或任务的状态</p>
-<p><img alt="" src="../../images/schedule_for_poll.png" /></p>
-<h3 id="34">3.4 算法组件调度<a class="headerlink" href="#34" title="Permanent link">&para;</a></h3>
-<ul>
-<li>前处理: 数据、模型、算法参数等输入处理</li>
-<li>组件运行: 算法组件逻辑</li>
-<li>后处理: 算法组件输出内容处理
-<img alt="" src="../../images/schedule_for_component.png" /></li>
-</ul>
-<h2 id="4">4. 多方资源协调<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
-<ul>
-<li>每个引擎总资源大小通过配置文件配置，后续实现系统对接</li>
-<li>总资源大小中的cores表示每个计算节点cpu核数</li>
-<li>FATEFlow server启动时从配置文件读取资源大小配置，并注册更新到数据库</li>
-<li>以Job维度申请资源，Job Conf提交时生效</li>
-</ul>
-<h2 id="5">5. 作业实时监测<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
-<ul>
-<li>工作进程存活性检测</li>
-<li>作业超时检测</li>
-<li>资源回收检测</li>
-<li>基础引擎会话超时检测</li>
-</ul>
-<p><img alt="" src="../../images/fate_flow_detector.png" /></p>
-<h2 id="6">6. <a href="../provider_register/">任务组件中心</a><a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../../images/fate_flow_component_registry.png" /></p>
-<h2 id="7">7. <a href="../data_access/">数据接入</a><a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../../images/upload_data.png" /></p>
+<h4 id="222">2.2.2 上传数据命令<a class="headerlink" href="#222" title="Permanent link">&para;</a></h4>
+<h5 id="-">客户端-服务器不分离<a class="headerlink" href="#-" title="Permanent link">&para;</a></h5>
+<p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>upload<span class="w"> </span>-c<span class="w"> </span>examples/upload/upload_guest.json
+</code></pre></div>
+注：需要保证配置中的file路径在服务器中存在。</p>
+<h5 id="-_1">客户端-服务器分离<a class="headerlink" href="#-_1" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>upload-file<span class="w"> </span>-c<span class="w"> </span>examples/upload/upload_guest.json
+</code></pre></div>
+<h4 id="223">2.2.3 上传结果<a class="headerlink" href="#223" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202312281606030428210&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="224">2.2.4 数据查询<a class="headerlink" href="#224" title="Permanent link">&para;</a></h4>
+<p>因为整个上传为异步操作，需要确认是否上传成功才可进行后续操作。
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span>query<span class="w"> </span>--namespace<span class="w"> </span>experiment<span class="w"> </span>--name<span class="w"> </span>breast_hetero_guest
+</code></pre></div>
+- 数据上传成功返回
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">569</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;data_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dataframe&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;standalone&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dataframe_transformer&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;output_artifact_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dataframe_output&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;output_index&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;party_task_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202312281606030428210_transformer_0_0_local_0&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;task_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202312281606030428210_transformer_0&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;task_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;transformer_0&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h2 id="3">3. 数据绑定<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<p>对于特定的算法，可能需要特殊的数据集，FATE Flow提供data bind接口来将数据供FATE使用</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span><span class="nb">bind</span><span class="w"> </span>--namespace<span class="w"> </span>bind_data<span class="w"> </span>--name<span class="w"> </span>breast_hetero_guest<span class="w"> </span>--path<span class="w"> </span>/data/projects/fate/fate_flow/data/xxx
+</code></pre></div>
+<h2 id="4">4. 数据查询<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<p>对于上传或者绑定的数据表，可以通过查询接口来获取数据的简略信息</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span>query<span class="w"> </span>--namespace<span class="w"> </span>experiment<span class="w"> </span>--name<span class="w"> </span>breast_hetero_guest
+</code></pre></div>
+<h2 id="5">5. 数据清理<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<p>可以通过清理接口来清理已经存在FATE的数据表</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span>delete<span class="w"> </span>--namespace<span class="w"> </span>experiment<span class="w"> </span>--name<span class="w"> </span>breast_hetero_guest
+</code></pre></div>
 
 
 

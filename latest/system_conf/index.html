@@ -569,33 +569,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pulsar" class="md-nav__link">
-    <span class="md-ellipsis">
-      Pulsar
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nginx" class="md-nav__link">
-    <span class="md-ellipsis">
-      Nginx:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rabbitmq" class="md-nav__link">
-    <span class="md-ellipsis">
-      RabbitMQ
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#osx" class="md-nav__link">
     <span class="md-ellipsis">
       OSx
@@ -812,33 +785,6 @@
   
     <nav class="md-nav" aria-label="Communication Engine Pool">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pulsar" class="md-nav__link">
-    <span class="md-ellipsis">
-      Pulsar
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nginx" class="md-nav__link">
-    <span class="md-ellipsis">
-      Nginx:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rabbitmq" class="md-nav__link">
-    <span class="md-ellipsis">
-      RabbitMQ
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#osx" class="md-nav__link">
@@ -1107,32 +1053,6 @@ This encryption module is primarily used for encrypting passwords (e.g., MySQL p
 <li>device: Algorithm launch mode, local/docker/k8s, etc.</li>
 </ul>
 <h2 id="communication-engine-pool">Communication Engine Pool<a class="headerlink" href="#communication-engine-pool" title="Permanent link">&para;</a></h2>
-<h3 id="pulsar">Pulsar<a class="headerlink" href="#pulsar" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nt">pulsar</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.0.5</span>
-<span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6650</span>
-<span class="w">  </span><span class="nt">mng_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8080</span>
-<span class="w">  </span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standalone</span>
-<span class="w">  </span><span class="nt">tenant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fl-tenant</span>
-<span class="w">  </span><span class="nt">topic_ttl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
-<span class="w">  </span><span class="nt">route_table</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">replication</span>
-<span class="w">  </span><span class="nt">max_message_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1048576</span>
-</code></pre></div>
-<h3 id="nginx">Nginx:<a class="headerlink" href="#nginx" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nt">nginx</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
-<span class="w">  </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9300</span>
-<span class="w">  </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9310</span>
-<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
-</code></pre></div>
-<h3 id="rabbitmq">RabbitMQ<a class="headerlink" href="#rabbitmq" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nt">nginx</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
-<span class="w">  </span><span class="nt">http_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9300</span>
-<span class="w">  </span><span class="nt">grpc_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9310</span>
-<span class="w">  </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
-</code></pre></div>
 <h3 id="osx">OSx<a class="headerlink" href="#osx" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
 <span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9370</span>
@@ -1155,7 +1075,7 @@ This encryption module is primarily used for encrypting passwords (e.g., MySQL p
 - host: eggroll cluster manager host ip
 - port: eggroll cluster manager port</p>
 <h3 id="spark">Spark<a class="headerlink" href="#spark" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code><span class="nt">eggroll</span><span class="p">:</span>
+<p><div class="highlight"><pre><span></span><code><span class="nt">spark</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">home</span><span class="p">:</span><span class="w"> </span>
 <span class="w">  </span><span class="nt">cores</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span>
 </code></pre></div>

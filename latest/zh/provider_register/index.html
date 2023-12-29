@@ -9,10 +9,6 @@
       
       
       
-        <link rel="prev" href="../">
-      
-      
-        <link rel="next" href="../quick_start/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -20,7 +16,7 @@
     
     
       
-        <title>整体设计 - FATE Flow</title>
+        <title>组件注册中心 - FATE Flow</title>
       
     
     
@@ -120,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              整体设计
+              组件注册中心
             
           </span>
         </div>
@@ -167,7 +163,7 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../fate_flow/" hreflang="en" class="md-select__link">
+            <a href="../../provider_register/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
@@ -262,13 +258,11 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../fate_flow/" class="md-tabs__link">
           
   
     
@@ -373,10 +367,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -393,12 +385,14 @@
       
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -412,7 +406,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Docs
@@ -423,30 +417,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    整体设计
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../fate_flow/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -455,179 +429,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. 设计架构图
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. 整体架构
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. 整体架构">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#21-fate" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.1 FATE整体架构
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-fate-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.2 FATE Flow功能架构
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-fate-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.3 FATE Flow集群架构
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. 调度架构
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 调度架构">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.1 基于共享状态的调度架构
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2 状态驱动调度
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3.2 状态驱动调度">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#321-callback" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.1 callback回调模式
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#322-poll" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.2 poll轮询模式
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#34" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.4 算法组件调度
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. 多方资源协调
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. 作业实时监测
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. 任务组件中心
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. 数据接入
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -731,153 +532,105 @@
         <li class="md-nav__item">
   <a href="#1" class="md-nav__link">
     <span class="md-ellipsis">
-      1. 设计架构图
+      1. 说明
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-provider" class="md-nav__link">
     <span class="md-ellipsis">
-      2. 整体架构
+      2. provider
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 整体架构">
+    <nav class="md-nav" aria-label="2. provider">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21-fate" class="md-nav__link">
+  <a href="#21" class="md-nav__link">
     <span class="md-ellipsis">
-      2.1 FATE整体架构
+      2.1 注册
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#22-fate-flow" class="md-nav__link">
+  <a href="#22" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2 FATE Flow功能架构
+      2.2 查询
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#23-fate-flow" class="md-nav__link">
+  <a href="#23" class="md-nav__link">
     <span class="md-ellipsis">
-      2.3 FATE Flow集群架构
+      2.3 删除
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
+          <li class="md-nav__item">
   <a href="#3" class="md-nav__link">
     <span class="md-ellipsis">
-      3. 调度架构
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 调度架构">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.1 基于共享状态的调度架构
+      3.组件注册与发现机制
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#32" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2 状态驱动调度
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3.2 状态驱动调度">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#321-callback" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.1 callback回调模式
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#322-poll" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.2 poll轮询模式
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#34" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.4 算法组件调度
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#4" class="md-nav__link">
     <span class="md-ellipsis">
-      4. 多方资源协调
+      4. 配置方法
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#41-job" class="md-nav__link">
     <span class="md-ellipsis">
-      5. 作业实时监测
+      4.1 全局job配置
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#42-task" class="md-nav__link">
     <span class="md-ellipsis">
-      6. 任务组件中心
+      4.2 全局参与方task配置
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#7" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#43-task" class="md-nav__link">
     <span class="md-ellipsis">
-      7. 数据接入
+      4.3 全局task配置
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 指定task配置
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -899,69 +652,133 @@
   
 
 
-<h1 id="_1">整体设计<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<h2 id="1">1. 设计架构图<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../../images/open_flow.png" />
-- 应用层接口：供如fate-board、fate-client等上层使用
-- 互联互通层接口：分为调度器接口和参与方接口，调度器接口用于接收如创建、停止等调度命令并下发给参与方，参与方接口用于各参与方接收如创建、运行、停止等命令并执行
-- 底座接口： 用于接收算法容器上报的状态等
-- 调度器：联邦调度逻辑，解析DSL依赖及运行相关的作业及任务
-- 算法容器：是算法运行的环境，FATE Flow支持算法运行在本地进程、算法容器中，其运行方式类似。
-- 平台资源池： 抽象计算、通信、存储API</p>
-<h2 id="2">2. 整体架构<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<h3 id="21-fate">2.1 FATE整体架构<a class="headerlink" href="#21-fate" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../../images/fate_arch.png" /></p>
-<h3 id="22-fate-flow">2.2 FATE Flow功能架构<a class="headerlink" href="#22-fate-flow" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../../images/fate_flow_arch.png" /></p>
-<h3 id="23-fate-flow">2.3 FATE Flow集群架构<a class="headerlink" href="#23-fate-flow" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../../images/flow_cluster.png" /></p>
-<h2 id="3">3. 调度架构<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<h3 id="31">3.1 基于共享状态的调度架构<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<h1 id="_1">组件注册中心<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="1">1. 说明<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>FATE Flow设计了算法组件注册模块，以支持多个算法开发厂商、多个版本及多种运行模式。</p>
+<h2 id="2-provider">2. provider<a class="headerlink" href="#2-provider" title="Permanent link">&para;</a></h2>
+<p><em>定义</em>： <code>$name:$version@device</code>, 如<code>fate:2.0.0@local</code>
+- name： 算法提供厂商
+- version: 算法版本
+- device: 算法运行模式，如: docker, k8s, local等</p>
+<h3 id="21">2.1 注册<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
 <ul>
-<li>剥离状态(资源、作业)与管理器(调度器、资源管理器)</li>
-<li>资源状态与作业状态持久化存于MySQL，全局共享，提供可靠事务性操作</li>
-<li>提高管理服务的高可用与扩展性</li>
-<li>作业可介入，支持实现如重启、重跑、并行控制、资源隔离等</li>
+<li>注册命令：</li>
 </ul>
-<p><img alt="" src="../../images/fate_flow_scheduling_arch.png" /></p>
-<h3 id="32">3.2 状态驱动调度<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>register<span class="w"> </span>-c<span class="w"> </span>examples/provider/register.json
+</code></pre></div>
+- 注册本地的算法包，需要传入算法包路径(path)和python环境路径(可选，若不传将使用系统的环境)
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Users/tonly/FATE/python&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;venv&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Users/tonly/opt/anaconda3/envs/fate3.8/bin/python&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
 <ul>
-<li>南北向状态上报/查询</li>
-<li>东西向多方任务状态计算联邦任务状态</li>
-<li>上下游任务状态计算作业作态</li>
+<li>注册docker算法镜像包
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docker&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.0&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;base_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;federatedai/fate:2.0.0&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;protocol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bfia&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;components_description&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></li>
 </ul>
-<h4 id="321-callback">3.2.1 callback回调模式<a class="headerlink" href="#321-callback" title="Permanent link">&para;</a></h4>
-<p>调度器创建作业和任务，由各参与方主动回调作业或任务的状态</p>
-<p><img alt="" src="../../images/schedule_for_callback.png" /></p>
-<h4 id="322-poll">3.2.2 poll轮询模式<a class="headerlink" href="#322-poll" title="Permanent link">&para;</a></h4>
-<p>调度器不仅需创建作业和任务，在调度过程中会轮询参与方的作业或任务的状态</p>
-<p><img alt="" src="../../images/schedule_for_poll.png" /></p>
-<h3 id="34">3.4 算法组件调度<a class="headerlink" href="#34" title="Permanent link">&para;</a></h3>
+<h3 id="22">2.2 查询<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
 <ul>
-<li>前处理: 数据、模型、算法参数等输入处理</li>
-<li>组件运行: 算法组件逻辑</li>
-<li>后处理: 算法组件输出内容处理
-<img alt="" src="../../images/schedule_for_component.png" /></li>
+<li>命令：
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>register<span class="w"> </span>--name<span class="w"> </span>fate<span class="w"> </span>--version<span class="w"> </span><span class="m">2</span>.0.1<span class="w"> </span>--device<span class="w"> </span><span class="nb">local</span>
+</code></pre></div></li>
+<li>输出：
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1703762542058</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Users/tonly/FATE/python&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;venv&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Users/tonly/opt/anaconda3/envs/fate3.8/bin/python&quot;</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;provider_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate:2.0.1@local&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;update_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1703762542058</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.1&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div></li>
 </ul>
-<h2 id="4">4. 多方资源协调<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<h3 id="23">2.3 删除<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>用于删除已经注册的算法
+- 命令：
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>delete<span class="w"> </span>--name<span class="w"> </span>fate<span class="w"> </span>--version<span class="w"> </span><span class="m">2</span>.0.1<span class="w"> </span>--device<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+- 输出：
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h3 id="3">3.组件注册与发现机制<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
 <ul>
-<li>每个引擎总资源大小通过配置文件配置，后续实现系统对接</li>
-<li>总资源大小中的cores表示每个计算节点cpu核数</li>
-<li>FATEFlow server启动时从配置文件读取资源大小配置，并注册更新到数据库</li>
-<li>以Job维度申请资源，Job Conf提交时生效</li>
+<li>注册算法</li>
+<li>任务配置中携带provider参数，详见如下<a href="#配置方法">配置方法</a></li>
 </ul>
-<h2 id="5">5. 作业实时监测<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
-<ul>
-<li>工作进程存活性检测</li>
-<li>作业超时检测</li>
-<li>资源回收检测</li>
-<li>基础引擎会话超时检测</li>
-</ul>
-<p><img alt="" src="../../images/fate_flow_detector.png" /></p>
-<h2 id="6">6. <a href="../provider_register/">任务组件中心</a><a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
 <p><img alt="" src="../../images/fate_flow_component_registry.png" /></p>
-<h2 id="7">7. <a href="../data_access/">数据接入</a><a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../../images/upload_data.png" /></p>
+<h3 id="4">4. 配置方法<a class="headerlink" href="#4" title="Permanent link">&para;</a></h3>
+<h3 id="41-job">4.1 全局job配置<a class="headerlink" href="#41-job" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">conf</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate:2.0.1@local</span>
+</code></pre></div>
+job下的所有task继承此provider</p>
+<h3 id="42-task">4.2 全局参与方task配置<a class="headerlink" href="#42-task" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">party_tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">guest_9999</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">parties</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">party_id</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;9999&#39;</span>
+<span class="w">        </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">guest</span>
+<span class="w">      </span><span class="nt">conf</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate:2.0.1@local</span>
+</code></pre></div>
+guest 9999下的所有task继承此provider</p>
+<h3 id="43-task">4.3 全局task配置<a class="headerlink" href="#43-task" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">reader_0</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">conf</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate:2.0.1@local</span>
+<span class="w">      </span><span class="nt">component_ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reader</span>
+</code></pre></div>
+所有参与方的reader组件继承此provider</p>
+<h3 id="44-task">4.4 指定task配置<a class="headerlink" href="#44-task" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">party_tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">guest_9999</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">parties</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">party_id</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;9999&#39;</span>
+<span class="w">        </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">guest</span>
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">reader_0</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">conf</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate:2.0.1@local</span>
+</code></pre></div>
+guest 9999下reader组件继承此provider</p>
 
 
 

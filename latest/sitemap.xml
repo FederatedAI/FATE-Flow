@@ -8,11 +8,32 @@
         <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/"/>
     </url>
     <url>
+        <loc>Nonedata_access/</loc>
+        <lastmod>2023-12-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedata_access/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/data_access/"/>
+    </url>
+    <url>
         <loc>Nonefate_flow/</loc>
         <lastmod>2023-12-29</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonefate_flow/"/>
         <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/fate_flow/"/>
+    </url>
+    <url>
+        <loc>Nonejob_scheduling/</loc>
+        <lastmod>2023-12-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonejob_scheduling/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/job_scheduling/"/>
+    </url>
+    <url>
+        <loc>Noneprovider_register/</loc>
+        <lastmod>2023-12-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneprovider_register/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/provider_register/"/>
     </url>
     <url>
         <loc>Nonequick_start/</loc>
@@ -70,11 +91,32 @@
         <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/bfia_access/"/>
     </url>
     <url>
+        <loc>Nonezh/data_access/</loc>
+        <lastmod>2023-12-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/data_access/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedata_access/"/>
+    </url>
+    <url>
         <loc>Nonezh/fate_flow/</loc>
         <lastmod>2023-12-29</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/fate_flow/"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonefate_flow/"/>
+    </url>
+    <url>
+        <loc>Nonezh/job_scheduling/</loc>
+        <lastmod>2023-12-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/job_scheduling/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonejob_scheduling/"/>
+    </url>
+    <url>
+        <loc>Nonezh/provider_register/</loc>
+        <lastmod>2023-12-29</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/provider_register/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneprovider_register/"/>
     </url>
     <url>
         <loc>Nonezh/quick_start/</loc>

@@ -9,10 +9,6 @@
       
       
       
-        <link rel="prev" href="..">
-      
-      
-        <link rel="next" href="../quick_start/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +16,7 @@
     
     
       
-        <title>Overall Design - FATE Flow</title>
+        <title>FATE Data Access Guide - FATE Flow</title>
       
     
     
@@ -80,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#overall-design" class="md-skip">
+        <a href="#fate-data-access-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overall Design
+              FATE Data Access Guide
             
           </span>
         </div>
@@ -173,7 +169,7 @@
           </li>
         
           <li class="md-select__item">
-            <a href="../zh/fate_flow/" hreflang="zh" class="md-select__link">
+            <a href="../zh/data_access/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -262,13 +258,11 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../fate_flow/" class="md-tabs__link">
           
   
     
@@ -373,10 +367,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -393,12 +385,14 @@
       
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -412,7 +406,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Docs
@@ -423,30 +417,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Overall Design
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../fate_flow/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -455,179 +429,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-design-architecture-diagram" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Design Architecture Diagram
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-overall-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Overall Architecture
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Overall Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#21-fate-overall-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.1 FATE Overall Architecture
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-fate-flow-functional-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.2 FATE Flow Functional Architecture
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-fate-flow-cluster-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.3 FATE Flow Cluster Architecture
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-scheduling-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Scheduling Architecture
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Scheduling Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31-state-based-scheduling-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.1 State-Based Scheduling Architecture
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32-state-driven-scheduling" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2 State-Driven Scheduling
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3.2 State-Driven Scheduling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#321-callback-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.1 Callback Mode
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#322-polling-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.2 Polling Mode
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#34-algorithm-component-scheduling" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.4 Algorithm Component Scheduling
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-multi-party-resource-coordination" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Multi-Party Resource Coordination
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-real-time-job-monitoring" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Real-time Job Monitoring
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-task-component-center" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Task Component Center
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-data-access" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. Data Access
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -729,98 +530,75 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-design-architecture-diagram" class="md-nav__link">
+  <a href="#1-upload-process" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Design Architecture Diagram
+      1. Upload Process
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-overall-architecture" class="md-nav__link">
+  <a href="#2-data-upload-methods" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Overall Architecture
+      2. Data Upload Methods
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Overall Architecture">
+    <nav class="md-nav" aria-label="2. Data Upload Methods">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21-fate-overall-architecture" class="md-nav__link">
+  <a href="#21-upload-scenario-explanation" class="md-nav__link">
     <span class="md-ellipsis">
-      2.1 FATE Overall Architecture
+      2.1 Upload Scenario Explanation
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#22-fate-flow-functional-architecture" class="md-nav__link">
+  <a href="#22-data-upload" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2 FATE Flow Functional Architecture
+      2.2 Data Upload
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-fate-flow-cluster-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.3 FATE Flow Cluster Architecture
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-scheduling-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Scheduling Architecture
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Scheduling Architecture">
+    <nav class="md-nav" aria-label="2.2 Data Upload">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-state-based-scheduling-architecture" class="md-nav__link">
+  <a href="#221-configuration-and-data-preparation" class="md-nav__link">
     <span class="md-ellipsis">
-      3.1 State-Based Scheduling Architecture
+      2.2.1 Configuration and Data Preparation
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#32-state-driven-scheduling" class="md-nav__link">
+  <a href="#222-data-upload-commands" class="md-nav__link">
     <span class="md-ellipsis">
-      3.2 State-Driven Scheduling
+      2.2.2 Data Upload Commands
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3.2 State-Driven Scheduling">
+    <nav class="md-nav" aria-label="2.2.2 Data Upload Commands">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#321-callback-mode" class="md-nav__link">
+  <a href="#client-server-non-separation" class="md-nav__link">
     <span class="md-ellipsis">
-      3.2.1 Callback Mode
+      Client-Server Non-Separation
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#322-polling-mode" class="md-nav__link">
+  <a href="#client-server-separation" class="md-nav__link">
     <span class="md-ellipsis">
-      3.2.2 Polling Mode
+      Client-Server Separation
     </span>
   </a>
   
@@ -832,9 +610,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#34-algorithm-component-scheduling" class="md-nav__link">
+  <a href="#223-upload-results" class="md-nav__link">
     <span class="md-ellipsis">
-      3.4 Algorithm Component Scheduling
+      2.2.3 Upload Results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224-data-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.4 Data Query
     </span>
   </a>
   
@@ -844,38 +631,34 @@
     </nav>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#4-multi-party-resource-coordination" class="md-nav__link">
+  <a href="#3-data-binding" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Multi-Party Resource Coordination
+      3. Data Binding
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-real-time-job-monitoring" class="md-nav__link">
+  <a href="#4-data-query" class="md-nav__link">
     <span class="md-ellipsis">
-      5. Real-time Job Monitoring
+      4. Data Query
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-task-component-center" class="md-nav__link">
+  <a href="#5-data-cleaning" class="md-nav__link">
     <span class="md-ellipsis">
-      6. Task Component Center
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-data-access" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. Data Access
+      5. Data Cleaning
     </span>
   </a>
   
@@ -899,69 +682,109 @@
   
 
 
-<h1 id="overall-design">Overall Design<a class="headerlink" href="#overall-design" title="Permanent link">&para;</a></h1>
-<h2 id="1-design-architecture-diagram">1. Design Architecture Diagram<a class="headerlink" href="#1-design-architecture-diagram" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../images/open_flow.png" />
-- Application Layer Interface: Used by higher-level components like fate-board, fate-client, etc.
-- Interconnect Layer Interface: Divided into Scheduler Interface and Participant Interface. Scheduler Interface receives scheduling commands like create, stop, etc., and sends them to participants. Participant Interface is used by each participant to receive commands like create, run, stop, etc., and execute them.
-- Base Interface: Receives status reports from algorithm containers, etc.
-- Scheduler: Federated scheduling logic, interprets DSL dependencies, and runs related jobs and tasks.
-- Algorithm Container: Environment for algorithm execution. FATE Flow supports running algorithms in local processes or in algorithm containers, with similar execution modes.
-- Platform Resource Pool: Abstract computation, communication, storage APIs.</p>
-<h2 id="2-overall-architecture">2. Overall Architecture<a class="headerlink" href="#2-overall-architecture" title="Permanent link">&para;</a></h2>
-<h3 id="21-fate-overall-architecture">2.1 FATE Overall Architecture<a class="headerlink" href="#21-fate-overall-architecture" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../images/fate_arch.png" /></p>
-<h3 id="22-fate-flow-functional-architecture">2.2 FATE Flow Functional Architecture<a class="headerlink" href="#22-fate-flow-functional-architecture" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../images/fate_flow_arch.png" /></p>
-<h3 id="23-fate-flow-cluster-architecture">2.3 FATE Flow Cluster Architecture<a class="headerlink" href="#23-fate-flow-cluster-architecture" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../images/flow_cluster.png" /></p>
-<h2 id="3-scheduling-architecture">3. Scheduling Architecture<a class="headerlink" href="#3-scheduling-architecture" title="Permanent link">&para;</a></h2>
-<h3 id="31-state-based-scheduling-architecture">3.1 State-Based Scheduling Architecture<a class="headerlink" href="#31-state-based-scheduling-architecture" title="Permanent link">&para;</a></h3>
+<h1 id="fate-data-access-guide">FATE Data Access Guide<a class="headerlink" href="#fate-data-access-guide" title="Permanent link">&para;</a></h1>
+<h2 id="1-upload-process">1. Upload Process<a class="headerlink" href="#1-upload-process" title="Permanent link">&para;</a></h2>
+<p>The process diagram for data upload is as follows:</p>
+<p><img alt="Data Upload" src="../images/upload_data.png" />
+- The client uploads data to the server.
+- The server encapsulates the upload parameters into a DAG job configuration, including two components: 'upload' and 'dataframe-transformer,' then calls the submit interface to submit the job.
+- The 'upload' component stores data into the FATE storage service.
+- The 'transformer' component converts the data output from the 'upload' component into a dataframe and stores it into the FATE storage service.
+- Metadata about the data is stored in the database.</p>
+<h2 id="2-data-upload-methods">2. Data Upload Methods<a class="headerlink" href="#2-data-upload-methods" title="Permanent link">&para;</a></h2>
+<p>Note: FATE provides clients including SDK, CLI, and Pipeline. If you haven't deployed the FATE Client in your environment, you can use <code>pip install fate_client</code> to download it. The following operations are CLI-based.</p>
+<h3 id="21-upload-scenario-explanation">2.1 Upload Scenario Explanation<a class="headerlink" href="#21-upload-scenario-explanation" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Separation of states (resources, jobs) and managers (scheduler, resource manager)</li>
-<li>Persistent storage of resource and job states in MySQL, globally shared, providing reliable transactional operations</li>
-<li>Improved high availability and scalability of management services</li>
-<li>Intervention in jobs, supporting actions like restarts, reruns, parallel control, resource isolation, etc.</li>
+<li>Client-server separation: Installed client and server are on different machines.</li>
+<li>Client-server non-separation: Installed client and server are on the same machine.
+Difference: In scenarios where the client and server are not separated, the step "the client uploads data to the server" in the above process can be omitted to improve data upload efficiency in scenarios with large data volumes. There are differences in interfaces and parameters between the two scenarios, and you can choose the corresponding scenario for data upload.</li>
 </ul>
-<p><img alt="" src="../images/fate_flow_scheduling_arch.png" /></p>
-<h3 id="32-state-driven-scheduling">3.2 State-Driven Scheduling<a class="headerlink" href="#32-state-driven-scheduling" title="Permanent link">&para;</a></h3>
+<h3 id="22-data-upload">2.2 Data Upload<a class="headerlink" href="#22-data-upload" title="Permanent link">&para;</a></h3>
+<h4 id="221-configuration-and-data-preparation">2.2.1 Configuration and Data Preparation<a class="headerlink" href="#221-configuration-and-data-preparation" title="Permanent link">&para;</a></h4>
 <ul>
-<li>North-south state reporting/querying</li>
-<li>East-west multi-party task state computation for federated task states</li>
-<li>Upstream and downstream task state computation for job states</li>
+<li>Upload configuration is located in <a href="https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/upload">examples-upload</a>
+    <div class="highlight"><pre><span></span><code><span class="p p-Indicator">{</span>
+<span class="w">  </span><span class="s">&quot;file&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;examples/data/breast_hetero_guest.csv&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;head&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;partitions&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="nv">16</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;extend_sid&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;meta&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="w">    </span><span class="s">&quot;delimiter&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;,&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">    </span><span class="s">&quot;label_name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;y&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">    </span><span class="s">&quot;match_id_name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;id&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">},</span>
+<span class="w">  </span><span class="s">&quot;namespace&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;experiment&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="s">&quot;name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;breast_hetero_guest&quot;</span>
+<span class="p p-Indicator">}</span>
+</code></pre></div></li>
+<li>file: File path</li>
+<li>head: Whether the data contains a header: true/false</li>
+<li>partitions: Number of data storage partitions</li>
+<li>extend_sid: Whether to generate an 'sid' column</li>
+<li>meta: Metadata about the data</li>
+<li>namespace &amp;&amp; name: Reference to data in the FATE storage table</li>
+<li>Uploaded data is located in <a href="https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/data">upload-data</a></li>
+<li>You can also use your own data and modify the "meta" information in the upload configuration.</li>
 </ul>
-<h4 id="321-callback-mode">3.2.1 Callback Mode<a class="headerlink" href="#321-callback-mode" title="Permanent link">&para;</a></h4>
-<p>Scheduler creates jobs and tasks, and each participant actively callbacks the state of jobs or tasks.</p>
-<p><img alt="" src="../images/schedule_for_callback.png" /></p>
-<h4 id="322-polling-mode">3.2.2 Polling Mode<a class="headerlink" href="#322-polling-mode" title="Permanent link">&para;</a></h4>
-<p>Scheduler not only creates jobs and tasks but also polls the state of jobs or tasks from the participants during the scheduling process.</p>
-<p><img alt="" src="../images/schedule_for_poll.png" /></p>
-<h3 id="34-algorithm-component-scheduling">3.4 Algorithm Component Scheduling<a class="headerlink" href="#34-algorithm-component-scheduling" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Pre-processing: Handling inputs such as data, models, algorithm parameters</li>
-<li>Component execution: Logic of algorithm components</li>
-<li>Post-processing: Handling outputs of algorithm components</li>
-</ul>
-<p><img alt="" src="../images/schedule_for_component.png" /></p>
-<h2 id="4-multi-party-resource-coordination">4. Multi-Party Resource Coordination<a class="headerlink" href="#4-multi-party-resource-coordination" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Total resource size for each engine is configured via a configuration file, subsequent system integration to be implemented</li>
-<li>The cores within the total resource size represent the number of CPU cores per computing node</li>
-<li>FATEFlow server reads resource size configuration from the configuration file upon startup and registers updates to the database</li>
-<li>Resources are allocated at the Job level, becoming effective upon Job Conf submission</li>
-</ul>
-<h2 id="5-real-time-job-monitoring">5. Real-time Job Monitoring<a class="headerlink" href="#5-real-time-job-monitoring" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Work process liveness detection</li>
-<li>Job timeout detection</li>
-<li>Resource recovery detection</li>
-<li>Basic engine session timeout detection</li>
-</ul>
-<p><img alt="" src="../images/fate_flow_detector.png" /></p>
-<h2 id="6-task-component-center">6. <a href="../provider_register/">Task Component Center</a><a class="headerlink" href="#6-task-component-center" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../images/fate_flow_component_registry.png" /></p>
-<h2 id="7-data-access">7. <a href="../data_access/">Data Access</a><a class="headerlink" href="#7-data-access" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../images/upload_data.png" /></p>
+<h4 id="222-data-upload-commands">2.2.2 Data Upload Commands<a class="headerlink" href="#222-data-upload-commands" title="Permanent link">&para;</a></h4>
+<h5 id="client-server-non-separation">Client-Server Non-Separation<a class="headerlink" href="#client-server-non-separation" title="Permanent link">&para;</a></h5>
+<p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>upload<span class="w"> </span>-c<span class="w"> </span>examples/upload/upload_guest.json
+</code></pre></div>
+Note: Ensure that the file path in the configuration exists on the server.</p>
+<h5 id="client-server-separation">Client-Server Separation<a class="headerlink" href="#client-server-separation" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>data<span class="w"> </span>upload-file<span class="w"> </span>-c<span class="w"> </span>examples/upload/upload_guest.json
+</code></pre></div>
+<h4 id="223-upload-results">2.2.3 Upload Results<a class="headerlink" href="#223-upload-results" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202312281606030428210&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="224-data-query">2.2.4 Data Query<a class="headerlink" href="#224-data-query" title="Permanent link">&para;</a></h4>
+<p>Since the entire upload is an asynchronous operation, it's necessary to confirm successful upload before performing subsequent operations.
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span>query<span class="w"> </span>--namespace<span class="w"> </span>experiment<span class="w"> </span>--name<span class="w"> </span>breast_hetero_guest
+</code></pre></div>
+- Successful data upload returns:
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">569</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;data_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dataframe&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;standalone&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;breast_hetero_guest&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xxx&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;component&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dataframe_transformer&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;output_artifact_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dataframe_output&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;output_index&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;party_task_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202312281606030428210_transformer_0_0_local_0&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;task_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;202312281606030428210_transformer_0&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;task_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;transformer_0&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h2 id="3-data-binding">3. Data Binding<a class="headerlink" href="#3-data-binding" title="Permanent link">&para;</a></h2>
+<p>For specific algorithms that may require particular datasets, FATE Flow provides a data binding interface to make the data available for use in FATE.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span><span class="nb">bind</span><span class="w"> </span>--namespace<span class="w"> </span>bind_data<span class="w"> </span>--name<span class="w"> </span>breast_hetero_guest<span class="w"> </span>--path<span class="w"> </span>/data/projects/fate/fate_flow/data/xxx
+</code></pre></div>
+<h2 id="4-data-query">4. Data Query<a class="headerlink" href="#4-data-query" title="Permanent link">&para;</a></h2>
+<p>For uploaded or bound data tables, you can use the query interface to retrieve brief information about the data.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span>query<span class="w"> </span>--namespace<span class="w"> </span>experiment<span class="w"> </span>--name<span class="w"> </span>breast_hetero_guest
+</code></pre></div>
+<h2 id="5-data-cleaning">5. Data Cleaning<a class="headerlink" href="#5-data-cleaning" title="Permanent link">&para;</a></h2>
+<p>You can use delete cli to clean data tables that already exist in FATE.</p>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>table<span class="w"> </span>delete<span class="w"> </span>--namespace<span class="w"> </span>experiment<span class="w"> </span>--name<span class="w"> </span>breast_hetero_guest
+</code></pre></div>
+<p>This covers the translation of the document into English.</p>
 
 
 

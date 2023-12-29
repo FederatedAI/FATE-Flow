@@ -9,10 +9,6 @@
       
       
       
-        <link rel="prev" href="..">
-      
-      
-        <link rel="next" href="../quick_start/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +16,7 @@
     
     
       
-        <title>Overall Design - FATE Flow</title>
+        <title>Component Registry - FATE Flow</title>
       
     
     
@@ -80,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#overall-design" class="md-skip">
+        <a href="#component-registry" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overall Design
+              Component Registry
             
           </span>
         </div>
@@ -173,7 +169,7 @@
           </li>
         
           <li class="md-select__item">
-            <a href="../zh/fate_flow/" hreflang="zh" class="md-select__link">
+            <a href="../zh/provider_register/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -262,13 +258,11 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../fate_flow/" class="md-tabs__link">
           
   
     
@@ -373,10 +367,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -393,12 +385,14 @@
       
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -412,7 +406,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Docs
@@ -423,30 +417,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Overall Design
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../fate_flow/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -455,179 +429,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-design-architecture-diagram" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Design Architecture Diagram
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-overall-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Overall Architecture
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Overall Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#21-fate-overall-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.1 FATE Overall Architecture
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-fate-flow-functional-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.2 FATE Flow Functional Architecture
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-fate-flow-cluster-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.3 FATE Flow Cluster Architecture
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-scheduling-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Scheduling Architecture
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Scheduling Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31-state-based-scheduling-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.1 State-Based Scheduling Architecture
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32-state-driven-scheduling" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2 State-Driven Scheduling
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3.2 State-Driven Scheduling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#321-callback-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.1 Callback Mode
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#322-polling-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.2 Polling Mode
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#34-algorithm-component-scheduling" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.4 Algorithm Component Scheduling
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-multi-party-resource-coordination" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Multi-Party Resource Coordination
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-real-time-job-monitoring" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Real-time Job Monitoring
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-task-component-center" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Task Component Center
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-data-access" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. Data Access
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -729,46 +530,100 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-design-architecture-diagram" class="md-nav__link">
+  <a href="#1-introduction" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Design Architecture Diagram
+      1. Introduction
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-overall-architecture" class="md-nav__link">
+  <a href="#2-provider" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Overall Architecture
+      2. Provider
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Overall Architecture">
+    <nav class="md-nav" aria-label="2. Provider">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21-fate-overall-architecture" class="md-nav__link">
+  <a href="#21-registration" class="md-nav__link">
     <span class="md-ellipsis">
-      2.1 FATE Overall Architecture
+      2.1 Registration
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#22-fate-flow-functional-architecture" class="md-nav__link">
+  <a href="#22-querying" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2 FATE Flow Functional Architecture
+      2.2 Querying
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#23-fate-flow-cluster-architecture" class="md-nav__link">
+  <a href="#23-deletion" class="md-nav__link">
     <span class="md-ellipsis">
-      2.3 FATE Flow Cluster Architecture
+      2.3 Deletion
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-component-registry-and-discovery-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Component Registry and Discovery Mechanism
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-configuration-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Configuration Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#41-global-job-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Global Job Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-global-party-task-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Global Party Task Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-global-task-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 Global Task Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-specified-task-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 Specified Task Configuration
     </span>
   </a>
   
@@ -776,108 +631,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-scheduling-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Scheduling Architecture
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Scheduling Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#31-state-based-scheduling-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.1 State-Based Scheduling Architecture
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32-state-driven-scheduling" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2 State-Driven Scheduling
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3.2 State-Driven Scheduling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#321-callback-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.1 Callback Mode
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#322-polling-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.2.2 Polling Mode
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#34-algorithm-component-scheduling" class="md-nav__link">
-    <span class="md-ellipsis">
-      3.4 Algorithm Component Scheduling
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-multi-party-resource-coordination" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Multi-Party Resource Coordination
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-real-time-job-monitoring" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Real-time Job Monitoring
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-task-component-center" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Task Component Center
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-data-access" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. Data Access
-    </span>
-  </a>
   
 </li>
       
@@ -899,69 +652,143 @@
   
 
 
-<h1 id="overall-design">Overall Design<a class="headerlink" href="#overall-design" title="Permanent link">&para;</a></h1>
-<h2 id="1-design-architecture-diagram">1. Design Architecture Diagram<a class="headerlink" href="#1-design-architecture-diagram" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../images/open_flow.png" />
-- Application Layer Interface: Used by higher-level components like fate-board, fate-client, etc.
-- Interconnect Layer Interface: Divided into Scheduler Interface and Participant Interface. Scheduler Interface receives scheduling commands like create, stop, etc., and sends them to participants. Participant Interface is used by each participant to receive commands like create, run, stop, etc., and execute them.
-- Base Interface: Receives status reports from algorithm containers, etc.
-- Scheduler: Federated scheduling logic, interprets DSL dependencies, and runs related jobs and tasks.
-- Algorithm Container: Environment for algorithm execution. FATE Flow supports running algorithms in local processes or in algorithm containers, with similar execution modes.
-- Platform Resource Pool: Abstract computation, communication, storage APIs.</p>
-<h2 id="2-overall-architecture">2. Overall Architecture<a class="headerlink" href="#2-overall-architecture" title="Permanent link">&para;</a></h2>
-<h3 id="21-fate-overall-architecture">2.1 FATE Overall Architecture<a class="headerlink" href="#21-fate-overall-architecture" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../images/fate_arch.png" /></p>
-<h3 id="22-fate-flow-functional-architecture">2.2 FATE Flow Functional Architecture<a class="headerlink" href="#22-fate-flow-functional-architecture" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../images/fate_flow_arch.png" /></p>
-<h3 id="23-fate-flow-cluster-architecture">2.3 FATE Flow Cluster Architecture<a class="headerlink" href="#23-fate-flow-cluster-architecture" title="Permanent link">&para;</a></h3>
-<p><img alt="" src="../images/flow_cluster.png" /></p>
-<h2 id="3-scheduling-architecture">3. Scheduling Architecture<a class="headerlink" href="#3-scheduling-architecture" title="Permanent link">&para;</a></h2>
-<h3 id="31-state-based-scheduling-architecture">3.1 State-Based Scheduling Architecture<a class="headerlink" href="#31-state-based-scheduling-architecture" title="Permanent link">&para;</a></h3>
+<h1 id="component-registry">Component Registry<a class="headerlink" href="#component-registry" title="Permanent link">&para;</a></h1>
+<h2 id="1-introduction">1. Introduction<a class="headerlink" href="#1-introduction" title="Permanent link">&para;</a></h2>
+<p>FATE Flow has designed an algorithm component registry module to support multiple algorithm vendors, versions, and various execution modes.</p>
+<h2 id="2-provider">2. Provider<a class="headerlink" href="#2-provider" title="Permanent link">&para;</a></h2>
+<p><em>Definition</em>: <code>$name:$version@device</code>, such as <code>fate:2.0.0@local</code>
+- name: Algorithm provider vendor
+- version: Algorithm version
+- device: Algorithm execution mode, e.g., docker, k8s, local, etc.</p>
+<h3 id="21-registration">2.1 Registration<a class="headerlink" href="#21-registration" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Separation of states (resources, jobs) and managers (scheduler, resource manager)</li>
-<li>Persistent storage of resource and job states in MySQL, globally shared, providing reliable transactional operations</li>
-<li>Improved high availability and scalability of management services</li>
-<li>Intervention in jobs, supporting actions like restarts, reruns, parallel control, resource isolation, etc.</li>
+<li>Registration command:</li>
 </ul>
-<p><img alt="" src="../images/fate_flow_scheduling_arch.png" /></p>
-<h3 id="32-state-driven-scheduling">3.2 State-Driven Scheduling<a class="headerlink" href="#32-state-driven-scheduling" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>register<span class="w"> </span>-c<span class="w"> </span>examples/provider/register.json
+</code></pre></div>
 <ul>
-<li>North-south state reporting/querying</li>
-<li>East-west multi-party task state computation for federated task states</li>
-<li>Upstream and downstream task state computation for job states</li>
+<li>
+<p>Registering a local algorithm package requires providing the algorithm package path (<code>path</code>) and optionally the Python environment path (if not provided, the system environment will be used).
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Users/tonly/FATE/python&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;venv&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Users/tonly/opt/anaconda3/envs/fate3.8/bin/python&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>Registering a docker-based algorithm image:
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docker&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.0&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;base_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;federatedai/fate:2.0.0&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;protocol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bfia&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;components_description&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+</li>
 </ul>
-<h4 id="321-callback-mode">3.2.1 Callback Mode<a class="headerlink" href="#321-callback-mode" title="Permanent link">&para;</a></h4>
-<p>Scheduler creates jobs and tasks, and each participant actively callbacks the state of jobs or tasks.</p>
-<p><img alt="" src="../images/schedule_for_callback.png" /></p>
-<h4 id="322-polling-mode">3.2.2 Polling Mode<a class="headerlink" href="#322-polling-mode" title="Permanent link">&para;</a></h4>
-<p>Scheduler not only creates jobs and tasks but also polls the state of jobs or tasks from the participants during the scheduling process.</p>
-<p><img alt="" src="../images/schedule_for_poll.png" /></p>
-<h3 id="34-algorithm-component-scheduling">3.4 Algorithm Component Scheduling<a class="headerlink" href="#34-algorithm-component-scheduling" title="Permanent link">&para;</a></h3>
+<h3 id="22-querying">2.2 Querying<a class="headerlink" href="#22-querying" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Pre-processing: Handling inputs such as data, models, algorithm parameters</li>
-<li>Component execution: Logic of algorithm components</li>
-<li>Post-processing: Handling outputs of algorithm components</li>
+<li>
+<p>Command:
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>register<span class="w"> </span>--name<span class="w"> </span>fate<span class="w"> </span>--version<span class="w"> </span><span class="m">2</span>.0.1<span class="w"> </span>--device<span class="w"> </span><span class="nb">local</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>Output:
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;create_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1703762542058</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Users/tonly/FATE/python&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;venv&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Users/tonly/opt/anaconda3/envs/fate3.8/bin/python&quot;</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;provider_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate:2.0.1@local&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;update_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1703762542058</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.1&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+</li>
 </ul>
-<p><img alt="" src="../images/schedule_for_component.png" /></p>
-<h2 id="4-multi-party-resource-coordination">4. Multi-Party Resource Coordination<a class="headerlink" href="#4-multi-party-resource-coordination" title="Permanent link">&para;</a></h2>
+<h3 id="23-deletion">2.3 Deletion<a class="headerlink" href="#23-deletion" title="Permanent link">&para;</a></h3>
+<p>Used for deleting a registered algorithm.
+- Command:
+<div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>delete<span class="w"> </span>--name<span class="w"> </span>fate<span class="w"> </span>--version<span class="w"> </span><span class="m">2</span>.0.1<span class="w"> </span>--device<span class="w"> </span><span class="nb">local</span>
+</code></pre></div></p>
 <ul>
-<li>Total resource size for each engine is configured via a configuration file, subsequent system integration to be implemented</li>
-<li>The cores within the total resource size represent the number of CPU cores per computing node</li>
-<li>FATEFlow server reads resource size configuration from the configuration file upon startup and registers updates to the database</li>
-<li>Resources are allocated at the Job level, becoming effective upon Job Conf submission</li>
+<li>Output:
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</code></pre></div></li>
 </ul>
-<h2 id="5-real-time-job-monitoring">5. Real-time Job Monitoring<a class="headerlink" href="#5-real-time-job-monitoring" title="Permanent link">&para;</a></h2>
+<h3 id="3-component-registry-and-discovery-mechanism">3. Component Registry and Discovery Mechanism<a class="headerlink" href="#3-component-registry-and-discovery-mechanism" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Work process liveness detection</li>
-<li>Job timeout detection</li>
-<li>Resource recovery detection</li>
-<li>Basic engine session timeout detection</li>
+<li>Registering algorithms</li>
+<li>Task configuration carrying the provider parameter, see the <a href="#configuration-methods">configuration methods</a> below</li>
 </ul>
-<p><img alt="" src="../images/fate_flow_detector.png" /></p>
-<h2 id="6-task-component-center">6. <a href="../provider_register/">Task Component Center</a><a class="headerlink" href="#6-task-component-center" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../images/fate_flow_component_registry.png" /></p>
-<h2 id="7-data-access">7. <a href="../data_access/">Data Access</a><a class="headerlink" href="#7-data-access" title="Permanent link">&para;</a></h2>
-<p><img alt="" src="../images/upload_data.png" /></p>
+<p><img alt="Component Registry" src="../images/fate_flow_component_registry.png" /></p>
+<h3 id="4-configuration-methods">4. Configuration Methods<a class="headerlink" href="#4-configuration-methods" title="Permanent link">&para;</a></h3>
+<h3 id="41-global-job-configuration">4.1 Global Job Configuration<a class="headerlink" href="#41-global-job-configuration" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">conf</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate:2.0.1@local</span>
+</code></pre></div>
+All tasks under the job inherit this provider.</p>
+<h3 id="42-global-party-task-configuration">4.2 Global Party Task Configuration<a class="headerlink" href="#42-global-party-task-configuration" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">party_tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">guest_9999</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">parties</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">party_id</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;9999&#39;</span>
+<span class="w">        </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">guest</span>
+<span class="w">      </span><span class="nt">conf</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate:2.0.1@local</span>
+</code></pre></div>
+All tasks under guest 9999 inherit this provider.</p>
+<h3 id="43-global-task-configuration">4.3 Global Task Configuration<a class="headerlink" href="#43-global-task-configuration" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">reader_0</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">conf</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate:2.0.1@local</span>
+<span class="w">      </span><span class="nt">component_ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reader</span>
+</code></pre></div>
+All reader components across all parties inherit this provider.</p>
+<h3 id="44-specified-task-configuration">4.4 Specified Task Configuration<a class="headerlink" href="#44-specified-task-configuration" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">party_tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">guest_9999</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">parties</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">party_id</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;9999&#39;</span>
+<span class="w">        </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">guest</span>
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">reader_0</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">conf</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate:2.0.1@local</span>
+</code></pre></div>
+The reader component under guest 9999 specifically inherits this provider.</p>
 
 
 
