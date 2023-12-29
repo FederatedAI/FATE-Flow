@@ -85,36 +85,6 @@ default_engines:
 - device: Algorithm launch mode, local/docker/k8s, etc.
 
 ## Communication Engine Pool
-### Pulsar
-```yaml
-pulsar:
-  host: 192.168.0.5
-  port: 6650
-  mng_port: 8080
-  cluster: standalone
-  tenant: fl-tenant
-  topic_ttl: 30
-  route_table:
-  mode: replication
-  max_message_size: 1048576
-```
-### Nginx:
-```yaml
-nginx:
-  host: 127.0.0.1
-  http_port: 9300
-  grpc_port: 9310
-  protocol: http
-```
-
-### RabbitMQ
-```yaml
-nginx:
-  host: 127.0.0.1
-  http_port: 9300
-  grpc_port: 9310
-  protocol: http
-```
 
 ### OSx
 ```yaml
@@ -145,7 +115,7 @@ eggroll:
 
 ### Spark
 ```yaml
-eggroll:
+spark:
   home: 
   cores: 32
 ```
