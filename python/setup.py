@@ -43,12 +43,12 @@ extras_require = {
         "grpcio-tools",
         "protobuf",
     ],
-    "testabc": ["fate_flow[rabbitmq,pulsar,spark,eggroll]"],
+    "fate_flow": ["fate_flow[rabbitmq,pulsar,spark,eggroll]"],
 }
 
 
 CONF_NAME = "conf"
-PACKAGE_NAME = "testabc"
+PACKAGE_NAME = "fate_flow"
 ENV_NAME = "fateflow.env"
 HOME = os.path.abspath("../")
 CONF_PATH = os.path.join(HOME, CONF_NAME)
@@ -84,8 +84,8 @@ class InstallCommand(Command):
 
 
 setup(
-    name="testabc",
-    version="1.19.0",
+    name="fate_flow",
+    version=fate_flow.__version__,
     keywords=["federated learning scheduler"],
     author="FederatedAI",
     author_email="contact@FedAI.org",
