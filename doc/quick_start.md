@@ -450,7 +450,7 @@ For example, with the previously submitted training DAG task, you can use `flow 
 
 ## 3. More Documentation
 - [Restful-api](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/doc/swagger/swagger.yaml)
-- [CLI](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0/python/fate_client/flow_cli/build/doc)
-- [Pipeline](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/tutorial)
+- [CLI](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0/doc/cli_index.md)
+- [Pipeline](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0/doc/pipeline.md)
 - [FATE Quick Start](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/2.0/fate/quick_start.md)
 - [FATE Algorithms](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/2.0/fate)
