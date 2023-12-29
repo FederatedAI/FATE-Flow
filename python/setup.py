@@ -28,7 +28,7 @@ install_requires = [
     "shortuuid",
     "cos-python-sdk-v5",
     "typing-extensions",
-    "ruamel-yaml==0.16",
+    "ruamel.yaml",
     "boto3"
 ]
 extras_require = {
