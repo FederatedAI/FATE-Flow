@@ -31,10 +31,10 @@ fate_flow status/start/stop/restart
 ```
 
 ### 1.2 单机版部署
-参考[单机版部署](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-rc/deploy/standalone-deploy/README.zh.md)
+参考[单机版部署](https://github.com/FederatedAI/FATE/tree/v2.0.0/deploy/standalone-deploy/README.zh.md)
 
 ### 1.3 集群部署
-参考[allinone部署](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-rc/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.zh.md)
+参考[allinone部署](https://github.com/FederatedAI/FATE/tree/v2.0.0/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.zh.md)
 
 ## 2. 使用指南
 fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部署FATE Client,可以使用`pip install fate_client`下载，以下的使用操作均基于cli编写。
@@ -42,8 +42,8 @@ fate提供的客户端包括SDK、CLI和Pipeline，若你的环境中没有部�
 ### 2.1 数据上传
 更详细的数据操作指南可参考：[数据接入指南](data_access.zh.md)
 ### 2.1.1 配置及数据
- - 上传配置: [examples-upload](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0.0-rc/examples/upload)
- - 上传数据: [upload-data](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0.0-rc/examples/data)
+ - 上传配置: [examples-upload](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/upload)
+ - 上传数据: [upload-data](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/data)
 ### 2.1.2 上传guest方数据
 ```shell
 flow data upload -c examples/upload/upload_guest.json
@@ -56,7 +56,7 @@ flow data upload -c examples/upload/upload_host.json
 ### 2.2 开始FATE作业
 #### 2.2.1 提交作业
 当你的数据准备好后，可以开始提交作业给FATE Flow：
-- job配置example位于[lr-train](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0.0-rc/examples/lr/train_lr.yaml);
+- job配置example位于[lr-train](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/lr/train_lr.yaml);
 - job配置中站点id为"9998"和"9999"。如果你的部署环境为集群版，需要替换成真实的站点id；单机版可使用默认配置。
 - 如果想要使用自己的数据，可以更改配置中reader的参数。
 - 提交作业的命令为:
@@ -452,8 +452,8 @@ flow output download-data -j $job_id -r $role -p $party_id -tn $task_name -o $do
 ```
 
 ## 3.更多文档
-- [Restful-api](https://github.com/FederatedAI/FATE-Flow/tree/dev-2.0.0-rc/doc/swagger/swagger.yaml)
-- [CLI](https://github.com/FederatedAI/FATE-Client/tree/dev-2.0.0-rc/python/fate_client/flow_cli/build/doc)
-- [Pipeline](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-rc/doc/tutorial)
-- [FATE快速开始](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-rc/doc/2.0/quick_start.md)
-- [FATE算法](https://github.com/FederatedAI/FATE/tree/dev-2.0.0-rc/doc/2.0/fate)
+- [Restful-api](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/doc/swagger/swagger.yaml)
+- [CLI](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0/python/fate_client/flow_cli/build/doc)
+- [Pipeline](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/tutorial)
+- [FATE快速开始](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/2.0/fate/quick_start.md)
+- [FATE算法](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/2.0/fate)
