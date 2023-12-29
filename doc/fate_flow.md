@@ -1,110 +1,80 @@
 # Overall Design
 
-## 1. Logical Architecture
+## 1. Design Architecture Diagram
+![](./images/open_flow.png)
+- Application Layer Interface: Used by higher-level components like fate-board, fate-client, etc.
+- Interconnect Layer Interface: Divided into Scheduler Interface and Participant Interface. Scheduler Interface receives scheduling commands like create, stop, etc., and sends them to participants. Participant Interface is used by each participant to receive commands like create, run, stop, etc., and execute them.
+- Base Interface: Receives status reports from algorithm containers, etc.
+- Scheduler: Federated scheduling logic, interprets DSL dependencies, and runs related jobs and tasks.
+- Algorithm Container: Environment for algorithm execution. FATE Flow supports running algorithms in local processes or in algorithm containers, with similar execution modes.
+- Platform Resource Pool: Abstract computation, communication, storage APIs.
 
-- DSL defined jobs
-- Top-down vertical subtask flow scheduling, multi-participant joint subtask coordination
-- Independent isolated task execution work processes
-- Support for multiple types and versions of components
-- Computational abstraction API
-- Storage abstraction API
-- Cross-party transfer abstraction API
 
-![](./images/fate_flow_logical_arch.png)
+## 2. Overall Architecture
 
-## 2. Service Architecture
-
-### 2.1 FATE
+### 2.1 FATE Overall Architecture
 
 ![](./images/fate_arch.png)
 
-### 2.2 FATE Flow
+### 2.2 FATE Flow Functional Architecture
 
 ![](./images/fate_flow_arch.png)
 
-## 3. [Scheduling Architecture](./fate_flow_job_scheduling.md)
+### 2.3 FATE Flow Cluster Architecture
 
-### 3.1 A new scheduling architecture based on shared-state
+![](./images/flow_cluster.png)
 
-- Stripping state (resources, jobs) and managers (schedulers, resource managers)
-- Resource state and job state are persisted in MySQL and shared globally to provide reliable transactional operations
-- Improve the high availability and scalability of managed services
-- Jobs can be intervened to support restart, rerun, parallel control, resource isolation, etc.
+## 3. Scheduling Architecture
+### 3.1 State-Based Scheduling Architecture
+
+- Separation of states (resources, jobs) and managers (scheduler, resource manager)
+- Persistent storage of resource and job states in MySQL, globally shared, providing reliable transactional operations
+- Improved high availability and scalability of management services
+- Intervention in jobs, supporting actions like restarts, reruns, parallel control, resource isolation, etc.
 
 ![](./images/fate_flow_scheduling_arch.png)
 
 ### 3.2 State-Driven Scheduling
 
-- Resource coordination
-- Pull up the child process Executor to run the component
-- Executor reports state to local Server and also to scheduler
-- Multi-party task state calculation of federal task state
-- Upstream and downstream task states compute job states
+- North-south state reporting/querying
+- East-west multi-party task state computation for federated task states
+- Upstream and downstream task state computation for job states
+#### 3.2.1 Callback Mode
+Scheduler creates jobs and tasks, and each participant actively callbacks the state of jobs or tasks.
 
-![](./images/fate_flow_resource_process.png)
+![](./images/schedule_for_callback.png)
+#### 3.2.2 Polling Mode
+Scheduler not only creates jobs and tasks but also polls the state of jobs or tasks from the participants during the scheduling process.
 
-## 4. [Multiparty Resource Coordination](./fate_flow_resource_management.md)
+![](./images/schedule_for_poll.png)
 
-- The total resource size of each engine is configured through the configuration file, and the system is subsequently interfaced
-- The cores_per_node in the total resource size indicates the number of cpu cores per compute node, and nodes indicates the number of compute nodes.
-- FATEFlow server reads the resource size configuration from the configuration file when it starts and registers the update to the database
-- The resources are requested in Job dimension, and take effect when Job Conf is submitted, formula: task_parallelism*task_cores
-- See separate section of the documentation for details
+### 3.4 Algorithm Component Scheduling
+- Pre-processing: Handling inputs such as data, models, algorithm parameters
+- Component execution: Logic of algorithm components
+- Post-processing: Handling outputs of algorithm components
 
-## 5. [Data Flow Tracking](./fate_flow_tracking.md)
+![](./images/schedule_for_component.png)
 
-- Definition
- - metric type: metric type, such as auc, loss, ks, etc.
- - metric namespace: custom metric namespace, e.g. train, predict
- - metric name: custom metric name, e.g. auc0, hetero_lr_auc0
- - metric data: metric data in key-value form
- - metric meta: metric meta information in key-value form, support flexible drawing
-- API
- - log_metric_data(metric_namespace, metric_name, metrics)
- - set_metric_meta(metric_namespace, metric_name, metric_meta)
- - get_metric_data(metric_namespace, metric_name)
- - get_metric_meta(metric_namespace, metric_name)
+## 4. Multi-Party Resource Coordination
 
-## 6. [Realtime Monitoring](./fate_flow_monitoring.md)
+- Total resource size for each engine is configured via a configuration file, subsequent system integration to be implemented
+- The cores within the total resource size represent the number of CPU cores per computing node
+- FATEFlow server reads resource size configuration from the configuration file upon startup and registers updates to the database
+- Resources are allocated at the Job level, becoming effective upon Job Conf submission
 
-- Job process survivability detection
+## 5. Real-time Job Monitoring
+
+- Work process liveness detection
 - Job timeout detection
 - Resource recovery detection
-- Base engine session timeout detection
+- Basic engine session timeout detection
 
 ![](./images/fate_flow_detector.png)
 
-## 7. [Task Component Registry](./fate_flow_component_registry.md)
+## 6. [Task Component Center](./provider_register.md)
 
 ![](./images/fate_flow_component_registry.png)
 
-## 8. [Multi-Party Federated Model Registry](./fate_flow_model_registry.md)
+## 7. [Data Access](./data_access.md)
 
-- Using Google Protocol Buffer as the model storage protocol, using cross-language sharing, each algorithmic model consists of two parts: ModelParam & ModelMeta
-- A Pipeline generates a series of algorithmic models
-- The model named Pipeline stores Pipeline modeling DSL and online inference DSL
-- Under federal learning, model consistency needs to be guaranteed for all participants, i.e., model binding
-- model_key is the model identifier defined by the user when submitting the task
-- The model IDs of the federated parties are the party identification information role, party_id, plus model_key
-- The model version of the federated parties must be unique and consistent, and FATE-Flow directly sets it to job_id
-
-![](./images/fate_flow_pipelined_model.png){: style="height:400px;width:450px"}
-
-![](./images/fate_flow_model_storage.png){: style="height:400px;width:800px"}
-
-## 9. [Data Access](./fate_flow_data_access.md)
-
-- Upload.
- - External storage is imported directly to FATE Storage, creating a new DTable
- - When the job runs, Reader reads directly from Storage
-
-- Table Bind.
- - Key the external storage address to a new DTable in FATE
- - When the job is running, Reader reads data from external storage via Meta and transfers it to FATE Storage
- - Connecting to the Big Data ecosystem: HDFS, Hive/MySQL
-
-![](./images/fate_flow_inputoutput.png)
-
-## 10. [Multi-Party Collaboration Authority Management](./fate_flow_authority_management.md)
-
-![](./images/fate_flow_authorization.png)
+![](./images/upload_data.png)

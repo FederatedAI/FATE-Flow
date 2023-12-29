@@ -85,41 +85,6 @@ default_engines:
 - device: 算法启动方式, local/docker/k8s等
 
 ## 通信引擎池
-### pulsar
-```yaml
-pulsar:
-  host: 192.168.0.5
-  port: 6650
-  mng_port: 8080
-  cluster: standalone
-  tenant: fl-tenant
-  topic_ttl: 30
-  # default conf/pulsar_route_table.yaml
-  route_table:
-  # mode: replication / client, default: replication
-  mode: replication
-  max_message_size: 1048576
-```
-### nginx:
-```yaml
-nginx:
-  host: 127.0.0.1
-  http_port: 9300
-  grpc_port: 9310
-  # http or grpc
-  protocol: http
-```
-
-### rabbitmq
-```yaml
-nginx:
-  host: 127.0.0.1
-  http_port: 9300
-  grpc_port: 9310
-  # http or grpc
-  protocol: http
-```
-
 ### osx
 ```yaml
   host: 127.0.0.1
@@ -149,7 +114,7 @@ eggroll:
 
 ### spark
 ```yaml
-eggroll:
+spark:
   home: 
   cores: 32
 ```
