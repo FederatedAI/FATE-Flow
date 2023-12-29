@@ -7,14 +7,14 @@ from setuptools import find_packages, setup, Command
 packages = find_packages(".")
 install_requires = [
     "apsw",
-    "Flask",
-    "grpcio",
-    "grpcio-tools",
+    "Flask==2.2.5",
+    "grpcio==1.59.3",
+    "grpcio-tools==1.59.3",
     "requests",
     "urllib3",
     "cachetools",
     "filelock",
-    "pydantic",
+    "pydantic==1.10.12",
     "webargs",
     "peewee",
     "python-dotenv",
@@ -28,7 +28,7 @@ install_requires = [
     "shortuuid",
     "cos-python-sdk-v5",
     "typing-extensions",
-    "ruamel-yaml==0.16",
+    "ruamel.yaml==0.16",
     "boto3"
 ]
 extras_require = {
@@ -43,7 +43,7 @@ extras_require = {
         "grpcio-tools",
         "protobuf",
     ],
-    "all": ["fate_flow[rabbitmq,pulsar,spark,eggroll]"],
+    "fate_flow": ["fate_flow[rabbitmq,pulsar,spark,eggroll]"],
 }
 
 
