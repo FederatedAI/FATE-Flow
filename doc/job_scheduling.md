@@ -1,111 +1,156 @@
-# Quick Start
+# Multi-Party Joint Operation
 
-## 1. Environment Setup
-You can choose from the following three deployment modes based on your requirements:
+## 1. Introduction
 
-### 1.1 Pypi Package Installation
-Explanation: This mode operates in a single-machine environment.
+This primarily introduces how to define federated learning jobs using `FATE Flow`.
 
-#### 1.1.1 Installation
-- Prepare and install [conda](https://docs.conda.io/projects/miniconda/en/latest/) environment.
-- Create a virtual environment:
-```shell
-# FATE requires python>=3.8
-conda create -n fate_env python=3.8
-conda activate fate_env
+## 2. DAG Definition
+
+FATE 2.0 uses a brand new DAG to define a job, including the upstream and downstream dependencies of each component.
+
+## 3. Job Functional Configuration
+
+### 3.1 Prediction
+```yaml
+dag:
+  conf:
+    model_warehouse:                        
+      model_id: '202307171452088269870'      
+      model_version: '0'                    
 ```
-- Install FATE Flow and related dependencies:
-```shell
-pip install fate_client[fate,fate_flow]==2.0.0
+In `dag.conf.model_warehouse`, define the model information that the prediction task relies on. This model will be used for prediction in the algorithm.
+
+### 3.2 Job Inheritance
+```yaml
+dag:
+  conf:
+    inheritance:                  
+      job_id: "202307041704214920920"  
+      task_list: ["reader_0"]         
+```
+In `job.conf.inheritance`, fill in the job and algorithm component names that need to be inherited. The newly started job will directly reuse the outputs of these components.
+
+### 3.3 Specifying the Scheduler Party
+```yaml
+dag:
+  conf:
+    scheduler_party_id: "9999"   
+```
+In `job.conf.scheduler_party_id`, you can specify scheduler party information. If not specified, the initiator acts as the scheduler.
+
+### 3.4 Specifying Job Priority
+```yaml
+dag:
+  conf:
+    priority: 2
+```
+In `job.conf.priority`, specify the scheduling weight of the task. The higher the value, the higher the priority.
+
+### 3.5 Automatic Retry on Failure
+```yaml
+dag:
+  conf:
+    auto_retries: 2
+```
+In `job.conf.auto_retries`, specify the number of retries if a task fails. Default is 0.
+
+### 3.6 Resource Allocation
+```yaml
+dag:
+  conf:
+    cores: 4
+  task:
+    engine_run:
+      cores: 2
+```
+- Here, `dag.conf.cores` represents the allocated resources for the entire job (`job_cores`), and `dag.conf.engine_run.cores` represents the allocated resources for the task (`task_cores`). If a job is started with this configuration, its maximum parallelism will be 2.
+- Task parallelism = job_cores / task_cores
+
+### 3.7 Task Timeout
+```yaml
+dag:
+  task:
+    timeout: 3600 # s
+```
+In `dag.task.timeout`, specify the task's timeout. When a task is in the 'running' state after reaching the timeout, it triggers an automatic job kill operation.
+
+### 3.8 Task Provider
+```yaml
+dag:
+  task:
+    provider: fate:2.0.1@local
+```
+In `dag.task.provider`, specify the algorithm provider, version number, and execution mode for the task.
+
+## 4. Input
+**Description:** Upstream input, divided into two input types: data and models.
+
+### 4.1 Data Input
+- As parameter input to a component
+```yaml
+dag:
+  party_tasks:
+    guest_9999:
+      tasks:
+        reader_0:
+          parameters:
+            name: breast_hetero_guest
+            namespace: experiment
+    host_9998:
+      tasks:
+        reader_0:
+          parameters:
+            name: breast_hetero_host
+            namespace: experiment
+```
+The `reader` component supports directly passing a FATE data table as job-level data input.
+
+- Input of one component from another component's output
+```yaml
+dag:
+  tasks:
+    binning_0:
+      component_ref: hetero_feature_binning
+      inputs:
+        data:
+          train_data:
+            task_output_artifact:
+              output_artifact_key: train_output_data
+              producer_task: scale_0
+```
+`binning_0` depends on the output data of `scale_0`.
+
+### 4.2 Model Input
+- Model Warehouse
+```yaml
+dag:
+  conf:
+    model_warehouse:                        
+      model_id: '202307171452088269870'      
+      model_version: '0'  
+  tasks:
+    selection_0:
+      component_ref: hetero_feature_selection
+      dependent_tasks:
+      - scale_0
+        model:
+          input_model:
+            model_warehouse:
+              output_artifact_key: train_output_model
+              producer_task: selection_0
 ```
 
-#### 1.1.2 Service Initialization
-```shell
-fate_flow init --ip 127.0.0.1 --port 9380 --home $HOME_DIR
-```
-- ip: Service running IP
-- port: HTTP port for the service
-- home: Data storage directory, including data/models/logs/job configurations/sqlite.db, etc.
+## 5. Output
+The job's output includes data, models, and metrics.
 
-#### 1.1.3 Service Start/Stop
-```shell
-fate_flow status/start/stop/restart
-```
-
-### 1.2 Standalone Deployment
-Refer to [Standalone Deployment](https://github.com/FederatedAI/FATE/tree/v2.0.0/deploy/standalone-deploy/README.zh.md)
-
-### 1.3 Cluster Deployment
-Refer to [Allinone Deployment](https://github.com/FederatedAI/FATE/tree/v2.0.0/deploy/cluster-deploy/allinone/fate-allinone_deployment_guide.zh.md)
-
-## 2. User Guide
-FATE provides a client package including SDK, CLI, and Pipeline. If FATE Client isn't deployed in your environment, you can download it using `pip install fate_client`. The following operations are CLI-based.
-
-### 2.1 Data Upload
-For detailed data operation guides, refer to [Data Access Guide](data_access.zh.md)
-### 2.1.1 Configuration and Data
- - Upload Configuration: [examples-upload](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/upload)
- - Upload Data: [upload-data](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/data)
-### 2.1.2 Upload Guest Data
-```shell
-flow data upload -c examples/upload/upload_guest.json
-```
-### 2.1.3 Upload Host Data
-```shell
-flow data upload -c examples/upload/upload_host.json
-```
-
-### 2.2 Starting a FATE Job
-#### 2.2.1 Submitting a Job
-Once your data is prepared, you can submit a job to FATE Flow:
-- Job configuration examples are in [lr-train](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/examples/lr/train_lr.yaml).
-- Site IDs in the job configuration are "9998" and "9999". Replace them with real site IDs for cluster deployments; default configuration can be used for standalone deployments.
-- If you want to use your data, modify the parameters in the reader within the configuration.
-- Command to submit a job:
-```shell
-flow job submit -c examples/lr/train_lr.yaml 
-```
-- Successful submission returns:
-```json
-{
-    "code": 0,
-    "data": {
-        "model_id": "202308211911505128750",
-        "model_version": "0"
-    },
-    "job_id": "202308211911505128750",
-    "message": "success"
-}
-
-```
-The "data" here contains the output of the job, i.e., the model.
-
-#### 2.2.2 Querying a Job
-During job execution, you can query the job status using the query command:
-```shell
-flow job query -j $job_id
-```
-
-#### 2.2.3 Stopping a Job
-While the job is running, you can stop it using the stop job command:
-```shell
-flow job stop -j $job_id
-```
-
-#### 2.2.4 Rerunning a Job
-If a job fails during execution, you can rerun it using the rerun command:
-```shell
-flow job rerun -j $job_id
-```
-
-### 2.3 Fetching Job Output
-Job output includes data, models, and metrics.
-#### 2.3.1 Output Metrics
+### 5.1 Metric Output
+#### Querying Metrics
 Querying output metrics command:
 ```shell
 flow output query-metric -j $job_id -r $role -p $party_id -tn $task_name
 ```
-For example, with the previously submitted training DAG task, you can use `flow output query-metric -j 202308211911505128750 -r arbiter -p 9998 -tn lr_0` to query. The result looks like this:
+- `flow output query-metric -j 202308211911505128750 -r arbiter -p 9998 -tn lr_0`
+- Input content as follows:
 ```json
 {
     "code": 0,
@@ -165,13 +210,13 @@ For example, with the previously submitted training DAG task, you can use `flow 
 ```
 
 
-#### 2.3.2 Output Models
-##### 2.3.2.1 Querying Models
+### 5.2 Model Output
+#### Querying Models
 ```shell
 flow output query-model -j $job_id -r $role -p $party_id -tn $task_name
 ```
-For instance, with the previously submitted training DAG task, you can use `flow output query-model -j 202308211911505128750 -r host -p 9998 -tn lr_0` to query.
-The query result looks like this:
+- `flow output query-model -j 202308211911505128750 -r host -p 9998 -tn lr_0`
+- Query result as follows:
 ```json
 {
     "code": 0,
@@ -396,28 +441,27 @@ The query result looks like this:
 
 ```
 
-##### 2.3.2.2 Downloading Models
+#### Downloading Models
 ```shell 
 flow output download-model -j $job_id -r $role -p $party_id -tn $task_name -o $download_dir
 ```
-For example, with the previously submitted training DAG task, you can use `flow output download-model -j 202308211911505128750 -r host -p 9998 -tn lr_0 -o ./` to download.
-The download result is shown below:
+- `flow output download-model -j 202308211911505128750 -r host -p 9998 -tn lr_0 -o ./`
+- Download result:
 ```json
 {
     "code": 0,
     "directory": "./output_model_202308211911505128750_host_9998_lr_0",
-    "message": "download success, please check the path: ./output_model_202308211911505128750_host_9998_lr_0"
+    "message": "Download success, please check the path: ./output_model_202308211911505128750_host_9998_lr_0"
 }
-
-
 ```
 
-### 2.3.3 Output Data
-#### 2.3.3.1 Query Data Table
+### 5.3 Output Data
+#### Querying Data Tables
 ```shell
 flow output query-data-table -j $job_id -r $role -p $party_id -tn $task_name
 ```
-For instance, with the previously submitted training DAG task, you can use `flow output query-data-table -j 202308211911505128750 -r host -p 9998 -tn binning_0` to query. The result looks like this:
+- `flow output query-data-table -j 202308211911505128750 -r host -p 9998 -tn binning_0`
+- Query result:
 ```json
 {
     "train_output_data": [
@@ -429,28 +473,23 @@ For instance, with the previously submitted training DAG task, you can use `flow
 }
 ```
 
-#### 2.3.3.2 Preview Data
+#### Previewing Data
 ```shell
 flow output display-data -j $job_id -r $role -p $party_id -tn $task_name
 ```
-For example, with the previously submitted training DAG task, you can use `flow output display-data -j 202308211911505128750 -r host -p 9998 -tn binning_0` to preview output data.
+- `flow output display-data -j 202308211911505128750 -r host -p 9998 -tn binning_0`
 
-#### 2.3.3.3 Download Data
+#### Downloading Data
 ```shell
 flow output download-data -j $job_id -r $role -p $party_id -tn $task_name -o $download_dir
 ```
-For example, with the previously submitted training DAG task, you can use `flow output download-data -j 202308211911505128750 -r guest -p 9999 -tn lr_0 -o ./` to download output data. The download result is as follows:
+- `flow output download-data -j 202308211911505128750 -r guest -p 9999 -tn lr_0 -o ./`
+- Result:
 ```json
 {
     "code": 0,
     "directory": "./output_data_202308211911505128750_guest_9999_lr_0",
-    "message": "download success, please check the path: ./output_data_202308211911505128750_guest_9999_lr_0"
+    "message": "Download success, please check the path: ./output_data_202308211911505128750_guest_9999_lr_0"
 }
 ```
 
-## 3. More Documentation
-- [Restful-api](https://github.com/FederatedAI/FATE-Flow/tree/v2.0.0/doc/swagger/swagger.yaml)
-- [CLI](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0/doc/cli_index.md)
-- [Pipeline](https://github.com/FederatedAI/FATE-Client/tree/v2.0.0/doc/pipeline.md)
-- [FATE Quick Start](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/2.0/fate/quick_start.md)
-- [FATE Algorithms](https://github.com/FederatedAI/FATE/tree/v2.0.0/doc/2.0/fate)
