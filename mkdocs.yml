@@ -11,6 +11,9 @@ nav:
     #- ... | flat | *.md
     - fate_flow.md
     - quick_start.md
+    - data_access.md
+    - job_scheduling.md
+    - provider_register.md
     - system_conf.md
   - API: swagger/index.md
 
