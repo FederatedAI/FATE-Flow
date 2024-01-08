@@ -118,5 +118,3 @@ You can use delete cli to clean data tables that already exist in FATE.
 ```shell
 flow table delete --namespace experiment --name breast_hetero_guest
 ```
-
-This covers the translation of the document into English.
