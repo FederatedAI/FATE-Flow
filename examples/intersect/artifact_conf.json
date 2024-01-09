@@ -1,0 +1,34 @@
+{
+  "dsl_version": 2,
+  "initiator": {
+    "role": "guest",
+    "party_id": 9999
+  },
+  "role": {
+    "guest": [
+      9999
+    ],
+    "host": [
+      10000
+    ]
+  },
+  "component_parameters": {
+    "common": {
+      "intersect_0": {
+        "data_warehouse": {
+          "job_id": "202401081745447781510",
+          "producer_task": "data_transform_0"
+        },
+        "intersect_method": "rsa",
+        "sync_intersect_ids": false,
+        "only_output_key": true,
+        "rsa_params": {
+          "hash_method": "sha256",
+          "final_hash_method": "sha256",
+          "split_calculation": false,
+          "key_length": 2048
+        }
+      }
+    }
+  }
+}
