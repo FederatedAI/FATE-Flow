@@ -19,4 +19,4 @@ from ._component_provider import ComponentProvider
 from ._job import JobConfigurationBase, JobConfiguration
 from ._metric import MetricType, Metric, MetricMeta
 from .types import RetCode
-from ._run_parameters import RunParameters
+from ._run_parameters import RunParameters, DataWarehouseChannelSpec

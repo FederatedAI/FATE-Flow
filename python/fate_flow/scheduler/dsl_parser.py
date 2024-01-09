@@ -242,6 +242,8 @@ class BaseDSLParser(object):
                         input_data_name = data_key.split(".", -1)[-1]
 
                         if input_component not in self.component_name_index:
+                            if input_component == "parameters":
+                                continue
                             raise InputComponentNotExistError(component=name, value_type="data",
                                                               input=input_component)
                         else:
@@ -513,13 +515,14 @@ class BaseDSLParser(object):
                     for dataset in data_list:
                         up_component_name = dataset.split(".", -1)[0]
                         up_pos = self.component_name_index.get(up_component_name)
+                        if not up_pos:
+                            continue
                         up_component = self.components[up_pos]
                         data_name = dataset.split(".", -1)[1]
                         if up_component.get_output().get("data"):
                             data_pos = up_component.get_output().get("data").index(data_name)
                         else:
                             data_pos = 0
-
                         if data_key == "data" or data_key == "train_data":
                             data_type = data_key
                         else:

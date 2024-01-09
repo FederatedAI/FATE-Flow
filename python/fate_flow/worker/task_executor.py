@@ -27,7 +27,7 @@ from fate_flow.component_env_utils import provider_utils
 from fate_flow.db.component_registry import ComponentRegistry
 from fate_flow.db.db_models import TrackingOutputDataInfo, fill_db_model_object
 from fate_flow.db.runtime_config import RuntimeConfig
-from fate_flow.entity import DataCache, RunParameters
+from fate_flow.entity import DataCache, RunParameters, DataWarehouseChannelSpec
 from fate_flow.entity.run_status import TaskStatus
 from fate_flow.errors import PassError
 from fate_flow.hook import HookManager
@@ -158,6 +158,7 @@ class TaskExecutor(BaseTaskWorker):
             LOGGER.info(f'run {args.component_name} {args.task_id} {args.task_version} on {args.role} {args.party_id} task')
             LOGGER.info(f"component parameters on party:\n{json_dumps(component_parameters_on_party, indent=4)}")
             LOGGER.info(f"task input dsl {task_input_dsl}")
+            data_warehouse = component_parameters_on_party.get("ComponentParam", {}).get("data_warehouse", None)
             task_run_args, input_table_list = self.get_task_run_args(job_id=args.job_id, role=args.role, party_id=args.party_id,
                                                                      task_id=args.task_id,
                                                                      task_version=args.task_version,
@@ -165,6 +166,7 @@ class TaskExecutor(BaseTaskWorker):
                                                                      job_parameters=job_parameters,
                                                                      task_parameters=task_parameters,
                                                                      input_dsl=task_input_dsl,
+                                                                     data_warehouse=data_warehouse
                                                                      )
             if module_name in {"Upload", "Download", "Reader", "Writer", "Checkpoint"}:
                 task_run_args["job_parameters"] = job_parameters
@@ -324,7 +326,7 @@ class TaskExecutor(BaseTaskWorker):
     @classmethod
     def get_task_run_args(cls, job_id, role, party_id, task_id, task_version,
                           job_args, job_parameters: RunParameters, task_parameters: RunParameters,
-                          input_dsl, filter_type=None, filter_attr=None, get_input_table=False):
+                          input_dsl, filter_type=None, filter_attr=None, get_input_table=False, data_warehouse=None):
         task_run_args = {}
         input_table = {}
         input_table_info_list = []
@@ -353,6 +355,32 @@ class TaskExecutor(BaseTaskWorker):
                                 storage_table_meta = storage.StorageTableMeta(
                                     name=job_args['data'][search_data_name]['name'],
                                     namespace=job_args['data'][search_data_name]['namespace'])
+                        elif search_component_name == 'parameters':
+                            LOGGER.info(f"search_data_name: {search_data_name}")
+                            if search_data_name == "data_warehouse" and data_warehouse:
+                                LOGGER.info(f"data_warehouse: {data_warehouse}")
+                                data_warehouse = DataWarehouseChannelSpec(**data_warehouse)
+                                if data_warehouse.name and data_warehouse.namespace:
+                                    namespace = data_warehouse.namespace
+                                    name = data_warehouse.name
+                                else:
+                                    tables = tracker_client.get_output_data_tables(
+                                        job_id=data_warehouse.job_id,
+                                        role=role,
+                                        party_id=party_id,
+                                        component_name=data_warehouse.producer_task
+                                    )
+                                    if tables:
+                                        name = tables[0].get("table_name")
+                                        namespace = tables[0].get("table_namespace")
+                                    else:
+                                        raise RuntimeError(f"No found job[{data_warehouse.job_id} {role} {party_id}"
+                                                           f" {data_warehouse.producer_task}] output table")
+                                LOGGER.info(f"data_warehouse namespace {namespace} name {name}")
+                                storage_table_meta = storage.StorageTableMeta(
+                                    name=name,
+                                    namespace=namespace
+                                )
                         else:
                             upstream_output_table_infos_json = tracker_client.get_output_data_info(
                                 data_name=search_data_name)

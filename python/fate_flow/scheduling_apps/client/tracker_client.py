@@ -278,6 +278,23 @@ class TrackerClient(object):
         else:
             return None
 
+    def get_output_data_tables(self, job_id, role, party_id, component_name):
+        LOGGER.info(f"Request get output data table {job_id} {role} {party_id} {component_name}")
+        request_body = {
+            "job_id": job_id,
+            "role": role,
+            "party_id": party_id,
+            "component_name": component_name
+        }
+        response = api_utils.local_api(job_id=self.job_id,
+                                       method='POST',
+                                       endpoint='/tracking/component/output/data/table',
+                                       json_body=request_body)
+        if response["retcode"] == RetCode.SUCCESS and "data" in response:
+            return response["data"]
+        else:
+            return None
+
     def log_component_summary(self, summary_data: dict):
         LOGGER.info("Request save job {} task {} {} on {} {} component summary".format(self.job_id,
                                                                                        self.task_id,

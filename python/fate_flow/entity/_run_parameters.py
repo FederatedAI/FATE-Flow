@@ -83,3 +83,15 @@ class RunParameters(BaseEntity):
 
     def __str__(self):
         return str(self.to_dict())
+
+
+class DataWarehouseChannelSpec(BaseEntity):
+    def __init__(self, **kwargs):
+        self.namespace = None
+        self.name = None
+        self.job_id = None
+        self.producer_task = None
+        self.output_artifact_key = None
+        for k, v in kwargs.items():
+            if hasattr(self, k):
+                setattr(self, k, v)
