@@ -27,7 +27,7 @@ from fate_arch.common.base_utils import CustomJSONEncoder
 from fate_flow.settings import CLIENT_AUTHENTICATION, HTTP_APP_KEY, HTTP_SECRET_KEY
 
 
-requests.models.complexjson.dumps = functools.partial(json.dumps, cls=CustomJSONEncoder)
+requests.models.complexjson.dumps = functools.partial(json.dumps, cls=CustomJSONEncoder, allow_nan=True)
 
 
 def request(**kwargs):
