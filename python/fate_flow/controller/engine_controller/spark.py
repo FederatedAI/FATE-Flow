@@ -35,9 +35,8 @@ class SparkEngine(EngineABC):
         spark_home = ServerRegistry.FATE_ON_SPARK.get("spark", {}).get("home")
         if not spark_home:
             try:
-                # import pyspark
-                # spark_home = pyspark.__path__[0]
-                pass
+                import pyspark
+                spark_home = pyspark.__path__[0]
             except ImportError as e:
                 raise RuntimeError("can not import pyspark")
             except Exception as e:
