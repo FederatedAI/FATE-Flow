@@ -220,7 +220,7 @@ def job_log_download():
 
     tar.close()
     memory_file.seek(0)
-    return send_file(memory_file, attachment_filename=f'job_{job_id}_log.tar.gz', as_attachment=True)
+    return send_file(memory_file, download_name=f'job_{job_id}_log.tar.gz', as_attachment=True)
 
 
 @manager.route('/log/path', methods=['POST'])
@@ -310,7 +310,7 @@ def dsl_generator():
             temp_filepath = os.path.join(TEMP_DIRECTORY, data.get("filename"))
             with open(temp_filepath, "w") as fout:
                 fout.write(json.dumps(predict_dsl, indent=4))
-            return send_file(open(temp_filepath, 'rb'), as_attachment=True, attachment_filename=data.get("filename"))
+            return send_file(open(temp_filepath, 'rb'), as_attachment=True, download_name=data.get("filename"))
         return get_json_result(data=predict_dsl)
     except Exception as e:
         stat_logger.exception(e)

@@ -448,4 +448,4 @@ def send_file_in_mem(data, filename):
     f.write(data)
     f.seek(0)
 
-    return send_file(f, as_attachment=True, attachment_filename=filename)
+    return send_file(f, as_attachment=True, download_name=filename)
