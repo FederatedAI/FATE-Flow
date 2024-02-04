@@ -27,7 +27,10 @@ from fate_flow.entity import RetCode
 @manager.route('/fateflow/info', methods=['POST'])
 def fate_flow_server_info():
     data = RuntimeConfig.SERVICE_DB.get_servers()
-    return get_json_result(data=data)
+    infos = {}
+    for instance_id, instance in data.items():
+        infos[instance_id] = instance.to_dict()
+    return get_json_result(data=infos)
 
 
 @manager.route('/version/get', methods=['POST'])
