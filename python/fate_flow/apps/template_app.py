@@ -52,4 +52,4 @@ def template_download():
                 tar.add(full_path, rel_path)
     tar.close()
     memory_file.seek(0)
-    return send_file(memory_file, attachment_filename=f'template.tar.gz', as_attachment=True)
+    return send_file(memory_file, download_name=f'template.tar.gz', as_attachment=True)
