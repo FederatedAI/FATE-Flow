@@ -99,7 +99,7 @@ def list_job():
             query[i] = ('contains', request.json[i])
     if request.json.get('party_id') is not None:
         try:
-            query['party_id'] = int(request.json['party_id'])
+            query['party_id'] = str(request.json['party_id'])
         except Exception:
             return error_response(400, f"Invalid parameter 'party_id'.")
         query['party_id'] = ('contains', query['party_id'])
