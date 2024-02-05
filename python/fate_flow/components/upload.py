@@ -411,7 +411,7 @@ class Upload(ComponentBase):
         self.tracker.set_metric_meta(
             metric_namespace="upload",
             metric_name="data_access",
-            metric_meta=MetricMeta(name="upload", metric_type=MetricType.UPLOAD),
+            metric_meta=MetricMeta(name="upload", metric_type=MetricType.UPLOAD.value),
         )
 
     def get_data_table_count(self, path, name, namespace):
