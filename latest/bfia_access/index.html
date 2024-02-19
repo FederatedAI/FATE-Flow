@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="zh" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -15,19 +15,19 @@
         <link rel="next" href="../swagger/">
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.9">
     
     
       
-        <title>BFIA接入指南 - FATE Flow</title>
+        <title>BFIA Integration Guide - FATE Flow</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.f2e4d321.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.f2e4d321.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -46,15 +46,15 @@
       
     
     
-      <link rel="stylesheet" href="../../mkdocs/css/termynal.css">
+      <link rel="stylesheet" href="../mkdocs/css/termynal.css">
     
-      <link rel="stylesheet" href="../../mkdocs/css/custom.css">
+      <link rel="stylesheet" href="../mkdocs/css/custom.css">
     
-      <link rel="stylesheet" href="../../mkdocs/css/extra.css">
+      <link rel="stylesheet" href="../mkdocs/css/extra.css">
     
-      <link rel="stylesheet" href="../../mkdocs/css/landing.css">
+      <link rel="stylesheet" href="../mkdocs/css/landing.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,8 +80,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#bfia" class="md-skip">
-          跳转至
+        <a href="#bfia-integration-guide" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -99,8 +99,8 @@
   
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../" title="FATE Flow" class="md-header__button md-logo" aria-label="FATE Flow" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="FATE Flow" class="md-header__button md-logo" aria-label="FATE Flow" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              BFIA接入指南
+              BFIA Integration Guide
             
           </span>
         </div>
@@ -160,20 +160,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="选择当前语言">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../bfia_access/" hreflang="en" class="md-select__link">
+            <a href="./" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="./" hreflang="zh" class="md-select__link">
+            <a href="../zh/bfia_access/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -192,16 +192,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="查找">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
@@ -212,7 +212,7 @@
       <div class="md-search__scrollwrap" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            正在初始化搜索引擎
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -223,7 +223,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/FederatedAI/FATE-Flow" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/FederatedAI/FATE-Flow" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
@@ -238,7 +238,7 @@
   
     
       
-<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -247,7 +247,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../" class="md-tabs__link">
+      <a href=".." class="md-tabs__link">
         
   
     
@@ -324,9 +324,9 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../" title="FATE Flow" class="md-nav__button md-logo" aria-label="FATE Flow" data-md-component="logo">
+    <a href=".." title="FATE Flow" class="md-nav__button md-logo" aria-label="FATE Flow" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -336,7 +336,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/FederatedAI/FATE-Flow" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/FederatedAI/FATE-Flow" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
@@ -356,7 +356,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -439,7 +439,7 @@
         
   
   <span class="md-ellipsis">
-    整体设计
+    Overall Design
   </span>
   
 
@@ -460,7 +460,7 @@
         
   
   <span class="md-ellipsis">
-    快速入门
+    Quick Start
   </span>
   
 
@@ -481,7 +481,7 @@
         
   
   <span class="md-ellipsis">
-    FATE数据接入指南
+    FATE Data Access Guide
   </span>
   
 
@@ -502,7 +502,7 @@
         
   
   <span class="md-ellipsis">
-    多方联合作业
+    Multi-Party Joint Operation
   </span>
   
 
@@ -523,7 +523,7 @@
         
   
   <span class="md-ellipsis">
-    组件注册中心
+    Component Registry
   </span>
   
 
@@ -544,7 +544,7 @@
         
   
   <span class="md-ellipsis">
-    系统配置描述文档
+    System Configuration
   </span>
   
 
@@ -574,7 +574,7 @@
           
   
   <span class="md-ellipsis">
-    BFIA接入指南
+    BFIA Integration Guide
   </span>
   
 
@@ -585,7 +585,7 @@
         
   
   <span class="md-ellipsis">
-    BFIA接入指南
+    BFIA Integration Guide
   </span>
   
 
@@ -593,7 +593,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -602,7 +602,7 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -617,37 +617,37 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-fate" class="md-nav__link">
+  <a href="#11-fate-algorithm" class="md-nav__link">
     <span class="md-ellipsis">
-      1.1 FATE算法
+      1.1 FATE Algorithm
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#12" class="md-nav__link">
+  <a href="#12-unionpay-algorithm" class="md-nav__link">
     <span class="md-ellipsis">
-      1.2 银联算法
+      1.2 UnionPay Algorithm
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#13-bfia" class="md-nav__link">
+  <a href="#13-other-bfia-protocol-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      1.3 BFIA协议其他算法
+      1.3 Other BFIA Protocol Algorithms
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1.3 BFIA协议其他算法">
+    <nav class="md-nav" aria-label="1.3 Other BFIA Protocol Algorithms">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#131-pipeline" class="md-nav__link">
+  <a href="#131-pipeline-adaptation-development" class="md-nav__link">
     <span class="md-ellipsis">
-      1.3.1 pipeline适配开发
+      1.3.1 Pipeline Adaptation Development:
     </span>
   </a>
   
@@ -664,56 +664,56 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-scheduling" class="md-nav__link">
     <span class="md-ellipsis">
-      2. 调度
+      2. Scheduling
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 调度">
+    <nav class="md-nav" aria-label="2. Scheduling">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-modifying-configurations" class="md-nav__link">
     <span class="md-ellipsis">
-      2.1 修改配置
+      2.1 Modifying Configurations
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-registering-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2 注册算法
+      2.2 Registering Algorithms
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2.2 注册算法">
+    <nav class="md-nav" aria-label="2.2 Registering Algorithms">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#221-fate" class="md-nav__link">
+  <a href="#221-registering-fate-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2.1 注册FATE算法
+      2.2.1 Registering FATE Algorithms
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#222" class="md-nav__link">
+  <a href="#222-registering-unionpay-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2.2 注册银联算法
+      2.2.2 Registering UnionPay Algorithms
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#223" class="md-nav__link">
+  <a href="#223-registering-other-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2.3 注册其他算法
+      2.2.3 Registering Other Algorithms
     </span>
   </a>
   
@@ -730,39 +730,39 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-usage" class="md-nav__link">
     <span class="md-ellipsis">
-      3. 使用
+      3. Usage
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 使用">
+    <nav class="md-nav" aria-label="3. Usage">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-fate" class="md-nav__link">
+  <a href="#31-using-fate-algorithm-images" class="md-nav__link">
     <span class="md-ellipsis">
-      3.1 使用FATE算法镜像
+      3.1 Using FATE Algorithm Images
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3.1 使用FATE算法镜像">
+    <nav class="md-nav" aria-label="3.1 Using FATE Algorithm Images">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#311" class="md-nav__link">
+  <a href="#311-data-upload" class="md-nav__link">
     <span class="md-ellipsis">
-      3.1.1 数据上传
+      3.1.1 Data Upload
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3.1.1 数据上传">
+    <nav class="md-nav" aria-label="3.1.1 Data Upload">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#3111-upload" class="md-nav__link">
     <span class="md-ellipsis">
-      3.1.1.1 upload
+      3.1.1.1 Upload
     </span>
   </a>
   
@@ -783,9 +783,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#312-fate" class="md-nav__link">
+  <a href="#312-running-fate-algorithm-components" class="md-nav__link">
     <span class="md-ellipsis">
-      3.1.2 运行FATE算法组件
+      3.1.2 Running FATE Algorithm Components
     </span>
   </a>
   
@@ -797,28 +797,28 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32" class="md-nav__link">
+  <a href="#32-using-algorithm-images-from-other-vendors" class="md-nav__link">
     <span class="md-ellipsis">
-      3.2 使用其他厂商算法镜像
+      3.2 Using Algorithm Images from Other Vendors
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3.2 使用其他厂商算法镜像">
+    <nav class="md-nav" aria-label="3.2 Using Algorithm Images from Other Vendors">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#321" class="md-nav__link">
+  <a href="#321-data-upload" class="md-nav__link">
     <span class="md-ellipsis">
-      3.2.1 数据上传
+      3.2.1 Data Upload
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#322" class="md-nav__link">
+  <a href="#322-running-algorithm-components-from-other-vendors-unionpay-example" class="md-nav__link">
     <span class="md-ellipsis">
-      3.2.2 运行其他厂商算法组件(银联为例)
+      3.2.2 Running Algorithm Components from Other Vendors (UnionPay example)
     </span>
   </a>
   
@@ -883,7 +883,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="目录">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -892,7 +892,7 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      目录
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -907,37 +907,37 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-fate" class="md-nav__link">
+  <a href="#11-fate-algorithm" class="md-nav__link">
     <span class="md-ellipsis">
-      1.1 FATE算法
+      1.1 FATE Algorithm
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#12" class="md-nav__link">
+  <a href="#12-unionpay-algorithm" class="md-nav__link">
     <span class="md-ellipsis">
-      1.2 银联算法
+      1.2 UnionPay Algorithm
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#13-bfia" class="md-nav__link">
+  <a href="#13-other-bfia-protocol-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      1.3 BFIA协议其他算法
+      1.3 Other BFIA Protocol Algorithms
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1.3 BFIA协议其他算法">
+    <nav class="md-nav" aria-label="1.3 Other BFIA Protocol Algorithms">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#131-pipeline" class="md-nav__link">
+  <a href="#131-pipeline-adaptation-development" class="md-nav__link">
     <span class="md-ellipsis">
-      1.3.1 pipeline适配开发
+      1.3.1 Pipeline Adaptation Development:
     </span>
   </a>
   
@@ -954,56 +954,56 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#2-scheduling" class="md-nav__link">
     <span class="md-ellipsis">
-      2. 调度
+      2. Scheduling
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 调度">
+    <nav class="md-nav" aria-label="2. Scheduling">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21" class="md-nav__link">
+  <a href="#21-modifying-configurations" class="md-nav__link">
     <span class="md-ellipsis">
-      2.1 修改配置
+      2.1 Modifying Configurations
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#22" class="md-nav__link">
+  <a href="#22-registering-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2 注册算法
+      2.2 Registering Algorithms
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2.2 注册算法">
+    <nav class="md-nav" aria-label="2.2 Registering Algorithms">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#221-fate" class="md-nav__link">
+  <a href="#221-registering-fate-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2.1 注册FATE算法
+      2.2.1 Registering FATE Algorithms
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#222" class="md-nav__link">
+  <a href="#222-registering-unionpay-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2.2 注册银联算法
+      2.2.2 Registering UnionPay Algorithms
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#223" class="md-nav__link">
+  <a href="#223-registering-other-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
-      2.2.3 注册其他算法
+      2.2.3 Registering Other Algorithms
     </span>
   </a>
   
@@ -1020,39 +1020,39 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#3-usage" class="md-nav__link">
     <span class="md-ellipsis">
-      3. 使用
+      3. Usage
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 使用">
+    <nav class="md-nav" aria-label="3. Usage">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-fate" class="md-nav__link">
+  <a href="#31-using-fate-algorithm-images" class="md-nav__link">
     <span class="md-ellipsis">
-      3.1 使用FATE算法镜像
+      3.1 Using FATE Algorithm Images
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3.1 使用FATE算法镜像">
+    <nav class="md-nav" aria-label="3.1 Using FATE Algorithm Images">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#311" class="md-nav__link">
+  <a href="#311-data-upload" class="md-nav__link">
     <span class="md-ellipsis">
-      3.1.1 数据上传
+      3.1.1 Data Upload
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3.1.1 数据上传">
+    <nav class="md-nav" aria-label="3.1.1 Data Upload">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#3111-upload" class="md-nav__link">
     <span class="md-ellipsis">
-      3.1.1.1 upload
+      3.1.1.1 Upload
     </span>
   </a>
   
@@ -1073,9 +1073,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#312-fate" class="md-nav__link">
+  <a href="#312-running-fate-algorithm-components" class="md-nav__link">
     <span class="md-ellipsis">
-      3.1.2 运行FATE算法组件
+      3.1.2 Running FATE Algorithm Components
     </span>
   </a>
   
@@ -1087,28 +1087,28 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32" class="md-nav__link">
+  <a href="#32-using-algorithm-images-from-other-vendors" class="md-nav__link">
     <span class="md-ellipsis">
-      3.2 使用其他厂商算法镜像
+      3.2 Using Algorithm Images from Other Vendors
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3.2 使用其他厂商算法镜像">
+    <nav class="md-nav" aria-label="3.2 Using Algorithm Images from Other Vendors">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#321" class="md-nav__link">
+  <a href="#321-data-upload" class="md-nav__link">
     <span class="md-ellipsis">
-      3.2.1 数据上传
+      3.2.1 Data Upload
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#322" class="md-nav__link">
+  <a href="#322-running-algorithm-components-from-other-vendors-unionpay-example" class="md-nav__link">
     <span class="md-ellipsis">
-      3.2.2 运行其他厂商算法组件(银联为例)
+      3.2.2 Running Algorithm Components from Other Vendors (UnionPay example)
     </span>
   </a>
   
@@ -1142,12 +1142,12 @@
   
 
 
-<h1 id="bfia">BFIA接入指南<a class="headerlink" href="#bfia" title="Permanent link">&para;</a></h1>
-<p><a href="https://github.com/FederatedAI/InterOp">BFIA协议</a>由北京金融科技产业联盟组织，中国银联牵头，联合主要金融机构、电信运营商、互联网公司、科技公司、检测机构、科研院所等60余家单位共同制定的互联互通API接口规范。FATE 2.0版本从Pipeline、调度、通信等几个层面适配此协议，本文将介绍如何以BFIA协议与FATE框架进行联邦学习。</p>
+<h1 id="bfia-integration-guide">BFIA Integration Guide<a class="headerlink" href="#bfia-integration-guide" title="Permanent link">&para;</a></h1>
+<p>The <a href="https://github.com/FederatedAI/InterOp">BFIA protocol</a>, organized by the Beijing Financial Technology Industry Alliance and led by China UnionPay, is an API interface specification established jointly by over 60 units, including major financial institutions, telecom operators, internet companies, technology firms, testing agencies, and research institutes. FATE 2.0 has adapted this protocol across various layers like Pipeline, Scheduling, Communication, and more. This document will guide how to perform federated learning with FATE framework using the BFIA protocol.</p>
 <h2 id="1-pipeline">1. Pipeline<a class="headerlink" href="#1-pipeline" title="Permanent link">&para;</a></h2>
-<p><img alt="pipeline" src="../../images/open_flow/pipeline.png" />
-pipeline构建FATE的互联互通统一客户端，产生基于FATE 2.0协议的DAG配置。pipeline并不直接调用BFIA协议API，而是调用FATE协议API，在FATE Flow内通过适配器模式转化为BFIA协议运行。</p>
-<h3 id="11-fate">1.1 FATE算法<a class="headerlink" href="#11-fate" title="Permanent link">&para;</a></h3>
+<p><img alt="pipeline" src="../images/open_flow/pipeline.png" /></p>
+<p>The pipeline constructs a unified client for FATE's interoperation, generating a DAG configuration based on the FATE 2.0 protocol. The pipeline doesn't directly call the BFIA protocol API; instead, it utilizes the FATE protocol API and transforms it into BFIA protocol execution within the FATE Flow through an adapter pattern.</p>
+<h3 id="11-fate-algorithm">1.1 FATE Algorithm<a class="headerlink" href="#11-fate-algorithm" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">fate_client.pipeline</span> <span class="kn">import</span> <span class="n">FateFlowPipeline</span>
 <span class="kn">from</span> <span class="nn">fate_client.pipeline.components.fate</span> <span class="kn">import</span> <span class="n">CoordinatedLR</span><span class="p">,</span> <span class="n">PSI</span>
 <span class="kn">from</span> <span class="nn">fate_client.pipeline.interface.channel</span> <span class="kn">import</span> <span class="n">DataWarehouseChannel</span>
@@ -1184,7 +1184,7 @@ pipeline构建FATE的互联互通统一客户端，产生基于FATE 2.0协议的
 <span class="n">pipeline</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
 <span class="n">pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
 </code></pre></div>
-<h3 id="12">1.2 银联算法<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
+<h3 id="12-unionpay-algorithm">1.2 UnionPay Algorithm<a class="headerlink" href="#12-unionpay-algorithm" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">fate_client.pipeline</span> <span class="kn">import</span> <span class="n">FateFlowPipeline</span>
 <span class="kn">from</span> <span class="nn">fate_client.pipeline.adapters.bfia.components.unionpay.intersection</span> <span class="kn">import</span> <span class="n">Intersection</span>
 <span class="kn">from</span> <span class="nn">fate_client.pipeline.adapters.bfia.components.unionpay.hetero_lr</span> <span class="kn">import</span> <span class="n">HeteroLR</span>
@@ -1247,25 +1247,25 @@ pipeline构建FATE的互联互通统一客户端，产生基于FATE 2.0协议的
 <span class="n">pipeline</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
 <span class="n">pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
 </code></pre></div>
-<h3 id="13-bfia">1.3 BFIA协议其他算法<a class="headerlink" href="#13-bfia" title="Permanent link">&para;</a></h3>
-<h4 id="131-pipeline">1.3.1 pipeline适配开发<a class="headerlink" href="#131-pipeline" title="Permanent link">&para;</a></h4>
-<p>目前pipeline适配了fate和银联算法的生成，其他的算法也可以接入pipeline。具体接入方法如下
-- 组件描述文件：需要将算法组件描述文件放在<a href="https://github.com/FederatedAI/FATE-Client/blob/v2.0.0/python/fate_client/pipeline/adapters/bfia/component_define">pipeline-component-define</a>
-- 组件定义：需要将算法组件描述文件放在<a href="https://github.com/FederatedAI/FATE-Client/blob/v2.0.0/python/fate_client/pipeline/adapters/bfia/components">pipeline-component</a></p>
-<h2 id="2">2. 调度<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p><img alt="scheduler" src="../../images/open_flow/scheduler.png" /></p>
-<h3 id="21">2.1 修改配置<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<h3 id="13-other-bfia-protocol-algorithms">1.3 Other BFIA Protocol Algorithms<a class="headerlink" href="#13-other-bfia-protocol-algorithms" title="Permanent link">&para;</a></h3>
+<h4 id="131-pipeline-adaptation-development">1.3.1 Pipeline Adaptation Development:<a class="headerlink" href="#131-pipeline-adaptation-development" title="Permanent link">&para;</a></h4>
+<p>To integrate other algorithms, follow these steps:
+- Component Description File: Place the algorithm component description file in <a href="https://github.com/FederatedAI/FATE-Client/blob/v2.0.0/python/fate_client/pipeline/adapters/bfia/component_define">pipeline-component-define</a>
+- Component Definition: Place the algorithm component definition file in <a href="https://github.com/FederatedAI/FATE-Client/blob/v2.0.0/python/fate_client/pipeline/adapters/bfia/components">pipeline-component</a></p>
+<h2 id="2-scheduling">2. Scheduling<a class="headerlink" href="#2-scheduling" title="Permanent link">&para;</a></h2>
+<p><img alt="scheduler" src="../images/open_flow/scheduler.png" /></p>
+<h3 id="21-modifying-configurations">2.1 Modifying Configurations<a class="headerlink" href="#21-modifying-configurations" title="Permanent link">&para;</a></h3>
 <ul>
-<li>修改<a href="../python/fate_flow/adapter/bfia/conf/route_table.yaml">路由配置</a></li>
-<li>本方站点<a href="../python/fate_flow/adapter/bfia/settings.py">local-site-settings</a></li>
-<li><code>LOCAL_SITE_ID</code>: 本方站点id</li>
-<li><code>STORAGE_ADDRESS</code>: s3存储地址</li>
-<li><code>TRANSPORT</code>: 本方算法所使用的通信引擎地址</li>
-<li><code>CONTAINER_LOG_PATH</code>: 容器的日志磁盘挂载的本地路径</li>
-<li><code>CALLBACK_ADDRESS</code>: 调度服务的地址，供算法回调使用</li>
+<li>Modify <a href="../python/fate_flow/adapter/bfia/conf/route_table.yaml">Route-Table</a>.</li>
+<li>Update <a href="../python/fate_flow/adapter/bfia/settings.py">local-site-settings</a></li>
+<li><code>LOCAL_SITE_ID</code>: ID of the local site.</li>
+<li><code>STORAGE_ADDRESS</code>: S3 storage address.</li>
+<li><code>TRANSPORT</code>: Communication engine address used by the local algorithm.</li>
+<li><code>CONTAINER_LOG_PATH</code>: Local path for container logs.</li>
+<li><code>CALLBACK_ADDRESS</code>: Address for scheduling service used by the algorithm for callbacks.</li>
 </ul>
-<h3 id="22">2.2 注册算法<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code><span class="p">{</span>
+<h3 id="22-registering-algorithms">2.2 Registering Algorithms<a class="headerlink" href="#22-registering-algorithms" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unionpay&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docker&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.0&quot;</span><span class="p">,</span>
@@ -1277,37 +1277,37 @@ pipeline构建FATE的互联互通统一客户端，产生基于FATE 2.0协议的
 <span class="w">  </span><span class="nt">&quot;components_description&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="p">}</span>
 </code></pre></div>
-注册配置说明：
-- <code>name</code>: 提供厂商名称
-- <code>device</code>: 算法运行的模式，当前支持"docker"
-- <code>version</code>: 算法版本
-- <code>metadata</code>: 镜像信息
-- <code>protocol</code>: 算法使用协议
-- <code>components_description</code>: 算法组件描述信息, 参考<a href="https://github.com/FederatedAI/InterOp/blob/main/API_SPECS/3.%E7%AE%97%E6%B3%95%E7%BB%84%E4%BB%B6%E5%B1%82%E6%8E%A5%E5%8F%A3/%E9%9A%90%E7%A7%81%E8%AE%A1%E7%AE%97%E4%BA%92%E8%81%94%E4%BA%92%E9%80%9A%E7%AE%97%E6%B3%95%E7%BB%84%E4%BB%B6%E5%B1%82API.md#2-%E7%AE%97%E6%B3%95%E7%BB%84%E4%BB%B6%E8%87%AA%E6%8F%8F%E8%BF%B0%E6%96%87%E4%BB%B6">BFIA算法自描述</a></p>
-<h4 id="221-fate">2.2.1 注册FATE算法<a class="headerlink" href="#221-fate" title="Permanent link">&para;</a></h4>
+<p>Registration Configuration Explanation:
+- <code>name</code>: Name of the provider/vendor.
+- <code>device</code>: Mode of algorithm execution, currently supporting "docker".
+- <code>version</code>: Algorithm version.
+- <code>metadata</code>: Image information.
+- <code>protocol</code>: Protocol used by the algorithm.
+- <code>components_description</code>: Description of algorithm components, reference <a href="https://github.com/FederatedAI/InterOp/blob/main/API_SPECS/3.%E7%AE%97%E6%B3%95%E7%BB%84%E4%BB%B6%E5%B1%82%E6%8E%A5%E5%8F%A3/%E9%9A%90%E7%A7%81%E8%AE%A1%E7%AE%97%E4%BA%92%E8%81%94%E4%BA%92%E9%80%9A%E7%AE%97%E6%B3%95%E7%BB%84%E4%BB%B6%E5%B1%82API.md#2-%E7%AE%97%E6%B3%95%E7%BB%84%E4%BB%B6%E8%87%AA%E6%8F%8F%E8%BF%B0%E6%96%87%E4%BB%B6">BFIA Algorithm Self-description</a></p>
+<h4 id="221-registering-fate-algorithms">2.2.1 Registering FATE Algorithms<a class="headerlink" href="#221-registering-fate-algorithms" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>register<span class="w"> </span>-c<span class="w"> </span>examples/bfia/fate/register/fate_components.json
 </code></pre></div>
-- 配置参考<a href="../examples/bfia/fate/register/fate_components.json">fate_components.json</a></p>
-<h4 id="222">2.2.2 注册银联算法<a class="headerlink" href="#222" title="Permanent link">&para;</a></h4>
+- Configuration reference: <a href="../examples/bfia/fate/register/fate_components.json">fate_components.json</a></p>
+<h4 id="222-registering-unionpay-algorithms">2.2.2 Registering UnionPay Algorithms<a class="headerlink" href="#222-registering-unionpay-algorithms" title="Permanent link">&para;</a></h4>
 <p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>register<span class="w"> </span>-c<span class="w"> </span>examples/bfia/unionpay/register/unionpay_components.json
 </code></pre></div>
-- 配置参考<a href="../examples/bfia/unionpay/register/unionpay_components.json">unionpay_components.json</a></p>
-<h4 id="223">2.2.3 注册其他算法<a class="headerlink" href="#223" title="Permanent link">&para;</a></h4>
-<p>可以按照上面配置将其他厂商的算法镜像注册到FATE Flow服务中。运行时会自动加载成容器运行此算法。</p>
-<h2 id="3">3. 使用<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+- Configuration reference: <a href="../examples/bfia/unionpay/register/unionpay_components.json">unionpay_components.json</a></p>
+<h4 id="223-registering-other-algorithms">2.2.3 Registering Other Algorithms<a class="headerlink" href="#223-registering-other-algorithms" title="Permanent link">&para;</a></h4>
+<p>You can use the above configuration to register algorithm images from other vendors into the FATE Flow service. They will be automatically loaded and run as containers during execution.</p>
+<h2 id="3-usage">3. Usage<a class="headerlink" href="#3-usage" title="Permanent link">&para;</a></h2>
 <ul>
-<li>按照上述2.1修改配置</li>
-<li>按照上述2.2注册对应的算法</li>
+<li>Modify configurations as outlined in section 2.1.</li>
+<li>Register corresponding algorithms as described in section 2.2.</li>
 </ul>
-<h3 id="31-fate">3.1 使用FATE算法镜像<a class="headerlink" href="#31-fate" title="Permanent link">&para;</a></h3>
-<h4 id="311">3.1.1 数据上传<a class="headerlink" href="#311" title="Permanent link">&para;</a></h4>
-<h5 id="3111-upload">3.1.1.1 upload<a class="headerlink" href="#3111-upload" title="Permanent link">&para;</a></h5>
+<h3 id="31-using-fate-algorithm-images">3.1 Using FATE Algorithm Images<a class="headerlink" href="#31-using-fate-algorithm-images" title="Permanent link">&para;</a></h3>
+<h4 id="311-data-upload">3.1.1 Data Upload<a class="headerlink" href="#311-data-upload" title="Permanent link">&para;</a></h4>
+<h5 id="3111-upload">3.1.1.1 Upload<a class="headerlink" href="#3111-upload" title="Permanent link">&para;</a></h5>
 <ul>
-<li>安装FATE Flow和 Flow Cli
+<li>Install FATE Flow and Flow Cli
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">fate_flow</span><span class="o">==</span><span class="m">2</span>.0.0
 pip<span class="w"> </span>install<span class="w"> </span><span class="nv">fate_client</span><span class="o">==</span><span class="m">2</span>.0.0
 </code></pre></div></li>
-<li>upload数据到s3存储
+<li>Upload data to s3 storage
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 
@@ -1354,19 +1354,19 @@ pip<span class="w"> </span>install<span class="w"> </span><span class="nv">fate_
     <span class="p">}</span>
     <span class="n">upload_data</span><span class="p">(</span><span class="n">s3_address</span><span class="o">=</span><span class="n">s3_address</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
 </code></pre></div>
-修改上面的<code>s3_address</code>、<code>file</code>、<code>namespace</code>、 <code>name</code>、<code>meta</code>参数为实际值，参数含义如下：
-<div class="highlight"><pre><span></span><code><span class="nt">s3_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3存储地址</span>
-<span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">本地数据的路径</span>
-<span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate的表空间名</span>
-<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate的表名</span>
-<span class="nt">meta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">数据元信息</span>
+Modify the parameters <code>s3_address</code>, <code>file</code>, <code>namespace</code>, <code>name</code>, <code>meta</code> in the above code with actual values, where:
+<div class="highlight"><pre><span></span><code><span class="nt">s3_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3 storage address</span>
+<span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local path of the data</span>
+<span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FATE table namespace</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FATE table name</span>
+<span class="nt">meta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Data metadata</span>
 </code></pre></div></li>
 </ul>
 <h5 id="3112-dataframe-transformer">3.1.1.2 dataframe-transformer<a class="headerlink" href="#3112-dataframe-transformer" title="Permanent link">&para;</a></h5>
-<p>说明：上面的upload是将数据上传到s3存储中，fate的算法依赖dataframe格式数据集，fate提供<code>dataframe-transformer</code>组件将进行数据转化。<strong>在BFIA协议中的数据输入参数为<code>dataset_id</code>, FATE适配这个参数的方式为<code>$namespace + '#' + $name</code></strong>
-- 配置：<a href="../examples/bfia/fate/job/dataframe_transformer.yaml">dataframe-transformer</a>
-- 将配置中的<code>JG0100001100000010</code>替换成实际站点ID
-- 修改<code>dataset_id</code>为<code>$namespace + '#' + $name</code>, 其中namespace和name为upload设置的参数
+<p>Explanation: The upload process stores data in the s3 storage. FATE algorithms depend on dataframe-format datasets. FATE provides the <code>dataframe-transformer</code> component for data conversion. <strong>In the BFIA protocol, the input parameter for data is <code>dataset_id</code>, which FATE adapts as <code>$namespace + '#' + $name</code></strong>
+- Configuration: <a href="../examples/bfia/fate/job/dataframe_transformer.yaml">dataframe-transformer</a>
+- Replace <code>JG0100001100000010</code> in the configuration with the actual site ID
+- Modify <code>dataset_id</code> to <code>$namespace + '#' + $name</code>, where namespace and name are the parameters set for upload.
 <div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">transformer_0</span><span class="p">:</span>
@@ -1376,7 +1376,7 @@ pip<span class="w"> </span>install<span class="w"> </span><span class="nv">fate_
 <span class="w">            </span><span class="nt">data_warehouse</span><span class="p">:</span>
 <span class="w">              </span><span class="nt">dataset_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">upload#guest</span>
 </code></pre></div>
-- 输出的数据表在dag.tasks.transformer_0.parameters参数中定义，可以修改为自定义的值
+- The output data table is defined in dag.tasks.transformer_0.parameters and can be customized.
 <div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">transformer_0</span><span class="p">:</span>
@@ -1384,24 +1384,28 @@ pip<span class="w"> </span>install<span class="w"> </span><span class="nv">fate_
 <span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">breast_hetero_guest</span>
 <span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">experiment</span>
 </code></pre></div>
-- 提交并<code>dataframe-transformer</code>组件: <code>flow job submit -c examples/bfia/fate/job/dataframe_transformer.yaml</code></p>
-<h4 id="312-fate">3.1.2 运行FATE算法组件<a class="headerlink" href="#312-fate" title="Permanent link">&para;</a></h4>
-<p>可以通过cli、pipeline或者bfia的<a href="https://github.com/FederatedAI/InterOp/blob/main/API_SPECS/2.%E6%8E%A7%E5%88%B6%E5%B1%82%E6%8E%A5%E5%8F%A3/%E9%9A%90%E7%A7%81%E8%AE%A1%E7%AE%97%E4%BA%92%E8%81%94%E4%BA%92%E9%80%9A%E6%8E%A7%E5%88%B6%E5%B1%82API.md#51-%E5%88%9B%E5%BB%BA%E4%BD%9C%E4%B8%9A">restful-api</a>提交作业
-- cli提交作业: 
-  - 配置：<a href="../examples/bfia/fate/job/psi_lr.yaml">psi-lr</a>、<a href="../examples/bfia/fate/job/psi_sbt.yaml">psi-sbt</a>
-  - 命令: <code>flow job submit -c examples/bfia/fate/job/psi_lr.yaml</code>
-- pipeline提交作业：<a href="../examples/bfia/fate/pipeline/test_lr.py">psi-lr</a>、<a href="../examples/bfia/fate/pipeline/test_sbt.py">psi-sbt</a>
-- restful-api: <a href="../python/fate_flow/adapter/bfia/examples/job/fate/fate_psi_lr.json">psi-lr</a>、<a href="../python/fate_flow/adapter/bfia/examples/job/fate/fate_psi_sbt.json">psi-sbt</a></p>
-<h3 id="32">3.2 使用其他厂商算法镜像<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
-<h4 id="321">3.2.1 数据上传<a class="headerlink" href="#321" title="Permanent link">&para;</a></h4>
-<p>由各厂商提供各自的数据上传接口</p>
-<h4 id="322">3.2.2 运行其他厂商算法组件(银联为例)<a class="headerlink" href="#322" title="Permanent link">&para;</a></h4>
-<p>可以通过cli、pipeline或者bfia的<a href="https://github.com/FederatedAI/InterOp/blob/main/API_SPECS/2.%E6%8E%A7%E5%88%B6%E5%B1%82%E6%8E%A5%E5%8F%A3/%E9%9A%90%E7%A7%81%E8%AE%A1%E7%AE%97%E4%BA%92%E8%81%94%E4%BA%92%E9%80%9A%E6%8E%A7%E5%88%B6%E5%B1%82API.md#51-%E5%88%9B%E5%BB%BA%E4%BD%9C%E4%B8%9A">restful-api</a>提交作业
-- cli提交作业: 
-  - 配置：<a href="../examples/bfia/unionpay/job/psi_lr.yaml">psi-lr</a>、<a href="../examples/bfia/unionpay/job/psi_sbt.yaml">psi-sbt</a>
-  - 命令: <code>flow job submit -c examples/bfia/unionpay/job/psi_lr.yaml</code>
-- pipeline提交作业：<a href="../examples/bfia/unionpay/pipeline/test_unionpay_lr.py">psi-lr</a>、<a href="../examples/bfia/unionpay/pipeline/test_unionpay_sbt.py">psi-sbt</a>
-- restful-api: <a href="../python/fate_flow/adapter/bfia/examples/job/unionpay/bfia_psi_lr.json">psi-lr</a>、<a href="../python/fate_flow/adapter/bfia/examples/job/unionpay/bfia_psi_sbt.json">psi-sbt</a></p>
+- Submit the <code>dataframe-transformer</code> component: <code>flow job submit -c examples/bfia/fate/job/dataframe_transformer.yaml</code></p>
+<h4 id="312-running-fate-algorithm-components">3.1.2 Running FATE Algorithm Components<a class="headerlink" href="#312-running-fate-algorithm-components" title="Permanent link">&para;</a></h4>
+<p>Jobs can be submitted via CLI, pipelines, or the BFIA's <a href="https://github.com/FederatedAI/InterOp/blob/main/API_SPECS/2.%E6%8E%A7%E5%88%B6%E5%B1%82%E6%8E%A5%E5%8F%A3/%E9%9A%90%E7%A7%81%E8%AE%A1%E7%AE%97%E4%BA%92%E8%81%94%E4%BA%92%E9%80%9A%E6%8E%A7%E5%88%B6%E5%B1%82API.md#51-%E5%88%9B%E5%BB%BA%E4%BD%9C%E4%B8%9A">restful-api</a></p>
+<ul>
+<li>Submitting jobs via CLI:</li>
+<li>Configuration: <a href="../examples/bfia/fate/job/psi_lr.yaml">psi-lr</a>, <a href="../examples/bfia/fate/job/psi_sbt.yaml">psi-sbt</a></li>
+<li>Command: <code>flow job submit -c examples/bfia/fate/job/psi_lr.yaml</code></li>
+<li>Submitting jobs via pipelines: <a href="../examples/bfia/fate/pipeline/test_lr.py">psi-lr</a>, <a href="../examples/bfia/fate/pipeline/test_sbt.py">psi-sbt</a></li>
+<li>Using the restful-api: <a href="../python/fate_flow/adapter/bfia/examples/job/fate/fate_psi_lr.json">psi-lr</a>, <a href="../python/fate_flow/adapter/bfia/examples/job/fate/fate_psi_sbt.json">psi-sbt</a></li>
+</ul>
+<h3 id="32-using-algorithm-images-from-other-vendors">3.2 Using Algorithm Images from Other Vendors<a class="headerlink" href="#32-using-algorithm-images-from-other-vendors" title="Permanent link">&para;</a></h3>
+<h4 id="321-data-upload">3.2.1 Data Upload<a class="headerlink" href="#321-data-upload" title="Permanent link">&para;</a></h4>
+<p>Each vendor provides its own data upload interface.</p>
+<h4 id="322-running-algorithm-components-from-other-vendors-unionpay-example">3.2.2 Running Algorithm Components from Other Vendors (UnionPay example)<a class="headerlink" href="#322-running-algorithm-components-from-other-vendors-unionpay-example" title="Permanent link">&para;</a></h4>
+<p>Jobs can be submitted via CLI, pipelines, or the BFIA's <a href="https://github.com/FederatedAI/InterOp/blob/main/API_SPECS/2.%E6%8E%A7%E5%88%B6%E5%B1%82%E6%8E%A5%E5%8F%A3/%E9%9A%90%E7%A7%81%E8%AE%A1%E7%AE%97%E4%BA%92%E8%81%94%E4%BA%92%E9%80%9A%E6%8E%A7%E5%88%B6%E5%B1%82API.md#51-%E5%88%9B%E5%BB%BA%E4%BD%9C%E4%B8%9A">restful-api</a></p>
+<ul>
+<li>Submitting jobs via CLI:</li>
+<li>Configuration: <a href="../examples/bfia/unionpay/job/psi_lr.yaml">psi-lr</a>, <a href="../examples/bfia/unionpay/job/psi_sbt.yaml">psi-sbt</a></li>
+<li>Command: <code>flow job submit -c examples/bfia/unionpay/job/psi_lr.yaml</code></li>
+<li>Submitting jobs via pipelines: <a href="../examples/bfia/unionpay/pipeline/test_unionpay_lr.py">psi-lr</a>, <a href="../examples/bfia/unionpay/pipeline/test_unionpay_sbt.py">psi-sbt</a></li>
+<li>restful-api: <a href="../python/fate_flow/adapter/bfia/examples/job/unionpay/bfia_psi_lr.json">psi-lr</a>、<a href="../python/fate_flow/adapter/bfia/examples/job/unionpay/bfia_psi_sbt.json">psi-sbt</a></li>
+</ul>
 
 
 
@@ -1425,7 +1429,7 @@ pip<span class="w"> </span>install<span class="w"> </span><span class="nv">fate_
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
-  回到页面顶部
+  Back to top
 </button>
         
       </main>
@@ -1458,16 +1462,16 @@ pip<span class="w"> </span>install<span class="w"> </span><span class="nv">fate_
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.instant", "header.autohide"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.8fd75fb4.min.js"></script>
+      <script src="../assets/javascripts/bundle.8fd75fb4.min.js"></script>
       
-        <script src="../../mkdocs/js/termynal.js"></script>
+        <script src="../mkdocs/js/termynal.js"></script>
       
-        <script src="../../mkdocs/js/custom.js"></script>
+        <script src="../mkdocs/js/custom.js"></script>
       
-        <script src="../../mkdocs/js/lottie-player.js"></script>
+        <script src="../mkdocs/js/lottie-player.js"></script>
       
     
   </body>
