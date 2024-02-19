@@ -295,7 +295,7 @@ def get_component_summary():
                 with open(temp_filepath, "w") as fout:
                     fout.write(json.dumps(summary, indent=4))
                 return send_file(open(temp_filepath, "rb"), as_attachment=True,
-                                 attachment_filename=request_data.get("filename"))
+                                 download_name=request_data.get("filename"))
             else:
                 return get_json_result(data=summary)
         return error_response(210, "No component summary found, please check if arguments are specified correctly.")

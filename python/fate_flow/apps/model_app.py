@@ -446,7 +446,7 @@ def operate_model(model_operation):
             return send_file(
                 model.archive_model_file_path,
                 as_attachment=True,
-                attachment_filename=os.path.basename(model.archive_model_file_path),
+                download_name=os.path.basename(model.archive_model_file_path),
             )
 
     # store and restore
