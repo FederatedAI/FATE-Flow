@@ -16,14 +16,15 @@
 import os
 
 from .file_utils import load_yaml_conf, get_fate_flow_directory
+from ..settings import DEFAULT_SERVER_CONF_PATH
 
 SERVICE_CONF = "service_conf.yaml"
 TRANSFER_CONF = "transfer_conf.yaml"
 
 
 def conf_realpath(conf_name):
-    conf_path = f"conf/{conf_name}"
-    return os.path.join(get_fate_flow_directory(), conf_path)
+    conf_path = DEFAULT_SERVER_CONF_PATH or os.path.join(get_fate_flow_directory(), "conf")
+    return f"{conf_path}/{conf_name}"
 
 
 def get_base_config(key, default=None, conf_name=SERVICE_CONF) -> dict:

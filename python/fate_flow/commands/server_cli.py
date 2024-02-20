@@ -14,6 +14,7 @@
 #  limitations under the License.
 #
 import os
+import shutil
 import subprocess
 import platform
 import click
@@ -21,10 +22,12 @@ from ruamel import yaml
 
 import fate_flow
 from fate_flow.commands.service import manage_fate_service
+from fate_flow.settings import DEFAULT_SERVER_CONF_PATH
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 HOME = os.path.dirname(fate_flow.__file__)
-SERVER_CONF_PATH = os.path.join(HOME, "conf", "service_conf.yaml")
+CONF_PATH = DEFAULT_SERVER_CONF_PATH or os.path.join(HOME, "conf")
+SERVER_CONF_PATH = os.path.join(CONF_PATH, "service_conf.yaml")
 SETTING_PATH = os.path.join(HOME, "settings.py")
 SERVICE_SH = os.path.join(HOME, "commands", "service.sh")
 
@@ -138,6 +141,13 @@ def get_version():
     print(fate_flow.__version__)
 
 
+def set_conf_home(home_path):
+    default_conf = os.path.join(HOME, "conf")
+    conf_home = f"{home_path}/conf"
+    shutil.copytree(default_conf, conf_home)
+    return conf_home
+
+
 def replace_settings(home_path):
     import re
     with open(SETTING_PATH, "r") as file:
@@ -147,6 +157,9 @@ def replace_settings(home_path):
     content = re.sub(r"JOB_DIR.*", f"JOB_DIR = \"{home_path}/jobs\"", content)
     content = re.sub(r"LOG_DIR.*", f"LOG_DIR = \"{home_path}/logs\"", content)
     content = re.sub(r"SQLITE_FILE_NAME.*", f"SQLITE_FILE_NAME = \"{home_path}/fate_flow_sqlite.db\"", content)
+
+    content = re.sub(r"DEFAULT_SERVER_CONF_PATH.*", f"DEFAULT_SERVER_CONF_PATH = \"{home_path}/conf\"", content)
+
     with open(SETTING_PATH, "w") as file:
         file.write(content)
 
@@ -158,6 +171,7 @@ def replace_settings(home_path):
 
 
 def init_server(ip, port, home):
+    conf_home = CONF_PATH
     with open(SERVER_CONF_PATH, "r") as file:
         config = yaml.safe_load(file)
     if ip:
@@ -171,10 +185,13 @@ def init_server(ip, port, home):
             raise RuntimeError(f"Please use an absolute path: {home}")
         os.makedirs(home, exist_ok=True)
         print(f"home: {home}")
+        conf_home = set_conf_home(home)
         replace_settings(home)
 
     if ip or port:
-        with open(SERVER_CONF_PATH, "w") as file:
+        service_conf_path = SERVER_CONF_PATH if not conf_home else os.path.join(conf_home, "service_conf.yaml")
+        print(f"Conf path: {service_conf_path}")
+        with open(service_conf_path, "w") as file:
             yaml.dump(config, file, default_flow_style=False)
 
     print("Init server completed!")
@@ -182,7 +199,8 @@ def init_server(ip, port, home):
 
 def run_command(command):
     try:
-        command = f"bash {SERVICE_SH} {HOME} {command}"
+        service_conf_path = os.path.join(CONF_PATH, "service_conf.yaml")
+        command = f"bash {SERVICE_SH} {HOME} {command} {service_conf_path}"
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, text=True)
         if result.returncode == 0:
             print(result.stdout)

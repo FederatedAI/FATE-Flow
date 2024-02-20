@@ -16,6 +16,7 @@
 import abc
 import atexit
 import json
+import os
 import socket
 import time
 from functools import wraps
@@ -24,6 +25,7 @@ from queue import Queue
 from threading import Thread
 from urllib import parse
 
+from fate_flow.utils.file_utils import get_fate_flow_directory
 from kazoo.client import KazooClient
 from kazoo.exceptions import NodeExistsError, NoNodeError, ZookeeperError
 from kazoo.security import make_digest_acl
@@ -37,6 +39,7 @@ from fate_flow.errors.zookeeper_error import ServiceNotSupported, ServicesError,
 from fate_flow.runtime.reload_config_base import ReloadConfigBase
 from fate_flow.runtime.system_settings import RANDOM_INSTANCE_ID, HOST, HTTP_PORT, GRPC_PORT, ZOOKEEPER_REGISTRY, \
     ZOOKEEPER, USE_REGISTRY, NGINX_HOST, NGINX_HTTP_PORT, FATE_FLOW_MODEL_TRANSFER_ENDPOINT, SERVICE_CONF_NAME
+from fate_flow.settings import DEFAULT_SERVER_CONF_PATH
 from fate_flow.utils import conf_utils, file_utils
 from fate_flow.utils.log import getLogger
 from fate_flow.utils.version import get_flow_version
@@ -421,7 +424,8 @@ class ServerRegistry(ReloadConfigBase):
 
     @classmethod
     def load_server_info_from_conf(cls):
-        path = Path(file_utils.get_fate_flow_directory()) / 'conf' / SERVICE_CONF_NAME
+        conf_path = DEFAULT_SERVER_CONF_PATH or os.path.join(get_fate_flow_directory(), "conf")
+        path = Path(conf_path) / SERVICE_CONF_NAME
         conf = file_utils.load_yaml_conf(path)
         if not isinstance(conf, dict):
             raise ValueError('invalid config file')

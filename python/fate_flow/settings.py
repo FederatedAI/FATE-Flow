@@ -25,6 +25,7 @@ DATA_DIR = ""
 MODEL_DIR = ""
 JOB_DIR = ""
 DEFAULT_FATE_DIR = ""
+DEFAULT_SERVER_CONF_PATH = ""
 
 # sqlite
 SQLITE_FILE_DIR = ""
