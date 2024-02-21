@@ -134,7 +134,11 @@ class DataManager:
             datas[key] = []
             for meta in metas:
                 if meta.data_type in [DataType.DATAFRAME, DataType.TABLE]:
-                    datas[key].append({"data": meta.get_part_of_data(), "metadata": meta.get_data_meta()})
+                    datas[key].append({
+                        "data": meta.get_part_of_data(),
+                        "metadata": meta.get_data_meta(),
+                        "total": meta.get_count()}
+                    )
                 else:
                     continue
         return datas
