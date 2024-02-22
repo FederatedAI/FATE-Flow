@@ -133,11 +133,16 @@ class DAGScheduler(SchedulerABC):
     def rollback_job_resource(cls, job, federated_response):
         rollback_party = []
         failed_party = []
+        stop_status = False
         for dest_role in federated_response.keys():
             for dest_party_id in federated_response[dest_role].keys():
                 retcode = federated_response[dest_role][dest_party_id]["code"]
                 if retcode == ReturnCode.Base.SUCCESS:
                     rollback_party.append({"role": dest_role, "party_id": [dest_party_id]})
+                elif retcode == ReturnCode.Job.RESOURCE_LIMIT_EXCEEDED:
+                    # stop job
+                    schedule_logger(job.f_job_id).exception(f"{dest_role} {dest_party_id} resource limit exceeded")
+                    stop_status = True
                 else:
                     failed_party.append({"role": dest_role, "party_id": [dest_party_id]})
         schedule_logger(job.f_job_id).info("job apply resource failed on {}, rollback {}".format(failed_party,
@@ -152,6 +157,10 @@ class DAGScheduler(SchedulerABC):
                 schedule_logger(job.f_job_id).info(f"job return resource failed:\n{federated_response}")
         else:
             schedule_logger(job.f_job_id).info("job no party should be rollback resource")
+
+        if stop_status:
+            cls.stop_job(job.f_job_id, stop_status=JobStatus.FAILED)
+            ScheduleJobSaver.update_job_status({"job_id": job.f_job_id, "status": JobStatus.FAILED})
 
     @classmethod
     @wraps_utils.schedule_lock
@@ -317,7 +326,11 @@ class DAGScheduler(SchedulerABC):
             schedule_logger(job_id).info(f"require {[task.f_task_name for task in tasks]} to rerun")
         else:
             # todo: get_need_revisit_nodes
-            tasks = ScheduleJobSaver.query_task(job_id=job_id, status=TaskStatus.CANCELED, scheduler_status=True)
+            tasks = ScheduleJobSaver.query_task(
+                job_id=job_id,
+                status=[TaskStatus.CANCELED, TaskStatus.FAILED, TaskStatus.TIMEOUT],
+                scheduler_status=True
+            )
         job_can_rerun = any([TaskController.prepare_rerun_task(
             job=job, task=task, auto=auto, force=False,
         ) for task in tasks])
