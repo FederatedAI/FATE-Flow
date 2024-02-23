@@ -248,7 +248,10 @@ class TaskParser(object):
         if ENGINES.get(EngineType.COMPUTING).lower() == ComputingEngine.SPARK:
             return SparkComputingSpec(
                 type=ENGINES.get(EngineType.COMPUTING).lower(),
-                metadata={"computing_id": self.computing_id}
+                metadata={
+                    "computing_id": self.computing_id,
+                    "options": {"home": COMPUTING_CONF.get(ComputingEngine.SPARK).get("home")}
+                }
             )
 
     @staticmethod
