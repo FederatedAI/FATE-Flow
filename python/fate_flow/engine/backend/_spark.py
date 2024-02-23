@@ -16,13 +16,17 @@
 import os
 
 from fate_flow.engine.backend._base import LocalEngine
+from fate_flow.entity.spec.dag import TaskConfigSpec
 from fate_flow.entity.types import WorkerName
 from fate_flow.manager.service.worker_manager import WorkerManager
 
 
 class SparkEngine(LocalEngine):
     def run(self, task_info, run_parameters, conf_path, output_path, engine_run, provider_name, **kwargs):
-        spark_home = os.environ.get("SPARK_HOME", None)
+        spark_home = None
+        parameters = TaskConfigSpec.parse_obj(run_parameters)
+        if parameters.conf.computing.metadata.options:
+            spark_home = parameters.conf.computing.metadata.options.get("home")
         if not spark_home:
             try:
                 import pyspark
