@@ -148,7 +148,7 @@ def set_conf_home(home_path):
     return conf_home
 
 
-def replace_settings(home_path):
+def replace_settings(home_path, data_home):
     import re
     with open(SETTING_PATH, "r") as file:
         content = file.read()
@@ -156,6 +156,7 @@ def replace_settings(home_path):
     content = re.sub(r"MODEL_DIR.*", f"MODEL_DIR = \"{home_path}/model\"", content)
     content = re.sub(r"JOB_DIR.*", f"JOB_DIR = \"{home_path}/jobs\"", content)
     content = re.sub(r"LOG_DIR.*", f"LOG_DIR = \"{home_path}/logs\"", content)
+    content = re.sub(r"UPLOAD_DATA_HOME.*", f"UPLOAD_DATA_HOME = \"{data_home}\"", content)
     content = re.sub(r"SQLITE_FILE_NAME.*", f"SQLITE_FILE_NAME = \"{home_path}/fate_flow_sqlite.db\"", content)
 
     content = re.sub(r"DEFAULT_SERVER_CONF_PATH.*", f"DEFAULT_SERVER_CONF_PATH = \"{home_path}/conf\"", content)
@@ -184,9 +185,11 @@ def init_server(ip, port, home):
         if not os.path.isabs(home):
             raise RuntimeError(f"Please use an absolute path: {home}")
         os.makedirs(home, exist_ok=True)
+        data_home = os.path.join(home, "upload")
+        os.makedirs(data_home, exist_ok=True)
         print(f"home: {home}")
         conf_home = set_conf_home(home)
-        replace_settings(home)
+        replace_settings(home, data_home)
 
     if ip or port:
         service_conf_path = SERVER_CONF_PATH if not conf_home else os.path.join(conf_home, "service_conf.yaml")
