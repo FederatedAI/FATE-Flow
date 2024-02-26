@@ -34,7 +34,7 @@ def component():
 
 @component.command()
 @click.option("--config", required=False, type=click.File(), help="config path")
-@click.option("--env-name", required=False, type=str, help="env name for config")
+@click.option("--env-name", required=True, type=str, help="env name for config", default="CONFIG")
 @click.option("--wraps-module", required=False, type=str, help="component run wraps module")
 def entrypoint(config, env_name, wraps_module):
     # parse config

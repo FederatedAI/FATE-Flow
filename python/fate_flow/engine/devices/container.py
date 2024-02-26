@@ -56,7 +56,8 @@ class ContainerdEngine(EngineABC):
 
     @classmethod
     def _get_environment(cls, task: Task, run_parameters):
-        return cls._flatten_dict(run_parameters)
+        # return cls._flatten_dict(run_parameters)
+        return {"CONFIG": json.dumps(run_parameters)}
 
     @classmethod
     def _get_volume(cls, task):
