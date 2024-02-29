@@ -177,10 +177,12 @@ class DataManager:
             if key not in outputs:
                 outputs[key] = []
             for table in tables:
-                outputs[key].append(storage.StorageTableMeta(
+                meta = storage.StorageTableMeta(
                     name=table.get("name"),
                     namespace=table.get("namespace")
-                ))
+                )
+                if meta:
+                    outputs[key].append(meta)
         return cls.display_data(outputs)
 
     @staticmethod
