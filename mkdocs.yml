@@ -15,6 +15,7 @@ nav:
     - job_scheduling.md
     - provider_register.md
     - system_conf.md
+    - fate_access.md
     - bfia_access.md
   - API: swagger/index.md
 
