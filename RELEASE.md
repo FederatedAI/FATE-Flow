@@ -2,7 +2,7 @@
 ### Major Features and Improvements
 Improved the display issue of output data.
 Enhanced the PyPI package: configuration files have been relocated to the user's home directory, and the relative paths for uploading data are based on the user's home directory.
-Added support for running FATE algorithms with Spark + Hadoop.
+Supported running FATE algorithms in Spark on YARN client mode.
 
 ### Bug-Fix
 Fixed an issue where failed tasks could not be retried.
