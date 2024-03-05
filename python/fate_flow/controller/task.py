@@ -120,8 +120,8 @@ class TaskController(object):
     @staticmethod
     def update_launcher_config(task, launcher_name, task_parameters):
         # support deepspeed and other launcher
-        if task.f_role == "arbiter":
-            return
+        # if task.f_role == "arbiter":
+        #     return
         schedule_logger(task.f_job_id).info(f"task runtime launcher name: {launcher_name}")
         if launcher_name and launcher_name != LauncherType.DEFAULT:
             task_parameters.launcher_name = task.f_launcher_name = launcher_name
