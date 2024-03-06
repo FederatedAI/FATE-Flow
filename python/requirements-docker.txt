@@ -6,3 +6,6 @@
 
 # container
 -r requirements-container.txt
+
+# eggroll-client
+-r requirements-eggroll-client.txt

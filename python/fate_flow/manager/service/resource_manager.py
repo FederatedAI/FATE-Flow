@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from fate_flow.entity.code import ReturnCode
 from pydantic import typing
 
 from fate_flow.db.base_models import DB
@@ -90,6 +91,9 @@ class ResourceManager(object):
         operate_status = False
         cores, memory = cls.query_job_resource(job_id=job_id, role=role, party_id=party_id)
         engine_name = ENGINES.get(EngineType.COMPUTING)
+        total_cores = EngineRegistry.query(engine_name=engine_name)[0].f_cores
+        if cores > total_cores:
+            raise RuntimeError(ReturnCode.Job.RESOURCE_LIMIT_EXCEEDED, "Resource limit exceeded")
         try:
             with DB.atomic():
                 updates = {

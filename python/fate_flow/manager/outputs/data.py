@@ -134,7 +134,11 @@ class DataManager:
             datas[key] = []
             for meta in metas:
                 if meta.data_type in [DataType.DATAFRAME, DataType.TABLE]:
-                    datas[key].append({"data": meta.get_part_of_data(), "metadata": meta.get_data_meta()})
+                    datas[key].append({
+                        "data": meta.get_part_of_data(),
+                        "metadata": meta.get_data_meta(),
+                        "total": meta.get_count()}
+                    )
                 else:
                     continue
         return datas
@@ -173,10 +177,12 @@ class DataManager:
             if key not in outputs:
                 outputs[key] = []
             for table in tables:
-                outputs[key].append(storage.StorageTableMeta(
+                meta = storage.StorageTableMeta(
                     name=table.get("name"),
                     namespace=table.get("namespace")
-                ))
+                )
+                if meta:
+                    outputs[key].append(meta)
         return cls.display_data(outputs)
 
     @staticmethod

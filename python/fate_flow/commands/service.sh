@@ -36,6 +36,7 @@
 #
 # -----------------------------------------------------------------------------
 FATE_FLOW_BASE=$1
+CONF_PATH=$3
 LOG_DIR=$FATE_FLOW_BASE/logs
 
 
@@ -144,7 +145,6 @@ load_config() {
     LOG_STDOUT="${LOG_DIR}/console.log"
 
     print_info "Checking service configuration..."
-    CONF_PATH="${FATE_FLOW_BASE}/conf/service_conf.yaml"
     if [ -f "${CONF_PATH}" ]; then
         print_ok "Service configuration file found." ${CONF_PATH}
     else

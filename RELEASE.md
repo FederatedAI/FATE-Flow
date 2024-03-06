@@ -1,3 +1,13 @@
+## Release 2.1.0
+### Major Features and Improvements
+Improved the display issue of output data.
+Enhanced the PyPI package: configuration files have been relocated to the user's home directory, and the relative paths for uploading data are based on the user's home directory.
+Supported running FATE algorithms in Spark on YARN client mode.
+
+### Bug-Fix
+Fixed an issue where failed tasks could not be retried.
+Fixed an issue where the system couldn't run when the task cores exceeded the system total cores.
+
 ## Release 2.0.0
 ### Major Features and Improvements
 * Adapted to new scalable and standardized federated DSL IR
