@@ -80,7 +80,7 @@ dag:
       - lr_0
       inputs:
         data:
-          input_data:
+          input_datas:
             task_output_artifact:
               - output_artifact_key: train_output_data
                 producer_task: lr_0

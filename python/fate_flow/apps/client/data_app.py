@@ -14,6 +14,8 @@
 #  limitations under the License.
 #
 import json
+import os.path
+
 from webargs import fields
 from flask import request
 from fate_flow.apps.desc import SERVER_FILE_PATH, HEAD, PARTITIONS, META, EXTEND_SID, NAMESPACE, NAME, DATA_WAREHOUSE, \
@@ -21,6 +23,7 @@ from fate_flow.apps.desc import SERVER_FILE_PATH, HEAD, PARTITIONS, META, EXTEND
 from fate_flow.engine import storage
 from fate_flow.manager.components.component_manager import ComponentManager
 from fate_flow.manager.outputs.data import DataManager
+from fate_flow.settings import UPLOAD_DATA_HOME
 from fate_flow.utils.api_utils import API
 from fate_flow.errors.server_error import NoFoundTable, NoFoundFile
 
@@ -36,6 +39,9 @@ page_name = "data"
 @API.Input.json(namespace=fields.String(required=False), desc=NAMESPACE)
 @API.Input.json(name=fields.String(required=False), desc=NAME)
 def upload_data(file, head, partitions, meta, namespace=None, name=None, extend_sid=False):
+    if not os.path.isabs(file):
+        if UPLOAD_DATA_HOME:
+            file = os.path.join(UPLOAD_DATA_HOME, file)
     if namespace and name:
         result = ComponentManager.upload_dataframe(
             file=file, head=head, partitions=partitions, meta=meta, namespace=namespace, name=name, extend_sid=extend_sid

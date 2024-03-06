@@ -35,7 +35,7 @@ PERMISSION_MANAGER_PAGE = "permission"
 APP_MANAGER_PAGE = "app"
 
 ADMIN_PAGE = [PERMISSION_MANAGER_PAGE, APP_MANAGER_PAGE]
-FATE_FLOW_CONF_PATH = os.path.join(get_fate_flow_directory(), "conf")
+FATE_FLOW_CONF_PATH = DEFAULT_SERVER_CONF_PATH or os.path.join(get_fate_flow_directory(), "conf")
 
 FATE_FLOW_JOB_DEFAULT_CONFIG_PATH = os.path.join(FATE_FLOW_CONF_PATH, "job_default_config.yaml")
 
