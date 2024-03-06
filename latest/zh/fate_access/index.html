@@ -9,8 +9,10 @@
       
       
       
-        <link rel="prev" href="../bfia_access/">
+        <link rel="prev" href="../system_conf/">
       
+      
+        <link rel="next" href="../bfia_access/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -18,7 +20,7 @@
     
     
       
-        <title>API - FATE Flow</title>
+        <title>FATE 2.0 版本互联互通接入指南 - FATE Flow</title>
       
     
     
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#swagger-api" class="md-skip">
+        <a href="#fate-20" class="md-skip">
           跳转至
         </a>
       
@@ -118,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API
+              FATE 2.0 版本互联互通接入指南
             
           </span>
         </div>
@@ -165,7 +167,7 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../swagger/" hreflang="en" class="md-select__link">
+            <a href="../../fate_access/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
@@ -260,10 +262,12 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../fate_flow/" class="md-tabs__link">
           
   
@@ -280,11 +284,9 @@
         
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../swagger/" class="md-tabs__link">
         
   
     
@@ -371,8 +373,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -395,19 +399,20 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -418,7 +423,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Docs
@@ -555,10 +560,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../fate_access/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    FATE 2.0 版本互联互通接入指南
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -567,6 +592,200 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-fate-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. FATE Flow接入指南
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. FATE Flow接入指南">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1 接口
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-api-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.1 api-1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-api-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.2 api-2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-api-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.3 api-3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-api-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.4 api-4
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2 调度器
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 调度器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.1 方案
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.2 调度逻辑
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.3 调度接口
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2 算法接入指南
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2 算法接入指南">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-fate" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 FATE算法容器化方案
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 接入
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 接入">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.1 算法参数
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.2 注册算法镜像
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.3 使用算法镜像
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -604,28 +823,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    API
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../swagger/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -634,33 +835,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#swagger-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      Swagger API
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -682,6 +856,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -690,11 +866,176 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#swagger-api" class="md-nav__link">
+  <a href="#1-fate-flow" class="md-nav__link">
     <span class="md-ellipsis">
-      Swagger API
+      1. FATE Flow接入指南
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="1. FATE Flow接入指南">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1 接口
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-api-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.1 api-1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-api-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.2 api-2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-api-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.3 api-3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-api-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.4 api-4
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2 调度器
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 调度器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.1 方案
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.2 调度逻辑
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.3 调度接口
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2 算法接入指南
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2 算法接入指南">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-fate" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 FATE算法容器化方案
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 接入
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 接入">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.1 算法参数
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.2 注册算法镜像
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.3 使用算法镜像
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -716,19 +1057,185 @@
   
 
 
-  <h1>API</h1>
+<h1 id="fate-20">FATE 2.0 版本互联互通接入指南<a class="headerlink" href="#fate-20" title="Permanent link">&para;</a></h1>
+<h2 id="1-fate-flow">1. FATE Flow接入指南<a class="headerlink" href="#1-fate-flow" title="Permanent link">&para;</a></h2>
+<ul>
+<li>说明：此章节为异构调度平台对接FATE调度平台FATE FLow的接入指南</li>
+<li>场景：本方为待接入系统，合作方为FATE站点</li>
+</ul>
+<h3 id="11">1.1 接口<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
+<p><img alt="api" src="../../images/fate_flow_api.png" />
+FATE flow接口划分为4类：
+- 1负责接收来自上层系统的请求，如提交、停止、查询作业等；
+- 2负责接收来自调度层的请求，如开始、停止任务等；
+- 3负责接收来自算法容器的请求，如任务的状态、输入上报等
+- 4负责来自平台层的请求，并分发给各个参与方的接口2，如创建作业，停止作业等</p>
+<h4 id="111-api-1">1.1.1 api-1<a class="headerlink" href="#111-api-1" title="Permanent link">&para;</a></h4>
+<p>说明：由于是对接上层系统，并不涉及调度之间的交互，非必需接口，可自定义实现，接口层面不做约束。</p>
+<h4 id="112-api-2">1.1.2 api-2<a class="headerlink" href="#112-api-2" title="Permanent link">&para;</a></h4>
+<p>可参考<a href="./../python/fate_flow/apps/partner/partner_app.py">接口</a>实现
+- <code>/v2/partner/job/create</code>: 创建作业
+- <code>/v2/partner/job/start</code>: 开始作业
+- <code>/v2/partner/job/status/update</code>: 更新作业状态
+- <code>/v2/partner/job/update</code>: 更新作业(如进度信息)
+- <code>/v2/partner/job/resource/apply</code>: 申请作业资源
+- <code>/v2/partner/job/resource/return</code>: 归还作业资源
+- <code>/v2/partner/job/stop</code>: 停止作业
+- <code>/v2/partner/task/resource/apply</code>: 申请任务资源
+- <code>/v2/partner/task/resource/return</code>: 归还任务资源
+- <code>/v2/partner/task/start</code>: 开始任务
+- <code>/v2/partner/task/collect</code>: 调度层收集任务状态
+- <code>/v2/partner/task/status/update</code>: 更新任务状态
+- <code>/v2/partner/task/stop</code>: 停止任务
+- <code>/v2/partner/task/rerun</code>: 重跑任务</p>
+<h4 id="113-api-3">1.1.3 api-3<a class="headerlink" href="#113-api-3" title="Permanent link">&para;</a></h4>
+<p>可参考<a href="./../python/fate_flow/apps/worker/worker_app.py">接口</a>实现
+- <code>/v2/worker/task/status</code>: 状态上报
+- <code>/v2/worker/model/save</code>: 模型存储
+- <code>/v2/worker/model/download</code>: 模型下载
+- <code>/v2/worker/data/tracking/query</code>: 查询数据
+- <code>/v2/worker/data/tracking/save</code>: 记录数据
+- <code>/v2/worker/metric/save/&lt;execution_id&gt;</code>: 记录指标</p>
+<h4 id="114-api-4">1.1.4 api-4<a class="headerlink" href="#114-api-4" title="Permanent link">&para;</a></h4>
+<p>可参考<a href="./../python/fate_flow/apps/scheduler/scheduler_app.py">接口</a>实现
+- <code>/v2/scheduler/job/create</code>: 创建作业、
+- <code>/v2/scheduler/job/stop</code>: 停止作业
+- <code>/v2/scheduler/task/report</code>: 任务上报(如状态)
+- <code>/v2/scheduler/job/rerun</code>: 重跑作业</p>
+<h3 id="12">1.2 调度器<a class="headerlink" href="#12" title="Permanent link">&para;</a></h3>
+<p>调度器主要包括两部分：调度逻辑和调度接口。异构的场景下的调度层想要实现互联互通，统一的调度流程和接口是不可或缺的。上述提到若使用FATE Flow作为调度方，与其它厂商互联时，可忽略调度器的实现。</p>
+<h4 id="121">1.2.1 方案<a class="headerlink" href="#121" title="Permanent link">&para;</a></h4>
+<p>调度的核心是调度流程，流程定义作业的生命周期。在FATE 1.x版本中调度器与发起方逻辑是绑定的，即多方作业的协调调度是在发起方。
+这样有个弊处：假设A、B、C三家厂商各自都有发起任务的需求，他们的调度层都需要基于相同的调度逻辑实现调度器，互联互通的成本较高。
+在2.0版本中，将调度模块中的发起方与调度方逻辑解耦，且调度方可以在作业配置中被指定。在上诉的案例中，只要A、B、C厂商中的任意一家实现了调度器，
+或者直接使用FATE作为调度方，其他厂商只需要实现调度客户端接口，即可满足需求，大大降低互联互通成本。</p>
+<p><img alt="scheduler" src="../../images/scheduler.png" /></p>
+<p style="text-align:center;">P代表调度客户端接口，S代表调度器接口</p>
 
-<h2 id="swagger-api">Swagger API<a class="headerlink" href="#swagger-api" title="Permanent link">&para;</a></h2>
-<p><link type="text/css" rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"></p>
-<div id="swagger-ui-2">
-</div>
-<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js" charset="UTF-8"></script>
-<script>
-    SwaggerUIBundle({
-      url: 'swagger.yaml',
-      dom_id: '#swagger-ui-2',
-    })
-</script>
+<p>举个例子简单说明下该调度模式：假设A想要和C创建作业，调度方为FATE Flow。首先A请求FATE-FLow S(create-job)接口, FATE FLow收到请求后通过job配置获取参与方信息(A、C)，随即分发给参与方各自的P(create-job)接口。</p>
+<h4 id="122">1.2.2 调度逻辑<a class="headerlink" href="#122" title="Permanent link">&para;</a></h4>
+<p>对作业的生命周期管理，主要包括作业何时启停、任务何时启停、DAG解析、组件运行依赖等等。FATE FLow的调度流程按任务状态获取模式分为两种: 
+callback和poll。其中callback模式是由各参与方主动上报任务状态给调度方，poll模式是调度方定时向各参与方拉取任务状态。
+两种模式对应的调度流程图如下：</p>
+<p><img alt="schedule-for-callback" src="../../images/schedule_for_callback.png" /></p>
+<p style="text-align:center;">callback模式</p>
+
+<p><img alt="schedule-for-poll" src="../../images/schedule_for_poll.png" /></p>
+<p style="text-align:center;">poll模式</p>
+
+<h4 id="123">1.2.3 调度接口<a class="headerlink" href="#123" title="Permanent link">&para;</a></h4>
+<p>负责来自平台层的请求，并分发给各个参与方的<a href="#api-2">api-2</a>，如创建作业，停止作业等。接口见<a href="#api-4">api-4</a></p>
+<h2 id="2">2 算法接入指南<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p>在FATE 历史版本中，算法是以调度服务启动的本地进程方式运行，在扩展性方面存在不足，很难满足互联互通的需求。在2.0版本中采用“算法容器”运行算法，
+通过制定统一的算法镜像构建标准与定义一套规范的镜像加载机制来实现异构算法调度功能。
+<img alt="scheduler" src="../../images/federationml_schedule.png" /></p>
+<h3 id="21-fate">2.1 FATE算法容器化方案<a class="headerlink" href="#21-fate" title="Permanent link">&para;</a></h3>
+<ul>
+<li>前处理: 数据、模型、算法参数等输入处理，会调用平台层接口<a href="#api-3">api-3</a>从平台获取相关依赖</li>
+<li>组件运行: 算法组件逻辑</li>
+<li>后处理: 算法组件输出内容处理，会调用平台层接口<a href="#api-3">api-3</a>将输出上传到平台
+<img alt="" src="../../images/schedule_for_component.png" /></li>
+</ul>
+<h3 id="22">2.2 接入<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<h4 id="221">2.2.1 算法参数<a class="headerlink" href="#221" title="Permanent link">&para;</a></h4>
+<p>FATE FLow会以环境变量的形式将参数传递给算法容器，环境变量的key为"CONFIG"，参数值为JSON字符串。内容如下：
+<div class="highlight"><pre><span></span><code>component: psi
+computing_partitions: 8
+conf:
+  computing:
+    metadata:
+      computing_id: 202402271112016150790_psi_0_0_host_9998
+      host：127.0.0.1
+      port:4670
+    type: standalone/eggroll/spark
+  device:
+    metadata: {}
+    type: CPU
+  federation:
+    metadata:
+      federation_id: 202402271112016150790_psi_0_0
+      parties:
+        local:
+          partyid: &#39;9998&#39;
+          role: host
+        parties:
+        - partyid: &#39;9999&#39;
+          role: guest
+        - partyid: &#39;9998&#39;
+          role: host
+      osx_config:
+        host: 127.0.01
+        port: 9370
+    type: osx
+  logger:
+    config:
+  storage: standalone/eggroll/hdfs
+engine_run:
+  cores: 4
+input_artifacts:
+  data:
+    input_data:
+      output_artifact_key: output_data
+      output_artifact_type_alias: null
+      parties:
+      - party_id:
+        - &#39;9998&#39;
+        role: host
+      producer_task: reader_0
+  model: null
+job_id: &#39;202402271112016150790&#39;
+launcher_conf: {}
+launcher_name: default
+mlmd:
+  metadata:
+    api_version: v2
+    host: 127.0.0.1
+    port: 9380
+    protocol: http
+  type: flow
+model_id: &#39;202402271112016150790&#39;
+model_version: &#39;0&#39;
+parameters: {}
+party_id: &#39;9998&#39;
+party_task_id: 202402271112016150790_psi_0_0_host_9998
+provider_name: fate
+role: host
+stage: default
+task_id: 202402271112016150790_psi_0
+task_name: psi_0
+task_version: &#39;0&#39;
+</code></pre></div>
+其中，关键的配置为：
+- component：算法名。多个算法打包在同一个镜像时可通过该参数标识
+- conf.computing: 为计算引擎配置
+- conf.federation: 为通信引擎配置
+- conf.storage: 为存储引擎配置，支持standalone/eggroll和hdfs
+- mlmd: 为平台层接口，供算法的输出记录使用。接口为<a href="#api-3">api-3</a>
+- input_artifacts：输入依赖，包括数据、模型等
+- parameters：算法参数
+算法的启动入口需要在打镜像时指定CMD，算法结束需要调用<a href="#api-3">api-3</a>中的状态上报接口</p>
+<h4 id="222">2.2.2 注册算法镜像<a class="headerlink" href="#222" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code>flow<span class="w"> </span>provider<span class="w"> </span>register<span class="w"> </span>-c<span class="w"> </span>examples/provider/register_image.json
+</code></pre></div>
+其中，register_image.json如下：
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fate&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docker&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.1.0&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;base_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;federatedai/fate:2.1.0&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h4 id="223">2.2.3 使用算法镜像<a class="headerlink" href="#223" title="Permanent link">&para;</a></h4>
+<p>注册完成后，在作业配置的DAG中可以指定provider来运行此fate算法镜像，参考如下：
+<div class="highlight"><pre><span></span><code><span class="nt">dag</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">conf</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fate:2.1.0@docker</span>
+</code></pre></div>
+或者你也可以指定单个算法使用此镜像，详细可参考<a href="../provider_register/">provider指南</a></p>
 
 
 
