@@ -49,6 +49,11 @@ from fate_flow.utils.version import get_versions
 from fate_flow.utils.xthread import ThreadPoolExecutor
 from fate_flow.proto.rollsite import proxy_pb2_grpc
 
+from fate_flow.utils.file_utils import get_project_base_directory
+from cheroot import wsgi
+from wsgidav.fs_dav_provider import FilesystemProvider
+from wsgidav.wsgidav_app import WsgiDAVApp
+
 detect_logger = getLogger("fate_flow_detect")
 stat_logger = getLogger("fate_flow_stat")
 
@@ -96,6 +101,32 @@ def server_init():
     ProviderManager.register_default_providers()
 
 
+def get_wsgidav_app():
+    path = os.path.join(get_project_base_directory(), "webdav")
+    if not os.path.exists(path):
+        os.makedirs(path)
+    config = {
+        "host": HOST,
+        "port": HTTP_PORT,
+        "simple_dc": {
+            "user_mapping": {
+                "*": {
+                    "root": {
+                        "password": "root",
+                        "roles": []
+                    }
+                },
+            }
+        },
+        "provider_mapping": {
+            "/": FilesystemProvider(path),
+        },
+        "verbose": 3,
+    }
+    wsgidav_app = WsgiDAVApp(config=config)
+    return wsgidav_app
+
+
 def start_server(debug=False):
     # grpc
     thread_pool_executor = ThreadPoolExecutor(max_workers=GRPC_SERVER_MAX_WORKERS)
@@ -110,14 +141,14 @@ def start_server(debug=False):
 
     # http
     stat_logger.info("FATE Flow http server start...")
-    run_simple(
-        hostname=HOST,
-        port=HTTP_PORT,
-        application=app,
-        threaded=True,
-        use_reloader=debug,
-        use_debugger=debug
-    )
+    webdav_app = get_wsgidav_app()
+    dispatcher = wsgi.PathInfoDispatcher({
+        '/': app,
+        '/webdav': webdav_app,
+    })
+    address = (HOST, HTTP_PORT)
+    cheroot_server = wsgi.Server(address, dispatcher, numthreads=2)
+    cheroot_server.start()
 
 
 if __name__ == '__main__':

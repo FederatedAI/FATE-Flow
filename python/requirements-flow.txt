@@ -24,3 +24,5 @@ cos-python-sdk-v5==1.9.10
 typing-extensions==4.5.0
 boto3
 pyarrow==14.0.1
+wsgidav==4.3.0
+cheroot==10.0.0
