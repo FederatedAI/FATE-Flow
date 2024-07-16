@@ -33,15 +33,17 @@ install_requires = [
 ]
 extras_require = {
     "rabbitmq": ["pika==1.2.1"],
-    "pulsar": ["pulsar-client==2.10.2"],
+    "pulsar": ["pulsar-client==3.4.0"],
     "spark": ["pyspark"],
     "eggroll": [
-        "cloudpickle",
+        "cloudpickle==2.1.0",
         "lmdb",
-        "protobuf",
-        "grpcio",
-        "grpcio-tools",
-        "protobuf",
+        "protobuf==4.24.4",
+        "grpcio==1.62.1",
+        "grpcio-tools==1.62.1",
+        "protobuf==4.24.4",
+        "psutil>=5.7.0",
+        "pynvml==11.5.0"
     ],
     "fate_flow": ["fate_flow[rabbitmq,pulsar,spark,eggroll]"],
 }
