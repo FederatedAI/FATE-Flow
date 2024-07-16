@@ -42,6 +42,8 @@ extras_require = {
         "grpcio==1.62.1",
         "grpcio-tools==1.62.1",
         "protobuf==4.24.4",
+        "psutil>=5.7.0",
+        "pynvml==11.5.0"
     ],
     "fate_flow": ["fate_flow[rabbitmq,pulsar,spark,eggroll]"],
 }
