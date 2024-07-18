@@ -24,3 +24,4 @@ cos-python-sdk-v5==1.9.10
 typing-extensions==4.5.0
 boto3
 pyarrow==14.0.1
+sqlalchemy==2.0.31
