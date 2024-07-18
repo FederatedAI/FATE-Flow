@@ -25,7 +25,7 @@ from fate_flow.entity.spec.dag import IOMeta, ArtifactOutputSpec, Metadata, Arti
 from fate_flow.entity.types import JsonMetricArtifactType, EngineType
 from fate_flow.manager.outputs.data import DatasetManager
 from fate_flow.runtime.system_settings import STANDALONE_DATA_HOME, ENGINES
-from fate_flow.utils.file_utils import get_fate_flow_directory
+from fate_flow.utils.file_utils import get_fate_flow_directory, transform_local_file, file_delete
 from fate_flow.utils.io_utils import URI
 
 
@@ -135,6 +135,7 @@ class Upload:
         self.parameters = parameters
         logging.info(self.parameters.to_dict())
         storage_address = self.parameters.storage_address
+        parameters.file, is_cache = transform_local_file(parameters.file)
         if not os.path.isabs(parameters.file):
             parameters.file = os.path.join(
                 get_fate_flow_directory(), parameters.file
@@ -208,6 +209,8 @@ class Upload:
             logging.info("table name: {}, table namespace: {}".format(name, namespace))
             if outputs:
                 self.save_outputs(job_id, outputs, data_table_count)
+            if is_cache:
+                file_delete(parameters.file)
             return {"name": name, "namespace": namespace, "count": data_table_count, "data_meta": self.data_meta}
 
     def save_data_table(self, job_id):
