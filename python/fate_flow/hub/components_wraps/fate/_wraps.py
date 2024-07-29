@@ -403,6 +403,9 @@ class FlowWraps(WrapsABC):
         if self.config.conf.computing.type == ComputingEngine.STANDALONE or \
                 self.config.conf.federation.type == ComputingEngine.STANDALONE:
             os.environ["STANDALONE_DATA_PATH"] = STANDALONE_DATA_HOME
+        if self.config.env_vars:
+            for k, v in self.config.env_vars.items():
+                os.environ[k] = v
 
     def _output_artifacts(self, type_name, is_multi, name, output_type=None):
         output_artifacts = ArtifactOutputApplySpec(uri="", type_name=type_name)

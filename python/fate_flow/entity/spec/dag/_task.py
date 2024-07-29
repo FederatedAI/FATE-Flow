@@ -46,6 +46,7 @@ class PreTaskConfigSpec(pydantic.BaseModel):
     computing_partitions: int = None
     launcher_name: Optional[str] = "default"
     launcher_conf: Optional[Dict] = {}
+    env_vars: Optional[Dict] = {}
 
 
 class TaskConfigSpec(pydantic.BaseModel):

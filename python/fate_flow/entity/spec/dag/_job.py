@@ -54,6 +54,7 @@ class TaskConfSpec(BaseModel):
     provider: Optional[str]
     timeout: Optional[int]
     launcher_name: Optional[str] = "default"
+    env_vars: Optional[Dict]
 
 
 class InheritConfSpec(BaseModel):

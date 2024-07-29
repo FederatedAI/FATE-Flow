@@ -178,6 +178,10 @@ class TaskParser(object):
         return self.task_runtime_conf.get("launcher_name", "default")
 
     @property
+    def env_vars(self):
+        return self.task_runtime_conf.get("env_vars", {})
+
+    @property
     def engine_run(self):
         return self.task_runtime_conf.get("engine_run", {})
 
@@ -352,7 +356,8 @@ class TaskParser(object):
             parameters=self.input_parameters,
             input_artifacts=self.task_node.upstream_inputs,
             conf=self.task_conf,
-            mlmd=self.generate_mlmd()
+            mlmd=self.generate_mlmd(),
+            env_vars=self.env_vars
         )
 
 
