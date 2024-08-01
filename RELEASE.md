@@ -1,3 +1,7 @@
+## Release 2.2.0
+### Major Features and Improvements
+* Upgrade from Python 3.8 to Python 3.10
+
 ## Release 2.1.0
 ### Major Features and Improvements
 Improved the display issue of output data.

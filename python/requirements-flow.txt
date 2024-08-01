@@ -1,8 +1,8 @@
 pip>=21
-apsw<=3.10
+apsw>=3.10
 Flask==2.2.5
-grpcio==1.59.3
-grpcio-tools==1.59.3
+grpcio==1.62.1
+grpcio-tools==1.62.1
 requests<2.26.0
 urllib3==1.26.18
 ruamel-yaml==0.16
@@ -10,9 +10,9 @@ cachetools==3.0.0
 filelock==3.3.1
 pydantic==1.10.12
 webargs
-peewee==3.9.3
+peewee==3.17.1
 python-dotenv==0.13.0
-pyyaml==5.4.1
+pyyaml
 networkx
 psutil>=5.7.0
 casbin_peewee_adapter
@@ -20,8 +20,8 @@ casbin
 pymysql
 kazoo
 shortuuid
-cos-python-sdk-v5==1.9.10
-typing-extensions==4.5.0
+cos-python-sdk-v5==1.9.27
+typing-extensions==4.8.0
 boto3
-pyarrow==14.0.1
 sqlalchemy==2.0.31
+pyarrow==15.0.1
