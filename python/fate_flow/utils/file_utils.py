@@ -16,8 +16,12 @@
 
 import json
 import os
+import uuid
+from pathlib import Path
 
+import pandas as pd
 from ruamel import yaml
+from sqlalchemy import create_engine
 
 from fate_flow.runtime.env import is_in_virtualenv
 
@@ -72,6 +76,50 @@ def get_fate_flow_directory(*args):
     if args:
         return os.path.join(fate_flow_dir, *args)
     return fate_flow_dir
+
+
+def transform_local_file(file):
+    """
+    Args:
+        file (str):
+            values like :
+                mysql://user:password@host_ip:host_port/db/table
+                file:///path/to/local_file.csv
+                /path/to/local_file.csv
+    """
+    def _find_positions(s):
+        last_at_index = s.rfind('@')
+        first_colon_index = s.find(':')
+        last_slash_index = s.rfind('/')
+        second_last_slash_index = s.rfind('/', 0, last_slash_index)
+        return last_at_index, first_colon_index, second_last_slash_index
+
+    if file.startswith('mysql://'):
+        db_info_str = file[8:]
+        db_info = db_info_str.split('/')
+        table_name = db_info[-1]
+        dbname = db_info[-2]
+        last_at, first_colon, second_last_slash = _find_positions(db_info_str)
+        username = db_info_str[0:first_colon]
+        password = db_info_str[first_colon + 1: last_at]
+        host = db_info_str[last_at + 1:second_last_slash]
+        database_url = f"mysql+pymysql://{username}:{password}@{host}/{dbname}"
+        engine = create_engine(database_url)
+        df = pd.read_sql_table(table_name, con=engine)
+        file = f"/tmp/data_{uuid.uuid4()}.csv"
+        df.to_csv(file, index=False)
+        return file, True
+
+    elif file.startswith('file://'):
+        return file[7:], False
+
+    else:
+        return file, False
+
+
+def file_delete(file):
+    file_path = Path(file)
+    file_path.unlink(missing_ok=True)
 
 
 def load_yaml_conf(conf_path):
