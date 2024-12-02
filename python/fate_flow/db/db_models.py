@@ -71,6 +71,11 @@ class BaseDataBase:
             self.database_connection = APSWDatabase(file_utils.get_project_base_directory("fate_sqlite.db"))
             RuntimeConfig.init_config(USE_LOCAL_DATABASE=True)
             stat_logger.info('init sqlite database on standalone mode successfully')
+        # 支持pg
+        elif database_config.pop("engine") == "postgres":
+            from playhouse.pool import PostgresqlDatabase
+            self.database_connection = PostgresqlDatabase(db_name, **database_config)
+            stat_logger.info('init postgres database on cluster mode successfully')
         else:
             self.database_connection = PooledMySQLDatabase(db_name, **database_config)
             stat_logger.info('init mysql database on cluster mode successfully')

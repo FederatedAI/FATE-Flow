@@ -165,11 +165,16 @@ def save_model_info(model_info):
     model_info = {k if k.startswith('f_') else f'f_{k}': v for k, v in model_info.items()}
 
     with DB.connection_context():
-        MLModel.insert(**model_info).on_conflict(preserve=(
-            'f_update_time',
-            'f_update_date',
-            *model_info.keys(),
-        )).execute()
+        MLModel.insert(**model_info).on_conflict(  # 为适配 antdb 增加了 conflict_target 参数
+            conflict_target=[MLModel.f_model_id,
+                             MLModel.f_role,
+                             MLModel.f_party_id,
+                             MLModel.f_model_version],
+            preserve=('f_update_time',
+                      'f_update_date',
+                      *model_info.keys(),
+                      ),
+        ).execute()
 
     if ENABLE_MODEL_STORE:
         sync_model = SyncModel(
