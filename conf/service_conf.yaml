@@ -28,6 +28,13 @@ database:
     port: 3306
     max_connections: 100
     stale_timeout: 30
+  postgresql:
+    name: fate_flow
+    user: fate
+    password: fate
+    host: 127.0.0.1
+    port: 5432
+    max_connections: 100
   sqlite:
     # default fate_flow/runtime/system_settings: SQLITE_PATH
     # /xxx/xxx.sqlite
