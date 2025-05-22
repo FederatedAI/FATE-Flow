@@ -233,7 +233,8 @@ class Upload:
             id_index = self.update_table_meta(data_head)
             read_status = True
         else:
-            pass
+            data_head = self.parameters.meta.header
+            id_index = self.update_table_meta(data_head)
         return id_index, read_status
 
     def upload_file(self, input_file, job_id, input_feature_count=None, table=None):
